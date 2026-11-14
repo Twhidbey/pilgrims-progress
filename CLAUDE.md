@@ -5,7 +5,7 @@ A gentle side-scrolling game for kids ages 7 to 10, following Bunyan's *The Pilg
 ## Working with the owner
 
 - **Repo: `Twhidbey/pilgrims-progress`, branch `main`.** This repo IS the live game: GitHub Pages serves it at https://twhidbey.github.io/pilgrims-progress/ (style lab: `/style-lab.html`). Pushing `main` publishes it (Pages takes 1 to 2 minutes). Commit and push after every change, then tell the owner it is live. A phone may show an old copy, so suggest adding `?v=N` to the link.
-- **Build stamp:** bottom-right corner of the game (`id="build"` in `index.html`) and of the style lab canvas (`id="build"` in `style-lab.html`): `build N · date`. Bump N on **every** push, in both files, so one number means one push. Currently **build 7**.
+- **Build stamp:** bottom-right corner of the game (`id="build"` in `index.html`) and of the style lab canvas (`id="build"` in `style-lab.html`): `build N · date`. Bump N on **every** push, in both files, so one number means one push. Currently **build 8**.
 - **Keep `CLAUDE.md` and `HANDOFF.md` updated after every change.** The repo is public: no names, emails or other personal details in notes, code or commits.
 - Players: kids 7 to 10, mostly on a phone. Gentle: **no lives, no game over**, on-screen touch buttons, read-aloud dialogue, short simple sentences.
 - Sister project with the same habits: `Twhidbey/math-jump` (Math Ninja).
@@ -17,7 +17,8 @@ A gentle side-scrolling game for kids ages 7 to 10, following Bunyan's *The Pilg
 - **Soft rain on the left clearing to warm golden light on the right.**
 - Simple, natural, calm. **Not cartoonish.**
 - The look was settled in `style-lab.html` first, then moved into the game (build 6). Try new looks in the lab before changing the game.
-- **Christian is a silhouette** (owner: "making him a silhouette is better"). His four painted poses are tinted one colour and made solid (thin paint used to let pale spots show through; owner found them distracting).
+- **Christian is a silhouette** (owner: "making him a silhouette is better"). Since build 8 his poses are black silhouettes the owner made with an AI image tool (Nano Banana), cut out and embedded; they are tinted to the road colour in the game.
+- **Don't cover the scene with words** (owner, twice): the dialogue is a thin strip of light text on the dark road under everyone's feet, no box.
 - **Background hills should look realistic** (owner): natural ridgelines, not smooth waves or a single pointed peak.
 - **Scale:** Christian must not dwarf things beside him (owner: "pilgrim dwarfs the fence"). Small things like fences go on a layer further back, sized for that distance.
 - **The owner's chosen look** (lab default and the game's `LOOK`): `look=50.60.65.29.4.80.30.66.41.19.55.35.0-0.1.1.3` = Storm to gold, 4 layers, mist 29, soft edges 66, gentle hills.
@@ -50,7 +51,7 @@ Layered silhouettes since build 6. **The scenery code is copied from the lab (no
 
 | Area | Search for |
 |---|---|
-| Christian's painted poses (base64 WebP: stand / walk / run / jump) and their silhouettes | `SPR_SRC`, `loadSprites`, `SIL` (each pose baked in the rain colour `.c` and golden colour `.w`) |
+| Christian's poses (base64 WebP, black on transparent: stand, walk2, walk3, run1, run2, jump) and their tinted copies | `SPR_SRC`, `SPR_META` (per pose: anchor x and ground line y in the picture's pixels), `loadSprites`, `SIL` (rain colour `.c`, golden colour `.w`). Chosen in `draw()`: walk poses below speed 3.2, run poses at full speed. Drawn at scale .56 (about 150 tall) |
 | Screen size and fit | `VW`, `VH`, `GY` (ground 440), `LEVEL_W`, `GATE`, `fit()` |
 | The look: numbers from the lab, colours | `LOOK`, `PAL`, `layerCol(d)` |
 | Weather: 0 rain .. 1 golden across the screen; `clearAt` moves with the camera so the level goes from rain to gold | `warm`, `clearAt` (set at the top of `draw()`), `hGrad` |
@@ -61,7 +62,7 @@ Layered silhouettes since build 6. **The scenery code is copied from the lab (no
 | Level layout | `buildLevel()`: `SOL` (solid crates, barrels, cart, walls), `ONE` (one-way market awning), `MUD`, `SPARKS` (lights to gather), `TRIG` (story triggers) |
 | Things on the road (dark shapes in the ground colour, faint hint lines, a pale line along each top so kids see where to land) | `thing`, `barrelShape`, `stall`, `gate`, `INK` / `SETC` / `HINT` |
 | Other people, code-drawn for now (Evangelist, Obstinate, Pliable) | `person(c, o)` (poses stand / walk / jump; options hood, burden, robe, cloak, hat, hair, beard, point, hips, staff), `drawWho` |
-| Story text | `INTRO`, `EVAN`, `NEIGH`, `END`; `talk()`, `show()`, `next()`; read-aloud `say()` (speechSynthesis). The words box `#dlg` sits at the **top, in the sky** (owner: at the bottom it covered the lower third, people included); while it shows, `body.talking` hides the touch buttons and the sparks counter (any tap moves the story on) |
+| Story text | `INTRO`, `EVAN`, `NEIGH`, `END`; `talk()`, `show()`, `next()`; read-aloud `say()` (speechSynthesis). The words `#dlg` are a **thin strip on the dark road below everyone's feet** (top 82.5% of the stage to the bottom; light text, name in gold, faint dark fade, no box; owner didn't want the scene covered). `#dlg.on` shows it; `body.talking` hides the touch buttons, sparks counter and build stamp (any tap moves the story on) |
 | Movement | `update()`: `GRAV`, `JUMP`, `MAXV`, coyote time + jump buffer, mud slows, rolling barrels only bump Christian back (no harm) |
 | Drawing a frame | `draw()`, `drawLight()` (the shining light, always visible, grows as he nears) |
 | Input | `KMAP` (arrows / WASD / space), touch buttons `#tl #tr #tj` |

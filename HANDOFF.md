@@ -32,6 +32,12 @@ The game is `index.html` (one file, no build step). `style-lab.html` is the art-
 ## Built Nov 14, 2026 (build 7)
 - Owner: "the script covers the lower third of the scene". The words box moved to the top of the screen (the sky is empty there), a little narrower; the touch buttons and the sparks counter hide while people talk. Checked at iPhone landscape size.
 
+## Built Nov 14, 2026 (build 8)
+- Owner: "I still don't like the scene covered up ... make the script run in a small strip". The words are now a thin line of light text on the dark road under everyone's feet: no box, name in gold, wraps to two lines at most. Checked at iPhone landscape size with the longest line.
+- **New Christian** from the owner's Nano Banana sheet (8 black silhouettes): cut out automatically with clean edges. Used: stand, walk 2 and 3 (starting off), run 1 and 2 (full speed), jump. **Not used: walk 1 and walk 4**, because they have a long robe while the others have a short tunic, so mixing them made the robe flicker. The two walk poses used are almost the same stride, so walking looks a little stiff; full-speed running looks good.
+- Style lab uses the new walk pose too ("Watercolour" button renamed "Plain black").
+- File is 71 KB now (the old painted sprites are gone).
+
 ## Open questions for the owner
 1. How does the game feel on the phone: smooth? Anything hard to see (dark Christian against dark houses, crates, barrels)?
 2. New sprites: when they arrive, which poses, and are Evangelist / Obstinate / Pliable included?
