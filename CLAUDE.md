@@ -5,7 +5,7 @@ A gentle side-scrolling game for kids ages 7 to 10, following Bunyan's *The Pilg
 ## Working with the owner
 
 - **Repo: `Twhidbey/pilgrims-progress`, branch `main`.** This repo IS the live game: GitHub Pages serves it at https://twhidbey.github.io/pilgrims-progress/ (style lab: `/style-lab.html`). Pushing `main` publishes it (Pages takes 1 to 2 minutes). Commit and push after every change, then tell the owner it is live. A phone may show an old copy, so suggest adding `?v=N` to the link.
-- **Build stamp:** bottom-right corner of the game (`id="build"` in `index.html`) and of the style lab canvas (`id="build"` in `style-lab.html`): `build N · date`. Bump N on **every** push, in both files, so one number means one push. Currently **build 12**.
+- **Build stamp:** bottom-right corner of the game (`id="build"` in `index.html`), the style lab canvas (`id="build"` in `style-lab.html`) and the walk lab (`id="build"` in `walk-lab.html`): `build N · date`. Bump N on **every** push, in both files, so one number means one push. Currently **build 13**.
 - **Keep `CLAUDE.md` and `HANDOFF.md` updated after every change.** The repo is public: no names, emails or other personal details in notes, code or commits.
 - Players: kids 7 to 10, mostly on a phone. Gentle: **no lives, no game over**, on-screen touch buttons, read-aloud dialogue, short simple sentences.
 - Sister project with the same habits: `Twhidbey/math-jump` (Math Ninja).
@@ -44,6 +44,10 @@ Scene units are 960 × 540, ground line `GY = 455`. Search for these names:
 | Remembering a look in the link (`#sliders-palette.who.framing.seed`) | `save()`, `load()` |
 
 How it stays cheap: `dirty = 2` rebuilds shapes, `dirty = 1` only repaints; the finished picture is kept in `sceneC` and only the rain streaks are drawn each frame. Layers scroll at different speeds with the "Walk along" slider (`par`, `PAN`).
+
+## `walk-lab.html` (Christian's walk, side by side)
+
+Built because the AI walk poses looked jumpy however they were blended. **Measured cause:** the AI "walk cycle" is mostly the same wide stride with a sudden legs-together pose every third frame (front foot at +34, 0, +24, +33, +3, +33 px from the body), so the legs snap open and shut; blending only smears it. Compares: A = the game's current blended AI poses; B = **the AI body cut at the tunic hem (`HEM` = 200 of 272 px) riding on legs drawn in code**: planted foot moves back at exactly ground speed (`footAt`, `STANCE` .6), swinging foot arcs forward, knees by two-bone reach (`leg`), hip height set by the planted leg so the body rises and falls naturally, standing and jumping eased in by moving the feet (no image blending). Sliders: speed, step length, leg thickness, bob; Stop/Walk, Jump, slow motion. Pale marks on the road show whether a planted foot slides.
 
 ## `index.html` (the game, Level 1 "City of Destruction")
 

@@ -54,6 +54,12 @@ The game is `index.html` (one file, no build step). `style-lab.html` is the art-
 ## Built Nov 14, 2026 (build 12)
 - Owner: "still looks jumpy, maybe slower transition?". Each walk pose now blends into the next as he moves (`drawBlend`), and starting and stopping blend between standing and walking (`P.move`). Walk poses re-lined up on the head and sack so the body doesn't shift sideways. If still not smooth enough: slow his top speed a little (`MAXV`, now 4.4) for a calmer walk, or ask for more in-between poses.
 
+## Built Nov 14, 2026 (build 13): walk lab
+- Owner: "still looks jumpy, and blending shows when he stops sometimes; need a more comprehensive plan".
+- Measured the walk poses: they are not a real cycle (mostly one wide stride plus a snap to legs-together), so no blending can make them smooth.
+- **Plan:** keep the AI picture for Christian's body (hood, sack, tunic, arms) and draw only his legs in code below the hem, following a correct walk (feet planted, no sliding, no snapping, natural stop, no blending ghosts). Built as `walk-lab.html` first, side by side with the current walk, game untouched.
+- **Next, if the owner likes B:** move B into the game for Christian (replace `WALK` / `drawBlend` / the walk poses), then the same for Pliable and Obstinate. If not: ask Nano Banana for a proper cycle with the pose list from chat, and check the feet with the measuring script before using it.
+
 ## Open questions for the owner
 1. How does the game feel on the phone: smooth? Anything hard to see (dark Christian against dark houses, crates, barrels)?
 2. New sprites: when they arrive, which poses, and are Evangelist / Obstinate / Pliable included?
