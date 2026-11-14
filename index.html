@@ -55,7 +55,7 @@ body.portrait #rot{display:block}
     <p style="color:#7a6a5a">Next: the Slough of Despond (coming soon)</p>
     <button class="btn" id="again">Play again</button>
   </div>
-  <div id="build">build 18 · Nov 14 2026</div>
+  <div id="build">build 19 · Nov 14 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <div class="tb" id="tl">◀</div><div class="tb" id="tr">▶</div><div class="tb" id="tj">▲</div>
@@ -416,13 +416,13 @@ const chime = () => { tone(1320, .35, 'sine', .05); tone(1980, .3, 'sine', .025,
 
 // ---------- game state ----------
 const P = { x: 140, y: GY, vx: 0, vy: 0, w: 44, h: 118, face: 1, ground: true, coy: 0, buf: 0, anim: 1, stand: { t: 120 }, hurt: 0, prevB: GY };   // starts standing quietly (QUIET[0]; set again in reset)
-const G = { state: 'title', cam: 0, got: 0, t: 0, trail: [], pli: null, obst: null, evan: { x: 640, pt: 0 }, barrels: [], shake: 0, tipped: false };
+const G = { state: 'title', cam: 0, got: 0, t: 0, trail: [], pli: null, obst: null, evan: { x: 640, pt: 0, turn: 0 }, barrels: [], shake: 0, tipped: false };
 const keys = { l: false, r: false, j: false };
 
 function reset() {
   seed = 99; buildLevel();
   Object.assign(P, { x: 140, y: GY, vx: 0, vy: 0, face: 1, ground: true, hurt: 0, anim: 1, stand: { t: QUIET[0] } });
-  Object.assign(G, { cam: 0, got: 0, t: 0, trail: [], pli: null, obst: null, barrels: [], evanDone: false, evanGone: 0 }); G.evan.pt = 0;
+  Object.assign(G, { cam: 0, got: 0, t: 0, trail: [], pli: null, obst: null, barrels: [], evanDone: false, evanGone: 0 }); G.evan.pt = 0; G.evan.turn = 0;
   document.getElementById('tot').textContent = SPARKS.length;
   document.getElementById('cnt').textContent = 0;
 }
@@ -489,7 +489,10 @@ function chrAnim() {
 function update() {
   G.t++;
   // Evangelist: still (a slow breath at the start of his video) until he says "Do you see that shining light?", then he raises his arm and keeps pointing
-  if (!G.evan.pt && G.evanDone && (G.evanGone || (lines === EVAN && li >= 2))) G.evan.pt = 30;
+  // he faces Christian while they talk; on "Do you see that shining light?" he turns toward the light (G.evan.turn 0 → 1, about
+  // a quarter of a second, like a paper figure turning), and once he has turned he raises his arm and points
+  if (!G.evan.turn && G.evanDone && (G.evanGone || (lines === EVAN && li >= 2))) G.evan.turn = .001;
+  if (G.evan.turn && G.evan.turn < 1) { G.evan.turn = Math.min(1, G.evan.turn + 1 / 14); if (G.evan.turn === 1) G.evan.pt = 30; }
   if (G.evan.pt) G.evan.pt = Math.min(119, G.evan.pt + .4);
   if (G.state !== 'play') { if (G.state === 'dialog') chrAnim(); cameraTick(); return; }
   const inMud = P.ground && MUD.some(m => P.x > m.x && P.x < m.x + m.w);
@@ -719,7 +722,7 @@ function draw() {
   const ink = sx => colAt(gcol, sx);
   // Evangelist, pointing to the light; he fades away after speaking
   // Evangelist points to the light once Christian reaches him, then fades away after speaking
-  if (G.evanGone < 90) { const t = G.evan.pt ? (G.evan.pt < 119 ? G.evan.pt : 104 + 15 * (.5 + .5 * Math.sin(G.t / 50))) : 14 + 14 * Math.sin(G.t / 60); drawFrame(EVA[atTime(EVA_META, t)], EVA_META, G.evan.x - cam, GY, 1, 1 - G.evanGone / 90); }
+  if (G.evanGone < 90) { const t = G.evan.pt ? (G.evan.pt < 119 ? G.evan.pt : 104 + 15 * (.5 + .5 * Math.sin(G.t / 50))) : 14 + 14 * Math.sin(G.t / 60); const c = -Math.cos(Math.PI * (G.evan.turn || 0)), face = Math.sign(c || 1) * Math.max(.12, Math.abs(c)); drawFrame(EVA[atTime(EVA_META, t)], EVA_META, G.evan.x - cam, GY, face, 1 - G.evanGone / 90); }
   if (G.obst && G.obst.x > cam - 100) drawFrame(OBS[Math.floor(G.obst.anim ?? OBS_META.rest[0]) % OBS.length], OBS_META, G.obst.x - cam, GY, G.obst.mode === 'home' ? -1 : 1, 1);
   if (G.pli) drawFrame(PLI[Math.floor(G.pli.anim ?? 0) % PLI.length], PLI_META, G.pli.x - cam, G.pli.y ?? GY, G.pli.face ?? 1, 1);
   // sparks of light

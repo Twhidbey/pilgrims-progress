@@ -94,6 +94,9 @@ The game is `index.html` (one file, no build step). `style-lab.html` is the art-
 - Owner: feet had a gap above the road. Everyone is now drawn 9 px lower (`FEET_SINK`), so feet overlap the road edge.
 - A start-up bug in this build's first try (a value used before it was defined) stopped the game loading in testing; fixed before pushing. Test scripts now wait for the Begin button instead of a fixed time (the file is about 2.4 MB).
 
+## Built Nov 14, 2026 (build 19)
+- Owner: "shouldn't Evangelist face the pilgrim when talking, then turn and point?" He now faces Christian as he walks up and while they talk; on "Do you see that shining light far away?" he turns toward the light (a quick paper-figure turn), then raises his arm and points.
+
 ## Open questions for the owner
 1. How does the game feel on the phone: smooth? Anything hard to see (dark Christian against dark houses, crates, barrels)?
 2. New sprites: when they arrive, which poses, and are Evangelist / Obstinate / Pliable included?
