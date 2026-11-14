@@ -119,5 +119,5 @@ The page is the style lab's painting code (copied) with new shapes and four dire
 
 ## Known loose ends
 
-- There is **no `assets/` folder in the repo**; the images exist only as base64 inside `index.html`, which is now about **2.7 MB** (five videos' frames). If it grows much more, move frames into separate WebP sprite sheets.
+- `index.html` still carries every frame inside it as base64 (about **2.7 MB**). `assets/*.pack` are copies of those frames for `story-lab.html`, made by `tools/pack-frames.py`; when the story lab replaces the game, the base64 can go.
 - The old watercolour background images (`ART_SRC`) and the unused `_old()` were removed in build 6.
