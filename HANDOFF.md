@@ -97,6 +97,11 @@ The game is `index.html` (one file, no build step). `style-lab.html` is the art-
 ## Built Nov 14, 2026 (build 19)
 - Owner: "shouldn't Evangelist face the pilgrim when talking, then turn and point?" He now faces Christian as he walks up and while they talk; on "Do you see that shining light far away?" he turns toward the light (a quick paper-figure turn), then raises his arm and points.
 
+## Built Nov 14, 2026 (build 20)
+- Owner made a turn-and-point video for Evangelist. First try (start picture only) turned him toward the camera and back, never facing the other way; mirroring couldn't fix it. Second try used a start picture (facing left) and an end picture (pointing right), with "keep his face blank" (Veo had added eyes): worked.
+- In the game he now faces Christian while they talk, then on "Do you see that shining light far away?" really turns round (about 3.5 s, the video at 1.5 times speed), raises his arm and points. The paper-flip turn from build 19 is gone.
+- File about 2.7 MB. If more clips come, consider moving frames into separate WebP sprite sheets.
+
 ## Open questions for the owner
 1. How does the game feel on the phone: smooth? Anything hard to see (dark Christian against dark houses, crates, barrels)?
 2. New sprites: when they arrive, which poses, and are Evangelist / Obstinate / Pliable included?
