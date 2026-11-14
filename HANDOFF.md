@@ -110,6 +110,9 @@ The game is `index.html` (one file, no build step). `style-lab.html` is the art-
 - Owner: Evangelist's hand moving up and down while he waits was distracting. He now only breathes (calm frames 0 to 16 of his clip) while waiting; the turn continues smoothly from there.
 - Owner: don't make him disappear after Christian moves on. He now stays, pointing toward the light.
 
+## Built Nov 14, 2026 (build 24)
+- Owner: Christian should hold relatively still when talking, not bob from breathing. During any dialogue he now finishes stepping to a stop, then holds still; his standing (book lift once, quiet breathing) carries on when the talk ends.
+
 ## Open questions for the owner
 1. How does the game feel on the phone: smooth? Anything hard to see (dark Christian against dark houses, crates, barrels)?
 2. New sprites: when they arrive, which poses, and are Evangelist / Obstinate / Pliable included?

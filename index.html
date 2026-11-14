@@ -55,7 +55,7 @@ body.portrait #rot{display:block}
     <p style="color:#7a6a5a">Next: the Slough of Despond (coming soon)</p>
     <button class="btn" id="again">Play again</button>
   </div>
-  <div id="build">build 23 · Nov 14 2026</div>
+  <div id="build">build 24 · Nov 14 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <div class="tb" id="tl">◀</div><div class="tb" id="tr">▶</div><div class="tb" id="tj">▲</div>
@@ -484,7 +484,8 @@ function chrAnim() {
     } else if (!P.stand) {                         // let go: finish the step into frame 28 or 1, where the standing video joins on
       const f = Math.floor(P.anim) % CHR_META.frames;
       if (f === 28) P.stand = { t: 0 }; else if (f === 1) P.stand = { t: STAND_FROM_1 }; else P.anim += .42;   // finishing the step at the video's pace
-    } else P.stand.t += .4;                         // standing: the video at its own pace (24 a second)
+    } else if (G.state !== 'dialog' || P.stand.t < 16) P.stand.t += .4;   // standing: the video at its own pace (24 a second)
+    // while someone is talking he finishes stopping, then holds still: no breathing bob, no book (owner asked)
   }
 }
 function update() {
