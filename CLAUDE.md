@@ -5,7 +5,7 @@ A gentle side-scrolling game for kids ages 7 to 10, following Bunyan's *The Pilg
 ## Working with the owner
 
 - **Repo: `Twhidbey/pilgrims-progress`, branch `main`.** This repo IS the live game: GitHub Pages serves it at https://twhidbey.github.io/pilgrims-progress/ (style lab: `/style-lab.html`). Pushing `main` publishes it (Pages takes 1 to 2 minutes). Commit and push after every change, then tell the owner it is live. A phone may show an old copy, so suggest adding `?v=N` to the link.
-- **Build stamp:** bottom-right corner of the game (`id="build"` in `index.html`), the style lab canvas (`id="build"` in `style-lab.html`), the walk lab (`id="build"` in `walk-lab.html`) and the 2200 concept page (`concept-2200.html`): `build N · date`. Bump N on **every** push, in both files, so one number means one push. Currently **build 24**.
+- **Build stamp:** bottom-right corner of the game (`id="build"` in `index.html`), the style lab canvas (`id="build"` in `style-lab.html`), the walk lab (`id="build"` in `walk-lab.html`), the 2200 concept page (`concept-2200.html`) and the story lab (`story-lab.html`): `build N · date`. Bump N on **every** push, in both files, so one number means one push. Currently **build 25**. Several chats may be pushing at once: `git fetch` and rebase on `origin/main` just before pushing, and take the next number after whatever is there.
 - **Keep `CLAUDE.md` and `HANDOFF.md` updated after every change.** The repo is public: no names, emails or other personal details in notes, code or commits.
 - Players: kids 7 to 10, mostly on a phone. Gentle: **no lives, no game over**, on-screen touch buttons, read-aloud dialogue, short simple sentences.
 - Sister project with the same habits: `Twhidbey/math-jump` (Math Ninja).
@@ -82,6 +82,34 @@ Layered silhouettes since build 6. **The scenery code is copied from the lab (no
 Story beats in order: intro, Evangelist points to the shining light, mud, barrels roll down the street, Obstinate goes home and Pliable follows, out through the city gate. Next level named on the end card: the Slough of Despond.
 
 **Speed lessons (build 6):** never draw from a canvas that changed this frame into another canvas (a scratch canvas per layer per frame dropped the game to 12 frames a second in testing). Bake pictures once and only draw from them. Draw each layer only in the band of the screen it occupies (`Lr.top` to the ground). Leave `imageSmoothingQuality` at its default.
+
+## Game direction (owner, Nov 14 2026): a story walk, not a platformer
+
+Owner: "leaning away from the mario style initial setup and toward atmospheric story driven game ... I don't want jumps and obstacles ... I like the old Riven and Myst games where visuals and story-telling take center (though I don't want the wandering) ... the light dots keep the character moving forward". Then: "let's do all these changes ... keep it super atmospheric, cool and beautiful". And: "putting some stuff in separate files and not all in index.html is good, game should be fast".
+
+- **No jumps, no obstacles, no score, no counter.** One way to go. Walk, then a story moment, then walk.
+- **Built in `story-lab.html` first** (below), because other chats were changing the characters in `index.html` at the same time. **When the owner approves it, it replaces the play code in `index.html`** (or becomes `index.html`).
+
+## `story-lab.html` (Level 1 as a story walk, build 25)
+
+Live at `/story-lab.html`. Its scenery code (setup to `bakeFinish`) is a copy of `index.html`'s: keep them in step. **The characters' frames are not inside it:** they load from `assets/*.pack`. Search for these names:
+
+| Area | Search for |
+|---|---|
+| Frames in separate files | `loadPack(name, into)`, `PACK_V` (bump when packs change). A `.pack` is the same WebP frames end to end (4 bytes count, 4 bytes per frame length, then the frames; nothing re-compressed). Made by **`python3 tools/pack-frames.py`**, which reads `CHR_SRC` etc. out of `index.html`: **run it again whenever another chat changes frames in `index.html`**, and copy any changed `*_META` line into `story-lab.html`. Christian's two packs load before "Begin" shows; Evangelist, Obstinate and Pliable load while the child already plays (`EVA.ready` etc.; the story waits for them if needed) |
+| Hold to walk | `downs` (fingers held), `held()` (a tap only touches; a finger held 9 ticks walks), `keys.r` (space / right arrow / D), `walkTick(dir, max)`. **He never stops mid-stride:** letting go, he walks on to walk frame 28 or 1 (where the standing video joins) so feet never slide. `P.turn` = turn round once he has stopped |
+| Same speed on every screen | `loop()`: the world ticks 60 times a second whatever the screen's refresh rate (`STEPS`) |
+| The lights are a tune | `PHRASES` (Amazing Grace, public domain, one phrase per stretch; `[beat, note]`), `BEAT` (58 px of road per beat, so walking plays it in time), `LIGHTS`, `gather()`. A higher note floats higher. Three low notes in the mud |
+| Gathered lights stay with him | `G.motes`, `motes()`: a slow cloud of fireflies behind his shoulder, plus a soft warmth round him that grows (`glow`, `GLOW`). At the gate they help push, then fly on into the far light one per note |
+| The world answers a touch | `touchAt(sx, sy)`: the far light (`pulseLight`), lamps (`LAMPS`, `lightLamp`, `lamp`), birds (`FLOCKS`, `scatter`, `birdSit`; they also fly when he walks near, always toward the light), puddles (`PUDDLES`, ripples), church bells (`SCN[1].steeples`, `toll`), windows (`nearWindow`, `lightWindow`, `G.litw`). Many set a light free (`free`) that flies to him and sings a harmony note (`HARM`). Small glints now and then show what can be touched (`G.glints`) |
+| Words | `talk(lines, then)` stops and waits for taps. A line can be `[who, text, act, fn]`: `act` = `'light'` or `'gate'` waits for the child to do it; `fn` runs when the line appears. `caption(lines)` = said while walking, passes on its own (`CAPS` by road position). `hint(key, text)` = a quiet prompt until done. All in the same thin strip on the road |
+| The acts | `acts()`, `G.ring` (soft rings showing where to touch). Evangelist asks "Do you see that shining light?" and the child touches it (`lightTouched`). At the gate the child holds the gate to push (`G.gateOpen`, `pushHeld`, `doors`, `gateOpened`) |
+| The choice | `choose()`, `pick(home)`, `#choice`: "Go home" or "Go on to the light". Going home = a few steps back, rain harder, light dim (`G.gloom`, `G.gloomTo`), then he turns round by himself (`HOME`). Nothing is lost: the book treats wrong turns the same way |
+| Story text | `INTRO`, `EVAN`, `NEIGH`, `HOME`, `ONWARD`, `PART`, `GATEWORDS`, `END`; triggers in `story()`; neighbours and Pliable following in `people()` |
+| Weather | In `draw()`: rain through the city, clearing near the gate; **the gold breaks through as the gate is pushed open** (`clearAt` uses `G.gateOpen`); `G.gloom` pulls the rain back |
+| Sound, all made in the browser (no files) | `audio()` (rain hiss, a low hum on G and D, a warm note in the gold, a dark note for gloom, an echo `ECHO`), `note(midi)`, `sfx` (footsteps, mud, splash, lamp, window, puddle, wings, bell, birdsong, gate), `ambience()`. Sound button `#snd`. At the open gate the whole tune plays once with bass notes (`TUNE`, `BASS`, `G.finale`) |
+| Things at the back of the road (nothing blocks) | `DECOR`, `thing`, `STALL`, `gate`, `doors` |
+| Testing | `story-lab.html?x=3600` starts further along the road. In a test, `update()` can be called in a loop to fast-forward; `next(true)` skips a line; `pick(true/false)`; `keys.r` / `keys.push` |
 
 ## `concept-2200.html` (year 2200 concept pictures, build 21)
 

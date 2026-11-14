@@ -113,7 +113,23 @@ The game is `index.html` (one file, no build step). `style-lab.html` is the art-
 ## Built Nov 14, 2026 (build 24)
 - Owner: Christian should hold relatively still when talking, not bob from breathing. During any dialogue he now finishes stepping to a stop, then holds still; his standing (book lift once, quiet breathing) carries on when the talk ends.
 
+## Built Nov 14, 2026 (build 25): the story walk (`story-lab.html`)
+- Owner: no more jumps and obstacles; an atmospheric, story-driven game like Myst and Riven but without wandering; keep the lights; frames in separate files so it is fast. "Let's do all these changes."
+- **New page `story-lab.html`** (live at `/story-lab.html`): all of Level 1 as a story walk. `index.html` was left alone because other chats were changing the characters in it (only its build stamp changed).
+  - **Hold to walk.** No buttons, no jump, nothing in the way. He always finishes his step, so feet never slide.
+  - **The lights sing.** Each light is one note of Amazing Grace, spaced so that walking plays the tune in time, one phrase per stretch. Gathered lights drift round him like fireflies.
+  - **The world answers a touch:** lamps light, windows light, birds fly off toward the light, church bells ring, puddles ripple, the far light pulses. Many set a light free that flies to him.
+  - **The child does the story:** touches the light when Evangelist asks "Do you see that shining light?"; chooses "Go home" or "Go on to the light" (going home is a few dark steps, then he turns round by himself); holds the gate to push it open, and the gold breaks through.
+  - **Words while walking:** the mud, the people at their windows, and Pliable's talk pass by as captions; nobody stops.
+  - **Sound:** rain, a low hum, footsteps, mud, wings, bell, birdsong in the gold, the gate. At the open gate the whole tune plays once while the lights fly on ahead. All made in the browser.
+  - **Fast start:** frames load from `assets/*.pack`; the page itself is 80 KB (the game is 2.7 MB). Ready in under a second in testing.
+- New: `assets/` (five `.pack` files, 2 MB) and `tools/pack-frames.py` (re-run when frames in `index.html` change).
+- Tested in a headless browser at phone size with real touch events: whole level both ways through the choice, no errors; same frame rate as the game in the same test. **Not heard** (the test browser has no speakers) **and not seen on a real phone.**
+- **Next:** the owner tries it on a phone with sound. Then: move it into `index.html` once the other chats' character work is finished (re-run the pack tool first); a recorded voice instead of the phone's robot voice; Level 2, the Slough of Despond, in the same shape (the child reaches for Help's hand).
+- Ideas not built yet: the bell and windows could tell tiny stories (a door opens, someone calls); the child's lights could light the stepping stones in the Slough; a different hymn for each level.
+
 ## Open questions for the owner
+0. **Story lab (build 25):** is this the right shape for the game? How does it sound? Is "Go home" a good choice to offer? Should it replace the game now?
 1. How does the game feel on the phone: smooth? Anything hard to see (dark Christian against dark houses, crates, barrels)?
 2. New sprites: when they arrive, which poses, and are Evangelist / Obstinate / Pliable included?
 3. Weather across the whole level (rain in the city, gold at the gate): right, or should every screen show both?
@@ -121,6 +137,7 @@ The game is `index.html` (one file, no build step). `style-lab.html` is the art-
 5. Leafy boughs and tall grass in front: keep, or in the way?
 
 ## Next steps
+- **First: see build 25 above** (the story walk). The three older steps below were written before the characters became videos and before the story walk.
 - Swap in the owner's new sprites (cut each pose out, add to `SPR_SRC`, keep feet on the bottom edge; `loadSprites` makes the silhouettes).
 - Replace the code-drawn Evangelist, Obstinate and Pliable with sprites if the owner makes them.
 - Then Level 2: the Slough of Despond.
