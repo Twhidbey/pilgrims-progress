@@ -26,7 +26,7 @@ a{color:#d9b77c}
 </style>
 </head>
 <body>
-<div id="top"><div id="frame"><canvas id="cv"></canvas><div id="build">style lab · build 5 · Nov 14 2026</div></div></div>
+<div id="top"><div id="frame"><canvas id="cv"></canvas><div id="build">style lab · build 6 · Nov 14 2026</div></div></div>
 <div id="panel">
   <div class="row"><span>Colours</span><span id="pals"></span></div>
   <div class="row"><span>Christian</span><span id="whos"></span></div>
@@ -54,20 +54,20 @@ let S = 1;                                                // canvas pixels per s
 // ---------- controls ----------
 const CTRL = [
   ['Light and weather'],
-  { id: 'clear', label: 'Rain ↔ golden light', v: 45 },
-  { id: 'rain', label: 'Rain', v: 57 },
-  { id: 'gold', label: 'Golden glow', v: 44 },
-  { id: 'mist', label: 'Mist between layers', v: 100 },
+  { id: 'clear', label: 'Rain ↔ golden light', v: 50 },
+  { id: 'rain', label: 'Rain', v: 60 },
+  { id: 'gold', label: 'Golden glow', v: 65 },
+  { id: 'mist', label: 'Mist between layers', v: 29 },
   ['Layers'],
   { id: 'n', label: 'How many layers', v: 4, min: 2, max: 9 },
   { id: 'depth', label: 'Pale far layers', v: 80 },
-  { id: 'thru', label: 'See-through overlap', v: 37 },
-  { id: 'soft', label: 'Soft edges', v: 77 },
+  { id: 'thru', label: 'See-through overlap', v: 30 },
+  { id: 'soft', label: 'Soft edges', v: 66 },
   ['Shapes'],
-  { id: 'city', label: 'Countryside ↔ city', v: 46 },
-  { id: 'hills', label: 'Hills', v: 51 },
+  { id: 'city', label: 'Countryside ↔ city', v: 41 },
+  { id: 'hills', label: 'Hills', v: 19 },
   { id: 'trees', label: 'Trees', v: 55 },
-  { id: 'win', label: 'Lit windows', v: 48 },
+  { id: 'win', label: 'Lit windows', v: 35 },
   ['Look around'],
   { id: 'walk', label: 'Walk along', v: 0 },
 ];
@@ -180,6 +180,14 @@ function tuft(x, gy, hgt) {
   const n = 3 + (R() * 4 | 0);
   for (let i = 0; i < n; i++) { const bx = x + (i - n / 2) * 3, h = hgt * rr(.5, 1), lx = rr(-.5, .5) * h; poly([[bx - 1.3, gy + 4], [bx + lx, gy - h], [bx + 1.3, gy + 4]]); }
 }
+// a field fence far enough back to look the right size next to Christian
+function fence(x0, gy, n) {
+  for (let k = 0, x = x0; k < n; k++, x += 15) {
+    const t = rr(-1, 1), y = gy(x), y2 = gy(x + 15);
+    poly([[x - 1.1, y + 3], [x - 1.1 + t, y - 13 - rr(0, 2)], [x + 1.1 + t, y - 13], [x + 1.1, y + 3]]);
+    if (k < n - 1) { poly([[x, y - 10.5], [x + 15, y2 - 10.5 + rr(-.7, .7)], [x + 15, y2 - 9], [x, y - 9]]); poly([[x, y - 5.5], [x + 15, y2 - 5.5 + rr(-.7, .7)], [x + 15, y2 - 4.2], [x, y - 4.2]]); }
+  }
+}
 
 // ---------- build the layers (shapes only; colour comes at paint time) ----------
 let layers = [], front = null;
@@ -220,13 +228,8 @@ function build() {
     }
     poly(hp);
     if (last) {
-      // the ground Christian walks on: grass, a fence out in the country
+      // the ground Christian walks on
       for (let x = rr(0, 30); x < W; x += rr(16, 70)) tuft(x, GY, rr(5, 13));
-      const fx0 = Math.max(edge + 80, 40);
-      for (let x = fx0, k = 0; x < fx0 + 330 && k < 8; x += 46, k++) {
-        const t = rr(-2, 2); poly([[x - 2.5, GY + 4], [x - 2.5 + t, GY - 30 - rr(0, 5)], [x + 2.5 + t, GY - 30], [x + 2.5, GY + 4]]);
-        if (k < 7) { poly([[x, GY - 24], [x + 46, GY - 23 + rr(-2, 2)], [x + 46, GY - 20], [x, GY - 21]]); poly([[x, GY - 13], [x + 46, GY - 12 + rr(-2, 2)], [x + 46, GY - 9.5], [x, GY - 10.5]]); }
-      }
     } else if (!first) {
       // city on the left
       const hh = lerp(62, 118, d);
@@ -245,6 +248,7 @@ function build() {
       }
       // an odd tree among the houses
       for (let x = rr(60, 200); x < edge - 60; x += rr(160, 420)) if (R() < treeAmt) tree(x, gy(x), s * rr(.7, 1), R() < .6 ? 0 : 1);
+      if (i === n - 2) for (let x = Math.max(edge + 90, 30); x < W - 150; x += rr(380, 560)) fence(x, gy, 8 + (R() * 8 | 0));
     }
     layers.push(L);
   }
@@ -381,6 +385,7 @@ function paint() {
       figSil.width = fig.width; figSil.height = fig.height;
       k.drawImage(fig, 0, 0); k.globalCompositeOperation = 'source-in';
       k.fillStyle = css(mix(col[0], col[1], wm)); k.fillRect(0, 0, fig.width, fig.height);
+      k.globalCompositeOperation = 'source-over'; for (let r = 0; r < 5; r++) k.drawImage(figSil, 0, 0);   // make thin paint solid, so no pale spots show through
       // the light catches his front edge
       k.globalCompositeOperation = 'source-atop';
       const g = k.createLinearGradient(fig.width * .45, 0, fig.width, 0); g.addColorStop(0, css(P.light, 0)); g.addColorStop(1, css(P.light, .3 * gold * (.3 + .7 * wm)));

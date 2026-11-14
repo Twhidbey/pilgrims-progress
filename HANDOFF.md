@@ -21,17 +21,24 @@ The game is `index.html` (one file, no build step). `style-lab.html` is the art-
 - Owner's look is now the lab default: `look=45.57.44.100.4.80.37.77.46.51.55.48.0-0.1.1.3` (Storm to gold, 4 layers, mist 100, soft edges 77, framing on).
 - Game unchanged apart from the build stamp.
 
-## Open questions for the owner
-1. Are the new hills realistic enough, or should they be bolder (taller, darker, more ranges)? At mist 100 the far range is very faint.
-2. Christian's silhouette: keep tinting the painted poses, or redraw him in code?
-3. Are lit windows welcome (a second colour inside a layer), or strictly one colour per layer?
-4. Framing layer in front (trunk, leaves, grass): keep it in the game, or is it in the way of play?
-5. In the game, should the rain-to-gold change happen across the whole level (rain in the city, gold at the gate) rather than across one screen?
-6. Other people (Evangelist, Obstinate, Pliable) and obstacles (barrels, crates, mud): silhouettes on the ground layer too?
+## Built Nov 14, 2026 (build 6): the game gets the layered look
+- Owner feedback on build 5: "pilgrim dwarfs the fence, the fence needs to be further back"; pale-blue spots on the silhouette were distracting; new look `look=50.60.65.29.4.80.30.66.41.19.55.35.0-0.1.1.3`; "ready to see game".
+- **`index.html` rebuilt in the layered-silhouette style**: far mountains, two layers of city with lit windows, countryside past the gate, mist, rain that clears to golden light as Christian walks the level, light beams, grass and leafy boughs in front. Crates, barrels, cart, walls, market stall, gate and the other people are dark shapes. File went from 360 KB to about 158 KB (old background images removed).
+- **Christian** is his four painted poses as solid silhouettes (no more spots). A code-drawn pilgrim was built and tried first; **the owner prefers sprites** and will make new ones with an AI image tool. A prompt was given in chat. The code-drawn `person()` is still used for Evangelist, Obstinate and Pliable until sprites exist for them.
+- Fence moved onto the layer behind the ground, small, in both the lab and the game. Lab default is the new look; lab silhouette is solid too.
+- Speed: first version ran at 12 frames a second in the test browser (old game: 60). Now about 50 to 60. See "Speed lessons" in `CLAUDE.md`.
+- Tested in a headless browser only: title, start, all six stretches of the level, no errors. **Not yet played on a real phone**, and the neighbours scene and the barrels were not watched closely.
 
-## Next steps (after the owner picks a look)
-- Move the chosen look into `index.html`: replace `paintSky/paintFar/paintMid/paintNear` and the `ART_SRC` images with layered code-drawn silhouettes built for the whole level width, weather following the level.
-- Redraw obstacles and people in the same style; drop `ART_SRC` to shrink the file. Christian: tint the `SPR_SRC` poses to silhouettes (or redraw in code if the owner prefers).
+## Open questions for the owner
+1. How does the game feel on the phone: smooth? Anything hard to see (dark Christian against dark houses, crates, barrels)?
+2. New sprites: when they arrive, which poses, and are Evangelist / Obstinate / Pliable included?
+3. Weather across the whole level (rain in the city, gold at the gate): right, or should every screen show both?
+4. Are lit windows welcome (a second colour inside a layer)?
+5. Leafy boughs and tall grass in front: keep, or in the way?
+
+## Next steps
+- Swap in the owner's new sprites (cut each pose out, add to `SPR_SRC`, keep feet on the bottom edge; `loadSprites` makes the silhouettes).
+- Replace the code-drawn Evangelist, Obstinate and Pliable with sprites if the owner makes them.
 - Then Level 2: the Slough of Despond.
 
 ## Loose ends
