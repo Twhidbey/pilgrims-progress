@@ -81,6 +81,14 @@ The game is `index.html` (one file, no build step). `style-lab.html` is the art-
 - File is now about 780 KB (two video walks). Fine for now; if it grows too big, frames can move into separate files.
 - **Waiting for the owner's videos:** Obstinate walking, Obstinate arguing (hands on hips), Evangelist pointing, Christian standing (optional). Prompts were given in chat; each about 8 s.
 
+## Built Nov 14, 2026 (build 17): everyone from videos
+- Owner sent: Obstinate walking, Evangelist pointing, Christian standing and breathing (and the same Pliable video again). No Obstinate arguing video.
+- **Obstinate:** true walk (steady camera, foot 6 px per frame), loop frames 27 to 58. Runs in, pauses on a both-feet-down frame while arguing, walks home.
+- **Evangelist:** still at first (a slow breath), then on "Do you see that shining light far away?" raises his arm and points, and keeps pointing with a gentle sway; fades after speaking. Fewer frames stored where he is still, to save space.
+- **Christian standing:** his standing video begins with him walking to a stop, and its first frame matches walk frame 28 (stand frame 17 matches walk frame 1). So letting go, he finishes his step, slows to a stop, lifts his book and breathes; pressing again starts from walk frame 1. This also runs during dialogue, so he settles while people talk.
+- Old black sprites and their code are gone. File about 2 MB. Simulated playthrough fine; about 50 frames a second in the test browser. Not yet seen on a phone.
+- Optional next: Obstinate arguing video (hands on hips) for the argument; a jump for Christian (he holds a stride in the air now).
+
 ## Open questions for the owner
 1. How does the game feel on the phone: smooth? Anything hard to see (dark Christian against dark houses, crates, barrels)?
 2. New sprites: when they arrive, which poses, and are Evangelist / Obstinate / Pliable included?
