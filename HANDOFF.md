@@ -75,6 +75,12 @@ The game is `index.html` (one file, no build step). `style-lab.html` is the art-
 - Pace 2.6 to 2.2 (mud 1.5 to 1.3) so the steps aren't hurried. Simulated playthrough finishes (about 47 s of walking, 12 jumps). Same speed as before (about 47 to 63 frames a second in the test browser). Not yet seen on a phone.
 - Next: the same video method for Pliable, Obstinate and Evangelist if the owner likes it (one video each, started from their pictures).
 
+## Built Nov 14, 2026 (build 16): Pliable's video walk
+- Owner loved Christian's video walk ("AMAZING, more like this for other characters"). Gave a step-by-step guide: Nano Banana paints each character in Christian's watercolour style, then Veo animates it. Owner then asked for **timeless clothes** (a post-apocalyptic version may come): prompts rewritten for worn, handmade, layered cloth.
+- Pliable's video (8 s, 24 fps): camera steady (head within 3 px), about 290 px tall like Christian, planted foot 6 px per frame, stride width rises and falls evenly. Loop frames 115 to 146 (32 frames). In the game he walks in, stands (frame 0) while they talk, and follows Christian, frames stepped by how far he moved. Same monochrome tint as Christian. Old Pliable sprites removed.
+- File is now about 780 KB (two video walks). Fine for now; if it grows too big, frames can move into separate files.
+- **Waiting for the owner's videos:** Obstinate walking, Obstinate arguing (hands on hips), Evangelist pointing, Christian standing (optional). Prompts were given in chat; each about 8 s.
+
 ## Open questions for the owner
 1. How does the game feel on the phone: smooth? Anything hard to see (dark Christian against dark houses, crates, barrels)?
 2. New sprites: when they arrive, which poses, and are Evangelist / Obstinate / Pliable included?
