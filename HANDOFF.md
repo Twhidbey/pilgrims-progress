@@ -128,6 +128,10 @@ The game is `index.html` (one file, no build step). `style-lab.html` is the art-
 - **Next:** the owner tries it on a phone with sound. Then: move it into `index.html` once the other chats' character work is finished (re-run the pack tool first); a recorded voice instead of the phone's robot voice; Level 2, the Slough of Despond, in the same shape (the child reaches for Help's hand).
 - Ideas not built yet: the bell and windows could tell tiny stories (a door opens, someone calls); the child's lights could light the stepping stones in the Slough; a different hymn for each level.
 
+## Built Nov 14, 2026 (build 26): trimming
+- Owner: "I would like to keep files trim." `walk-lab.html` deleted (nothing used it). Next to trim: the frames inside `index.html` when the story lab replaces the game, and `concept-2200.html` when a 2200 look is chosen.
+- Owner asked about an AI recorded voice for the story. Advice given in chat: one sound file per line, made with an AI voice tool; a list of the lines by speaker is in `story-lab.html` (`INTRO`, `EVAN`, `NEIGH`, `HOME`, `ONWARD`, `PART`, `GATEWORDS`, `END`, `CAPS`). Not built yet: `say()` would play the file for a line and fall back to the phone's voice.
+
 ## Open questions for the owner
 0. **Story lab (build 25):** is this the right shape for the game? How does it sound? Is "Go home" a good choice to offer? Should it replace the game now?
 1. How does the game feel on the phone: smooth? Anything hard to see (dark Christian against dark houses, crates, barrels)?
