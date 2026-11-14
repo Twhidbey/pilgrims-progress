@@ -114,6 +114,12 @@ The game is `index.html` (one file, no build step). `style-lab.html` is the art-
 - Replace the code-drawn Evangelist, Obstinate and Pliable with sprites if the owner makes them.
 - Then Level 2: the Slough of Despond.
 
+## Built Nov 14, 2026 (build 21): year 2200 concept pictures
+- Owner: "thinking of a post apocalyptic version like in year 2200 and updating the landscape to match", then "can you give concept art for me to choose from".
+- New page **`concept-2200.html`** (live at `/concept-2200.html`): four directions in the game's own layered style, each with "Another version", "Walk along" and the rain/gold slider. A Fallen towers, B Rust and ash, C The green return, D Glass age. Details in `CLAUDE.md`.
+- **Next: the owner picks one (or a mix)**; then move it into `style-lab.html` properly, then the game (`buildScenery()`), and restyle the things on the road (drums, tyres, dead car, bus-shelter roof, patched gate).
+- Game and other labs unchanged apart from the build stamp.
+
 ## Loose ends
 - No `assets/` folder is in the repo (images are only base64 inside `index.html`). Upload it if the originals should be kept here.
 - `README.md` is only a title.

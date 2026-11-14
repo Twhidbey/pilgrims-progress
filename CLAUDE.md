@@ -5,7 +5,7 @@ A gentle side-scrolling game for kids ages 7 to 10, following Bunyan's *The Pilg
 ## Working with the owner
 
 - **Repo: `Twhidbey/pilgrims-progress`, branch `main`.** This repo IS the live game: GitHub Pages serves it at https://twhidbey.github.io/pilgrims-progress/ (style lab: `/style-lab.html`). Pushing `main` publishes it (Pages takes 1 to 2 minutes). Commit and push after every change, then tell the owner it is live. A phone may show an old copy, so suggest adding `?v=N` to the link.
-- **Build stamp:** bottom-right corner of the game (`id="build"` in `index.html`), the style lab canvas (`id="build"` in `style-lab.html`) and the walk lab (`id="build"` in `walk-lab.html`): `build N · date`. Bump N on **every** push, in both files, so one number means one push. Currently **build 20**.
+- **Build stamp:** bottom-right corner of the game (`id="build"` in `index.html`), the style lab canvas (`id="build"` in `style-lab.html`), the walk lab (`id="build"` in `walk-lab.html`) and the 2200 concept page (`concept-2200.html`): `build N · date`. Bump N on **every** push, in both files, so one number means one push. Currently **build 21**.
 - **Keep `CLAUDE.md` and `HANDOFF.md` updated after every change.** The repo is public: no names, emails or other personal details in notes, code or commits.
 - Players: kids 7 to 10, mostly on a phone. Gentle: **no lives, no game over**, on-screen touch buttons, read-aloud dialogue, short simple sentences.
 - Sister project with the same habits: `Twhidbey/math-jump` (Math Ninja).
@@ -82,6 +82,12 @@ Layered silhouettes since build 6. **The scenery code is copied from the lab (no
 Story beats in order: intro, Evangelist points to the shining light, mud, barrels roll down the street, Obstinate goes home and Pliable follows, out through the city gate. Next level named on the end card: the Slough of Despond.
 
 **Speed lessons (build 6):** never draw from a canvas that changed this frame into another canvas (a scratch canvas per layer per frame dropped the game to 12 frames a second in testing). Bake pictures once and only draw from them. Draw each layer only in the band of the screen it occupies (`Lr.top` to the ground). Leave `imageSmoothingQuality` at its default.
+
+## `concept-2200.html` (year 2200 concept pictures, build 21)
+
+The owner is thinking about a **post-apocalyptic version set in the year 2200** (asked Nov 14 2026 for ideas, then concept art to choose from). Agreed tone: a *quiet* apocalypse, long after, gentle for ages 7 to 10 (no skulls, weapons, mutants); rain to gold becomes dead world to living world; Bunyan's names and words stay; the people sprites stay.
+
+The page is the style lab's painting code (copied) with new shapes and four directions on buttons (`V.pal`): **A Fallen towers**, **B Rust and ash**, **C The green return**, **D Glass age**. Link form `#A3` = direction + version number (`SEEDS` holds the default version of each). New shapes to search for: `holed` (outline with see-through holes), `bar`, `wire`, `dangle` (snapped wire / vine), `tower` (ruined block), `pylon`, `pole`, `overpass` (also the sky-rail), `turbine`, `cooling`, `stack`, `tank`, `crane`, `pipeline`, `shack`, `pod`, `car`, `spire`, `dome`, `arc`, `drum`, `tyre`. Scale rule used: things on the layer behind the ground are sized like the fence (about 12 units a metre), tall towers go on the layers further back. **Waiting on the owner's choice**; nothing in the game has changed.
 
 ## Known loose ends
 
