@@ -29,6 +29,9 @@ The game is `index.html` (one file, no build step). `style-lab.html` is the art-
 - Speed: first version ran at 12 frames a second in the test browser (old game: 60). Now about 50 to 60. See "Speed lessons" in `CLAUDE.md`.
 - Tested in a headless browser only: title, start, all six stretches of the level, no errors. **Not yet played on a real phone**, and the neighbours scene and the barrels were not watched closely.
 
+## Built Nov 14, 2026 (build 7)
+- Owner: "the script covers the lower third of the scene". The words box moved to the top of the screen (the sky is empty there), a little narrower; the touch buttons and the sparks counter hide while people talk. Checked at iPhone landscape size.
+
 ## Open questions for the owner
 1. How does the game feel on the phone: smooth? Anything hard to see (dark Christian against dark houses, crates, barrels)?
 2. New sprites: when they arrive, which poses, and are Evangelist / Obstinate / Pliable included?

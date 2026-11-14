@@ -19,7 +19,7 @@ canvas{display:block;width:100%;height:100%;border-radius:6px}
 .btn:active{transform:scale(.96)}
 #title{background:rgba(244,238,224,.6)}
 #endc{background:rgba(250,245,233,.72);display:none}
-#dlg{position:absolute;left:4%;right:4%;bottom:4%;min-height:3.6em;background:rgba(253,249,240,.93);border:1.5px solid rgba(70,60,80,.45);border-radius:14px;padding:.6em 3.2em .7em 1em;font-family:Georgia,serif;color:#352f3a;display:none;box-shadow:0 2px 0 rgba(60,50,70,.15)}
+#dlg{position:absolute;left:7%;right:7%;top:3.5%;min-height:3.6em;background:rgba(253,249,240,.93);border:1.5px solid rgba(70,60,80,.45);border-radius:14px;padding:.6em 3.2em .7em 1em;font-family:Georgia,serif;color:#352f3a;display:none;box-shadow:0 2px 0 rgba(60,50,70,.15)}
 #dlg .who{font-size:clamp(12px,1.9vw,17px);font-style:italic;color:#7a5c3c;margin-bottom:.15em}
 #dlg .txt{font-size:clamp(15px,2.6vw,25px);line-height:1.35}
 #dlg .more{position:absolute;right:.7em;bottom:.45em;font-size:clamp(13px,2vw,18px);color:#8a7a6a}
@@ -29,6 +29,7 @@ canvas{display:block;width:100%;height:100%;border-radius:6px}
 .tb{position:fixed;width:74px;height:74px;border-radius:50%;background:rgba(253,249,240,.28);border:2px solid rgba(253,249,240,.55);color:rgba(255,255,255,.9);font-size:30px;display:none;align-items:center;justify-content:center;touch-action:none;bottom:max(18px,env(safe-area-inset-bottom))}
 .tb.on{background:rgba(253,249,240,.55)}
 body.touch.playing .tb{display:flex}
+body.talking .tb,body.talking #hud{visibility:hidden}
 #tl{left:18px}#tr{left:108px}#tj{right:22px;width:88px;height:88px}
 body.portrait .tb{bottom:max(40px,env(safe-area-inset-bottom));width:90px;height:90px}
 body.portrait #tr{left:126px}body.portrait #tj{width:104px;height:104px}
@@ -52,7 +53,7 @@ body.portrait #rot{display:block}
     <p style="color:#7a6a5a">Next: the Slough of Despond (coming soon)</p>
     <button class="btn" id="again">Play again</button>
   </div>
-  <div id="build">build 6 · Nov 14 2026</div>
+  <div id="build">build 7 · Nov 14 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <div class="tb" id="tl">◀</div><div class="tb" id="tr">▶</div><div class="tb" id="tj">▲</div>
@@ -479,12 +480,12 @@ function reset() {
 const dlg = document.getElementById('dlg');
 let lines = [], li = 0, after = null;
 const C = 'Christian', E = 'Evangelist', N = '', O = 'Obstinate', PL = 'Pliable';
-function talk(arr, then) { lines = arr; li = 0; after = then; G.state = 'dialog'; dlg.style.display = 'block'; show(); }
+function talk(arr, then) { lines = arr; li = 0; after = then; G.state = 'dialog'; dlg.style.display = 'block'; document.body.classList.add('talking'); show(); }
 function show() { const [who, txt] = lines[li]; dlg.querySelector('.who').textContent = who; dlg.querySelector('.txt').textContent = txt; dlg.querySelector('.who').style.visibility = who ? 'visible' : 'hidden'; if (readAloud) say(); }
 function next() {
   if (G.state !== 'dialog') return;
   li++;
-  if (li >= lines.length) { dlg.style.display = 'none'; G.state = 'play'; speechSynthesis && speechSynthesis.cancel(); after && after(); return; }
+  if (li >= lines.length) { dlg.style.display = 'none'; document.body.classList.remove('talking'); G.state = 'play'; speechSynthesis && speechSynthesis.cancel(); after && after(); return; }
   show();
 }
 let readAloud = false;
