@@ -60,6 +60,14 @@ The game is `index.html` (one file, no build step). `style-lab.html` is the art-
 - **Plan:** keep the AI picture for Christian's body (hood, sack, tunic, arms) and draw only his legs in code below the hem, following a correct walk (feet planted, no sliding, no snapping, natural stop, no blending ghosts). Built as `walk-lab.html` first, side by side with the current walk, game untouched.
 - **Next, if the owner likes B:** move B into the game for Christian (replace `WALK` / `drawBlend` / the walk poses), then the same for Pliable and Obstinate. If not: ask Nano Banana for a proper cycle with the pose list from chat, and check the feet with the measuring script before using it.
 
+## Built Nov 14, 2026 (build 14): smooth walk in the game
+- Owner tried a fourth Nano Banana sheet drawn from my pose guide; measured, it was still mostly wide strides with two sudden narrow ones (and pose 1 was standing, pose 5 had a longer robe). Owner then: "use walk lab but make slightly more realistic using clips as guide".
+- Legs re-made from measurements of the AI art (shin 22 wide at the knee to 14 at the ankle, shoe about 43 long with a heel, knee about 54 above the ground, wide strides): heel strike with the toe up, foot rolls flat, heel lifts and pushes off the toe, lower leg folds back in the swing, hip rises and falls with the planted leg.
+- **In the game now** (`RIG`, `drawChristian`). Standing, walking and jumping are all the legs moving: no pictures swap, so nothing snaps or ghosts. Old walk, stand and jump pictures removed.
+- **Slower pace:** `MAXV` 4.4 to 2.6 (mud 1.9 to 1.5), because at 4.4 even perfect legs take about 6 steps a second, which reads as frantic. A simulated playthrough still finishes (about 40 s of walking, 11 jumps). Tell the owner; easy to raise if it feels slow.
+- Same speed as before (about 54 to 63 frames a second in the test browser). Not yet seen on a phone.
+- Next: if the owner likes it, give Pliable and Obstinate the same treatment (their body pictures cut at the hem, drawn legs), so everyone walks the same way.
+
 ## Open questions for the owner
 1. How does the game feel on the phone: smooth? Anything hard to see (dark Christian against dark houses, crates, barrels)?
 2. New sprites: when they arrive, which poses, and are Evangelist / Obstinate / Pliable included?

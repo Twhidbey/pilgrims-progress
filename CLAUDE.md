@@ -5,7 +5,7 @@ A gentle side-scrolling game for kids ages 7 to 10, following Bunyan's *The Pilg
 ## Working with the owner
 
 - **Repo: `Twhidbey/pilgrims-progress`, branch `main`.** This repo IS the live game: GitHub Pages serves it at https://twhidbey.github.io/pilgrims-progress/ (style lab: `/style-lab.html`). Pushing `main` publishes it (Pages takes 1 to 2 minutes). Commit and push after every change, then tell the owner it is live. A phone may show an old copy, so suggest adding `?v=N` to the link.
-- **Build stamp:** bottom-right corner of the game (`id="build"` in `index.html`), the style lab canvas (`id="build"` in `style-lab.html`) and the walk lab (`id="build"` in `walk-lab.html`): `build N · date`. Bump N on **every** push, in both files, so one number means one push. Currently **build 13**.
+- **Build stamp:** bottom-right corner of the game (`id="build"` in `index.html`), the style lab canvas (`id="build"` in `style-lab.html`) and the walk lab (`id="build"` in `walk-lab.html`): `build N · date`. Bump N on **every** push, in both files, so one number means one push. Currently **build 14**.
 - **Keep `CLAUDE.md` and `HANDOFF.md` updated after every change.** The repo is public: no names, emails or other personal details in notes, code or commits.
 - Players: kids 7 to 10, mostly on a phone. Gentle: **no lives, no game over**, on-screen touch buttons, read-aloud dialogue, short simple sentences.
 - Sister project with the same habits: `Twhidbey/math-jump` (Math Ninja).
@@ -17,7 +17,8 @@ A gentle side-scrolling game for kids ages 7 to 10, following Bunyan's *The Pilg
 - **Soft rain on the left clearing to warm golden light on the right.**
 - Simple, natural, calm. **Not cartoonish.**
 - The look was settled in `style-lab.html` first, then moved into the game (build 6). Try new looks in the lab before changing the game.
-- **Christian is a silhouette** (owner: "making him a silhouette is better"). Since build 8 his poses are black silhouettes the owner made with an AI image tool (Nano Banana), cut out and embedded; they are tinted to the road colour in the game.
+- **Christian is a silhouette** (owner: "making him a silhouette is better"). **Since build 14: his body (hood, sack, tunic, arms) is an AI picture cut at the tunic hem, and his legs are drawn in code** (owner: "use walk lab, slightly more realistic using the clips as guide"). Three AI walk sheets were tried; none was a true walk cycle (measured), so they always looked jumpy.
+- **Walking pace:** a calm, realistic walk (owner wanted smooth and elegant). Top speed `MAXV` 2.6 (was 4.4, a jog at about 6 steps a second); the level takes about 40 s of walking.
 - **Don't cover the scene with words** (owner, twice): the dialogue is a thin strip of light text on the dark road under everyone's feet, no box.
 - **Background hills should look realistic** (owner): natural ridgelines, not smooth waves or a single pointed peak.
 - **Scale:** Christian must not dwarf things beside him (owner: "pilgrim dwarfs the fence"). Small things like fences go on a layer further back, sized for that distance.
@@ -47,7 +48,7 @@ How it stays cheap: `dirty = 2` rebuilds shapes, `dirty = 1` only repaints; the 
 
 ## `walk-lab.html` (Christian's walk, side by side)
 
-Built because the AI walk poses looked jumpy however they were blended. **Measured cause:** the AI "walk cycle" is mostly the same wide stride with a sudden legs-together pose every third frame (front foot at +34, 0, +24, +33, +3, +33 px from the body), so the legs snap open and shut; blending only smears it. Compares: A = the game's current blended AI poses; B = **the AI body cut at the tunic hem (`HEM` = 200 of 272 px) riding on legs drawn in code**: planted foot moves back at exactly ground speed (`footAt`, `STANCE` .6), swinging foot arcs forward, knees by two-bone reach (`leg`), hip height set by the planted leg so the body rises and falls naturally, standing and jumping eased in by moving the feet (no image blending). Sliders: speed, step length, leg thickness, bob; Stop/Walk, Jump, slow motion. Pale marks on the road show whether a planted foot slides.
+Built because the AI walk poses looked jumpy however they were blended. **Measured cause:** the AI "walk cycles" are mostly the same wide stride with a sudden legs-together pose (front foot at +34, 0, +24, +33, +3, +33 px from the body), so the legs snap open and shut. Compares A = the old blended AI poses with B = the AI body on drawn legs (`RIG`, the same code as the game). Sliders: speed, step length, leg thickness, bob; Stop/Walk, Jump, slow motion. Pale marks on the road show whether a planted foot slides. It also rendered the pose guide given to Nano Banana (8 evenly spaced moments of one cycle).
 
 ## `index.html` (the game, Level 1 "City of Destruction")
 
@@ -55,7 +56,7 @@ Layered silhouettes since build 6. **The scenery code is copied from the lab (no
 
 | Area | Search for |
 |---|---|
-| Christian's poses (base64 WebP, black on transparent: walk1..walk6 from a dedicated walk-cycle sheet, stand = a passing pose from it, jump from the first sheet) and their tinted copies | `SPR_SRC`, `SPR_META` (per pose: anchor x and ground line y in the picture's pixels; walk poses are anchored on the head and sack so the body doesn't wobble), `loadSprites`, `SIL` (rain colour `.c`, golden colour `.w`). **One gait: he always walks** (owner: switching walk/run was clunky; wants it "super smooth, clean and elegant"). The walk cycle is the list `WALK`; `P.anim` advances one pose per `STEP_PX` walked (a full cycle = 140 px, the stride in the pictures) so feet keep pace at any speed. **Poses blend softly into each other** (owner: snapping looked jumpy): `drawBlend(mix, ...)` adds weighted poses on a small canvas with `'lighter'` so the body stays solid; `P.move` eases between standing and walking. Walk anchors were lined up by matching the head and sack (top 36% of each picture). **Watch for costume changes between AI poses** (robe length, flare): leave such poses out, they flash. Drawn at scale .56 (about 150 tall) |
+| Christian: body picture + drawn legs | `RIG` (all sizes, measured from the AI poses: hip, thigh, shin, ankle, step length `L`, stance 62%, leg widths, shoe outline), `rigFoot` (one foot through a step: heel strike, flat, push off the toe, swing), `rigFeet(dist, move, air)` (both feet, eased between standing, walking and jumping), `rigLeg` (knee by two-bone reach, tapered shin, shoe), `rigDraw` (hip height from the planted leg = natural rise and fall), `drawChristian` (black on a small canvas `figC`, then coloured for the weather). State: `P.dist` (picture px walked), `P.move`, `P.air`. **The same `RIG` code is in `walk-lab.html`: keep both in step.** Body picture is `walk2` in `SPR_SRC` (anchor in `SPR_META`) |
 | Screen size and fit | `VW`, `VH`, `GY` (ground 440), `LEVEL_W`, `GATE`, `fit()` |
 | The look: numbers from the lab, colours | `LOOK`, `PAL`, `layerCol(d)` |
 | Weather: 0 rain .. 1 golden across the screen; `clearAt` moves with the camera so the level goes from rain to gold | `warm`, `clearAt` (set at the top of `draw()`), `hGrad` |

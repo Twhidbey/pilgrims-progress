@@ -25,14 +25,14 @@ a{color:#d9b77c}
 </style>
 </head>
 <body>
-<div id="top"><div id="frame"><canvas id="cv"></canvas><div id="label"></div><div id="build">walk lab · build 13 · Nov 14 2026</div></div></div>
+<div id="top"><div id="frame"><canvas id="cv"></canvas><div id="label"></div><div id="build">walk lab · build 14 · Nov 14 2026</div></div></div>
 <div id="panel">
   <div class="row"><span>Legs</span><button id="mA">AI poses (game now)</button><button id="mB">AI body + drawn legs</button><button id="mC">Both side by side</button></div>
   <div class="row"><button id="go">Stop</button><button id="jump">Jump</button><button id="slow">Slow motion: off</button></div>
   <div class="grid">
-    <label class="s">Walking speed <input type="range" id="speed" min="10" max="55" value="44"></label>
-    <label class="s">Step length (drawn legs) <input type="range" id="step" min="40" max="120" value="78"></label>
-    <label class="s">Leg thickness (drawn legs) <input type="range" id="thick" min="8" max="26" value="18"></label>
+    <label class="s">Walking speed <input type="range" id="speed" min="10" max="50" value="26"></label>
+    <label class="s">Step length (drawn legs) <input type="range" id="step" min="50" max="120" value="92"></label>
+    <label class="s">Leg thickness (drawn legs) <input type="range" id="thick" min="70" max="130" value="100"></label>
     <label class="s">Bob up and down (drawn legs) <input type="range" id="bob" min="0" max="100" value="60"></label>
   </div>
   <p class="hint">Watch the grass: a foot on the ground should stay exactly on the same spot of grass until it lifts. "Stop" eases him to a halt like letting go of ▶ in the game. Slow motion runs everything at a quarter speed so you can see each step.</p>
@@ -83,61 +83,90 @@ function drawA(w, x) {
   ctx.drawImage(bc, x - 110, GY + w.y + 1 - 165, 230, 175);
 }
 
-// ---------- B: the AI body (cut at the tunic hem) on legs drawn in code ----------
-// All lengths in picture pixels (the body picture is 272 tall from head to sole).
-const BODY = 'walk2', HEM = 200;          // the passing pose; rows below the hem are drawn as legs
-const HIP_X = 6, HIP_UP = 122;            // hip: 6 px in front of the body's centre line, 122 px above the soles
-const THIGH = 60, SHIN = 58, ANKLE = 9;   // ankle sits 9 px above the sole
-const STANCE = .6, LIFT = 15;             // each foot is on the ground 60% of the time; swinging foot rises 15 px
-const SHOE = [[-10, -6], [-11, 4], [-7, 9], [28, 9], [34, 7], [35, 3], [28, -1], [14, -4], [3, -8]];   // around the ankle, y down
-function rot(p, a) { const c = Math.cos(a), s = Math.sin(a); return [p[0] * c - p[1] * s, p[0] * s + p[1] * c]; }
-// where one foot is, from the walk phase p (0..1): x from the hip, lift above the ground, tilt (toe up is negative)
-function footAt(p, L) {
-  if (p < STANCE) {                       // on the ground, moving back under him at exactly ground speed
-    const t = p / STANCE;
-    return { x: L / 2 - L * t, lift: 0, tilt: t < .12 ? -.22 * (1 - t / .12) : t > .78 ? .45 * (t - .78) / .22 : 0, ground: true };
+// ---------- Christian's legs, drawn in code under the AI body (shared by walk-lab.html and index.html: keep in step) ----------
+// The AI picture gives his body down to the tunic hem; legs below are drawn here so the walk is smooth by construction.
+// Sizes are measured from the AI poses, in picture pixels (the picture is 272 tall from head to sole; the game draws it at .56).
+const RIG = {
+  BODY: 'walk2', HEM: 200,        // the body picture and the row where it is cut (the tunic hem)
+  HIP_X: 4, HIP_UP: 117,          // hip: just in front of the body's centre line, this high above the soles
+  THIGH: 64, SHIN: 46, ANKLE: 12, // shin from knee to ankle; the ankle sits 12 above the sole
+  STANCE: .62,                    // each foot is on the ground 62% of the time (both feet down for a moment each step)
+  LIFT: 13,                       // how high the swinging foot rises
+  L: 92,                          // step length: how far a planted foot travels back under him (wide strides in the AI art)
+  W: { thigh: 26, knee: 22, calf: 21, ankle: 14 },
+  // the shoe around the ankle (y down, sole at y = 12): a low heel, a rounded toe
+  SHOE: [[-9, -5], [-11, 2], [-11, 12], [-4, 12], [-3, 10], [27, 10], [32, 12], [34, 9], [33, 4], [26, 0], [12, -3], [5, -7]],
+  HEEL: [-10, 12], TOE: [32, 12]
+};
+const rRot = (p, a) => { const c = Math.cos(a), s = Math.sin(a); return [p[0] * c - p[1] * s, p[0] * s + p[1] * c]; };
+// one foot at walk phase p (0..1). Returns ground x of its reference point (from the hip), lift, tilt, and which point it pivots on
+function rigFoot(p, L) {
+  const S = RIG.STANCE;
+  if (p < S) {                                     // planted: slides back under him at exactly ground speed
+    const t = p / S, x = L / 2 - L * t;
+    if (t < .14) return { x, lift: 0, tilt: -.32 * (1 - t / .14) ** 1.5, pivot: 'heel' };          // heel strikes, toe comes down
+    if (t > .7) return { x, lift: 0, tilt: .8 * ((t - .7) / .3) ** 1.6, pivot: 'toe' };           // heel rises, pushes off the toe
+    return { x, lift: 0, tilt: 0, pivot: 'heel' };
   }
-  const t = (p - STANCE) / (1 - STANCE), e = .5 - .5 * Math.cos(Math.PI * t);   // swinging forward through the air
-  return { x: -L / 2 + L * e, lift: LIFT * Math.sin(Math.PI * t), tilt: .45 * (1 - t) * (1 - t) - .22 * t * t, ground: false };
+  const t = (p - S) / (1 - S);                     // swinging forward: the lower leg folds back first, then reaches forward
+  const e = t * t * (3 - 2 * t), x = -L / 2 + L * (e * .85 + t * .15);
+  return { x, lift: RIG.LIFT * Math.sin(Math.PI * Math.pow(t, .75)), tilt: .8 * (1 - t) ** 2 - .32 * t ** 3, pivot: 'air' };
 }
-function leg(c, hip, foot, thick) {
-  // the shoe, tilted about the ankle; a foot on the ground is lifted just enough that the shoe never sinks in
-  const pts = SHOE.map(q => rot(q, foot.tilt));
-  const low = Math.max(...pts.map(q => q[1]));
-  const ank = [hip[0] + foot.x, -foot.lift - low];       // ground is y = 0, up is negative
-  // knee by two-bone reach, always bending forward
-  let dx = ank[0] - hip[0], dy = ank[1] - hip[1], d = Math.hypot(dx, dy);
-  const R = THIGH + SHIN - .5; if (d > R) { dx *= R / d; dy *= R / d; d = R; }
-  const a = Math.acos(Math.max(-1, Math.min(1, (THIGH * THIGH + d * d - SHIN * SHIN) / (2 * THIGH * d))));
-  const base = Math.atan2(dy, dx), ka = base - a;
-  const knee = [hip[0] + THIGH * Math.cos(ka), hip[1] + THIGH * Math.sin(ka)];
-  const ankle = [hip[0] + dx, hip[1] + dy];
-  c.lineCap = c.lineJoin = 'round';
-  c.lineWidth = thick * 1.45; c.beginPath(); c.moveTo(hip[0], hip[1]); c.lineTo(knee[0], knee[1]); c.stroke();
-  c.lineWidth = thick; c.beginPath(); c.moveTo(knee[0], knee[1]); c.lineTo(ankle[0], ankle[1]); c.stroke();
-  c.beginPath(); pts.forEach((q, i) => { const X = ankle[0] + q[0], Y = ankle[1] + q[1]; i ? c.lineTo(X, Y) : c.moveTo(X, Y); }); c.closePath(); c.fill();
-}
-function drawB(w, x) {
-  const L = val('step'), C = L / STANCE, ph = w.dist / Z / C, thick = val('thick'), bob = val('bob') / 100;
-  const stand = [{ x: -7, lift: 0, tilt: 0, ground: true }, { x: 9, lift: 0, tilt: 0, ground: true }];
-  const jump = [{ x: 16, lift: 34, tilt: .25, ground: false }, { x: -20, lift: 22, tilt: .45, ground: false }];
-  const m = w.move, j = w.air;
-  const feet = [0, .5].map((o, i) => {
-    const f = footAt(((ph + o) % 1 + 1) % 1, L), s = stand[i], q = jump[i];
-    const wx = s.x + (f.x - s.x) * m, wl = f.lift * m, wt = f.tilt * m;
-    return { x: wx + (q.x - wx) * j, lift: wl + (q.lift - wl) * j, tilt: wt + (q.tilt - wt) * j, ground: f.ground };
+// both feet for a walker: dist walked (picture px), move (0 standing .. 1 walking), air (0 .. 1 in a jump)
+function rigFeet(dist, move, air, L = RIG.L) {
+  const C = L / RIG.STANCE, ph = dist / C;
+  const stand = [{ x: -6, lift: 0, tilt: 0, pivot: 'heel' }, { x: 8, lift: 0, tilt: 0, pivot: 'heel' }];
+  const jump = [{ x: 14, lift: 30, tilt: .3, pivot: 'air' }, { x: -18, lift: 20, tilt: .6, pivot: 'air' }];
+  return [0, .5].map((o, i) => {
+    const f = rigFoot(((ph + o) % 1 + 1) % 1, L), s = stand[i], q = jump[i];
+    const g = { x: s.x + (f.x - s.x) * move, lift: f.lift * move, tilt: f.tilt * move, pivot: move > .5 ? f.pivot : 'heel' };
+    return air > .001 ? { x: g.x + (q.x - g.x) * air, lift: g.lift + (q.lift - g.lift) * air, tilt: g.tilt + (q.tilt - g.tilt) * air, pivot: air > .5 ? 'air' : g.pivot } : g;
   });
-  // hip height: as high as the planted leg allows (that is what makes the body rise and fall naturally)
-  let h = HIP_UP;
-  for (const f of feet) if (f.lift < 1) h = Math.min(h, Math.sqrt(Math.max(0, (THIGH + SHIN - 2) ** 2 - f.x * f.x)) + ANKLE);
-  h = HIP_UP + (h - HIP_UP) * bob;
-  const hip = [HIP_X, -h];
+}
+// where the ankle is and the shoe's outline, for a foot (ground is y = 0, up is negative)
+function rigShoe(f, hipX) {
+  const A = RIG.ANKLE, gx = hipX + f.x;
+  let ank;
+  if (f.pivot === 'air') ank = [gx, -A - f.lift];
+  else { const pv = f.pivot === 'toe' ? RIG.TOE : RIG.HEEL, pw = [gx + pv[0], -f.lift], r = rRot([-pv[0], -pv[1]], f.tilt); ank = [pw[0] + r[0], pw[1] + r[1]]; }
+  return { ank, pts: RIG.SHOE.map(q => { const r = rRot(q, f.tilt); return [ank[0] + r[0], ank[1] + r[1]]; }) };
+}
+function rigLeg(c, hip, f, k) {
+  const { ank, pts } = rigShoe(f, hip[0]);
+  let dx = ank[0] - hip[0], dy = ank[1] - hip[1], d = Math.hypot(dx, dy);
+  const T = RIG.THIGH, S = RIG.SHIN, R = T + S - .3;
+  if (d > R) { dx *= R / d; dy *= R / d; d = R; }
+  const a = Math.acos(Math.max(-1, Math.min(1, (T * T + d * d - S * S) / (2 * T * d))));
+  const ka = Math.atan2(dy, dx) - a;                                     // the knee always bends forward
+  const knee = [hip[0] + T * Math.cos(ka), hip[1] + T * Math.sin(ka)], an = [hip[0] + dx, hip[1] + dy];
+  const W = RIG.W;
+  c.lineCap = c.lineJoin = 'round';
+  c.lineWidth = W.thigh * k; c.beginPath(); c.moveTo(hip[0], hip[1]); c.lineTo(knee[0], knee[1]); c.stroke();
+  // the shin: wide at the knee, a little calf at the back, narrow at the ankle
+  const ux = (an[0] - knee[0]) / S, uy = (an[1] - knee[1]) / S, nx = -uy, ny = ux;   // n points forward for a leg going down
+  const P = (t, side, w) => [knee[0] + (an[0] - knee[0]) * t + nx * side * w / 2, knee[1] + (an[1] - knee[1]) * t + ny * side * w / 2];
+  const sh = [P(0, 1, W.knee * k), P(.45, 1, W.ankle * k * 1.25), P(1, 1, W.ankle * k), P(1, -1, W.ankle * k), P(.6, -1, W.calf * k * .95), P(.3, -1, W.calf * k * 1.05), P(0, -1, W.knee * k)];
+  c.beginPath(); sh.forEach((q, i) => i ? c.lineTo(q[0], q[1]) : c.moveTo(q[0], q[1])); c.closePath(); c.fill();
+  c.beginPath(); c.arc(knee[0], knee[1], W.knee * k / 2, 0, 6.2832); c.fill();
+  c.beginPath(); pts.forEach((q, i) => i ? c.lineTo(q[0], q[1]) : c.moveTo(q[0], q[1])); c.closePath(); c.fill();
+  c.beginPath(); c.arc(an[0], an[1], W.ankle * k / 2, 0, 6.2832); c.fill();
+}
+// draw the whole figure at the origin (feet on y = 0, facing right), in the current fill and stroke colour.
+// body: the body picture (any colour; only its shape is used if you colour afterwards), meta: [anchor x, ground y]
+function rigDraw(c, body, meta, feet, o = {}) {
+  const k = o.thick || 1, bob = o.bob ?? .6;
+  let h = RIG.HIP_UP;                                // the hip rides as high as the planted leg allows: a natural rise and fall
+  for (const f of feet) if (f.lift < 1) { const { ank } = rigShoe(f, RIG.HIP_X); h = Math.min(h, -ank[1] + Math.sqrt(Math.max(0, (RIG.THIGH + RIG.SHIN - 3) ** 2 - (ank[0] - RIG.HIP_X) ** 2))); }
+  const drop = (RIG.HIP_UP - h) * bob, hip = [RIG.HIP_X, -RIG.HIP_UP + drop];
+  rigLeg(c, hip, feet[1], k); rigLeg(c, hip, feet[0], k);
+  c.drawImage(body, 0, 0, body.width, RIG.HEM, -meta[0], -meta[1] + drop, body.width, RIG.HEM);
+}
+
+function drawB(w, x) {
+  const feet = rigFeet(w.dist / Z, w.move, w.air, val('step'));
   ctx.save(); ctx.translate(x, GY + w.y + 1); ctx.scale(Z, Z);
   ctx.fillStyle = ctx.strokeStyle = COL;
-  leg(ctx, hip, feet[1], thick); leg(ctx, hip, feet[0], thick);
-  // the body picture, cut at the hem, riding on the hip
-  const im = IM[BODY], mt = SPR.meta[BODY], top = -(mt[1]) + (HIP_UP - h);
-  ctx.drawImage(im, 0, 0, im.width, HEM, -mt[0], top, im.width, HEM);
+  rigDraw(ctx, IM[RIG.BODY], SPR.meta[RIG.BODY], feet, { thick: val('thick') / 100, bob: val('bob') / 100 });
   ctx.restore();
 }
 
