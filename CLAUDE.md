@@ -5,7 +5,7 @@ A gentle side-scrolling game for kids ages 7 to 10, following Bunyan's *The Pilg
 ## Working with the owner
 
 - **Repo: `Twhidbey/pilgrims-progress`, branch `main`.** This repo IS the live game: GitHub Pages serves it at https://twhidbey.github.io/pilgrims-progress/ (style lab: `/style-lab.html`). Pushing `main` publishes it (Pages takes 1 to 2 minutes). Commit and push after every change, then tell the owner it is live. A phone may show an old copy, so suggest adding `?v=N` to the link.
-- **Build stamp:** bottom-right corner of the game (`id="build"` in `index.html`), the style lab canvas (`id="build"` in `style-lab.html`) and the walk lab (`id="build"` in `walk-lab.html`): `build N · date`. Bump N on **every** push, in both files, so one number means one push. Currently **build 14**.
+- **Build stamp:** bottom-right corner of the game (`id="build"` in `index.html`), the style lab canvas (`id="build"` in `style-lab.html`) and the walk lab (`id="build"` in `walk-lab.html`): `build N · date`. Bump N on **every** push, in both files, so one number means one push. Currently **build 15**.
 - **Keep `CLAUDE.md` and `HANDOFF.md` updated after every change.** The repo is public: no names, emails or other personal details in notes, code or commits.
 - Players: kids 7 to 10, mostly on a phone. Gentle: **no lives, no game over**, on-screen touch buttons, read-aloud dialogue, short simple sentences.
 - Sister project with the same habits: `Twhidbey/math-jump` (Math Ninja).
@@ -17,8 +17,8 @@ A gentle side-scrolling game for kids ages 7 to 10, following Bunyan's *The Pilg
 - **Soft rain on the left clearing to warm golden light on the right.**
 - Simple, natural, calm. **Not cartoonish.**
 - The look was settled in `style-lab.html` first, then moved into the game (build 6). Try new looks in the lab before changing the game.
-- **Christian is a silhouette** (owner: "making him a silhouette is better"). **Since build 14: his body (hood, sack, tunic, arms) is an AI picture cut at the tunic hem, and his legs are drawn in code** (owner: "use walk lab, slightly more realistic using the clips as guide"). Three AI walk sheets were tried; none was a true walk cycle (measured), so they always looked jumpy.
-- **Walking pace:** a calm, realistic walk (owner wanted smooth and elegant). Top speed `MAXV` 2.6 (was 4.4, a jog at about 6 steps a second); the level takes about 40 s of walking.
+- **Christian is a monochrome watercolour** (owner, build 15: "I'm cool leaving him as watercolor, which you can make more monochromatic"). His walk is **rotoscoped from an AI video** (Veo, started from the original watercolour Christian): 38 frames of one full walk cycle, made grey (the painting's light and dark only) and tinted in the game for the weather. Earlier tries, all rejected as jumpy or strange: AI pose sheets (never a true walk cycle, measured), blending poses, AI body on code-drawn legs (`walk-lab.html`). **Lesson: AI image tools can't make walk cycles; AI video can.** The other people are still black silhouettes.
+- **Walking pace:** a calm, realistic walk (owner wanted smooth and elegant). Top speed `MAXV` 2.2 (was 4.4, a jog), mud 1.3; the level takes about 47 s of walking.
 - **Don't cover the scene with words** (owner, twice): the dialogue is a thin strip of light text on the dark road under everyone's feet, no box.
 - **Background hills should look realistic** (owner): natural ridgelines, not smooth waves or a single pointed peak.
 - **Scale:** Christian must not dwarf things beside him (owner: "pilgrim dwarfs the fence"). Small things like fences go on a layer further back, sized for that distance.
@@ -46,7 +46,7 @@ Scene units are 960 × 540, ground line `GY = 455`. Search for these names:
 
 How it stays cheap: `dirty = 2` rebuilds shapes, `dirty = 1` only repaints; the finished picture is kept in `sceneC` and only the rain streaks are drawn each frame. Layers scroll at different speeds with the "Walk along" slider (`par`, `PAN`).
 
-## `walk-lab.html` (Christian's walk, side by side)
+## `walk-lab.html` (Christian's walk, side by side): kept for reference, no longer used by the game
 
 Built because the AI walk poses looked jumpy however they were blended. **Measured cause:** the AI "walk cycles" are mostly the same wide stride with a sudden legs-together pose (front foot at +34, 0, +24, +33, +3, +33 px from the body), so the legs snap open and shut. Compares A = the old blended AI poses with B = the AI body on drawn legs (`RIG`, the same code as the game). Sliders: speed, step length, leg thickness, bob; Stop/Walk, Jump, slow motion. Pale marks on the road show whether a planted foot slides. It also rendered the pose guide given to Nano Banana (8 evenly spaced moments of one cycle).
 
@@ -56,7 +56,7 @@ Layered silhouettes since build 6. **The scenery code is copied from the lab (no
 
 | Area | Search for |
 |---|---|
-| Christian: body picture + drawn legs | `RIG` (all sizes, measured from the AI poses: hip, thigh, shin, ankle, step length `L`, stance 62%, leg widths, shoe outline), `rigFoot` (one foot through a step: heel strike, flat, push off the toe, swing), `rigFeet(dist, move, air)` (both feet, eased between standing, walking and jumping), `rigLeg` (knee by two-bone reach, tapered shin, shoe), `rigDraw` (hip height from the planted leg = natural rise and fall), `drawChristian` (black on a small canvas `figC`, then coloured for the weather). State: `P.dist` (picture px walked), `P.move`, `P.air`. **The same `RIG` code is in `walk-lab.html`: keep both in step.** Body picture is `walk2` in `SPR_SRC` (anchor in `SPR_META`) |
+| Christian: the video walk | `CHR_SRC` (38 grey WebP frames, base64), `CHR_META` (`ax`, `ground`: his centre and ground line in each frame; `vpx`: ground movement per video frame, 4.9; `rest`: frames 12 and 29, both feet down; `leap`: frame 10, held in a jump), `loadChristian`, `CHR_K` (.52: video px to screen), `CHR_STEP` (screen px walked per frame, so the planted foot stays put), `chrFrame`, `drawChristian` (grey frame × the weather tint on a small canvas `figC`, cut back to his shape). `P.anim` advances by distance walked; when he stops it plays on to the next `rest` frame and pauses. Tint is `mix(haze, near, .8)`: darker than the houses behind him. The gate and stall (`SETC`) were made paler (`layerCol(.66)`) so he shows in front of them |
 | Screen size and fit | `VW`, `VH`, `GY` (ground 440), `LEVEL_W`, `GATE`, `fit()` |
 | The look: numbers from the lab, colours | `LOOK`, `PAL`, `layerCol(d)` |
 | Weather: 0 rain .. 1 golden across the screen; `clearAt` moves with the camera so the level goes from rain to gold | `warm`, `clearAt` (set at the top of `draw()`), `hGrad` |

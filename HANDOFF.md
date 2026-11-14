@@ -68,6 +68,13 @@ The game is `index.html` (one file, no build step). `style-lab.html` is the art-
 - Same speed as before (about 54 to 63 frames a second in the test browser). Not yet seen on a phone.
 - Next: if the owner likes it, give Pliable and Obstinate the same treatment (their body pictures cut at the hem, drawn legs), so everyone walks the same way.
 
+## Built Nov 14, 2026 (build 15): Christian rotoscoped from an AI video
+- Owner on build 14: "going backwards, the blending steps look strange, we need a new vision, look online". Researched: smooth realistic game walks come from rotoscoping (tracing real movement frame by frame, Prince of Persia lineage); today indie developers do it from short AI videos, because AI image tools are unreliable at walk cycles.
+- Owner made a 10 s Veo video of the original watercolour Christian walking (camera following him, white background). Measured: camera steady (head within 5 px), he is about 290 px tall, one step every 18 to 19 frames, planted foot slides back a steady 4.9 px per frame, so it is a true walk. Used frames 187 to 224 (the cleanest loop).
+- Owner: "leave him as watercolor, make it more monochromatic". Frames made grey and tinted in the game: cool and dark in the rain, warm by the gate. Played by distance walked (feet stay put), pauses on a both-feet-down frame, holds a full stride in a jump. Old drawn legs and AI body removed from the game.
+- Pace 2.6 to 2.2 (mud 1.5 to 1.3) so the steps aren't hurried. Simulated playthrough finishes (about 47 s of walking, 12 jumps). Same speed as before (about 47 to 63 frames a second in the test browser). Not yet seen on a phone.
+- Next: the same video method for Pliable, Obstinate and Evangelist if the owner likes it (one video each, started from their pictures).
+
 ## Open questions for the owner
 1. How does the game feel on the phone: smooth? Anything hard to see (dark Christian against dark houses, crates, barrels)?
 2. New sprites: when they arrive, which poses, and are Evangelist / Obstinate / Pliable included?
