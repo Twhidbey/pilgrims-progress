@@ -15,9 +15,15 @@ The game is `index.html` (one file, no build step). `style-lab.html` is the art-
 - Game: only the build stamp changed (build 4, slightly easier to read). The game itself is still the watercolour version.
 - Checked in a headless browser at desktop and phone sizes: no errors, sliders and buttons change the picture. Not yet seen on a real phone.
 
+## Built Nov 14, 2026 (build 5): owner's first feedback
+- Owner: **"making him a silhouette is better"** → Christian is a silhouette by default in the lab (still the watercolour sprite tinted one colour; the four game poses can be tinted the same way).
+- Owner: **"the hills in the background can be more realistic"** → hills now use fractal noise: a far mountain range with rounded peaks and shoulders plus a paler range behind it, and rolling hills with a rough wooded skyline in patches. Before, they were a few sine waves and one pointed peak.
+- Owner's look is now the lab default: `look=45.57.44.100.4.80.37.77.46.51.55.48.0-0.1.1.3` (Storm to gold, 4 layers, mist 100, soft edges 77, framing on).
+- Game unchanged apart from the build stamp.
+
 ## Open questions for the owner
-1. **Christian: watercolour or silhouette?** The lab shows both. The silhouette is the watercolour sprite tinted one colour with a lit front edge; if silhouette wins he should be redrawn in code so he can animate cleanly.
-2. Which colour set and slider look? (Send the `look=` line or the link.)
+1. Are the new hills realistic enough, or should they be bolder (taller, darker, more ranges)? At mist 100 the far range is very faint.
+2. Christian's silhouette: keep tinting the painted poses, or redraw him in code?
 3. Are lit windows welcome (a second colour inside a layer), or strictly one colour per layer?
 4. Framing layer in front (trunk, leaves, grass): keep it in the game, or is it in the way of play?
 5. In the game, should the rain-to-gold change happen across the whole level (rain in the city, gold at the gate) rather than across one screen?
@@ -25,7 +31,7 @@ The game is `index.html` (one file, no build step). `style-lab.html` is the art-
 
 ## Next steps (after the owner picks a look)
 - Move the chosen look into `index.html`: replace `paintSky/paintFar/paintMid/paintNear` and the `ART_SRC` images with layered code-drawn silhouettes built for the whole level width, weather following the level.
-- Redraw obstacles and people in the same style; drop `ART_SRC` (and `SPR_SRC` if Christian becomes a silhouette) to shrink the file.
+- Redraw obstacles and people in the same style; drop `ART_SRC` to shrink the file. Christian: tint the `SPR_SRC` poses to silhouettes (or redraw in code if the owner prefers).
 - Then Level 2: the Slough of Despond.
 
 ## Loose ends

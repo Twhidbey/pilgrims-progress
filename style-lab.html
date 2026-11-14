@@ -26,7 +26,7 @@ a{color:#d9b77c}
 </style>
 </head>
 <body>
-<div id="top"><div id="frame"><canvas id="cv"></canvas><div id="build">style lab · build 4 · Nov 14 2026</div></div></div>
+<div id="top"><div id="frame"><canvas id="cv"></canvas><div id="build">style lab · build 5 · Nov 14 2026</div></div></div>
 <div id="panel">
   <div class="row"><span>Colours</span><span id="pals"></span></div>
   <div class="row"><span>Christian</span><span id="whos"></span></div>
@@ -54,25 +54,25 @@ let S = 1;                                                // canvas pixels per s
 // ---------- controls ----------
 const CTRL = [
   ['Light and weather'],
-  { id: 'clear', label: 'Rain ↔ golden light', v: 50 },
-  { id: 'rain', label: 'Rain', v: 60 },
-  { id: 'gold', label: 'Golden glow', v: 65 },
-  { id: 'mist', label: 'Mist between layers', v: 55 },
+  { id: 'clear', label: 'Rain ↔ golden light', v: 45 },
+  { id: 'rain', label: 'Rain', v: 57 },
+  { id: 'gold', label: 'Golden glow', v: 44 },
+  { id: 'mist', label: 'Mist between layers', v: 100 },
   ['Layers'],
-  { id: 'n', label: 'How many layers', v: 6, min: 2, max: 9 },
+  { id: 'n', label: 'How many layers', v: 4, min: 2, max: 9 },
   { id: 'depth', label: 'Pale far layers', v: 80 },
-  { id: 'thru', label: 'See-through overlap', v: 30 },
-  { id: 'soft', label: 'Soft edges', v: 40 },
+  { id: 'thru', label: 'See-through overlap', v: 37 },
+  { id: 'soft', label: 'Soft edges', v: 77 },
   ['Shapes'],
-  { id: 'city', label: 'Countryside ↔ city', v: 48 },
-  { id: 'hills', label: 'Hills', v: 50 },
+  { id: 'city', label: 'Countryside ↔ city', v: 46 },
+  { id: 'hills', label: 'Hills', v: 51 },
   { id: 'trees', label: 'Trees', v: 55 },
-  { id: 'win', label: 'Lit windows', v: 35 },
+  { id: 'win', label: 'Lit windows', v: 48 },
   ['Look around'],
   { id: 'walk', label: 'Walk along', v: 0 },
 ];
 const SL = CTRL.filter(c => !Array.isArray(c));
-const V = { pal: 0, who: 0, fg: 1, seed: 3 };
+const V = { pal: 0, who: 1, fg: 1, seed: 3 };
 for (const c of SL) V[c.id] = c.v;
 const DEF = { ...V };
 
@@ -84,7 +84,7 @@ const PALS = [
   { name: 'Green morning', skyC: ['#667c7a', '#bccbc4'], skyW: ['#e6da98', '#fbf6d2'], hazeC: '#bfcdc6', hazeW: '#f6efc0', nearC: '#1a2e2b', nearW: '#2f3a1d', cloud: '#465c5a', light: '#fdf6cc', win: '#ffdf8a' },
   { name: 'Ink and paper', skyC: ['#a59c8c', '#ddd5c4'], skyW: ['#e6d5a8', '#f8f0da'], hazeC: '#dcd4c4', hazeW: '#f4e8c8', nearC: '#26221f', nearW: '#3a2c1d', cloud: '#6e665a', light: '#fff4d6', win: '#f6d48e' },
 ].map(p => { const o = {}; for (const k in p) o[k] = k === 'name' ? p[k] : Array.isArray(p[k]) ? p[k].map(hex) : hex(p[k]); return o; });
-const WHO = ['Watercolour', 'Silhouette', 'Hidden'];
+const WHO = ['Watercolour', 'Silhouette', 'Hidden'];   // owner chose the silhouette (Nov 14 2026)
 
 // ---------- small helpers ----------
 const lerp = (a, b, t) => a + (b - a) * t;
@@ -95,8 +95,15 @@ const css = (c, a = 1) => `rgba(${c[0] | 0},${c[1] | 0},${c[2] | 0},${+a.toFixed
 function rng(seed) { let s = seed >>> 0 || 1; return () => { s = s + 0x6D2B79F5 | 0; let t = Math.imul(s ^ s >>> 15, 1 | s); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 let R = rng(1);
 const rr = (a, b) => a + (b - a) * R();
-// smooth rolling noise, -1..1
-function mkNoise() { const o = []; for (let k = 0; k < 4; k++) o.push([R() * 6.283, .75 + R() * .5]); return (x, wl) => { let v = 0, a = 1, t = 0; for (let k = 0; k < 4; k++) { v += a * Math.sin(x / wl * 6.283 * o[k][1] * (1 << k) + o[k][0]); t += a; a *= .5; } return v / t; }; }
+// fractal noise, -1..1: big slow shapes with smaller and smaller detail on top (how real land looks)
+function mkNoise() {
+  const o = R() * 1000, h = i => { const v = Math.sin(i * 127.1 + o) * 43758.5453; return v - Math.floor(v); };
+  return (x, wl, oct = 5, gain = .5) => {
+    let v = 0, a = 1, t = 0, f = 1 / wl;
+    for (let k = 0; k < oct; k++) { const q = x * f + k * 31.7, i = Math.floor(q), u = q - i, w = u * u * (3 - 2 * u); v += a * (lerp(h(i), h(i + 1), w) * 2 - 1); t += a; a *= gain; f *= 2.07; }
+    return v / t;
+  };
+}
 
 // ---------- the weather: 0 = rain, 1 = golden, across the screen ----------
 let clearAt = .5;
@@ -187,17 +194,30 @@ function build() {
     const s = .26 + .74 * Math.pow(d, 1.15);
     const base = lerp(292, GY, Math.pow(d, .9));
     const edge = lerp(-140, VW + 160, V.city / 100) * (1 + PAN * par / VW * .25) + rr(-50, 50);
-    const amp = last ? 0 : lerp(105, 24, Math.pow(d, .55)) * hills * (first ? 1.1 : 1);
-    const nz = mkNoise(), cl = mkNoise(), wl = lerp(330, 620, d);
+    const amp = last ? 0 : lerp(105, 24, Math.pow(d, .55)) * hills * (first ? 1.25 : 1);
+    const nz = mkNoise(), cl = mkNoise(), wd = mkNoise(), fine = mkNoise(), wl = lerp(380, 640, d);
+    // a mountain range: long ridgelines that rise to rounded peaks, with shoulders and small crags
+    const range = (x, w, sharp) => {
+      const n0 = nz(x + 70 * wd(x, 400, 2), w, 3, .45) * 2.3, r = 1 - Math.min(1, Math.sqrt(n0 * n0 + .02) - .1);   // ridges with rounded tops
+      const roll = clamp(nz(x + 999, w * .55, 4, .5) * 1.7 * .5 + .5);                      // rolling shoulders
+      return Math.pow(r, sharp) * .68 + roll * .32 + fine(x, 46, 3, .5) * .022;
+    };
     const gy = x => {
       if (last) return GY;
-      let v = nz(x, first ? 1500 : wl);
-      if (first) v = 1 - Math.pow(Math.abs(v), .8) * 1.25; else v = v * .5 + .5;      // far layer: ridges, like mountains
-      const cityFlat = first ? 1 : lerp(.5, 1, smooth(edge - 120, edge + 260, x));
-      return base - amp * v * cityFlat - (first ? 24 : 0);
+      if (first) return base - 14 - amp * range(x, 820, 1.7);
+      // rolling hills: broad rounded tops, wide valleys, and a rough edge where woods grow on the skyline
+      let v = clamp(nz(x + 90 * wd(x, 500, 2), wl, 5, .46) * 1.9 * .5 + .5);
+      v = Math.pow(v, 1.25);
+      const woods = smooth(.05, .4, wd(x + 300, 260 * s + 90, 2)) * (fine(x, 15 * s + 3, 2, .6) * .5 + .5) * 5.5 * s;
+      const cityFlat = lerp(.5, 1, smooth(edge - 120, edge + 260, x));
+      return base - amp * v * cityFlat - woods * cityFlat;
     };
     L = { d, par, W, base, s, shapes: [], wins: [], gy };
-    const hp = [[-30, VH + 20]]; for (let x = -30; x <= W + 6; x += 6) hp.push([x, gy(x)]); hp.push([W + 6, VH + 20]);
+    const hp = [[-30, VH + 20]]; for (let x = -30; x <= W + 6; x += 2.5) hp.push([x, gy(x)]); hp.push([W + 6, VH + 20]);
+    if (first) {                            // a second, paler range behind: same colour, half strength
+      const bp = [[-30, VH + 20]]; for (let x = -30; x <= W + 6; x += 2.5) bp.push([x, base - 34 - amp * 1.25 * range(x * .8 + 4321, 1000, 1.5)]); bp.push([W + 6, VH + 20]);
+      poly(bp); L.back = L.shapes.pop();
+    }
     poly(hp);
     if (last) {
       // the ground Christian walks on: grass, a fence out in the country
@@ -276,6 +296,7 @@ function paintLayer(c, P, Lr, off, col, alpha, q) {
   soft(c, q, alpha, 'source-over', t => {
     t.translate(-off, 0);
     t.fillStyle = hGrad(t, col[0], col[1], 1, 1, off);
+    if (Lr.back) { t.globalAlpha = .5; t.fill(Lr.back); t.globalAlpha = 1; }
     for (const p of Lr.shapes) t.fill(p);
   });
 }

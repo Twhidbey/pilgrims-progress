@@ -5,7 +5,7 @@ A gentle side-scrolling game for kids ages 7 to 10, following Bunyan's *The Pilg
 ## Working with the owner
 
 - **Repo: `Twhidbey/pilgrims-progress`, branch `main`.** This repo IS the live game: GitHub Pages serves it at https://twhidbey.github.io/pilgrims-progress/ (style lab: `/style-lab.html`). Pushing `main` publishes it (Pages takes 1 to 2 minutes). Commit and push after every change, then tell the owner it is live. A phone may show an old copy, so suggest adding `?v=N` to the link.
-- **Build stamp:** bottom-right corner of the game (`id="build"` in `index.html`) and of the style lab canvas (`id="build"` in `style-lab.html`): `build N · date`. Bump N on **every** push, in both files, so one number means one push. Currently **build 4**.
+- **Build stamp:** bottom-right corner of the game (`id="build"` in `index.html`) and of the style lab canvas (`id="build"` in `style-lab.html`): `build N · date`. Bump N on **every** push, in both files, so one number means one push. Currently **build 5**.
 - **Keep `CLAUDE.md` and `HANDOFF.md` updated after every change.** The repo is public: no names, emails or other personal details in notes, code or commits.
 - Players: kids 7 to 10, mostly on a phone. Gentle: **no lives, no game over**, on-screen touch buttons, read-aloud dialogue, short simple sentences.
 - Sister project with the same habits: `Twhidbey/math-jump` (Math Ninja).
@@ -17,7 +17,9 @@ A gentle side-scrolling game for kids ages 7 to 10, following Bunyan's *The Pilg
 - **Soft rain on the left clearing to warm golden light on the right.**
 - Simple, natural, calm. **Not cartoonish.**
 - **Start small:** the look is being settled in `style-lab.html` first. Do not restyle the game until the owner picks a look there.
-- Open: does Christian stay the watercolour figure or become a silhouette? (The lab shows both.)
+- **Christian is a silhouette** (owner, Nov 14 2026: "making him a silhouette is better"). For now it is the watercolour sprite tinted one colour; the lab still has the Watercolour button for comparison.
+- **Background hills should look realistic** (owner, Nov 14 2026): natural ridgelines, not smooth waves or a single pointed peak.
+- **The owner's chosen look** is the lab's default: Storm to gold, 4 layers, mist 100, soft edges 77 (`look=45.57.44.100.4.80.37.77.46.51.55.48.0-0.1.1.3`).
 
 ## `style-lab.html` (the layered look, one screen)
 
@@ -30,6 +32,7 @@ Scene units are 960 × 540, ground line `GY = 455`. Search for these names:
 | The weather across the screen (0 = rain, 1 = golden) | `warm(fx)`, `clearAt`, `hGrad` (a left-to-right gradient that follows the weather; used for every layer colour) |
 | Soft drawing without `ctx.filter` (not reliable on iPhone): paint small on a scratch canvas, stretch back up | `soft(c, q, alpha, op, fn)` |
 | Shapes (each is a filled outline, a `Path2D` pushed to the layer being built) | `poly`, `blob`, `house` (gable end / side roof / steeple, chimney, window spots), `tree` (0 round, 1 poplar, 2 bush), `tuft` |
+| Hills | `mkNoise` (fractal value noise: `(x, wavelength, octaves, gain)`), and inside `build()`: `range` (far mountains: ridges with rounded tops, shoulders, small crags; a second paler range behind is `L.back`, drawn at half strength in `paintLayer`), `gy` (rolling hills with a rough wooded skyline in patches, flatter under the city) |
 | Building the layers (shapes only): far ridge, city on the left, groves on the right, flat ground last, plus the framing layer in front | `build()`, `layers`, `front` |
 | One colour per layer by depth | `layerCol(P, d)` (haze colour toward nearest colour) |
 | Painting: sky, birds, each layer + lit windows + mist band, far rain sheets and light beams after the middle layer, puddles, Christian, framing, final rain-dull / gold-warm wash, vignette, paper grain | `paint()`, `paintSky()`, `paintLayer()` |
