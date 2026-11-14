@@ -55,7 +55,7 @@ body.portrait #rot{display:block}
     <p style="color:#7a6a5a">Next: the Slough of Despond (coming soon)</p>
     <button class="btn" id="again">Play again</button>
   </div>
-  <div id="build">build 22 · Nov 14 2026</div>
+  <div id="build">build 23 · Nov 14 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <div class="tb" id="tl">◀</div><div class="tb" id="tr">▶</div><div class="tb" id="tj">▲</div>
@@ -492,7 +492,10 @@ function update() {
   // Evangelist: still (a slow breath at the start of his video) until he says "Do you see that shining light?", then he raises his arm and keeps pointing
   // Evangelist faces Christian while they talk; on "Do you see that shining light?" he turns all the way round toward the light
   // and raises his arm to point (his video from frame 46 to 239, at its own slow pace)
-  if (!G.evan.pt && G.evanDone && (G.evanGone || (lines === EVAN && li >= 2))) G.evan.pt = 46;
+  // waiting: only the calm start of his video (frames 0-16: just breathing; from about 20 his hand starts to move, owner found it distracting)
+  G.evan.idle = 8 - 8 * Math.cos(G.t / 70);
+  // the turn carries on from wherever his breathing is, so nothing jumps
+  if (!G.evan.pt && G.evanDone && (G.evanGone || (lines === EVAN && li >= 2))) G.evan.pt = Math.max(.01, G.evan.idle);
   if (G.evan.pt) G.evan.pt = Math.min(239, G.evan.pt + .4);
   if (G.state !== 'play') { if (G.state === 'dialog') chrAnim(); cameraTick(); return; }
   const inMud = P.ground && MUD.some(m => P.x > m.x && P.x < m.x + m.w);
@@ -722,7 +725,8 @@ function draw() {
   const ink = sx => colAt(gcol, sx);
   // Evangelist, pointing to the light; he fades away after speaking
   // Evangelist points to the light once Christian reaches him, then fades away after speaking
-  if (G.evanGone < 90) { const t = G.evan.pt ? (G.evan.pt < 239 ? G.evan.pt : 212 + 27 * (.5 + .5 * Math.sin(G.t / 50))) : 22 + 22 * Math.sin(G.t / 60); drawFrame(EVA[atTime(EVA_META, t)], EVA_META, G.evan.x - cam, GY, 1, 1 - G.evanGone / 90); }
+  // he stays where he is, still pointing toward the light, as Christian walks on (owner: don't make him disappear)
+  if (Math.abs(G.evan.x - cam - VW / 2) < VW) { const t = G.evan.pt ? (G.evan.pt < 239 ? G.evan.pt : 212 + 27 * (.5 + .5 * Math.sin(G.t / 50))) : G.evan.idle || 0; drawFrame(EVA[atTime(EVA_META, t)], EVA_META, G.evan.x - cam, GY, 1, 1); }
   if (G.obst && G.obst.x > cam - 100) drawFrame(OBS[Math.floor(G.obst.anim ?? OBS_META.rest[0]) % OBS.length], OBS_META, G.obst.x - cam, GY, G.obst.mode === 'home' ? -1 : 1, 1);
   if (G.pli) drawFrame(PLI[Math.floor(G.pli.anim ?? 0) % PLI.length], PLI_META, G.pli.x - cam, G.pli.y ?? GY, G.pli.face ?? 1, 1);
   // sparks of light

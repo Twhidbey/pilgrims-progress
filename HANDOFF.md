@@ -106,6 +106,10 @@ The game is `index.html` (one file, no build step). `style-lab.html` is the art-
 - Owner: "you can keep things slow, same with walk, I'm going for an atmospheric feel". Everything now plays at its video's own speed: Evangelist's turn (about 5.5 s), Christian's walk (`MAXV` 2.2 to 1.05, mud to .6), Obstinate walking home (1.25); the neighbours hurry after Christian at 2.2 (caught up about 2 s after appearing in testing).
 - Simulated playthrough still finishes: every crate, wall and barrel still clearable; about 94 s of walking (was 47).
 
+## Built Nov 14, 2026 (build 23)
+- Owner: Evangelist's hand moving up and down while he waits was distracting. He now only breathes (calm frames 0 to 16 of his clip) while waiting; the turn continues smoothly from there.
+- Owner: don't make him disappear after Christian moves on. He now stays, pointing toward the light.
+
 ## Open questions for the owner
 1. How does the game feel on the phone: smooth? Anything hard to see (dark Christian against dark houses, crates, barrels)?
 2. New sprites: when they arrive, which poses, and are Evangelist / Obstinate / Pliable included?
