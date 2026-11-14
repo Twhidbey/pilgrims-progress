@@ -5,7 +5,7 @@ A gentle side-scrolling game for kids ages 7 to 10, following Bunyan's *The Pilg
 ## Working with the owner
 
 - **Repo: `Twhidbey/pilgrims-progress`, branch `main`.** This repo IS the live game: GitHub Pages serves it at https://twhidbey.github.io/pilgrims-progress/ (style lab: `/style-lab.html`). Pushing `main` publishes it (Pages takes 1 to 2 minutes). Commit and push after every change, then tell the owner it is live. A phone may show an old copy, so suggest adding `?v=N` to the link.
-- **Build stamp:** bottom-right corner of the game (`id="build"` in `index.html`) and of the style lab canvas (`id="build"` in `style-lab.html`): `build N · date`. Bump N on **every** push, in both files, so one number means one push. Currently **build 8**.
+- **Build stamp:** bottom-right corner of the game (`id="build"` in `index.html`) and of the style lab canvas (`id="build"` in `style-lab.html`): `build N · date`. Bump N on **every** push, in both files, so one number means one push. Currently **build 9**.
 - **Keep `CLAUDE.md` and `HANDOFF.md` updated after every change.** The repo is public: no names, emails or other personal details in notes, code or commits.
 - Players: kids 7 to 10, mostly on a phone. Gentle: **no lives, no game over**, on-screen touch buttons, read-aloud dialogue, short simple sentences.
 - Sister project with the same habits: `Twhidbey/math-jump` (Math Ninja).
@@ -61,7 +61,7 @@ Layered silhouettes since build 6. **The scenery code is copied from the lab (no
 | Vignette + paper grain, one baked overlay | `bakeFinish`, `finishC` |
 | Level layout | `buildLevel()`: `SOL` (solid crates, barrels, cart, walls), `ONE` (one-way market awning), `MUD`, `SPARKS` (lights to gather), `TRIG` (story triggers) |
 | Things on the road (dark shapes in the ground colour, faint hint lines, a pale line along each top so kids see where to land) | `thing`, `barrelShape`, `stall`, `gate`, `INK` / `SETC` / `HINT` |
-| Other people, code-drawn for now (Evangelist, Obstinate, Pliable) | `person(c, o)` (poses stand / walk / jump; options hood, burden, robe, cloak, hat, hair, beard, point, hips, staff), `drawWho` |
+| Evangelist, Obstinate, Pliable: sprite poses from a second AI sheet (`evan`, `evan_point`, `obst` hands on hips, `obst_walk`, `pli`, `pli_walk`), anchored on the lower body so the staff and pointing arm don't shift them | `SPR_SRC` / `SPR_META` (same tables as Christian), `drawSpr(k, x, y, face, alpha, bob)`; Pliable steps by swapping `pli` / `pli_walk`, Obstinate walks with a bob |
 | Story text | `INTRO`, `EVAN`, `NEIGH`, `END`; `talk()`, `show()`, `next()`; read-aloud `say()` (speechSynthesis). The words `#dlg` are a **thin strip on the dark road below everyone's feet** (top 82.5% of the stage to the bottom; light text, name in gold, faint dark fade, no box; owner didn't want the scene covered). `#dlg.on` shows it; `body.talking` hides the touch buttons, sparks counter and build stamp (any tap moves the story on) |
 | Movement | `update()`: `GRAV`, `JUMP`, `MAXV`, coyote time + jump buffer, mud slows, rolling barrels only bump Christian back (no harm) |
 | Drawing a frame | `draw()`, `drawLight()` (the shining light, always visible, grows as he nears) |

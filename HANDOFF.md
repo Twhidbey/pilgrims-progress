@@ -38,6 +38,11 @@ The game is `index.html` (one file, no build step). `style-lab.html` is the art-
 - Style lab uses the new walk pose too ("Watercolour" button renamed "Plain black").
 - File is 71 KB now (the old painted sprites are gone).
 
+## Built Nov 14, 2026 (build 9)
+- Owner sent a second Nano Banana sheet: Evangelist pointing and standing with a staff, Obstinate hands on hips and walking (wide hat), Pliable standing and walking (short cloak). Cut out the same way and put in the game; **the code-drawn people (`person()`) are gone**.
+- Evangelist stands until Christian reaches him, then points to the light while he speaks. Obstinate walks in, stands with hands on hips while arguing, walks home. Pliable walks (two poses taking turns) and follows Christian.
+- Played through both scenes in a headless browser: no errors. Not yet seen on a phone.
+
 ## Open questions for the owner
 1. How does the game feel on the phone: smooth? Anything hard to see (dark Christian against dark houses, crates, barrels)?
 2. New sprites: when they arrive, which poses, and are Evangelist / Obstinate / Pliable included?
