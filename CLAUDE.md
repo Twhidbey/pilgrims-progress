@@ -5,7 +5,7 @@ A gentle side-scrolling game for kids ages 7 to 10, following Bunyan's *The Pilg
 ## Working with the owner
 
 - **Repo: `Twhidbey/pilgrims-progress`, branch `main`.** This repo IS the live game: GitHub Pages serves it at https://twhidbey.github.io/pilgrims-progress/ (style lab: `/style-lab.html`). Pushing `main` publishes it (Pages takes 1 to 2 minutes). Commit and push after every change, then tell the owner it is live. A phone may show an old copy, so suggest adding `?v=N` to the link.
-- **Build stamp:** bottom-right corner of the game (`id="build"` in `index.html`) and of the style lab canvas (`id="build"` in `style-lab.html`): `build N · date`. Bump N on **every** push, in both files, so one number means one push. Currently **build 10**.
+- **Build stamp:** bottom-right corner of the game (`id="build"` in `index.html`) and of the style lab canvas (`id="build"` in `style-lab.html`): `build N · date`. Bump N on **every** push, in both files, so one number means one push. Currently **build 11**.
 - **Keep `CLAUDE.md` and `HANDOFF.md` updated after every change.** The repo is public: no names, emails or other personal details in notes, code or commits.
 - Players: kids 7 to 10, mostly on a phone. Gentle: **no lives, no game over**, on-screen touch buttons, read-aloud dialogue, short simple sentences.
 - Sister project with the same habits: `Twhidbey/math-jump` (Math Ninja).
@@ -51,7 +51,7 @@ Layered silhouettes since build 6. **The scenery code is copied from the lab (no
 
 | Area | Search for |
 |---|---|
-| Christian's poses (base64 WebP, black on transparent: stand, walk2, walk3, jump) and their tinted copies | `SPR_SRC`, `SPR_META` (per pose: anchor x and ground line y in the picture's pixels), `loadSprites`, `SIL` (rain colour `.c`, golden colour `.w`). **One gait: he always walks** (owner: switching walk/run was clunky; wants it "super smooth, clean and elegant"). The walk cycle is the list `WALK`; `P.anim` advances one pose per `STEP_PX` walked so feet keep pace at any speed. Drawn at scale .56 (about 150 tall) |
+| Christian's poses (base64 WebP, black on transparent: walk1..walk6 from a dedicated walk-cycle sheet, stand = a passing pose from it, jump from the first sheet) and their tinted copies | `SPR_SRC`, `SPR_META` (per pose: anchor x and ground line y in the picture's pixels; walk poses are anchored on the head and sack so the body doesn't wobble), `loadSprites`, `SIL` (rain colour `.c`, golden colour `.w`). **One gait: he always walks** (owner: switching walk/run was clunky; wants it "super smooth, clean and elegant"). The walk cycle is the list `WALK`; `P.anim` advances one pose per `STEP_PX` walked (a full cycle = 140 px, the stride in the pictures) so feet keep pace at any speed. **Watch for costume changes between AI poses** (robe length, flare): leave such poses out, they flash. Drawn at scale .56 (about 150 tall) |
 | Screen size and fit | `VW`, `VH`, `GY` (ground 440), `LEVEL_W`, `GATE`, `fit()` |
 | The look: numbers from the lab, colours | `LOOK`, `PAL`, `layerCol(d)` |
 | Weather: 0 rain .. 1 golden across the screen; `clearAt` moves with the camera so the level goes from rain to gold | `warm`, `clearAt` (set at the top of `draw()`), `hGrad` |

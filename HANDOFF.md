@@ -47,6 +47,10 @@ The game is `index.html` (one file, no build step). `style-lab.html` is the art-
 - Owner: "the transition between running and walking is clunky; maybe just walking, more intermediate sprites, super smooth and clean and elegant". Christian now **only walks** (run poses removed). Walk poses advance by distance walked (`WALK`, `STEP_PX`), so adding poses needs only the list changed.
 - Still only two walk poses (nearly the same stride), so it is not smooth yet. **Waiting on an 8-pose walk cycle from the owner** (prompt given in chat): cut out, add as walk1..walk8, set `WALK` to all eight.
 
+## Built Nov 14, 2026 (build 11)
+- Owner sent an 8-pose walk-cycle sheet. Used six poses (2, 3, 4, 6, 7, 8) as `walk1..walk6`; poses 1 and 5 left out because their robe flares longer and would flash every step. Standing uses pose 3 (a passing pose), so the robe no longer changes when he stops. Old two-pose walk and old stand removed. Jump is still from the first sheet.
+- Not yet watched at full frame rate on a phone; worth asking the owner if the walk is smooth enough, or whether to try all 8 poses.
+
 ## Open questions for the owner
 1. How does the game feel on the phone: smooth? Anything hard to see (dark Christian against dark houses, crates, barrels)?
 2. New sprites: when they arrive, which poses, and are Evangelist / Obstinate / Pliable included?
