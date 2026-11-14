@@ -43,6 +43,10 @@ The game is `index.html` (one file, no build step). `style-lab.html` is the art-
 - Evangelist stands until Christian reaches him, then points to the light while he speaks. Obstinate walks in, stands with hands on hips while arguing, walks home. Pliable walks (two poses taking turns) and follows Christian.
 - Played through both scenes in a headless browser: no errors. Not yet seen on a phone.
 
+## Built Nov 14, 2026 (build 10)
+- Owner: "the transition between running and walking is clunky; maybe just walking, more intermediate sprites, super smooth and clean and elegant". Christian now **only walks** (run poses removed). Walk poses advance by distance walked (`WALK`, `STEP_PX`), so adding poses needs only the list changed.
+- Still only two walk poses (nearly the same stride), so it is not smooth yet. **Waiting on an 8-pose walk cycle from the owner** (prompt given in chat): cut out, add as walk1..walk8, set `WALK` to all eight.
+
 ## Open questions for the owner
 1. How does the game feel on the phone: smooth? Anything hard to see (dark Christian against dark houses, crates, barrels)?
 2. New sprites: when they arrive, which poses, and are Evangelist / Obstinate / Pliable included?
