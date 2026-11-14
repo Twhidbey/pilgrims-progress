@@ -89,6 +89,11 @@ The game is `index.html` (one file, no build step). `style-lab.html` is the art-
 - Old black sprites and their code are gone. File about 2 MB. Simulated playthrough fine; about 50 frames a second in the test browser. Not yet seen on a phone.
 - Optional next: Obstinate arguing video (hands on hips) for the argument; a jump for Christian (he holds a stride in the air now).
 
+## Built Nov 14, 2026 (build 18)
+- Owner: Christian's hands moving up and down while standing felt repetitive; "loop it once, then just standing breathing". No new video needed: the last 5 s of his standing video are quiet breathing with still hands. Now each stop plays: step into the stop, lift and lower the book once, then the quiet part back and forth.
+- Owner: feet had a gap above the road. Everyone is now drawn 9 px lower (`FEET_SINK`), so feet overlap the road edge.
+- A start-up bug in this build's first try (a value used before it was defined) stopped the game loading in testing; fixed before pushing. Test scripts now wait for the Begin button instead of a fixed time (the file is about 2.4 MB).
+
 ## Open questions for the owner
 1. How does the game feel on the phone: smooth? Anything hard to see (dark Christian against dark houses, crates, barrels)?
 2. New sprites: when they arrive, which poses, and are Evangelist / Obstinate / Pliable included?
