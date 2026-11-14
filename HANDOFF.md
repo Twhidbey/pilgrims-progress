@@ -102,6 +102,10 @@ The game is `index.html` (one file, no build step). `style-lab.html` is the art-
 - In the game he now faces Christian while they talk, then on "Do you see that shining light far away?" really turns round (about 3.5 s, the video at 1.5 times speed), raises his arm and points. The paper-flip turn from build 19 is gone.
 - File about 2.7 MB. If more clips come, consider moving frames into separate WebP sprite sheets.
 
+## Built Nov 14, 2026 (build 22)
+- Owner: "you can keep things slow, same with walk, I'm going for an atmospheric feel". Everything now plays at its video's own speed: Evangelist's turn (about 5.5 s), Christian's walk (`MAXV` 2.2 to 1.05, mud to .6), Obstinate walking home (1.25); the neighbours hurry after Christian at 2.2 (caught up about 2 s after appearing in testing).
+- Simulated playthrough still finishes: every crate, wall and barrel still clearable; about 94 s of walking (was 47).
+
 ## Open questions for the owner
 1. How does the game feel on the phone: smooth? Anything hard to see (dark Christian against dark houses, crates, barrels)?
 2. New sprites: when they arrive, which poses, and are Evangelist / Obstinate / Pliable included?

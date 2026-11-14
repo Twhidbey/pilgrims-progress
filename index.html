@@ -55,7 +55,7 @@ body.portrait #rot{display:block}
     <p style="color:#7a6a5a">Next: the Slough of Despond (coming soon)</p>
     <button class="btn" id="again">Play again</button>
   </div>
-  <div id="build">build 21 · Nov 14 2026</div>
+  <div id="build">build 22 · Nov 14 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <div class="tb" id="tl">◀</div><div class="tb" id="tr">▶</div><div class="tb" id="tj">▲</div>
@@ -470,8 +470,8 @@ const NEIGH = [
 const END = [[N, 'Christian and Pliable left the city behind. The shining light was ahead of them.']];
 
 // ---------- physics ----------
-// a walking pace (owner wanted a realistic, calm walk; 4.4 was a jog at about 6 steps a second)
-const GRAV = .72, JUMP = -13.6, MAXV = 2.2;
+// walking pace = the pace in Christian's video (owner: "keep things slow, I'm going for an atmospheric feel"); 4.4 was a jog
+const GRAV = .72, JUMP = -13.6, MAXV = 1.05;
 function solidsNear(x0, x1) { return SOL.filter(b => b.x < x1 && b.x + b.w > x0); }
 // Christian's frames (runs during dialogue too, so he settles into standing while people talk)
 function chrAnim() {
@@ -483,7 +483,7 @@ function chrAnim() {
       P.anim += Math.abs(P.vx) / CHR_STEP;
     } else if (!P.stand) {                         // let go: finish the step into frame 28 or 1, where the standing video joins on
       const f = Math.floor(P.anim) % CHR_META.frames;
-      if (f === 28) P.stand = { t: 0 }; else if (f === 1) P.stand = { t: STAND_FROM_1 }; else P.anim += .9;
+      if (f === 28) P.stand = { t: 0 }; else if (f === 1) P.stand = { t: STAND_FROM_1 }; else P.anim += .42;   // finishing the step at the video's pace
     } else P.stand.t += .4;                         // standing: the video at its own pace (24 a second)
   }
 }
@@ -491,12 +491,12 @@ function update() {
   G.t++;
   // Evangelist: still (a slow breath at the start of his video) until he says "Do you see that shining light?", then he raises his arm and keeps pointing
   // Evangelist faces Christian while they talk; on "Do you see that shining light?" he turns all the way round toward the light
-  // and raises his arm to point (his video from frame 46 to 239, played at 1.5 times its speed so the turn keeps up with the words)
+  // and raises his arm to point (his video from frame 46 to 239, at its own slow pace)
   if (!G.evan.pt && G.evanDone && (G.evanGone || (lines === EVAN && li >= 2))) G.evan.pt = 46;
-  if (G.evan.pt) G.evan.pt = Math.min(239, G.evan.pt + .6);
+  if (G.evan.pt) G.evan.pt = Math.min(239, G.evan.pt + .4);
   if (G.state !== 'play') { if (G.state === 'dialog') chrAnim(); cameraTick(); return; }
   const inMud = P.ground && MUD.some(m => P.x > m.x && P.x < m.x + m.w);
-  const max = inMud ? 1.3 : MAXV;
+  const max = inMud ? .6 : MAXV;
   const dir = (keys.r ? 1 : 0) - (keys.l ? 1 : 0);
   if (P.hurt > 0) P.hurt--;
   if (dir && P.hurt < 20) { P.vx += dir * (P.ground ? .55 : .35); P.face = dir; }
@@ -555,10 +555,10 @@ function update() {
   }
   // neighbors arrive, talk, then one goes home and one follows
   if (G.obst && G.obst.mode === 'run') {
-    G.obst.x += 5.2; G.pli.x += 5.2;
+    G.obst.x += 2.2; G.pli.x += 2.2;   // hurrying after him, but still walking
     if (G.obst.x > P.x - 170) { G.obst.mode = 'talk'; G.pli.mode = 'talk'; P.vx = 0; P.face = -1; talk(NEIGH, () => { G.obst.mode = 'home'; G.pli.mode = 'follow'; P.face = 1; G.trail = []; }); }
   }
-  if (G.obst && G.obst.mode === 'home') G.obst.x -= 3.4;
+  if (G.obst && G.obst.mode === 'home') G.obst.x -= 1.25;   // his video's own walking pace
   G.trail.push({ x: P.x, y: P.y, face: P.face, moving: Math.abs(P.vx) > .3 && P.ground }); if (G.trail.length > 40) G.trail.shift();
   if (G.pli && G.pli.mode === 'follow' && G.trail.length > 30) { const t = G.trail[0]; G.pli.x = t.x - 70 * t.face; G.pli.y = t.y; G.pli.face = t.face; G.pli.moving = t.moving; }
   // Obstinate's and Pliable's walk frames follow how far they actually moved this frame
