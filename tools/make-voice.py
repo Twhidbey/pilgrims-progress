@@ -11,7 +11,7 @@ Only missing lines are recorded; recordings of lines that no longer exist are de
 
 The key is never stored in the repo (it is public). Each recording is checked by having a Gemini model write down what
 it hears; a recording with the wrong words is thrown away and made again.
-VOICES are voices designed from a description in the owner's Google project (the descriptions are in HANDOFF.md).
+VOICES are voices designed (POST /v1beta/voices with {"model": "models/gemini-3.8-flash-tts", "type": "prompted", "store": true, "prompted": {"input": description}}; GET /v1beta/voices lists them; they expire after a year) from a description in the owner's Google project (the descriptions are in HANDOFF.md).
 """
 import base64, json, os, re, subprocess, sys, tempfile, time, urllib.error, urllib.request
 
@@ -21,7 +21,7 @@ API = 'https://generativelanguage.googleapis.com/v1beta'
 TTS, EAR = 'gemini-3.8-flash-tts', 'gemini-3.8-flash'
 VOICES = {'N': 'voice_zqnt5xdln1kq', 'C': 'voice_xp9kua42jfe2', 'E': 'voice_x361phwkq8td',      # storyteller, Christian, Evangelist
           'O': 'voice_a69c9ezmlhxf', 'PL': 'voice_42c9jyj3oc93', 'W': 'voice_ttq297s4wa5y',     # Obstinate, Pliable (boyish), Christian's wife
-          'H': ''}      # Help (Level 2): NOT YET DESIGNED; his description is in HANDOFF.md (build 87). Put the new voice ID here.
+          'H': 'voice_njlpqcyvcd0a'}      # Help (Level 2), designed in build 91 from the description in HANDOFF.md (build 87)
 WHO = {'N': '', 'C': 'Christian', 'E': 'Evangelist', 'O': 'Obstinate', 'PL': 'Pliable', 'W': 'His wife', 'H': 'Help'}
 KEY = os.environ.get('GEMINI_API_KEY', '')
 
@@ -40,7 +40,10 @@ def name(who, text):                      # FNV-1a, the same sum as voiceName() 
     for ch in who + '|' + text: h = ((h ^ ord(ch)) * 0x01000193) & 0xffffffff
     return f'{h:08x}'
 
-def words(s): return re.sub(r'[^a-z ]', '', s.lower().replace('-', ' ')).split()
+SAME = {'towards': 'toward', 'neighbour': 'neighbor', 'colour': 'color'}
+def words(s): return [SAME.get(w, w) for w in re.sub(r'[^a-z ]', '', s.lower().replace('-', ' ')).split()]
+def close(a, b, attempt):           # from the second take, one misheard word (e.g. "No" heard as "Now") is let through
+    return a == b or (attempt > 0 and len(a) == len(b) and sum(x != y for x, y in zip(a, b)) <= 1)
 
 def record(code, text, dest):
     for attempt in range(4):
@@ -53,7 +56,7 @@ def record(code, text, dest):
         os.unlink(f.name)
         heard = call(f'/models/{EAR}:generateContent', {'contents': [{'parts': [{'inlineData': {'mimeType': 'audio/mp3', 'data': base64.b64encode(open(dest, 'rb').read()).decode()}}, {'text': 'Write down exactly the words spoken in this recording, and nothing else.'}]}]})
         heard = heard['candidates'][0]['content']['parts'][0].get('text', '')
-        if words(heard) == words(text): return attempt + 1
+        if close(words(heard), words(text), attempt): return attempt + 1
         print(f'   heard "{heard.strip()}" - trying again')
     sys.exit(f'Could not get a clean recording of: {text}')
 
