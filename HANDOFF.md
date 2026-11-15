@@ -2,6 +2,34 @@
 
 The game is `index.html` (one file, no build step). `style-lab.html` is the art-style test page. `CLAUDE.md` maps the code and records the owner's decisions. Work on **`main`** and push after every change: pushing IS publishing (GitHub Pages, https://twhidbey.github.io/pilgrims-progress/). Bump the build stamp in both pages on every push and tell the owner when it is live (a phone may need `?v=N` on the link). Keep this file and `CLAUDE.md` updated. Public repo: no personal details.
 
+## START HERE (written at build 40, Nov 15 2026, for a new chat)
+
+**What is live.** https://twhidbey.github.io/pilgrims-progress/story-lab.html is the game being worked on: Level 1, "The City of Destruction", as a story walk. The main link (`index.html`) is still the OLD jumping game from build 24. Everything below is about `story-lab.html`; `CLAUDE.md` maps its code.
+
+**What the level is now (in order, following the book):** title ("Open the book", a few quiet notes, "Begin") → rain, Christian with his book and burden → hold to walk; lights on the road sing Amazing Grace one note each → Evangelist: the child touches the far light → his own cottage: his wife and two children call from the lit doorway; the child holds to run on; he runs with his hands over his ears crying "Life! Life! Eternal life!" (the world goes muffled) → he tires and walks; neighbours' windows light → Obstinate and Pliable catch him; the child chooses "Go home" or "Go on to the light" → the road with Pliable → the child pushes the city gate open; the gold breaks through; they walk into the gate and the tune plays whole. All 31 lines are recorded voices (six designed voices).
+
+**Done in build 40 (the last thing built):** lights stay by his head when he runs; Pliable stays gone after the gate; Enter skips a line; the speaker button removed; **depth levels on one perspective rule** (see `CLAUDE.md`, "DEPTH"); a low cottage on the middle level with the family in its doorway; few special things, one at a time; puddle discs replaced by a wet road with rings.
+
+**The owner has NOT yet seen build 40 play.** Their last words were that the layers were "off by quite a bit" (that was the by-eye version before the rule) and "puddles look off". First thing in a new chat: ask how build 40 looks, and offer `story-lab.html?lines` (the guide lines) if anything still looks wrong.
+
+**Open, in the order I would take them:**
+1. **The owner's verdict on build 40's depth.** Known doubts: the far row of houses does not obey the rule (raised on purpose so it shows; amber in `?lines`); things on `f1` hide Christian's legs as he passes (true to perspective, but the owner may not like it); `f2` shows dark shapes low in the picture that may read as blobs (the owner asked "what's this?" about the old leafy boughs).
+2. **Figures on the middle level** ("nice place for some figures", owner): neighbours watching from the lane. Needs new pictures (about 15 cents each) and the owner's go-ahead.
+3. **Make the story walk the main game:** replace `index.html` with the story lab and delete the lab page (also removes 2.7 MB of pictures inside `index.html`). Waiting only on the owner confirming no other chat is still editing `index.html` (asked twice, not answered).
+4. **Standing videos** for Obstinate and Pliable (they now dissolve into a painted standing pose; a video like Christian's would be smoother). The video model is on the owner's key (56 cents each).
+5. **Level 2, the Slough of Despond:** the mud belongs there; Pliable turns back; the child reaches for Help's hand; ideas: the gathered lights show the stepping stones; a different hymn.
+6. Housekeeping: `concept-2200.html` waits on the owner's choice; `style-lab.html` is no longer in step with the story lab's scenery.
+
+**Working with this owner (what this chat learned):**
+- They look at everything closely and answer fast. Show pictures; they notice faces, perspective, scale and anything that does not read.
+- They want my opinion when they ask "what do you think?" and action when they say "do it". When they say "before you code", only talk.
+- **Money:** pictures, videos and voices are made with the owner's Google key and cost them money (picture about 15 cents, video about 56 cents, a voice line about a cent). Their prepaid credit ran out once mid-build. **Say the cost before spending.** Roughly $1.85 was spent after their top-up.
+- **The key** was pasted into the old chat and is NOT in the repo or anywhere a new chat can read. Ask for it. Advise them to delete it and make a new one, since it sat in a chat.
+- I cannot hear sound or watch motion: everything was checked from still pictures and by machine (voices by transcription). Say so; the owner's ears and eyes decide.
+- Rules they have set are collected in `CLAUDE.md`; the newest: one special thing in the picture at a time; props flat and quiet; faces plain but his profile must show; the hymn is discovered on the road, never played before; keep files trim.
+
+**How to test without a phone:** serve the folder (`python3 -m http.server`), open `story-lab.html` in a headless browser (Playwright is installed), click `#open` then `#play`, wait for `G.state === 'dialog'`, then fast-forward by calling `update()` in a loop with `keys.r = true`; `next(true)` skips a line, `lightTouched()`, `keys.push = true` for the run and the gate, `pick(false)` for the choice. `?x=2000` starts further along; `?lines` shows the perspective guides. A full run ends with `G.state === 'end'` and 35 lights of 35.
+
 ## The owner and players
 - Players: kids 7 to 10, mostly on a phone. Gentle: no lives, no game over, touch buttons, read-aloud dialogue.
 - New art direction (Nov 14 2026): everything drawn in code; atmospheric layered silhouettes, one colour per depth layer, pale far and dark near, transparency and haze, soft rain on the left clearing to golden light on the right; calm and natural, not cartoonish, not video-game looking.
@@ -210,6 +238,13 @@ The game is `index.html` (one file, no build step). `style-lab.html` is the art-
 
 ## Built Nov 15, 2026 (build 39)
 - Owner sent a screenshot of the dark blobs at the top of the screen: "what's this at the top?" They were the leafy boughs of the framing layer, which did not read as leaves. Removed from `story-lab.html` (the grass along the bottom stays). `index.html` still has them; they go when the story lab replaces it.
+
+## Built Nov 15, 2026 (build 40): depth on one rule, a low cottage, a wet road
+- Owner: "(1) make light dots stay close to head when he runs; (2) make Pliable stay disappeared after he goes thru gate; (3) need foreground items (between viewer and Christian) to build depth, maybe at least two levels ... House is big. I wonder if we should put wife and kids at an intermediate level? What about one more level between Christian and first row of houses; (4) I don't think there should be more than one special item in frame at same time". Then: "enter to skip dialogue", "remove speaker in bottom right", and, on seeing my first try, "it might be worth drawing some perspective lines to get the layers right (it is off by quite a bit right now) ... also puddles look off (love that his steps look like they are hitting water with the circles coming out from them)".
+- First try placed the new levels by eye (too big, too low). Rebuilt on one rule: horizon 140 above the road; size = sliding speed = p; ground line = horizon + 140 p. Guides with `?lines`.
+- New low cottage picture (15 cents): "The front of a small, LOW, one-storey cottage: a long low wall of rough stone and timber that is only a little taller than its doorway, and above it a low, shaggy thatched roof about as tall as the wall itself, with a short stubby chimney near one end ... ONE plain doorway in the middle ... two small square window openings, one on each side of the door. The doorway and the two window openings are left as pure blank white paper ..." + the flat-elevation style text.
+- Pliable's bug: at the instant the level ended, his target changed and a negative step moved him back 48 px, half visible in the gateway.
+- Tested in a headless browser: whole level plays, 35 lights, no errors; pictures looked at with the guides on. Not seen moving.
 
 ## Open questions for the owner
 0. **Story lab (build 25):** is this the right shape for the game? How does it sound? Is "Go home" a good choice to offer? Should it replace the game now?

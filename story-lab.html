@@ -30,11 +30,9 @@ button{font-family:Georgia,'Times New Roman',serif;-webkit-appearance:none;appea
 #dlg .txt{font-size:clamp(13px,2.1vw,20px);line-height:1.3;animation:rise .5s ease both}
 #dlg.hint .txt{font-style:italic;color:rgba(244,236,220,.85)}
 #dlg .more{position:absolute;right:1.2%;bottom:6%;font-size:clamp(11px,1.6vw,15px);color:rgba(244,236,220,.7)}
-#dlg.cap .more,#dlg.cap .say{display:none}
+#dlg.cap .more{display:none}
 #dlg.wait .more{visibility:hidden}
 #dlg.act .more{color:#e8c27c;font-style:italic;animation:glowtxt 2.2s ease-in-out infinite}
-#dlg .say.off{opacity:.3}
-#dlg .say{position:absolute;right:.6%;top:8%;border:none;background:none;font-size:clamp(15px,2.4vw,22px);cursor:pointer;padding:.1em;opacity:.85;pointer-events:auto}
 @keyframes rise{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 @keyframes glowtxt{0%,100%{opacity:.55}50%{opacity:1}}
 /* a choice: two quiet buttons on the road */
@@ -55,7 +53,7 @@ body.portrait #rot{display:block}
 <body>
 <div id="wrap"><div id="stage">
   <canvas id="cv"></canvas>
-  <div id="dlg"><div class="txt"><span class="who"></span><span class="t"></span></div><div class="more">tap ▸</div><button class="say" aria-label="Voice on or off">🔊</button></div>
+  <div id="dlg"><div class="txt"><span class="who"></span><span class="t"></span></div><div class="more">tap ▸</div></div>
   <div id="choice"><button id="chHome">Go home</button><button id="chOn">Go on to the light</button></div>
   <div id="title" class="card">
     <h1>Pilgrim's Progress</h1>
@@ -70,7 +68,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">story lab · build 39 · Nov 15 2026</div>
+  <div id="build">story lab · build 40 · Nov 15 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -309,7 +307,8 @@ function buildScenery() {
   // framing in front of everything: tall grass along the bottom. (The leafy boughs at the top were removed in build 39:
   // drawn soft because they are near, they came out as blocky dark blobs that did not read as leaves; the owner asked what they were.)
   R = rng(98);
-  L = FRONT = { par: 1.3, W: VW + PANG * 1.3 + 60, shapes: [], wins: [] };
+  // the grass stands along the bottom edge, 230 below the horizon, so by the perspective rule it slides at 230 / 140 = 1.64
+  L = FRONT = { par: 1.64, W: VW + PANG * 1.64 + 60, shapes: [], wins: [] };
   poly([[-30, VH + 10], [-30, VH - 12], [L.W, VH - 10], [L.W, VH + 10]]);
   for (let x = -10; x < L.W; x += rr(5, 22)) tuft(x, VH - 10, R() < .25 ? rr(26, 50) : rr(8, 22));
   bake(FRONT, Math.min(1, 1.3 / (1.6 + LOOK.soft)), layerCol(1).map(v => mix(v, [8, 8, 12], .4)));
@@ -392,18 +391,24 @@ const PHRASES = [
 const TUNE = [], BASS = [43, 43, 48, 43, 43, 43, 50, 50, 43, 43, 48, 43, 43, 50, 43, 43];
 for (const ph of PHRASES) for (const [b, k] of ph.n) TUNE.push([ph.at + b, NOTE[k]]);
 const HARM = [55, 59, 62, 67, 50, 57];     // notes for lights set free by a touch (they fit under the tune)
-const LIGHTS = [], LAMPS = [], PUDDLES = [], DECOR = [], FLOCKS = [], CAPS = [];
+const LIGHTS = [], LAMPS = [], THINGS = [], FLOCKS = [], CAPS = [];
 function buildLevel() {
-  LIGHTS.length = LAMPS.length = PUDDLES.length = DECOR.length = FLOCKS.length = CAPS.length = 0;
+  LIGHTS.length = LAMPS.length = FLOCKS.length = CAPS.length = 0;
   const light = (x, midi) => LIGHTS.push({ x, y: GY - 60 - clamp(midi - 62, -6, 12) * 5.2, midi, got: false, ph: rnd() * 6 });
   for (const ph of PHRASES) for (const [b, k] of ph.n) light(ph.x + b * BEAT, NOTE[k]);
-  for (const x of [300, 760, 1300, 2900, 3560, 4120, 4660, 5100]) LAMPS.push({ x, lit: 0 });
-  for (const [x, w] of [[640, 150], [1830, 110], [3050, 170], [4000, 150], [4900, 150]]) PUDDLES.push({ x, w, used: false });
-  // things standing at the back of the road (nothing blocks the way): watercolour pictures, x = their left edge
-  for (const [k, x] of [['barrel', 540], ['crates', 1440], ['stall', 1590], ['cart', 2620], ['wall', 3020], ['wall', 3290], ['crates', 3760], ['barrel', 3900], ['crates', 4380], ['barrel', 4980]]) DECOR.push({ k, x });
-  // little flocks of birds, sitting on things
-  const flock = (x, y, n) => { const b = []; for (let i = 0; i < n; i++) b.push({ dx: (i - (n - 1) / 2) * 13 + (rnd() - .5) * 5, s: .85 + rnd() * .3, f: rnd() < .5 ? 1 : -1 }); FLOCKS.push({ x, y, b, away: false }); };
-  flock(572, GY - 73, 2); flock(1712, GY - 170, 4); flock(2680, GY - 79, 3); flock(3066, GY - 63, 3); flock(3496, GY - 63, 4); flock(3808, GY - 93, 2); flock(4428, GY - 93, 2); flock(5185, GY - 162, 4);
+  for (const x of [300, 2700, 4900]) LAMPS.push({ x, lit: 0 });                  // few and far apart: they count as special things too
+  // Things, each on a depth level (LEVELS). Owner's rule (build 40): no more than one special thing in the picture at a
+  // time, because their likeness distracts. So there are few of them, about one every 600 of road counting the lamps and his
+  // house, never two of a kind near each other, and they take turns between the levels. (Two can share the picture for a
+  // moment at its edges, one leaving as the next arrives.)
+  // a = where on the road Christian is when the thing is level with him.
+  THINGS.length = 0;
+  const flock = (x, y, n, par = 1, s = 1, lv = 'road') => { const b = []; for (let i = 0; i < n; i++) b.push({ dx: (i - (n - 1) / 2) * 13 + (rnd() - .5) * 5, s: .85 + rnd() * .3, f: rnd() < .5 ? 1 : -1 }); FLOCKS.push({ x, y, b, par, s, lv, away: false }); };
+  for (const [lv, k, a, birds] of [['mid', 'stall', 700, 4], ['f1', 'barrel', 1650, 2], ['f2', 'wall', 3150, 0], ['mid', 'cart', 3850, 3], ['f1', 'crates', 4400, 0]]) {
+    const L = LEVELS[lv], m = PROP_META[k], t = { lv, k, w: m.w * L.k, h: m.h * L.k }; t.x = lineUp(a, L.par) - t.w / 2; THINGS.push(t);
+    if (birds) flock(t.x + t.w * m.perch[0], L.base + 3 - m.perch[1] * L.k, birds, L.par, L.k, lv);      // birds sit on its top
+  }
+  flock(5185, GY - 162, 4);                                    // and on the city wall by the gate
   // words said while walking (nobody stops)
   CAPS.push({ x: 3620, watch: true, lines: [[N, 'People watched from their windows. Some laughed. Some called him back.'], [C, 'I will not stop. I can still see the light.']] });
   CAPS.push({ x: 4680, pli: true, lines: [[PL, 'What is it like, the place where we are going?'], [C, 'No one cries there. Everyone shines like the sun.'], [PL, 'Then let us keep walking!']] });
@@ -569,7 +574,7 @@ function next(force) {
 // A line's file is named by a sum of who says it and the words, so the words on screen and the recording always belong together.
 // A line with no recording is simply silent.
 const VOX = new Map(), VOICE_V = 3;       // bump VOICE_V when recordings change, so phones fetch the new ones
-let voiceOn = true, voxSrc = null, sayN = 0;
+let voxSrc = null, sayN = 0;
 function voiceName(who, txt) { let h = 0x811c9dc5; const t = who + '|' + txt; for (let i = 0; i < t.length; i++) h = Math.imul(h ^ t.charCodeAt(i), 0x01000193) >>> 0; return h.toString(16).padStart(8, '0'); }
 function vox(who, txt) {
   const n = voiceName(who, txt); let v = VOX.get(n);
@@ -582,7 +587,7 @@ async function voxBuf(v) {
 }
 function hush() { sayN++; if (voxSrc) { try { voxSrc.stop(); } catch (e) {} voxSrc = null; } }
 async function say(who, txt) {
-  hush(); if (!voiceOn || !audio()) return;
+  hush(); if (!audio()) return;
   const me = sayN, buf = await voxBuf(vox(who, txt));
   if (!buf || me !== sayN) return;
   voxSrc = AC.createBufferSource(); voxSrc.buffer = buf; voxSrc.connect(who === C ? CLEAR : VOICEG); voxSrc.start();
@@ -750,8 +755,9 @@ function walkTick(dir, max) {
   if (P.run) { const r0 = Math.floor(P.ranim) % RUN_META.frames; P.ranim += moved / RUN_STEP; const r1 = Math.floor(P.ranim) % RUN_META.frames; down = r1 !== r0 && (r1 === 7 || r1 === 22); }
   else { P.anim += Math.max(moved, .25) / CHR_STEP; const f1 = chrFrame(); down = f1 !== f0 && CHR_META.rest.includes(f1); }
   if (down) {                                                  // a foot comes down
-    const pud = PUDDLES.find(p => P.x > p.x && P.x < p.x + p.w);
-    sfx.step(false, P.run ? 1.3 : Math.max(.35, 1 - G.got / 60)); if (pud) { G.ripples.push({ x: P.x + P.face * 14, t: 0 }); sfx.splash(); }
+    // the road is wet wherever it is raining: every step sends rings out (owner loved this), fading as the weather clears
+    const wet = 1 - warm((P.x - G.cam) / VW);
+    sfx.step(false, P.run ? 1.3 : Math.max(.35, 1 - G.got / 60)); if (wet > .15) { G.ripples.push({ x: P.x + P.face * 14, y: GY + 9, t: 0, a: wet, r: 1 }); if (wet > .5) sfx.splash(); }
   }
 }
 // going in through the open gate: 0 outside, 1 gone into the light. A figure in the archway grows a little smaller,
@@ -771,7 +777,7 @@ const LAMP_DX = 40, LAMP_Y = GY - 137;     // where the lantern hangs, from the 
 function lightLamp(l) { l.lit = G.t; sfx.lamp(); free(l.x + LAMP_DX, LAMP_Y); touched(); }
 function scatter(fl, quiet) {
   fl.away = true; if (!quiet) sfx.flutter();
-  for (const b of fl.b) G.flyers.push({ x: fl.x + b.dx, y: fl.y - 5, vx: .9 + Math.random() * 1.3, vy: -1.5 - Math.random() * .9, ph: Math.random() * 6, s: b.s, par: 1, life: 0 });
+  for (const b of fl.b) G.flyers.push({ x: fl.x + b.dx * fl.s, y: fl.y - 5, vx: (.9 + Math.random() * 1.3) * fl.s, vy: (-1.5 - Math.random() * .9) * fl.s, ph: Math.random() * 6, s: b.s * fl.s, par: fl.par, life: 0 });
 }
 function toll(st, par) {
   st[2] = G.t; sfx.bell();
@@ -797,9 +803,9 @@ function touchAt(sx, sy) {
   const cam = G.cam, wx = sx + cam, lp = lightPos();
   if (Math.hypot(sx - lp.x, sy - lp.y) < 58) { pulseLight(); return true; }
   for (const l of LAMPS) if (!l.lit && Math.abs(wx - (l.x + 18)) < 50 && sy > GY - 215 && sy < GY + 14) { lightLamp(l); return true; }
-  for (const fl of FLOCKS) if (!fl.away && Math.abs(wx - fl.x) < 52 && Math.abs(sy - fl.y + 6) < 46) { scatter(fl); touched(); return true; }
-  if (sy > GY - 8 && sy < GY + 44) for (const p of PUDDLES) if (wx > p.x - 10 && wx < p.x + p.w + 10) {
-    G.ripples.push({ x: wx, t: 0 }); sfx.plink(); if (!p.used) { p.used = true; free(wx, GY + 4); } touched(); return true;
+  for (const fl of FLOCKS) if (!fl.away && Math.abs(sx - (fl.x - cam * fl.par)) < 52 && Math.abs(sy - fl.y + 6) < 46) { scatter(fl); touched(); return true; }
+  if (sy > GY + 2 && warm(sx / VW) < .85) {                  // a finger on the wet road: rings, and now and then a light
+    G.ripples.push({ x: wx, y: sy, t: 0, a: 1, r: (sy - HORIZON) / 149 }); sfx.plink(); if (!(G.roadT > G.t - 600)) { G.roadT = G.t; free(wx, sy); } touched(); return true;
   }
   if (sy >= GY - 8) return false;
   const far = SCN[1], foff = cam * far.par;
@@ -868,13 +874,13 @@ function people() {
   if (o && o.mode === 'home' && o.st <= 0 && o.x > G.cam - 200) o.x -= 1.25; // his video's own walking pace
   if (p && p.mode === 'follow') {                             // Pliable keeps a little behind Christian, hurrying only if he falls back
     const gap = (G.leaving ? DOOR1 - 10 : P.x - 70) - p.x;      // at the end he follows Christian in through the gate
-    if (G.leaving && gap < 4) { G.leaving = false; finish(); }
+    if (G.leaving && gap < 4) { G.leaving = false; p.mode = 'gone'; finish(); }      // through the gate: he stays gone
     if (gap > 14) p.go = true; if (gap < 1) p.go = false;
   }
   if (p) {
     const still = p.mode === 'talk' || (p.mode === 'follow' && !p.go);
     p.st = clamp((p.st || 0) + (still && rest(p, PLI_META) && PLI_ST ? .035 : -.06));
-    if (p.mode === 'follow' && p.go && p.st <= 0) { const gap = (G.leaving ? DOOR1 - 10 : P.x - 70) - p.x; p.x += Math.min(gap, gap > 46 ? 2 : MAXV); }
+    if (p.mode === 'follow' && p.go && p.st <= 0) { const gap = (G.leaving ? DOOR1 - 10 : P.x - 70) - p.x; p.x += Math.max(0, Math.min(gap, gap > 46 ? 2 : MAXV)); }
   }
   if (o) { o.anim = stepAnim(o.anim ?? OBS_META.rest[0], Math.abs(o.x - (o.px ?? o.x)), OBS_STEP, OBS_META); o.px = o.x; }
   if (p) { p.anim = stepAnim(p.anim ?? PLI_META.rest[0], Math.abs(p.x - (p.px ?? p.x)), PLI_STEP, PLI_META); p.px = p.x; }
@@ -885,7 +891,7 @@ function gather() {
     s.got = true; G.got++; note(s.midi, .075, 2.8);
     G.motes.push({ x: s.x, y: s.y, tw: Math.random() * 6 });
   }
-  for (const fl of FLOCKS) if (!fl.away && Math.abs(fl.x - P.x) < 64) scatter(fl);
+  for (const fl of FLOCKS) if (!fl.away && Math.abs(fl.x - G.cam * fl.par - (P.x - G.cam)) < 64) scatter(fl);
 }
 // the lights he has gathered drift round him like slow fireflies; at the gate they go on ahead into the far light
 function motes() {
@@ -902,6 +908,7 @@ function motes() {
     const i = k++, r = 8 + 5 * Math.sqrt(i), a = i * 2.4 + G.t * .009 * (1 + (i % 3) * .35);
     let tx = cx + Math.cos(a) * r * 1.5, ty = cy + Math.sin(a) * r * .5 - i * .25 + Math.sin(G.t / 37 + i) * 2.5;
     if (G.act === 'gate' && pushHeld()) { tx = DOORM + Math.sin(a * 3) * 5; ty = GY - 14 - (i * 37) % 230; }   // helping at the gate
+    if (!m.free) m.x += P.vx * .9;                             // they move with him, so they stay by his head even when he runs
     const e = m.free ? .028 : .07; m.x += (tx - m.x) * e; m.y += (ty - m.y) * e;
     if (m.free && Math.hypot(tx - m.x, ty - m.y) < 40) { m.free = false; G.got++; note(HARM[G.extra++ % HARM.length], .05, 3.2); }
   }
@@ -910,13 +917,15 @@ function effects() {
   for (const f of G.flyers) { f.x += f.vx; f.y += f.vy; f.vy = f.vy * .992 - .002; f.ph += .42; f.life++; }
   G.flyers = G.flyers.filter(f => f.life < 700 && f.y > -30);
   for (const r of G.ripples) r.t++; G.ripples = G.ripples.filter(r => r.t < 70);
+  // raindrops ring the wet road too: small rings anywhere on it where the rain is falling
+  for (let i = 0; i < 2; i++) { const sx = Math.random() * VW; if (Math.random() < (1 - warm(sx / VW)) * LOOK.rain * .55) { const y = GY + 4 + Math.random() * (VH - GY - 10); G.ripples.push({ x: sx + G.cam * (y - HORIZON) / 140, y, t: 44, a: .55, r: .35 * (y - HORIZON) / 149, par: (y - HORIZON) / 140 }); } }
   for (const t of G.taps) t.t++; G.taps = G.taps.filter(t => t.t < 26);
   for (const g of G.glints) g.t++; G.glints = G.glints.filter(g => g.t < 56);
   // now and then something that can be touched gives a small glint
   if (G.state === 'play' && G.t % 100 === 50) {
     const cam = G.cam, c = [];
     for (const l of LAMPS) if (!l.lit && l.x > cam + 20 && l.x < cam + VW - 20) c.push([l.x + LAMP_DX, LAMP_Y, 1]);
-    for (const fl of FLOCKS) if (!fl.away && fl.x > cam + 20 && fl.x < cam + VW - 20) c.push([fl.x, fl.y - 8, 1]);
+    for (const fl of FLOCKS) { const x = fl.x - cam * fl.par; if (!fl.away && x > 20 && x < VW - 20) c.push([fl.x, fl.y - 8, fl.par]); }
     for (const st of SCN[1].steeples) { const x = st[0] - cam * SCN[1].par; if (x > 20 && x < VW - 20) c.push([st[0], st[1] + 6, SCN[1].par]); }
     const ws = SCN[2].wins; for (let k = 0; k < 14; k++) { const w = ws[Math.random() * ws.length | 0], x = w[0] - cam * SCN[2].par; if (!w[5] && w[4] > LOOK.win * .6 && x > 20 && x < VW - 20 && w[1] < GY - 10) { c.push([w[0] + w[2] / 2, w[1] + w[3] / 2, SCN[2].par]); break; } }
     if (c.length) { const g = c[Math.random() * c.length | 0]; G.glints.push({ x: g[0], y: g[1], par: g[2], t: 0 }); }
@@ -976,7 +985,25 @@ let INK = '#000', HINT = 'rgba(255,255,255,.1)', SETC = '#333', DOORC = '#222';
 // Each is baked once in a rain tint and a golden tint (bakeTint), like the scenery layers, and the two are mixed by the
 // weather where the thing stands: no scratch canvas is touched while playing. depth .5 keeps them paler than the people (.8).
 const PROP_DETAIL = .2, HOUSE_DETAIL = .65, FLAT_GREY = .56;      // 0 = a flat shape, 1 = the whole painting; FLAT_GREY = the paintings' average tone
-const PROP_META = { barrel: { w: 64, h: 76 }, crates: { w: 96, h: 96 }, cart: { w: 219, h: 84 }, stall: { w: 243, h: 200 }, wall: { w: 259, h: 70 }, lamp: { w: 73, h: 205 } }, PROP = {};
+// perch = where birds sit on it (how far across, how high)
+const PROP_META = { barrel: { w: 64, h: 76, perch: [.5, 76] }, crates: { w: 96, h: 96, perch: [.5, 96] }, cart: { w: 219, h: 84, perch: [.25, 80] }, stall: { w: 243, h: 200, perch: [.54, 172] }, wall: { w: 259, h: 70, perch: [.2, 64] }, lamp: { w: 73, h: 205 } }, PROP = {};
+// DEPTH (owner, build 40: "need foreground items between viewer and Christian to build depth, at least two levels ... one more
+// level between Christian and the first row of houses"). From far to near: mountains, far houses, near houses (the scenery
+// layers); then 'mid', a lane just behind the road, where his house and family stand; the road itself (Christian, the
+// people, the lamps, the lights); 'f1', between us and Christian (low things, so he is never hidden); 'f2', right in front of
+// us, where only the tops of things show along the bottom, nearly black. par = how fast a level slides as he walks
+// (1 = the road), k = how big things are on it, base = the line they stand on, depth = how dark (0 pale .. 1 the road's
+// dark, above 1 toward black), detail = how much of the painting shows.
+// ONE PERSPECTIVE RULE (owner, build 40: "draw some perspective lines to get the layers right"). We look from eye height:
+// the HORIZON is 140 above the road line, about Christian's shoulder. A level's distance is one number p (1 = the road
+// Christian walks on; smaller = further away; larger = nearer to us), and everything follows from it:
+//   how big things are = p;   how fast the level slides as he walks = p;   the line things stand on = HORIZON + 140 * p.
+// So a thing twice as near is twice as big, slides twice as fast and stands twice as far below the horizon.
+// Add ?lines to the page's address to see the horizon, each level's ground line and a man-high mark on each (drawGuides).
+const HORIZON = GY - 140;
+const level = (p, depth, detail) => ({ par: p, k: p, base: HORIZON + (GY - HORIZON) * p, depth, detail });
+const LEVELS = { mid: level(.72, .45, PROP_DETAIL), f1: level(1.25, .95, .1), f2: level(1.6, 1.5, 0) };
+const lineUp = (a, par) => 325 + (a - 325) * par;      // the place on a level that is beside Christian when he is at a on the road (he walks about 325 from the left of the picture)
 function bakeTint(im, depth, detail) {
   const one = col => {
     const flat = mk(im.width, im.height), f = flat.getContext('2d');                // the shape in one solid tone
@@ -987,35 +1014,57 @@ function bakeTint(im, depth, detail) {
     }
     return flat;
   };
-  return { cool: one(mix(PAL.hazeC, PAL.nearC, depth)), warm: one(mix(PAL.hazeW, PAL.nearW, depth)) };
+  const tone = (haze, near) => depth <= 1 ? mix(haze, near, depth) : mix(near, [5, 6, 9], depth - 1);
+  return { cool: one(tone(PAL.hazeC, PAL.nearC)), warm: one(tone(PAL.hazeW, PAL.nearW)) };
 }
-// x = the thing's left edge in the level; it stands on the road line. Drawn inside the scrolled part of draw().
+// x = the thing's left edge in the level; it stands on the road line. Drawn inside the scrolled part of draw() (the lamps).
 function drawProp(b, m, x, cam, h = m.h) {
   if (!b) return;
   const wm = warm((x + m.w / 2 - cam) / VW), y = GY + 3 - h;
   ctx.drawImage(b.cool, x, y, m.w, h); if (wm > .01) { ctx.globalAlpha = wm; ctx.drawImage(b.warm, x, y, m.w, h); ctx.globalAlpha = 1; }
 }
+// everything on one depth level, in screen units: its things, and the birds sitting on them
+function drawLevel(lv, cam) {
+  const L = LEVELS[lv], B = PROP[lv];
+  for (const t of THINGS) {
+    if (t.lv !== lv || !B || !B[t.k]) continue;
+    const x = t.x - cam * L.par; if (x > VW + 20 || x + t.w < -20) continue;
+    const wm = warm((x + t.w / 2) / VW), y = L.base + 3 - t.h;
+    ctx.drawImage(B[t.k].cool, x, y, t.w, t.h); if (wm > .01) { ctx.globalAlpha = wm; ctx.drawImage(B[t.k].warm, x, y, t.w, t.h); ctx.globalAlpha = 1; }
+  }
+  for (const fl of FLOCKS) {
+    if (fl.lv !== lv || fl.away) continue;
+    const x = fl.x - cam * fl.par; if (x < -60 || x > VW + 60) continue;
+    ctx.fillStyle = css(mix(PAL.nearC, PAL.nearW, warm(x / VW)).map(v => v * (lv === 'mid' ? 1 : .6)));
+    for (const b of fl.b) birdSit(ctx, x + b.dx * fl.s, fl.y + 1, b.s * fl.s, b.f);
+  }
+}
 // Christian's own house, at the back of the road: a watercolour like the people and the things (assets/house.webp), with
 // see-through holes for the door and windows; light is painted behind the holes. The door opens as he passes: warm light
 // inside, and his wife and two children on the step (assets/family.webp, drawn by drawFrame like everyone else).
-const HOUSE_META = { w: 594.6, h: 480, door: [347.2, 352.1, 62.8, 124.2], wins: [[409.8, 211.1, 31.7, 50.3], [244.1, 212.4, 31.1, 49.7], [231.0, 360.1, 33.5, 51.5]] };
-const HOME_L = HOME_X - HOUSE_META.door[0] - HOUSE_META.door[2] / 2, FAM_META = {"ax": 93, "ground": 254}, OBS_ST_META = {"ax": 89, "ground": 311}, PLI_ST_META = {"ax": 67, "ground": 302};
+const HOUSE_META = {"w": 941.0, "h": 403.0, "door": [418.7, 257.2, 82.3, 146.0], "wins": [[169.7, 266.1, 51.9, 62.3], [717.4, 267.5, 54.8, 63.7]]};      // a low one-storey cottage, sizes at the road's scale (its doorway is 146 high, just taller than his wife)
+const FAM_META = {"ax": 93, "ground": 254}, OBS_ST_META = {"ax": 89, "ground": 311}, PLI_ST_META = {"ax": 67, "ground": 302};
 let HOUSE = null, FAM = null, OBS_ST = null, PLI_ST = null;
 const loadImg = name => fetch('assets/' + name + '?v=' + PACK_V).then(r => r.ok ? r.blob().then(toImage) : null).catch(() => null);   // a missing picture is just left out
+// The house stands on the 'mid' level, a little way back from the road (owner: "House is big ... put wife and kids at an
+// intermediate level"), so it and the family are smaller than Christian and slide a little slower than the road.
+const doorX = cam => lineUp(HOME_X, LEVELS.mid.par) - cam * LEVELS.mid.par;      // where the middle of the doorway is on the screen
 function home(cam) {                       // drawn in screen units, before the road
   if (!HOUSE) return;
-  const c = ctx, M = HOUSE_META, x = HOME_L - cam, y = GY + 3 - M.h, o = G.door, e = o * o * (3 - 2 * o), wm = warm((HOME_X - cam) / VW);
-  const [dx, dy, dw, dh] = M.door, dark = css(mix(layerCol(.9)[0], layerCol(.9)[1], wm));
+  const c = ctx, M = HOUSE_META, L = LEVELS.mid, k = L.k, [dx, dy, dw, dh] = M.door.map(v => v * k);
+  const x = doorX(cam) - dx - dw / 2, y = L.base + 3 - M.h * k, o = G.door, e = o * o * (3 - 2 * o);
+  if (x > VW + 20 || x + M.w * k < -20) return;
+  const wm = warm(doorX(cam) / VW), dark = css(mix(layerCol(.9)[0], layerCol(.9)[1], wm)), cy = y + dy + dh * .5;
   // behind the painting: dim light in the windows, and the doorway (dark, then warm light as the door swings back to the left)
-  c.fillStyle = css(PAL.win, .6 * lerp(1, .45, wm)); for (const w of M.wins) c.fillRect(x + w[0] - 2, y + w[1] - 2, w[2] + 4, w[3] + 4);
+  c.fillStyle = css(PAL.win, .6 * lerp(1, .45, wm)); for (const w of M.wins) c.fillRect(x + w[0] * k - 2, y + w[1] * k - 2, w[2] * k + 4, w[3] * k + 4);
   c.fillStyle = dark; c.fillRect(x + dx - 2, y + dy - 2, dw + 4, dh + 6);
   if (e > 0) {
-    const g = c.createRadialGradient(x + dx + dw * .55, GY - 70, 0, x + dx + dw * .55, GY - 70, 130); g.addColorStop(0, css(PAL.light, .95 * e)); g.addColorStop(1, css(PAL.win, .8 * e));
+    const g = c.createRadialGradient(x + dx + dw * .55, cy, 0, x + dx + dw * .55, cy, 110); g.addColorStop(0, css(PAL.light, .95 * e)); g.addColorStop(1, css(PAL.win, .8 * e));
     c.fillStyle = g; c.fillRect(x + dx - 2, y + dy - 2, dw + 4, dh + 6);
     c.fillStyle = dark; c.fillRect(x + dx - 2, y + dy - 2, (dw + 4) * (1 - .86 * e), dh + 6);
   }
-  c.drawImage(HOUSE.cool, x, y, M.w, M.h); if (wm > .01) { c.globalAlpha = wm; c.drawImage(HOUSE.warm, x, y, M.w, M.h); c.globalAlpha = 1; }
-  if (e > .3) drawFrame(FAM, FAM_META, HOME_X + 2 - cam, GY - FEET_SINK - 1, 1, smooth(.3, 1, e), CHR_K * .93);   // on the step, in front of the wall
+  c.drawImage(HOUSE.cool, x, y, M.w * k, M.h * k); if (wm > .01) { c.globalAlpha = wm; c.drawImage(HOUSE.warm, x, y, M.w * k, M.h * k); c.globalAlpha = 1; }
+  if (e > .3) drawFrame(FAM, FAM_META, doorX(cam) + 2, L.base + 1 - FEET_SINK, 1, smooth(.3, 1, e), CHR_K * .93 * k);   // on the step, in front of the wall
 }
 function gate() {                          // the city gate: two towers and an arch, a little paler than the road so Christian shows against it
   const c = ctx; c.fillStyle = SETC;
@@ -1095,40 +1144,35 @@ function draw() {
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
   // the road and everything on it
   const gcol = layerCol(1), wAt = x => warm((x - cam) / VW), on = (x, w = 0, m = 80) => x < cam + VW + m && x + w > cam - m;
-  if (on(HOME_L, HOUSE_META.w)) home(cam);
+  // the lane just behind the road: a low bank a little paler than the road, with his house and a few things on it
+  ctx.fillStyle = hGrad(ctx, ...layerCol(.86)); ctx.fillRect(0, LEVELS.mid.base, VW, GY - LEVELS.mid.base + 2);
+  home(cam); drawLevel('mid', cam);
   ctx.save(); ctx.translate(-cam, 0);
   const grad = hGrad(ctx, gcol[0], gcol[1], 1, 1, cam);
   INK = grad; SETC = hGrad(ctx, ...layerCol(.66), 1, 1, cam); DOORC = hGrad(ctx, ...layerCol(.86), 1, 1, cam);
   HINT = hGrad(ctx, PAL.hazeC, PAL.hazeW, .13, .17, cam);
   if (on(5120, 420)) { doors(); gate(); }
-  for (const b of DECOR) if (on(b.x, PROP_META[b.k].w)) drawProp(PROP[b.k], PROP_META[b.k], b.x, cam);
   for (const l of LAMPS) if (on(l.x - 15, 73)) {
-    drawProp(PROP.lamp, PROP_META.lamp, l.x - 15, cam);
+    drawProp(PROP.road && PROP.road.lamp, PROP_META.lamp, l.x - 15, cam);
     if (l.lit) { ctx.fillStyle = css(PAL.win, Math.min(1, (G.t - l.lit) / 30)); ctx.fillRect(l.x + 34.5, GY - 142.6, 10.6, 10.5); }      // the lantern's little window
   }
   // birds sitting on things
   ctx.fillStyle = grad;
-  for (const fl of FLOCKS) if (!fl.away && on(fl.x)) for (const b of fl.b) birdSit(ctx, fl.x + b.dx, fl.y + 1, b.s, b.f);
+  for (const fl of FLOCKS) if (fl.lv === 'road' && !fl.away && on(fl.x)) for (const b of fl.b) birdSit(ctx, fl.x + b.dx, fl.y + 1, b.s, b.f);
   ctx.fillStyle = grad; ctx.fillRect(cam - 20, GY, VW + 40, VH - GY);
   for (const t of TUFTS) if (t.x > cam - 30 && t.x < cam + VW + 30) for (const p of t.shapes) ctx.fill(p);
-  // puddles catch the sky; rings spread where a foot or a finger lands
-  for (const m of PUDDLES) {
-    if (!on(m.x, m.w)) continue;
-    const w = wAt(m.x + m.w / 2);
-    ctx.fillStyle = css(mix(mix(PAL.skyC[1], PAL.hazeC, .5), PAL.hazeW, w), .42);
-    ctx.beginPath(); ctx.ellipse(m.x + m.w / 2, GY + 9, m.w / 2, 8, 0, 0, 6.2832); ctx.fill();
-    ctx.fillStyle = css(mix(PAL.skyC[1], PAL.hazeW, w), .3);
-    ctx.beginPath(); ctx.ellipse(m.x + m.w * .4, GY + 8, m.w * .28, 3.5, 0, 0, 6.2832); ctx.fill();
-  }
+  // rings on the wet road, where a foot, a finger or a raindrop lands. They are circles lying on the ground, so by the
+  // perspective rule a ring at height y is flattened to (y - HORIZON) / 1320 of its width, and nearer rings are bigger
   ctx.lineWidth = 1.2;
   for (const r of G.ripples) for (const k of [0, 14]) {
-    const t = r.t - k; if (t < 0) continue;
-    ctx.strokeStyle = css(mix(PAL.hazeC, PAL.hazeW, wAt(r.x)), .55 * (1 - t / 70)); ctx.beginPath(); ctx.ellipse(r.x, GY + 9, 4 + t * .55, 1.2 + t * .1, 0, 0, 6.2832); ctx.stroke();
+    const t = r.t - k; if (t < 0 || (k && r.par)) continue;
+    const x = r.par ? r.x - cam * r.par + cam : r.x, rx = (4 + t * .55) * r.r;
+    ctx.strokeStyle = css(mix(PAL.hazeC, PAL.hazeW, wAt(x)), .55 * (1 - t / 70) * r.a); ctx.beginPath(); ctx.ellipse(x, r.y, rx, Math.max(.6, rx * (r.y - HORIZON) / 1320 * 1.6), 0, 0, 6.2832); ctx.stroke();
   }
-  // light from his own open door lies across the road
-  if (G.door > .02 && on(HOME_X - 200, 400)) {
-    const e = G.door, g = ctx.createLinearGradient(0, GY, 0, VH); g.addColorStop(0, css(PAL.win, .42 * e)); g.addColorStop(1, css(PAL.win, 0));
-    ctx.globalCompositeOperation = 'screen'; ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(HOME_X - 36, GY); ctx.lineTo(HOME_X + 40, GY); ctx.lineTo(HOME_X + 190, VH); ctx.lineTo(HOME_X - 90, VH); ctx.closePath(); ctx.fill(); ctx.globalCompositeOperation = 'source-over';
+  // light from his own open door lies across the lane and the road
+  if (G.door > .02) {
+    const e = G.door, hx = doorX(cam) + cam, top = LEVELS.mid.base, g = ctx.createLinearGradient(0, top, 0, VH); g.addColorStop(0, css(PAL.win, .42 * e)); g.addColorStop(1, css(PAL.win, 0));
+    ctx.globalCompositeOperation = 'screen'; ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(hx - 24, top); ctx.lineTo(hx + 26, top); ctx.lineTo(hx + 190, VH); ctx.lineTo(hx - 100, VH); ctx.closePath(); ctx.fill(); ctx.globalCompositeOperation = 'source-over';
   }
   // light from the open gate lies across the road
   if (G.gateOpen > .02) {
@@ -1142,7 +1186,7 @@ function draw() {
   // comes in on top, then the walking one goes: the background never shows through him)
   const walker = (w, fr, meta, stIm, stMeta, face, a) => { const st = w.st || 0; if (st < 1) drawFrame(fr, meta, w.x - cam, GY, face, a * (st < .5 ? 1 : 2 * (1 - st))); if (st > 0) drawFrame(stIm, stMeta, w.x - cam, GY, 1, a * (st < .5 ? 2 * st : 1)); };
   if (G.obst && G.obst.x > cam - 100) walker(G.obst, OBS[Math.floor(G.obst.anim ?? OBS_META.rest[0]) % OBS.length], OBS_META, OBS_ST, OBS_ST_META, G.obst.mode === 'home' ? -1 : 1, 1);
-  if (G.pli) figure(G.pli.x, a => walker(G.pli, PLI[Math.floor(G.pli.anim ?? 0) % PLI.length], PLI_META, PLI_ST, PLI_ST_META, 1, a));
+  if (G.pli && G.pli.mode !== 'gone') figure(G.pli.x, a => walker(G.pli, PLI[Math.floor(G.pli.anim ?? 0) % PLI.length], PLI_META, PLI_ST, PLI_ST_META, 1, a));
   figure(P.x, a => drawChristian(P.x - cam, P.y + 1, P.face, a));
   // birds in the air
   ctx.lineCap = 'round'; ctx.strokeStyle = css(mix(gcol[0], gcol[1], warm(.5)), .9);
@@ -1152,11 +1196,13 @@ function draw() {
     ctx.beginPath(); ctx.moveTo(x - 7.5 * s, f.y - w); ctx.quadraticCurveTo(x - 3 * s, f.y - w * .25 - 1.6 * s, x, f.y); ctx.quadraticCurveTo(x + 3 * s, f.y - w * .25 - 1.6 * s, x + 7.5 * s, f.y - w); ctx.stroke();
   }
   ctx.globalAlpha = 1;
-  // grass and leaves in front
+  drawLevel('f1', cam);                                      // things between us and Christian
+  // grass in front
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   pair(FRONT.cool, FRONT.warm, cam * FRONT.par, FRONT.q, 1, VH - 70, VH);
-  // the rain side is dulled, the golden side is warmed
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  drawLevel('f2', cam);                                      // and the tops of things right in front of us
+  // the rain side is dulled, the golden side is warmed
   ctx.globalCompositeOperation = 'multiply';
   ctx.fillStyle = hGrad(ctx, mix(PAL.cloud, [255, 255, 255], .45), [255, 255, 255], .2 + LOOK.rain * .5, 0); ctx.fillRect(0, 0, VW, VH);
   if (G.gloom > .01) { ctx.fillStyle = css(mix(PAL.cloud, [20, 22, 34], .5), .5 * G.gloom); ctx.fillRect(0, 0, VW, VH); }
@@ -1169,7 +1215,7 @@ function draw() {
   ctx.globalCompositeOperation = 'screen';
   const dim = 1 - .7 * G.gloom;
   for (const l of LAMPS) if (l.lit && on(l.x, 60, 160)) { const a = Math.min(1, (G.t - l.lit) / 40) * lerp(1, .45, wAt(l.x)) * (.94 + .06 * Math.sin(G.t / 9 + l.x)); glow(l.x + LAMP_DX - cam, LAMP_Y, 200, .5 * a); glow(l.x + LAMP_DX - cam, LAMP_Y, 46, .9 * a); ctx.globalAlpha = .34 * a; ctx.drawImage(GLOW, l.x + LAMP_DX - 100 - cam, GY - 6, 200, 30); }
-  if (G.door > .02 && on(HOME_X - 200, 400)) glow(HOME_X + 4 - cam, GY - 92, 300, .32 * G.door * lerp(1, .5, wAt(HOME_X)));   // the glow of home
+  if (G.door > .02) glow(doorX(cam) + 3, LEVELS.mid.base - 62, 260, .32 * G.door * lerp(1, .5, warm(doorX(cam) / VW)));   // the glow of home
   for (const s of LIGHTS) {
     const x = s.x - cam; if (s.got || x < -40 || x > VW + 40) continue;
     const y = s.y + Math.sin(G.t / 26 + s.ph) * 4, tw = .82 + .18 * Math.sin(G.t / 11 + s.ph * 3);
@@ -1190,6 +1236,22 @@ function draw() {
     ctx.globalAlpha = Math.min(1, a); ctx.beginPath(); ctx.moveTo(d.x, d.y); ctx.lineTo(d.x - d.l * .2, d.y + d.l); ctx.stroke();
   }
   ctx.globalAlpha = 1;
+  if (GUIDES) drawGuides();
+}
+// Perspective guides (?lines in the address): the horizon, each level's ground line with a man-high mark standing on it
+// (150 * p tall: Christian's height at that distance), and floor lines running to the vanishing point.
+const GUIDES = new URLSearchParams(location.search).has('lines');
+function drawGuides() {
+  const c = ctx; c.save(); c.lineWidth = 1; c.font = '11px Georgia'; c.textBaseline = 'bottom';
+  c.strokeStyle = 'rgba(255,90,90,.9)'; c.fillStyle = 'rgba(255,120,120,.95)'; c.beginPath(); c.moveTo(0, HORIZON); c.lineTo(VW, HORIZON); c.stroke(); c.fillText('horizon (eye height)', 8, HORIZON - 2);
+  c.strokeStyle = 'rgba(255,255,255,.22)'; c.beginPath(); for (let x = -1200; x <= VW + 1200; x += 160) { c.moveTo(VW / 2, HORIZON); c.lineTo(x, VH); } c.stroke();
+  const rows = [['far houses', SCN[1].par, SCN[1].base], ['near houses', SCN[2].par, SCN[2].base], ['mid', LEVELS.mid.par, LEVELS.mid.base], ['road', 1, GY], ['f1', LEVELS.f1.par, LEVELS.f1.base], ['f2', LEVELS.f2.par, LEVELS.f2.base], ['grass', FRONT.par, VH - 10]];
+  rows.forEach(([name, p, y], i) => {
+    const want = HORIZON + (GY - HORIZON) * p, ok = Math.abs(want - y) < 6, x = 150 + i * 105;
+    c.strokeStyle = c.fillStyle = ok ? 'rgba(120,255,160,.95)' : 'rgba(255,200,80,.95)';
+    c.beginPath(); c.moveTo(0, y); c.lineTo(VW, y); c.stroke(); c.fillRect(x, y - 150 * p, 3, 150 * p); c.fillText(name + ' p=' + p.toFixed(2) + (ok ? '' : ' (rule says y=' + want.toFixed(0) + ')'), x + 6, y - 2);
+  });
+  c.restore();
 }
 // the same speed on every screen: the world ticks 60 times a second however often the screen redraws
 let lastT = 0, acc = 0;
@@ -1226,14 +1288,12 @@ addEventListener('keydown', e => {
   if (G.state === 'dialog') {
     if (G.act === 'gate' || G.act === 'walkon') keys.push = true;
     else if (G.act === 'light') { if (!e.repeat) lightTouched(); }
-    else if (!e.repeat) next();
+    else if (!e.repeat) next(e.code === 'Enter');             // Enter skips a line even while it is being spoken
     return;
   }
   keys.r = true;
 });
 addEventListener('keyup', e => { if (e.code === 'Space' || e.code === 'Enter' || e.code === 'ArrowRight' || e.code === 'KeyD') keys.r = keys.push = false; });
-const sayEl = dlg.querySelector('.say');
-sayEl.addEventListener('click', () => { voiceOn = !voiceOn; sayEl.classList.toggle('off', !voiceOn); if (voiceOn) say(dWho.textContent, dTxt.textContent); else hush(); });
 const sndEl = document.getElementById('snd');
 sndEl.onclick = () => { muted = !muted; sndEl.classList.toggle('off', muted); if (AC) MASTER.gain.setTargetAtTime(muted ? 0 : 1, AC.currentTime, .05); };
 
@@ -1262,7 +1322,9 @@ document.getElementById('again').onclick = start;
   const chr = Promise.all([loadPack('christian-walk', CHR), loadPack('christian-stand', STD), ...Object.keys(PROP_META).map(k => loadImg('prop-' + k + '.webp').then(im => { PROP[k] = im; }))]);
   buildScenery(); seed = 99; buildLevel(); bakeFinish();
   await chr;
-  for (const k in PROP) PROP[k] = PROP[k] && bakeTint(PROP[k], .5, PROP_DETAIL);
+  { const im = Object.assign({}, PROP); for (const k in PROP) delete PROP[k];
+    PROP.road = { lamp: im.lamp && bakeTint(im.lamp, .5, PROP_DETAIL) };
+    for (const lv in LEVELS) { PROP[lv] = {}; for (const k in im) if (k !== 'lamp' && im[k]) PROP[lv][k] = bakeTint(im[k], LEVELS[lv].depth, LEVELS[lv].detail); } }
   reset();
   document.getElementById('sub').textContent = 'The City of Destruction';
   document.getElementById('open').style.visibility = 'visible';
