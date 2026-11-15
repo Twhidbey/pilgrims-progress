@@ -68,7 +68,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">story lab · build 65 · Nov 15 2026</div>
+  <div id="build">story lab · build 66 · Nov 15 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -1509,17 +1509,28 @@ function draw() {
   // 'color-dodge' brightens what is there, so the lane and the road each keep their own colour.
   if (G.door > .02) {
     const R = 330, g = ctx.createRadialGradient(0, 0, 0, 0, 0, R), lamp = mix(PAL.win, [0, 0, 0], .22);
-    g.addColorStop(0, css(lamp, .95 * G.door)); g.addColorStop(.3, css(lamp, .85 * G.door)); g.addColorStop(.65, css(lamp, .5 * G.door)); g.addColorStop(1, css(lamp, 0));
+    g.addColorStop(0, css(lamp, .6 * G.door)); g.addColorStop(.3, css(lamp, .5 * G.door)); g.addColorStop(.65, css(lamp, .26 * G.door)); g.addColorStop(1, css(lamp, 0));
     ctx.save(); ctx.translate(doorX(cam) + cam + 3, LEVELS.home.base + 2); ctx.scale(1, .14); ctx.globalCompositeOperation = 'color-dodge';
     ctx.fillStyle = g; ctx.beginPath(); ctx.rect(-R, 0, R * 2, R); ctx.fill(); ctx.restore();      // the lower half of the pool: only on the ground, not up the wall
+    // The door's own shape of light (owner, build 66: "should light be so diffuse", and the people's shadows "should
+    // block more light"): light through a doorway has a shape, so inside the weak wide glow lies a short bright band as
+    // wide as the door, spreading only a little and fading out within a few steps. It is still flat: it does not run
+    // down the picture toward us. The shadows of whoever stands in the door are laid across it.
+    { const hw = HOUSE_META.door[2] * LEVELS.home.k * HOUSE_K / 2, cx = doorX(cam) + cam + 3, y0 = LEVELS.home.base + 2;
+      ctx.save(); ctx.globalCompositeOperation = 'color-dodge';
+      for (const [k, a] of [[1.15, .3], [1, .42], [.8, .42]]) {      // three passes, wide to narrow: a soft edge
+        const d = 40 * (.7 + .3 * k), g2 = ctx.createLinearGradient(0, y0, 0, y0 + d); g2.addColorStop(0, css(lamp, a * G.door)); g2.addColorStop(.55, css(lamp, a * .7 * G.door)); g2.addColorStop(1, css(lamp, 0));
+        ctx.fillStyle = g2; ctx.beginPath(); ctx.moveTo(cx - hw * k - 1, y0); ctx.lineTo(cx + hw * k + 1, y0); ctx.lineTo(cx + hw * k * 2.3, y0 + d); ctx.lineTo(cx - hw * k * 2.3, y0 + d); ctx.closePath(); ctx.fill();
+      }
+      ctx.restore(); }
     // The shadows of those standing in the door (owner, build 64: "can you put shadows of people (wife and kids) when
     // they are in door"): the light is behind them, so their shapes fall forward out of the doorway onto the lit ground,
     // flat like the pool (a little way down the picture, never streaming toward us).
     { const alone = !G.fam && WIFE && WIFE_META, sh = alone ? WIFE_SH : FAM_SH, im = alone ? WIFE : FAM, meta = alone ? WIFE_META : FAM_META, e = G.door * G.door * (3 - 2 * G.door);
       if (sh && im && e > .3) {
         const L = LEVELS.home, K = CHR_K * .93 * HOUSE_K * L.k, off = alone ? 8 : 2;
-        ctx.save(); ctx.translate(doorX(cam) + cam + off, L.base + 2); ctx.transform(G.fam ? 1 : -1, 0, -off / 30, -.24, 0, 0);
-        ctx.globalAlpha = .65 * smooth(.3, 1, e); ctx.drawImage(sh, -meta.ax * K, -meta.ground * K, im.width * K, im.height * K); ctx.restore();
+        ctx.save(); ctx.translate(doorX(cam) + cam + off, L.base + 2); ctx.transform(G.fam ? 1 : -1, 0, -off / 30, -.44, 0, 0);
+        ctx.globalAlpha = .9 * smooth(.3, 1, e); ctx.drawImage(sh, -meta.ax * K, -meta.ground * K, im.width * K, im.height * K); ctx.restore();
       } }
     // His shadow in that light: his own shape laid down on the ground, pointing away from the door. The ground is seen
     // almost edge-on, so the shadow is long sideways and only a little way down the picture (flat, like the pool).
@@ -1645,7 +1656,8 @@ const lift = e => { if (e.type === 'blur') { downs.clear(); pushing = false; ret
 addEventListener('pointerup', lift); addEventListener('pointercancel', lift); addEventListener('blur', lift);
 addEventListener('contextmenu', e => e.preventDefault());
 addEventListener('keydown', e => {
-  const go = e.code === 'Space' || e.code === 'Enter' || e.code === 'ArrowRight' || e.code === 'KeyD';
+  const out = (e.code === 'ArrowLeft' || e.code === 'KeyA') && G.state === 'play' && !G.evanDone;      // at the start he walks out to the left, so the left arrow walks him too
+  const go = e.code === 'Space' || e.code === 'Enter' || e.code === 'ArrowRight' || e.code === 'KeyD' || out;
   if (G.state === 'choice') { if (e.code === 'ArrowLeft') pick(true); if (e.code === 'ArrowRight') pick(false); return; }
   if (!go) return; e.preventDefault();
   if (G.state === 'dialog') {
@@ -1656,7 +1668,7 @@ addEventListener('keydown', e => {
   }
   keys.r = true;
 });
-addEventListener('keyup', e => { if (e.code === 'Space' || e.code === 'Enter' || e.code === 'ArrowRight' || e.code === 'KeyD') keys.r = keys.push = false; });
+addEventListener('keyup', e => { if (e.code === 'Space' || e.code === 'Enter' || e.code === 'ArrowRight' || e.code === 'KeyD' || e.code === 'ArrowLeft' || e.code === 'KeyA') keys.r = keys.push = false; });
 const sndEl = document.getElementById('snd');
 sndEl.onclick = () => { muted = !muted; sndEl.classList.toggle('off', muted); if (AC) MASTER.gain.setTargetAtTime(muted ? 0 : 1, AC.currentTime, .05); };
 
