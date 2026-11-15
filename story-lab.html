@@ -68,7 +68,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">story lab · build 49 · Nov 15 2026</div>
+  <div id="build">story lab · build 50 · Nov 15 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -85,7 +85,7 @@ const EVA_META={"ax": 82, "ground": 311, "frames": 80, "src": [0, 4, 8, 12, 16, 
 const STD_META={"ax": 101, "ground": 302, "frames": 79, "src": [0, 2, 4, 6, 8, 10, 12, 14, 16, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35, 37, 39, 41, 43, 45, 47, 49, 51, 53, 55, 57, 59, 61, 63, 65, 67, 69, 71, 73, 75, 77, 79, 81, 83, 85, 87, 89, 91, 93, 95, 96, 100, 104, 108, 112, 116, 120, 124, 128, 132, 136, 140, 144, 148, 152, 156, 160, 164, 168, 172, 176, 180, 184, 188, 192, 196, 200, 204, 208, 212]};
 
 // ---------- setup ----------
-const VW = 960, VH = 540, GY = 440, LEVEL_W = 6400, PANG = LEVEL_W - VW, GATE = 5940;
+const VW = 960, VH = 540, GY = 440, LEVEL_W = 5850, PANG = LEVEL_W - VW, GATE = 5390;
 const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
 const stage = document.getElementById('stage');
 let DPR = 1;
@@ -224,7 +224,7 @@ function fence(x0, gy, n) {
 const WHEAT = [], WHEAT_GAP = 3;
 function buildWheat() {
   const Rw = rng(4177); WHEAT.length = 0;
-  for (const [p, h, d, front, wind] of [[.9, 62, .72, 0, 0], [.96, 78, .84, 0, 1], [1.075, 66, 1, 1, 0]]) {
+  for (const [p, h, d, front, wind] of [[.9, 62, .72, 0, 0], [.96, 78, .84, 0, 1], [1.075, 58, 1, 1, 0]]) {
     const x1 = 325 + (FIELD_END - 325) * p, n = Math.ceil((x1 + 30) / WHEAT_GAP), hs = new Float32Array(n), ph = new Float32Array(n), o = Rw() * 99;
     for (let i = 0; i < n; i++) {
       const x = -30 + i * WHEAT_GAP;                         // a crop stands even-topped: slow swells, no ragged stalks
@@ -429,18 +429,21 @@ function bakeFinish() {
 // on crying "Life! Life! Eternal life!" and does not look behind him; the neighbours watch; Obstinate and Pliable come
 // after him. Ours, not the book's: he stops for a moment at his door (the owner's picture of him and his family framed in
 // the light, build 45) and answers them; and the city gate at the end. No mud here: the mud is the Slough, next level.
-const FIELD_END = 2200;      // where the wheat field ends and the street begins (the wheat sinks away before it)
-const EVAN_X = 1600, HOME_X = 2700, RUN_END = 4000, NEIGH_X = 4950, GATE_STOP = 5836, DOOR0 = 5906, DOOR1 = 6020, DOORM = 5963;
-const START_X = +(new URLSearchParams(location.search).get('x')) || 140;   // ?x=3600 starts further along (for testing)
+// OUT, THEN BACK (owner, build 50). He starts in the city at his own house (HOME_X), walks LEFT out into the field, meets
+// Evangelist there (EVAN_X), then turns and runs RIGHT, back past his own door and on through the city to the gate. One
+// house in one place, and it is the book's geography: he walks out to the fields, then flees past his own door.
+const FIELD_END = 1650;      // where the wheat field ends and the street begins (the wheat sinks away before it)
+const EVAN_X = 650, HOME_X = 2150, RUN_END = 3450, NEIGH_X = 4400, GATE_STOP = 5286, DOOR0 = 5356, DOOR1 = 5470, DOORM = 5413;
+const TEST_X = +(new URLSearchParams(location.search).get('x')) || 0, START_X = TEST_X || HOME_X - 70;   // he starts beside his own door; ?x=3600 starts further along, after Evangelist (for testing)
 // The lights on the road are a tune: "Amazing Grace" (New Britain, 1829), one phrase per stretch of road.
 // Each light is one note. They are spaced by the length of each note, so walking at his steady pace plays the tune in time.
 // A higher note floats higher. [beat, note]; BEAT = road walked per beat.
 const BEAT = 58, NOTE = { D: 62, E: 64, G: 67, A: 69, B: 71, d: 74 };
 const PHRASES = [
-  { x: 330, at: 0, n: [[0, 'D'], [1, 'G'], [3, 'B'], [3.5, 'G'], [4, 'B'], [6, 'A'], [7, 'G'], [9, 'E'], [10, 'D']] },
-  { x: 1010, at: 12, n: [[0, 'D'], [1, 'G'], [3, 'B'], [3.5, 'G'], [4, 'B'], [6, 'A'], [7, 'd']] },
-  { x: 4250, at: 24, n: [[0, 'B'], [1, 'd'], [2.5, 'B'], [3, 'd'], [3.5, 'B'], [4, 'G'], [6, 'D'], [7, 'E'], [8.5, 'G'], [9, 'G'], [9.5, 'E'], [10, 'D']] },
-  { x: 5300, at: 36, n: [[0, 'D'], [1, 'G'], [3, 'B'], [3.5, 'G'], [4, 'B'], [6, 'A'], [7, 'G']] },
+  { x: 1880, back: true, at: 0, n: [[0, 'D'], [1, 'G'], [3, 'B'], [3.5, 'G'], [4, 'B'], [6, 'A'], [7, 'G'], [9, 'E'], [10, 'D']] },
+  { x: 1230, back: true, at: 12, n: [[0, 'D'], [1, 'G'], [3, 'B'], [3.5, 'G'], [4, 'B'], [6, 'A'], [7, 'd']] },
+  { x: 3700, at: 24, n: [[0, 'B'], [1, 'd'], [2.5, 'B'], [3, 'd'], [3.5, 'B'], [4, 'G'], [6, 'D'], [7, 'E'], [8.5, 'G'], [9, 'G'], [9.5, 'E'], [10, 'D']] },
+  { x: 4750, at: 36, n: [[0, 'D'], [1, 'G'], [3, 'B'], [3.5, 'G'], [4, 'B'], [6, 'A'], [7, 'G']] },
 ];
 // the whole tune, sung through once when the gate opens, with a low note under each bar
 const TUNE = [], BASS = [43, 43, 48, 43, 43, 43, 50, 50, 43, 43, 48, 43, 43, 50, 43, 43];
@@ -450,8 +453,8 @@ const LIGHTS = [], LAMPS = [], THINGS = [], FLOCKS = [], CAPS = [];
 function buildLevel() {
   LIGHTS.length = LAMPS.length = FLOCKS.length = CAPS.length = 0;
   const light = (x, midi) => LIGHTS.push({ x, y: GY - 60 - clamp(midi - 62, -6, 12) * 5.2, midi, got: false, ph: rnd() * 6 });
-  for (const ph of PHRASES) for (const [b, k] of ph.n) light(ph.x + b * BEAT, NOTE[k]);
-  for (const x of [3250, 5500]) LAMPS.push({ x, lit: 0 });                       // few and far apart: they count as special things too (none in the field)
+  for (const ph of PHRASES) for (const [b, k] of ph.n) light(ph.x + (ph.back ? -b : b) * BEAT, NOTE[k]);      // 'back': a phrase met walking left, out into the field
+  for (const x of [2700, 4950]) LAMPS.push({ x, lit: 0 });                       // few and far apart: they count as special things too (none in the field)
   // Things, each on a depth level (LEVELS). Owner's rule (build 40): no more than one special thing in the picture at a
   // time, because their likeness distracts. So there are few of them, about one every 600 of road counting the lamps and his
   // house, never two of a kind near each other, and they take turns between the levels. (Two can share the picture for a
@@ -462,14 +465,14 @@ function buildLevel() {
   // The market stall and the barrel were removed in build 44 (owner: "need this to be pretty stripped down and elegant").
   THINGS.length = 0;
   const flock = (x, y, n, par = 1, s = 1, lv = 'road') => { const b = []; for (let i = 0; i < n; i++) b.push({ dx: (i - (n - 1) / 2) * 13 + (rnd() - .5) * 5, s: .85 + rnd() * .3, f: rnd() < .5 ? 1 : -1 }); FLOCKS.push({ x, y, b, par, s, lv, away: false }); };
-  for (const [lv, k, a, birds] of [['mid', 'wall', 3700, 0], ['mid', 'cart', 4450, 3], ['f1', 'crates', 5400, 0]]) {
+  for (const [lv, k, a, birds] of [['mid', 'wall', 3150, 0], ['mid', 'cart', 3900, 3], ['f1', 'crates', 4850, 0]]) {
     const L = LEVELS[lv], m = PROP_META[k], t = { lv, k, w: m.w * L.k, h: m.h * L.k }; t.x = lineUp(a, L.par) - t.w / 2; THINGS.push(t);
     if (birds) flock(t.x + t.w * m.perch[0], L.base + 3 - m.perch[1] * L.k, birds, L.par, L.k, lv);      // birds sit on its top
   }
-  flock(5785, GY - 162, 4);                                    // and on the city wall by the gate
+  flock(GATE - 155, GY - 162, 4);                                    // and on the city wall by the gate
   // words said while walking (nobody stops)
-  CAPS.push({ x: 4300, watch: true, lines: [[N, 'People watched from their windows. Some laughed. Some called him back.'], [C, 'I will not stop. I can still see the light.']] });
-  CAPS.push({ x: 5280, pli: true, lines: [[PL, 'What is it like, the place where we are going?'], [C, 'No one cries there. Everyone shines like the sun.'], [PL, 'Then let us keep walking!']] });
+  CAPS.push({ x: 3750, watch: true, lines: [[N, 'People watched from their windows. Some laughed. Some called him back.'], [C, 'I will not stop. I can still see the light.']] });
+  CAPS.push({ x: 4730, pli: true, lines: [[PL, 'What is it like, the place where we are going?'], [C, 'No one cries there. Everyone shines like the sun.'], [PL, 'Then let us keep walking!']] });
 }
 
 // ---------- sound: everything is made in the browser (no sound files) ----------
@@ -570,7 +573,7 @@ function ambience() {
 document.addEventListener('visibilitychange', () => { if (AC) document.hidden ? AC.suspend() : AC.resume(); });
 
 // ---------- state ----------
-const P = { x: START_X, y: GY, vx: 0, face: 1, anim: 1, stand: { t: 120 }, turn: 0 };
+const P = { x: START_X, y: GY, vx: 0, face: TEST_X ? 1 : -1, anim: 1, stand: { t: 120 }, turn: 0 };
 const G = { state: 'title', cam: 0, t: 0, got: 0, extra: 0, motes: [], flyers: [], ripples: [], glints: [], taps: [], litw: [], capQ: [], cap: 0, hint: null,
   pli: null, obst: null, evan: { x: EVAN_X, pt: 0, idle: 0 }, flare: 0, gloom: 0, gloomTo: 0, gateOpen: 0, act: null, actT: 0, ring: null, auto: null, finale: null, guard: 0, idle: 0, wins: 0 };
 const keys = { r: false, push: false };
@@ -585,13 +588,13 @@ const lightPos = () => ({ x: 880 - G.cam * .02, y: 146 });
 function reset() {
   seed = 99; buildLevel();
   for (const Lr of SCN) for (const w of Lr.wins) w[5] = false;
-  Object.assign(P, { x: START_X, y: GY, vx: 0, face: 1, anim: 1, stand: { t: QUIET[0] }, turn: 0, run: false, ranim: 0, blend: null });
-  Object.assign(G, { cam: Math.max(0, Math.min(LEVEL_W - VW, START_X - VW * .38 + 40)), t: 0, got: 0, extra: 0, motes: [], flyers: [], ripples: [], glints: [], taps: [], litw: [], capQ: [], cap: 0, hint: null,
+  Object.assign(P, { x: START_X, y: GY, vx: 0, face: TEST_X ? 1 : -1, anim: 1, stand: { t: QUIET[0] }, turn: 0, run: false, ranim: 0, blend: null });
+  Object.assign(G, { cam: Math.max(0, Math.min(LEVEL_W - VW, TEST_X ? START_X - VW * .38 + 40 : START_X - VW * .62 - 40)), t: 0, got: 0, extra: 0, motes: [], flyers: [], ripples: [], glints: [], taps: [], litw: [], capQ: [], cap: 0, hint: null,
     pli: null, obst: null, flare: 0, gloom: 0, gloomTo: 0, gateOpen: 0, act: null, actT: 0, ring: null, auto: null, finale: null, guard: 0, idle: 0, wins: 0,
-    evanDone: START_X > EVAN_X, evanGone: START_X > EVAN_X ? 1 : 0, neigh: START_X > NEIGH_X + 300, gateSeen: false, walked: false, touched: false, leaving: false, fam: START_X > HOME_X ? 2 : 0, door: START_X > HOME_X ? 1 : 0, runZone: false });
-  G.evan.pt = START_X > EVAN_X ? 239 : 0; downs.clear(); pushing = false; keys.r = keys.push = false;
-  for (const l of LIGHTS) if (l.x < START_X) l.got = true;
-  for (const c of CAPS) if (c.x < START_X) c.done = true;
+    evanDone: !!TEST_X, evanGone: TEST_X ? 1 : 0, neigh: TEST_X > NEIGH_X + 300, gateSeen: false, walked: false, touched: false, leaving: false, fam: TEST_X > HOME_X ? 2 : 0, door: TEST_X > HOME_X ? 1 : 0, runZone: false });
+  G.evan.pt = TEST_X ? 239 : 0; downs.clear(); pushing = false; keys.r = keys.push = false;
+  if (TEST_X) for (const l of LIGHTS) if (l.x < Math.max(TEST_X, 2000)) l.got = true;
+  for (const c of CAPS) if (c.x < TEST_X) c.done = true;
   if (G.neigh) G.pli = { x: START_X - 70, mode: 'follow' };
 }
 
@@ -821,8 +824,8 @@ function walkTick(dir, max) {
   }
   if (!P.vx) return;
   // the way is shut until the gate opens; and wait for Evangelist's pictures if the phone is still fetching them
-  let lim = G.gateOpen >= 1 ? LEVEL_W - 30 : DOOR0 - 44; if (!EVA.ready && !G.evanDone) lim = EVAN_X - 125;
-  const nx = clamp(P.x + P.vx, 30, lim), moved = Math.abs(nx - P.x), f0 = chrFrame();
+  const lim = G.gateOpen >= 1 ? LEVEL_W - 30 : DOOR0 - 44, lo = !EVA.ready && !G.evanDone ? EVAN_X + 125 : 30;
+  const nx = clamp(P.x + P.vx, lo, lim), moved = Math.abs(nx - P.x), f0 = chrFrame();
   P.x = nx; let down = false;
   if (P.run) { const r0 = Math.floor(P.ranim) % RUN_META.frames; P.ranim += moved / RUN_STEP; const r1 = Math.floor(P.ranim) % RUN_META.frames; down = r1 !== r0 && (r1 === 7 || r1 === 22); }
   else { P.anim += Math.max(moved, .25) / CHR_STEP; const f1 = chrFrame(); down = f1 !== f0 && CHR_META.rest.includes(f1); }
@@ -888,7 +891,7 @@ function touchAt(sx, sy) {
   return false;
 }
 // the story's own acts
-function lightTouched() { G.flare = 1.2; sfx.chord(); next(true); }
+function lightTouched() { G.flare = 1.2; sfx.chord(); P.turn = 1; next(true); }      // he turns round to look at the light
 function gateOpened() {
   G.gateOpen = 1; G.flare = 1.3; sfx.open(); G.finale = { t: -50, i: 0, bar: 0 };
   next(true);       // the words are finished: on through the gate
@@ -901,13 +904,13 @@ function update() {
   G.flare *= .975; G.gloom += (G.gloomTo - G.gloom) * .02; if (G.fam) G.door = Math.min(1, G.door + .05);      // the door is flung open
   // Evangelist: only the calm start of his video while he waits (a slow breath). On "Do you see that shining light?"
   // he turns all the way round toward the light and raises his arm (video 46..239 at its own pace), and stays pointing.
-  G.evan.idle = 8 - 8 * Math.cos(G.t / 70);
+  G.evan.idle = 178;      // build 50: Christian now comes to him from the right, so he waits facing right (the end of his turn, held still), then raises his arm and points on past Christian to the light (180..239)
   if (!G.evan.pt && G.evanDone && (G.evanGone || (lines === EVAN && li >= 2))) G.evan.pt = Math.max(.01, G.evan.idle);
   if (G.evan.pt) G.evan.pt = Math.min(239, G.evan.pt + .4);
   // walking
   let dir = 0;
   if (G.state === 'auto' && G.auto) dir = G.auto.dir;
-  else if (G.state === 'play' && (keys.r || held())) dir = 1;
+  else if (G.state === 'play' && (keys.r || held())) dir = G.evanDone ? 1 : -1;      // out to the field first (left), then on toward the light
   else if (G.act === 'walkon' && G.state === 'dialog' && P.turn !== 1 && (keys.push || held())) dir = 1;   // walking on while they call
   walkTick(dir, MAXV);
   if (G.state === 'auto' && G.auto && (G.auto.dir > 0 ? P.x >= G.auto.to : P.x <= G.auto.to)) { const a = G.auto; G.auto = null; if (P.stand || !a.wait) { G.state = 'play'; a.then && a.then(); } else G.auto = { dir: 0, to: a.dir > 0 ? -1e9 : 1e9, then: a.then }; }
@@ -916,7 +919,7 @@ function update() {
   P.bk = Math.max(0, Math.min(1, (P.bk || 0) + (P.wantBack && P.stand ? .022 : -.07)));
   people(); gather(); motes(); effects(); capTick(); acts(); ambience(); opening();
   if (G.state === 'play') story();
-  const target = Math.max(0, Math.min(LEVEL_W - VW, P.x - VW * .38 + P.face * 40));
+  const target = Math.max(0, Math.min(LEVEL_W - VW, P.x - VW * (G.evanDone ? .38 : .62) + P.face * 40));      // room in front of him, whichever way he is going
   G.cam += (target - G.cam) * .05;
 }
 // the story's triggers along the road
@@ -924,13 +927,13 @@ function story() {
   const walking = !P.stand;
   if (walking) { G.walked = true; G.idle = 0; clearHint('walk'); } else G.idle++;
   if ((!G.walked && G.idle === 30) || G.idle === 720) hint('walk', isTouch ? 'Hold your finger on the picture to walk.' : 'Hold the space bar, or hold the mouse on the picture, to walk.');
-  if (!G.touched && !G.hintT && P.x > 190 && P.x < 420) { G.hintT = true; const hx = P.x + 190; hint('touch', 'Touch the road. The world answers when you touch it.'); G.ring = () => [hx - G.cam, GY + 60]; }
+  if (!G.touched && !G.hintT && !G.evanDone && P.x < START_X - 50) { G.hintT = true; const hx = P.x - 190; hint('touch', 'Touch the road. The world answers when you touch it.'); G.ring = () => [hx - G.cam, GY + 60]; }
   if (G.hint !== 'touch' && G.ring && G.state === 'play') G.ring = null;
-  if (G.hint === 'touch' && P.x > 560) clearHint('touch');
-  if (!G.fam && P.x > HOME_X - 330) { G.fam = 1; sweep(170, 120, .5, .03); hiss(140, .8, .09, .16, 'lowpass'); sfx.lamp(); caption(DOOR_WORDS); }      // the door of his house is flung open as he comes running
+  if (G.hint === 'touch' && P.x < START_X - 470) clearHint('touch');
+  if (!G.fam && G.evanDone && P.x > HOME_X - 330) { G.fam = 1; sweep(170, 120, .5, .03); hiss(140, .8, .09, .16, 'lowpass'); sfx.lamp(); caption(DOOR_WORDS); }      // the door of his house is flung open as he comes running
   if (G.fam === 1 && P.stand && P.x > HOME_X - 170) { G.fam = 2; G.capQ.length = 0; talk(FAMILY, () => caption(LIFE)); return; }      // the child let go by the house: he stops (the framed picture)
   if (G.fam === 1 && P.x > HOME_X + 150) { G.fam = 2; caption([...FAMILY_RUN, ...LIFE]); }                                         // the child held on: he runs straight past, as in the book
-  if (!G.evanDone && P.x > EVAN_X - 120) { G.evanDone = true; talk(EVAN, () => { G.evanGone = 1; G.runZone = true; G.idle = 0; }); return; }   // "So I saw in my dream that the man began to run"
+  if (!G.evanDone && P.x < EVAN_X + 120) { G.evanDone = true; talk(EVAN, () => { G.evanGone = 1; G.runZone = true; G.idle = 0; }); return; }   // "So I saw in my dream that the man began to run"
   if (G.runZone && !P.run && G.idle === 110) hint('walk', 'Hold to run.');
   for (const c of CAPS) if (!c.done && P.x > c.x && (!c.pli || (G.pli && G.pli.mode === 'follow'))) { c.done = true; caption(c.lines); if (c.watch) G.watch = 520; }
   if (G.runZone && P.x > RUN_END) { G.runZone = false; vox(TIRED[0][0], TIRED[0][1]).raw.then(r => { if (r) caption(TIRED); }); }      // he tires, and walks again
@@ -1061,7 +1064,7 @@ let INK = '#000', HINT = 'rgba(255,255,255,.1)', SETC = '#333', DOORC = '#222';
 // Three levels of detail: people = the full painting; his house = HOUSE_DETAIL of it; things = PROP_DETAIL of it.
 // Each is baked once in a rain tint and a golden tint (bakeTint), like the scenery layers, and the two are mixed by the
 // weather where the thing stands: no scratch canvas is touched while playing. depth .5 keeps them paler than the people (.8).
-const PROP_DETAIL = .2, HOUSE_DETAIL = .65, FLAT_GREY = .56;      // 0 = a flat shape, 1 = the whole painting; FLAT_GREY = the paintings' average tone
+const PROP_DETAIL = .2, HOUSE_DETAIL = .4, FLAT_GREY = .56;      // 0 = a flat shape, 1 = the whole painting; FLAT_GREY = the paintings' average tone
 // perch = where birds sit on it (how far across, how high)
 const PROP_META = { crates: { w: 74, h: 74, perch: [.5, 74] }, cart: { w: 186, h: 71, perch: [.25, 68] }, wall: { w: 259, h: 70, perch: [.2, 64] }, lamp: { w: 73, h: 205 } }, PROP = {};
 // DEPTH (owner, build 40: "need foreground items between viewer and Christian to build depth, at least two levels ... one more
@@ -1125,7 +1128,8 @@ function drawLevel(lv, cam) {
 // inside, and his wife and two children on the step (assets/family.webp, drawn by drawFrame like everyone else).
 const HOUSE_META = {"w": 438.0, "h": 336.8, "door": [183.6, 189.6, 70.4, 146.0], "wins": [[88.8, 200.4, 37.6, 42.8], [314.8, 199.6, 37.2, 42.0]]};      // a small one-room cottage (build 45; the long one of build 40 was too big), sizes at the road's scale (its doorway is 146 high, just taller than his wife)
 const FAM_META = {"ax": 93, "ground": 254}, OBS_ST_META = {"ax": 89, "ground": 311}, PLI_ST_META = {"ax": 67, "ground": 302};
-const HOUSE_K = 1;      // the cottage's size against its picture's sizes
+const HOUSE_DEPTH = .5;      // the tone of his house and its row: paler than the people, so Christian shows in front of them
+const HOUSE_K = .87;      // the cottage's size against its picture's sizes (build 50: it and the family a little smaller)
 const BACK_META = {"ax": 72, "ground": 298};      // Christian seen from behind (assets/christian-back.webp), for the moment his wife calls
 let BACK = null, RIM = null;
 let HOUSE = null, FAM = null, OBS_ST = null, PLI_ST = null;
@@ -1133,6 +1137,24 @@ const loadImg = name => fetch('assets/' + name + '?v=' + PACK_V).then(r => r.ok 
 // The house stands on the 'mid' level, a little way back from the road (owner: "House is big ... put wife and kids at an
 // intermediate level"), so it and the family are smaller than Christian and slide a little slower than the road.
 const doorX = cam => lineUp(HOME_X, LEVELS.mid.par) - cam * LEVELS.mid.par;      // where the middle of the doorway is on the screen
+// His house stands in a row (owner, build 50: "house really sticks out ... put row of houses there and make it blend in
+// more with background"): plain code-drawn houses either side of it on the same level, in the cottage's own flat tone,
+// so it is one house among its neighbours and only its door and its light mark it out.
+const ROW = { shapes: [], wins: [] };
+function buildRow() {
+  R = rng(611); L = ROW; ROW.shapes.length = ROW.wins.length = 0;
+  const p = LEVELS.mid.par, D = lineUp(HOME_X, p), half = HOUSE_META.w * HOUSE_K * p / 2, gy = LEVELS.mid.base + 3;
+  let x = D - half - 6; for (let i = 0; i < 2; i++) { const w = rr(130, 180); x -= w; house(x, gy, w, rr(85, 120), 2.3); x -= rr(6, 22); }
+  x = D + half + 6; for (let i = 0; i < 4; i++) { const w = rr(130, 180); house(x, gy, w, rr(85, 120), 2.3); x += w + rr(6, 22); }
+}
+function drawRow(cam) {
+  const p = LEVELS.mid.par, off = cam * p, d = lineUp(HOME_X, p) - off; if (d < -1100 || d > VW + 700) return;
+  const tone = (a, b) => mix(a, b, HOUSE_DEPTH).map(v => v * FLAT_GREY), c = ctx;
+  c.save(); c.beginPath(); c.rect(0, 0, VW, LEVELS.mid.base + 3); c.clip(); c.translate(-off, 0);
+  c.fillStyle = hGrad(c, tone(PAL.hazeC, PAL.nearC), tone(PAL.hazeW, PAL.nearW), 1, 1, off); for (const sh of ROW.shapes) c.fill(sh);
+  c.fillStyle = css(PAL.win, .42); for (const w of ROW.wins) if (w[4] < .45) c.fillRect(w[0], w[1], w[2], w[3]);
+  c.restore();
+}
 function home(cam) {                       // drawn in screen units, before the road
   if (!HOUSE) return;
   const c = ctx, M = HOUSE_META, L = LEVELS.mid, k = L.k * HOUSE_K, [dx, dy, dw, dh] = M.door.map(v => v * k);
@@ -1148,13 +1170,13 @@ function home(cam) {                       // drawn in screen units, before the 
     c.fillStyle = dark; c.fillRect(x + dx - 2, y + dy - 2, (dw + 4) * (1 - .86 * e), dh + 4);
   }
   c.drawImage(HOUSE.cool, x, y, M.w * k, M.h * k); if (wm > .01) { c.globalAlpha = wm; c.drawImage(HOUSE.warm, x, y, M.w * k, M.h * k); c.globalAlpha = 1; }
-  if (e > .3) drawFrame(FAM, FAM_META, doorX(cam) + 2, L.base + 1 - FEET_SINK, 1, smooth(.3, 1, e), CHR_K * .93 * L.k);   // on the step, in front of the wall
+  if (e > .3) drawFrame(FAM, FAM_META, doorX(cam) + 2, L.base + 1 - FEET_SINK, 1, smooth(.3, 1, e), CHR_K * .93 * HOUSE_K * L.k);   // on the step, in front of the wall
 }
 function gate() {                          // the city gate: two towers and an arch, a little paler than the road so Christian shows against it
   const c = ctx; c.fillStyle = SETC;
-  for (const gx of [5850, 6020]) { c.fillRect(gx, GY - 300, 56, 302); for (let k = 0; k < 3; k++) c.fillRect(gx - 4 + k * 24, GY - 314, 16, 16); }
-  c.beginPath(); c.moveTo(5906, GY - 300); c.lineTo(5906, GY - 236); c.quadraticCurveTo(5963, GY - 292, 6020, GY - 236); c.lineTo(6020, GY - 300);
-  c.lineTo(6000, GY - 300); c.lineTo(5963, GY - 348); c.lineTo(5926, GY - 300); c.closePath(); c.fill();
+  for (const gx of [GATE - 90, GATE + 80]) { c.fillRect(gx, GY - 300, 56, 302); for (let k = 0; k < 3; k++) c.fillRect(gx - 4 + k * 24, GY - 314, 16, 16); }
+  c.beginPath(); c.moveTo(GATE - 34, GY - 300); c.lineTo(GATE - 34, GY - 236); c.quadraticCurveTo(GATE + 23, GY - 292, GATE + 80, GY - 236); c.lineTo(GATE + 80, GY - 300);
+  c.lineTo(GATE + 60, GY - 300); c.lineTo(GATE + 23, GY - 348); c.lineTo(GATE - 14, GY - 300); c.closePath(); c.fill();
   // The gate stands in the city wall, and the wall is one unbroken line (owner, build 48: the gate "doesn't block off left
   // from right, it should be part of a continuous wall"): from a corner tower far to the left, through the gate, and on
   // off the right of the picture. Nobody could walk round it; the only way on is through.
@@ -1200,7 +1222,7 @@ function draw() {
   // the weather: rain through the city, clearing toward the gate; the gold breaks through when the gate is pushed open.
   // Turning back for home pulls the rain over the scene again.
   // It ends with the light won only in the right-hand part of the picture (.12, was -.32 = gold from edge to edge).
-  clearAt = lerp(1.02, .12, .55 * smooth(.3, 1, cam / PANG) + .45 * smooth(0, 1, G.gateOpen)) + G.gloom * .5;
+  clearAt = lerp(1.02, .12, .55 * smooth(.45, 1, cam / PANG) + .45 * smooth(0, 1, G.gateOpen)) + G.gloom * .5;
   weatherSegs();
   ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
   // sky
@@ -1235,7 +1257,7 @@ function draw() {
   const gcol = layerCol(1), wAt = x => warm((x - cam) / VW), on = (x, w = 0, m = 80) => x < cam + VW + m && x + w > cam - m;
   // the lane just behind the road: a low bank a little paler than the road, with his house and a few things on it
   ctx.fillStyle = hGrad(ctx, ...layerCol(.93)); ctx.fillRect(0, LEVELS.mid.base, VW, GY - LEVELS.mid.base + 2);
-  home(cam); drawLevel('mid', cam); drawWheat(false);          // the wheat behind him
+  drawRow(cam); home(cam); drawLevel('mid', cam); drawWheat(false);          // the wheat behind him
   ctx.save(); ctx.translate(-cam, 0);
   const grad = hGrad(ctx, gcol[0], gcol[1], 1, 1, cam);
   INK = grad; SETC = hGrad(ctx, ...layerCol(.66), 1, 1, cam); DOORC = hGrad(ctx, ...layerCol(.86), 1, 1, cam);
@@ -1413,7 +1435,7 @@ function start() {
   document.body.classList.add('playing'); G.opening = null;
   reset();
   hush(); if (audio()) { AC.resume(); setTimeout(() => sfx.bell(.6), 300); fetchVoices(); }
-  if (START_X > 140) { G.state = 'play'; return; }
+  if (TEST_X) { G.state = 'play'; return; }
   const run = ++runN; G.state = 'wait'; setTimeout(() => { if (run === runN && G.state === 'wait') talk(INTRO); }, 1700);   // the bell, then the story
 }
 document.getElementById('play').onclick = start;
@@ -1429,7 +1451,7 @@ document.getElementById('again').onclick = start;
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.fillStyle = '#5d6b80'; ctx.fillRect(0, 0, VW, VH);
   await new Promise(r => setTimeout(r, 30));
   const chr = Promise.all([loadPack('christian-walk', CHR), loadPack('christian-stand', STD), ...Object.keys(PROP_META).map(k => loadImg('prop-' + k + '.webp').then(im => { PROP[k] = im; }))]);
-  buildScenery(); buildWheat(); seed = 99; buildLevel(); bakeFinish();
+  buildScenery(); buildWheat(); buildRow(); seed = 99; buildLevel(); bakeFinish();
   await chr;
   { const im = Object.assign({}, PROP); for (const k in PROP) delete PROP[k];
     PROP.road = { lamp: im.lamp && bakeTint(im.lamp, .5, PROP_DETAIL) };
@@ -1438,7 +1460,7 @@ document.getElementById('again').onclick = start;
   document.getElementById('sub').textContent = 'The City of Destruction';
   document.getElementById('open').style.visibility = 'visible';
   requestAnimationFrame(t => { lastT = t; loop(t); });
-  loadPack('evangelist', EVA).then(() => Promise.all([loadImg('house.webp').then(im => { HOUSE = im && bakeTint(im, .6, HOUSE_DETAIL); }), loadImg('family.webp').then(im => { FAM = im; }), loadImg('christian-back.webp').then(im => { BACK = im; }), loadPack('christian-run', RUN)]))
+  loadPack('evangelist', EVA).then(() => Promise.all([loadImg('house.webp').then(im => { HOUSE = im && bakeTint(im, HOUSE_DEPTH, HOUSE_DETAIL); }), loadImg('family.webp').then(im => { FAM = im; }), loadImg('christian-back.webp').then(im => { BACK = im; }), loadPack('christian-run', RUN)]))
     .then(() => Promise.all([loadPack('obstinate', OBS), loadPack('pliable', PLI), loadImg('obstinate-stand.webp').then(im => { OBS_ST = im; }), loadImg('pliable-stand.webp').then(im => { PLI_ST = im; })]));
   for (const [who, txt] of INTRO) vox(who, txt);          // the first words, ready before Begin is pressed
 })();
