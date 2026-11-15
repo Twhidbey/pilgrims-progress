@@ -208,6 +208,9 @@ The game is `index.html` (one file, no build step). `style-lab.html` is the art-
 - Start picture re-painted with: "Look closely at his head: inside the hood we see his face in side profile, facing right: forehead, a clear nose, lips and bearded chin, painted simply in a mid-grey wash, with no eye detail. Paint the SAME man, with exactly that same head and the same profile face showing inside the hood (the nose and chin must be clearly visible in profile, facing right, in the same mid-grey wash: not hidden, not blank, not black) ... His near hand is raised and pressed flat over his ear, on the side of the hood BEHIND his face (the hand must not cover his face or his nose)". Video prompt adds: "His face stays just as it is in the picture: a simple side profile inside the hood, with his nose and bearded chin showing ... it never turns black, never disappears, and his hands never cover it."
 - New loop: 29 frames (video frames 70 to 98), `vpx` 17.2, feet come down at frames 7 and 22. Spent: 1 picture, 1 video (about 70 cents).
 
+## Built Nov 15, 2026 (build 39)
+- Owner sent a screenshot of the dark blobs at the top of the screen: "what's this at the top?" They were the leafy boughs of the framing layer, which did not read as leaves. Removed from `story-lab.html` (the grass along the bottom stays). `index.html` still has them; they go when the story lab replaces it.
+
 ## Open questions for the owner
 0. **Story lab (build 25):** is this the right shape for the game? How does it sound? Is "Go home" a good choice to offer? Should it replace the game now?
 1. How does the game feel on the phone: smooth? Anything hard to see (dark Christian against dark houses, crates, barrels)?

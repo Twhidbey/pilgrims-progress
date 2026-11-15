@@ -70,7 +70,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">story lab · build 38 · Nov 15 2026</div>
+  <div id="build">story lab · build 39 · Nov 15 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -306,18 +306,12 @@ function buildScenery() {
   // grass on the road's edge (drawn sharp, with the ground)
   R = rng(51); TUFTS.length = 0;
   for (let x = rr(0, 30); x < LEVEL_W; x += rr(16, 70)) { L = { shapes: [] }; tuft(x, GY, rr(5, 13)); TUFTS.push({ x, shapes: L.shapes }); }
-  // framing in front of everything: tall grass along the bottom, a leafy bough at the top now and then
+  // framing in front of everything: tall grass along the bottom. (The leafy boughs at the top were removed in build 39:
+  // drawn soft because they are near, they came out as blocky dark blobs that did not read as leaves; the owner asked what they were.)
   R = rng(98);
   L = FRONT = { par: 1.3, W: VW + PANG * 1.3 + 60, shapes: [], wins: [] };
   poly([[-30, VH + 10], [-30, VH - 12], [L.W, VH - 10], [L.W, VH + 10]]);
   for (let x = -10; x < L.W; x += rr(5, 22)) tuft(x, VH - 10, R() < .25 ? rr(26, 50) : rr(8, 22));
-  for (let x0 = -40; x0 < L.W; x0 += rr(1300, 2100)) {
-    const p = new Path2D(), len = rr(280, 380);
-    poly([[x0, 30], [x0 + len * .45, 6], [x0 + len * .9, -10], [x0, -10]]);
-    for (let i = 0; i < 45; i++) { const x = rr(-20, len), y = rr(-14, 8) + (1 - x / len) * rr(0, 34); blob(p, x0 + x, y, rr(7, 15), rr(4, 8)); }
-    for (let i = 0; i < 90; i++) { const x = rr(0, len + 30); blob(p, x0 + x, rr(4, 22) + (1 - x / (len + 30)) * rr(6, 52), rr(2.5, 5.5), rr(1.5, 3)); }
-    L.shapes.push(p);
-  }
   bake(FRONT, Math.min(1, 1.3 / (1.6 + LOOK.soft)), layerCol(1).map(v => mix(v, [8, 8, 12], .4)));
   // two skies, blended by the weather: heavy cloud over the rain, thin bright cloud toward the light
   const sky = (top, bot) => { const m = mk(480, 270), c = m.getContext('2d'); c.scale(.5, .5); const g = c.createLinearGradient(0, 0, 0, GY - 60); g.addColorStop(0, css(top)); g.addColorStop(1, css(bot)); c.fillStyle = g; c.fillRect(0, 0, VW, VH); return [m, c]; };
@@ -1160,7 +1154,6 @@ function draw() {
   ctx.globalAlpha = 1;
   // grass and leaves in front
   ctx.setTransform(1, 0, 0, 1, 0, 0);
-  pair(FRONT.cool, FRONT.warm, cam * FRONT.par, FRONT.q, 1, 0, 100);
   pair(FRONT.cool, FRONT.warm, cam * FRONT.par, FRONT.q, 1, VH - 70, VH);
   // the rain side is dulled, the golden side is warmed
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
