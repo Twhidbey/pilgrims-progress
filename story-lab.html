@@ -27,7 +27,7 @@ button{font-family:Georgia,'Times New Roman',serif;-webkit-appearance:none;appea
 #dlg.on{display:flex;align-items:center}
 #dlg .who{font-style:italic;color:#e8c27c}
 #dlg .who:not(:empty)::after{content:': '}
-#dlg .txt{font-size:clamp(13px,2.1vw,20px);line-height:1.3;animation:rise .5s ease both}
+#dlg .txt{font-size:clamp(12px,1.85vw,19px);line-height:1.3;animation:rise .5s ease both}
 #dlg.hint .txt{font-style:italic;color:rgba(244,236,220,.85)}
 #dlg .more{position:absolute;right:1.2%;bottom:6%;font-size:clamp(11px,1.6vw,15px);color:rgba(244,236,220,.7)}
 #dlg.cap .more{display:none}
@@ -68,7 +68,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">story lab · build 85 · Nov 15 2026</div>
+  <div id="build">story lab · build 86 · Nov 15 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -622,7 +622,24 @@ function buildLevel() {
 
 // ---------- sound: everything is made in the browser (no sound files) ----------
 let AC = null, OUT, MASTER, MUFF, CLEAR, VOICEG, ECHO, NOISE, rainG, padG, warmG, gloomG, creakG, creakO, muted = false;
+// THE IPHONE'S SILENT SWITCH (owner, build 85: on the phone the voices are muted "unless iPhone is not on silent"). Web
+// audio counts as ringer sound on an iPhone, so the switch silences it. Telling the phone this page plays media (iOS 17
+// and later: navigator.audioSession), and on older phones quietly playing a silent looping <audio> element from the
+// first touch, makes it media sound, which plays with the switch on silent like a video does. The volume buttons and
+// the ♪ button still work.
+function mediaSound() {
+  try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch (e) {}
+  if (mediaSound.el) return;
+  try {
+    const n = 8000, b = new ArrayBuffer(44 + n), v = new DataView(b), w = (o, t) => { for (let i = 0; i < t.length; i++) v.setUint8(o + i, t.charCodeAt(i)); };
+    w(0, 'RIFF'); v.setUint32(4, 36 + n, true); w(8, 'WAVEfmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+    v.setUint32(24, 8000, true); v.setUint32(28, 8000, true); v.setUint16(32, 1, true); v.setUint16(34, 8, true); w(36, 'data'); v.setUint32(40, n, true);
+    for (let i = 0; i < n; i++) v.setUint8(44 + i, 128);      // one second of silence
+    const el = mediaSound.el = document.createElement('audio'); el.src = URL.createObjectURL(new Blob([b], { type: 'audio/wav' })); el.loop = true; el.setAttribute('playsinline', ''); el.play().catch(() => {});
+  } catch (e) {}
+}
 function audio() {
+  mediaSound();
   if (AC) return AC;
   try {
     AC = new (window.AudioContext || window.webkitAudioContext)();
@@ -751,9 +768,19 @@ const dlg = document.getElementById('dlg'), dWho = dlg.querySelector('.who'), dT
 let lines = [], li = 0, after = null;
 const HEARD = new Set();                   // lines already heard to the end (they can be skipped next time)
 const C = 'Christian', E = 'Evangelist', N = '', O = 'Obstinate', PL = 'Pliable', W = 'His wife';
+// THE WORDS FIT THEIR STRIP (owner, build 85: on a phone "the text of some of the characters' dialog is too large"):
+// the long lines wrapped to three rows and ran off the bottom. Each line now starts at its usual size and steps down
+// until it fits the strip, never below 10 px.
+function fitWords(box) {
+  box.style.fontSize = ''; const room = dlg.clientHeight * .86;
+  let px = parseFloat(getComputedStyle(box).fontSize);
+  while (box.offsetHeight > room && px > 10) { px *= .92; box.style.fontSize = px + 'px'; }
+}
+addEventListener('resize', () => { if (dlg.classList.contains('on')) fitWords(dlg.querySelector('.txt')); });
 function words(who, txt, cls) {
   dWho.textContent = who; dTxt.textContent = txt; dlg.className = 'on ' + cls;
   const box = dlg.querySelector('.txt'); box.style.animation = 'none'; void box.offsetWidth; box.style.animation = '';
+  fitWords(box);
   if (!cls.includes('hint')) say(who, txt); else hush();
 }
 function talk(arr, then) {
@@ -1909,6 +1936,16 @@ document.getElementById('open').onclick = () => {
 document.getElementById('again').onclick = start;
 
 // ---------- boot: build the scenery, fetch Christian, then the others while the child is already playing ----------
+// THE HOME SCREEN LINK STAYS UP TO DATE (owner, build 85: "is there a way to force update link when I open it"). A
+// phone can open an old copy it kept. On opening, the page asks the server for its newest copy, past every cache; if
+// that one has a higher build number than this one, it reloads once onto the new build (?v=N, which no cache holds).
+(function freshCopy() {
+  const mine = +((document.getElementById('build').textContent.match(/build (\d+)/) || [])[1] || 0);
+  fetch(location.pathname + '?check=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.text() : '').then(t => {
+    const n = +((t.match(/id="build">[^<]*build (\d+)/) || [])[1] || 0);
+    const q = new URLSearchParams(location.search); if (n > mine && q.get('v') !== String(n)) { q.set('v', n); location.replace(location.pathname + '?' + q); }
+  }).catch(() => {});
+})();
 (async function boot() {
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.fillStyle = '#5d6b80'; ctx.fillRect(0, 0, VW, VH);
   await new Promise(r => setTimeout(r, 30));
