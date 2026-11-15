@@ -4,6 +4,8 @@ The game is `index.html` (one file, no build step). `style-lab.html` is the art-
 
 ## START HERE (written at build 41, updated at build 43, Nov 15 2026, for a new chat)
 
+**Build 115: Pliable's stop video (about 56 cents, right first time), feet at the bog's edge, no dark line, the limb raised above Help, Help and the steps uncovered by moving fog (see `CLAUDE.md`). Spent since build 106: about $0.57.**
+
 **Build 114: Level 2's six points done in code (standing, feet, lights, mist, oak, deeper wading; see `CLAUDE.md`). Nothing spent (running total since build 106: about $0.01).**
 
 **Build 113: Obstinate and Pliable each stand in their own lit doorway (Pliable has his own cottage). Nothing spent.**

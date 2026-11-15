@@ -69,7 +69,10 @@ const SL = (() => {
   const HX = BANK0 + 34, GRASP = { dx: -(82 - 15 + 129), dy: 283 - 55 };
   const HY = () => bankY(HX) + 4;
   const STUCK_X = HX + GRASP.dx * CHR_K, STUCK_Y = () => HY() + GRASP.dy * CHR_K;
-  const SINK = 100, PLI_SINK = 76, DEEP = 22, OAK_X = 110, OAK_S = 1.2;                        // how deep each stands in the mire when they fall (feet below the water line)
+  const SINK = 100, PLI_SINK = 76, DEEP = 22, OAK_X = 110, OAK_S = 1.2;
+  // build 115 (owner, of them standing at the bog's edge: "still white space between feet and ground"): on the muddy flat at
+  // the water's level they stand a little sunk in it, and every picture of them there is cut at the water line
+  const MUDDY = x => 6 * smooth(-6, 0, bankY(x));                        // how deep each stands in the mire when they fall (feet below the water line)
   // the fall is slow (owner, build 105: "go deeper ... drop more slow ... what it looks like to get [stuck in] mud"): a soft first
   // drop to the knees, then a slow sink over about 5 seconds that goes on while the words begin
   const sunk = t => .4 * smooth(0, 40, t) + .6 * smooth(25, 330, t);
@@ -110,7 +113,7 @@ const SL = (() => {
     const [tx, ty, ta] = grow(0, 0, -.06, 92, 58, 0, { wander: .1, elbow: 0, taper: .14, w0: 90, guide: t => lerp(-.06, -.24, t) });
     const limb = (dx, dy, to, len, w, o = {}) => grow(tx + dx, ty + dy, lerp(ta, to, .35), len, w, depth, { w0: 40, ...o,
       guide: t => t < .13 ? lerp(lerp(ta, to, .35), to, t / .13) : o.then ? o.then((t - .13) / .87) : null });
-    limb(-8, 9, -1.34, 372, 25, { wander: .2, elbow: .03, taper: .7, reach: true, w0: 44, then: t => t < .6 ? lerp(-1.34, -1.61, t / .6) : lerp(-1.61, -1.3, (t - .6) / .4) });
+    limb(-8, 9, -1.22, 372, 25, { wander: .2, elbow: .03, taper: .7, reach: true, w0: 44, then: t => t < .6 ? lerp(-1.22, -1.47, t / .6) : lerp(-1.47, -1.2, (t - .6) / .4) });      // build 115 (owner: "helps head is in branch ... can you move branch up"): the long limb leaves higher and sags less (was -1.34, -1.61, -1.3)
     limb(-4, 2, -.74, 250, 24); limb(0, 0, -.1, 236, 22); limb(4, 2, .54, 262, 24);
     limb(9, 14, 1.24, 304, 23, { w0: 44 });
     grow(-2, -30, -2.4, 112, 14, 0, { wander: .12, elbow: 0, taper: .9, w0: 40, guide: t => lerp(-2.5, -1.72, t * 2) });
@@ -167,11 +170,22 @@ const SL = (() => {
   }
 
   // ---------- the people ----------
-  const HELPF = [], REACH = [], LIFT = [], PLIC = [], WADE = [];
+  const HELPF = [], REACH = [], LIFT = [], PLIC = [], WADE = [], PSTOP = [];
   const META = { help: { ax: 94, ground: 309 }, reach: { ax: 70, ground: 307 }, lift: { ax: 257, ground: 307 },
     climb: { ax: 363, ground: 342, top: 38, end: 440, sink: 39, c0: 168, top0: 143 },      // c0, top0: the middle and the head of him in the first frame (build 106)
     // Christian struggling through the mud (build 104): a loop, waist-deep in the video; ground = where his feet would be
-    wade: { ax: 174, ground: 294 } };
+    wade: { ax: 174, ground: 294 },
+    // Pliable coming to a stop (build 115, one video, about 56 cents: first frame his walk frame 0, last frame his standing
+    // picture one step further on): pack frames 0..49 he slows over two or three steps and stops (video 0..98), 50..119 he
+    // stands breathing (video 100..238, played back and forth). ax/ground = where walk frame 0's ax and ground fall in the
+    // pack, so frame 0 lies exactly on the walk frame; at the end his feet are STOPD further on
+    stop: { ax: 100.8, ground: 308 } };
+  // where the stop video can begin (build 115, measured by shape overlap): for each walk frame, the stop video frame that
+  // matches it best and how far ahead (pack px) that frame's figure stands, or null (no good match: walk on a frame or
+  // two); and how far each of the first 50 stop frames' figure has come from walk frame 0's place (pack px; 72.5 standing)
+  const STOP_ENTRY = [[0, 0], [1, 1], [1, 1], null, null, [33, 69], [14, 25], null, [15, 28], [16, 31], [16, 31], null, null, null, null, [29, 57], [29, 57], [30, 61], [31, 65], [12, 22], [32, 68], [13, 24], [33, 70], [14, 26], [15, 29], [15, 28], [16, 31], [16, 30], [17, 33], [17, 33], [0, -1], [0, -1]];
+  const STOP_OFFS = [0, 0.1, 2.1, 4.1, 4.7, 5.2, 7.4, 9.8, 12.3, 13.8, 14.8, 17.1, 20.2, 22.3, 24.6, 28.5, 31.7, 34.5, 36.3, 37, 37.4, 39.8, 41.2, 42.1, 44, 46.5, 49.7, 52.5, 54.8, 56.5, 59.2, 63.3, 66.2, 68.5, 71.2, 75.1, 77.5, 78.7, 79.2, 79.2, 77.6, 76.1, 75, 74.7, 74.3, 73.8, 73.4, 72.8, 72.5, 72.5];
+  const stopOff = t => (t >= 49 ? 72.5 : STOP_OFFS[Math.floor(t)]) * CHR_K, STOPD = 72.5 * CHR_K;
   const HELP_SRC = [0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 42, 44, 46, 48, 50, 52, 54, 56, 58, 60, 62, 64, 66, 68, 70, 72, 74, 76, 78, 80, 82, 84, 86, 88, 90, 92, 94, 96, 98, 100, 102, 104, 106, 108, 110, 112, 114, 116, 118, 120, 122, 124, 126, 128, 130, 132, 136, 140, 144, 148, 152, 156, 160, 164, 168, 172, 176, 180, 184, 188, 192, 196, 200, 204, 208, 212, 216, 220, 224, 228, 232, 236];
   const REACH_SRC = [3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 36, 39, 42, 45, 48, 51, 54, 57, 60, 63, 66, 69, 72, 75, 78, 80, 82, 84, 86, 88, 90, 92, 94, 96, 98, 100, 102, 104, 106, 108, 110, 112, 114, 116, 118, 120, 122, 124, 128, 134, 140, 146, 152, 158, 164, 170, 176, 182, 188, 194, 200, 206, 212, 218, 224, 230, 236];
   const LIFT_SRC = [...Array(76).keys()].map(i => i * 2).concat([...Array(11).keys()].map(i => 156 + i * 8));
@@ -182,7 +196,7 @@ const SL = (() => {
   // line, top = how high the bank stands in the video (pack pixels), end = where his feet are in the last frame. Without the pack
   // he wades to his own bank and rises out of the water as he walks into the mist.
   function preload() {
-    if (!loading) loading = Promise.all([loadPack('help', HELPF), loadPack('christian-reach', REACH), loadPack('lift', LIFT), loadPack('pliable-climb', PLIC).catch(() => {}), loadPack('christian-wade', WADE).catch(() => {})]).catch(() => {});
+    if (!loading) loading = Promise.all([loadPack('help', HELPF), loadPack('christian-reach', REACH), loadPack('lift', LIFT), loadPack('pliable-climb', PLIC).catch(() => {}), loadPack('christian-wade', WADE).catch(() => {}), loadPack('pliable-stop', PSTOP).catch(() => {})]).catch(() => {});
     return loading;
   }
   // one tinted figure, feet at world (x, y); nothing below the water line when `cut` (each figure has its own small canvas)
@@ -235,7 +249,7 @@ const SL = (() => {
     Object.assign(G, { t: 0, capQ: [], cap: 0, hint: null, act: null, actT: 0, ring: null, auto: null, guard: 0, autoT: 0, taps: [], roll: { t: 999, x: 0, y: 0 }, ended: false });
     downs.clear(); keys.r = keys.push = false;
     ph = 'plain'; Object.assign(C2, { x: START, y: bankY(START) + 4, face: 1, anim: 12, alpha: 1, sink: 0, reach: 0, stand: 1, sd: QUIET[0], st: 0, faceA: 1, done: 0 });
-    pli = { x: START - 80, y: 0, face: 1, anim: 0, alpha: 1, sink: 0, mode: 'follow', px: START - 80 };
+    pli = { x: START - 80, y: 0, face: 1, anim: 0, alpha: 1, sink: 0, mode: 'follow', px: START - 80, stop: { t: 50, x0: START - 80 - 72.5 * CHR_K } };      // he starts standing (his stop video's breathing part)
     prints = []; fogH = 1; fogS = 1; help = null; mv = null; lift = null; rings = []; steps = []; gloom = gloomTo = 0; noteI = 0; strain = 0; slipT = 0; fearT = 300; fearsSaid = false; goldT = 0; onwayT = 0; capsSaid = new Set(); nearSaid = false;
     motes = [...Array(LAST.length)].map((_, i) => ({ ox: -30 - Math.random() * 50, oy: -112 - Math.random() * 40, x: START, y: -150, tw: Math.random() * 6, i }));
     // the steps through the bog, hidden until the lights settle on them: low flat stones, no two alike (from the approved still)
@@ -295,7 +309,7 @@ const SL = (() => {
       if (v) { if (C2.sd != null) { C2.sd = null; C2.anim = 1; } }
       else if (C2.sd == null) { if (fr0 === 28 || fr0 === 1 || !STD.length) C2.sd = fr0 === 28 ? 0 : STAND_FROM_1; else v = MAXV; }
       C2.x += v;
-      C2.anim = stepAnim(C2.anim, v, CHR_STEP, CHR_META); C2.y = bankY(C2.x) + 4;
+      C2.anim = stepAnim(C2.anim, v, CHR_STEP, CHR_META); C2.y = bankY(C2.x) + 4 + MUDDY(C2.x);
       C2.stand = C2.sd != null ? 1 : 0;
       // faint wet footprints in the soft ground near the bog (owner's idea, build 114: "mud prints or feet sinking slightly")
       const fr1 = ((Math.floor(C2.anim) % CHR.length) + CHR.length) % CHR.length;
@@ -368,17 +382,32 @@ const SL = (() => {
     // it drifts away to the right and thins (about 4 s, with a breath of wind) and he is seen coming out of it. A low mist
     // lies over the middle of the bog where the steps are (the book, {35}: "these steps are hardly seen"); it thins as the
     // lights settle on the steps.
-    if (help) { if (fogH === 1) hiss(260, .5, .05, 3.5, 'lowpass'); fogH = Math.max(0, fogH - .0024); help.a = 1 - smooth(.3, .8, fogH); }
+    // build 115 (owner: "instead of making help appear can you have [the fog] move to the right and then as it clears you can see
+    // [him] ... has physical explanation"): Help is there from the first, whole, inside the fog; the fog bank moves off to the
+    // right and uncovers him, and only thins once it has moved on
+    if (help) { if (fogH === 1) hiss(260, .5, .05, 3.5, 'lowpass'); fogH = Math.max(0, fogH - .0013); help.a = 1; }
     fogS = ph === 'look' ? 1 - smooth(60, 60 + LAST.length * 55 + 120, goldT) : ph === 'on' ? Math.max(0, fogS - .01) : fogS;
     if (mv) mv.t = Math.min(150, mv.t + .4);
     if (G.act === 'hand') { G.actT++; if (mv && mv.t >= 150 && !G.ring && G.actT > 20) { dMore.textContent = 'take his hand ✦'; const [hx, hy] = handPt(); G.ring = () => [(hx - cam.cx) * cam.z + VW / 2, cam.wl + hy * cam.z]; } }
     // --- Pliable ---
     if (pli) {
       if (pli.mode === 'follow') {
-        const tx = C2.x - 80, v = clamp(tx - pli.x, 0, MAXV * 1.05); pli.x += v; pli.y = bankY(pli.x) + 4;
-        pli.anim = stepAnim(pli.anim, v, PLI_STEP, PLI_META); pli.face = 1;
-        const atRest = PLI_META.rest.includes(Math.floor(pli.anim) % PLI_META.frames); pli.st = clamp((pli.st || 0) + (v > .05 ? -.1 : atRest && PLI_ST ? .06 : -.1));      // he stands too (build 110); build 114: the standing picture comes in over the walk frame, then the walk frame goes (no see-through middle)
-        if (ph === 'fall') { pli.mode = 'in'; pli.st = 0; }
+        // PLIABLE STOPS IN HIS OWN VIDEO (owner, build 115: his "transition not great ... new video would be worth it"): when
+        // Christian stands, Pliable walks on to walk frame 0 (where the video begins) and the video brings him to a stop, then
+        // he breathes; when Christian walks again, his standing frame dissolves quickly into his walk, from where he stood
+        const halt = C2.sd != null && PSTOP.length > 0;
+        if (pli.stop && !halt) { const t = pli.stop.t; pli.x = pli.stop.x0 + stopOff(t); pli.leave = { f: Math.min(Math.floor(t), PSTOP.length - 1), x: pli.stop.x0, a: 1 }; pli.stop = null; pli.anim = 0; }
+        if (pli.stop) { pli.stop.t += .2; pli.y = bankY(pli.x) + 4 + MUDDY(pli.x); pli.st = 0; }
+        else {
+        const tx = C2.x - 80 - (halt ? 30 : 0), fNow = ((Math.floor(pli.anim) % PLI_META.frames) + PLI_META.frames) % PLI_META.frames;
+        let v = clamp(tx - pli.x, 0, MAXV * 1.05);
+        if (halt && v < .05) { const e = STOP_ENTRY[fNow]; if (e) pli.stop = { t: e[0], x0: pli.x - e[1] * CHR_K }; else v = MAXV; }      // into the stop video at the frame that matches his step (or a step on to one that does)
+        if (!pli.stop) { pli.x += v; pli.anim = stepAnim(pli.anim, v, PLI_STEP, PLI_META); }
+        pli.y = bankY(pli.x) + 4 + MUDDY(pli.x); pli.face = 1;
+        }
+        if (pli.leave && (pli.leave.a -= .12) <= 0) pli.leave = null;
+        if (!PSTOP.length && !pli.stop) { const atRest = PLI_META.rest.includes(Math.floor(pli.anim) % PLI_META.frames); pli.st = clamp((pli.st || 0) + (pli.x !== pli.px2 ? -.1 : atRest && PLI_ST ? .06 : -.1)); } pli.px2 = pli.x;      // (without the video: the old dissolve)      // he stands too (build 110); build 114: the standing picture comes in over the walk frame, then the walk frame goes (no see-through middle)
+        if (ph === 'fall') { pli.mode = 'in'; pli.st = 0; pli.stop = null; pli.leave = null; }
       } else if (pli.mode === 'climb' && PLIC.length && !pli.out) {
         // the video: he wades crossly to the bank, climbs up it and steps off; raised to meet the game's bank as he climbs
         // BUILD 106 (owner: "when pliable gets out sprite jumps around (skips locations)"): two jumps fixed. (1) At the end
@@ -501,10 +530,15 @@ const SL = (() => {
     // Pliable
     if (pli) {
       if (PLIC.length && pli.mode === 'climb' && !pli.out) figure(n, 'pli', PLIC[Math.floor(pli.ct || 0)], META.climb, pli.x, pli.y, -1, fig, true, pli.alpha);
+      else if (pli.stop && pli.mode === 'follow' && PSTOP.length) {
+        const t = pli.stop.t, L = PSTOP.length - 50, f = t < 50 ? Math.floor(t) : 50 + Math.floor(((u => u < L ? u : 2 * L - u))((t - 50) % (2 * L)));
+        figure(n, 'plistop', PSTOP[Math.min(PSTOP.length - 1, f)], META.stop, pli.stop.x0, pli.y, pli.face, fig, pli.y > 2, pli.alpha);
+      }
       else {
+        if (pli.leave && pli.mode === 'follow') figure(n, 'plileave', PSTOP[pli.leave.f], META.stop, pli.leave.x, pli.y, pli.face, fig, pli.y > 2, pli.alpha * pli.leave.a);
         const st = pli.mode === 'follow' && PLI_ST ? pli.st || 0 : 0;
         if (st < 1) figure(n, 'pli', PLI[Math.floor(pli.anim) % (PLI.length || 1)], PLI_META, pli.x, pli.y, pli.face, fig, pli.y > 2 && !(PLIC.length && pli.mode === 'climb'), pli.alpha * (1 - smooth(.5, 1, st)));
-        if (st > 0) figure(n, 'plist', PLI_ST, PLI_ST_META, pli.x, pli.y, pli.face, fig, false, pli.alpha * smooth(0, .5, st));
+        if (st > 0) figure(n, 'plist', PLI_ST, PLI_ST_META, pli.x, pli.y, pli.face, fig, pli.y > 2, pli.alpha * smooth(0, .5, st));
       }
     }
     // Help: he comes out of the mist on the far bank, steps to the edge, kneels and holds out his hand
@@ -524,7 +558,7 @@ const SL = (() => {
     // the idea of "mud prints or feet sinking slightly in mud"): the land's own edge is laid again over the bottom of
     // everyone standing on it, a little ragged, so feet sink slightly into the ground; and faint wet prints (a little
     // sky caught in them) are left in the soft ground near the bog
-    n.fillStyle = css(land); n.beginPath(); n.moveTo(x0, 0); for (let x = x0; x <= x1; x += 3 / z) n.lineTo(x, Math.min(0, bankY(x) - 1.2 - 1.6 * bankN(x * .09, 2))); n.lineTo(x1, 0); n.fill();
+    n.fillStyle = css(land); n.beginPath(); n.moveTo(x0, 0); for (let x = x0; x <= x1; x += 3 / z) n.lineTo(x, bankY(x) < -2 ? bankY(x) - 1.2 - 1.6 * bankN(x * .09, 2) : 0);      // build 115: only on real ground (it ran as a dark line along the bog) n.lineTo(x1, 0); n.fill();
     for (const pr of prints) { const a = .22 * (1 - smooth(900, 1600, pr.t)); if (a < .01) continue; n.fillStyle = css(LIGHT, a); n.beginPath(); n.ellipse(pr.x, bankY(pr.x) + 1.2, 6, .9, 0, 0, 7); n.fill(); }
     // build 114 (owner: "not sure about light dots above pliable's head"): the lights he gathered are no longer shown
     // following him; they first appear behind his shoulder when he looks back, and fly to the steps
@@ -564,15 +598,19 @@ const SL = (() => {
     // natural"): a long bank of mist lies along the far shore from where Help will stand far off to the right, highest
     // and thickest at his place and lower and thinner further right, with slow soft rounds drifting in it; it all drifts
     // right as it thins
-    if (fogH > .01) { const go = (1 - fogH) * 220, a = smooth(0, 1, fogH);
-      for (const [dx, rx0, ry0, al] of [[50, 150, 190, .97], [250, 230, 150, .82], [520, 300, 120, .62], [850, 340, 95, .42]]) {
+    if (fogH > .01) { const go = smooth(0, .85, 1 - fogH) * 520, a = smooth(0, .45, fogH);
+      for (const [dx, rx0, ry0, al] of [[40, 170, 200, 1], [250, 230, 160, .85], [520, 300, 120, .62], [850, 340, 95, .42]]) {
         const mx = X(HX + dx + go * (1 + dx / 500)), my = Y(-ry0 * .5), rx = rx0 * z, ry = ry0 * z;
         ctx.save(); ctx.translate(mx, my); ctx.scale(rx, ry); const g = ctx.createRadialGradient(0, 0, 0, 0, 0, 1);
         g.addColorStop(0, css(tone(.93), al * a)); g.addColorStop(.5, css(tone(.93), al * .88 * a)); g.addColorStop(.8, css(tone(.93), al * .3 * a)); g.addColorStop(1, css(tone(.93), 0));
         ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, 1, 0, 7); ctx.fill(); ctx.restore(); }
       bank(HX + 20 + go, HX + 1000 + go * 2, 20, 200, 110, a * .55, 34, 7, false); }
     // the low mist over the middle of the bog, where the steps are: wide, flat and smooth
-    bank(HOME0 + 60, BANK0 - 60, 14, 10, 230, fogS * (.35 + .25 * look.mist), 12, 11, true);
+    // build 115 (owner: "fog clears to reveal them instead of them appearing out of nowhere"): the low mist over the
+    // steps is laid step by step; over each step it moves off to the right and thins as that step's light lands (s.lit),
+    // so the stones are uncovered in place, one by one, from the far bank back toward the plain. Straight across, flat
+    // (an arc toward us was offered and advised against: it would bring back the perspective the picture avoids)
+    for (const st of steps) { const c = st.lit || 0; bank(st.x - 70 + c * 90, st.x + 70 + c * 90, 12, 10, 120, (1 - smooth(0, 1, c)) * (.55 + .3 * look.mist) * (ph === 'look' || ph === 'on' ? 1 : fogS), 6, 11 + st.i, true); }
     ctx.globalAlpha = .55 * look.mist; { const o = (G.t * .15) % VW; ctx.drawImage(threads, -o, wl - 22, VW, 40); ctx.drawImage(threads, VW - o, wl - 22, VW, 40); } ctx.globalAlpha = 1;
     if (look.veil > .01) { const g = ctx.createLinearGradient(VW * .42, 0, VW, 0); g.addColorStop(0, css(LIGHT, 0)); g.addColorStop(.55, css(tone(.93), look.veil * .86)); g.addColorStop(1, css(tone(.93), look.veil)); ctx.fillStyle = g; ctx.fillRect(0, 0, VW, VH); }
     // the gold coming back from the oak outward
@@ -607,8 +645,9 @@ const SL = (() => {
     }
     if (C2.stand > 0 && STD.length) {
       const im = STD[atTime(STD_META, breathT(C2.sd ?? QUIET[0] + G.t * .4))], fr = (1 + C2.faceA) / 2;
-      if (fr > .01) figure(n, 'std', im, STD_META, C2.x, C2.y, 1, fig, false, alpha * C2.stand * C2.alpha * fr);
-      if (fr < .99) figure(n, 'std2', im, STD_META, C2.x, C2.y, -1, fig, false, alpha * C2.stand * C2.alpha * (1 - fr));
+      const cutS = C2.y > 2;
+      if (fr > .01) figure(n, 'std', im, STD_META, C2.x, C2.y, 1, fig, cutS, alpha * C2.stand * C2.alpha * fr);
+      if (fr < .99) figure(n, 'std2', im, STD_META, C2.x, C2.y, -1, fig, cutS, alpha * C2.stand * C2.alpha * (1 - fr));
       if (C2.stand < 1) figure(n, 'chr', walkIm, CHR_META, C2.x, C2.y, C2.face, fig, false, alpha * (1 - C2.stand) * C2.alpha);
       return;
     }
@@ -617,5 +656,5 @@ const SL = (() => {
 
   // for testing: SL.peek() tells where the story is
   // oakPic: the great oak baked small in one colour, for Level 1's far glimpse of the Slough (story-lab.html, drawFarSlough)
-  return { on: false, start, update, draw, touch, grip, pick, preload, lines: ALL, oakPic: (col, k) => bakeTree(oak(18), col, k), peek: () => ({ ph, x: C2.x, y: C2.y, mv: mv && mv.t, lift: lift && lift.t, pli: pli && pli.mode, cam }) };
+  return { on: false, start, update, draw, touch, grip, pick, preload, lines: ALL, oakPic: (col, k) => bakeTree(oak(18), col, k), peek: () => ({ ph, x: C2.x, y: C2.y, mv: mv && mv.t, lift: lift && lift.t, pli: pli && pli.mode, plx: pli && Math.round(pli.x), plStop: !!(pli && pli.stop), cam }) };
 })();
