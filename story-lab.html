@@ -68,7 +68,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">story lab · build 83 · Nov 15 2026</div>
+  <div id="build">story lab · build 84 · Nov 15 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -733,7 +733,7 @@ const lightPos = () => ({ x: 880 - G.cam * .02, y: 146 });
 function reset() {
   seed = 99; buildLevel(); for (const it of ROW) if (it.who) { it.on = TEST_X > it.a; it.open = it.on ? 1 : 0; }
   for (const Lr of SCN) for (const w of Lr.wins) w[5] = false;
-  Object.assign(P, { x: START_X, y: GY, vx: 0, face: TEST_X ? 1 : -1, anim: 1, stand: { t: QUIET[0] }, turn: 0, run: false, ranim: 0, blend: null, weep: null, turnTo: 0, wantBack: false, bk: 0 });
+  Object.assign(P, { x: START_X, y: GY, vx: 0, face: TEST_X ? 1 : -1, anim: 1, stand: { t: QUIET[0] }, turn: 0, run: false, ranim: 0, blend: null, weep: null, turnTo: 0, turnV: null, wantBack: false, bk: 0 });
   Object.assign(G, { cam: Math.max(0, Math.min(LEVEL_W - VW, TEST_X ? START_X - VW * .38 + 40 : START_X - VW * .62 - 40)), t: 0, got: 0, extra: 0, motes: [], flyers: [], ripples: [], glints: [], taps: [], litw: [], capQ: [], cap: 0, hint: null,
     pli: null, obst: null, flare: 0, gloom: 0, gloomTo: 0, gateOpen: 0, act: null, actT: 0, ring: null, auto: null, finale: null, guard: 0, idle: 0, wins: 0,
     evanDone: !!TEST_X, evanGone: TEST_X ? 1 : 0, neigh: TEST_X > NEIGH_X + 300, gateSeen: false, walked: false, touched: false, leaving: false, fam: TEST_X > HOME_X ? 2 : 0, door: TEST_X ? (TEST_X > HOME_X ? 1 : 0) : 1, doorShut: false, roll: TEST_X ? { t: 999, x: 0, y: 0 } : null, runZone: false, outSaid: false, watched: TEST_X > HOME_X + 900, ears: TEST_X > HOME_X });
@@ -948,7 +948,7 @@ const chrFrame = () => ((Math.floor(P.anim) % CHR.length) + CHR.length) % CHR.le
 const stdFrame = () => atTime(STD_META, breathT(P.stand.t));
 const figC = mk(8, 8), shC = mk(8, 8), FEET_SINK = 9;
 // which picture he is in: running (fingers in his ears, from his run video), standing, or walking
-const chrPose = () => P.weep && WEEP.ready ? [WEEP[Math.min(WEEP.length - 1, Math.floor(P.weep.t))], WEEP_META] : P.run ? (([set, meta]) => [set[((Math.floor(P.ranim) % set.length) + set.length) % set.length], meta])(runNow()) : P.stand ? [STD[stdFrame()], STD_META] : [CHR[chrFrame()], CHR_META];
+const chrPose = () => P.turnV && TURN.ready ? [TURN[Math.min(TURN.length - 1, Math.floor(P.turnV.t))], TURN_META] : P.weep && WEEP.ready ? [WEEP[Math.min(WEEP.length - 1, Math.floor(P.weep.t))], WEEP_META] : P.run ? (([set, meta]) => [set[((Math.floor(P.ranim) % set.length) + set.length) % set.length], meta])(runNow()) : P.stand ? [STD[stdFrame()], STD_META] : [CHR[chrFrame()], CHR_META];
 // Walking and standing join frame to frame. Running does not, so going into or out of the run the old picture dissolves
 // into the new one over a fifth of a second (the new one comes in on top, then the old one goes: nothing shows through).
 // n = ticks; quick = the new picture is there at once and the old one fades off it (used into and out of the run:
@@ -956,6 +956,7 @@ const chrPose = () => P.weep && WEEP.ready ? [WEEP[Math.min(WEEP.length - 1, Mat
 function poseChange(n = 12, quick = false) { const [im, meta] = chrPose(); P.blend = { im, meta, face: P.face, t: 0, n, quick }; }
 function drawChristian(x, y, face, alpha) {
   const [im, meta] = chrPose(), b = P.blend, bk = BACK ? P.bk || 0 : 0;
+  if (P.turnV) face = Math.abs(face);      // the turn's frames face their own way
   if (bk > 0) {                              // turned to look back at his door: the back view comes in on top, then the side view goes
     if (bk < 1) drawFrame(im, meta, x, y, face, alpha * (bk < .5 ? 1 : 2 * (1 - bk)));
     drawFrame(BACK, BACK_META, x, y, 1, alpha * (bk < .5 ? 2 * bk : 1)); return;
@@ -1112,7 +1113,12 @@ function touchExtra(sx, sy, wx) {
 // the story's own acts
 // He turns round to look at the light: not a flip, but a turn away from us (owner, build 65: animate his "turning to see
 // light"): his back-view picture dissolves in, he faces the other way, and the side view dissolves back (P.turnTo).
-function lightTouched() { G.flare = 1.2; sfx.chord(); if (BACK && P.stand && P.face < 0) { P.turnTo = 1; P.wantBack = true; } else P.turn = 1; next(true); }
+// Since build 84 (owner: "animate christian's turn to see light") he really turns, from a video made with his standing
+// picture facing left as its first frame and facing right as its last (assets/christian-turn.pack, TURN_META: every
+// frame already faces the way it should, so it is drawn unmirrored; 4 pictures a second, the video's own pace, about
+// 7 seconds). He turns away from us: halfway, his back and the burden face us. Without the pack, the old dissolve.
+let TURN = []; const TURN_META = {"ax": 90, "ground": 302, "frames": 30, "step": 4 / 60};
+function lightTouched() { G.flare = 1.2; sfx.chord(); if (TURN.ready && P.stand && P.face < 0) P.turnV = { t: 0 }; else if (BACK && P.stand && P.face < 0) { P.turnTo = 1; P.wantBack = true; } else P.turn = 1; next(true); }
 function gateOpened() {
   G.gateOpen = 1; G.flare = 1.3; sfx.open(); G.finale = { t: -50, i: 0, bar: 0 };
   next(true);       // the words are finished: on through the gate
@@ -1144,6 +1150,7 @@ function update() {
   walkTick(dir, MAXV);
   if (G.state === 'auto' && G.auto && (G.auto.dir > 0 ? P.x >= G.auto.to : P.x <= G.auto.to)) { const a = G.auto; G.auto = null; if (P.stand || !a.wait) { G.state = 'play'; a.then && a.then(); } else G.auto = { dir: 0, to: a.dir > 0 ? -1e9 : 1e9, then: a.then }; }
   if (G.state === 'auto' && G.auto && !G.auto.dir && P.stand) { const a = G.auto; G.auto = null; G.state = 'play'; a.then && a.then(); }
+  if (P.turnV && (dir || (P.turnV.t += TURN_META.step) >= TURN_META.frames - 1)) { if (dir) poseChange(6, true); P.turnV = null; P.face = 1; P.stand = { t: QUIET[0] }; }      // the turn is done (or the child walks on)
   if (P.turnTo && (P.bk || 0) >= .99) { P.face = P.turnTo; P.turnTo = 0; P.wantBack = false; }      // half way through his turn: now he faces the light
   if (P.wantBack && !P.turnTo && (dir > 0 || G.state === 'play')) P.wantBack = false;      // the child holds to run on: he turns away
   P.bk = Math.max(0, Math.min(1, (P.bk || 0) + (P.wantBack && P.stand ? .022 : -.07)));
@@ -1922,6 +1929,7 @@ document.getElementById('again').onclick = start;
   document.getElementById('sub').textContent = 'The City of Destruction';
   document.getElementById('open').style.visibility = 'visible';
   requestAnimationFrame(t => { lastT = t; loop(t); });
+  loadPack('christian-turn', TURN).catch(() => {});
   Promise.all([loadPack('evangelist', EVA), loadPack('evangelist-stand', EVS)]).then(() => Promise.all([loadImg('house.webp').then(im => { HOUSE = im && bakeTint(im, HOUSE_DEPTH, HOUSE_DETAIL); }), ...['b', 'c'].map(key => loadImg('house-' + key + '.webp').then(im => { if (im) NB[key] = bakeTint(im, HOUSE_DEPTH, HOUSE_DETAIL); })), ...Object.keys(TREE_META).map(key => loadImg('tree-' + key + '.webp').then(im => { if (im) for (const i of [1, 2]) (TREE[i] = TREE[i] || {})[key] = bakeTree(im, SCN[i].d); })), loadImg('family.webp').then(im => { FAM = im; if (im) FAM_SH = mkShadow(im); }), loadImg('wife.webp').then(im => { WIFE = im; if (im) WIFE_SH = mkShadow(im); }), loadImg('gate.webp').then(im => { if (im) GATE_P = bakeTint(im, .52, .4); }), loadImg('wall.webp').then(im => { if (im) WALL_P = bakeTint(im, .52, .4); }), ...['a', 'b', 'c'].map(key => loadImg('neighbor-' + key + '.webp').then(im => { WATCH_IM[key] = im; })), ...['a', 'b', 'c'].map(key => loadPack('neighbor-' + key, WATCH_PACK[key]).catch(() => {})), loadImg('christian-back.webp').then(im => { BACK = im; }), loadPack('christian-run', RUN), loadPack('christian-run-plain', RUNP)]))
     .then(() => Promise.all([loadPack('obstinate', OBS), loadPack('pliable', PLI), loadImg('obstinate-stand.webp').then(im => { OBS_ST = im; }), loadImg('pliable-stand.webp').then(im => { PLI_ST = im; })]));
   for (const [who, txt] of INTRO) vox(who, txt);          // the first words, ready before Begin is pressed
