@@ -162,9 +162,11 @@ const SL = (() => {
   }
 
   // ---------- the people ----------
-  const HELPF = [], REACH = [], LIFT = [], PLIC = [];
+  const HELPF = [], REACH = [], LIFT = [], PLIC = [], WADE = [];
   const META = { help: { ax: 94, ground: 309 }, reach: { ax: 70, ground: 307 }, lift: { ax: 257, ground: 307 },
-    climb: { ax: 363, ground: 342, top: 38, end: 440, sink: 25 } };
+    climb: { ax: 363, ground: 342, top: 38, end: 440, sink: 25 },
+    // Christian struggling through the mud (build 104): a loop, waist-deep in the video; ground = where his feet would be
+    wade: { ax: 174, ground: 294 } };
   const HELP_SRC = [0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 42, 44, 46, 48, 50, 52, 54, 56, 58, 60, 62, 64, 66, 68, 70, 72, 74, 76, 78, 80, 82, 84, 86, 88, 90, 92, 94, 96, 98, 100, 102, 104, 106, 108, 110, 112, 114, 116, 118, 120, 122, 124, 126, 128, 130, 132, 136, 140, 144, 148, 152, 156, 160, 164, 168, 172, 176, 180, 184, 188, 192, 196, 200, 204, 208, 212, 216, 220, 224, 228, 232, 236];
   const REACH_SRC = [3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 36, 39, 42, 45, 48, 51, 54, 57, 60, 63, 66, 69, 72, 75, 78, 80, 82, 84, 86, 88, 90, 92, 94, 96, 98, 100, 102, 104, 106, 108, 110, 112, 114, 116, 118, 120, 122, 124, 128, 134, 140, 146, 152, 158, 164, 170, 176, 182, 188, 194, 200, 206, 212, 218, 224, 230, 236];
   const LIFT_SRC = [...Array(76).keys()].map(i => i * 2).concat([...Array(11).keys()].map(i => 156 + i * 8));
@@ -175,7 +177,7 @@ const SL = (() => {
   // line, top = how high the bank stands in the video (pack pixels), end = where his feet are in the last frame. Without the pack
   // he wades to his own bank and rises out of the water as he walks into the mist.
   function preload() {
-    if (!loading) loading = Promise.all([loadPack('help', HELPF), loadPack('christian-reach', REACH), loadPack('lift', LIFT), loadPack('pliable-climb', PLIC).catch(() => {})]).catch(() => {});
+    if (!loading) loading = Promise.all([loadPack('help', HELPF), loadPack('christian-reach', REACH), loadPack('lift', LIFT), loadPack('pliable-climb', PLIC).catch(() => {}), loadPack('christian-wade', WADE).catch(() => {})]).catch(() => {});
     return loading;
   }
   // one tinted figure, feet at world (x, y); nothing below the water line when `cut` (each figure has its own small canvas)
@@ -301,6 +303,7 @@ const SL = (() => {
     } else if (ph === 'wade') {
       const v = want ? .32 : 0, p = clamp((C2.x - FALL_X) / (STUCK_X - FALL_X));
       C2.x = Math.min(STUCK_X, C2.x + v); C2.face = 1;
+      C2.wa = (C2.wa || 0) + (v ? .2 : .07);
       if (v) { C2.anim += v / CHR_STEP * 2.6; footfall(); } else C2.anim = stepAnim(C2.anim, 0, CHR_STEP, CHR_META);
       C2.y = lerp(SINK, STUCK_Y(), p);
       if (p > .45 && !fearsSaid) { fearsSaid = true; caption(FEARS); }
@@ -311,6 +314,7 @@ const SL = (() => {
     } else if (ph === 'stuck') {
       // THE HEART OF THE LEVEL: he cannot get out alone. Holding does nothing but strain; he slips back; then Help comes.
       slipT++;
+      C2.wa = (C2.wa || 0) + (want ? .26 : .06);
       if (want) { strain++; C2.anim += .5; if (strain % 40 === 1) { sfxS.strain(); rings.push({ x: C2.x, y: 0, t: 0, k: .8 }); } }
       C2.x = STUCK_X - 4 * Math.max(0, Math.sin(slipT / 50)) * smooth(60, 160, slipT);
       if (strain > 230 || slipT > 420) { ph = 'help'; C2.x = STUCK_X; talk(STUCK, () => { help = { a: 0, t: 0 }; talk(HELP, () => {}); }); }
@@ -510,10 +514,12 @@ const SL = (() => {
   function drawChr(n, fig, alpha) {
     if (alpha <= 0) return;
     const inWater = C2.y > 2 && ph !== 'look' && ph !== 'onway' && ph !== 'on' && ph !== 'drawn';
-    const walkIm = CHR[((Math.floor(C2.anim) % CHR.length) + CHR.length) % CHR.length];
+    let walkIm = CHR[((Math.floor(C2.anim) % CHR.length) + CHR.length) % CHR.length], walkM = CHR_META;
+    // in the mire he heaves and struggles (one video loop) instead of walking
+    if (WADE.length && inWater && (ph === 'wade' || ph === 'stuck' || ph === 'help')) { walkIm = WADE[Math.floor(C2.wa || 0) % WADE.length]; walkM = META.wade; }
     if (ph === 'help' && C2.reach > 0) {
       const gx = HX + GRASP.dx * CHR_K, gy = STUCK_Y();
-      if (C2.reach < 1) figure(n, 'chr', walkIm, CHR_META, C2.x, C2.y, 1, fig, true, alpha * (1 - C2.reach));
+      if (C2.reach < 1) figure(n, 'chr', walkIm, walkM, C2.x, C2.y, 1, fig, true, alpha * (1 - C2.reach));
       figure(n, 'reach', REACH[at(REACH_SRC, mv ? mv.t : 0)], META.reach, gx, gy, 1, fig, true, alpha * C2.reach);
       return;
     }
@@ -524,7 +530,7 @@ const SL = (() => {
       if (C2.stand < 1) figure(n, 'chr', walkIm, CHR_META, C2.x, C2.y, C2.face, fig, false, alpha * (1 - C2.stand) * C2.alpha);
       return;
     }
-    figure(n, 'chr', walkIm, CHR_META, C2.x, C2.y, C2.face, fig, inWater, alpha * C2.alpha);
+    figure(n, 'chr', walkIm, walkM, C2.x, C2.y, C2.face, fig, inWater, alpha * C2.alpha);
   }
 
   // for testing: SL.peek() tells where the story is
