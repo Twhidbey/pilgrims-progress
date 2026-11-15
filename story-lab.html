@@ -70,7 +70,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">story lab · build 90 · Nov 15 2026</div>
+  <div id="build">story lab · build 91 · Nov 15 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -87,7 +87,7 @@ const EVA_META={"ax": 82, "ground": 311, "frames": 80, "src": [0, 4, 8, 12, 16, 
 const STD_META={"ax": 101, "ground": 302, "frames": 79, "src": [0, 2, 4, 6, 8, 10, 12, 14, 16, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35, 37, 39, 41, 43, 45, 47, 49, 51, 53, 55, 57, 59, 61, 63, 65, 67, 69, 71, 73, 75, 77, 79, 81, 83, 85, 87, 89, 91, 93, 95, 96, 100, 104, 108, 112, 116, 120, 124, 128, 132, 136, 140, 144, 148, 152, 156, 160, 164, 168, 172, 176, 180, 184, 188, 192, 196, 200, 204, 208, 212]};
 
 // ---------- setup ----------
-const VW = 960, VH = 540, GY = 440, LEVEL_W = 7500, PANG = LEVEL_W - VW, GATE = 7040;
+let VW = 960; const VW0 = 960, VH = 540, GY = 440, LEVEL_W = 7500, PANG = LEVEL_W - VW, GATE = 7040;
 const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
 const stage = document.getElementById('stage');
 let DPR = 1;
@@ -580,7 +580,7 @@ function bakeFinish() {
 // Evangelist there (EVAN_X), then turns and runs RIGHT, back past his own door and on through the city to the gate. One
 // house in one place, and it is the book's geography: he walks out to the fields, then flees past his own door.
 const FIELD_END = 1650;      // where the wheat field ends and the street begins (the wheat sinks away before it)
-const EVAN_X = 420, HOME_X = 2150, RUN_END = 5100, NEIGH_X = 6050, GATE_STOP = 6936, DOOR0 = 7006, DOOR1 = 7120, DOORM = 7063;
+const EVAN_X = 420, HOME_X = 2150, RUN_END = 5100, NEIGH_X = 6050, GATE_STOP = 6936, DOOR0 = 6996, DOOR1 = 7136, DOORM = 7066;      // build 91: the gateway is wider (was 7006 to 7120), so the painted gatehouse is bigger
 // SKIP AHEAD (owner, build 89: "is there a way to skip ahead to a moment?"): add ?at=NAME to the link. Each name starts
 // the level just before that moment, after Evangelist. (?x=N still works for any place on the road; ?level=2 starts
 // at the Slough of Despond.)
@@ -1196,6 +1196,7 @@ function update() {
   if (G.state === 'play') story();
   const target = Math.max(0, Math.min(LEVEL_W - VW, P.x - VW * (G.evanDone ? .38 : .62) + P.face * 40));      // room in front of him, whichever way he is going
   G.cam += (target - G.cam) * .05;
+  G.zoom = (G.zoom || 1) + ((1 - (1 - ZOOM_GATE) * smooth(GATE - 1050, GATE - 380, P.x)) - (G.zoom || 1)) * .02;      // the camera draws back near the gate
 }
 // the story's triggers along the road
 function story() {
@@ -1654,35 +1655,57 @@ function lampLight(l, a, cam) {
 const glow = (x, y, size, a) => { if (a < .01) return; ctx.globalAlpha = Math.min(1, a); ctx.drawImage(GLOW, x - size / 2, y - size / 2, size, size); };
 const drops = []; { const r = rng(9); for (let i = 0; i < 240; i++) drops.push({ x: r() * (VW + 160), y: r() * VH, l: 14 + r() * 24, v: 9 + r() * 8, a: .12 + r() * .3 }); }
 let STEPS = 1;
+// THE CAMERA DRAWS BACK AT THE GATE (owner, build 90: "the gate door seems like it should be bigger - could we zoom
+// out as they get close and then it wouldn't go off screen?"). The whole picture is drawn in fixed scene units, so a
+// zoom is done by widening the screen for one frame: VW grows to 960 / Z, the pixels per scene unit (DPR) shrink by Z,
+// the camera steps left so Christian keeps his place, and everything is lowered (OYD) so the road keeps its place at
+// the bottom and more sky shows above. G.zoom eases from 1 to ZOOM_GATE as he walks up to the gate. Touches are
+// mapped back the same way (scenePt). Everything is put back after the frame.
+const ZOOM_GATE = .8;
+let OYD = 0, ZCAM = 0; const bandC = mk(48, 1);
 function draw() {
+  const Z = G.zoom || 1;
+  if (Z > .999) { OYD = 0; ZCAM = 0; drawWorld(); return; }
+  const dpr = DPR, cam = G.cam;
+  VW = VW0 / Z; DPR = dpr * Z; OYD = VH * (1 - Z) * dpr;
+  G.cam = Math.max(0, Math.min(LEVEL_W - VW, cam - (VW - VW0) * .3)); ZCAM = G.cam - cam;
+  try {
+    drawWorld();
+  } finally { VW = VW0; DPR = dpr; G.cam = cam; }
+}
+function drawWorld() {
   const cam = G.cam;
   // the weather: rain through the city, clearing toward the gate; the gold breaks through when the gate is pushed open.
   // Turning back for home pulls the rain over the scene again.
   // It ends with the light won only in the right-hand part of the picture (.12, was -.32 = gold from edge to edge).
   clearAt = lerp(1.02, .12, .55 * smooth(.45, 1, cam / PANG) + .45 * smooth(0, 1, G.gateOpen)) + G.gloom * .5;
   weatherSegs();
-  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
+  ctx.setTransform(1, 0, 0, 1, 0, OYD); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
   // sky
   const GD = Math.round((GY + 2) * DPR);
   ctx.drawImage(skyRain, 0, 0, 480, GD / DPR / 2, 0, 0, cv.width, GD);
   fade(skyGold, 0, .5, w => w, 0, GY + 2);
-  ctx.setTransform(DPR, 0, 0, DPR, 0, 0); drawLight(); ctx.setTransform(1, 0, 0, 1, 0, 0);
+  // zoomed out (see draw()): the sky above the old top edge is the sky's own top row, softened and stretched up (the
+  // sky there is one smooth gradient, so it matches); the washes and the vignette below reach up over it too (TOPY)
+  const TOPY = -OYD / DPR;
+  if (OYD > 0) { const b = bandC.getContext('2d'); ctx.setTransform(1, 0, 0, 1, 0, 0); b.clearRect(0, 0, 48, 1); b.drawImage(cv, 0, Math.ceil(OYD) + 2, cv.width, 1, 0, 0, 48, 1); ctx.drawImage(bandC, 0, 0, 48, 1, 0, 0, cv.width, Math.ceil(OYD) + 3); ctx.setTransform(1, 0, 0, 1, 0, OYD); }
+  ctx.setTransform(DPR, 0, 0, DPR, 0, OYD); drawLight(); ctx.setTransform(1, 0, 0, 1, 0, OYD);
   // the layers, far to near, each one colour, with mist between
   const vis = warm(SUN[0] / VW) * LOOK.gold, alpha = 1 - LOOK.thru * .62;
   for (let i = 0; i < 3; i++) {
     const Lr = SCN[i], off = cam * Lr.par;
     pair(Lr.cool, Lr.warm, off, Lr.q, alpha, Lr.top, GY + 2);
-    if (i) { ctx.setTransform(DPR, 0, 0, DPR, 0, 0); drawTrees(i, cam); ctx.setTransform(1, 0, 0, 1, 0, 0); }      // this layer's trees
+    if (i) { ctx.setTransform(DPR, 0, 0, DPR, 0, OYD); drawTrees(i, cam); ctx.setTransform(1, 0, 0, 1, 0, OYD); }      // this layer's trees
     // windows lit by a touch
     if (G.litw.length) {
-      ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+      ctx.setTransform(DPR, 0, 0, DPR, 0, OYD);
       for (const lw of G.litw) {
         if (lw.i !== i) continue;
         const w = lw.w, x = w[0] - off; if (x < -30 || x > VW + 30) continue;
         const a = (.6 + .4 * Lr.d) * lerp(1, .3, warm(x / VW)) * Math.min(1, (G.t - lw.t) / 45);
         glow(x + w[2] / 2, w[1] + w[3] / 2, w[3] * 6, a * .55); ctx.globalAlpha = a; ctx.fillStyle = css(PAL.win); ctx.fillRect(x, w[1], w[2], w[3]);
       }
-      ctx.globalAlpha = 1; ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.globalAlpha = 1; ctx.setTransform(1, 0, 0, 1, 0, OYD);
     }
     pair(Lr.mistC, Lr.mistW, 0, 1, Lr.mistA, Lr.mistTop, GY + 2);
     if (i === 0) {
@@ -1691,13 +1714,13 @@ function draw() {
     }
   }
   drawFog(false);      // (the far bank only: FOG[0] is drawn here, FOG[1] after the lane, see below)
-  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  ctx.setTransform(DPR, 0, 0, DPR, 0, OYD);
   // the road and everything on it
   const gcol = layerCol(1), wAt = x => warm((x - cam) / VW), on = (x, w = 0, m = 80) => x < cam + VW + m && x + w > cam - m;
   // the lane just behind the road: a low bank a little paler than the road, with his house and a few things on it
   ctx.fillStyle = hGrad(ctx, ...layerCol(.93)); ctx.fillRect(0, LEVELS.home.base, VW, GY - LEVELS.home.base + 2);
   drawRow(cam); home(cam); drawLevel('mid', cam); drawWatchers(cam); drawWheat(false);          // the wheat behind him
-  ctx.setTransform(1, 0, 0, 1, 0, 0); drawFog('lane'); ctx.setTransform(DPR, 0, 0, DPR, 0, 0);      // mist lying along the lane, round the houses' feet and in the wheat
+  ctx.setTransform(1, 0, 0, 1, 0, OYD); drawFog('lane'); ctx.setTransform(DPR, 0, 0, DPR, 0, OYD);      // mist lying along the lane, round the houses' feet and in the wheat
   ctx.save(); ctx.translate(-cam, 0);
   const grad = hGrad(ctx, gcol[0], gcol[1], 1, 1, cam);
   INK = grad; SETC = hGrad(ctx, ...layerCol(.66), 1, 1, cam); DOORC = hGrad(ctx, ...layerCol(.86), 1, 1, cam);
@@ -1812,18 +1835,18 @@ function draw() {
   drawWheat(true);                                           // the wheat he wades through
   drawLevel('f1', cam);                                      // things between us and Christian
   // grass in front
-  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.setTransform(1, 0, 0, 1, 0, OYD);
   drawFog(true);                                             // a thin veil low over the road, in front of everyone
-  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  ctx.setTransform(DPR, 0, 0, DPR, 0, OYD);
   // the rain side is dulled, the golden side is warmed
   ctx.globalCompositeOperation = 'multiply';
-  ctx.fillStyle = hGrad(ctx, mix(PAL.cloud, [255, 255, 255], .45), [255, 255, 255], .2 + LOOK.rain * .5, 0); ctx.fillRect(0, 0, VW, VH);
-  if (G.gloom > .01) { ctx.fillStyle = css(mix(PAL.cloud, [20, 22, 34], .5), .5 * G.gloom); ctx.fillRect(0, 0, VW, VH); }
+  ctx.fillStyle = hGrad(ctx, mix(PAL.cloud, [255, 255, 255], .45), [255, 255, 255], .2 + LOOK.rain * .5, 0); ctx.fillRect(0, TOPY, VW, VH - TOPY);
+  if (G.gloom > .01) { ctx.fillStyle = css(mix(PAL.cloud, [20, 22, 34], .5), .5 * G.gloom); ctx.fillRect(0, TOPY, VW, VH - TOPY); }
   ctx.globalCompositeOperation = 'soft-light';
-  ctx.fillStyle = hGrad(ctx, PAL.light, PAL.light, 0, LOOK.gold * .5); ctx.fillRect(0, 0, VW, VH);
-  if (G.flare > .02) { ctx.fillStyle = css(PAL.light, Math.min(.5, G.flare * .32)); ctx.fillRect(0, 0, VW, VH); }
+  ctx.fillStyle = hGrad(ctx, PAL.light, PAL.light, 0, LOOK.gold * .5); ctx.fillRect(0, TOPY, VW, VH - TOPY);
+  if (G.flare > .02) { ctx.fillStyle = css(PAL.light, Math.min(.5, G.flare * .32)); ctx.fillRect(0, TOPY, VW, VH - TOPY); }
   // vignette and a little paper grain so flat colour feels painted
-  ctx.globalCompositeOperation = 'multiply'; ctx.drawImage(finishC, 0, 0, VW, VH);
+  ctx.globalCompositeOperation = 'multiply'; ctx.drawImage(finishC, 0, TOPY, VW, VH - TOPY);
   // everything that shines, drawn last so it glows in the gloom
   ctx.globalCompositeOperation = 'screen';
   const dim = 1 - .7 * G.gloom;
@@ -1841,13 +1864,15 @@ function draw() {
   for (const t of G.taps) { ctx.globalAlpha = .5 * (1 - t.t / 26); ctx.strokeStyle = '#fff3d0'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(t.x, t.y, 6 + t.t * 1.3, 0, 6.2832); ctx.stroke(); }
   if (G.ring) { const [x, y] = G.ring(); ctx.strokeStyle = '#ffe6ae'; ctx.lineWidth = 2; for (const k of [0, .5]) { const ph = (G.t / 80 + k) % 1; ctx.globalAlpha = .65 * (1 - ph); ctx.beginPath(); ctx.arc(x, y, 14 + ph * 40, 0, 6.2832); ctx.stroke(); } }
   ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
+  // zoomed out (see draw()): the rain falls through the sky above the old top edge too
   // falling rain
   const n = Math.round(LOOK.rain * drops.length);
   ctx.strokeStyle = css(mix(PAL.hazeC, [255, 255, 255], .5)); ctx.lineCap = 'round'; ctx.lineWidth = 1.1;
   for (let i = 0; i < n; i++) {
     const d = drops[i]; d.y += d.v * STEPS; d.x -= d.v * .2 * STEPS; if (d.y > VH + 20) { d.y = -30; d.x = Math.random() * (VW + 160); }
     const a = d.a * (1 - warm(d.x / VW)) * (1 + .6 * G.gloom); if (a < .02) continue;
-    ctx.globalAlpha = Math.min(1, a); ctx.beginPath(); ctx.moveTo(d.x, d.y); ctx.lineTo(d.x - d.l * .2, d.y + d.l); ctx.stroke();
+    const y = d.y + TOPY * (1 - (d.y + 30) / (VH + 50));
+    ctx.globalAlpha = Math.min(1, a); ctx.beginPath(); ctx.moveTo(d.x, y); ctx.lineTo(d.x - d.l * .2, y + d.l); ctx.stroke();
   }
   ctx.globalAlpha = 1;
   drawItems();
@@ -1896,7 +1921,7 @@ function loop(ts) {
 }
 
 // ---------- input: hold to walk, touch things ----------
-function scenePt(e) { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) / r.width * VW, (e.clientY - r.top) / r.height * VH]; }
+function scenePt(e) { const r = cv.getBoundingClientRect(), Z = SL.on ? 1 : G.zoom || 1, x = (e.clientX - r.left) / r.width * VW, y = (e.clientY - r.top) / r.height * VH; return Z > .999 ? [x, y] : [x / Z + ZCAM, y / Z - VH * (1 - Z) / Z]; }
 stage.addEventListener('pointerdown', e => {
   if (e.target.closest('button')) return;
   e.preventDefault();
@@ -1993,6 +2018,6 @@ document.getElementById('on2').onclick = () => SL.start();
   for (const [who, txt] of INTRO) vox(who, txt);          // the first words, ready before Begin is pressed
 })();
 </script>
-<script src="slough.js?v=90"></script>
+<script src="slough.js?v=91"></script>
 </body>
 </html>
