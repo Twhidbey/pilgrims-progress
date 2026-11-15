@@ -25,6 +25,7 @@ button{font-family:Georgia,'Times New Roman',serif;-webkit-appearance:none;appea
 /* the words: a thin strip of light text on the dark road, under everyone's feet */
 #dlg{position:absolute;left:0;right:0;top:82.5%;bottom:0;padding:0 7.5% 0 4%;font-family:Georgia,serif;color:#f4ecdc;display:none;background:linear-gradient(rgba(14,14,20,0),rgba(14,14,20,.4) 30%);text-shadow:0 1px 3px rgba(0,0,0,.8);pointer-events:none}
 #dlg.on{display:flex;align-items:center}
+body.slough #dlg{background:linear-gradient(rgba(14,14,20,0),rgba(14,14,20,.78) 34%)}
 #dlg .who{font-style:italic;color:#e8c27c}
 #dlg .who:not(:empty)::after{content:': '}
 #dlg .txt{font-size:clamp(12px,1.85vw,19px);line-height:1.3;animation:rise .5s ease both}
@@ -65,10 +66,11 @@ body.portrait #rot{display:block}
     <h1 style="font-size:clamp(24px,5vw,48px)">Out of the city</h1>
     <p>The lights he gathered went on ahead of him.</p>
     <p style="color:rgba(244,236,220,.7)">Next: the Slough of Despond</p>
+    <button class="btn" id="on2">Go on</button>
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">story lab · build 86 · Nov 15 2026</div>
+  <div id="build">story lab · build 87 · Nov 15 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -923,6 +925,7 @@ function choose() { G.state = 'choice'; choiceEl.className = 'on'; document.body
 function pick(home) {
   if (G.state !== 'choice') return;
   choiceEl.className = ''; document.body.classList.remove('talking');
+  if (SL.on) { SL.pick(home); return; }
   const part = () => talk(PART, () => { G.obst.mode = 'home'; G.pli.mode = 'follow'; P.turn = 1; });
   if (!home) { note(67, .05, 3); talk(ONWARD, part); return; }
   // going home: a few steps back into the rain. The light dims, then he turns round again. Nothing is lost.
@@ -1158,6 +1161,8 @@ function update() {
   // LESS TAPPING (owner, build 73: "there's a lot of click thru text"): a line moves on by itself a moment after it has
   // been spoken; a tap still moves it on sooner. Lines that ask the child to do something wait as before.
   if (G.autoT > 0 && --G.autoT === 0 && G.state === 'dialog' && !G.act) next();
+  // Level 2 (slough.js) runs its own world from here, with the same words, voices and holding to walk
+  if (SL.on) { SL.update(); capTick(); return; }
   G.flare *= .975; G.gloom += (G.gloomTo - G.gloom) * .02; if (G.fam) G.door = Math.min(1, G.door + .05); else if (G.doorShut) G.door = Math.max(0, G.door - .02);      // the door is flung open (and, at the start, shut behind him)
   // Evangelist: only the calm start of his video while he waits (a slow breath). On "Do you see that shining light?"
   // he turns all the way round toward the light and raises his arm (video 46..239 at its own pace), and stays pointing.
@@ -1316,7 +1321,7 @@ function acts() {
   }
 }
 function finish() {
-  G.state = 'end'; G.ended = false;
+  G.state = 'end'; G.ended = false; SL.preload();
 }
 
 // ---------- drawing ----------
@@ -1876,7 +1881,7 @@ let lastT = 0, acc = 0;
 function loop(ts) {
   acc += Math.min(100, ts - lastT); lastT = ts; STEPS = 0;
   while (acc >= 16.6 && STEPS < 5) { update(); acc -= 16.667; STEPS++; }
-  if (STEPS) draw();
+  if (STEPS) SL.on ? SL.draw() : draw();
   requestAnimationFrame(loop);
 }
 
@@ -1888,6 +1893,7 @@ stage.addEventListener('pointerdown', e => {
   const [sx, sy] = scenePt(e);
   if (G.state !== 'title' && G.state !== 'end') G.taps.push({ x: sx, y: sy, t: 0 });
   if (G.state === 'dialog') {
+    if (G.act === 'hand') { SL.touch(sx, sy); return; }
     if (G.act === 'light') { const l = lightPos(); if (Math.hypot(sx - l.x, sy - l.y) < 95) lightTouched(); else G.actT = Math.max(G.actT, 149); return; }
     if (G.act === 'walkon') { downs.set(e.pointerId, G.t); return; }
     if (G.act === 'gate') { if (Math.abs(sx - (DOORM - G.cam)) < 120 && sy > GY - 340 && sy < GY + 40) { pushing = true; pushId = e.pointerId; } else G.actT = Math.max(G.actT, 39); return; }
@@ -1895,19 +1901,20 @@ stage.addEventListener('pointerdown', e => {
   }
   if (G.state !== 'play') return;
   if (G.roll && G.roll.t > 90 && sx > ITEM_X + 22 && sx < ITEM_X + 54 && sy < ITEM_Y + 30) { hint('roll', 'The roll says: Flee from the wrath to come.'); G.rollT = 260; return; }      // a touch on the roll in the tray
-  downs.set(e.pointerId, G.t); touchAt(sx, sy);
+  downs.set(e.pointerId, G.t); if (SL.on) SL.touch(sx, sy); else touchAt(sx, sy);
 });
 const lift = e => { if (e.type === 'blur') { downs.clear(); pushing = false; return; } downs.delete(e.pointerId); if (e.pointerId === pushId) pushing = false; };
 addEventListener('pointerup', lift); addEventListener('pointercancel', lift); addEventListener('blur', lift);
 addEventListener('contextmenu', e => e.preventDefault());
 addEventListener('keydown', e => {
-  const out = (e.code === 'ArrowLeft' || e.code === 'KeyA') && G.state === 'play' && !G.evanDone;      // at the start he walks out to the left, so the left arrow walks him too
+  const out = (e.code === 'ArrowLeft' || e.code === 'KeyA') && G.state === 'play' && !G.evanDone && !SL.on;      // at the start he walks out to the left, so the left arrow walks him too
   const go = e.code === 'Space' || e.code === 'Enter' || e.code === 'ArrowRight' || e.code === 'KeyD' || out;
   if (G.state === 'choice') { if (e.code === 'ArrowLeft') pick(true); if (e.code === 'ArrowRight') pick(false); return; }
   if (!go) return; e.preventDefault();
   if (G.state === 'dialog') {
     if (G.act === 'gate' || G.act === 'walkon') keys.push = true;
     else if (G.act === 'light') { if (!e.repeat) lightTouched(); }
+    else if (G.act === 'hand') { if (!e.repeat) SL.grip(); }
     else if (!e.repeat) next(e.code === 'Enter');             // Enter skips a line even while it is being spoken
     return;
   }
@@ -1918,7 +1925,13 @@ const sndEl = document.getElementById('snd');
 sndEl.onclick = () => { muted = !muted; sndEl.classList.toggle('off', muted); if (AC) MASTER.gain.setTargetAtTime(muted ? 0 : 1, AC.currentTime, .05); };
 
 let runN = 0;
+const L2_FIRST = new URLSearchParams(location.search).get('level') === '2';
+const END1 = [...document.querySelectorAll('#endc h1, #endc p')].map(e => e.textContent);
 function start() {
+  if (L2_FIRST) { SL.start(); return; }
+  SL.on = false; document.body.classList.remove('slough');
+  document.querySelectorAll('#endc h1, #endc p').forEach((e, i) => { e.textContent = END1[i]; }); document.getElementById('on2').style.display = '';
+  document.getElementById('chHome').textContent = 'Go home'; document.getElementById('chOn').textContent = 'Go on to the light';
   document.getElementById('title').style.opacity = 0; setTimeout(() => { document.getElementById('title').style.display = 'none'; }, 900);
   document.getElementById('endc').className = 'card';
   document.body.classList.add('playing'); G.opening = null;
@@ -1933,7 +1946,8 @@ document.getElementById('open').onclick = () => {
   if (audio()) { AC.resume(); G.opening = { t: 0, next: 70, n: 0, last: 0 }; fetchVoices(); }
   setTimeout(() => { document.getElementById('play').style.display = ''; }, 2600);
 };
-document.getElementById('again').onclick = start;
+document.getElementById('again').onclick = () => SL.on ? SL.start() : start();
+document.getElementById('on2').onclick = () => SL.start();
 
 // ---------- boot: build the scenery, fetch Christian, then the others while the child is already playing ----------
 // THE HOME SCREEN LINK STAYS UP TO DATE (owner, build 85: "is there a way to force update link when I open it"). A
@@ -1956,7 +1970,8 @@ document.getElementById('again').onclick = start;
     PROP.road = { lamp: im.lamp && bakeTint(im.lamp, .5, PROP_DETAIL) };
     for (const lv in LEVELS) { PROP[lv] = {}; for (const k in im) if (k !== 'lamp' && im[k]) PROP[lv][k] = bakeTint(im[k], LEVELS[lv].depth, LEVELS[lv].detail); } }
   reset();
-  document.getElementById('sub').textContent = 'The City of Destruction';
+  document.getElementById('sub').textContent = L2_FIRST ? 'The Slough of Despond' : 'The City of Destruction';
+  if (L2_FIRST) SL.preload();
   document.getElementById('open').style.visibility = 'visible';
   requestAnimationFrame(t => { lastT = t; loop(t); });
   loadPack('christian-turn', TURN).catch(() => {});
@@ -1965,5 +1980,6 @@ document.getElementById('again').onclick = start;
   for (const [who, txt] of INTRO) vox(who, txt);          // the first words, ready before Begin is pressed
 })();
 </script>
+<script src="slough.js?v=87"></script>
 </body>
 </html>

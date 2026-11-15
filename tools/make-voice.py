@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """Record the story's spoken lines with Google's speech service (Gemini TTS) into assets/voice/*.mp3.
 
-It reads every spoken line straight out of story-lab.html (anything written as [N, '...'], [C, '...'], [E, '...'],
-[O, '...'], [PL, '...'] or [W, '...']), so the words on screen and the recordings cannot drift apart. Each line becomes one small
+It reads every spoken line straight out of story-lab.html and slough.js (Level 2) (anything written as [N, '...'], [C, '...'],
+[E, '...'], [O, '...'], [PL, '...'], [W, '...'] or [H, '...']), so the words on screen and the recordings cannot drift apart. Each line becomes one small
 MP3 named by a hash of who says it and the words; the game works out the same name (voiceName() in story-lab.html).
 Only missing lines are recorded; recordings of lines that no longer exist are deleted (keep the files trim).
 
   GEMINI_API_KEY=... python3 tools/make-voice.py            record what is missing
-  GEMINI_API_KEY=... python3 tools/make-voice.py --redo C   record Christian's lines again (N, C, E, O, PL, W or all)
+  GEMINI_API_KEY=... python3 tools/make-voice.py --redo C   record Christian's lines again (N, C, E, O, PL, W, H or all)
 
 The key is never stored in the repo (it is public). Each recording is checked by having a Gemini model write down what
 it hears; a recording with the wrong words is thrown away and made again.
@@ -20,8 +20,9 @@ OUT = os.path.join(ROOT, 'assets', 'voice')
 API = 'https://generativelanguage.googleapis.com/v1beta'
 TTS, EAR = 'gemini-3.8-flash-tts', 'gemini-3.8-flash'
 VOICES = {'N': 'voice_zqnt5xdln1kq', 'C': 'voice_xp9kua42jfe2', 'E': 'voice_x361phwkq8td',      # storyteller, Christian, Evangelist
-          'O': 'voice_a69c9ezmlhxf', 'PL': 'voice_42c9jyj3oc93', 'W': 'voice_ttq297s4wa5y'}     # Obstinate, Pliable (boyish), Christian's wife
-WHO = {'N': '', 'C': 'Christian', 'E': 'Evangelist', 'O': 'Obstinate', 'PL': 'Pliable', 'W': 'His wife'}
+          'O': 'voice_a69c9ezmlhxf', 'PL': 'voice_42c9jyj3oc93', 'W': 'voice_ttq297s4wa5y',     # Obstinate, Pliable (boyish), Christian's wife
+          'H': ''}      # Help (Level 2): NOT YET DESIGNED; his description is in HANDOFF.md (build 87). Put the new voice ID here.
+WHO = {'N': '', 'C': 'Christian', 'E': 'Evangelist', 'O': 'Obstinate', 'PL': 'Pliable', 'W': 'His wife', 'H': 'Help'}
 KEY = os.environ.get('GEMINI_API_KEY', '')
 
 def call(path, body):
@@ -58,9 +59,9 @@ def record(code, text, dest):
 
 def main():
     redo = sys.argv[sys.argv.index('--redo') + 1] if '--redo' in sys.argv else ''
-    src = open(os.path.join(ROOT, 'story-lab.html'), encoding='utf-8').read()
+    src = ''.join(open(os.path.join(ROOT, f), encoding='utf-8').read() for f in ('story-lab.html', 'slough.js'))
     lines = []
-    for code, text in re.findall(r"\[(N|C|E|O|PL|W), '((?:[^'\\]|\\.)*)'", src):
+    for code, text in re.findall(r"\[(N|C|E|O|PL|W|H), '((?:[^'\\]|\\.)*)'", src):
         text = text.replace("\\'", "'")
         if (code, text) not in lines: lines.append((code, text))
     os.makedirs(OUT, exist_ok=True)
@@ -69,6 +70,7 @@ def main():
         fn = name(WHO[code], text) + '.mp3'; keep.add(fn); dest = os.path.join(OUT, fn)
         if os.path.exists(dest) and redo not in (code, 'all'): continue
         if not KEY: sys.exit('Set GEMINI_API_KEY first.')
+        if not VOICES[code]: print('no voice yet for', WHO[code], '(skipped):', text); continue
         n = record(code, text, dest)
         print(f'{fn}  {os.path.getsize(dest) // 1024:3d} KB  {WHO[code] or "Storyteller":11s} {text}' + (f'  (take {n})' if n > 1 else ''))
     for fn in os.listdir(OUT):
