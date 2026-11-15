@@ -64,13 +64,13 @@ body.portrait #rot{display:block}
   </div>
   <div id="endc" class="card">
     <h1 style="font-size:clamp(24px,5vw,48px)">Out of the city</h1>
-    <p>The lights he gathered went on ahead of him.</p>
+    <p>He went on toward the light, and Pliable with him.</p>
     <p style="color:rgba(244,236,220,.7)">Next: the Slough of Despond</p>
     <button class="btn" id="on2">Go on</button>
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">story lab · build 94 · Nov 15 2026</div>
+  <div id="build">story lab · build 95 · Nov 15 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -1660,7 +1660,8 @@ function lampLight(l, a, cam) {
   c.globalAlpha = a; c.fillStyle = fg; c.beginPath(); c.ellipse(x + 2, y + 3, 4.5 * fl, 7 * fl, 0, 0, 7); c.fill();      // the flame
   const sg = c.createLinearGradient(0, top + 40, 0, GY); sg.addColorStop(0, css(PAL.win, .22 * a)); sg.addColorStop(.3, css(PAL.win, .07 * a)); sg.addColorStop(1, css(PAL.win, 0));
   c.globalAlpha = 1; c.fillStyle = sg; c.fillRect(px + 17, top + 30, 5, GY - top - 30);      // its side of the post
-  c.globalAlpha = .4 * a * fl; c.drawImage(GLOW, x - 120, GY - 8, 240, 26);       // a flat pool on the road below
+  { const R = 300, g = c.createRadialGradient(0, 0, 0, 0, 0, R); g.addColorStop(0, css(PAL.light, .55 * a * fl)); g.addColorStop(.3, css(PAL.win, .32 * a * fl)); g.addColorStop(.65, css(PAL.win, .1 * a * fl)); g.addColorStop(1, css(PAL.win, 0));
+    c.save(); c.globalAlpha = 1; c.translate(x, GY + 4); c.scale(1, .13); c.fillStyle = g; c.fillRect(-R, -R, 2 * R, 2 * R); c.restore(); }      // a wide flat pool on the road below (build 95, owner: "can be much bigger")
 }
 const glow = (x, y, size, a) => { if (a < .01) return; ctx.globalAlpha = Math.min(1, a); ctx.drawImage(GLOW, x - size / 2, y - size / 2, size, size); };
 const drops = []; { const r = rng(9); for (let i = 0; i < 240; i++) drops.push({ x: r() * (VW + 160), y: r() * VH, l: 14 + r() * 24, v: 9 + r() * 8, a: .12 + r() * .3 }); }
@@ -2029,6 +2030,6 @@ document.getElementById('on2').onclick = () => SL.start();
   for (const [who, txt] of INTRO) vox(who, txt);          // the first words, ready before Begin is pressed
 })();
 </script>
-<script src="slough.js?v=94"></script>
+<script src="slough.js?v=95"></script>
 </body>
 </html>
