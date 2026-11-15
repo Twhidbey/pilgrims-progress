@@ -290,6 +290,9 @@ The game is `index.html` (one file, no build step). `style-lab.html` is the art-
 - Pliable's bug: at the instant the level ended, his target changed and a negative step moved him back 48 px, half visible in the gateway.
 - Tested in a headless browser: whole level plays, 35 lights, no errors; pictures looked at with the guides on. Not seen moving.
 
+## Build 63, Nov 15 2026: the level list (notes only, nothing in the game changed)
+The owner asked what follows the Slough of Despond, what that level should hold, and how many levels the game will have at this pace; then asked for the list to be kept. It is in `CLAUDE.md` under "The whole game: about 18 levels", with the Level 3 proposal (Mr. Worldly Wiseman and the hill) and its three open questions. The owner has not yet answered those.
+
 ## Open questions for the owner
 0. **Story lab (build 25):** is this the right shape for the game? How does it sound? Is "Go home" a good choice to offer? Should it replace the game now?
 1. How does the game feel on the phone: smooth? Anything hard to see (dark Christian against dark houses, crates, barrels)?
