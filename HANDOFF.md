@@ -2,15 +2,17 @@
 
 The game is `index.html` (one file, no build step). `style-lab.html` is the art-style test page. `CLAUDE.md` maps the code and records the owner's decisions. Work on **`main`** and push after every change: pushing IS publishing (GitHub Pages, https://twhidbey.github.io/pilgrims-progress/). Bump the build stamp in both pages on every push and tell the owner when it is live (a phone may need `?v=N` on the link). Keep this file and `CLAUDE.md` updated. Public repo: no personal details.
 
-## START HERE (written at build 40, Nov 15 2026, for a new chat)
+## START HERE (written at build 41, Nov 15 2026, for a new chat)
 
 **What is live.** https://twhidbey.github.io/pilgrims-progress/story-lab.html is the game being worked on: Level 1, "The City of Destruction", as a story walk. The main link (`index.html`) is still the OLD jumping game from build 24. Everything below is about `story-lab.html`; `CLAUDE.md` maps its code.
 
 **What the level is now (in order, following the book):** title ("Open the book", a few quiet notes, "Begin") → rain, Christian with his book and burden → hold to walk; lights on the road sing Amazing Grace one note each → Evangelist: the child touches the far light → his own cottage: his wife and two children call from the lit doorway; the child holds to run on; he runs with his hands over his ears crying "Life! Life! Eternal life!" (the world goes muffled) → he tires and walks; neighbours' windows light → Obstinate and Pliable catch him; the child chooses "Go home" or "Go on to the light" → the road with Pliable → the child pushes the city gate open; the gold breaks through; they walk into the gate and the tune plays whole. All 31 lines are recorded voices (six designed voices).
 
+**Build 41 (the last thing built):** the light from the cottage door no longer lies flat across the lane and road (owner: it "is running across multiple levels and flattening them when it should be making contours on ground"; they like the effect and asked for a way to keep it). It now lights each piece of ground in that ground's own colour, fades with distance, and leaves the step between lane and road dark.
+
 **Done in build 40 (the last thing built):** lights stay by his head when he runs; Pliable stays gone after the gate; Enter skips a line; the speaker button removed; **depth levels on one perspective rule** (see `CLAUDE.md`, "DEPTH"); a low cottage on the middle level with the family in its doorway; few special things, one at a time; puddle discs replaced by a wet road with rings.
 
-**The owner has NOT yet seen build 40 play.** Their last words were that the layers were "off by quite a bit" (that was the by-eye version before the rule) and "puddles look off". First thing in a new chat: ask how build 40 looks, and offer `story-lab.html?lines` (the guide lines) if anything still looks wrong.
+**The owner has seen stills of build 40 (and commented only on the door light, fixed in 41), but may not have played it.** Their last words were that the layers were "off by quite a bit" (that was the by-eye version before the rule) and "puddles look off". First thing in a new chat: ask how build 40 looks, and offer `story-lab.html?lines` (the guide lines) if anything still looks wrong.
 
 **Open, in the order I would take them:**
 1. **The owner's verdict on build 40's depth.** Known doubts: the far row of houses does not obey the rule (raised on purpose so it shows; amber in `?lines`); things on `f1` hide Christian's legs as he passes (true to perspective, but the owner may not like it); `f2` shows dark shapes low in the picture that may read as blobs (the owner asked "what's this?" about the old leafy boughs).

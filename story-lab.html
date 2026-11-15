@@ -68,7 +68,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">story lab · build 40 · Nov 15 2026</div>
+  <div id="build">story lab · build 41 · Nov 15 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -1169,10 +1169,22 @@ function draw() {
     const x = r.par ? r.x - cam * r.par + cam : r.x, rx = (4 + t * .55) * r.r;
     ctx.strokeStyle = css(mix(PAL.hazeC, PAL.hazeW, wAt(x)), .55 * (1 - t / 70) * r.a); ctx.beginPath(); ctx.ellipse(x, r.y, rx, Math.max(.6, rx * (r.y - HORIZON) / 1320 * 1.6), 0, 0, 6.2832); ctx.stroke();
   }
-  // light from his own open door lies across the lane and the road
+  // Light from his own open door lies on the ground in front of it. It used to be one flat pale shape laid over the lane and
+  // the road alike, which flattened the levels (owner, build 41). Now it lights each piece of ground in that ground's own
+  // colour ('color-dodge' brightens what is there, so the paler lane stays paler than the road), it is brightest by the
+  // door and dies away before the bottom of the picture, and the little step down from the lane to the road stays dark,
+  // so the light bends over the ground's shape. Things nearer to us are drawn later and stand dark against it.
   if (G.door > .02) {
-    const e = G.door, hx = doorX(cam) + cam, top = LEVELS.mid.base, g = ctx.createLinearGradient(0, top, 0, VH); g.addColorStop(0, css(PAL.win, .42 * e)); g.addColorStop(1, css(PAL.win, 0));
-    ctx.globalCompositeOperation = 'screen'; ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(hx - 24, top); ctx.lineTo(hx + 26, top); ctx.lineTo(hx + 190, VH); ctx.lineTo(hx - 100, VH); ctx.closePath(); ctx.fill(); ctx.globalCompositeOperation = 'source-over';
+    const e = G.door, hx = doorX(cam) + cam, top = LEVELS.mid.base, far = GY + 86, lamp = mix(PAL.win, [0, 0, 0], .42);
+    const edge = y => { const t = (y - top) / (VH - top); return [hx - 22 - 100 * t, hx + 24 + 180 * t]; };      // the shape widens toward us
+    const patch = (y0, y1, a0, a1) => {
+      const g = ctx.createLinearGradient(0, y0, 0, y1); g.addColorStop(0, css(lamp, a0 * e)); g.addColorStop(1, css(lamp, a1 * e));
+      const [l0, r0] = edge(y0), [l1, r1] = edge(y1); ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(l0, y0); ctx.lineTo(r0, y0); ctx.lineTo(r1, y1); ctx.lineTo(l1, y1); ctx.closePath(); ctx.fill();
+    };
+    ctx.globalCompositeOperation = 'color-dodge';
+    patch(top, GY - 1, 1, .8);                                 // on the lane, close to the door
+    patch(GY + 3, far, .62, 0);                                // on the road, a step lower and further from the door, fading out
+    ctx.globalCompositeOperation = 'source-over';
   }
   // light from the open gate lies across the road
   if (G.gateOpen > .02) {
