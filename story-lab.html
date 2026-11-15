@@ -68,7 +68,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">story lab · build 57 · Nov 15 2026</div>
+  <div id="build">story lab · build 58 · Nov 15 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -85,7 +85,7 @@ const EVA_META={"ax": 82, "ground": 311, "frames": 80, "src": [0, 4, 8, 12, 16, 
 const STD_META={"ax": 101, "ground": 302, "frames": 79, "src": [0, 2, 4, 6, 8, 10, 12, 14, 16, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35, 37, 39, 41, 43, 45, 47, 49, 51, 53, 55, 57, 59, 61, 63, 65, 67, 69, 71, 73, 75, 77, 79, 81, 83, 85, 87, 89, 91, 93, 95, 96, 100, 104, 108, 112, 116, 120, 124, 128, 132, 136, 140, 144, 148, 152, 156, 160, 164, 168, 172, 176, 180, 184, 188, 192, 196, 200, 204, 208, 212]};
 
 // ---------- setup ----------
-const VW = 960, VH = 540, GY = 440, LEVEL_W = 6650, PANG = LEVEL_W - VW, GATE = 6190;
+const VW = 960, VH = 540, GY = 440, LEVEL_W = 7500, PANG = LEVEL_W - VW, GATE = 7040;
 const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
 const stage = document.getElementById('stage');
 let DPR = 1;
@@ -176,7 +176,7 @@ function house(x, gy, w, h, s, tall) {
     poly([[cx, top], [cx, ct], [cx - 1.2 * s, ct], [cx - 1.2 * s, ct - 2.5 * s], [cx + cw + 1.2 * s, ct - 2.5 * s], [cx + cw + 1.2 * s, ct], [cx + cw, ct], [cx + cw, top]]);
   }
   if (!tall && s > .4) {                  // windows that may be lit
-    const cols = Math.max(1, Math.round(w / (24 * s))), rows = Math.max(1, Math.floor(h / (34 * s)));
+    const cols = Math.max(1, Math.round(w / (38 * s))), rows = Math.max(1, Math.min(2, Math.floor(h / (40 * s))));
     for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++)
       L.wins.push([x + (c + .5) * w / cols - 3 * s + ln * (1 - r / rows), top + 12 * s + r * 32 * s, 6 * s, 8.5 * s, R()]);
   }
@@ -238,24 +238,48 @@ function buildWheat() {
 }
 // the wind in the middle layer: long slow waves running with the rain (a lean, 0 = upright)
 const wheatWind = (x, t) => .07 * Math.sin(x * .0075 + t * .017) + .025 * Math.sin(x * .019 + t * .031);
+// The field itself, behind the three near layers: a pale plane of crop running back to the hedgerow on the rise (the near
+// scenery layer's ridge, SCN[2].gy), so the wheat is one field and not strips in front of a dark hill. Slow bands of
+// light cross it too, flattened by distance.
+function wheatPlane(cam) {
+  const N2 = SCN[2], off = cam * N2.par, xe = N2.field - 30 - off, c = ctx; if (xe < 0) return;
+  const pl = new Path2D(), col = layerCol(.34), x1 = Math.min(VW + 10, xe); pl.moveTo(-10, GY - 30);
+  for (let x = -10; x <= x1; x += 10) pl.lineTo(x, N2.gy(x + off) - 4);      // a little over the ridge, so the dark layer behind does not show as a line
+  pl.lineTo(x1, GY - 30); pl.closePath();
+  c.fillStyle = hGrad(c, col[0], col[1]); c.fill(pl);
+  c.save(); c.clip(pl);
+  const span = VW + 900;
+  for (let k = 0; k < 6; k++) {
+    const d = (k * .37) % 1, y = lerp(GY - 118, GY - 62, d), x = (((k * 311 - G.t * lerp(.22, .4, d) - cam * lerp(.62, .88, d)) % span) + span) % span - 450;
+    c.save(); c.translate(x, y); c.rotate(-.03); c.scale(lerp(190, 330, d), lerp(4, 9, d));
+    const g = c.createRadialGradient(0, 0, 0, 0, 0, 1); g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(1, 'rgba(255,255,255,0)');
+    c.globalAlpha = .2; c.fillStyle = g; c.fillRect(-1, -1, 2, 2); c.restore();
+  }
+  c.restore();
+}
 function drawWheat(front) {
   const cam = G.cam, c = ctx; if (cam > FIELD_END + 200) return;
   c.lineCap = 'round';
+  if (!front) wheatPlane(cam);
   for (const r of WHEAT) {
     if (!!r.front !== front) continue;
     const { h, ph, p, base } = r, off = cam * p + 30, col = layerCol(r.d);
     const i0 = Math.max(0, Math.floor((off - 70) / WHEAT_GAP)), i1 = Math.min(r.n, Math.ceil((off + VW + 70) / WHEAT_GAP)); if (i1 - i0 < 2) continue;
-    const body = new Path2D(), awns = new Path2D(); body.moveTo(i0 * WHEAT_GAP - off, base + 4);
+    const body = new Path2D(), awns = new Path2D(), ears = new Path2D(), grain = new Path2D(); body.moveTo(i0 * WHEAT_GAP - off, base + 4);
     for (let i = i0; i < i1; i++) {
       const sx = i * WHEAT_GAP - off, hh = h[i]; if (hh < 1) { body.lineTo(sx, base + 4); continue; }
       const a = -.08 + (r.wind ? wheatWind(i * WHEAT_GAP, G.t) : 0), bx = sx + a * hh, by = base - hh;
       body.lineTo(bx, by);
       const k = Math.min(1, hh / 30) * p, el = (7 + 7 * ph[i]) * k, sp = (ph[i] - .5) * 5 * k;      // the soft top: fine awns, fanned a little
       awns.moveTo(bx, by + 2); awns.lineTo(bx + a * 2 * el + sp, by - el); awns.moveTo(bx + 1.5, by + 2); awns.lineTo(bx + 1.5 + a * 2 * el - sp * .6, by - el * .7);
+      ears.moveTo(bx, by + 4 * k); ears.lineTo(bx + a * 9 * k + sp * .3, by - 3 * k);                      // the ear itself: a short heavy head that nods with the lean
+      if (i % 2) { grain.moveTo(bx, by + 5 * k); grain.lineTo(sx + (ph[i] - .5) * 2, base + 2); }      // the stems: fine upright streaks down the face of the crop
     }
     body.lineTo((i1 - 1) * WHEAT_GAP - off, base + 4); body.closePath();
     c.strokeStyle = c.fillStyle = hGrad(c, col[0], col[1]);
     c.fill(body); c.lineWidth = .9 * p; c.globalAlpha = .7; c.stroke(awns); c.globalAlpha = 1;
+    c.lineWidth = 2.1 * p; c.stroke(ears);
+    c.strokeStyle = hGrad(c, layerCol(r.d + .22)[0], layerCol(r.d + .22)[1], .3, .3); c.lineWidth = .8 * p; c.stroke(grain);      // darker between the stems, toward the ground
     if (r.wind) {                                            // light travelling through the crop with the wind
       c.save(); c.clip(body); c.fillStyle = hGrad(c, PAL.hazeC, PAL.hazeW, .26, .3);
       const span = VW + 700, cy = base - r.h0 * .6;
@@ -353,18 +377,21 @@ function buildScenery() {
       const lift = near ? 1 - smooth(field - 420, field - 40, x) : 0;      // the field rises gently behind the wheat
       return base - amp * v * cityFlat - woods * cityFlat - lift * (62 + 26 * v);
     };
-    L = { d, par, W, base, s, shapes: [], wins: [], steeples: [] };
+    L = { d, par, W, base, s, gy, field, shapes: [], wins: [], steeples: [] };
     if (first) { const bp = [[-30, VH + 20]]; for (let x = -30; x <= W + 6; x += 2.5) bp.push([x, base - 34 - amp * 1.25 * range(x * .8 + 4321, 1000, 1.5)]); bp.push([W + 6, VH + 20]); poly(bp); L.back = L.shapes.pop(); }
     const hp = [[-30, VH + 20]]; for (let x = -30; x <= W + 6; x += 2.5) hp.push([x, gy(x)]); hp.push([W + 6, VH + 20]);
     poly(hp);
     if (!first) {
       // the city
-      const hh = lerp(62, 118, d) * (near ? 1.45 : 1.2);
+      // Build 57 (owner: "building in background too tall - they didn't have skyscrapers back then ... want a 16th (or
+      // appropriate) century look but not too much detail"): low houses of one or two floors under steep roofs, wider
+      // than they are tall; only the church spires stand high; few windows, and few of them lit.
+      const hh = lerp(62, 118, d) * (near ? .9 : .72);
       let nextSteeple = rr(300, 700) * s;
       for (let x = near ? field : -50 * s - R() * 50 * s; x < edge;) {
         const tp = clamp((edge - x) / (300 * s), .5, 1) * clamp(.55 + (x - field) / 260, .55, 1);
-        const w = rr(44, 88) * s, h = rr(.5, 1) * hh * tp;
-        if (d < .55 && x > nextSteeple) { nextSteeple = x + rr(500, 1100) * s; const tw = rr(20, 26) * s; house(x, gy(x + tw / 2), tw, hh * 1.25, s, true); x += tw * .7; continue; }
+        const w = rr(58, 112) * s, h = rr(.55, 1) * hh * tp;
+        if (d < .55 && x > nextSteeple) { nextSteeple = x + rr(500, 1100) * s; const tw = rr(20, 26) * s; house(x, gy(x + tw / 2), tw, hh * 1.7, s, true); x += tw * .7; continue; }
         house(x, gy(x + w / 2), w, h, s);
         x += w + rr(-9, 5) * s; if (R() < .1) x += rr(14, 50) * s;
       }
@@ -383,7 +410,7 @@ function buildScenery() {
     for (const [m, k] of [[L.cool, 1], [L.warm, .25]]) {
       const c = m.getContext('2d'); c.scale(q, q);
       for (const w of L.wins) {
-        if (w[4] > LOOK.win * .6) continue;
+        if (w[4] > LOOK.win * .34) continue;
         const a = (.55 + .45 * d) * k, cx = w[0] + w[2] / 2, cy = w[1] + w[3] / 2, g = c.createRadialGradient(cx, cy, 0, cx, cy, w[3] * 2.4);
         g.addColorStop(0, css(PAL.win, a * .45)); g.addColorStop(1, css(PAL.win, 0));
         c.fillStyle = g; c.fillRect(cx - w[3] * 2.6, cy - w[3] * 2.6, w[3] * 5.2, w[3] * 5.2);
@@ -480,7 +507,7 @@ function bakeFinish() {
 // Evangelist there (EVAN_X), then turns and runs RIGHT, back past his own door and on through the city to the gate. One
 // house in one place, and it is the book's geography: he walks out to the fields, then flees past his own door.
 const FIELD_END = 1650;      // where the wheat field ends and the street begins (the wheat sinks away before it)
-const EVAN_X = 650, HOME_X = 2150, RUN_END = 4250, NEIGH_X = 5200, GATE_STOP = 6086, DOOR0 = 6156, DOOR1 = 6270, DOORM = 6213;
+const EVAN_X = 650, HOME_X = 2150, RUN_END = 5100, NEIGH_X = 6050, GATE_STOP = 6936, DOOR0 = 7006, DOOR1 = 7120, DOORM = 7063;
 const TEST_X = +(new URLSearchParams(location.search).get('x')) || 0, START_X = TEST_X || HOME_X - 70;   // he starts beside his own door; ?x=3600 starts further along, after Evangelist (for testing)
 // The lights on the road are a tune: "Amazing Grace" (New Britain, 1829), one phrase per stretch of road.
 // Each light is one note. They are spaced by the length of each note, so walking at his steady pace plays the tune in time.
@@ -489,8 +516,8 @@ const BEAT = 58, NOTE = { D: 62, E: 64, G: 67, A: 69, B: 71, d: 74 };
 const PHRASES = [
   { x: 1880, back: true, at: 0, n: [[0, 'D'], [1, 'G'], [3, 'B'], [3.5, 'G'], [4, 'B'], [6, 'A'], [7, 'G'], [9, 'E'], [10, 'D']] },
   { x: 1230, back: true, at: 12, n: [[0, 'D'], [1, 'G'], [3, 'B'], [3.5, 'G'], [4, 'B'], [6, 'A'], [7, 'd']] },
-  { x: 4500, at: 24, n: [[0, 'B'], [1, 'd'], [2.5, 'B'], [3, 'd'], [3.5, 'B'], [4, 'G'], [6, 'D'], [7, 'E'], [8.5, 'G'], [9, 'G'], [9.5, 'E'], [10, 'D']] },
-  { x: 5550, at: 36, n: [[0, 'D'], [1, 'G'], [3, 'B'], [3.5, 'G'], [4, 'B'], [6, 'A'], [7, 'G']] },
+  { x: 5350, at: 24, n: [[0, 'B'], [1, 'd'], [2.5, 'B'], [3, 'd'], [3.5, 'B'], [4, 'G'], [6, 'D'], [7, 'E'], [8.5, 'G'], [9, 'G'], [9.5, 'E'], [10, 'D']] },
+  { x: 6400, at: 36, n: [[0, 'D'], [1, 'G'], [3, 'B'], [3.5, 'G'], [4, 'B'], [6, 'A'], [7, 'G']] },
 ];
 // the whole tune, sung through once when the gate opens, with a low note under each bar
 const TUNE = [], BASS = [43, 43, 48, 43, 43, 43, 50, 50, 43, 43, 48, 43, 43, 50, 43, 43];
@@ -501,24 +528,24 @@ function buildLevel() {
   LIGHTS.length = LAMPS.length = FLOCKS.length = CAPS.length = 0;
   const light = (x, midi) => LIGHTS.push({ x, y: GY - 60 - clamp(midi - 62, -6, 12) * 5.2, midi, got: false, ph: rnd() * 6 });
   for (const ph of PHRASES) for (const [b, k] of ph.n) light(ph.x + (ph.back ? -b : b) * BEAT, NOTE[k]);      // 'back': a phrase met walking left, out into the field
-  for (const x of [2700, 5750]) LAMPS.push({ x, lit: 0 });                       // few and far apart: they count as special things too (none in the field)
+  for (const x of [2700, 6600]) LAMPS.push({ x, lit: 0 });                       // few and far apart: they count as special things too (none in the field)
   // Things, each on a depth level (LEVELS). Owner's rule (build 40): no more than one special thing in the picture at a
   // time, because their likeness distracts. So there are few of them, about one every 600 of road counting the lamps and his
   // house, never two of a kind near each other, and they take turns between the levels. (Two can share the picture for a
   // moment at its edges, one leaving as the next arrives.)
   // a = where on the road Christian is when the thing is level with him. Things on 'f1' hide him as he passes, so they
   // must stand where he never stops to talk (build 43).
-  // Sizes on 'mid' must agree with his house: its doorway is 146 high, so a cart wheel is about 70.
+  // The cart was removed in build 58 (owner asked; one thing fewer).
   // The market stall and the barrel were removed in build 44 (owner: "need this to be pretty stripped down and elegant").
   THINGS.length = 0;
   const flock = (x, y, n, par = 1, s = 1, lv = 'road') => { const b = []; for (let i = 0; i < n; i++) b.push({ dx: (i - (n - 1) / 2) * 13 + (rnd() - .5) * 5, s: .85 + rnd() * .3, f: rnd() < .5 ? 1 : -1 }); FLOCKS.push({ x, y, b, par, s, lv, away: false }); };
-  for (const [lv, k, a, birds] of [['mid', 'wall', 3150, 0], ['mid', 'cart', 4700, 3], ['f1', 'crates', 5650, 0]]) {
+  for (const [lv, k, a, birds] of [['mid', 'wall', 3500, 2], ['f1', 'crates', 6500, 0]]) {
     const L = LEVELS[lv], m = PROP_META[k], t = { lv, k, w: m.w * L.k, h: m.h * L.k }; t.x = lineUp(a, L.par) - t.w / 2; THINGS.push(t);
     if (birds) flock(t.x + t.w * m.perch[0], L.base + 3 - m.perch[1] * L.k, birds, L.par, L.k, lv);      // birds sit on its top
   }
   flock(GATE - 155, GY - 162, 4);                                    // and on the city wall by the gate
   // words said while walking (nobody stops)
-  CAPS.push({ x: 5530, pli: true, lines: [[PL, 'Come, neighbor Christian, tell me more of the place where we are going.'], [C, 'There shall be no more crying, nor sorrow. And we shall be given garments that make us shine like the sun.'], [PL, 'Glad am I to hear of these things. Come on, let us mend our pace!'], [C, 'I cannot go so fast as I would, because of this burden that is on my back.']] });      // {26} to {28}
+  CAPS.push({ x: 6380, pli: true, lines: [[PL, 'Come, neighbor Christian, tell me more of the place where we are going.'], [C, 'There shall be no more crying, nor sorrow. And we shall be given garments that make us shine like the sun.'], [PL, 'Glad am I to hear of these things. Come on, let us mend our pace!'], [C, 'I cannot go so fast as I would, because of this burden that is on my back.']] });      // {26} to {28}
 }
 
 // ---------- sound: everything is made in the browser (no sound files) ----------
@@ -681,7 +708,7 @@ function next(force) {
 // ---------- the voices: one small recording per line, in assets/voice (made by tools/make-voice.py) ----------
 // A line's file is named by a sum of who says it and the words, so the words on screen and the recording always belong together.
 // A line with no recording is simply silent.
-const VOX = new Map(), VOICE_V = 3;       // bump VOICE_V when recordings change, so phones fetch the new ones
+const VOX = new Map(), VOICE_V = 4;       // bump VOICE_V when recordings change, so phones fetch the new ones
 let voxSrc = null, sayN = 0;
 function voiceName(who, txt) { let h = 0x811c9dc5; const t = who + '|' + txt; for (let i = 0; i < t.length; i++) h = Math.imul(h ^ t.charCodeAt(i), 0x01000193) >>> 0; return h.toString(16).padStart(8, '0'); }
 function vox(who, txt) {
@@ -753,44 +780,27 @@ const FAMILY = [
   [W, 'Christian! Come back!', 'walkon', () => { P.turn = 1; G.walkFrom = P.x; G.runZone = true; coverEars(); }],
 ];
 const LIFE = [[C, 'Life! Life! Eternal life!', 'quick'], [N, 'So he did not look behind him, but fled on.', 'quick']];      // said as he runs ('quick': they pass as soon as they are heard)
-// {19} to {24}: the neighbours come out while he is still running; two set out to fetch him back, and overtake him.
-// BOOK_NEIGHBOURS: the book's wording for this part is written (the second of each pair below) but NOT YET RECORDED: the
-// owner's Google credit ran out in build 56 after 20 of 32 lines. Until then the older words, which have recordings, are
-// used. When there is credit: run `python3 tools/make-voice.py` (it records every line it finds here, both sets), then
-// set BOOK_NEIGHBOURS to true, run the tool again (it deletes the old recordings) and bump VOICE_V.
-const BOOK_NEIGHBOURS = false, either = (old, book) => BOOK_NEIGHBOURS ? book : old;
-const WATCH = either(
-  [[N, 'People watched from their windows. Some laughed. Some called him back.', 'quick']],
-  [[N, 'The neighbors also came out to see him run.', 'quick'], [N, 'Some mocked. Some threatened. And some cried after him to come back.', 'quick']]);
-const FETCH = either(
-  [[N, 'The burden was heavy. He could not run for long.']],
-  [[N, 'Two of them resolved to fetch him back by force. The name of one was Obstinate, and the other Pliable.']]);
-const NEIGH = either([
-  [N, 'Two neighbors hurried after him.'],
-  [O, 'Come back home, Christian! It is warm and dry at home.'],
-], [
+// {19} to {24}: the neighbours come out while he is still running; two set out to fetch him back, and overtake him
+const WATCH = [[N, 'The neighbors also came out to see him run.', 'quick'], [N, 'Some mocked. Some threatened. And some cried after him to come back.', 'quick']];
+const FETCH = [[N, 'Two of them resolved to fetch him back by force. The name of one was Obstinate, and the other Pliable.']];
+const NEIGH = [
   [N, 'In a little time they overtook him.'],
   [C, 'Neighbors, why have you come?'],
   [O, 'To persuade you to go back with us.'],
   [C, 'That can by no means be. Be content, good neighbors, and go along with me.'],
   [O, 'What! And leave our friends and our comforts behind us?'],      // {20}; then the child chooses (the choice is ours, not the book's)
-]);
+];
 const HOME = [
   [N, 'Christian turned back toward home. The rain fell harder, and the light grew dim.'],
   [C, 'No. I cannot stay here. My burden is too heavy.', null, () => { G.gloomTo = 0; }],
   [C, 'Come with me, neighbors! I have seen the light.'],
 ];
-const ONWARD = either(
-  [[C, 'No. I have seen the light. Come with me!']],
-  [[C, 'Yes. For all that you leave is not worth a little of what I am seeking. Come away, and prove my words.']]);
-const PART = either([
-  [O, 'Not me! I am going home.'],
-  [PL, 'I will come with you, Christian!'],
-], [
+const ONWARD = [[C, 'Yes. For all that you leave is not worth a little of what I am seeking. Come away, and prove my words.']];
+const PART = [       // {21} to {24}
   [O, 'Tush! Away with your book. Come then, neighbor Pliable, let us go home without him.'],
   [PL, 'If what the good Christian says is true, the things he seeks are better than ours. I will go along with this good man.'],
   [O, 'What! More fools still? I will go back to my place.'],
-]);
+];
 const GATEWORDS = [
   [N, 'At the edge of the city stood a great gate. It was shut.'],
   [N, 'It was heavy. Help Christian push it open.', 'gate'],
@@ -956,7 +966,7 @@ function lightWindow(i, w, quiet) {
 function nearWindow(i, sx, sy, rad) {
   const Lr = SCN[i], off = G.cam * Lr.par; let best = null, bd = rad;
   for (const w of Lr.wins) {
-    if (w[5] || w[4] <= LOOK.win * .6 || w[1] > GY - 8) continue;
+    if (w[5] || w[4] <= LOOK.win * .34 || w[1] > GY - 8) continue;
     const d = Math.hypot(w[0] - off - sx, w[1] - sy); if (d < bd) { bd = d; best = w; }
   }
   return best;
@@ -1102,7 +1112,7 @@ function effects() {
     for (const l of LAMPS) if (!l.lit && l.x > cam + 20 && l.x < cam + VW - 20) c.push([l.x + LAMP_DX, LAMP_Y, 1]);
     for (const fl of FLOCKS) { const x = fl.x - cam * fl.par; if (!fl.away && x > 20 && x < VW - 20) c.push([fl.x, fl.y - 8, fl.par]); }
     for (const st of SCN[1].steeples) { const x = st[0] - cam * SCN[1].par; if (x > 20 && x < VW - 20) c.push([st[0], st[1] + 6, SCN[1].par]); }
-    const ws = SCN[2].wins; for (let k = 0; k < 14; k++) { const w = ws[Math.random() * ws.length | 0], x = w[0] - cam * SCN[2].par; if (!w[5] && w[4] > LOOK.win * .6 && x > 20 && x < VW - 20 && w[1] < GY - 10) { c.push([w[0] + w[2] / 2, w[1] + w[3] / 2, SCN[2].par]); break; } }
+    const ws = SCN[2].wins; for (let k = 0; k < 14; k++) { const w = ws[Math.random() * ws.length | 0], x = w[0] - cam * SCN[2].par; if (!w[5] && w[4] > LOOK.win * .34 && x > 20 && x < VW - 20 && w[1] < GY - 10) { c.push([w[0] + w[2] / 2, w[1] + w[3] / 2, SCN[2].par]); break; } }
     if (c.length) { const g = c[Math.random() * c.length | 0]; G.glints.push({ x: g[0], y: g[1], par: g[2], t: 0 }); }
   }
   // "People watched from their windows": windows light by themselves as he passes
@@ -1161,7 +1171,7 @@ let INK = '#000', HINT = 'rgba(255,255,255,.1)', SETC = '#333', DOORC = '#222';
 // weather where the thing stands: no scratch canvas is touched while playing. depth .5 keeps them paler than the people (.8).
 const PROP_DETAIL = .2, HOUSE_DETAIL = .4, FLAT_GREY = .56;      // 0 = a flat shape, 1 = the whole painting; FLAT_GREY = the paintings' average tone
 // perch = where birds sit on it (how far across, how high)
-const PROP_META = { crates: { w: 74, h: 74, perch: [.5, 74] }, cart: { w: 186, h: 71, perch: [.25, 68] }, wall: { w: 259, h: 70, perch: [.2, 64] }, lamp: { w: 73, h: 205 } }, PROP = {};
+const PROP_META = { crates: { w: 74, h: 74, perch: [.5, 74] }, wall: { w: 259, h: 70, perch: [.2, 64] }, lamp: { w: 73, h: 205 } }, PROP = {};
 // DEPTH (owner, build 40: "need foreground items between viewer and Christian to build depth, at least two levels ... one more
 // level between Christian and the first row of houses"). From far to near: mountains, far houses, near houses (the scenery
 // layers); then 'mid', a lane just behind the road, where his house and family stand; the road itself (Christian, the
@@ -1258,6 +1268,25 @@ function drawRow(cam) {
     M.wins.forEach((v, i) => { const wx = v[0] * k - 2, wy = y + v[1] * k - 2, ww = v[2] * k + 4, wh = v[3] * k + 4; if (it.lit[i]) room(c, wx, wy, ww, wh, lerp(.8, .45, wm), dark, it.x * .37 + i * 5); else { c.fillStyle = dark; c.fillRect(wx, wy, ww, wh); } });
     c.drawImage(B.cool, 0, y, w, h); if (wm > .01) { c.globalAlpha = wm; c.drawImage(B.warm, 0, y, w, h); c.globalAlpha = 1; }
     c.restore();
+  }
+}
+// The neighbours who come out to see him run ({19}: "some mocked, others threatened, and some cried after him to
+// return"; owner, build 58: "i need neighbors teasing him"). They stand in the lane (the 'mid' level) beyond his row,
+// painted like the other people: one laughing and pointing, one calling after him, one shaking his fist; and with them
+// Obstinate and Pliable (their standing pictures), who in the book are two of these neighbours. Each turns to keep
+// facing Christian as he runs by (the picture is mirrored, with a short dissolve).
+// [picture, where on the road Christian is when he is level with them]
+const WATCHERS = [['a', 3950], ['b', 4170], ['c', 4420], ['obs', 4650], ['pli', 4730]].map(([key, a]) => ({ key, a, f: -1 }));
+const WATCH_META = { a: {"ax": 67, "ground": 302}, b: {"ax": 73, "ground": 270}, c: {"ax": 76, "ground": 290} };
+const WATCH_IM = {};
+function drawWatchers(cam) {
+  const L = LEVELS.mid, p = L.par, y = L.base + 1 - FEET_SINK, K = CHR_K * L.k;
+  for (const w of WATCHERS) {
+    const im = w.key === 'obs' ? OBS_ST : w.key === 'pli' ? PLI_ST : WATCH_IM[w.key], meta = w.key === 'obs' ? OBS_ST_META : w.key === 'pli' ? PLI_ST_META : WATCH_META[w.key];
+    const x = lineUp(w.a, p) - cam * p; if (!im || !meta || x < -120 || x > VW + 120) continue;
+    w.f += ((P.x - cam > x ? 1 : -1) - w.f) * .2; const u = (w.f + 1) / 2;      // 0 = facing left, 1 = facing right
+    if (u < .99) drawFrame(im, meta, x, y, -1, u < .5 ? 1 : 2 * (1 - u), K);
+    if (u > .01) drawFrame(im, meta, x, y, 1, u < .5 ? 2 * u : 1, K);
   }
 }
 // A window looks INTO the house (owner, build 51: "windows should look into interior of house in some way"; build 56, of
@@ -1381,7 +1410,7 @@ function draw() {
   const gcol = layerCol(1), wAt = x => warm((x - cam) / VW), on = (x, w = 0, m = 80) => x < cam + VW + m && x + w > cam - m;
   // the lane just behind the road: a low bank a little paler than the road, with his house and a few things on it
   ctx.fillStyle = hGrad(ctx, ...layerCol(.93)); ctx.fillRect(0, LEVELS.home.base, VW, GY - LEVELS.home.base + 2);
-  drawRow(cam); home(cam); drawLevel('mid', cam); drawWheat(false);          // the wheat behind him
+  drawRow(cam); home(cam); drawLevel('mid', cam); drawWatchers(cam); drawWheat(false);          // the wheat behind him
   ctx.setTransform(1, 0, 0, 1, 0, 0); drawFog('lane'); ctx.setTransform(DPR, 0, 0, DPR, 0, 0);      // mist lying along the lane, round the houses' feet and in the wheat
   ctx.save(); ctx.translate(-cam, 0);
   const grad = hGrad(ctx, gcol[0], gcol[1], 1, 1, cam);
@@ -1586,7 +1615,7 @@ document.getElementById('again').onclick = start;
   document.getElementById('sub').textContent = 'The City of Destruction';
   document.getElementById('open').style.visibility = 'visible';
   requestAnimationFrame(t => { lastT = t; loop(t); });
-  Promise.all([loadPack('evangelist', EVA), loadPack('evangelist-stand', EVS)]).then(() => Promise.all([loadImg('house.webp').then(im => { HOUSE = im && bakeTint(im, HOUSE_DEPTH, HOUSE_DETAIL); }), ...['b', 'c'].map(key => loadImg('house-' + key + '.webp').then(im => { if (im) NB[key] = bakeTint(im, HOUSE_DEPTH, HOUSE_DETAIL); })), loadImg('family.webp').then(im => { FAM = im; }), loadImg('christian-back.webp').then(im => { BACK = im; }), loadPack('christian-run', RUN), loadPack('christian-run-plain', RUNP)]))
+  Promise.all([loadPack('evangelist', EVA), loadPack('evangelist-stand', EVS)]).then(() => Promise.all([loadImg('house.webp').then(im => { HOUSE = im && bakeTint(im, HOUSE_DEPTH, HOUSE_DETAIL); }), ...['b', 'c'].map(key => loadImg('house-' + key + '.webp').then(im => { if (im) NB[key] = bakeTint(im, HOUSE_DEPTH, HOUSE_DETAIL); })), loadImg('family.webp').then(im => { FAM = im; }), ...['a', 'b', 'c'].map(key => loadImg('neighbor-' + key + '.webp').then(im => { WATCH_IM[key] = im; })), loadImg('christian-back.webp').then(im => { BACK = im; }), loadPack('christian-run', RUN), loadPack('christian-run-plain', RUNP)]))
     .then(() => Promise.all([loadPack('obstinate', OBS), loadPack('pliable', PLI), loadImg('obstinate-stand.webp').then(im => { OBS_ST = im; }), loadImg('pliable-stand.webp').then(im => { PLI_ST = im; })]));
   for (const [who, txt] of INTRO) vox(who, txt);          // the first words, ready before Begin is pressed
 })();
