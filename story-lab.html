@@ -68,7 +68,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">story lab · build 61 · Nov 15 2026</div>
+  <div id="build">story lab · build 62 · Nov 15 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -158,9 +158,20 @@ function house(x, gy, w, h, s, tall) {
   const b = gy + 60, top = gy - h, ln = (R() - .5) * .035 * h, k = R();
   let rh;
   if (tall) {                             // a tower or steeple
-    rh = w * rr(1.6, 2.6);
-    poly([[x, b], [x, top], [x - 1.5 * s, top], [x + w / 2, top - rh], [x + w + 1.5 * s, top], [x + w, top], [x + w, b]]);
-    if (L.steeples) L.steeples.push([x + w / 2, top - rh, -1e9, false]);   // where a bell can be rung
+    // No two alike (owner, build 62, of a row of identical narrow towers: "repeated smoke stacks not so great ... need
+    // variety"): a church tower with a slender spire, a squat tower under a pyramid roof, or a plain tower with battlements.
+    const kind = R(), bw = w * rr(1.1, 1.9), mid = x + bw / 2; let tip;
+    if (kind < .45) {
+      const bh = h * rr(.4, .55), sh = h * rr(.45, .8), y0 = gy - bh, sw = bw * rr(.16, .24); tip = y0 - sh;
+      poly([[x, b], [x, y0], [x - 1.5 * s, y0], [mid - sw, y0 - 5 * s], [mid, tip], [mid + sw, y0 - 5 * s], [x + bw + 1.5 * s, y0], [x + bw, y0], [x + bw, b]]);
+    } else if (kind < .78) {
+      const bh = h * rr(.45, .7), y0 = gy - bh; tip = y0 - bw * rr(.5, .95);
+      poly([[x, b], [x, y0], [x - 2 * s, y0], [mid, tip], [x + bw + 2 * s, y0], [x + bw, y0], [x + bw, b]]);
+    } else {
+      const bh = h * rr(.5, .75), y0 = gy - bh, m = bw / 5; tip = y0 - 4 * s;
+      poly([[x, b], [x, tip], [x + m, tip], [x + m, y0], [x + 2 * m, y0], [x + 2 * m, tip], [x + 3 * m, tip], [x + 3 * m, y0], [x + 4 * m, y0], [x + 4 * m, tip], [x + bw, tip], [x + bw, b]]);
+    }
+    if (L.steeples) L.steeples.push([mid, tip, -1e9, false]);   // where a bell can be rung
   } else if (k < .55) {                   // gable end toward us, sometimes with a jutting upper floor
     rh = w * rr(.5, .85);
     const j = R() < .45 ? 3.5 * s : 0, jy = top + h * rr(.4, .55);
@@ -275,11 +286,11 @@ function drawWheat(front) {
     if (!!r.front !== front) continue;
     const { h, ph, p, base } = r, off = cam * p + 30, col = layerCol(r.d);
     const i0 = Math.max(0, Math.floor((off - 70) / WHEAT_GAP)), i1 = Math.min(r.n, Math.ceil((off + VW + 70) / WHEAT_GAP)); if (i1 - i0 < 2) continue;
-    const body = new Path2D(), awns = new Path2D(), ears = new Path2D(), grain = new Path2D(); body.moveTo(i0 * WHEAT_GAP - off, base + 4);
+    const body = new Path2D(), awns = new Path2D(), ears = new Path2D(), grain = new Path2D(), top = new Path2D(); body.moveTo(i0 * WHEAT_GAP - off, base + 4);
     for (let i = i0; i < i1; i++) {
       const sx = i * WHEAT_GAP - off, hh = h[i]; if (hh < 1) { body.lineTo(sx, base + 4); continue; }
       const a = -.08 + (r.wind ? wheatWind(i * WHEAT_GAP, G.t) : 0), bx = sx + a * hh, by = base - hh;
-      body.lineTo(bx, by);
+      body.lineTo(bx, by); top.lineTo(bx, by - 3 * p);
       const k = Math.min(1, hh / 30) * p, el = (7 + 7 * ph[i]) * k, sp = (ph[i] - .5) * 5 * k;      // the soft top: fine awns, fanned a little
       awns.moveTo(bx, by + 2); awns.lineTo(bx + a * 2 * el + sp, by - el); awns.moveTo(bx + 1.5, by + 2); awns.lineTo(bx + 1.5 + a * 2 * el - sp * .6, by - el * .7);
       ears.moveTo(bx, by + 4 * k); ears.lineTo(bx + a * 9 * k + sp * .3, by - 3 * k);                      // the ear itself: a short heavy head that nods with the lean
@@ -288,8 +299,13 @@ function drawWheat(front) {
     body.lineTo((i1 - 1) * WHEAT_GAP - off, base + 4); body.closePath();
     const xe = r.x1 - cam * p, len = 300 * p;
     c.strokeStyle = c.fillStyle = fadeGrad(c, col[0], col[1], xe, len);
-    c.fill(body); c.lineWidth = .9 * p; c.globalAlpha = .7; c.stroke(awns); c.globalAlpha = 1;
-    c.lineWidth = 2.1 * p; c.stroke(ears);
+    c.fill(body); c.lineWidth = .9 * p; c.globalAlpha = .45; c.stroke(awns);
+    c.lineWidth = 2.1 * p; c.globalAlpha = .6; c.stroke(ears); c.globalAlpha = 1;
+    // mist clings along the top of the crop, so its edge melts into the grey behind (owner, build 62: "top of wheat has
+    // line of contrast with background mist ... is there a way to blend this?")
+    c.strokeStyle = fadeGrad(c, PAL.hazeC, PAL.hazeW, xe, len, r.front ? .05 : .08); c.lineJoin = 'round';
+    for (const lw of [26, 20, 14, 9, 5]) { c.lineWidth = lw * p; c.stroke(top); }      // several faint passes, wide to narrow: a soft edge, no stripes
+    c.strokeStyle = fadeGrad(c, col[0], col[1], xe, len);
     c.strokeStyle = fadeGrad(c, layerCol(r.d + .22)[0], layerCol(r.d + .22)[1], xe, len, .3); c.lineWidth = .8 * p; c.stroke(grain);      // darker between the stems, toward the ground
     if (r.wind) {                                            // light travelling through the crop with the wind
       c.save(); c.clip(body); c.fillStyle = hGrad(c, PAL.hazeC, PAL.hazeW, .26, .3);
@@ -352,10 +368,12 @@ function tinted(mask, col) { const m = mk(mask.width, mask.height), c = m.getCon
 function bake(Lr, q, col) {
   Lr.q = q; const m = stencil(Lr, q); Lr.cool = tinted(m, col[0]); Lr.warm = tinted(m, col[1]);
   // the highest thing in the layer, so draw() can skip the empty sky above it
-  const t = mk(32, 135), c = t.getContext('2d'); c.drawImage(m, 0, 0, m.width, VH * q, 0, 0, 32, 135);
-  const px = c.getImageData(0, 0, 32, 135).data; let row = 0;
-  search: for (; row < 135; row++) for (let x = 0; x < 32; x++) if (px[(row * 32 + x) * 4 + 3] > 0) break search;
-  Lr.top = Math.max(0, row * 4 - 8);
+  // (looked for on a picture 640 wide: at 32 wide, as it was until build 62, a lone tree could fall between the samples
+  // and have its crown cut off flat: owner, "top of tree looks wrong")
+  const TW = 640, t = mk(TW, 135), c = t.getContext('2d'); c.drawImage(m, 0, 0, m.width, VH * q, 0, 0, TW, 135);
+  const px = c.getImageData(0, 0, TW, 135).data; let row = 0;
+  search: for (; row < 135; row++) for (let x = 0; x < TW; x++) if (px[(row * TW + x) * 4 + 3] > 0) break search;
+  Lr.top = Math.max(0, row * 4 - 16);
 }
 function buildScenery() {
   SCN.length = 0;
@@ -402,7 +420,7 @@ function buildScenery() {
       for (let x = near ? field : -50 * s - R() * 50 * s; x < edge;) {
         const tp = clamp((edge - x) / (300 * s), .5, 1) * clamp(.55 + (x - field) / 260, .55, 1);
         const w = rr(58, 112) * s, h = rr(.55, 1) * hh * tp;
-        if (d < .55 && x > nextSteeple) { nextSteeple = x + rr(500, 1100) * s; const tw = rr(20, 26) * s; house(x, gy(x + tw / 2), tw, hh * 1.7, s, true); x += tw * .7; continue; }
+        if (d < .55 && x > nextSteeple) { nextSteeple = x + rr(900, 1900) * s; const tw = rr(20, 26) * s; house(x, gy(x + tw / 2), tw, hh * rr(1.3, 2), s, true); x += tw * 1.2; continue; }
         house(x, gy(x + w / 2), w, h, s);
         x += w + rr(-9, 5) * s; if (R() < .1) x += rr(14, 50) * s;
       }
@@ -412,7 +430,7 @@ function buildScenery() {
         const k = R(); tree(x, gy(x), s * rr(.75, 1.2), k < .58 ? 0 : k < .78 ? 1 : 2);
       }
       for (let x = Math.max(rr(60, 200), field + 80); x < edge - 60; x += rr(160, 420)) if (R() < LOOK.trees) tree(x, gy(x), s * rr(.7, 1), R() < .6 ? 0 : 1);
-      if (near) for (const x of [150, 520, 575, 1010]) tree(x, gy(x) + 4, s * rr(.75, 1), x === 575 ? 2 : 0);      // hedgerow trees in the field
+      if (near) for (const x of [70, 150, 380, 520, 575, 800, 1010]) tree(x, gy(x) + 4, s * rr(.75, 1), x === 575 || x === 380 ? 2 : 0);      // (more of them in build 62: the owner likes these)      // hedgerow trees in the field
       if (i === 2) for (let x = edge + 150; x < W - 200; x += rr(380, 560)) fence(x, gy, 8 + (R() * 8 | 0));
     }
     // soft stencil (farther = softer), lit windows, and the mist that settles in front of this layer
@@ -736,7 +754,7 @@ async function say(who, txt) {
   hush(); if (!audio()) return;
   const me = sayN, buf = await voxBuf(vox(who, txt));
   if (!buf || me !== sayN) return;
-  voxSrc = AC.createBufferSource(); voxSrc.buffer = buf; voxSrc.connect(who === C ? CLEAR : VOICEG); voxSrc.start();
+  voxSrc = AC.createBufferSource(); voxSrc.buffer = buf; voxSrc.connect(who === C || who === N ? CLEAR : VOICEG);      // Christian and the storyteller stay clear when his fingers are in his ears voxSrc.start();
   if (G.cap > 0) G.cap = Math.max(G.cap, Math.ceil(buf.duration * 60) + 50);     // words said while walking stay until they have been spoken
   else if (G.state === 'dialog' && G.guardKey === who + '|' + txt && !HEARD.has(G.guardKey)) G.guard = Math.ceil(buf.duration * 60) + 12;   // and a line cannot be skipped while it is being spoken
 }
@@ -1049,7 +1067,7 @@ function story() {
   if (G.hint !== 'touch' && G.ring && G.state === 'play') G.ring = null;
   if (G.hint === 'touch' && P.x < START_X - 470) clearHint('touch');
   if (!G.fam && G.evanDone && P.x > HOME_X - 330) { G.fam = 1; sweep(170, 120, .5, .03); hiss(140, .8, .09, .16, 'lowpass'); sfx.lamp(); caption(DOOR_WORDS); }      // the door of his house is flung open as he comes running
-  if (G.fam === 1 && P.stand && P.x > HOME_X - 170) { G.fam = 2; G.capQ.length = 0; talk(FAMILY, () => caption(LIFE)); return; }      // the child let go by the house: he stops (the framed picture)
+  if (G.fam === 1 && P.stand && P.x > HOME_X - 170 && G.cap <= 0 && !G.capQ.length) { G.fam = 2; talk(FAMILY, () => caption(LIFE)); return; }      // (once the storyteller's line is over: build 62, his wife used to cut in on it)      // the child let go by the house: he stops (the framed picture)
   if (G.fam === 1 && P.x > HOME_X + 150) { G.fam = 2; coverEars(); caption([...FAMILY_RUN, ...LIFE]); }                                         // the child held on: he runs straight past, as in the book
   // {10}: "standing ... with his face from his own house". We know the house is his because his door stands open behind
   // him with his wife and children in its light (owner, build 60: "how do we know it's his?"); it shuts as he walks away.
@@ -1255,6 +1273,7 @@ const HOUSE_DEPTH = .44;      // the tone of his house and its row: paler than t
 const HOUSE_K = .9;      // the cottage's size against its picture's sizes (build 50: it and the family a little smaller)
 const BACK_META = {"ax": 72, "ground": 298};      // Christian seen from behind (assets/christian-back.webp), for the moment his wife calls
 let BACK = null, RIM = null;
+let WIFE = null; const WIFE_META = {"ax": 45, "ground": 254};      // his wife alone, watching him from the door at the opening (assets/wife.webp)
 let HOUSE = null, FAM = null, OBS_ST = null, PLI_ST = null;
 const loadImg = name => fetch('assets/' + name + '?v=' + PACK_V).then(r => r.ok ? r.blob().then(toImage) : null).catch(() => null);   // a missing picture is just left out
 // The house stands on the 'mid' level, a little way back from the road (owner: "House is big ... put wife and kids at an
@@ -1273,12 +1292,20 @@ const NB = {}, ROW = [];      // ROW: { key, x (left edge on the level), flip, l
 function buildRow() {
   const p = LEVELS.home.par, k = p * HOUSE_K, D = lineUp(HOME_X, p), left = D - (HOUSE_META.door[0] + HOUSE_META.door[2] / 2) * k, right = left + HOUSE_META.w * k;
   ROW.length = 0;
+  ROW.gaps = [[left - 12, left], [right, right + 12], [right + 12 + NB_META.c.w * k, right + 12 + NB_META.c.w * k + 14]];      // the spaces between the houses
   ROW.push({ key: 'b', x: left - 12 - NB_META.b.w * k, flip: false, lit: [0, 1] });
   ROW.push({ key: 'c', x: right + 12, flip: false, lit: [1, 0] });
   ROW.push({ key: 'b', x: right + 12 + NB_META.c.w * k + 14, flip: true, lit: [1, 0] });
 }
 function drawRow(cam) {
   const L = LEVELS.home, p = L.par, k = p * HOUSE_K, c = ctx;
+  // Between two houses the pale far mist showed as a hard bright slot (owner, build 62: "too high contrast here"): a soft
+  // shade now stands in each space, the houses' own tone, strongest at the ground and gone by the eaves.
+  for (const [g0, g1] of ROW.gaps || []) {
+    const x0 = g0 - cam * p - 14, x1 = g1 - cam * p + 14, y1 = L.base + 3, y0 = y1 - 200 * k; if (x1 < 0 || x0 > VW) continue;
+    const wm = warm((x0 + x1) / 2 / VW), tone = mix(mix(PAL.hazeC, PAL.nearC, HOUSE_DEPTH), mix(PAL.hazeW, PAL.nearW, HOUSE_DEPTH), wm).map(v => v * FLAT_GREY), g = c.createLinearGradient(0, y0, 0, y1);
+    g.addColorStop(0, css(tone, 0)); g.addColorStop(.45, css(tone, .5)); g.addColorStop(1, css(tone, .85)); c.fillStyle = g; c.fillRect(x0, y0, x1 - x0, y1 - y0);
+  }
   for (const it of ROW) {
     const B = NB[it.key], M = NB_META[it.key], x = it.x - cam * p, w = M.w * k, h = M.h * k, y = L.base + 3 - h; if (!B || x > VW + 20 || x + w < -20) continue;
     const wm = warm((x + w / 2) / VW), dark = css(mix(layerCol(.9)[0], layerCol(.9)[1], wm));
@@ -1340,7 +1367,8 @@ function home(cam) {                       // drawn in screen units, before the 
     c.fillStyle = dark; c.fillRect(x + dx - 2, y + dy - 2, (dw + 4) * (1 - .86 * e), dh + 4);
   }
   c.drawImage(HOUSE.cool, x, y, M.w * k, M.h * k); if (wm > .01) { c.globalAlpha = wm; c.drawImage(HOUSE.warm, x, y, M.w * k, M.h * k); c.globalAlpha = 1; }
-  if (e > .3) drawFrame(FAM, FAM_META, doorX(cam) + 2, L.base + 1 - FEET_SINK, G.fam ? 1 : -1, smooth(.3, 1, e),      // at the start they look after him, to the left
+  const alone = !G.fam && WIFE && WIFE_META;      // at the opening only his wife stands in the door (owner, build 62)
+  if (e > .3) drawFrame(alone ? WIFE : FAM, alone ? WIFE_META : FAM_META, doorX(cam) + (alone ? 8 : 2), L.base + 1 - FEET_SINK, G.fam ? 1 : -1, smooth(.3, 1, e),      // at the start they look after him, to the left
     CHR_K * .93 * HOUSE_K * L.k);   // on the step, in front of the wall
 }
 function gate() {                          // the city gate: two towers and an arch, a little paler than the road so Christian shows against it
@@ -1634,7 +1662,7 @@ document.getElementById('again').onclick = start;
   document.getElementById('sub').textContent = 'The City of Destruction';
   document.getElementById('open').style.visibility = 'visible';
   requestAnimationFrame(t => { lastT = t; loop(t); });
-  Promise.all([loadPack('evangelist', EVA), loadPack('evangelist-stand', EVS)]).then(() => Promise.all([loadImg('house.webp').then(im => { HOUSE = im && bakeTint(im, HOUSE_DEPTH, HOUSE_DETAIL); }), ...['b', 'c'].map(key => loadImg('house-' + key + '.webp').then(im => { if (im) NB[key] = bakeTint(im, HOUSE_DEPTH, HOUSE_DETAIL); })), loadImg('family.webp').then(im => { FAM = im; }), ...['a', 'b', 'c'].map(key => loadImg('neighbor-' + key + '.webp').then(im => { WATCH_IM[key] = im; })), loadImg('christian-back.webp').then(im => { BACK = im; }), loadPack('christian-run', RUN), loadPack('christian-run-plain', RUNP)]))
+  Promise.all([loadPack('evangelist', EVA), loadPack('evangelist-stand', EVS)]).then(() => Promise.all([loadImg('house.webp').then(im => { HOUSE = im && bakeTint(im, HOUSE_DEPTH, HOUSE_DETAIL); }), ...['b', 'c'].map(key => loadImg('house-' + key + '.webp').then(im => { if (im) NB[key] = bakeTint(im, HOUSE_DEPTH, HOUSE_DETAIL); })), loadImg('family.webp').then(im => { FAM = im; }), loadImg('wife.webp').then(im => { WIFE = im; }), ...['a', 'b', 'c'].map(key => loadImg('neighbor-' + key + '.webp').then(im => { WATCH_IM[key] = im; })), loadImg('christian-back.webp').then(im => { BACK = im; }), loadPack('christian-run', RUN), loadPack('christian-run-plain', RUNP)]))
     .then(() => Promise.all([loadPack('obstinate', OBS), loadPack('pliable', PLI), loadImg('obstinate-stand.webp').then(im => { OBS_ST = im; }), loadImg('pliable-stand.webp').then(im => { PLI_ST = im; })]));
   for (const [who, txt] of INTRO) vox(who, txt);          // the first words, ready before Begin is pressed
 })();
