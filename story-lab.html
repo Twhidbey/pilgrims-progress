@@ -68,7 +68,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">story lab · build 72 · Nov 15 2026</div>
+  <div id="build">story lab · build 73 · Nov 15 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -264,8 +264,8 @@ const wheatWind = (x, t) => .07 * Math.sin(x * .0075 + t * .017) + .025 * Math.s
 // own ground line. The six on the field's rise are six different trees (FIELD_TREES); elsewhere the six take turns, so a
 // tree only comes round again several trees (most of a screen or more) later. bx = where the trunk meets the ground,
 // across the picture; low = a low kind, drawn about half height.
-const TREE_META = { a: { bx: 368 / 859 }, b: { bx: 209 / 291 }, c: { bx: 255 / 530, low: .42 }, d: { bx: 209 / 342 }, e: { bx: 107 / 211 }, f: { bx: 11 / 203, low: .55 } }, TREE = {}, TREE_KEYS = ['e', 'a', 'f', 'd', 'b', 'c'];
-const FIELD_TREES = [['a', 150, 108, 1], ['f', 365, 95, 1], ['b', 520, 118, -1], ['d', 640, 92, -1], ['e', 835, 122, -1], ['c', 1015, 95, 1]];      // [which, where on the near layer, height, 1 or -1 = mirrored]
+const TREE_META = { a: { bx: 368 / 859 }, b: { bx: 209 / 291 }, e: { bx: 107 / 211 } }, TREE = {}, TREE_KEYS = ['e', 'a', 'b'];      // build 73 (owner: "tree should be of same type, no? (don't exotic ones)"): only the three plain broad-leaved trees; the willow, the bent thorn and the hawthorn clump are no longer used
+const FIELD_TREES = [['a', 150, 108, 1], ['e', 440, 120, 1], ['b', 720, 112, -1], ['a', 1015, 92, -1]];      // [which, where on the near layer, height, 1 or -1 = mirrored]; the two oaks are a screen apart
 function bakeTree(im, d) {
   const one = col => { const m = mk(im.width, im.height), c = m.getContext('2d'); c.drawImage(im, 0, 0); c.globalCompositeOperation = 'source-in'; c.fillStyle = css(col); c.fillRect(0, 0, m.width, m.height); c.globalCompositeOperation = 'source-atop'; c.globalAlpha = .08; c.drawImage(im, 0, 0); return m; };
   const col = layerCol(d); return { cool: one(mix(col[0], PAL.hazeC, .28)), warm: one(mix(col[1], PAL.hazeW, .28)) };
@@ -364,7 +364,7 @@ function drawWheat(front) {
 const FOG = [], FOG_T = 1024, FOG_Q = .25;
 function buildFog() {
   FOG.length = 0;
-  for (const [y0, y1, n, par, drift, a, front] of [[GY - 200, GY - 30, 24, .5, .07, .5, false], [GY - 84, GY + 4, 30, .92, .16, .5, 'lane'], [GY - 22, GY + 46, 16, 1.12, .28, .2, true]]) {
+  for (const [y0, y1, n, par, drift, a, front] of [[GY - 200, GY - 30, 24, .5, .07, .5, false], [GY - 96, GY - 10, 30, .92, .16, .45, 'lane'], [GY - 16, GY + 46, 16, 1.12, .28, .12, true]]) {
     const Rf = rng(900 + FOG.length * 31), W = Math.ceil((FOG_T + VW + 8) * FOG_Q), m = mk(W, Math.ceil(VH * FOG_Q) + 2), c = m.getContext('2d'); c.scale(FOG_Q, FOG_Q);
     for (let i = 0; i < n; i++) {
       const x = Rf() * FOG_T, y = lerp(y0, y1, .3 + .7 * Math.sqrt(Rf())), rx = 110 + Rf() * 240, ry = (7 + Rf() * 20) * (y1 - y0) / 110, al = .2 + Rf() * .32;
@@ -758,7 +758,7 @@ function talk(arr, then) {
 }
 function show() {
   const [who, txt, act, fn] = lines[li];
-  G.act = act || null; G.actT = 0; G.ring = null; dMore.textContent = act ? '' : 'tap ▸';
+  G.act = act || null; G.actT = 0; G.autoT = 0; G.ring = null; dMore.textContent = act ? '' : 'tap ▸';
   // No skipping by accident: a line cannot be tapped away until it has been spoken (say() sets the real length once the
   // recording starts; without a recording, a short reading time). "tap ▸" only shows when the line is ready to move on.
   // A line already heard once (walking again) can be tapped straight through.
@@ -908,7 +908,7 @@ const RUN_META = {"ax": 136, "ground": 309, "frames": 29, "vpx": 17.2, "down": [
 // Two runs (build 54; owner: "when he runs, he doesn't need to cover his ears (that doesn't happen till he runs from
 // family)"): RUNP = a plain run, arms free, from Evangelist to his own door (assets/christian-run-plain.pack); RUN = hands
 // over his ears, from the moment his wife cries after him (G.ears, coverEars()). 'steps' = the frames where a foot lands.
-const WEEP = [], WEEP_META = {"ax": 101, "ground": 302, "frames": 96, "step": .2};      // Christian opens his book, reads, weeps and trembles (assets/christian-weep.pack); step = stored frames per tick
+const WEEP = [], WEEP_META = {"ax": 101, "ground": 302, "frames": 96, "step": .13};      // Christian opens his book, reads, weeps and trembles (assets/christian-weep.pack); step = stored frames per tick
 const EVS = [], EVS_META = {"ax": 82, "ground": 311, "frames": 48};      // Evangelist standing, facing right, breathing
 const RUNP_META = {"ax": 132, "ground": 298, "frames": 28, "vpx": 16.6, "steps": [0, 15]}, RUNP = [];
 RUN_META.steps = [7, 22];
@@ -916,7 +916,7 @@ const runNow = () => G.ears || !RUNP.ready ? [RUN, RUN_META] : [RUNP, RUNP_META]
 function coverEars() { if (G.ears) return; if (P.run) poseChange(); G.ears = true; }
 const CHR = [], PLI = [], OBS = [], EVA = [], STD = [], RUN = [], CHR_K = .52, RUN_STEP = RUN_META.vpx * CHR_K, RUNV = RUN_STEP * .4,   // the run at its video's own speed (24 frames a second)
    CHR_STEP = CHR_META.vpx * CHR_K, PLI_STEP = PLI_META.vpx * CHR_K, OBS_STEP = OBS_META.vpx * CHR_K;
-const PACK_V = 11;                          // bump when the .pack files change, so phones fetch the new ones
+const PACK_V = 12;                          // bump when the .pack files change, so phones fetch the new ones
 // a .pack file: 4 bytes = how many frames, 4 bytes per frame = its length, then the WebP frames end to end
 async function loadPack(name, into) {
   const res = await fetch('assets/' + name + '.pack?v=' + PACK_V); if (!res.ok) throw new Error('no ' + name);      // a missing pack is left out
@@ -975,6 +975,10 @@ function drawFrame(im, meta, x, y, face, alpha, K = CHR_K, sy = 1) {      // sy:
   }
   c.globalCompositeOperation = 'destination-in'; c.drawImage(im, 0, 0, W, H);
   // FEET_SINK: everyone stands a little into the road, not on its edge
+  // Where feet meet the ground (owner, build 73: "all the people float too much - where feet meet ground need to be
+  // solid"): a soft dark patch lies under every figure, flat on the ground, so nobody hovers.
+  { const rx = Math.max(10, w * .3), g = ctx.createRadialGradient(0, 0, 0, 0, 0, 1); g.addColorStop(0, 'rgba(6,8,14,.55)'); g.addColorStop(.6, 'rgba(6,8,14,.3)'); g.addColorStop(1, 'rgba(6,8,14,0)');
+    ctx.save(); ctx.translate(x, y + FEET_SINK - 1); ctx.scale(rx, Math.max(2.5, rx * .16)); ctx.globalAlpha = alpha; ctx.fillStyle = g; ctx.fillRect(-1, -1, 2, 2); ctx.restore(); }
   ctx.save(); ctx.translate(x, y + FEET_SINK); ctx.scale(face, sy); ctx.globalAlpha = alpha;
   ctx.drawImage(figC, -meta.ax * K, -meta.ground * K, w, h); ctx.restore();
 }
@@ -985,7 +989,8 @@ function walkTick(dir, max) {
   const still = G.state === 'dialog' || G.state === 'choice';
   if (P.blend && ++P.blend.t >= 12) P.blend = null;
   // the opening: he reads, weeps and trembles (his own video, once); walking away or its end dissolves him back to standing
-  if (P.weep && (dir || !WEEP.ready || (P.weep.t += WEEP_META.step) >= WEEP.length - 1)) { if (WEEP.ready) poseChange(); P.weep = null; if (!dir) P.stand = { t: QUIET[0] }; }
+  // (unhurried, owner build 73: he stays bowed, weeping, until the next line; only then lowers his hand and stands)
+  if (P.weep && (dir || !WEEP.ready || (P.weep.t = Math.min(P.weep.t + WEEP_META.step, G.state === 'dialog' && lines === INTRO && li === 1 ? 64 : 1e9)) >= WEEP.length - 1)) { if (WEEP.ready) poseChange(); P.weep = null; if (!dir) P.stand = { t: QUIET[0] }; }
   // the run: from Evangelist he runs, past his own door with his fingers in his ears, until the burden tires him (G.runZone)
   const run = !!(G.runZone && dir > 0 && RUN.ready);
   if (run !== P.run) {
@@ -1084,7 +1089,10 @@ function gateOpened() {
 // ---------- every tick ----------
 function update() {
   G.t++;
-  if (G.guard > 0 && --G.guard === 0 && G.state === 'dialog') { dlg.classList.remove('wait'); HEARD.add(G.guardKey); }
+  if (G.guard > 0 && --G.guard === 0 && G.state === 'dialog') { dlg.classList.remove('wait'); HEARD.add(G.guardKey); if (!G.act) G.autoT = 75; }
+  // LESS TAPPING (owner, build 73: "there's a lot of click thru text"): a line moves on by itself a moment after it has
+  // been spoken; a tap still moves it on sooner. Lines that ask the child to do something wait as before.
+  if (G.autoT > 0 && --G.autoT === 0 && G.state === 'dialog' && !G.act) next();
   G.flare *= .975; G.gloom += (G.gloomTo - G.gloom) * .02; if (G.fam) G.door = Math.min(1, G.door + .05); else if (G.doorShut) G.door = Math.max(0, G.door - .02);      // the door is flung open (and, at the start, shut behind him)
   // Evangelist: only the calm start of his video while he waits (a slow breath). On "Do you see that shining light?"
   // he turns all the way round toward the light and raises his arm (video 46..239 at its own pace), and stays pointing.
@@ -1290,7 +1298,7 @@ function bakeTint(im, depth, detail) {
     const flat = mk(im.width, im.height), f = flat.getContext('2d');                // the shape in one solid tone
     f.drawImage(im, 0, 0); f.globalCompositeOperation = 'source-in'; f.fillStyle = css(col.map(v => v * FLAT_GREY)); f.fillRect(0, 0, flat.width, flat.height);
     if (detail > 0) {                                                                // then that much of the painting over it
-      const c = mk(im.width, im.height), x = c.getContext('2d'); x.drawImage(im, 0, 0); x.globalCompositeOperation = 'multiply'; x.fillStyle = css(col); x.fillRect(0, 0, c.width, c.height); x.globalCompositeOperation = 'destination-in'; x.drawImage(im, 0, 0);
+      const c = mk(im.width, im.height), x = c.getContext('2d'); x.drawImage(im, 0, 0); x.globalCompositeOperation = 'multiply'; x.fillStyle = css(col); x.fillRect(0, 0, c.width, c.height); x.globalCompositeOperation = 'destination-in'; for (const [ox, oy] of [[0, 0], [5, 0], [-5, 0], [0, 5], [0, -5]]) x.drawImage(im, ox, oy);      // (kept off the outermost edge, where the paper showed as a pale line: owner, build 73)
       f.globalCompositeOperation = 'source-atop'; f.globalAlpha = detail; f.drawImage(c, 0, 0);
     }
     return flat;
@@ -1333,6 +1341,7 @@ let BACK = null, RIM = null;
 const mkShadow = im => { const m = mk(Math.ceil(im.width / 7), Math.ceil(im.height / 7)),      // kept very small, so it is soft when stretched out on the ground
   c = m.getContext('2d'); c.drawImage(im, 0, 0, m.width, m.height); const f = c.createLinearGradient(0, 0, 0, m.height); f.addColorStop(0, 'rgba(6,8,14,.25)'); f.addColorStop(1, 'rgba(6,8,14,1)'); c.globalCompositeOperation = 'source-in'; c.fillStyle = f; c.fillRect(0, 0, m.width, m.height); return m; };
 let FAM_SH = null, WIFE_SH = null;
+const DOOR_FIG = .74;      // people standing in a doorway, against the other figures (was .93; owner, build 73: "need to be smaller to be more proportional to size of door")
 let WIFE = null; const WIFE_META = {"ax": 45, "ground": 254};      // his wife alone, watching him from the door at the opening (assets/wife.webp)
 let HOUSE = null, FAM = null, OBS_ST = null, PLI_ST = null;
 const loadImg = name => fetch('assets/' + name + '?v=' + PACK_V).then(r => r.ok ? r.blob().then(toImage) : null).catch(() => null);   // a missing picture is just left out
@@ -1387,7 +1396,7 @@ function drawRow(cam) {
     }
     c.restore();
     if (e > .3) {                            // and a neighbour in it, turning to keep facing him, mocking (the video loop, or the still breathing)
-      const sx = lineUp(it.a, p) - cam * p, K = CHR_K * .93 * k, fy = L.base + 2 - FEET_SINK, al = smooth(.3, 1, e);
+      const sx = lineUp(it.a, p) - cam * p, K = CHR_K * DOOR_FIG * k, fy = L.base + 2 - FEET_SINK, al = smooth(.3, 1, e);
       it.f += ((P.x - cam > sx ? 1 : -1) - it.f) * .2; const u = (it.f + 1) / 2, vp = WATCH_PACK[it.who], vm = WATCH_VMETA[it.who];
       const [im, meta, sy] = vp && vp.ready && vm ? [vp[Math.floor(G.t * .2 + it.a) % vp.length], vm, 1] : [WATCH_IM[it.who], WATCH_META[it.who], breath(it.a)];
       if (im && meta) { if (u < .99) drawFrame(im, meta, sx, fy, -1, al * (u < .5 ? 1 : 2 * (1 - u)), K, sy); if (u > .01) drawFrame(im, meta, sx, fy, 1, al * (u < .5 ? 2 * u : 1), K, sy); }
@@ -1458,12 +1467,7 @@ function home(cam) {                       // drawn in screen units, before the 
   const stepY = L.base;      // the top of the doorstep: whoever is in the door stands on it
   const alone = !G.fam && WIFE && WIFE_META;      // at the opening only his wife stands in the door (owner, build 62)
   if (e > .3) drawFrame(alone ? WIFE : FAM, alone ? WIFE_META : FAM_META, doorX(cam) + (alone ? 8 : 2), stepY + 2 - FEET_SINK, G.fam ? 1 : -1, smooth(.3, 1, e),      // at the start they look after him, to the left
-    CHR_K * .93 * HOUSE_K * L.k, breath(7));   // on the step, in front of the wall
-  // the doorstep: a stone sill across the foot of the doorway, a little wider than the door, its top edge catching the
-  // light; feet stand on it (owner, build 69: his wife's foot "doesn't look right" at the bottom of the door)
-  // (kept slight: owner, "mantle can be subtle")
-  c.globalAlpha = .7; c.fillStyle = dark; c.fillRect(x + dx - 4, stepY, dw + 8, L.base + 3 - stepY); c.globalAlpha = 1;
-  if (e > 0) { c.fillStyle = css(PAL.win, .28 * e); c.fillRect(x + dx - 4, stepY, dw + 8, 1); }
+    CHR_K * DOOR_FIG * HOUSE_K * L.k, breath(7));   // on the step, in front of the wall
 }
 function gate() {                          // the city gate: two towers and an arch, a little paler than the road so Christian shows against it
   const c = ctx; c.fillStyle = SETC;
@@ -1602,7 +1606,7 @@ function draw() {
     // flat like the pool (a little way down the picture, never streaming toward us).
     { const alone = !G.fam && WIFE && WIFE_META, sh = alone ? WIFE_SH : FAM_SH, im = alone ? WIFE : FAM, meta = alone ? WIFE_META : FAM_META, e = G.door * G.door * (3 - 2 * G.door);
       if (sh && im && e > .3) {
-        const L = LEVELS.home, K = CHR_K * .93 * HOUSE_K * L.k, off = alone ? 8 : 2;
+        const L = LEVELS.home, K = CHR_K * DOOR_FIG * HOUSE_K * L.k, off = alone ? 8 : 2;
         ctx.save(); ctx.translate(doorX(cam) + cam + off, L.base + 2); ctx.transform(G.fam ? 1 : -1, 0, -off / 30, -.44, 0, 0);
         ctx.globalAlpha = .7 * smooth(.3, 1, e); ctx.drawImage(sh, -meta.ax * K, -meta.ground * K, im.width * K, im.height * K); ctx.restore();
       } }
