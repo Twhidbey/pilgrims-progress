@@ -53,7 +53,7 @@ const SHOTS = [
   { name: '1 · The fall', z: .8, cx: -470, wl: 392, mist: 1, veil: .84, gold: 0, disc: .3, sky: .36,
     note: 'They fall in. Two small figures in white nothing; the oak is only a grey shape far off. The few lights he gathered are the only colour left.' },
   { name: '2 · Help', z: .66, cx: -250, wl: 352, mist: .3, veil: 0, gold: .1, disc: 1, sky: .2,
-    note: 'He cannot climb out. The camera has drawn back. The long limb reaches over the water as Help reaches down; the far light sits in the branches. (Help is a stand-in here: Evangelist, until he has his own figure.)' },
+    note: 'He cannot climb out. The camera has drawn back. The long limb reaches over the water as Help kneels and holds out his hand; the far light sits in the branches.' },
   { name: '3 · Looking back', z: .74, cx: -330, wl: 372, mist: .25, veil: 0, gold: 1, disc: 1, sky: .26,
     note: 'On sound ground he looks back. His lights settle on the steps that were there all along, each doubled in the water, and the gold comes back from the oak outward.' }
 ];
@@ -139,8 +139,8 @@ const bankY = x => x >= BANK0 ? -(30 * smooth(BANK0, BANK0 + 105, x) + (bankN(x 
                  : x <= HOME0 ? -(20 * smooth(HOME0, HOME0 - 90, x) + (bankN(x * .012, 7) - .5) * 10 * smooth(HOME0, HOME0 - 120, x)) : 0;
 
 // ---------- the people (frames from the game's packs) ----------
-const CHR = [], PLI = [], STD = [], EVA = [];
-const META = { chr: { ax: 93, ground: 295 }, pli: { ax: 98, ground: 298 }, std: { ax: 101, ground: 302 }, eva: { ax: 82, ground: 311 } };
+const CHR = [], PLI = [], STD = []; let HELP = null;
+const META = { chr: { ax: 93, ground: 295 }, pli: { ax: 98, ground: 298 }, std: { ax: 101, ground: 302 }, help: { ax: 90, ground: 179 } };   // help: assets/help-reach.webp, placed by his front boot
 async function loadPack(name, into, only) {
   const buf = await (await fetch('assets/' + name + '.pack?v=6')).arrayBuffer(), dv = new DataView(buf), n = dv.getUint32(0, true);
   let off = 4 + 4 * n; const jobs = [];
@@ -228,7 +228,7 @@ function paint() {
     figure(n, PLI[0], META.pli, -838, 62, 1, fig, CHR_K, 0); figure(n, CHR[12], META.chr, -752, 84, 1, fig, CHR_K, 0);
     for (let i = 0; i < 7; i++) mote(-790 - R() * 46, -52 - R() * 40, 1.6 + R(), .55 + R() * .3);
   } else if (shot === 1) {
-    figure(n, EVA[79], META.eva, BANK0 + 62, bankY(BANK0 + 62) + 5, -1, fig, CHR_K);
+    figure(n, HELP, META.help, BANK0 + 34, bankY(BANK0 + 34) + 4, 1, fig, CHR_K);   // kneeling at the edge, his open hand held out over the water
     figure(n, STD[62], META.std, BANK0 - 22, 72, 1, fig, CHR_K, 0);
     for (let i = 0; i < 7; i++) mote(BANK0 - 62 - R() * 50, -34 - R() * 34, 1.5 + R(), .4 + R() * .25);
   } else {
@@ -272,7 +272,7 @@ function paint() {
 SHOTS.forEach((s, i) => { const b = document.createElement('button'); b.textContent = s.name; b.onclick = () => { shot = i; paint(); }; document.getElementById('shots').appendChild(b); });
 document.getElementById('new').onclick = () => { oakSeed = oakSeed % 99 + 1; OAK = oak(oakSeed); paint(); };
 paint();
-Promise.all([loadPack('christian-walk', CHR, [12]), loadPack('pliable', PLI, [0]), loadPack('christian-stand', STD, [62]), loadPack('evangelist', EVA, [79])]).then(paint, () => {});
+Promise.all([loadPack('christian-walk', CHR, [12]), loadPack('pliable', PLI, [0]), loadPack('christian-stand', STD, [62]), new Promise(res => { const im = new Image(); im.onload = () => { HELP = im; res(); }; im.onerror = res; im.src = 'assets/help-reach.webp'; })]).then(paint, () => {});
 </script>
 </body>
 </html>
