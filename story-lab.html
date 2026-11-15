@@ -68,7 +68,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">story lab · build 80 · Nov 15 2026</div>
+  <div id="build">story lab · build 81 · Nov 15 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -504,10 +504,9 @@ function buildScenery() {
   // drawn soft because they are near, they came out as blocky dark blobs that did not read as leaves; the owner asked what they were.)
   R = rng(98);
   // the grass stands along the bottom edge, 230 below the horizon, so by the perspective rule it slides at 230 / 140 = 1.64
-  L = FRONT = { par: 1.64, W: VW + PANG * 1.64 + 60, shapes: [], wins: [] };
-  poly([[-30, VH + 10], [-30, VH - 12], [L.W, VH - 10], [L.W, VH + 10]]);
-  for (let x = -10; x < L.W; x += rr(5, 22)) tuft(x, VH - 10, R() < .25 ? rr(26, 50) : rr(8, 22));
-  bake(FRONT, Math.min(1, 1.3 / (1.6 + LOOK.soft)), layerCol(1).map(v => mix(v, [8, 8, 12], .4)));
+  // Build 81 (owner: "remove grass in foreground (pixelated and not so good looking)"): the grass is no longer built or
+  // drawn; FRONT keeps only its place in the depth guides (?lines).
+  FRONT = { par: 1.64 };
   // two skies, blended by the weather: heavy cloud over the rain, thin bright cloud toward the light
   const sky = (top, bot) => { const m = mk(480, 270), c = m.getContext('2d'); c.scale(.5, .5); const g = c.createLinearGradient(0, 0, 0, GY - 60); g.addColorStop(0, css(top)); g.addColorStop(1, css(bot)); c.fillStyle = g; c.fillRect(0, 0, VW, VH); return [m, c]; };
   const puff = (c, x, y, rx, ry, col, a) => { c.save(); c.translate(x, y); c.scale(rx, ry); const q = c.createRadialGradient(0, 0, 0, 0, 0, 1); q.addColorStop(0, css(col, a)); q.addColorStop(.55, css(col, a * .55)); q.addColorStop(1, css(col, 0)); c.fillStyle = q; c.fillRect(-1, -1, 2, 2); c.restore(); };
@@ -920,7 +919,7 @@ const runNow = () => G.ears || !RUNP.ready ? [RUN, RUN_META] : [RUNP, RUNP_META]
 function coverEars() { if (G.ears) return; if (P.run) poseChange(); G.ears = true; }
 const CHR = [], PLI = [], OBS = [], EVA = [], STD = [], RUN = [], CHR_K = .52, RUN_STEP = RUN_META.vpx * CHR_K, RUNV = RUN_STEP * .4,   // the run at its video's own speed (24 frames a second)
    CHR_STEP = CHR_META.vpx * CHR_K, PLI_STEP = PLI_META.vpx * CHR_K, OBS_STEP = OBS_META.vpx * CHR_K;
-const PACK_V = 13;                          // bump when the .pack files change, so phones fetch the new ones
+const PACK_V = 14;                          // bump when the .pack files change, so phones fetch the new ones
 // a .pack file: 4 bytes = how many frames, 4 bytes per frame = its length, then the WebP frames end to end
 async function loadPack(name, into) {
   const res = await fetch('assets/' + name + '.pack?v=' + PACK_V); if (!res.ok) throw new Error('no ' + name);      // a missing pack is left out
@@ -1040,7 +1039,7 @@ function figure(x, fn) {
 // ---------- things that answer a touch ----------
 function free(wx, wy) { G.motes.push({ x: wx, y: wy, free: true, tw: Math.random() * 6 }); }   // a light set free; it flies to Christian
 function touched() { G.touched = true; clearHint('touch'); }
-const LAMP_DX = 40, LAMP_Y = GY - 137;     // where the lantern hangs, from the post's foot
+const LAMP_DX = 40, LAMP_Y = GY - 200;      // build 81: the post is taller (the shaft stretched in the picture, owner: "don't just enlarge but lift"), so the lantern hangs higher     // where the lantern hangs, from the post's foot
 function lightLamp(l) { l.lit = G.t; sfx.lamp(); free(l.x + LAMP_DX, LAMP_Y); touched(); }
 function scatter(fl, quiet) {
   fl.away = true; if (!quiet) sfx.flutter();
@@ -1275,7 +1274,7 @@ let INK = '#000', HINT = 'rgba(255,255,255,.1)', SETC = '#333', DOORC = '#222';
 // weather where the thing stands: no scratch canvas is touched while playing. depth .5 keeps them paler than the people (.8).
 const PROP_DETAIL = .2, HOUSE_DETAIL = .4, FLAT_GREY = .56;      // 0 = a flat shape, 1 = the whole painting; FLAT_GREY = the paintings' average tone
 // perch = where birds sit on it (how far across, how high)
-const PROP_META = { lamp: { w: 73, h: 205 } }, PROP = {};
+const PROP_META = { lamp: { w: 73, h: 268 } }, PROP = {};
 // DEPTH (owner, build 40: "need foreground items between viewer and Christian to build depth, at least two levels ... one more
 // level between Christian and the first row of houses"). From far to near: mountains, far houses, near houses (the scenery
 // layers); then 'mid', a lane just behind the road, where his house and family stand; the road itself (Christian, the
@@ -1351,6 +1350,7 @@ let FAM_SH = null, WIFE_SH = null;
 // in doorways came up a little. If it still looks off, repaint the cottages with true proportions (about 45 cents).
 const sills = (c, wins, k, y, dark) => { c.fillStyle = dark; for (const w of wins) if (w[3] > 50) c.fillRect(w[0] * k - 4, y + (w[1] + w[3]) * k - 1, w[2] * k + 8, 2.2); };
 const DOOR_FIG = .78;      // people standing in a doorway, against the other figures (was .93; owner, build 73: "need to be smaller to be more proportional to size of door")
+const WIFE_DX = -2;      // build 81 (owner: "wife's hand can be on sill of door"): she stands toward the left jamb so her raised hand rests on the door frame
 let WIFE = null; const WIFE_META = {"ax": 45, "ground": 254};      // his wife alone, watching him from the door at the opening (assets/wife.webp)
 let HOUSE = null, FAM = null, OBS_ST = null, PLI_ST = null;
 const loadImg = name => fetch('assets/' + name + '?v=' + PACK_V).then(r => r.ok ? r.blob().then(toImage) : null).catch(() => null);   // a missing picture is just left out
@@ -1492,7 +1492,7 @@ function home(cam) {                       // drawn in screen units, before the 
   c.save(); c.translate(x, 0); sills(c, M.wins, k, y, dark); c.restore();
   const stepY = L.base;      // the top of the doorstep: whoever is in the door stands on it
   const alone = !G.fam && WIFE && WIFE_META;      // at the opening only his wife stands in the door (owner, build 62)
-  if (e > .3) drawFrame(alone ? WIFE : FAM, alone ? WIFE_META : FAM_META, doorX(cam) + (alone ? 8 : 2), stepY + 2 - FEET_SINK, G.fam ? 1 : -1, smooth(.3, 1, e),      // at the start they look after him, to the left
+  if (e > .3) drawFrame(alone ? WIFE : FAM, alone ? WIFE_META : FAM_META, doorX(cam) + (alone ? WIFE_DX : 2), stepY + 2 - FEET_SINK, G.fam ? 1 : -1, smooth(.3, 1, e),      // at the start they look after him, to the left
     CHR_K * DOOR_FIG * HOUSE_K * L.k, breath(7));   // on the step, in front of the wall
 }
 // THE GATE IS PAINTED (owner, build 74, asked "does gate look good enough?": it was the last code-drawn block beside
@@ -1565,6 +1565,21 @@ function drawLight() {                     // the shining light, far away: large
 // one soft glow, baked once and drawn wherever something shines
 const GLOW = mk(64, 64);
 { const c = GLOW.getContext('2d'), g = c.createRadialGradient(32, 32, 0, 32, 32, 32); g.addColorStop(0, 'rgba(255,251,232,1)'); g.addColorStop(.14, 'rgba(255,236,180,.8)'); g.addColorStop(.42, 'rgba(250,208,120,.28)'); g.addColorStop(1, 'rgba(240,190,100,0)'); c.fillStyle = g; c.fillRect(0, 0, 64, 64); }
+// A LIT LAMP (owner, build 76: "the light in them more realistic"): a small flame with a hot core low in the lantern,
+// warm light filling its panes, a little flicker, a wide soft halo in the mist, light catching the side of the post
+// toward the lantern, and a flat pool on the road beneath. Positions are from the lamp picture (prop-lamp.webp).
+function lampLight(l, a, cam) {
+  const x = l.x + LAMP_DX - cam, y = LAMP_Y, fl = .9 + .07 * Math.sin(G.t / 5.3 + l.x) + .05 * Math.sin(G.t / 2.1 + l.x * 3), c = ctx, top = GY - PROP_META.lamp.h, px = l.x - 15 - cam;
+  glow(x, y - 6, 260, .32 * a * fl);                                      // the halo in the mist
+  glow(x, y - 6, 90, .5 * a * fl);
+  const pg = c.createLinearGradient(0, top + 42, 0, top + 76); pg.addColorStop(0, css(PAL.win, .45 * a)); pg.addColorStop(.7, css(PAL.light, .85 * a * fl)); pg.addColorStop(1, css(PAL.win, .6 * a));
+  c.globalAlpha = 1; c.fillStyle = pg; c.fillRect(px + 48, top + 43, 21, 32);      // warm light in the panes
+  const fg = c.createRadialGradient(x + 2, y + 4, 0, x + 2, y + 4, 7 * fl); fg.addColorStop(0, 'rgba(255,253,240,1)'); fg.addColorStop(.35, css(PAL.light, .9)); fg.addColorStop(1, css(PAL.win, 0));
+  c.globalAlpha = a; c.fillStyle = fg; c.beginPath(); c.ellipse(x + 2, y + 3, 4.5 * fl, 7 * fl, 0, 0, 7); c.fill();      // the flame
+  const sg = c.createLinearGradient(0, top + 40, 0, GY); sg.addColorStop(0, css(PAL.win, .22 * a)); sg.addColorStop(.3, css(PAL.win, .07 * a)); sg.addColorStop(1, css(PAL.win, 0));
+  c.globalAlpha = 1; c.fillStyle = sg; c.fillRect(px + 17, top + 30, 5, GY - top - 30);      // its side of the post
+  c.globalAlpha = .4 * a * fl; c.drawImage(GLOW, x - 120, GY - 8, 240, 26);       // a flat pool on the road below
+}
 const glow = (x, y, size, a) => { if (a < .01) return; ctx.globalAlpha = Math.min(1, a); ctx.drawImage(GLOW, x - size / 2, y - size / 2, size, size); };
 const drops = []; { const r = rng(9); for (let i = 0; i < 240; i++) drops.push({ x: r() * (VW + 160), y: r() * VH, l: 14 + r() * 24, v: 9 + r() * 8, a: .12 + r() * .3 }); }
 let STEPS = 1;
@@ -1660,7 +1675,7 @@ function draw() {
     // flat like the pool (a little way down the picture, never streaming toward us).
     { const alone = !G.fam && WIFE && WIFE_META, sh = alone ? WIFE_SH : FAM_SH, im = alone ? WIFE : FAM, meta = alone ? WIFE_META : FAM_META, e = G.door * G.door * (3 - 2 * G.door);
       if (sh && im && e > .3) {
-        const L = LEVELS.home, K = CHR_K * DOOR_FIG * HOUSE_K * L.k, off = alone ? 8 : 2;
+        const L = LEVELS.home, K = CHR_K * DOOR_FIG * HOUSE_K * L.k, off = alone ? WIFE_DX : 2;
         ctx.save(); ctx.translate(doorX(cam) + cam + off, L.base + 2); ctx.transform(G.fam ? 1 : -1, 0, -off / 30, -.44, 0, 0);
         ctx.globalAlpha = .7 * smooth(.3, 1, e); ctx.drawImage(sh, -meta.ax * K, -meta.ground * K, im.width * K, im.height * K); ctx.restore();
       } }
@@ -1713,7 +1728,6 @@ function draw() {
   // grass in front
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   drawFog(true);                                             // a thin veil low over the road, in front of everyone
-  pair(FRONT.cool, FRONT.warm, cam * FRONT.par, FRONT.q, 1, VH - 70, VH);
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
   // the rain side is dulled, the golden side is warmed
   ctx.globalCompositeOperation = 'multiply';
@@ -1727,7 +1741,7 @@ function draw() {
   // everything that shines, drawn last so it glows in the gloom
   ctx.globalCompositeOperation = 'screen';
   const dim = 1 - .7 * G.gloom;
-  for (const l of LAMPS) if (l.lit && on(l.x, 60, 160)) { const a = Math.min(1, (G.t - l.lit) / 40) * lerp(1, .45, wAt(l.x)) * (.94 + .06 * Math.sin(G.t / 9 + l.x)); glow(l.x + LAMP_DX - cam, LAMP_Y, 200, .5 * a); glow(l.x + LAMP_DX - cam, LAMP_Y, 46, .9 * a); ctx.globalAlpha = .34 * a; ctx.drawImage(GLOW, l.x + LAMP_DX - 100 - cam, GY - 6, 200, 30); }
+  for (const l of LAMPS) if (l.lit && on(l.x, 60, 160)) { const a = Math.min(1, (G.t - l.lit) / 40) * lerp(1, .45, wAt(l.x)) * (.94 + .06 * Math.sin(G.t / 9 + l.x)); lampLight(l, a, cam); }
   for (const it of ROW) if (it.who && it.open > .02) { const sx = lineUp(it.a, LEVELS.home.par) - cam * LEVELS.home.par; if (sx > -200 && sx < VW + 200) glow(sx, LEVELS.home.base - 55, 170, .22 * it.open); }      // the glow of the neighbours' doors
   if (G.door > .02) glow(doorX(cam) + 3, LEVELS.home.base - 62, 260, .32 * G.door * lerp(1, .5, warm(doorX(cam) / VW)));   // the glow of home
   for (const s of LIGHTS) {
