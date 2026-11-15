@@ -144,6 +144,9 @@ The game is `index.html` (one file, no build step). `style-lab.html` is the art-
 - **Nobody has listened to the finished lines in the game yet** (the words were checked by machine, the sound was not): the owner's ear decides. Samples of the three voices were sent in chat.
 - The owner pasted the API key in chat; advised to delete it in AI Studio and make a new one when the voices are settled. It is not in the repo.
 
+## Built Nov 15, 2026 (build 28)
+- Owner: "make rain sound slightly quieter". Rain loudness is now one number, `RAIN_VOL` in `story-lab.html` (.05 to .032, about a third quieter).
+
 ## Open questions for the owner
 0. **Story lab (build 25):** is this the right shape for the game? How does it sound? Is "Go home" a good choice to offer? Should it replace the game now?
 1. How does the game feel on the phone: smooth? Anything hard to see (dark Christian against dark houses, crates, barrels)?

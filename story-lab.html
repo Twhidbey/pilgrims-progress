@@ -67,7 +67,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">story lab · build 27 · Nov 15 2026</div>
+  <div id="build">story lab · build 28 · Nov 15 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -488,10 +488,11 @@ const sfx = {
   open: () => { sweep(82, 41, 1.6, .12); [43, 55, 62, 67, 71].forEach((m, i) => note(m, .06, 6, i * .12)); },
 };
 // the weather you can hear: rain fades as the light grows
+const RAIN_VOL = .032;                    // how loud the rain is (was .05; owner asked for slightly quieter)
 function ambience() {
   if (!AC || G.t % 8) return;
   const now = AC.currentTime, w = warm((P.x - G.cam) / VW);
-  rainG.gain.setTargetAtTime(.05 * (1 - w) * LOOK.rain / .6 + .035 * G.gloom, now, .4);
+  rainG.gain.setTargetAtTime(RAIN_VOL * (1 - w) * LOOK.rain / .6 + RAIN_VOL * .7 * G.gloom, now, .4);
   padG.gain.setTargetAtTime(.055, now, .8);
   warmG.gain.setTargetAtTime(.05 * w + .04 * G.gateOpen, now, .8);
   gloomG.gain.setTargetAtTime(.06 * G.gloom, now, .5);
