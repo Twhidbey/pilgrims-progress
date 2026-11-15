@@ -68,7 +68,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">story lab · build 84 · Nov 15 2026</div>
+  <div id="build">story lab · build 85 · Nov 15 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -1043,7 +1043,7 @@ function figure(x, fn) {
 }
 
 // ---------- things that answer a touch ----------
-function free(wx, wy) { G.motes.push({ x: wx, y: wy, free: true, tw: Math.random() * 6 }); }   // a light set free; it flies to Christian
+function free(wx, wy) { G.got++; note(HARM[G.extra++ % HARM.length], .05, 3.2, .25); G.motes.push({ x: wx, y: wy, tw: Math.random() * 6, life: 0 }); }   // a light set free: it sings and drifts away to the far light
 function touched() { G.touched = true; clearHint('touch'); }
 const LAMP_DX = 40, LAMP_Y = GY - 200;      // build 81: the post is taller (the shaft stretched in the picture, owner: "don't just enlarge but lift"), so the lantern hangs higher     // where the lantern hangs, from the post's foot
 function lightLamp(l) { l.lit = G.t; sfx.lamp(); free(l.x + LAMP_DX, LAMP_Y); touched(); }
@@ -1209,32 +1209,25 @@ function people() {
   if (o) { o.anim = stepAnim(o.anim ?? OBS_META.rest[0], Math.abs(o.x - (o.px ?? o.x)), OBS_STEP, OBS_META); o.px = o.x; }
   if (p) { p.anim = stepAnim(p.anim ?? PLI_META.rest[0], Math.abs(p.x - (p.px ?? p.x)), PLI_STEP, PLI_META); p.px = p.x; }
 }
-// lights on the road: each sings its note as he reaches it, then stays with him
+// lights on the road: each sings its note as he reaches it, then drifts slowly up and away toward the far light and
+// fades. NOTHING IS COLLECTED (owner, build 84: "not sure about lights floating above head or collecting lights at all
+// ... too video gamey?"; agreed: the tune pulls the child on, a swarm by his head was a pickup counter). Only a soft
+// warmth round him still grows a little (G.got).
 function gather() {
   for (const s of LIGHTS) if (!s.got && s.x - P.x < 22 && s.x - P.x > -60) {
     s.got = true; G.got++; note(s.midi, .075, 2.8);
-    G.motes.push({ x: s.x, y: s.y, tw: Math.random() * 6 });
+    G.motes.push({ x: s.x, y: s.y, tw: Math.random() * 6, life: 0 });
   }
   for (const fl of FLOCKS) if (!fl.away && Math.abs(fl.x - G.cam * fl.par - (P.x - G.cam)) < 64) scatter(fl);
 }
-// the lights he has gathered drift round him like slow fireflies; at the gate they go on ahead into the far light
+// each light, once sung, drifts up and away toward the far light, slowly, and fades on the way; the far light answers a little
 function motes() {
-  const cx = P.x - P.face * 30, cy = GY - 152, lp = lightPos();
-  let k = 0;
+  const lp = lightPos();
   for (let i = G.motes.length - 1; i >= 0; i--) {
-    const m = G.motes[i];
-    if (!m.go) continue;
-    const tx = lp.x + G.cam, ty = lp.y, far = Math.min(1, Math.hypot(tx - m.x, ty - m.y) / 240); m.x += (tx - m.x) * .03; m.y += (ty - m.y) * .03 - far * .9;
-    if (far < .1) { G.motes.splice(i, 1); G.flare = Math.min(1.3, G.flare + .14); }
-  }
-  for (const m of G.motes) {
-    if (m.go) continue;
-    const i = k++, r = 8 + 5 * Math.sqrt(i), a = i * 2.4 + G.t * .009 * (1 + (i % 3) * .35);
-    let tx = cx + Math.cos(a) * r * 1.5, ty = cy + Math.sin(a) * r * .5 - i * .25 + Math.sin(G.t / 37 + i) * 2.5;
-    if (G.act === 'gate' && pushHeld()) { tx = DOORM + Math.sin(a * 3) * 5; ty = GY - 14 - (i * 37) % 230; }   // helping at the gate
-    if (!m.free) m.x += P.vx * .9;                             // they move with him, so they stay by his head even when he runs
-    const e = m.free ? .028 : .07; m.x += (tx - m.x) * e; m.y += (ty - m.y) * e;
-    if (m.free && Math.hypot(tx - m.x, ty - m.y) < 40) { m.free = false; G.got++; note(HARM[G.extra++ % HARM.length], .05, 3.2); }
+    const m = G.motes[i]; m.life++;
+    const tx = lp.x + G.cam, ty = lp.y; m.x += (tx - m.x) * .006 + P.vx * .5; m.y += (ty - m.y) * .006 - .25;
+    m.a = Math.min(1, m.life / 20) * (1 - smooth(140, 300, m.life));
+    if (m.life >= 300) { G.motes.splice(i, 1); G.flare = Math.min(1.3, G.flare + .03); }
   }
 }
 function effects() {
@@ -1260,9 +1253,9 @@ function effects() {
   const F = G.finale;
   if (F) {
     F.t++;
-    while (F.i < TUNE.length && F.t >= TUNE[F.i][0] * 28) { note(TUNE[F.i][1], .08, 3.2); const m = G.motes.find(m => !m.go && !m.free); if (m) m.go = true; F.i++; }
+    while (F.i < TUNE.length && F.t >= TUNE[F.i][0] * 28) { note(TUNE[F.i][1], .08, 3.2); G.flare = Math.min(1.3, G.flare + .05); F.i++; }      // the far light brightens with every note
     while (F.bar < BASS.length && F.t >= (1 + F.bar * 3) * 28) { note(BASS[F.bar], .06, 3.4, 0, false); note(BASS[F.bar] + 12, .03, 3, 0, false); F.bar++; }
-    if (F.i >= TUNE.length && F.t > 47 * 28) { for (const m of G.motes) m.go = true; G.finale = null; }
+    if (F.i >= TUNE.length && F.t > 47 * 28) G.finale = null;
   }
 }
 // ---------- the opening: a few quiet notes on the title page ----------
@@ -1801,7 +1794,7 @@ function draw() {
     glow(x, y, 54, .5 * tw); glow(x, y, 17, 1);
   }
   if (G.state !== 'title') glow(P.x - cam, GY - 84, 210 + G.got * 2.2, (.1 + Math.min(.2, G.got * .0045)) * dim * (1 - intoGate(P.x)));   // the warmth he carries
-  for (const m of G.motes) { const x = m.x - cam, tw = .75 + .25 * Math.sin(G.t / 9 + m.tw); glow(x, m.y, 26, .5 * tw * dim); glow(x, m.y, 8.5, dim); }
+  for (const m of G.motes) { const x = m.x - cam, tw = (.75 + .25 * Math.sin(G.t / 9 + m.tw)) * (m.a ?? 1); glow(x, m.y, 26, .5 * tw * dim); glow(x, m.y, 8.5, tw * dim); }
   for (const g of G.glints) { const x = g.x - cam * g.par, a = Math.sin(Math.PI * g.t / 56); glow(x, g.y, 30, .5 * a); ctx.globalAlpha = .9 * a; ctx.strokeStyle = '#fff6da'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(x - 8, g.y); ctx.lineTo(x + 8, g.y); ctx.moveTo(x, g.y - 8); ctx.lineTo(x, g.y + 8); ctx.stroke(); }
   for (const t of G.taps) { ctx.globalAlpha = .5 * (1 - t.t / 26); ctx.strokeStyle = '#fff3d0'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(t.x, t.y, 6 + t.t * 1.3, 0, 6.2832); ctx.stroke(); }
   if (G.ring) { const [x, y] = G.ring(); ctx.strokeStyle = '#ffe6ae'; ctx.lineWidth = 2; for (const k of [0, .5]) { const ph = (G.t / 80 + k) % 1; ctx.globalAlpha = .65 * (1 - ph); ctx.beginPath(); ctx.arc(x, y, 14 + ph * 40, 0, 6.2832); ctx.stroke(); } }
