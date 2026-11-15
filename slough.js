@@ -289,10 +289,13 @@ const SL = (() => {
       if (v && ph === 'plain' && saying()) { const nx = Math.min(...OPEN_AT.filter((x, i) => !capsSaid.has(i)), nearSaid ? Infinity : -1300, FALL_X); if (C2.x + v >= nx - 1) v = 0; }
       C2.x += v;
       C2.anim = stepAnim(C2.anim, v, CHR_STEP, CHR_META); C2.y = bankY(C2.x) + 4;
+      // build 110 (owner: "make christian and pliable go to standing still sprites when you're not walking"): on the
+      // plain, once his feet are down he dissolves into his standing picture (breathing), and back out when he walks
+      if (ph === 'plain') { const atRest = CHR_META.rest.includes(((Math.floor(C2.anim) % CHR.length) + CHR.length) % CHR.length); C2.stand = clamp(C2.stand + (v ? -.12 : atRest ? .05 : -.12)); }
       if (ph === 'plain') {
         OPEN_AT.forEach((x, i) => { if (C2.x > x && !capsSaid.has(i)) { capsSaid.add(i); caption([LEVEL2_OPENING[i]]); } });
         if (C2.x > -1300 && !nearSaid) { nearSaid = true; caption(NEAR); }
-        if (C2.x >= FALL_X) { ph = 'fall'; G.state = 'auto'; G.capQ.length = 0; C2.fallT = 0; sfxS.fall(); clearHint('walk'); }
+        if (C2.x >= FALL_X) { C2.stand = 0; ph = 'fall'; G.state = 'auto'; G.capQ.length = 0; C2.fallT = 0; sfxS.fall(); clearHint('walk'); }
         if (!G.walked && G.t > 400 && C2.x < START + 20) { G.walked = true; hint('walk', 'Hold to walk.'); }
         if (want) clearHint('walk');
       } else {
@@ -363,7 +366,8 @@ const SL = (() => {
       if (pli.mode === 'follow') {
         const tx = C2.x - 80, v = clamp(tx - pli.x, 0, MAXV * 1.05); pli.x += v; pli.y = bankY(pli.x) + 4;
         pli.anim = stepAnim(pli.anim, v, PLI_STEP, PLI_META); pli.face = 1;
-        if (ph === 'fall') pli.mode = 'in';
+        const atRest = PLI_META.rest.includes(Math.floor(pli.anim) % PLI_META.frames); pli.st = clamp((pli.st || 0) + (v > .05 ? -.12 : atRest && PLI_ST ? .05 : -.12));      // he stands too (build 110)
+        if (ph === 'fall') { pli.mode = 'in'; pli.st = 0; }
       } else if (pli.mode === 'climb' && PLIC.length && !pli.out) {
         // the video: he wades crossly to the bank, climbs up it and steps off; raised to meet the game's bank as he climbs
         // BUILD 106 (owner: "when pliable gets out sprite jumps around (skips locations)"): two jumps fixed. (1) At the end
@@ -482,7 +486,11 @@ const SL = (() => {
     // Pliable
     if (pli) {
       if (PLIC.length && pli.mode === 'climb' && !pli.out) figure(n, 'pli', PLIC[Math.floor(pli.ct || 0)], META.climb, pli.x, pli.y, -1, fig, true, pli.alpha);
-      else figure(n, 'pli', PLI[Math.floor(pli.anim) % (PLI.length || 1)], PLI_META, pli.x, pli.y, pli.face, fig, pli.y > 2 && !(PLIC.length && pli.mode === 'climb'), pli.alpha);
+      else {
+        const st = pli.mode === 'follow' && PLI_ST ? pli.st || 0 : 0;
+        if (st > 0) figure(n, 'plist', PLI_ST, PLI_ST_META, pli.x, pli.y, pli.face, fig, false, pli.alpha * st);
+        if (st < 1) figure(n, 'pli', PLI[Math.floor(pli.anim) % (PLI.length || 1)], PLI_META, pli.x, pli.y, pli.face, fig, pli.y > 2 && !(PLIC.length && pli.mode === 'climb'), pli.alpha * (1 - st));
+      }
     }
     // Help: he comes out of the mist on the far bank, steps to the edge, kneels and holds out his hand
     const vt = mv ? mv.t : 0, lt = lift ? lift.t : -1, mixIn = lift ? clamp(lt / 3.2) : 0;

@@ -70,7 +70,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">story lab · build 109 · Nov 15 2026</div>
+  <div id="build">story lab · build 110 · Nov 15 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -87,7 +87,7 @@ const EVA_META={"ax": 82, "ground": 311, "frames": 80, "src": [0, 4, 8, 12, 16, 
 const STD_META={"ax": 101, "ground": 302, "frames": 79, "src": [0, 2, 4, 6, 8, 10, 12, 14, 16, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35, 37, 39, 41, 43, 45, 47, 49, 51, 53, 55, 57, 59, 61, 63, 65, 67, 69, 71, 73, 75, 77, 79, 81, 83, 85, 87, 89, 91, 93, 95, 96, 100, 104, 108, 112, 116, 120, 124, 128, 132, 136, 140, 144, 148, 152, 156, 160, 164, 168, 172, 176, 180, 184, 188, 192, 196, 200, 204, 208, 212]};
 
 // ---------- setup ----------
-let VW = 960; const VW0 = 960, VH = 540, GY = 440, LEVEL_W = 7900, PANG = LEVEL_W - VW, GATE = 7040;
+let VW = 960; const VW0 = 960, VH = 540, GY = 440, LEVEL_W = 9400, PANG = LEVEL_W - VW, GATE = 8540;
 const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
 const stage = document.getElementById('stage');
 let DPR = 1;
@@ -608,11 +608,11 @@ function bakeFinish() {
 // Evangelist there (EVAN_X), then turns and runs RIGHT, back past his own door and on through the city to the gate. One
 // house in one place, and it is the book's geography: he walks out to the fields, then flees past his own door.
 const FIELD_END = 1650;      // where the wheat field ends and the street begins (the wheat sinks away before it)
-const EVAN_X = 420, HOME_X = 2150, RUN_END = 5400, NEIGH_X = 6050, GATE_STOP = 6870, DOOR0 = 6955, DOOR1 = 7185, DOORM = 7070;      // build 100: a 2.6 m gateway (88 units to a metre)      // build 91: the gateway is wider (was 7006 to 7120), so the painted gatehouse is bigger
+const EVAN_X = 420, HOME_X = 2150, RUN_END = 6300, NEIGH_X = 6950, GATE_STOP = 8370, DOOR0 = 8455, DOOR1 = 8685, DOORM = 8570;      // build 110: the street after his house is 900 longer, so each line is said where it belongs while he runs, and the road from the neighbours to the gate 600 longer (owner: "need more space here for obstinate and pliable to catch up and narration to read")      // build 100: a 2.6 m gateway (88 units to a metre)      // build 91: the gateway is wider (was 7006 to 7120), so the painted gatehouse is bigger
 // SKIP AHEAD (owner, build 89: "is there a way to skip ahead to a moment?"): add ?at=NAME to the link. Each name starts
 // the level just before that moment, after Evangelist. (?x=N still works for any place on the road; ?level=2 starts
 // at the Slough of Despond.)
-const AT = { door: 1500, neighbours: 3800, obstinate: 5700, gate: 6700 };
+const AT = { door: 1500, neighbours: 3950, obstinate: 6600, gate: 8200 };
 const TEST_X = +(new URLSearchParams(location.search).get('x')) || AT[new URLSearchParams(location.search).get('at')] || 0, START_X = TEST_X || HOME_X - 280;   // he starts beside his own door; ?x=3600 starts further along, after Evangelist (for testing)
 // The lights on the road are a tune: "Amazing Grace" (New Britain, 1829), one phrase per stretch of road.
 // Each light is one note. They are spaced by the length of each note, so walking at his steady pace plays the tune in time.
@@ -621,8 +621,8 @@ const BEAT = 58, NOTE = { D: 62, E: 64, G: 67, A: 69, B: 71, d: 74 };
 const PHRASES = [
   { x: 1770, back: true, at: 0, n: [[0, 'D'], [1, 'G'], [3, 'B'], [3.5, 'G'], [4, 'B'], [6, 'A'], [7, 'G'], [9, 'E'], [10, 'D']] },
   { x: 1100, back: true, at: 12, n: [[0, 'D'], [1, 'G'], [3, 'B'], [3.5, 'G'], [4, 'B'], [6, 'A'], [7, 'd']] },
-  { x: 5350, at: 24, n: [[0, 'B'], [1, 'd'], [2.5, 'B'], [3, 'd'], [3.5, 'B'], [4, 'G'], [6, 'D'], [7, 'E'], [8.5, 'G'], [9, 'G'], [9.5, 'E'], [10, 'D']] },
-  { x: 6400, at: 36, n: [[0, 'D'], [1, 'G'], [3, 'B'], [3.5, 'G'], [4, 'B'], [6, 'A'], [7, 'G']] },
+  { x: 6250, at: 24, n: [[0, 'B'], [1, 'd'], [2.5, 'B'], [3, 'd'], [3.5, 'B'], [4, 'G'], [6, 'D'], [7, 'E'], [8.5, 'G'], [9, 'G'], [9.5, 'E'], [10, 'D']] },
+  { x: 7700, at: 36, n: [[0, 'D'], [1, 'G'], [3, 'B'], [3.5, 'G'], [4, 'B'], [6, 'A'], [7, 'G']] },
 ];
 // the whole tune, sung through once when the gate opens, with a low note under each bar
 const TUNE = [], BASS = [43, 43, 48, 43, 43, 43, 50, 50, 43, 43, 48, 43, 43, 50, 43, 43];
@@ -633,7 +633,7 @@ function buildLevel() {
   LIGHTS.length = LAMPS.length = FLOCKS.length = CAPS.length = 0;
   const light = (x, midi) => LIGHTS.push({ x, y: GY - 60 - clamp(midi - 62, -6, 12) * 5.2, midi, got: false, ph: rnd() * 6 });
   for (const ph of PHRASES) for (const [b, k] of ph.n) light(ph.x + (ph.back ? -b : b) * BEAT, NOTE[k]);      // 'back': a phrase met walking left, out into the field
-  for (const x of [2700, 6600]) LAMPS.push({ x, lit: 0 });                       // few and far apart: they count as special things too (none in the field)
+  for (const x of [2700, 8100]) LAMPS.push({ x, lit: 0 });                       // few and far apart: they count as special things too (none in the field)
   // Things, each on a depth level (LEVELS). Owner's rule (build 40): no more than one special thing in the picture at a
   // time, because their likeness distracts. So there are few of them, about one every 600 of road counting the lamps and his
   // house, never two of a kind near each other, and they take turns between the levels. (Two can share the picture for a
@@ -799,8 +799,8 @@ function reset() {
   Object.assign(P, { x: START_X, y: GY, vx: 0, face: TEST_X ? 1 : -1, anim: 1, stand: { t: QUIET[0] }, turn: 0, run: false, ranim: 0, blend: null, weep: null, turnTo: 0, turnV: null, wantBack: false, bk: 0 });
   Object.assign(G, { cam: Math.max(0, Math.min(LEVEL_W - VW, TEST_X ? START_X - VW * .38 + 40 : START_X - VW * .62 - 40)), t: 0, got: 0, extra: 0, motes: [], flyers: [], ripples: [], glints: [], taps: [], litw: [], capQ: [], cap: 0, hint: null,
     pli: null, obst: null, flare: 0, gloom: 0, gloomTo: 0, gateOpen: 0, act: null, actT: 0, ring: null, auto: null, finale: null, guard: 0, idle: 0, wins: 0,
-    evanDone: !!TEST_X, evanGone: TEST_X ? 1 : 0, neigh: TEST_X > NEIGH_X + 300, gateSeen: false, walked: false, touched: false, leaving: false, fam: TEST_X > HOME_X ? 2 : 0, door: TEST_X ? (TEST_X > HOME_X ? 1 : 0) : 1, doorShut: false, roll: TEST_X ? { t: 999, x: 0, y: 0 } : null, runZone: !!TEST_X && TEST_X < RUN_END, outSaid: false, watched: TEST_X > HOME_X + 900, ears: TEST_X > HOME_X });
-  G.sunUp = 0; G.through = false; G.homeTo = null; G.calm = 0;
+    evanDone: !!TEST_X, evanGone: TEST_X ? 1 : 0, neigh: TEST_X > NEIGH_X + 300, gateSeen: false, walked: false, touched: false, leaving: false, fam: TEST_X > HOME_X ? 2 : 0, door: TEST_X ? (TEST_X > HOME_X ? 1 : 0) : 1, doorShut: false, roll: TEST_X ? { t: 999, x: 0, y: 0 } : null, runZone: !!TEST_X && TEST_X < RUN_END, outSaid: false, watched: TEST_X > WATCH_X, ears: TEST_X > HOME_X });
+  G.sunUp = 0; G.through = false; G.homeTo = null; G.calm = 0; G.doorSaid = false; G.choiceKind = null;
   G.zoom = 1 - (1 - ZOOM_GATE) * smooth(GATE - 1300, GATE - 380, START_X);      // starting near the gate (?at=gate): already drawn back
   G.evan.pt = TEST_X ? 239 : 0; G.evan.go = false; G.evan.st = EVS_META.frames * 100; downs.clear(); pushing = false; keys.r = keys.push = false;
   if (TEST_X) for (const l of LIGHTS) if (l.x < Math.max(TEST_X, 2000)) l.got = true;
@@ -939,7 +939,7 @@ const FAMILY_RUN = [[W, 'Come back! Come home to us!', 'quick']];
 const FAMILY = [
   [W, 'Come back! Come home to us!', 0, () => { P.wantBack = true; }],      // he turns to look: his back to us, his family framed in the lit door
   [C, 'I cannot stay. I must find the way, for all of us.'],
-  [W, 'Christian! Come back!', 'walkon', () => { P.turn = 1; G.walkFrom = P.x; G.runZone = true; coverEars(); }],
+  [W, 'Christian! Come back!', 'walkon', () => { P.turn = 1; G.walkFrom = P.x; G.runZone = true; }],      // build 110: his fingers go in his ears once she has been heard (coverEars when the talk ends)
 ];
 const LIFE = [[C, 'Life! Life! Eternal life!', 'quick'], [N, 'So he did not look behind him, but fled on.', 'quick']];      // said as he runs ('quick': they pass as soon as they are heard)
 // {19} to {24}: the neighbours come out while he is still running; two set out to fetch him back, and overtake him
@@ -988,6 +988,12 @@ function pick(home) {
   if (G.state !== 'choice') return;
   choiceEl.className = ''; document.body.classList.remove('talking');
   if (SL.on) { SL.pick(home); return; }
+  if (G.choiceKind === 'door') {
+    G.choiceKind = null; document.getElementById('chHome').textContent = 'Go home'; document.getElementById('chOn').textContent = 'Go on to the light';
+    if (home) { P.wantBack = true; talk(FAMILY.slice(1), () => { coverEars(); caption(LIFE); }); }      // he turns to them: his back to us, his family framed in the lit door
+    else { G.state = 'play'; coverEars(); caption(LIFE); G.idle = 0; }
+    return;
+  }
   const part = () => talk(PART, () => { G.obst.mode = 'home'; G.pli.mode = 'follow'; P.turn = 1; });
   if (!home) { note(67, .05, 3); talk(ONWARD, part); return; }
   // going home: a few steps back into the rain. The light dims, then he turns round again. Nothing is lost.
@@ -1088,13 +1094,13 @@ function drawFrame(im, meta, x, y, face, alpha, K = CHR_K, sy = 1) {      // sy:
 // the next place where new words begin, while words are still being said (see "STOP POINTS FOR THE WORDS" in update())
 // words are still being SAID (queued, or a recording still playing), not just lingering on the screen (both levels use this)
 const saying = () => !!(G.capQ.length || (G.cap > 0 && G.t <= (G.capEnd || 0) + 6));
-const WATCH_X = 3850, DOOR_OPEN = 640, SLOW_D = 700;      // DOOR_OPEN: how far before his house the door flies open (was 330; earlier, so its words are done by the house)      // where the first neighbour's door opens
+const WATCH_X = 4000, DOOR_OPEN = 640, DOOR_STOP = 170, DOOR_SAY = 1320;      // DOOR_STOP: where he stops before his door; DOOR_SAY: where the storyteller begins to tell of it (build 110)      // DOOR_OPEN: how far before his house the door flies open (was 330; earlier, so its words are done by the house)      // where the first neighbour's door opens
 function narrStop() {
   if (SL.on || G.state !== 'play' || !saying()) return null;
   if (!G.evanDone) return { lo: EVAN_X + 202 };      // walking out: Evangelist waits until the words in the field are done
   if (G.homeTo) return null;
   let hi = Infinity;
-  for (const [x, on] of [[HOME_X + 150, G.fam < 2], [WATCH_X, !G.watched], [RUN_END, G.runZone], [NEIGH_X, !G.neigh], [GATE_STOP, !G.gateSeen]]) if (on && x > P.x - 1 && x < hi) hi = x;
+  for (const [x, on] of [[HOME_X - DOOR_STOP, G.fam < 2], [WATCH_X, !G.watched], [RUN_END, G.runZone], [NEIGH_X, !G.neigh], [GATE_STOP, !G.gateSeen]]) if (on && x > P.x - 1 && x < hi) hi = x;
   return hi < Infinity ? { hi: hi - 1 } : null;
 }
 function walkTick(dir, max) {
@@ -1104,10 +1110,9 @@ function walkTick(dir, max) {
   // (unhurried, owner build 73: he stays bowed, weeping, until the next line; only then lowers his hand and stands)
   if (P.weep && (dir || !WEEP.ready || (P.weep.t = Math.min(P.weep.t + WEEP_META.step, G.state === 'dialog' && lines === INTRO && li === 1 ? 64 : 1e9)) >= WEEP.length - 1)) { if (WEEP.ready) poseChange(); P.weep = null; if (!dir) P.stand = { t: QUIET[0] }; }
   // the run: from Evangelist he runs, past his own door with his fingers in his ears, until the burden tires him (G.runZone)
-  // build 106: if the storyteller is still speaking and the next place with new words is near, he drops from the run to
-  // his heavy walk until the words are done (then runs on), rather than running up to that place and stopping dead
-  const nsw = narrStop(), slow = !!(nsw && nsw.hi != null && nsw.hi - P.x < SLOW_D);
-  const run = !!(G.runZone && dir > 0 && RUN.ready && !slow);
+  // (build 107 dropped him to a walk near the next place while words were still being said; build 110 gave the street
+  // room instead, owner: "maybe we should put more space between things so timing works out")
+  const run = !!(G.runZone && dir > 0 && RUN.ready);
   if (run !== P.run) {
     poseChange(6, true); P.run = run;
     if (run) P.ranim = runNow()[1].start || 0;      // he sets off from the run's narrowest stride, the frame nearest a standing figure
@@ -1295,9 +1300,13 @@ function story() {
   if (!G.touched && !G.hintT && !G.evanDone && P.x < START_X - 50) { G.hintT = true; const hx = P.x - 190; hint('touch', 'Touch the road. The world answers when you touch it.'); G.ring = () => [hx - G.cam, GY + 60]; }
   if (G.hint !== 'touch' && G.ring && G.state === 'play') G.ring = null;
   if (G.hint === 'touch' && P.x < START_X - 470) clearHint('touch');
-  if (!G.fam && G.evanDone && P.x > HOME_X - DOOR_OPEN) { G.fam = 1; sweep(170, 120, .5, .03); hiss(140, .8, .09, .16, 'lowpass'); sfx.lamp(); caption(DOOR_WORDS); }      // the door of his house is flung open as he comes running
-  if (G.fam === 1 && P.stand && !held() && !keys.r && P.x > HOME_X - 170 && G.cap <= 0 && !G.capQ.length) { G.fam = 2; talk(FAMILY, () => caption(LIFE)); return; }      // (once the storyteller's line is over: build 62, his wife used to cut in on it)      // the child let go by the house: he stops (the framed picture)
-  if (G.fam === 1 && P.x > HOME_X + 150) { G.fam = 2; coverEars(); caption([...FAMILY_RUN, ...LIFE]); }                                         // the child held on: he runs straight past, as in the book
+  if (!G.doorSaid && G.runZone && P.x > HOME_X - DOOR_SAY) { G.doorSaid = true; caption(DOOR_WORDS); }      // said as he runs toward it
+  if (!G.fam && G.evanDone && P.x > HOME_X - DOOR_OPEN) { G.fam = 1; sweep(170, 120, .5, .03); hiss(140, .8, .09, .16, 'lowpass'); sfx.lamp(); }      // the door of his house is flung open as he comes running
+  // AT HIS DOOR (build 110, owner: "no need to force him to walk before seeing wife, but maybe an option (run past or stop -
+  // worded in a nice way)"): he comes to his door, his wife cries after him (heard clearly: his fingers are not yet in his
+  // ears), and the child chooses: "Stop and look back" (the framed picture in the lit door, then hold to run on) or "Run
+  // on" (fingers in his ears, as in the book: hold to run). Either way "Life! Life! Eternal life!" follows.
+  if (G.fam === 1 && P.x > HOME_X - DOOR_STOP) { G.fam = 2; talk(FAMILY.slice(0, 1).map(l => [l[0], l[1]]), () => { G.choiceKind = 'door'; document.getElementById('chHome').textContent = 'Stop and look back'; document.getElementById('chOn').textContent = 'Run on'; choose(); }); return; }
   // {10}: "standing ... with his face from his own house". We know the house is his because his door stands open behind
   // him with his wife and children in its light (owner, build 60: "how do we know it's his?"); it shuts as he walks away.
   if (!G.doorShut && !G.evanDone && P.x < START_X - 45) { G.doorShut = true; sweep(150, 95, .5, .03); hiss(140, .8, .06, .14, 'lowpass', .45); }
@@ -1411,7 +1420,7 @@ function acts() {
   if (G.act === 'walkon') {                                  // heavy steps away from his own door
     if (G.actT === 70) { dMore.textContent = 'hold to run on ✦'; G.ring = () => [P.x + 130 - G.cam, GY - 70]; }
     if (!P.stand && G.ring) G.ring = null;
-    if (P.x > G.walkFrom + 230) next(true);
+    if (P.x > G.walkFrom + 230 && G.guard <= 0) next(true);      // build 110: not before her words have been heard
   }
   if (G.act === 'gate') {
     if (G.actT === 40) { G.ring = () => [DOORM - G.cam, GY - 110]; }
@@ -1543,7 +1552,7 @@ function buildRow() {
   // house?)"): they are now at the neighbours' size on the same level, Obstinate in a doorway of his own (a cottage of
   // the same painting as Christian's, mirrored; his own is far back up the street) and Pliable on the step outside it.
   // build 106: the neighbours stand 300 further on, so his family's words are done before theirs begin
-  for (const [key, flip, who, a] of [['b', true, 'a', 4250], ['c', true, 'b', 4590], ['b', false, 'c', 5100], ['h', true, 'obs', 5530]]) {
+  for (const [key, flip, who, a] of [['b', true, 'a', 4400], ['c', true, 'b', 4740], ['b', false, 'c', 5250], ['h', true, 'obs', 5680]]) {
     const M = rowMeta(key), dc = (M.door[0] + M.door[2] / 2) * k;      // the door's middle, from the house's left
     ROW.push({ key, flip, who, a, x: lineUp(a, p) - (flip ? M.w * k - dc : dc), lit: [who === 'b' ? 1 : 0, who === 'a' ? 1 : 0], on: false, open: 0, f: -1 });
   }
@@ -1586,7 +1595,7 @@ function drawRow(cam) {
 // Obstinate and Pliable (their standing pictures), who in the book are two of these neighbours. Each turns to keep
 // facing Christian as he runs by (the picture is mirrored, with a short dissolve).
 // [picture, where on the road Christian is when he is level with them]
-const WATCHERS = [['pli', 5300]].map(([key, a]) => ({ key, a, f: -1 }));      // only these two stand out in the lane now (they are the two who set off after him); the other three are in their doorways: see buildRow, drawRow
+const WATCHERS = [['pli', 5750]].map(([key, a]) => ({ key, a, f: -1 }));      // only these two stand out in the lane now (they are the two who set off after him); the other three are in their doorways: see buildRow, drawRow
 const WATCH_META = { a: {"ax": 67, "ground": 302}, b: {"ax": 73, "ground": 270}, c: {"ax": 76, "ground": 290} };
 const WATCH_IM = {};
 // their movement: a short loop each from a video (assets/neighbor-a/b/c.pack, build 68), 12 pictures a second; until a
@@ -1697,7 +1706,11 @@ let GATE_P = null, WALL_P = null;
 // Rows above WALL_TOP of the picture (merlons and the gaps between them) are dropped from both baked copies.
 const WALL_TOP = 112;
 function wallTop(B) {
-  const cut = cv0 => { const y0 = Math.round(cv0.height * WALL_TOP / WALL_META.h), c = document.createElement('canvas'); c.width = cv0.width; c.height = cv0.height - y0; c.getContext('2d').drawImage(cv0, 0, -y0); return c; };
+  // build 110 (owner: "wall top is a bit plain"): the top is no longer a ruled line but old worn coping: it dips and rises a
+  // little along the wall, with here and there a stone gone (a small square notch), the same in both baked copies
+  const R = rng(41), prof = []; { let x = 0; while (x < 1100) { const w = 26 + R() * 60; prof.push([x, w, R() < .22 ? 10 + R() * 9 : R() * 5]); x += w; } }
+  const cut = cv0 => { const y0 = Math.round(cv0.height * WALL_TOP / WALL_META.h), k = cv0.width / WALL_META.w, c = document.createElement('canvas'); c.width = cv0.width; c.height = cv0.height - y0;
+    const g = c.getContext('2d'); g.beginPath(); g.moveTo(0, c.height); for (const [x, w, d] of prof) { g.lineTo(x * k, d * k); g.lineTo((x + w) * k, d * k); } g.lineTo(c.width, c.height); g.closePath(); g.clip(); g.drawImage(cv0, 0, -y0); return c; };
   return Object.assign({}, B, { cool: cut(B.cool), warm: cut(B.warm) });
 }
 const gateFit = () => { const k = (DOOR1 - DOOR0) / (GATE_META.hole[2] - GATE_META.hole[0]); return { k, x: DOOR0 - GATE_META.hole[0] * k, y: GY + 2 - GATE_META.h * k, w: GATE_META.w * k, h: GATE_META.h * k }; };
@@ -2156,6 +2169,6 @@ document.getElementById('on2').onclick = () => SL.start();
   for (const [who, txt] of INTRO) vox(who, txt);          // the first words, ready before Begin is pressed
 })();
 </script>
-<script src="slough.js?v=107"></script>
+<script src="slough.js?v=110"></script>
 </body>
 </html>
