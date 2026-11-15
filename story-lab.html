@@ -70,7 +70,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">story lab · build 36 · Nov 15 2026</div>
+  <div id="build">story lab · build 37 · Nov 15 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -406,10 +406,10 @@ function buildLevel() {
   for (const x of [300, 760, 1300, 2900, 3560, 4120, 4660, 5100]) LAMPS.push({ x, lit: 0 });
   for (const [x, w] of [[640, 150], [1830, 110], [3050, 170], [4000, 150], [4900, 150]]) PUDDLES.push({ x, w, used: false });
   // things standing at the back of the road (nothing blocks the way): watercolour pictures, x = their left edge
-  for (const [k, x] of [['barrel', 540], ['crates', 1440], ['barrel', 1660], ['cart', 2620], ['wall', 3020], ['wall', 3290], ['crates', 3760], ['barrel', 3900], ['crates', 4380], ['barrel', 4980]]) DECOR.push({ k, x });
+  for (const [k, x] of [['barrel', 540], ['crates', 1440], ['stall', 1590], ['cart', 2620], ['wall', 3020], ['wall', 3290], ['crates', 3760], ['barrel', 3900], ['crates', 4380], ['barrel', 4980]]) DECOR.push({ k, x });
   // little flocks of birds, sitting on things
   const flock = (x, y, n) => { const b = []; for (let i = 0; i < n; i++) b.push({ dx: (i - (n - 1) / 2) * 13 + (rnd() - .5) * 5, s: .85 + rnd() * .3, f: rnd() < .5 ? 1 : -1 }); FLOCKS.push({ x, y, b, away: false }); };
-  flock(572, GY - 73, 2); flock(1692, GY - 73, 2); flock(2680, GY - 79, 3); flock(3066, GY - 63, 3); flock(3496, GY - 63, 4); flock(3808, GY - 93, 2); flock(4428, GY - 93, 2); flock(5185, GY - 162, 4);
+  flock(572, GY - 73, 2); flock(1712, GY - 170, 4); flock(2680, GY - 79, 3); flock(3066, GY - 63, 3); flock(3496, GY - 63, 4); flock(3808, GY - 93, 2); flock(4428, GY - 93, 2); flock(5185, GY - 162, 4);
   // words said while walking (nobody stops)
   CAPS.push({ x: 3620, watch: true, lines: [[N, 'People watched from their windows. Some laughed. Some called him back.'], [C, 'I will not stop. I can still see the light.']] });
   CAPS.push({ x: 4680, pli: true, lines: [[PL, 'What is it like, the place where we are going?'], [C, 'No one cries there. Everyone shines like the sun.'], [PL, 'Then let us keep walking!']] });
@@ -574,7 +574,7 @@ function next(force) {
 // ---------- the voices: one small recording per line, in assets/voice (made by tools/make-voice.py) ----------
 // A line's file is named by a sum of who says it and the words, so the words on screen and the recording always belong together.
 // A line with no recording is simply silent.
-const VOX = new Map(), VOICE_V = 2;       // bump VOICE_V when recordings change, so phones fetch the new ones
+const VOX = new Map(), VOICE_V = 3;       // bump VOICE_V when recordings change, so phones fetch the new ones
 let voiceOn = true, voxSrc = null, sayN = 0;
 function voiceName(who, txt) { let h = 0x811c9dc5; const t = who + '|' + txt; for (let i = 0; i < t.length; i++) h = Math.imul(h ^ t.charCodeAt(i), 0x01000193) >>> 0; return h.toString(16).padStart(8, '0'); }
 function vox(who, txt) {
@@ -597,7 +597,7 @@ async function say(who, txt) {
 }
 // fetch every line's recording quietly, in story order, while the child is already playing
 async function fetchVoices() {
-  const all = [...INTRO, ...EVAN, ...FAMILY, ...LIFE]; for (const c of CAPS) all.push(...c.lines); all.push(...NEIGH, ...HOME, ...ONWARD, ...PART, ...GATEWORDS, ...END);
+  const all = [...INTRO, ...EVAN, ...FAMILY, ...LIFE, ...TIRED]; for (const c of CAPS) all.push(...c.lines); all.push(...NEIGH, ...HOME, ...ONWARD, ...PART, ...GATEWORDS, ...END);
   for (const [who, txt] of all) { const v = vox(who, txt); await v.raw; await voxBuf(v); }
 }
 function caption(arr) { for (const l of arr) G.capQ.push(l); }
@@ -669,10 +669,10 @@ document.getElementById('chOn').onclick = () => pick(false);
 // ---------- Christian and the others: the video frames ----------
 // walking pace = the pace in Christian's video (owner: "keep things slow, I'm going for an atmospheric feel")
 const MAXV = 1.05;
-const RUN_META = {"ax": 136, "ground": 309, "frames": 24, "vpx": 18.2, "down": [0, 5, 6, 7, 8, 9, 10, 11, 12, 13, 18, 19, 20, 21, 22, 23]};
+const RUN_META = {"ax": 137, "ground": 309, "frames": 24, "vpx": 21.7, "down": [4, 5, 6, 7, 8, 9, 10, 15, 16, 17, 18, 19, 20, 21, 22]};
 const CHR = [], PLI = [], OBS = [], EVA = [], STD = [], RUN = [], CHR_K = .52, RUN_STEP = RUN_META.vpx * CHR_K, RUNV = RUN_STEP * .4,   // the run at its video's own speed (24 frames a second)
    CHR_STEP = CHR_META.vpx * CHR_K, PLI_STEP = PLI_META.vpx * CHR_K, OBS_STEP = OBS_META.vpx * CHR_K;
-const PACK_V = 3;                          // bump when the .pack files change, so phones fetch the new ones
+const PACK_V = 4;                          // bump when the .pack files change, so phones fetch the new ones
 // a .pack file: 4 bytes = how many frames, 4 bytes per frame = its length, then the WebP frames end to end
 async function loadPack(name, into) {
   const buf = await (await fetch('assets/' + name + '.pack?v=' + PACK_V)).arrayBuffer(), dv = new DataView(buf), n = dv.getUint32(0, true);
@@ -753,7 +753,7 @@ function walkTick(dir, max) {
   let lim = G.gateOpen >= 1 ? LEVEL_W - 30 : DOOR0 - 44; if (!EVA.ready && !G.evanDone) lim = EVAN_X - 125;
   const nx = clamp(P.x + P.vx, 30, lim), moved = Math.abs(nx - P.x), f0 = chrFrame();
   P.x = nx; let down = false;
-  if (P.run) { const r0 = Math.floor(P.ranim) % RUN_META.frames; P.ranim += moved / RUN_STEP; const r1 = Math.floor(P.ranim) % RUN_META.frames; down = r1 !== r0 && (r1 === 5 || r1 === 18); }
+  if (P.run) { const r0 = Math.floor(P.ranim) % RUN_META.frames; P.ranim += moved / RUN_STEP; const r1 = Math.floor(P.ranim) % RUN_META.frames; down = r1 !== r0 && (r1 === 4 || r1 === 15); }
   else { P.anim += Math.max(moved, .25) / CHR_STEP; const f1 = chrFrame(); down = f1 !== f0 && CHR_META.rest.includes(f1); }
   if (down) {                                                  // a foot comes down
     const pud = PUDDLES.find(p => P.x > p.x && P.x < p.x + p.w);
@@ -982,7 +982,7 @@ let INK = '#000', HINT = 'rgba(255,255,255,.1)', SETC = '#333', DOORC = '#222';
 // Each is baked once in a rain tint and a golden tint (bakeTint), like the scenery layers, and the two are mixed by the
 // weather where the thing stands: no scratch canvas is touched while playing. depth .5 keeps them paler than the people (.8).
 const PROP_DETAIL = .2, HOUSE_DETAIL = .65, FLAT_GREY = .56;      // 0 = a flat shape, 1 = the whole painting; FLAT_GREY = the paintings' average tone
-const PROP_META = { barrel: { w: 64, h: 76 }, crates: { w: 96, h: 96 }, cart: { w: 219, h: 84 }, wall: { w: 259, h: 70 }, lamp: { w: 73, h: 205 } }, PROP = {};
+const PROP_META = { barrel: { w: 64, h: 76 }, crates: { w: 96, h: 96 }, cart: { w: 219, h: 84 }, stall: { w: 243, h: 200 }, wall: { w: 259, h: 70 }, lamp: { w: 73, h: 205 } }, PROP = {};
 function bakeTint(im, depth, detail) {
   const one = col => {
     const flat = mk(im.width, im.height), f = flat.getContext('2d');                // the shape in one solid tone

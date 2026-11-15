@@ -196,6 +196,13 @@ The game is `index.html` (one file, no build step). `style-lab.html` is the art-
 - Owner: "I think the items were better not as watercolor, distracts a bit ... mostly opaque and not nearly as much details as characters (and maybe house)". Agreed and done with no new pictures: the things on the road keep their hand-drawn outlines but are one solid tone with a fifth of the drawing showing (`PROP_DETAIL`); the house shows two thirds of its painting (`HOUSE_DETAIL`); people stay full watercolour.
 - Still waiting on the owner's Google credit: a flatter market stall (left out), and the recording of "The burden was heavy. He could not run for long."
 
+## Built Nov 15, 2026 (build 37): the run re-made, the stall back, the last line recorded
+- Owner: "why is his face black as he runs away, doesn't seem right". Cause: the first run video turned his head toward the camera and filled the hood with black shadow (his walk is side-on, so the hood hides his face). I had wrongly said it looked fine. Owner topped up the Google credit.
+- **Run re-made** from a new start picture: "...now RUNNING to the right in the middle of a stride, still seen EXACTLY FROM THE SIDE in strict profile like the reference ... His head is in profile facing right, with the hood pulled forward exactly as in the reference, so the hood hides his face: we see only the side of the hood, painted in the same pale grey wash as the rest of the cloak. There is NO dark opening, NO black shadow and NO face anywhere on the hood. Both hands are raised to the sides of his head, pressed flat over his ears on the outside of the hood, elbows out..." and a video prompt adding "his head stays in strict profile facing right and never turns toward the camera. The hood ... stays the same pale grey wash as in the picture: no dark opening, no black shadow, no face ever appears." Loop = video frames 67 to 90.
+- **`tools/video-frames.py`** now holds the video-to-frames recipe (find the loop, cut out, grey, scale, pack, print META).
+- **Stall back** with its table drawn edge-on ("the table is drawn ONLY as its front edge: one single thick horizontal plank line, with NO table-top surface visible at all"). **"The burden was heavy. He could not run for long." recorded.**
+- Spent this build: 2 pictures, 1 video, 1 voice line (about a dollar).
+
 ## Open questions for the owner
 0. **Story lab (build 25):** is this the right shape for the game? How does it sound? Is "Go home" a good choice to offer? Should it replace the game now?
 1. How does the game feel on the phone: smooth? Anything hard to see (dark Christian against dark houses, crates, barrels)?
