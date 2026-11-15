@@ -68,7 +68,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">story lab · build 60 · Nov 15 2026</div>
+  <div id="build">story lab · build 61 · Nov 15 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -839,7 +839,7 @@ const RUN_META = {"ax": 136, "ground": 309, "frames": 29, "vpx": 17.2, "down": [
 // Two runs (build 54; owner: "when he runs, he doesn't need to cover his ears (that doesn't happen till he runs from
 // family)"): RUNP = a plain run, arms free, from Evangelist to his own door (assets/christian-run-plain.pack); RUN = hands
 // over his ears, from the moment his wife cries after him (G.ears, coverEars()). 'steps' = the frames where a foot lands.
-const WEEP = [], WEEP_META = /*WEEP_META*/{"ax": 0, "ground": 0, "step": .2};      // Christian opens his book, reads, weeps and trembles (assets/christian-weep.pack); step = stored frames per tick
+const WEEP = [], WEEP_META = {"ax": 101, "ground": 302, "frames": 96, "step": .2};      // Christian opens his book, reads, weeps and trembles (assets/christian-weep.pack); step = stored frames per tick
 const EVS = [], EVS_META = {"ax": 82, "ground": 311, "frames": 48};      // Evangelist standing, facing right, breathing
 const RUNP_META = {"ax": 132, "ground": 298, "frames": 28, "vpx": 16.6, "steps": [0, 15]}, RUNP = [];
 RUN_META.steps = [7, 22];
@@ -847,7 +847,7 @@ const runNow = () => G.ears || !RUNP.ready ? [RUN, RUN_META] : [RUNP, RUNP_META]
 function coverEars() { if (G.ears) return; if (P.run) poseChange(); G.ears = true; }
 const CHR = [], PLI = [], OBS = [], EVA = [], STD = [], RUN = [], CHR_K = .52, RUN_STEP = RUN_META.vpx * CHR_K, RUNV = RUN_STEP * .4,   // the run at its video's own speed (24 frames a second)
    CHR_STEP = CHR_META.vpx * CHR_K, PLI_STEP = PLI_META.vpx * CHR_K, OBS_STEP = OBS_META.vpx * CHR_K;
-const PACK_V = 7;                          // bump when the .pack files change, so phones fetch the new ones
+const PACK_V = 8;                          // bump when the .pack files change, so phones fetch the new ones
 // a .pack file: 4 bytes = how many frames, 4 bytes per frame = its length, then the WebP frames end to end
 async function loadPack(name, into) {
   const res = await fetch('assets/' + name + '.pack?v=' + PACK_V); if (!res.ok) throw new Error('no ' + name);      // a missing pack is left out
