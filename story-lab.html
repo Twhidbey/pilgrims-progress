@@ -68,7 +68,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">story lab · build 79 · Nov 15 2026</div>
+  <div id="build">story lab · build 80 · Nov 15 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -266,9 +266,14 @@ const wheatWind = (x, t) => .07 * Math.sin(x * .0075 + t * .017) + .025 * Math.s
 // across the picture; low = a low kind, drawn about half height.
 const TREE_META = { a: { bx: 368 / 859 }, b: { bx: 209 / 291 }, e: { bx: 107 / 211 } }, TREE = {}, TREE_KEYS = ['e', 'a', 'b'];      // build 73 (owner: "tree should be of same type, no? (don't exotic ones)"): only the three plain broad-leaved trees; the willow, the bent thorn and the hawthorn clump are no longer used
 const FIELD_TREES = [['a', 150, 108, 1], ['e', 440, 120, 1], ['b', 720, 112, -1], ['a', 1015, 92, -1]];      // [which, where on the near layer, height, 1 or -1 = mirrored]; the two oaks are a screen apart
+// SOFTER WITH DISTANCE (owner, build 76: "trees can be a bit blurry now esp when far off"): each tree is baked small for
+// its layer and stretched back up when drawn, so it blurs like the layer it stands on (no ctx.filter: unreliable on
+// iPhone). The far layer's trees are softest and sink further into the haze; the near layer's are only a little soft.
+const TREE_SOFT = d => d < .5 ? { q: .3, haze: .42 } : { q: .55, haze: .3 };      // q: baked size against a 130 px high tree
 function bakeTree(im, d) {
-  const one = col => { const m = mk(im.width, im.height), c = m.getContext('2d'); c.drawImage(im, 0, 0); c.globalCompositeOperation = 'source-in'; c.fillStyle = css(col); c.fillRect(0, 0, m.width, m.height); c.globalCompositeOperation = 'source-atop'; c.globalAlpha = .08; c.drawImage(im, 0, 0); return m; };
-  const col = layerCol(d); return { cool: one(mix(col[0], PAL.hazeC, .28)), warm: one(mix(col[1], PAL.hazeW, .28)) };
+  const S = TREE_SOFT(d), sc = Math.min(1, 130 * S.q / im.height), W = Math.max(2, Math.round(im.width * sc)), H = Math.max(2, Math.round(im.height * sc));
+  const one = col => { const m = mk(W, H), c = m.getContext('2d'); c.drawImage(im, 0, 0, W, H); c.globalCompositeOperation = 'source-in'; c.fillStyle = css(col); c.fillRect(0, 0, W, H); c.globalCompositeOperation = 'source-atop'; c.globalAlpha = .08; c.drawImage(im, 0, 0, W, H); return m; };
+  const col = layerCol(d); return { cool: one(mix(col[0], PAL.hazeC, S.haze)), warm: one(mix(col[1], PAL.hazeW, S.haze)) };
 }
 function drawTrees(i, cam) {
   const Lr = SCN[i], off = cam * Lr.par, c = ctx, set = TREE[i]; if (!set) return;
@@ -612,7 +617,7 @@ function buildLevel() {
     const L = LEVELS[lv], m = PROP_META[k], t = { lv, k, w: m.w * L.k, h: m.h * L.k }; t.x = lineUp(a, L.par) - t.w / 2; THINGS.push(t);
     if (birds) flock(t.x + t.w * m.perch[0], L.base + 3 - m.perch[1] * L.k, birds, L.par, L.k, lv);      // birds sit on its top
   }
-  flock(GATE - 155, GY - 162, 4);                                    // and on the city wall by the gate
+  flock(GATE - 300, GY - 166, 4);                                    // and on the city wall by the gate
   // words said while walking (nobody stops)
 }
 
@@ -1361,7 +1366,8 @@ const NB_META = {
   b: {"w": 334.5, "h": 384.0, "wins": [[150.9, 93.8, 32.2, 42.4], [214.5, 246.7, 36.7, 62.0]], "door": [73.4, 235.7, 86.9, 146.0]},
   c: {"w": 647.5, "h": 342.0, "wins": [[91.3, 204.8, 38.2, 60.3], [287.4, 204.8, 36.1, 59.3]], "door": [381.2, 192.4, 82.5, 146.0]},
 };
-const NB = {}, ROW = [];      // ROW: { key, x (left edge on the level), flip, lit: which windows show a lit room }
+const NB = {}, ROW = [];
+const rowMeta = key => key === 'h' ? HOUSE_META : NB_META[key], rowPic = key => key === 'h' ? HOUSE : NB[key];      // ROW: { key, x (left edge on the level), flip, lit: which windows show a lit room }
 function buildRow() {
   const p = LEVELS.home.par, k = p * HOUSE_K, D = lineUp(HOME_X, p), left = D - (HOUSE_META.door[0] + HOUSE_META.door[2] / 2) * k, right = left + HOUSE_META.w * k;
   ROW.length = 0;
@@ -1373,8 +1379,11 @@ function buildRow() {
   // they must not share the picture with the first group's: mirrored and well apart). As he runs by, each door opens in
   // turn, lit like his own, with one neighbour in it: who = which neighbour, a = where on the road Christian is when he
   // is level with that door. [painting, mirrored?, neighbour, a]
-  for (const [key, flip, who, a] of [['b', true, 'a', 3950], ['c', true, 'b', 4290], ['b', false, 'c', 4800]]) {
-    const M = NB_META[key], dc = (M.door[0] + M.door[2] / 2) * k;      // the door's middle, from the house's left
+  // Build 78 (owner: Obstinate and Pliable "should be lower and large or smaller and where they are (but maybe in
+  // house?)"): they are now at the neighbours' size on the same level, Obstinate in a doorway of his own (a cottage of
+  // the same painting as Christian's, mirrored; his own is far back up the street) and Pliable on the step outside it.
+  for (const [key, flip, who, a] of [['b', true, 'a', 3950], ['c', true, 'b', 4290], ['b', false, 'c', 4800], ['h', true, 'obs', 5230]]) {
+    const M = rowMeta(key), dc = (M.door[0] + M.door[2] / 2) * k;      // the door's middle, from the house's left
     ROW.push({ key, flip, who, a, x: lineUp(a, p) - (flip ? M.w * k - dc : dc), lit: [who === 'b' ? 1 : 0, who === 'a' ? 1 : 0], on: false, open: 0, f: -1 });
   }
 }
@@ -1388,7 +1397,7 @@ function drawRow(cam) {
     g.addColorStop(0, css(tone, 0)); g.addColorStop(.45, css(tone, .5)); g.addColorStop(1, css(tone, .85)); c.fillStyle = g; c.fillRect(x0, y0, x1 - x0, y1 - y0);
   }
   for (const it of ROW) {
-    const B = NB[it.key], M = NB_META[it.key], x = it.x - cam * p, w = M.w * k, h = M.h * k, y = L.base + 3 - h; if (!B || x > VW + 20 || x + w < -20) continue;
+    const B = rowPic(it.key), M = rowMeta(it.key), x = it.x - cam * p, w = M.w * k, h = M.h * k, y = L.base + 3 - h; if (!B || x > VW + 20 || x + w < -20) continue;
     const wm = warm((x + w / 2) / VW), dark = css(mix(layerCol(.9)[0], layerCol(.9)[1], wm));
     c.save(); if (it.flip) { c.translate(x + w, 0); c.scale(-1, 1); } else c.translate(x, 0);
     M.wins.forEach((v, i) => { const wx = v[0] * k - 2, wy = y + v[1] * k - 2, ww = v[2] * k + 4, wh = v[3] * k + 4; if (it.lit[i]) room(c, wx, wy, ww, wh, lerp(.8, .45, wm), dark, it.x * .37 + i * 5); else { c.fillStyle = dark; c.fillRect(wx, wy, ww, wh); } });
@@ -1398,12 +1407,13 @@ function drawRow(cam) {
     if (e > 0) {                             // the door stands open: lamplight where the painted door was
       const [dx, dy, dw, dh] = M.door.map(v => v * k), g = c.createRadialGradient(dx + dw * .5, y + dy + dh * .5, 0, dx + dw * .5, y + dy + dh * .5, 100);
       g.addColorStop(0, css(PAL.light, .95 * e)); g.addColorStop(1, css(PAL.win, .8 * e)); c.fillStyle = g; c.fillRect(dx + 3, y + dy + 2, dw - 6, dh - 2);
+      doorFloor(c, dx + 3, y + dy + dh, dw - 6, dh, e, dark);
     }
     c.restore();
     if (e > .3) {                            // and a neighbour in it, turning to keep facing him, mocking (the video loop, or the still breathing)
       const sx = lineUp(it.a, p) - cam * p, K = CHR_K * DOOR_FIG * k, fy = L.base + 2 - FEET_SINK, al = smooth(.3, 1, e);
       it.f += ((P.x - cam > sx ? 1 : -1) - it.f) * .2; const u = (it.f + 1) / 2, vp = WATCH_PACK[it.who], vm = WATCH_VMETA[it.who];
-      const [im, meta, sy] = vp && vp.ready && vm ? [vp[Math.floor(G.t * .2 + it.a) % vp.length], vm, 1] : [WATCH_IM[it.who], WATCH_META[it.who], breath(it.a)];
+      const [im, meta, sy] = it.who === 'obs' ? [OBS_ST, OBS_ST_META, breath(it.a)] : vp && vp.ready && vm ? [vp[Math.floor(G.t * .2 + it.a) % vp.length], vm, 1] : [WATCH_IM[it.who], WATCH_META[it.who], breath(it.a)];
       if (im && meta) { if (u < .99) drawFrame(im, meta, sx, fy, -1, al * (u < .5 ? 1 : 2 * (1 - u)), K, sy); if (u > .01) drawFrame(im, meta, sx, fy, 1, al * (u < .5 ? 2 * u : 1), K, sy); }
     }
   }
@@ -1414,7 +1424,7 @@ function drawRow(cam) {
 // Obstinate and Pliable (their standing pictures), who in the book are two of these neighbours. Each turns to keep
 // facing Christian as he runs by (the picture is mirrored, with a short dissolve).
 // [picture, where on the road Christian is when he is level with them]
-const WATCHERS = [['obs', 4960], ['pli', 5040]].map(([key, a]) => ({ key, a, f: -1 }));      // only these two stand out in the lane now (they are the two who set off after him); the other three are in their doorways: see buildRow, drawRow
+const WATCHERS = [['pli', 5300]].map(([key, a]) => ({ key, a, f: -1 }));      // only these two stand out in the lane now (they are the two who set off after him); the other three are in their doorways: see buildRow, drawRow
 const WATCH_META = { a: {"ax": 67, "ground": 302}, b: {"ax": 73, "ground": 270}, c: {"ax": 76, "ground": 290} };
 const WATCH_IM = {};
 // their movement: a short loop each from a video (assets/neighbor-a/b/c.pack, build 68), 12 pictures a second; until a
@@ -1424,8 +1434,9 @@ const WATCH_PACK = { a: [], b: [], c: [] }, WATCH_VMETA = { a: {"ax": 67, "groun
 // animated?"): enough that nobody stands frozen, without a video for every figure.
 const breath = k => 1 + .011 * Math.sin(G.t / 34 + k * 2.4) + .004 * Math.sin(G.t / 13 + k);
 function drawWatchers(cam) {
-  const L = LEVELS.mid, p = L.par, y = L.base + 1 - FEET_SINK, K = CHR_K * L.k;
+  const L = LEVELS.home, p = L.par, y = L.base + 2 - FEET_SINK, K = CHR_K * DOOR_FIG * HOUSE_K * L.k;      // on the houses' level, at the doorway people's size (build 78)
   for (const w of WATCHERS) {
+    if (!ROW.some(it => it.who === 'obs' && it.open > .3)) continue;      // Pliable comes out when Obstinate's door opens
     const im = w.key === 'obs' ? OBS_ST : w.key === 'pli' ? PLI_ST : WATCH_IM[w.key], meta = w.key === 'obs' ? OBS_ST_META : w.key === 'pli' ? PLI_ST_META : WATCH_META[w.key];
     const x = lineUp(w.a, p) - cam * p; if (!im || !meta || x < -120 || x > VW + 120) continue;
     w.f += ((P.x - cam > x ? 1 : -1) - w.f) * .2; const u = (w.f + 1) / 2;      // 0 = facing left, 1 = facing right
@@ -1454,6 +1465,14 @@ function room(c, x, y, w, h, a, dark, v) {
   c.globalAlpha = 1; c.fillRect(x + w / 2 - .9, y, 1.8, h); if (r(8) < .6) c.fillRect(x, y + h * .46 - .9, w, 1.8);      // the window's bars
   c.restore();
 }
+// FEET IN A LIT DOORWAY (owner, build 76: "feet fix for neighbors"): with lamplight all round them right down to the
+// threshold, the people in doorways seemed to hover. The floor inside a door is darker than the lamplit wall behind,
+// so the bottom of every lit doorway now darkens into a floor, and the feet stand on it.
+function doorFloor(c, x, yb, w, dh, e, dark) {
+  const h = dh * .24, g = c.createLinearGradient(0, yb - h, 0, yb);
+  g.addColorStop(0, 'rgba(0,0,0,0)'); const al = v => dark.replace(/,[\d.]+\)$/, ',' + (v * e).toFixed(3) + ')'); g.addColorStop(.5, al(.7)); g.addColorStop(1, al(1));
+  c.fillStyle = g; c.fillRect(x, yb - h, w, h);
+}
 function home(cam) {                       // drawn in screen units, before the road
   if (!HOUSE) return;
   const c = ctx, M = HOUSE_META, L = LEVELS.home, k = L.k * HOUSE_K, [dx, dy, dw, dh] = M.door.map(v => v * k);
@@ -1467,6 +1486,7 @@ function home(cam) {                       // drawn in screen units, before the 
     const g = c.createRadialGradient(x + dx + dw * .55, cy, 0, x + dx + dw * .55, cy, 110); g.addColorStop(0, css(PAL.light, .95 * e)); g.addColorStop(1, css(PAL.win, .8 * e));
     c.fillStyle = g; c.fillRect(x + dx - 2, y + dy - 2, dw + 4, dh + 4);
     c.fillStyle = dark; c.fillRect(x + dx - 2, y + dy - 2, (dw + 4) * (1 - .86 * e), dh + 4);
+    doorFloor(c, x + dx - 2 + (dw + 4) * (1 - .86 * e), y + dy + dh + 2, (dw + 4) * .86 * e, dh, e, dark);
   }
   c.drawImage(HOUSE.cool, x, y, M.w * k, M.h * k); if (wm > .01) { c.globalAlpha = wm; c.drawImage(HOUSE.warm, x, y, M.w * k, M.h * k); c.globalAlpha = 1; }
   c.save(); c.translate(x, 0); sills(c, M.wins, k, y, dark); c.restore();
@@ -1481,7 +1501,7 @@ function home(cam) {                       // drawn in screen units, before the 
 // Both are baked like the houses (bakeTint). The gatehouse is sized and placed so that its hole sits exactly on the
 // doorway the game already uses (DOOR0 to DOOR1); the doors and the light are drawn behind it (doors()).
 // hole = [left, top, right] of the gateway in the picture's pixels; solid = the wall's height below its battlements.
-const GATE_META = /*GATE_META*/null, WALL_META = /*WALL_META*/null;
+const GATE_META = {"w": 660, "h": 700, "hole": [235, 376, 425]}, WALL_META = {"w": 716, "h": 400, "solid": 363};
 let GATE_P = null, WALL_P = null;
 const gateFit = () => { const k = (DOOR1 - DOOR0) / (GATE_META.hole[2] - GATE_META.hole[0]); return { k, x: DOOR0 - GATE_META.hole[0] * k, y: GY + 2 - GATE_META.h * k, w: GATE_META.w * k, h: GATE_META.h * k }; };
 function gatePainted() {
@@ -1664,10 +1684,11 @@ function draw() {
       ctx.globalAlpha = .8 * near; ctx.drawImage(shC, -meta.ax * CHR_K, -meta.ground * CHR_K, w, h); ctx.restore();
     }
   }
-  // light from the open gate lies across the road
+  // Light from the open gate lies on the road as a low, wide, flat pool at the gateway's foot, like the door's light
+  // (build 78; it used to be a wedge running down the picture toward us, the old perspective problem the owner named).
   if (G.gateOpen > .02) {
-    const e = G.gateOpen, g = ctx.createLinearGradient(DOORM, 0, DOORM - 420, 0); g.addColorStop(0, css(PAL.light, .5 * e)); g.addColorStop(1, css(PAL.light, 0));
-    ctx.globalCompositeOperation = 'screen'; ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(DOOR0 + 20, GY); ctx.lineTo(DOOR1 - 20, GY); ctx.lineTo(DOOR1 + 40, VH); ctx.lineTo(DOOR0 - 420, VH); ctx.closePath(); ctx.fill(); ctx.globalCompositeOperation = 'source-over';
+    const e = G.gateOpen, g = ctx.createRadialGradient(0, 0, 0, 0, 0, 1); g.addColorStop(0, css(PAL.light, .55 * e)); g.addColorStop(.45, css(PAL.light, .22 * e)); g.addColorStop(1, css(PAL.light, 0));
+    ctx.save(); ctx.translate(DOORM, GY + 4); ctx.scale(330, 26); ctx.globalCompositeOperation = 'screen'; ctx.fillStyle = g; ctx.fillRect(-1, -.2, 2, 1.2); ctx.restore();
   }
   ctx.restore();
   // the people
