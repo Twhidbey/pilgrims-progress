@@ -161,6 +161,17 @@ The game is `index.html` (one file, no build step). `style-lab.html` is the art-
 - Owner: "make them go into the gate, not next to it". Christian and then Pliable now walk into the open archway and fade into the golden light (a little smaller and higher as they go), and the end card follows. Before, they walked across in front of the gate and on along the road.
 - Owner asked what I think of the level. Said in chat: the look, the gate and the choice are strong; the middle (Evangelist to the neighbours) is thin; Obstinate and Pliable need their own voices; the burden is told but not felt. **Suggested next: a moment in the middle where his family calls from a lit doorway and the child keeps walking** (from the book: he ran on, crying "Life! Life!"). Waiting for the owner's view.
 
+## Built Nov 15, 2026 (build 33): the family at the door, own voices, the burden heard
+- Owner said yes to all three suggestions, and "Pliable should have a boyish voice".
+- **The family moment** (middle of the level, after the mud): Christian's own house stands at the back of the road. Its door opens as he passes; his wife and two children stand in the light and call him back. He answers "I cannot stay. I must find the way, for all of us." Then, while she calls "Christian! Come back!", **the child must hold to walk on**, slowly and heavily. Then "Life! Life! Eternal life!" and "He did not look back." The third phrase of the tune and the "people watched" words moved a little further on to make room; one lamp was removed there.
+- **New voices**, designed from these descriptions:
+  - Obstinate: "A stout, stubborn English countryman in his fifties. A gruff, blunt, loud voice of low-middle pitch, sure of himself and impatient, a little scornful, like a neighbour who thinks the whole idea is foolish. A plain rural English accent. Firm and hard-headed, but an ordinary man, never a villain; never cartoonish."
+  - Pliable: "A boyish young English man of about eighteen. A light, bright, eager voice of higher pitch, quick to be excited and easily led, friendly and a little breathless. A plain English accent. Sounds young and hopeful, not childish, never cartoonish."
+  - His wife: "A gentle English woman in her thirties, a wife and mother. A warm, soft voice of middle pitch, worried and pleading, calling after someone she loves. Tender and sad, never shrill, never angry, never theatrical. A plain English accent."
+- **The burden can be heard:** every footstep has a low creak of the pack and a heavier tread, easing as he gathers light (never gone), heaviest as he walks away from his door.
+- The family in the doorway are simple code-drawn shapes. The owner prefers painted people, so offer to swap in a watercolour picture (a woman and two children in a doorway, seen from the side, blank faces) if they want one.
+- Tested in a headless browser: the scene plays, the act works with a held finger, no errors. Not heard by me.
+
 ## Open questions for the owner
 0. **Story lab (build 25):** is this the right shape for the game? How does it sound? Is "Go home" a good choice to offer? Should it replace the game now?
 1. How does the game feel on the phone: smooth? Anything hard to see (dark Christian against dark houses, crates, barrels)?

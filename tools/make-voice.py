@@ -2,12 +2,12 @@
 """Record the story's spoken lines with Google's speech service (Gemini TTS) into assets/voice/*.mp3.
 
 It reads every spoken line straight out of story-lab.html (anything written as [N, '...'], [C, '...'], [E, '...'],
-[O, '...'] or [PL, '...']), so the words on screen and the recordings cannot drift apart. Each line becomes one small
+[O, '...'], [PL, '...'] or [W, '...']), so the words on screen and the recordings cannot drift apart. Each line becomes one small
 MP3 named by a hash of who says it and the words; the game works out the same name (voiceName() in story-lab.html).
 Only missing lines are recorded; recordings of lines that no longer exist are deleted (keep the files trim).
 
   GEMINI_API_KEY=... python3 tools/make-voice.py            record what is missing
-  GEMINI_API_KEY=... python3 tools/make-voice.py --redo C   record Christian's lines again (N, C, E, O, PL or all)
+  GEMINI_API_KEY=... python3 tools/make-voice.py --redo C   record Christian's lines again (N, C, E, O, PL, W or all)
 
 The key is never stored in the repo (it is public). Each recording is checked by having a Gemini model write down what
 it hears; a recording with the wrong words is thrown away and made again.
@@ -19,9 +19,9 @@ ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
 OUT = os.path.join(ROOT, 'assets', 'voice')
 API = 'https://generativelanguage.googleapis.com/v1beta'
 TTS, EAR = 'gemini-3.8-flash-tts', 'gemini-3.8-flash'
-STORYTELLER, CHRISTIAN, EVANGELIST = 'voice_zqnt5xdln1kq', 'voice_xp9kua42jfe2', 'voice_x361phwkq8td'
-VOICES = {'N': STORYTELLER, 'C': CHRISTIAN, 'E': EVANGELIST, 'O': STORYTELLER, 'PL': STORYTELLER}
-WHO = {'N': '', 'C': 'Christian', 'E': 'Evangelist', 'O': 'Obstinate', 'PL': 'Pliable'}
+VOICES = {'N': 'voice_zqnt5xdln1kq', 'C': 'voice_xp9kua42jfe2', 'E': 'voice_x361phwkq8td',      # storyteller, Christian, Evangelist
+          'O': 'voice_a69c9ezmlhxf', 'PL': 'voice_42c9jyj3oc93', 'W': 'voice_ttq297s4wa5y'}     # Obstinate, Pliable (boyish), Christian's wife
+WHO = {'N': '', 'C': 'Christian', 'E': 'Evangelist', 'O': 'Obstinate', 'PL': 'Pliable', 'W': 'His wife'}
 KEY = os.environ.get('GEMINI_API_KEY', '')
 
 def call(path, body):
@@ -60,7 +60,7 @@ def main():
     redo = sys.argv[sys.argv.index('--redo') + 1] if '--redo' in sys.argv else ''
     src = open(os.path.join(ROOT, 'story-lab.html'), encoding='utf-8').read()
     lines = []
-    for code, text in re.findall(r"\[(N|C|E|O|PL), '((?:[^'\\]|\\.)*)'", src):
+    for code, text in re.findall(r"\[(N|C|E|O|PL|W), '((?:[^'\\]|\\.)*)'", src):
         text = text.replace("\\'", "'")
         if (code, text) not in lines: lines.append((code, text))
     os.makedirs(OUT, exist_ok=True)

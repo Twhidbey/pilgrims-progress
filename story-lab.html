@@ -70,7 +70,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">story lab · build 32 · Nov 15 2026</div>
+  <div id="build">story lab · build 33 · Nov 15 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -378,7 +378,7 @@ function bakeFinish() {
 }
 
 // ---------- the level: a road of lights, things that answer a touch, and story moments ----------
-const EVAN_X = 1150, NEIGH_X = 3700, GATE_STOP = 5236, DOOR0 = 5306, DOOR1 = 5420, DOORM = 5363, MUD = { x: 2250, w: 360 };
+const EVAN_X = 1150, HOME_X = 2760, NEIGH_X = 3700, GATE_STOP = 5236, DOOR0 = 5306, DOOR1 = 5420, DOORM = 5363, MUD = { x: 2250, w: 360 };
 const START_X = +(new URLSearchParams(location.search).get('x')) || 140;   // ?x=3600 starts further along (for testing)
 // The lights on the road are a tune: "Amazing Grace" (New Britain, 1829), one phrase per stretch of road.
 // Each light is one note. They are spaced by the length of each note, so walking at his steady pace plays the tune in time.
@@ -387,7 +387,7 @@ const BEAT = 58, NOTE = { D: 62, E: 64, G: 67, A: 69, B: 71, d: 74 };
 const PHRASES = [
   { x: 330, at: 0, n: [[0, 'D'], [1, 'G'], [3, 'B'], [3.5, 'G'], [4, 'B'], [6, 'A'], [7, 'G'], [9, 'E'], [10, 'D']] },
   { x: 1400, at: 12, n: [[0, 'D'], [1, 'G'], [3, 'B'], [3.5, 'G'], [4, 'B'], [6, 'A'], [7, 'd']] },
-  { x: 2850, at: 24, n: [[0, 'B'], [1, 'd'], [2.5, 'B'], [3, 'd'], [3.5, 'B'], [4, 'G'], [6, 'D'], [7, 'E'], [8.5, 'G'], [9, 'G'], [9.5, 'E'], [10, 'D']] },
+  { x: 3070, at: 24, n: [[0, 'B'], [1, 'd'], [2.5, 'B'], [3, 'd'], [3.5, 'B'], [4, 'G'], [6, 'D'], [7, 'E'], [8.5, 'G'], [9, 'G'], [9.5, 'E'], [10, 'D']] },
   { x: 4150, at: 36, n: [[0, 'D'], [1, 'G'], [3, 'B'], [3.5, 'G'], [4, 'B'], [6, 'A'], [7, 'G']] },
 ];
 // the whole tune, sung through once when the gate opens, with a low note under each bar
@@ -401,7 +401,7 @@ function buildLevel() {
   const light = (x, midi) => LIGHTS.push({ x, y: GY - 60 - clamp(midi - 62, -6, 12) * 5.2, midi, got: false, ph: rnd() * 6 });
   for (const ph of PHRASES) for (const [b, k] of ph.n) light(ph.x + b * BEAT, NOTE[k]);
   light(2350, 50); light(2470, 52); light(2580, 55);            // three low, slow notes in the mud
-  for (const x of [300, 760, 1300, 1900, 2700, 3300, 3900, 4700, 5100]) LAMPS.push({ x, lit: 0 });
+  for (const x of [300, 760, 1300, 1900, 3300, 3900, 4700, 5100]) LAMPS.push({ x, lit: 0 });
   for (const [x, w] of [[640, 150], [1830, 150], [MUD.x, MUD.w], [3580, 170], [4450, 150]]) PUDDLES.push({ x, w, used: false });
   // things standing at the back of the road (nothing blocks the way)
   DECOR.push({ x: 540, y: GY - 58, w: 48, h: 58, k: 'barrel' });
@@ -416,7 +416,7 @@ function buildLevel() {
   flock(564, GY - 58, 2); flock(1705, GY - 128, 4); flock(2075, GY - 66, 3); flock(3190, GY - 46, 5); flock(3440, GY - 46, 3); flock(4390, GY - 120, 2); flock(5185, GY - 162, 4);
   // words said while walking (nobody stops)
   CAPS.push({ x: MUD.x + 20, lines: [[N, 'The road turned to deep mud. His burden felt heavier with every step.']] });
-  CAPS.push({ x: 2790, watch: true, lines: [[N, 'People watched from their windows. Some laughed. Some called him back.'], [C, 'I will not stop. I can still see the light.']] });
+  CAPS.push({ x: 3045, watch: true, lines: [[N, 'People watched from their windows. Some laughed. Some called him back.'], [C, 'I will not stop. I can still see the light.']] });
   CAPS.push({ x: 4130, pli: true, lines: [[PL, 'What is it like, the place where we are going?'], [C, 'No one cries there. Everyone shines like the sun.'], [PL, 'Then let us keep walking!']] });
 }
 
@@ -479,7 +479,12 @@ function hiss(freq, q, v, d, type = 'bandpass', when = 0) {
   s.connect(f); f.connect(g); g.connect(OUT); s.start(t, Math.random()); s.stop(t + d + .05);
 }
 const sfx = {
-  step: mud => { if (mud) { hiss(240, .8, .1, .24, 'lowpass'); sweep(105, 58, .2, .05); } else hiss(430, .7, .05, .09, 'lowpass'); },
+  // a footstep, and the burden with it: a low creak of the pack and a heavier tread. heavy = 1 at the start of the road,
+  // easing as he gathers light (it never goes: the burden only falls off at the cross, much later in the story)
+  step: (mud, heavy = 1) => {
+    if (mud) { hiss(240, .8, .1, .24, 'lowpass'); sweep(105, 58, .2, .05); } else hiss(430 - 110 * heavy, .7, .05 + .02 * heavy, .09 + .04 * heavy, 'lowpass');
+    hiss(170, 9, .05 * heavy, .16, 'bandpass', .05); sweep(74, 62, .22, .028 * heavy, false, .04);
+  },
   splash: () => hiss(2600, .9, .03, .28),
   lamp: () => { hiss(3200, 2, .025, .12); note(79, .04, 2.6); note(67, .04, 3); },
   window: () => note([55, 57, 59, 62, 64][Math.random() * 5 | 0], .04, 2.2),
@@ -525,7 +530,7 @@ function reset() {
   Object.assign(P, { x: START_X, y: GY, vx: 0, face: 1, anim: 1, stand: { t: QUIET[0] }, turn: 0 });
   Object.assign(G, { cam: Math.max(0, Math.min(LEVEL_W - VW, START_X - VW * .38 + 40)), t: 0, got: 0, extra: 0, motes: [], flyers: [], ripples: [], glints: [], taps: [], litw: [], capQ: [], cap: 0, hint: null,
     pli: null, obst: null, flare: 0, gloom: 0, gloomTo: 0, gateOpen: 0, act: null, actT: 0, ring: null, auto: null, finale: null, guard: 0, idle: 0, wins: 0,
-    evanDone: START_X > EVAN_X, evanGone: START_X > EVAN_X ? 1 : 0, neigh: START_X > NEIGH_X + 300, gateSeen: false, walked: false, touched: false, leaving: false });
+    evanDone: START_X > EVAN_X, evanGone: START_X > EVAN_X ? 1 : 0, neigh: START_X > NEIGH_X + 300, gateSeen: false, walked: false, touched: false, leaving: false, fam: START_X > HOME_X ? 2 : 0, door: START_X > HOME_X ? 1 : 0 });
   G.evan.pt = START_X > EVAN_X ? 239 : 0; downs.clear(); pushing = false; keys.r = keys.push = false;
   for (const l of LIGHTS) if (l.x < START_X) l.got = true;
   for (const c of CAPS) if (c.x < START_X) c.done = true;
@@ -539,7 +544,7 @@ function reset() {
 const dlg = document.getElementById('dlg'), dWho = dlg.querySelector('.who'), dTxt = dlg.querySelector('.t'), dMore = dlg.querySelector('.more');
 let lines = [], li = 0, after = null;
 const HEARD = new Set();                   // lines already heard to the end (they can be skipped next time)
-const C = 'Christian', E = 'Evangelist', N = '', O = 'Obstinate', PL = 'Pliable';
+const C = 'Christian', E = 'Evangelist', N = '', O = 'Obstinate', PL = 'Pliable', W = 'His wife';
 function words(who, txt, cls) {
   dWho.textContent = who; dTxt.textContent = txt; dlg.className = 'on ' + cls;
   const box = dlg.querySelector('.txt'); box.style.animation = 'none'; void box.offsetWidth; box.style.animation = '';
@@ -569,7 +574,7 @@ function next(force) {
 // ---------- the voices: one small recording per line, in assets/voice (made by tools/make-voice.py) ----------
 // A line's file is named by a sum of who says it and the words, so the words on screen and the recording always belong together.
 // A line with no recording is simply silent.
-const VOX = new Map(), VOICE_V = 1;       // bump VOICE_V when recordings change, so phones fetch the new ones
+const VOX = new Map(), VOICE_V = 2;       // bump VOICE_V when recordings change, so phones fetch the new ones
 let voiceOn = true, voxSrc = null, sayN = 0;
 function voiceName(who, txt) { let h = 0x811c9dc5; const t = who + '|' + txt; for (let i = 0; i < t.length; i++) h = Math.imul(h ^ t.charCodeAt(i), 0x01000193) >>> 0; return h.toString(16).padStart(8, '0'); }
 function vox(who, txt) {
@@ -592,7 +597,7 @@ async function say(who, txt) {
 }
 // fetch every line's recording quietly, in story order, while the child is already playing
 async function fetchVoices() {
-  const all = [...INTRO, ...EVAN]; for (const c of CAPS) all.push(...c.lines); all.push(...NEIGH, ...HOME, ...ONWARD, ...PART, ...GATEWORDS, ...END);
+  const all = [...INTRO, ...EVAN, ...FAMILY]; for (const c of CAPS) all.push(...c.lines); all.push(...NEIGH, ...HOME, ...ONWARD, ...PART, ...GATEWORDS, ...END);
   for (const [who, txt] of all) { const v = vox(who, txt); await v.raw; await voxBuf(v); }
 }
 function caption(arr) { for (const l of arr) G.capQ.push(l); }
@@ -616,6 +621,16 @@ const EVAN = [
   [E, 'Do you see that shining light, far away?', 'light'],
   [C, 'I think I do.'],
   [E, 'Keep that light in front of you. It will lead you to the Wicket Gate.'],
+];
+// The middle of the level: his family calls him back from the door of his own house, and the child has to keep walking.
+// (In the book he runs on crying "Life! Life! Eternal life!" and does not look behind him.)
+const FAMILY = [
+  [N, 'His wife and children came to the door.'],
+  [W, 'Come back! Come home to us!'],
+  [C, 'I cannot stay. I must find the way, for all of us.'],
+  [W, 'Christian! Come back!', 'walkon', () => { P.turn = 1; G.gloomTo = .3; G.walkFrom = P.x; }],
+  [C, 'Life! Life! Eternal life!'],
+  [N, 'He did not look back.'],
 ];
 const NEIGH = [
   [N, 'Two neighbors hurried after him.'],
@@ -722,7 +737,7 @@ function walkTick(dir, max) {
   const f1 = chrFrame();
   if (f1 !== f0 && CHR_META.rest.includes(f1)) {               // a foot comes down
     const mud = inMud(P.x), pud = PUDDLES.find(p => P.x > p.x && P.x < p.x + p.w);
-    sfx.step(mud); if (pud) { G.ripples.push({ x: P.x + P.face * 14, t: 0 }); if (!mud) sfx.splash(); }
+    sfx.step(mud, G.act === 'walkon' ? 1.5 : Math.max(.35, 1 - G.got / 60)); if (pud) { G.ripples.push({ x: P.x + P.face * 14, t: 0 }); if (!mud) sfx.splash(); }
   }
 }
 const inMud = x => x > MUD.x && x < MUD.x + MUD.w;
@@ -790,7 +805,7 @@ function gateOpened() {
 function update() {
   G.t++;
   if (G.guard > 0 && --G.guard === 0 && G.state === 'dialog') { dlg.classList.remove('wait'); HEARD.add(G.guardKey); }
-  G.flare *= .975; G.gloom += (G.gloomTo - G.gloom) * .02;
+  G.flare *= .975; G.gloom += (G.gloomTo - G.gloom) * .02; if (G.fam) G.door = Math.min(1, G.door + .012);
   // Evangelist: only the calm start of his video while he waits (a slow breath). On "Do you see that shining light?"
   // he turns all the way round toward the light and raises his arm (video 46..239 at its own pace), and stays pointing.
   G.evan.idle = 8 - 8 * Math.cos(G.t / 70);
@@ -800,7 +815,8 @@ function update() {
   let dir = 0;
   if (G.state === 'auto' && G.auto) dir = G.auto.dir;
   else if (G.state === 'play' && (keys.r || held())) dir = 1;
-  walkTick(dir, inMud(P.x) ? MUDV : MAXV);
+  else if (G.act === 'walkon' && G.state === 'dialog' && P.turn !== 1 && (keys.push || held())) dir = 1;   // walking on while they call
+  walkTick(dir, inMud(P.x) || G.act === 'walkon' ? MUDV : MAXV);
   if (G.state === 'auto' && G.auto && (G.auto.dir > 0 ? P.x >= G.auto.to : P.x <= G.auto.to)) { const a = G.auto; G.auto = null; if (P.stand || !a.wait) { G.state = 'play'; a.then && a.then(); } else G.auto = { dir: 0, to: a.dir > 0 ? -1e9 : 1e9, then: a.then }; }
   if (G.state === 'auto' && G.auto && !G.auto.dir && P.stand) { const a = G.auto; G.auto = null; G.state = 'play'; a.then && a.then(); }
   people(); gather(); motes(); effects(); capTick(); acts(); ambience(); opening();
@@ -816,6 +832,8 @@ function story() {
   if (!G.touched && !G.hintT && P.x > 190 && P.x < 420 && !LAMPS[0].lit) { G.hintT = true; hint('touch', 'Touch the lamp. The world answers when you touch it.'); G.ring = () => [LAMPS[0].x + 20 - G.cam, GY - 110]; }
   if (G.hint !== 'touch' && G.ring && G.state === 'play') G.ring = null;
   if (G.hint === 'touch' && P.x > 560) clearHint('touch');
+  if (!G.fam && P.x > HOME_X - 70) { G.fam = 1; sweep(170, 120, .5, .03); sfx.lamp(); }       // the door of his house opens as he passes
+  if (G.fam === 1 && P.x > HOME_X + 40) { G.fam = 2; P.turn = -1; talk(FAMILY, () => { G.gloomTo = 0; }); return; }
   if (!G.evanDone && P.x > EVAN_X - 120) { G.evanDone = true; talk(EVAN, () => { G.evanGone = 1; }); return; }
   for (const c of CAPS) if (!c.done && P.x > c.x && (!c.pli || (G.pli && G.pli.mode === 'follow'))) { c.done = true; caption(c.lines); if (c.watch) G.watch = 520; }
   if (!G.neigh && P.x > NEIGH_X && OBS.ready && PLI.ready) { G.neigh = true; G.obst = { x: G.cam - 80, mode: 'run' }; G.pli = { x: G.cam - 150, mode: 'run' }; }
@@ -910,6 +928,11 @@ function acts() {
   if (G.state !== 'dialog' || !G.act) return;
   G.actT++;
   if (G.act === 'light' && G.actT === 150) { dMore.textContent = 'touch the light ✦'; G.ring = () => { const l = lightPos(); return [l.x, l.y]; }; }
+  if (G.act === 'walkon') {                                  // heavy steps away from his own door
+    if (G.actT === 70) { dMore.textContent = 'hold to walk on ✦'; G.ring = () => [P.x + 110 - G.cam, GY - 70]; }
+    if (!P.stand && G.ring) G.ring = null;
+    if (P.x > G.walkFrom + 150) { G.gloomTo = 0; next(true); }
+  }
   if (G.act === 'gate') {
     if (G.actT === 40) { dMore.textContent = isTouch ? 'hold the gate to push ✦' : 'hold the gate (or the space bar) to push ✦'; G.ring = () => [DOORM - G.cam, GY - 110]; }
     if (pushHeld()) { G.ring = null; G.gateOpen = Math.min(1, G.gateOpen + .0042); if (G.gateOpen >= 1) gateOpened(); }
@@ -970,6 +993,34 @@ function lamp(l) {
   c.fillRect(x + 19.2, GY - 128, 1.6, 8); c.fillRect(x + 14.5, GY - 121, 11, 3);
   c.beginPath(); c.moveTo(x + 14, GY - 118); c.lineTo(x + 26, GY - 118); c.lineTo(x + 24, GY - 101); c.lineTo(x + 16, GY - 101); c.closePath(); c.fill();
   if (l.lit) { c.fillStyle = css(PAL.win, Math.min(1, (G.t - l.lit) / 30)); c.fillRect(x + 17.5, GY - 115.5, 5, 11.5); }
+}
+// Christian's own house, at the back of the road: a tall gabled front, two dim windows, and a door that opens as he passes.
+// His wife and two children stand in the lit doorway: small plain shapes against the light (drawn in code; a painted
+// picture could replace them later).
+function person(c, x, h, arm) {
+  const k = h / 132;
+  c.beginPath(); c.arc(x, GY - 122 * k, 9.5 * k, 0, 6.2832); c.fill();
+  c.beginPath(); c.moveTo(x - 9 * k, GY - 112 * k); c.lineTo(x + 9 * k, GY - 112 * k); c.lineTo(x + 13 * k, GY - 80 * k); c.lineTo(x + 8 * k, GY - 78 * k);
+  c.lineTo(x + 21 * k, GY + 2); c.lineTo(x - 21 * k, GY + 2); c.lineTo(x - 8 * k, GY - 78 * k); c.lineTo(x - 13 * k, GY - 80 * k); c.closePath(); c.fill();
+  if (arm) { c.lineWidth = 5 * k; c.lineCap = 'round'; c.beginPath(); c.moveTo(x + 8 * k, GY - 106 * k); c.quadraticCurveTo(x + 22 * k, GY - 104 * k, x + 34 * k, GY - 118 * k + Math.sin(G.t / 26 + x) * 3 * k); c.stroke(); }
+}
+function home() {
+  const c = ctx, x = HOME_X, o = G.door, e = o * o * (3 - 2 * o), dx = x - 40, dw = 80, dt = GY - 176, wm = warm((x - G.cam) / VW);
+  c.fillStyle = SETC;
+  c.beginPath(); c.moveTo(x - 150, GY + 2); c.lineTo(x - 150, GY - 215); c.lineTo(x - 163, GY - 215); c.lineTo(x, GY - 332); c.lineTo(x + 163, GY - 215); c.lineTo(x + 150, GY - 215); c.lineTo(x + 150, GY + 2); c.closePath(); c.fill();
+  c.fillRect(x + 78, GY - 322, 22, 72); c.fillRect(x + 75, GY - 326, 28, 6);
+  c.fillStyle = css(PAL.win, .5 * lerp(1, .4, wm)); c.fillRect(x - 112, GY - 160, 30, 40); c.fillRect(x + 84, GY - 160, 30, 40);
+  c.strokeStyle = HINT; c.lineWidth = 1.4; c.beginPath(); c.moveTo(x - 97, GY - 160); c.lineTo(x - 97, GY - 120); c.moveTo(x + 99, GY - 160); c.lineTo(x + 99, GY - 120); c.moveTo(x - 150, GY - 215); c.lineTo(x + 150, GY - 215); c.stroke();
+  // the doorway: warm light inside, the family in it, and the door swung back against the left
+  c.fillStyle = DOORC; c.fillRect(dx, dt, dw, 178);
+  if (e > 0) {
+    c.save(); c.beginPath(); c.rect(dx, dt, dw, 178); c.clip();
+    const g = c.createRadialGradient(x + 6, GY - 90, 0, x + 6, GY - 90, 150); g.addColorStop(0, css(PAL.light, .95 * e)); g.addColorStop(1, css(PAL.win, .75 * e)); c.fillStyle = g; c.fillRect(dx, dt, dw, 178);
+    c.globalAlpha = e; c.fillStyle = c.strokeStyle = css(mix(PAL.nearC, PAL.nearW, wm));
+    person(c, x + 2, 132, true); person(c, x - 20, 78, false); person(c, x + 24, 60, true);
+    c.globalAlpha = 1; c.restore();
+    c.fillStyle = DOORC; c.fillRect(dx, dt, dw * (1 - .86 * e), 178);
+  }
 }
 function gate() {                          // the city gate: two towers and an arch, a little paler than the road so Christian shows against it
   const c = ctx; c.fillStyle = SETC;
@@ -1054,6 +1105,7 @@ function draw() {
   INK = grad; SETC = hGrad(ctx, ...layerCol(.66), 1, 1, cam); DOORC = hGrad(ctx, ...layerCol(.86), 1, 1, cam);
   HINT = hGrad(ctx, PAL.hazeC, PAL.hazeW, .13, .17, cam);
   if (on(5120, 420)) { doors(); gate(); }
+  if (on(HOME_X - 165, 330)) home();
   if (on(STALL.x, STALL.w)) stall(STALL);
   for (const b of DECOR) if (on(b.x, b.w)) thing(b);
   for (const l of LAMPS) if (on(l.x, 30)) lamp(l);
@@ -1075,6 +1127,11 @@ function draw() {
   for (const r of G.ripples) for (const k of [0, 14]) {
     const t = r.t - k; if (t < 0) continue;
     ctx.strokeStyle = css(mix(PAL.hazeC, PAL.hazeW, wAt(r.x)), .55 * (1 - t / 70)); ctx.beginPath(); ctx.ellipse(r.x, GY + 9, 4 + t * .55, 1.2 + t * .1, 0, 0, 6.2832); ctx.stroke();
+  }
+  // light from his own open door lies across the road
+  if (G.door > .02 && on(HOME_X - 200, 400)) {
+    const e = G.door, g = ctx.createLinearGradient(0, GY, 0, VH); g.addColorStop(0, css(PAL.win, .42 * e)); g.addColorStop(1, css(PAL.win, 0));
+    ctx.globalCompositeOperation = 'screen'; ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(HOME_X - 36, GY); ctx.lineTo(HOME_X + 40, GY); ctx.lineTo(HOME_X + 190, VH); ctx.lineTo(HOME_X - 90, VH); ctx.closePath(); ctx.fill(); ctx.globalCompositeOperation = 'source-over';
   }
   // light from the open gate lies across the road
   if (G.gateOpen > .02) {
@@ -1113,6 +1170,7 @@ function draw() {
   ctx.globalCompositeOperation = 'screen';
   const dim = 1 - .7 * G.gloom;
   for (const l of LAMPS) if (l.lit && on(l.x, 30, 160)) { const a = Math.min(1, (G.t - l.lit) / 40) * lerp(1, .45, wAt(l.x)) * (.94 + .06 * Math.sin(G.t / 9 + l.x)); glow(l.x + 20 - cam, GY - 108, 190, .5 * a); glow(l.x + 20 - cam, GY - 108, 46, .9 * a); ctx.globalAlpha = .34 * a; ctx.drawImage(GLOW, l.x - 80 - cam, GY - 6, 200, 30); }
+  if (G.door > .02 && on(HOME_X - 200, 400)) glow(HOME_X + 4 - cam, GY - 92, 300, .32 * G.door * lerp(1, .5, wAt(HOME_X)));   // the glow of home
   for (const s of LIGHTS) {
     const x = s.x - cam; if (s.got || x < -40 || x > VW + 40) continue;
     const y = s.y + Math.sin(G.t / 26 + s.ph) * 4, tw = .82 + .18 * Math.sin(G.t / 11 + s.ph * 3);
@@ -1152,6 +1210,7 @@ stage.addEventListener('pointerdown', e => {
   if (G.state !== 'title' && G.state !== 'end') G.taps.push({ x: sx, y: sy, t: 0 });
   if (G.state === 'dialog') {
     if (G.act === 'light') { const l = lightPos(); if (Math.hypot(sx - l.x, sy - l.y) < 95) lightTouched(); else G.actT = Math.max(G.actT, 149); return; }
+    if (G.act === 'walkon') { downs.set(e.pointerId, G.t); return; }
     if (G.act === 'gate') { if (Math.abs(sx - (DOORM - G.cam)) < 120 && sy > GY - 340 && sy < GY + 40) { pushing = true; pushId = e.pointerId; } else G.actT = Math.max(G.actT, 39); return; }
     next(); return;
   }
@@ -1166,7 +1225,7 @@ addEventListener('keydown', e => {
   if (G.state === 'choice') { if (e.code === 'ArrowLeft') pick(true); if (e.code === 'ArrowRight') pick(false); return; }
   if (!go) return; e.preventDefault();
   if (G.state === 'dialog') {
-    if (G.act === 'gate') keys.push = true;
+    if (G.act === 'gate' || G.act === 'walkon') keys.push = true;
     else if (G.act === 'light') { if (!e.repeat) lightTouched(); }
     else if (!e.repeat) next();
     return;
