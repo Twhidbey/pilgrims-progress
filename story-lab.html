@@ -68,7 +68,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">story lab · build 42 · Nov 15 2026</div>
+  <div id="build">story lab · build 43 · Nov 15 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -401,10 +401,12 @@ function buildLevel() {
   // time, because their likeness distracts. So there are few of them, about one every 600 of road counting the lamps and his
   // house, never two of a kind near each other, and they take turns between the levels. (Two can share the picture for a
   // moment at its edges, one leaving as the next arrives.)
-  // a = where on the road Christian is when the thing is level with him.
+  // a = where on the road Christian is when the thing is level with him. Things on 'f1' hide him as he passes, so they
+  // must stand where he never stops to talk (build 43).
+  // Sizes on 'mid' must agree with his house: its doorway is 146 high, so the stall's poles are 150 and a cart wheel about 70.
   THINGS.length = 0;
   const flock = (x, y, n, par = 1, s = 1, lv = 'road') => { const b = []; for (let i = 0; i < n; i++) b.push({ dx: (i - (n - 1) / 2) * 13 + (rnd() - .5) * 5, s: .85 + rnd() * .3, f: rnd() < .5 ? 1 : -1 }); FLOCKS.push({ x, y, b, par, s, lv, away: false }); };
-  for (const [lv, k, a, birds] of [['mid', 'stall', 700, 4], ['f1', 'barrel', 1650, 2], ['f2', 'wall', 3150, 0], ['mid', 'cart', 3850, 3], ['f1', 'crates', 4400, 0]]) {
+  for (const [lv, k, a, birds] of [['mid', 'stall', 700, 4], ['f1', 'barrel', 1650, 2], ['mid', 'wall', 3150, 0], ['mid', 'cart', 3850, 3], ['f1', 'crates', 4800, 0]]) {
     const L = LEVELS[lv], m = PROP_META[k], t = { lv, k, w: m.w * L.k, h: m.h * L.k }; t.x = lineUp(a, L.par) - t.w / 2; THINGS.push(t);
     if (birds) flock(t.x + t.w * m.perch[0], L.base + 3 - m.perch[1] * L.k, birds, L.par, L.k, lv);      // birds sit on its top
   }
@@ -986,12 +988,13 @@ let INK = '#000', HINT = 'rgba(255,255,255,.1)', SETC = '#333', DOORC = '#222';
 // weather where the thing stands: no scratch canvas is touched while playing. depth .5 keeps them paler than the people (.8).
 const PROP_DETAIL = .2, HOUSE_DETAIL = .65, FLAT_GREY = .56;      // 0 = a flat shape, 1 = the whole painting; FLAT_GREY = the paintings' average tone
 // perch = where birds sit on it (how far across, how high)
-const PROP_META = { barrel: { w: 64, h: 76, perch: [.5, 76] }, crates: { w: 96, h: 96, perch: [.5, 96] }, cart: { w: 219, h: 84, perch: [.25, 80] }, stall: { w: 243, h: 200, perch: [.54, 172] }, wall: { w: 259, h: 70, perch: [.2, 64] }, lamp: { w: 73, h: 205 } }, PROP = {};
+const PROP_META = { barrel: { w: 64, h: 76, perch: [.5, 76] }, crates: { w: 74, h: 74, perch: [.5, 74] }, cart: { w: 186, h: 71, perch: [.25, 68] }, stall: { w: 182, h: 150, perch: [.54, 129] }, wall: { w: 259, h: 70, perch: [.2, 64] }, lamp: { w: 73, h: 205 } }, PROP = {};
 // DEPTH (owner, build 40: "need foreground items between viewer and Christian to build depth, at least two levels ... one more
 // level between Christian and the first row of houses"). From far to near: mountains, far houses, near houses (the scenery
 // layers); then 'mid', a lane just behind the road, where his house and family stand; the road itself (Christian, the
-// people, the lamps, the lights); 'f1', between us and Christian (low things, so he is never hidden); 'f2', right in front of
-// us, where only the tops of things show along the bottom, nearly black. par = how fast a level slides as he walks
+// people, the lamps, the lights); 'f1', between us and Christian (two low things; he passes behind them). There was an 'f2'
+// right in front of us, nearly black; the owner found it "just black" and it went in build 43, and 'f1' now shows some of
+// its painting in a tone near the people's instead of near black. par = how fast a level slides as he walks
 // (1 = the road), k = how big things are on it, base = the line they stand on, depth = how dark (0 pale .. 1 the road's
 // dark, above 1 toward black), detail = how much of the painting shows.
 // ONE PERSPECTIVE RULE (owner, build 40: "draw some perspective lines to get the layers right"). We look from eye height:
@@ -999,10 +1002,13 @@ const PROP_META = { barrel: { w: 64, h: 76, perch: [.5, 76] }, crates: { w: 96, 
 // Christian walks on; smaller = further away; larger = nearer to us), and everything follows from it:
 //   how big things are = p;   how fast the level slides as he walks = p;   the line things stand on = HORIZON + 140 * p.
 // So a thing twice as near is twice as big, slides twice as fast and stands twice as far below the horizon.
+// FLAT, NOT DEEP (owner, build 43): the picture is a flat side view with a far horizon, like a long lens. Levels close to
+// Christian must differ from him only a little (mid .88, f1 1.12; build 40 had .72, 1.25 and 1.6, which set up a deep
+// perspective the flat town behind did not continue).
 // Add ?lines to the page's address to see the horizon, each level's ground line and a man-high mark on each (drawGuides).
 const HORIZON = GY - 140;
 const level = (p, depth, detail) => ({ par: p, k: p, base: HORIZON + (GY - HORIZON) * p, depth, detail });
-const LEVELS = { mid: level(.72, .45, PROP_DETAIL), f1: level(1.25, .95, .1), f2: level(1.6, 1.5, 0) };
+const LEVELS = { mid: level(.88, .6, PROP_DETAIL), f1: level(1.12, .8, .45) };
 const lineUp = (a, par) => 325 + (a - 325) * par;      // the place on a level that is beside Christian when he is at a on the road (he walks about 325 from the left of the picture)
 function bakeTint(im, depth, detail) {
   const one = col => {
@@ -1044,6 +1050,7 @@ function drawLevel(lv, cam) {
 // inside, and his wife and two children on the step (assets/family.webp, drawn by drawFrame like everyone else).
 const HOUSE_META = {"w": 941.0, "h": 403.0, "door": [418.7, 257.2, 82.3, 146.0], "wins": [[169.7, 266.1, 51.9, 62.3], [717.4, 267.5, 54.8, 63.7]]};      // a low one-storey cottage, sizes at the road's scale (its doorway is 146 high, just taller than his wife)
 const FAM_META = {"ax": 93, "ground": 254}, OBS_ST_META = {"ax": 89, "ground": 311}, PLI_ST_META = {"ax": 67, "ground": 302};
+const HOUSE_K = .9;      // the cottage drawn a little smaller than its picture's sizes, so it does not fill the screen now the lane is close
 let HOUSE = null, FAM = null, OBS_ST = null, PLI_ST = null;
 const loadImg = name => fetch('assets/' + name + '?v=' + PACK_V).then(r => r.ok ? r.blob().then(toImage) : null).catch(() => null);   // a missing picture is just left out
 // The house stands on the 'mid' level, a little way back from the road (owner: "House is big ... put wife and kids at an
@@ -1051,7 +1058,7 @@ const loadImg = name => fetch('assets/' + name + '?v=' + PACK_V).then(r => r.ok 
 const doorX = cam => lineUp(HOME_X, LEVELS.mid.par) - cam * LEVELS.mid.par;      // where the middle of the doorway is on the screen
 function home(cam) {                       // drawn in screen units, before the road
   if (!HOUSE) return;
-  const c = ctx, M = HOUSE_META, L = LEVELS.mid, k = L.k, [dx, dy, dw, dh] = M.door.map(v => v * k);
+  const c = ctx, M = HOUSE_META, L = LEVELS.mid, k = L.k * HOUSE_K, [dx, dy, dw, dh] = M.door.map(v => v * k);
   const x = doorX(cam) - dx - dw / 2, y = L.base + 3 - M.h * k, o = G.door, e = o * o * (3 - 2 * o);
   if (x > VW + 20 || x + M.w * k < -20) return;
   const wm = warm(doorX(cam) / VW), dark = css(mix(layerCol(.9)[0], layerCol(.9)[1], wm)), cy = y + dy + dh * .5;
@@ -1064,7 +1071,7 @@ function home(cam) {                       // drawn in screen units, before the 
     c.fillStyle = dark; c.fillRect(x + dx - 2, y + dy - 2, (dw + 4) * (1 - .86 * e), dh + 6);
   }
   c.drawImage(HOUSE.cool, x, y, M.w * k, M.h * k); if (wm > .01) { c.globalAlpha = wm; c.drawImage(HOUSE.warm, x, y, M.w * k, M.h * k); c.globalAlpha = 1; }
-  if (e > .3) drawFrame(FAM, FAM_META, doorX(cam) + 2, L.base + 1 - FEET_SINK, 1, smooth(.3, 1, e), CHR_K * .93 * k);   // on the step, in front of the wall
+  if (e > .3) drawFrame(FAM, FAM_META, doorX(cam) + 2, L.base + 1 - FEET_SINK, 1, smooth(.3, 1, e), CHR_K * .93 * L.k);   // on the step, in front of the wall
 }
 function gate() {                          // the city gate: two towers and an arch, a little paler than the road so Christian shows against it
   const c = ctx; c.fillStyle = SETC;
@@ -1145,7 +1152,7 @@ function draw() {
   // the road and everything on it
   const gcol = layerCol(1), wAt = x => warm((x - cam) / VW), on = (x, w = 0, m = 80) => x < cam + VW + m && x + w > cam - m;
   // the lane just behind the road: a low bank a little paler than the road, with his house and a few things on it
-  ctx.fillStyle = hGrad(ctx, ...layerCol(.86)); ctx.fillRect(0, LEVELS.mid.base, VW, GY - LEVELS.mid.base + 2);
+  ctx.fillStyle = hGrad(ctx, ...layerCol(.93)); ctx.fillRect(0, LEVELS.mid.base, VW, GY - LEVELS.mid.base + 2);
   home(cam); drawLevel('mid', cam);
   ctx.save(); ctx.translate(-cam, 0);
   const grad = hGrad(ctx, gcol[0], gcol[1], 1, 1, cam);
@@ -1169,22 +1176,16 @@ function draw() {
     const x = r.par ? r.x - cam * r.par + cam : r.x, rx = (4 + t * .55) * r.r;
     ctx.strokeStyle = css(mix(PAL.hazeC, PAL.hazeW, wAt(x)), .55 * (1 - t / 70) * r.a); ctx.beginPath(); ctx.ellipse(x, r.y, rx, Math.max(.6, rx * (r.y - HORIZON) / 1320 * 1.6), 0, 0, 6.2832); ctx.stroke();
   }
-  // Light from his own open door lies on the ground in front of it. It used to be one flat pale shape laid over the lane and
-  // the road alike, which flattened the levels (owner, build 41). Now it lights each piece of ground in that ground's own
-  // colour ('color-dodge' brightens what is there, so the paler lane stays paler than the road), it is brightest by the
-  // door and dies away before the bottom of the picture, and the little step down from the lane to the road stays dark,
-  // so the light bends over the ground's shape. Things nearer to us are drawn later and stand dark against it.
+  // Light from his own open door lies on the ground in front of it. We see the ground almost edge-on (a flat side view,
+  // like the rest of the picture), so the light is a low, wide, flat pool at the doorstep, like the glow under a lamp.
+  // Builds 40 to 43 drew a shape streaming down the picture toward us; the owner: "it sets up an angle of perspective
+  // that doesn't match the perspective of the rest". Never draw light (or anything) running down the ground toward us.
+  // 'color-dodge' brightens what is there, so the lane and the road each keep their own colour.
   if (G.door > .02) {
-    const e = G.door, hx = doorX(cam) + cam, top = LEVELS.mid.base, far = GY + 86, lamp = mix(PAL.win, [0, 0, 0], .42);
-    const edge = y => { const t = (y - top) / (VH - top); return [hx - 22 - 100 * t, hx + 24 + 180 * t]; };      // the shape widens toward us
-    const patch = (y0, y1, a0, a1) => {
-      const g = ctx.createLinearGradient(0, y0, 0, y1); g.addColorStop(0, css(lamp, a0 * e)); g.addColorStop(1, css(lamp, a1 * e));
-      const [l0, r0] = edge(y0), [l1, r1] = edge(y1); ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(l0, y0); ctx.lineTo(r0, y0); ctx.lineTo(r1, y1); ctx.lineTo(l1, y1); ctx.closePath(); ctx.fill();
-    };
-    ctx.globalCompositeOperation = 'color-dodge';
-    patch(top, GY - 1, 1, .8);                                 // on the lane, close to the door
-    patch(GY + 3, far, .62, 0);                                // on the road, a step lower and further from the door, fading out
-    ctx.globalCompositeOperation = 'source-over';
+    const R = 150, g = ctx.createRadialGradient(0, 0, 0, 0, 0, R), lamp = mix(PAL.win, [0, 0, 0], .42);
+    g.addColorStop(0, css(lamp, .95 * G.door)); g.addColorStop(.4, css(lamp, .7 * G.door)); g.addColorStop(1, css(lamp, 0));
+    ctx.save(); ctx.translate(doorX(cam) + cam + 3, LEVELS.mid.base + 6); ctx.scale(1, .17); ctx.globalCompositeOperation = 'color-dodge';
+    ctx.fillStyle = g; ctx.beginPath(); ctx.rect(-R, 0, R * 2, R); ctx.fill(); ctx.restore();      // the lower half of the pool: only on the ground, not up the wall
   }
   // light from the open gate lies across the road
   if (G.gateOpen > .02) {
@@ -1213,7 +1214,6 @@ function draw() {
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   pair(FRONT.cool, FRONT.warm, cam * FRONT.par, FRONT.q, 1, VH - 70, VH);
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-  drawLevel('f2', cam);                                      // and the tops of things right in front of us
   // the rain side is dulled, the golden side is warmed
   ctx.globalCompositeOperation = 'multiply';
   ctx.fillStyle = hGrad(ctx, mix(PAL.cloud, [255, 255, 255], .45), [255, 255, 255], .2 + LOOK.rain * .5, 0); ctx.fillRect(0, 0, VW, VH);
@@ -1257,7 +1257,7 @@ function drawGuides() {
   const c = ctx; c.save(); c.lineWidth = 1; c.font = '11px Georgia'; c.textBaseline = 'bottom';
   c.strokeStyle = 'rgba(255,90,90,.9)'; c.fillStyle = 'rgba(255,120,120,.95)'; c.beginPath(); c.moveTo(0, HORIZON); c.lineTo(VW, HORIZON); c.stroke(); c.fillText('horizon (eye height)', 8, HORIZON - 2);
   c.strokeStyle = 'rgba(255,255,255,.22)'; c.beginPath(); for (let x = -1200; x <= VW + 1200; x += 160) { c.moveTo(VW / 2, HORIZON); c.lineTo(x, VH); } c.stroke();
-  const rows = [['far houses', SCN[1].par, SCN[1].base], ['near houses', SCN[2].par, SCN[2].base], ['mid', LEVELS.mid.par, LEVELS.mid.base], ['road', 1, GY], ['f1', LEVELS.f1.par, LEVELS.f1.base], ['f2', LEVELS.f2.par, LEVELS.f2.base], ['grass', FRONT.par, VH - 10]];
+  const rows = [['far houses', SCN[1].par, SCN[1].base], ['near houses', SCN[2].par, SCN[2].base], ['mid', LEVELS.mid.par, LEVELS.mid.base], ['road', 1, GY], ['f1', LEVELS.f1.par, LEVELS.f1.base], ['grass', FRONT.par, VH - 10]];
   rows.forEach(([name, p, y], i) => {
     const want = HORIZON + (GY - HORIZON) * p, ok = Math.abs(want - y) < 6, x = 150 + i * 105;
     c.strokeStyle = c.fillStyle = ok ? 'rgba(120,255,160,.95)' : 'rgba(255,200,80,.95)';
@@ -1341,7 +1341,7 @@ document.getElementById('again').onclick = start;
   document.getElementById('sub').textContent = 'The City of Destruction';
   document.getElementById('open').style.visibility = 'visible';
   requestAnimationFrame(t => { lastT = t; loop(t); });
-  loadPack('evangelist', EVA).then(() => Promise.all([loadImg('house.webp').then(im => { HOUSE = im && bakeTint(im, .5, HOUSE_DETAIL); }), loadImg('family.webp').then(im => { FAM = im; }), loadPack('christian-run', RUN)]))
+  loadPack('evangelist', EVA).then(() => Promise.all([loadImg('house.webp').then(im => { HOUSE = im && bakeTint(im, .6, HOUSE_DETAIL); }), loadImg('family.webp').then(im => { FAM = im; }), loadPack('christian-run', RUN)]))
     .then(() => Promise.all([loadPack('obstinate', OBS), loadPack('pliable', PLI), loadImg('obstinate-stand.webp').then(im => { OBS_ST = im; }), loadImg('pliable-stand.webp').then(im => { PLI_ST = im; })]));
   for (const [who, txt] of INTRO) vox(who, txt);          // the first words, ready before Begin is pressed
 })();
