@@ -70,7 +70,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">story lab · build 112 · Nov 15 2026</div>
+  <div id="build">story lab · build 113 · Nov 15 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -1558,9 +1558,13 @@ function buildRow() {
   // house?)"): they are now at the neighbours' size on the same level, Obstinate in a doorway of his own (a cottage of
   // the same painting as Christian's, mirrored; his own is far back up the street) and Pliable on the step outside it.
   // build 106: the neighbours stand 300 further on, so his family's words are done before theirs begin
-  for (const [key, flip, who, a] of [['b', true, 'a', 4400], ['c', true, 'b', 4740], ['b', false, 'c', 5250], ['h', true, 'obs', 5680]]) {
+  // build 113 (owner: "when pass pliable and obstinate i think their door doesn't look good and i don't like how pliable
+  // just appears next to door (should he have his own house or window?)"): each has his own cottage and door now, opening
+  // as Christian comes like the others: Obstinate in the long low cottage, Pliable in the tall one beside it (no longer a
+  // copy of Christian's own cottage, and Pliable no longer pops up in the lane)
+  for (const [key, flip, who, a] of [['b', true, 'a', 4400], ['c', true, 'b', 4740], ['b', false, 'c', 5250], ['c', false, 'obs', 5850], ['b', true, 'pli', 6280]]) {
     const M = rowMeta(key), dc = (M.door[0] + M.door[2] / 2) * k;      // the door's middle, from the house's left
-    ROW.push({ key, flip, who, a, x: lineUp(a, p) - (flip ? M.w * k - dc : dc), lit: [who === 'b' ? 1 : 0, who === 'a' ? 1 : 0], on: false, open: 0, f: -1 });
+    ROW.push({ key, flip, who, a, x: lineUp(a, p) - (flip ? M.w * k - dc : dc), lit: [who === 'b' || who === 'obs' ? 1 : 0, who === 'a' || who === 'pli' ? 1 : 0], on: false, open: 0, f: -1 });
   }
   ROW.forEach((it, i) => { it.st = 1 + i % (WIN_STYLES - 1); });      // each house its own window style (his own is 0), no two alike (build 97)
 }
@@ -1590,7 +1594,7 @@ function drawRow(cam) {
     if (e > .3) {                            // and a neighbour in it, turning to keep facing him, mocking (the video loop, or the still breathing)
       const sx = lineUp(it.a, p) - cam * p, K = CHR_K * DOOR_FIG * k, fy = L.base + 2 - FEET_SINK, al = smooth(.3, 1, e);
       it.f += ((P.x - cam > sx ? 1 : -1) - it.f) * .2; const u = (it.f + 1) / 2, vp = WATCH_PACK[it.who], vm = WATCH_VMETA[it.who];
-      const [im, meta, sy] = it.who === 'obs' ? [OBS_ST, OBS_ST_META, breath(it.a)] : vp && vp.ready && vm ? [vp[Math.floor(G.t * .2 + it.a) % vp.length], vm, 1] : [WATCH_IM[it.who], WATCH_META[it.who], breath(it.a)];
+      const [im, meta, sy] = it.who === 'obs' ? [OBS_ST, OBS_ST_META, breath(it.a)] : it.who === 'pli' ? [PLI_ST, PLI_ST_META, breath(it.a)] : vp && vp.ready && vm ? [vp[Math.floor(G.t * .2 + it.a) % vp.length], vm, 1] : [WATCH_IM[it.who], WATCH_META[it.who], breath(it.a)];
       if (im && meta) { if (u < .99) drawFrame(im, meta, sx, fy, -1, al * (u < .5 ? 1 : 2 * (1 - u)), K, sy); if (u > .01) drawFrame(im, meta, sx, fy, 1, al * (u < .5 ? 2 * u : 1), K, sy); }
     }
   }
@@ -1601,7 +1605,7 @@ function drawRow(cam) {
 // Obstinate and Pliable (their standing pictures), who in the book are two of these neighbours. Each turns to keep
 // facing Christian as he runs by (the picture is mirrored, with a short dissolve).
 // [picture, where on the road Christian is when he is level with them]
-const WATCHERS = [['pli', 5750]].map(([key, a]) => ({ key, a, f: -1 }));      // only these two stand out in the lane now (they are the two who set off after him); the other three are in their doorways: see buildRow, drawRow
+const WATCHERS = [].map(([key, a]) => ({ key, a, f: -1 }));      // only these two stand out in the lane now (they are the two who set off after him); the other three are in their doorways: see buildRow, drawRow
 const WATCH_META = { a: {"ax": 67, "ground": 302}, b: {"ax": 73, "ground": 270}, c: {"ax": 76, "ground": 290} };
 const WATCH_IM = {};
 // their movement: a short loop each from a video (assets/neighbor-a/b/c.pack, build 68), 12 pictures a second; until a
