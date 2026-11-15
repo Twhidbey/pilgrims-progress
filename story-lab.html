@@ -70,7 +70,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">story lab · build 101 · Nov 15 2026</div>
+  <div id="build">story lab · build 102 · Nov 15 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -276,6 +276,25 @@ function bakeTree(im, d) {
   const S = TREE_SOFT(d), sc = Math.min(1, 130 * S.q / im.height), W = Math.max(2, Math.round(im.width * sc)), H = Math.max(2, Math.round(im.height * sc));
   const one = col => { const m = mk(W, H), c = m.getContext('2d'); c.drawImage(im, 0, 0, W, H); c.globalCompositeOperation = 'source-in'; c.fillStyle = css(col); c.fillRect(0, 0, W, H); c.globalCompositeOperation = 'source-atop'; c.globalAlpha = .08; c.drawImage(im, 0, 0, W, H); return m; };
   const col = layerCol(d); return { cool: one(mix(col[0], PAL.hazeC, S.haze)), warm: one(mix(col[1], PAL.hazeW, S.haze)) };
+}
+// A GLIMPSE OF LEVEL 2 (owner, build 101: "can you put some hint at scenery from level 2 in opening"): far away on the
+// plain under the shining light, at the foot of the far hills, a pale pool of mist with a few glints of still water and,
+// standing in it, the great twisted oak of the Slough of Despond, tiny (Level 2's own oak, SL.oakPic). Seen from the
+// field at the start; it fades as the town closes in.
+let FAR_OAK = null;
+function drawFarSlough(cam) {
+  const a = 1 - smooth(900, 2400, cam); if (a < .01 || typeof SL === 'undefined' || !SL.oakPic) return;
+  const L0 = SCN[0], lx = 905, x = lx - cam * L0.par, y = L0.gy(lx) + 9, c = ctx, wm = warm(x / VW);
+  const far = mix(layerCol(0)[0], layerCol(0)[1], wm), dark = mix(far, mix(PAL.nearC, PAL.nearW, wm), .22);
+  if (!FAR_OAK) { FAR_OAK = SL.oakPic([255, 255, 255], .25); const t = mk(FAR_OAK.c.width, FAR_OAK.c.height); FAR_OAK.t = t; }
+  // the mist lying in the hollow, and still water catching the light
+  const mist = (rx, ry, al) => { const g = c.createRadialGradient(0, 0, 0, 0, 0, 1); g.addColorStop(0, css(mix(PAL.hazeC, PAL.light, .3), al * a)); g.addColorStop(.55, css(mix(PAL.hazeC, PAL.light, .15), al * .55 * a)); g.addColorStop(1, css(PAL.hazeC, 0)); c.save(); c.translate(x - 6, y - 3); c.scale(rx, ry); c.fillStyle = g; c.fillRect(-1, -1, 2, 2); c.restore(); };
+  mist(210, 20, .55);
+  // the oak, in the far hills' colour, a little deeper so it reads
+  const b = FAR_OAK, tc = b.t.getContext('2d'); tc.globalCompositeOperation = 'source-over'; tc.clearRect(0, 0, b.t.width, b.t.height); tc.drawImage(b.c, 0, 0); tc.globalCompositeOperation = 'source-in'; tc.fillStyle = css(dark); tc.fillRect(0, 0, b.t.width, b.t.height);
+  const s = 34 / (b.c.height / b.k); c.globalAlpha = .85 * a; c.drawImage(b.t, x + b.x0 * s, y - 3 + b.y0 * s, b.c.width / b.k * s, b.c.height / b.k * s); c.globalAlpha = 1;
+  mist(150, 9, .6);      // and mist again over its foot, so it stands IN the mist, as in Level 2
+  c.fillStyle = css(PAL.light, .35 * a); for (const [dx, dy, w] of [[-70, 1, 22], [-28, 3, 34], [30, 2, 20], [70, 4, 16]]) c.fillRect(x + dx, y + dy, w, .7);      // glints of still water in it
 }
 function drawTrees(i, cam) {
   const Lr = SCN[i], off = cam * Lr.par, c = ctx, set = TREE[i]; if (!set) return;
@@ -764,7 +783,7 @@ const held = () => { for (const t of downs.values()) if (G.t - t >= 9) return tr
 // camera draws back at the gate, the far light rises to stand above the gateway, in the sky over the gatehouse
 // (Evangelist: "Keep that light in your eye, and go straight up to it. Then you will see the gate."). Since build 100
 // the gatehouse is tall, so the light stands high in the open sky beside it.
-const lightPos = () => { const t = smooth(0, 1, (1 - (G.zoom || 1)) / (1 - ZOOM_GATE)); return { x: lerp(880 - G.cam * .02, DOORM - G.cam + 600, t), y: lerp(146, -330, t) }; };      // build 100: in the open sky to the right of the tall gatehouse
+const lightPos = () => { const t = smooth(0, 1, (1 - (G.zoom || 1)) / (1 - ZOOM_GATE)); return { x: lerp(880 - G.cam * .02, DOORM - G.cam + 600, t), y: lerp(146, -330, t) - 90 * smooth(0, 1, G.sunUp || 0) }; };      // sunUp: once the gate is open it climbs a little higher (build 102)      // build 100: in the open sky to the right of the tall gatehouse
 
 function reset() {
   seed = 99; buildLevel(); for (const it of ROW) if (it.who) { it.on = TEST_X > it.a; it.open = it.on ? 1 : 0; }
@@ -773,6 +792,7 @@ function reset() {
   Object.assign(G, { cam: Math.max(0, Math.min(LEVEL_W - VW, TEST_X ? START_X - VW * .38 + 40 : START_X - VW * .62 - 40)), t: 0, got: 0, extra: 0, motes: [], flyers: [], ripples: [], glints: [], taps: [], litw: [], capQ: [], cap: 0, hint: null,
     pli: null, obst: null, flare: 0, gloom: 0, gloomTo: 0, gateOpen: 0, act: null, actT: 0, ring: null, auto: null, finale: null, guard: 0, idle: 0, wins: 0,
     evanDone: !!TEST_X, evanGone: TEST_X ? 1 : 0, neigh: TEST_X > NEIGH_X + 300, gateSeen: false, walked: false, touched: false, leaving: false, fam: TEST_X > HOME_X ? 2 : 0, door: TEST_X ? (TEST_X > HOME_X ? 1 : 0) : 1, doorShut: false, roll: TEST_X ? { t: 999, x: 0, y: 0 } : null, runZone: !!TEST_X && TEST_X < RUN_END, outSaid: false, watched: TEST_X > HOME_X + 900, ears: TEST_X > HOME_X });
+  G.sunUp = 0;
   G.zoom = 1 - (1 - ZOOM_GATE) * smooth(GATE - 1300, GATE - 380, START_X);      // starting near the gate (?at=gate): already drawn back
   G.evan.pt = TEST_X ? 239 : 0; G.evan.go = false; G.evan.st = EVS_META.frames * 100; downs.clear(); pushing = false; keys.r = keys.push = false;
   if (TEST_X) for (const l of LIGHTS) if (l.x < Math.max(TEST_X, 2000)) l.got = true;
@@ -1225,6 +1245,7 @@ function update() {
   if (G.state === 'play') story();
   const target = Math.max(0, Math.min(LEVEL_W - VW, P.x - VW * (G.evanDone ? .38 : .62) + P.face * 40));      // room in front of him, whichever way he is going
   G.cam += (target - G.cam) * .05;
+  if (G.gateOpen >= 1) G.sunUp = Math.min(1, (G.sunUp || 0) + .0012);      // the light climbs as they go through the gate (about 14 s)
   G.zoom = (G.zoom || 1) + ((1 - (1 - ZOOM_GATE) * smooth(GATE - 1300, GATE - 380, P.x)) - (G.zoom || 1)) * .02;      // the camera draws back near the gate
 }
 // the story's triggers along the road
@@ -1759,6 +1780,7 @@ function drawWorld() {
     const Lr = SCN[i], off = cam * Lr.par;
     pair(Lr.cool, Lr.warm, off, Lr.q, alpha, Lr.top, GY + 2);
     if (i) { ctx.setTransform(DPR, 0, 0, DPR, 0, OYD); drawTrees(i, cam); ctx.setTransform(1, 0, 0, 1, 0, OYD); }      // this layer's trees
+    else { ctx.setTransform(DPR, 0, 0, DPR, 0, OYD); drawFarSlough(cam); ctx.setTransform(1, 0, 0, 1, 0, OYD); }      // far off under the light: the Slough
     // windows lit by a touch
     if (G.litw.length) {
       ctx.setTransform(DPR, 0, 0, DPR, 0, OYD);
@@ -2081,6 +2103,6 @@ document.getElementById('on2').onclick = () => SL.start();
   for (const [who, txt] of INTRO) vox(who, txt);          // the first words, ready before Begin is pressed
 })();
 </script>
-<script src="slough.js?v=101"></script>
+<script src="slough.js?v=102"></script>
 </body>
 </html>

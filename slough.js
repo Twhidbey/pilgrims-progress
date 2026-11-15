@@ -527,5 +527,6 @@ const SL = (() => {
   }
 
   // for testing: SL.peek() tells where the story is
-  return { on: false, start, update, draw, touch, grip, pick, preload, lines: ALL, peek: () => ({ ph, x: C2.x, y: C2.y, mv: mv && mv.t, lift: lift && lift.t, pli: pli && pli.mode, cam }) };
+  // oakPic: the great oak baked small in one colour, for Level 1's far glimpse of the Slough (story-lab.html, drawFarSlough)
+  return { on: false, start, update, draw, touch, grip, pick, preload, lines: ALL, oakPic: (col, k) => bakeTree(oak(18), col, k), peek: () => ({ ph, x: C2.x, y: C2.y, mv: mv && mv.t, lift: lift && lift.t, pli: pli && pli.mode, cam }) };
 })();
