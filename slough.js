@@ -69,7 +69,10 @@ const SL = (() => {
   const HX = BANK0 + 34, GRASP = { dx: -(82 - 15 + 129), dy: 283 - 55 };
   const HY = () => bankY(HX) + 4;
   const STUCK_X = HX + GRASP.dx * CHR_K, STUCK_Y = () => HY() + GRASP.dy * CHR_K;
-  const SINK = 84, PLI_SINK = 62;                         // how deep each stands in the mire when they fall (feet below the water line)
+  const SINK = 100, PLI_SINK = 76;                        // how deep each stands in the mire when they fall (feet below the water line)
+  // the fall is slow (owner, build 105: "go deeper ... drop more slow ... what it looks like to get [stuck in] mud"): a soft first
+  // drop to the knees, then a slow sink over about 5 seconds that goes on while the words begin
+  const sunk = t => .4 * smooth(0, 40, t) + .6 * smooth(25, 330, t);
   // where each man stands when the lift is over, in the lift picture's own pixels (measured from its last frame)
   const LIFT_CHR = 260, LIFT_HELP = 399;
 
@@ -164,7 +167,7 @@ const SL = (() => {
   // ---------- the people ----------
   const HELPF = [], REACH = [], LIFT = [], PLIC = [], WADE = [];
   const META = { help: { ax: 94, ground: 309 }, reach: { ax: 70, ground: 307 }, lift: { ax: 257, ground: 307 },
-    climb: { ax: 363, ground: 342, top: 38, end: 440, sink: 25 },
+    climb: { ax: 363, ground: 342, top: 38, end: 440, sink: 39 },
     // Christian struggling through the mud (build 104): a loop, waist-deep in the video; ground = where his feet would be
     wade: { ax: 174, ground: 294 } };
   const HELP_SRC = [0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 42, 44, 46, 48, 50, 52, 54, 56, 58, 60, 62, 64, 66, 68, 70, 72, 74, 76, 78, 80, 82, 84, 86, 88, 90, 92, 94, 96, 98, 100, 102, 104, 106, 108, 110, 112, 114, 116, 118, 120, 122, 124, 126, 128, 130, 132, 136, 140, 144, 148, 152, 156, 160, 164, 168, 172, 176, 180, 184, 188, 192, 196, 200, 204, 208, 212, 216, 220, 224, 228, 232, 236];
@@ -291,10 +294,14 @@ const SL = (() => {
         if (C2.x > END_X - 300) C2.alpha = clamp((END_X - C2.x) / 300);
         if (C2.x >= END_X && G.state === 'play') finish();
       }
-    } else if (ph === 'fall') {
-      C2.fallT++;
-      C2.sink = SINK * smooth(0, 40, C2.fallT); pli.sink = PLI_SINK * smooth(4, 44, C2.fallT);
-      C2.y = lerp(bankY(FALL_X) + 4, C2.sink, smooth(0, 40, C2.fallT)); pli.y = lerp(bankY(pli.x) + 4, pli.sink, smooth(4, 44, C2.fallT));
+    }
+    if ((ph === 'fall' || ph === 'pli') && C2.fallT < 340) {
+      C2.fallT++; const top = smooth(0, 40, C2.fallT), topP = smooth(4, 44, C2.fallT);
+      C2.sink = SINK * sunk(C2.fallT); C2.y = lerp(bankY(FALL_X) + 4, C2.sink, top);
+      if (pli && pli.mode !== 'climb') { pli.sink = PLI_SINK * sunk(C2.fallT - 4); pli.y = lerp(bankY(pli.x) + 4, pli.sink, topP); }
+      if (C2.fallT % 50 === 0) { rings.push({ x: C2.x, y: 0, t: 0, k: .7 }); if (pli && pli.mode !== 'climb') rings.push({ x: pli.x, y: 0, t: 0, k: .6 }); }
+    }
+    if (ph === 'fall') {
       if (C2.fallT === 8 || C2.fallT === 14) { rings.push({ x: C2.x, y: 0, t: 0, k: 1.3 }); rings.push({ x: pli.x, y: 0, t: 0, k: 1.1 }); }
       if (C2.fallT === 120) { ph = 'pli'; talk(FALL, choose2); }
     } else if (ph === 'back') {
