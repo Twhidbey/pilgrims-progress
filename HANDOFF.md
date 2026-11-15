@@ -4,6 +4,8 @@ The game is `index.html` (one file, no build step). `style-lab.html` is the art-
 
 ## START HERE (written at build 41, updated at build 43, Nov 15 2026, for a new chat)
 
+**Build 112: the wall no longer flickers or vanishes near Obstinate and Pliable; the sky melts into the high sky when the camera draws back; "Go home" no longer freezes the game (a bug since build 107); the gate's birds sit on the wall. Nothing spent (running total since build 106: about $0.01).**
+
 **Build 110: more road after his house and before the gate, a gentle choice at his door, a worn wall top, Christian and Pliable stand on the Slough's plain (see `CLAUDE.md`, build 110). Nothing spent. **
 
 **Build 111: Obstinate's first line recorded again (about 1 cent, the only spend since build 106: running total about $0.01).** The owner should listen to it next to his other lines.

@@ -70,7 +70,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">story lab · build 111 · Nov 15 2026</div>
+  <div id="build">story lab · build 112 · Nov 15 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -417,7 +417,7 @@ function drawFog(front) {
 // ---------- build the scenery once ----------
 // Each layer is baked twice, in its rain colour and its golden colour; draw() blends the two by the weather.
 const SCN = [], TUFTS = [];
-let FRONT, skyRain, skyGold, beamC, veilC, hiRain, hiGold;
+let FRONT, skyRain, skyGold, beamC, veilC, hiRain, hiGold, hiRainF, hiGoldF;
 function stencil(Lr, q) {
   const m = mk(Math.ceil(Lr.W * q) + 4, Math.ceil(VH * q) + 2), c = m.getContext('2d');
   c.scale(q, q); c.fillStyle = '#fff';
@@ -548,6 +548,12 @@ function buildScenery() {
   const hi = (top, col, n, a0) => { const m = mk(480, 300), c = m.getContext('2d'); c.scale(.5, .5); const g = c.createLinearGradient(0, 0, 0, 600); g.addColorStop(0, css(mix(top, [20, 24, 34], .25))); g.addColorStop(1, css(top)); c.fillStyle = g; c.fillRect(0, 0, VW, 600);
     for (let i = 0; i < n; i++) { const y = rr(20, 520); puff(c, rr(-80, VW + 80), y, rr(90, 240), rr(18, 50), col, a0 * rr(.5, 1) * (1 - y / 600)); } return m; };
   R = rng(77); hiRain = hi(PAL.skyC[0], PAL.cloud, 60, .2 * (.35 + LOOK.rain * .75)); hiGold = hi(PAL.skyW[0], PAL.light, 26, .25 * (.3 + LOOK.gold * .7));
+  // build 112 (owner: "the sky after we zoom out doesn't cleanly transition to the sky above"): the old sky's clouds near
+  // its top were cut off flat at the old top edge. A feather of the high sky's own bottom colour is laid over that edge,
+  // fading out downward (hiRainF, hiGoldF; drawn in drawWorld beside the high sky), so the two skies melt together.
+  const feather = m => { const f = mk(480, 64), c = f.getContext('2d'); c.drawImage(m, 0, 292, 480, 8, 0, 0, 480, 64); c.globalCompositeOperation = 'destination-in';
+    const g = c.createLinearGradient(0, 0, 0, 64); g.addColorStop(0, 'rgba(0,0,0,1)'); g.addColorStop(.35, 'rgba(0,0,0,.7)'); g.addColorStop(1, 'rgba(0,0,0,0)'); c.fillStyle = g; c.fillRect(0, 0, 480, 64); return f; };
+  hiRainF = feather(hiRain); hiGoldF = feather(hiGold);
   // glow and soft beams from the light
   beamC = mk(240, 135); c = beamC.getContext('2d'); c.scale(.25, .25); R = rng(12);
   { const g = c.createRadialGradient(SUN[0], SUN[1], 0, SUN[0], SUN[1], 420); g.addColorStop(0, css(PAL.light, .75)); g.addColorStop(.3, css(PAL.light, .3)); g.addColorStop(1, css(PAL.light, 0)); c.fillStyle = g; c.fillRect(0, 0, VW, VH); }
@@ -650,7 +656,7 @@ function buildLevel() {
     const L = LEVELS[lv], m = PROP_META[k], t = { lv, k, w: m.w * L.k, h: m.h * L.k }; t.x = lineUp(a, L.par) - t.w / 2; THINGS.push(t);
     if (birds) flock(t.x + t.w * m.perch[0], L.base + 3 - m.perch[1] * L.k, birds, L.par, L.k, lv);      // birds sit on its top
   }
-  flock(GATE - 300, GY - 166, 4);                                    // and on the city wall by the gate
+  flock(GATE - 300, GY - 300, 4);                                    // and on the city wall by the gate (build 112: on its top, which is about 302 above the road since build 101)
   // words said while walking (nobody stops)
 }
 
@@ -997,7 +1003,7 @@ function pick(home) {
   const part = () => talk(PART, () => { G.obst.mode = 'home'; G.pli.mode = 'follow'; P.turn = 1; });
   if (!home) { note(67, .05, 3); talk(ONWARD, part); return; }
   // going home: a few steps back into the rain. The light dims, then he turns round again. Nothing is lost.
-  G.gloomTo = 1; G.homeTo = { to: P.x - 85, then: () => talk(HOME, part) }; G.idle = 0;      // build 106: the child walks him back (nothing moves on its own)
+  G.state = 'play'; G.gloomTo = 1; G.homeTo = { to: P.x - 85, then: () => talk(HOME, part) }; G.idle = 0;      // build 106: the child walks him back (nothing moves on its own)
 }
 document.getElementById('chHome').onclick = () => pick(true);
 document.getElementById('chOn').onclick = () => pick(false);
@@ -1729,7 +1735,12 @@ function gatePainted() {
   let n = 0;
   // Build 90 (owner: "the walls of city gate are transparent"): every piece is solid. Build 92 (owner: "why is left end
   // of wall faded? shouldn't it just start"): no fade at the far end either; the wall simply begins.
+  // build 112 (owner: "the wall flickers there and then disappears"): the last piece on the left reached up to a whole
+  // piece further left than W0, and was only drawn while the gate was near the screen, so it came and went as the
+  // camera moved. Now the wall is cut off cleanly at W0, and drawn whenever any of it is on the screen (see draw()).
+  c.save(); c.beginPath(); c.rect(W0, -5000, 1e5, 10000); c.clip();
   for (let x = f.x + 14 - ww; x + ww > W0; x -= ww - 1, n++) if (x < cam + VW + 40 && x + ww > cam - 40) both(WALL_P, x, GY + 2 - wh, ww, wh, n % 2);
+  c.restore();
   n = 0;
   for (let x = f.x + f.w - 14; x < LEVEL_W + 80; x += ww - 1, n++) if (x < cam + VW + 40 && x + ww > cam - 40) both(WALL_P, x, GY + 2 - wh, ww, wh, n % 2);
   both(GATE_P, f.x, f.y, f.w, f.h, false);
@@ -1837,7 +1848,10 @@ function drawWorld() {
     ctx.setTransform(1, 0, 0, 1, 0, 0); const H = Math.ceil(OYD) + 2, hs = Math.min(300, OYD / DPR * .5);      // hs: how much of the high sky shows (it is 600 scene units tall at half size)
     for (const sg of SEG) { const sx = sg[0] / cv.width * 480, sw = Math.max(.5, (sg[1] - sg[0]) / cv.width * 480);
       ctx.globalAlpha = 1; ctx.drawImage(hiRain, sx, 300 - hs, sw, hs, sg[0], 0, sg[1] - sg[0], H); if (sg[2] > .004) { ctx.globalAlpha = sg[2]; ctx.drawImage(hiGold, sx, 300 - hs, sw, hs, sg[0], 0, sg[1] - sg[0], H); } }
-    ctx.globalAlpha = 1; ctx.setTransform(1, 0, 0, 1, 0, OYD);
+    ctx.setTransform(1, 0, 0, 1, 0, OYD); const FH = 170 * DPR;      // the feather over the old top edge (build 112)
+    for (const sg of SEG) { const sx = sg[0] / cv.width * 480, sw = Math.max(.5, (sg[1] - sg[0]) / cv.width * 480);
+      ctx.globalAlpha = 1; ctx.drawImage(hiRainF, sx, 0, sw, 64, sg[0], -1, sg[1] - sg[0], FH); if (sg[2] > .004) { ctx.globalAlpha = sg[2]; ctx.drawImage(hiGoldF, sx, 0, sw, 64, sg[0], -1, sg[1] - sg[0], FH); } }
+    ctx.globalAlpha = 1;
   }
   ctx.setTransform(DPR, 0, 0, DPR, 0, OYD); drawLight(); ctx.setTransform(1, 0, 0, 1, 0, OYD);
   // the layers, far to near, each one colour, with mist between
@@ -1876,7 +1890,7 @@ function drawWorld() {
   const grad = hGrad(ctx, gcol[0], gcol[1], 1, 1, cam);
   INK = grad; SETC = hGrad(ctx, ...layerCol(.66), 1, 1, cam); DOORC = hGrad(ctx, ...layerCol(.86), 1, 1, cam);
   HINT = hGrad(ctx, PAL.hazeC, PAL.hazeW, .13, .17, cam);
-  if (on(GATE - 800, 1400)) { doors(); gate(); }
+  if (on(GATE - 760, LEVEL_W - GATE + 760)) { doors(); gate(); }      // the whole wall, from its start (W0) to the end of the level
   for (const l of LAMPS) if (on(l.x - 15, 73)) {
     drawProp(PROP.road && PROP.road.lamp, PROP_META.lamp, l.x - 15, cam);
     if (l.lit) { ctx.fillStyle = css(PAL.win, Math.min(1, (G.t - l.lit) / 30)); ctx.fillRect(l.x + 34.5, LAMP_Y - 5.6, 10.6, 10.5); }      // the lantern's little window
