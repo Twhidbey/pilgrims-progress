@@ -70,7 +70,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">story lab · build 91 · Nov 15 2026</div>
+  <div id="build">story lab · build 92 · Nov 15 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -584,7 +584,7 @@ const EVAN_X = 420, HOME_X = 2150, RUN_END = 5100, NEIGH_X = 6050, GATE_STOP = 6
 // SKIP AHEAD (owner, build 89: "is there a way to skip ahead to a moment?"): add ?at=NAME to the link. Each name starts
 // the level just before that moment, after Evangelist. (?x=N still works for any place on the road; ?level=2 starts
 // at the Slough of Despond.)
-const AT = { door: 1500, neighbours: 3500, obstinate: 5700, gate: 6450 };
+const AT = { door: 1500, neighbours: 3500, obstinate: 5700, gate: 6700 };
 const TEST_X = +(new URLSearchParams(location.search).get('x')) || AT[new URLSearchParams(location.search).get('at')] || 0, START_X = TEST_X || HOME_X - 280;   // he starts beside his own door; ?x=3600 starts further along, after Evangelist (for testing)
 // The lights on the road are a tune: "Amazing Grace" (New Britain, 1829), one phrase per stretch of road.
 // Each light is one note. They are spaced by the length of each note, so walking at his steady pace plays the tune in time.
@@ -760,6 +760,7 @@ function reset() {
   Object.assign(G, { cam: Math.max(0, Math.min(LEVEL_W - VW, TEST_X ? START_X - VW * .38 + 40 : START_X - VW * .62 - 40)), t: 0, got: 0, extra: 0, motes: [], flyers: [], ripples: [], glints: [], taps: [], litw: [], capQ: [], cap: 0, hint: null,
     pli: null, obst: null, flare: 0, gloom: 0, gloomTo: 0, gateOpen: 0, act: null, actT: 0, ring: null, auto: null, finale: null, guard: 0, idle: 0, wins: 0,
     evanDone: !!TEST_X, evanGone: TEST_X ? 1 : 0, neigh: TEST_X > NEIGH_X + 300, gateSeen: false, walked: false, touched: false, leaving: false, fam: TEST_X > HOME_X ? 2 : 0, door: TEST_X ? (TEST_X > HOME_X ? 1 : 0) : 1, doorShut: false, roll: TEST_X ? { t: 999, x: 0, y: 0 } : null, runZone: !!TEST_X && TEST_X < RUN_END, outSaid: false, watched: TEST_X > HOME_X + 900, ears: TEST_X > HOME_X });
+  G.zoom = 1 - (1 - ZOOM_GATE) * smooth(GATE - 1050, GATE - 380, START_X);      // starting near the gate (?at=gate): already drawn back
   G.evan.pt = TEST_X ? 239 : 0; G.evan.go = false; G.evan.st = EVS_META.frames * 100; downs.clear(); pushing = false; keys.r = keys.push = false;
   if (TEST_X) for (const l of LIGHTS) if (l.x < Math.max(TEST_X, 2000)) l.got = true;
   for (const c of CAPS) if (c.x < TEST_X) c.done = true;
@@ -1066,14 +1067,17 @@ function walkTick(dir, max) {
     if (P.x < FIELD_END - 200) sfx.swish(P.run ? 1.5 : 1);      // wading through the wheat (a soft brush of stalks with each step)
   }
 }
-// going in through the open gate: 0 outside, 1 gone into the light. A figure in the archway grows a little smaller,
-// rises a little and fades into the gold, so they go INTO the gate and not past it (owner asked).
-const intoGate = x => G.gateOpen >= 1 ? smooth(DOOR0 + 16, DOOR1 - 24, x) : 0;
+// going in through the open gate: 0 outside, 1 in the gateway. A figure in the archway grows a little smaller and rises
+// a little, so they go INTO the gate and not past it (owner asked), and then (build 92, owner: "they can walk to the
+// right instead of just fading (maybe a little fade is good but not entirely)") walks on to the right through the
+// passage, out of sight behind the right side of the arch, fading only a little into the gold on the way.
+const intoGate = x => G.gateOpen >= 1 ? smooth(DOOR0 + 10, DOOR1 - 20, x) : 0;
 function figure(x, fn) {
-  const g = intoGate(x); if (g >= 1) return;
+  const g = intoGate(x);
   if (!g) { fn(1); return; }
-  const sx = x - G.cam, k = 1 - .2 * g;
-  ctx.save(); ctx.translate(sx, GY - 14 * g); ctx.scale(k, k); ctx.translate(-sx, -GY); fn(1 - g * g); ctx.restore();
+  const sx = x - G.cam, k = 1 - .12 * g;
+  ctx.save(); ctx.beginPath(); ctx.rect(-50, -400, DOOR1 - 3 - G.cam + 50, VH + 800); ctx.clip();      // the right side of the arch hides them as they go on
+  ctx.translate(sx, GY - 10 * g); ctx.scale(k, k); ctx.translate(-sx, -GY); fn(1 - .35 * g); ctx.restore();
 }
 
 // ---------- things that answer a touch ----------
@@ -1219,7 +1223,7 @@ function story() {
   if (G.fam === 2 && !G.watched && P.x > HOME_X + 900) { G.watched = true; caption(WATCH); G.watch = 520; }      // the neighbours come out to see him run
   if (G.runZone && P.x > RUN_END) { G.runZone = false; caption(FETCH); }      // by now he is a good way off, and walks
   if (!G.neigh && P.x > NEIGH_X && OBS.ready && PLI.ready) { G.neigh = true; G.obst = { x: G.cam - 80, mode: 'run' }; G.pli = { x: G.cam - 150, mode: 'run' }; }
-  if (!G.gateSeen && P.x > GATE_STOP) { G.gateSeen = true; talk(GATEWORDS, () => { G.state = 'auto'; G.auto = { dir: 1, to: DOOR1 - 12, wait: true, then: () => { G.state = 'auto'; G.leaving = true; } }; caption(END); }); }
+  if (!G.gateSeen && P.x > GATE_STOP) { G.gateSeen = true; talk(GATEWORDS, () => { G.state = 'auto'; G.auto = { dir: 1, to: DOOR1 + 90, wait: true, then: () => { G.state = 'auto'; G.leaving = true; } }; caption(END); }); }
 }
 // Obstinate and Pliable
 function people() {
@@ -1234,14 +1238,14 @@ function people() {
   if (o) o.st = clamp((o.st || 0) + (o.mode === 'talk' && rest(o, OBS_META) && OBS_ST ? .035 : -.06));
   if (o && o.mode === 'home' && o.st <= 0 && o.x > G.cam - 200) o.x -= 1.25; // his video's own walking pace
   if (p && p.mode === 'follow') {                             // Pliable keeps a little behind Christian, hurrying only if he falls back
-    const gap = (G.leaving ? DOOR1 - 10 : P.x - 70) - p.x;      // at the end he follows Christian in through the gate
+    const gap = (G.leaving ? DOOR1 + 90 : P.x - 70) - p.x;      // at the end he follows Christian in through the gate and on
     if (G.leaving && gap < 4) { G.leaving = false; p.mode = 'gone'; finish(); }      // through the gate: he stays gone
     if (gap > 14) p.go = true; if (gap < 1) p.go = false;
   }
   if (p) {
     const still = p.mode === 'talk' || (p.mode === 'follow' && !p.go);
     p.st = clamp((p.st || 0) + (still && rest(p, PLI_META) && PLI_ST ? .035 : -.06));
-    if (p.mode === 'follow' && p.go && p.st <= 0) { const gap = (G.leaving ? DOOR1 - 10 : P.x - 70) - p.x; p.x += Math.max(0, Math.min(gap, gap > 46 ? 2 : MAXV)); }
+    if (p.mode === 'follow' && p.go && p.st <= 0) { const gap = (G.leaving ? DOOR1 + 90 : P.x - 70) - p.x; p.x += Math.max(0, Math.min(gap, gap > 46 ? 2 : MAXV)); }
   }
   if (o) { o.anim = stepAnim(o.anim ?? OBS_META.rest[0], Math.abs(o.x - (o.px ?? o.x)), OBS_STEP, OBS_META); o.px = o.x; }
   if (p) { p.anim = stepAnim(p.anim ?? PLI_META.rest[0], Math.abs(p.x - (p.px ?? p.x)), PLI_STEP, PLI_META); p.px = p.x; }
@@ -1570,7 +1574,6 @@ function home(cam) {                       // drawn in screen units, before the 
 const GATE_META = {"w": 660, "h": 700, "hole": [235, 376, 425]}, WALL_META = {"w": 716, "h": 400, "solid": 363};
 let GATE_P = null, WALL_P = null;
 const gateFit = () => { const k = (DOOR1 - DOOR0) / (GATE_META.hole[2] - GATE_META.hole[0]); return { k, x: DOOR0 - GATE_META.hole[0] * k, y: GY + 2 - GATE_META.h * k, w: GATE_META.w * k, h: GATE_META.h * k }; };
-const fadeLeft = im => { const m = mk(im.width, im.height), c = m.getContext('2d'); c.drawImage(im, 0, 0); const g = c.createLinearGradient(0, 0, im.width, 0); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(.7, 'rgba(0,0,0,1)'); c.globalCompositeOperation = 'destination-in'; c.fillStyle = g; c.fillRect(0, 0, m.width, m.height); return m; };
 function gatePainted() {
   const c = ctx, f = gateFit(), cam = G.cam, both = (B, x, y, w, h, flip) => {
     // the golden copy goes on in thin strips, each as golden as the weather where it stands, so no seam shows between pieces
@@ -1583,10 +1586,9 @@ function gatePainted() {
   // the wall: one unbroken line from far to the left (it thins into the mist there), through the gate, and off the right
   const kw = 152 / WALL_META.solid, ww = WALL_META.w * kw, wh = WALL_META.h * kw, W0 = GATE - 760;
   let n = 0;
-  // Build 90 (owner: "the walls of city gate are transparent"): every piece is solid; only the last piece, at the wall's
-  // far end, fades out into the mist toward its own left edge (a faded copy baked once, WALL_P.end).
-  if (!WALL_P.end) WALL_P.end = { cool: fadeLeft(WALL_P.cool), warm: fadeLeft(WALL_P.warm) };
-  for (let x = f.x + 14 - ww; x + ww > W0; x -= ww - 1, n++) if (x < cam + VW + 40 && x + ww > cam - 40) both(x <= W0 ? WALL_P.end : WALL_P, x, GY + 2 - wh, ww, wh, n % 2 && x > W0);
+  // Build 90 (owner: "the walls of city gate are transparent"): every piece is solid. Build 92 (owner: "why is left end
+  // of wall faded? shouldn't it just start"): no fade at the far end either; the wall simply begins.
+  for (let x = f.x + 14 - ww; x + ww > W0; x -= ww - 1, n++) if (x < cam + VW + 40 && x + ww > cam - 40) both(WALL_P, x, GY + 2 - wh, ww, wh, n % 2);
   n = 0;
   for (let x = f.x + f.w - 14; x < LEVEL_W + 80; x += ww - 1, n++) if (x < cam + VW + 40 && x + ww > cam - 40) both(WALL_P, x, GY + 2 - wh, ww, wh, n % 2);
   both(GATE_P, f.x, f.y, f.w, f.h, false);
@@ -2018,6 +2020,6 @@ document.getElementById('on2').onclick = () => SL.start();
   for (const [who, txt] of INTRO) vox(who, txt);          // the first words, ready before Begin is pressed
 })();
 </script>
-<script src="slough.js?v=91"></script>
+<script src="slough.js?v=92"></script>
 </body>
 </html>
