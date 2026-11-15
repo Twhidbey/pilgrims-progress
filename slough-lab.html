@@ -20,7 +20,7 @@ a{color:#d9b77c}
 </style>
 </head>
 <body>
-<div id="top"><div id="frame"><canvas id="cv"></canvas><div id="build">slough lab · build 48 · Nov 15 2026</div></div></div>
+<div id="top"><div id="frame"><canvas id="cv"></canvas><div id="build">slough lab · build 49 · Nov 15 2026</div></div></div>
 <div id="panel">
   <div class="row" id="shots"></div>
   <div class="row"><button id="new">Another oak</button></div>
@@ -57,7 +57,7 @@ const SHOTS = [
   { name: '3 · Looking back', z: .74, cx: -330, wl: 372, mist: .25, veil: 0, gold: 1, disc: 1, sky: .26,
     note: 'On sound ground he looks back. His lights settle on the steps that were there all along, each doubled in the water, and the gold comes back from the oak outward.' }
 ];
-let shot = Math.max(0, Math.min(2, (parseInt(location.hash.slice(1)) || 2) - 1)), oakSeed = parseInt(location.hash.split('.')[1]) || 11;
+let shot = Math.max(0, Math.min(2, (parseInt(location.hash.slice(1)) || 2) - 1)), oakSeed = parseInt(location.hash.split('.')[1]) || 12;
 
 // ---------- noise ----------
 function noise2(seed) {
@@ -72,7 +72,7 @@ function noise2(seed) {
 function oak(seed, hero = true, depth = 4) {
   const R = rng(seed), rr = (a, b) => a + (b - a) * R(), out = [];
   function grow(x, y, a, len, w, d, o = {}) {
-    const step = Math.max(2.6, len / 24), n = Math.max(3, Math.round(len / step)), pts = [[x, y, w]], taper = o.taper ?? .62;
+    const step = Math.max(2.6, len / 24), n = Math.max(3, Math.round(len / step)), w0 = o.w0 ?? w, pts = [[x, y, Math.max(w, w0)]], taper = o.taper ?? .62;
     let nextKid = rr(.16, .34) * n, side = R() < .5 ? -1 : 1;
     for (let i = 1; i <= n; i++) {
       const t = i / n;
@@ -81,17 +81,18 @@ function oak(seed, hero = true, depth = 4) {
       if (o.guide) a += (o.guide(t) - a) * .2; else a -= a * t * t * .13;          // tips turn up toward the sky
       if (y > -14 && !o.guide) a *= .8;                                            // nothing grows into the ground
       x += Math.sin(a) * step; y -= Math.cos(a) * step;
-      const ww = w * (1 - taper * t); pts.push([x, y, ww]);
+      // a branch leaves its parent as thick as the parent and narrows over a short way: the collar that makes a fork look grown, not stuck on
+      const ww = w * (1 - taper * t) + Math.max(0, w0 - w) * Math.exp(-i * step / (w0 * .6)); pts.push([x, y, ww]);
       if (d > 0 && i >= nextKid && i < n) {
         side = -side; if (R() < .25) side = -side;
         if (o.guide && R() < .75) side = 1;                                        // the reaching limb sends its shoots upward
         const ka = a + side * rr(.45, 1.15), kl = len * (1 - t * .6) * rr(.42, .78), kw = ww * rr(.5, .76);
-        if (kl > 6 && kw > .3) grow(x, y, ka, kl, kw, d - 1);
+        if (kl > 6 && kw > .3) grow(x, y, ka, kl, kw, d - 1, { w0: ww * .9 });
         nextKid = i + rr(.09, .22) * n;
       }
     }
     out.push(pts);
-    if (d > 0 && !o.stub) { const ew = w * (1 - taper); grow(x, y, a - rr(.3, .7), len * .42, ew * .85, d - 1); grow(x, y, a + rr(.3, .7), len * .36, ew * .75, d - 1); }
+    if (d > 0 && !o.stub) { const ew = w * (1 - taper); grow(x, y, a - rr(.3, .7), len * .42, ew * .85, d - 1, { w0: ew }); grow(x, y, a + rr(.3, .7), len * .36, ew * .75, d - 1, { w0: ew }); }
     return [x, y, a];
   }
   if (!hero) {                                                                     // a plain bare tree for the far mist
@@ -99,13 +100,21 @@ function oak(seed, hero = true, depth = 4) {
     for (const a of [-1.1, -.45, .2, .9]) grow(x, y, a + rr(-.2, .2), rr(150, 230), rr(9, 13), depth);
     return out;
   }
-  const [tx, ty] = grow(0, 0, -.16, 98, 60, 0, { taper: .3, wander: .16, elbow: 0 });
+  // The trunk does not end in a bunch of branches. It leans, then divides in two great leaders, and each leader divides again,
+  // every fork at its own height, every limb starting as thick as what it grew from (thickness is shared out, never added).
+  const still = { wander: .1, elbow: 0 };
+  const [tx, ty, ta] = grow(0, 0, -.06, 74, 60, 0, { ...still, taper: .1, w0: 90, guide: t => lerp(-.06, -.3, t) });
+  const A = grow(tx - 4, ty, ta - .1, 66, 43, 0, { ...still, taper: .2, w0: 56, guide: t => lerp(ta - .1, -.82, t) });       // the leader toward the water
+  const B = grow(tx + 4, ty, ta + .3, 84, 41, 0, { ...still, taper: .22, w0: 56, guide: t => lerp(ta + .3, .46, t * 1.3) }); // the leader away from it
   // the limb that reaches out over the water: long, low, dipping, then lifting at its end like an open hand
-  grow(tx - 6, ty + 10, -1.3, 372, 25, depth, { wander: .22, elbow: .05, taper: .7,
-    guide: t => t < .62 ? lerp(-1.42, -1.74, t / .62) : lerp(-1.74, -.95, (t - .62) / .38) });
-  grow(tx, ty, -.72, 250, 24, depth); grow(tx, ty, -.08, 236, 22, depth); grow(tx + 4, ty, .52, 262, 24, depth); grow(tx + 8, ty - 4, 1.02, 300, 22, depth);
-  grow(10, -56, 1.45, 46, 15, 1, { taper: .25, stub: true, wander: .2 });          // a broken limb low on the trunk
-  out.push([[-78, 6, 1], [-42, -8, 34], [-14, -40, 60], [-2, -64, 56]], [[84, 6, 1], [46, -8, 34], [12, -40, 58], [-2, -64, 56]]);   // the roots flare into the bank
+  grow(A[0], A[1], A[2] - .12, 356, 25, depth, { wander: .22, elbow: .05, taper: .7, w0: 35,
+    guide: t => t < .14 ? lerp(A[2] - .12, -1.42, t / .14) : t < .62 ? lerp(-1.42, -1.74, (t - .14) / .48) : lerp(-1.74, -.95, (t - .62) / .38) });
+  grow(A[0], A[1], A[2] + .42, 246, 25, depth, { w0: 35 });
+  grow(B[0], B[1], B[2] - .5, 232, 24, depth, { w0: 33 });
+  grow(B[0], B[1], B[2] + .3, 292, 25, depth, { w0: 33 });
+  // roots gripping the bank
+  grow(-22, -22, -2.3, 92, 14, 0, { wander: .16, elbow: 0, taper: .9, w0: 40, guide: t => lerp(-2.5, -1.72, t * 2) }); grow(24, -22, 2.3, 104, 14, 0, { wander: .16, elbow: 0, taper: .9, w0: 40, guide: t => lerp(2.5, 1.7, t * 2) });
+  grow(4, -14, 2.6, 58, 12, 0, { wander: .16, elbow: 0, taper: .9, w0: 30, guide: t => lerp(2.8, 1.9, t * 2) });
   return out;
 }
 function ribbons(c, tree) {
@@ -120,6 +129,7 @@ function ribbons(c, tree) {
     for (let i = n - 1; i >= 0; i--) c.lineTo(Rr[i][0], Rr[i][1]); c.closePath();
   }
   c.fill();
+  c.beginPath(); for (const p of tree) if (p[0][2] > 2 && p[0][1] < -30) { c.moveTo(p[0][0] + p[0][2] / 2, p[0][1]); c.arc(p[0][0], p[0][1], p[0][2] / 2, 0, 7); } c.fill();   // round where a branch begins
 }
 let OAK = oak(oakSeed);
 const GHOSTS = [[-760, .5, 3, .8], [-1500, .36, 5, .88], [560, .46, 8, .84], [-230, .3, 9, .9], [-2300, .42, 12, .86]].map(g => ({ x: g[0], p: g[1], t: g[3], tree: oak(g[2], false, 3) }));
