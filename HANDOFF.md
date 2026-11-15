@@ -154,6 +154,9 @@ The game is `index.html` (one file, no build step). `style-lab.html` is the art-
 - Owner: "can I get some opening music before I start game". The title now asks for one touch ("Open the book"), because a browser may not make sound before a touch; then quiet music plays (the hymn's chords like a slow harp, the first half of the tune above like a music box) with the rain, and "Begin" appears. Made in the browser, no sound file. Not heard by me: the owner's ear decides.
 - Owner noticed the main game and the story lab are "out of sync". Asked the owner to confirm the other chats are finished before the story walk replaces `index.html` (see build 25's "Next").
 
+## Built Nov 15, 2026 (build 31)
+- Owner: "I think Amazing Grace should be discovered; let's open up with something else, very subtle." The title's music is now only single soft notes, far apart, at random (no tune), over the rain and hum. **Rule: don't play the hymn anywhere before the lights sing it on the road.**
+
 ## Open questions for the owner
 0. **Story lab (build 25):** is this the right shape for the game? How does it sound? Is "Go home" a good choice to offer? Should it replace the game now?
 1. How does the game feel on the phone: smooth? Anything hard to see (dark Christian against dark houses, crates, barrels)?

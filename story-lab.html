@@ -70,7 +70,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">story lab · build 30 · Nov 15 2026</div>
+  <div id="build">story lab · build 31 · Nov 15 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -881,18 +881,19 @@ function effects() {
     if (F.i >= TUNE.length && F.t > 47 * 28) { for (const m of G.motes) m.go = true; G.finale = null; }
   }
 }
-// ---------- the opening: quiet music on the title page ----------
+// ---------- the opening: a few quiet notes on the title page ----------
 // A browser may not make any sound until the screen has been touched, so the title asks for one touch ("Open the book").
-// Then, for as long as the title is up: a slow harp-like figure on the tune's own chords (a low note, then two higher ones
-// in each bar), with the first half of the tune above it like a music box, then eight bars of the figure alone, round again.
-// It is the tune the lights will sing on the road. Pressing Begin lets the last notes ring out into the rain.
-const CHORD = { 43: [59, 62], 48: [60, 64], 50: [57, 66] }, BAR = 144, BEAT_S = .8;
+// Then, while the title is up: single soft notes, far apart, over the rain and the low hum. No tune at all
+// (owner: the hymn should be discovered on the road, not given away here). The notes are the hum's own G and D with
+// the darker B flat and F, so the rainy city sounds a little sad and the hymn's brighter notes arrive as something new.
+const OPEN_NOTES = [55, 58, 62, 65, 67, 70, 74];
 function opening() {
-  const o = G.opening; if (!o || o.t++ % BAR) return;
-  const bar = (o.t - 1) / BAR % 16, low = BASS[bar], [x, y] = CHORD[low];
-  note(low, .07, 4, 0, false); note(low + 12, .03, 3, 0, false); note(x, .045, 3, BEAT_S); note(y, .045, 3, BEAT_S * 2);
-  for (const [beat, m] of TUNE) { const at = beat - 1 - bar * 3; if (beat < 24 && at >= 0 && at < 3) note(m + 12, .04, 3, at * BEAT_S); }
-  if (bar === 15) note(TUNE[0][1] + 12, .04, 3, BEAT_S * 2);       // the tune's first note leads back in
+  const o = G.opening; if (!o || o.t++ < o.next) return;
+  let m; do m = OPEN_NOTES[Math.random() * OPEN_NOTES.length | 0]; while (m === o.last);
+  o.last = m; o.n++; o.next = o.t + 150 + Math.random() * 170;       // the next note comes 2.5 to 5 seconds later
+  note(m, .034, 5.5);
+  if (Math.random() < .3) note(m + 7, .016, 5, .7 + Math.random() * .5); // now and then a faint second note above it
+  if (o.n % 4 === 1) note(43, .05, 6, 0, false);                         // and a deep G under every fourth
 }
 // the two acts that wait for the child
 function acts() {
@@ -1181,7 +1182,7 @@ function start() {
 document.getElementById('play').onclick = start;
 document.getElementById('open').onclick = () => {
   document.getElementById('open').style.display = 'none'; document.body.classList.add('opened');
-  if (audio()) { AC.resume(); G.opening = { t: 0 }; fetchVoices(); }
+  if (audio()) { AC.resume(); G.opening = { t: 0, next: 70, n: 0, last: 0 }; fetchVoices(); }
   setTimeout(() => { document.getElementById('play').style.display = ''; }, 2600);
 };
 document.getElementById('again').onclick = start;
