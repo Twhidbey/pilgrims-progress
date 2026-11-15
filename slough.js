@@ -163,14 +163,16 @@ const SL = (() => {
 
   // ---------- the people ----------
   const HELPF = [], REACH = [], LIFT = [], PLIC = [];
-  const META = { help: { ax: 94, ground: 309 }, reach: { ax: 70, ground: 307 }, lift: { ax: 257, ground: 307 } };
+  const META = { help: { ax: 94, ground: 309 }, reach: { ax: 70, ground: 307 }, lift: { ax: 257, ground: 307 },
+    climb: { ax: 345, ground: 341, top: 38, end: 422 } };
   const HELP_SRC = [0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 42, 44, 46, 48, 50, 52, 54, 56, 58, 60, 62, 64, 66, 68, 70, 72, 74, 76, 78, 80, 82, 84, 86, 88, 90, 92, 94, 96, 98, 100, 102, 104, 106, 108, 110, 112, 114, 116, 118, 120, 122, 124, 126, 128, 130, 132, 136, 140, 144, 148, 152, 156, 160, 164, 168, 172, 176, 180, 184, 188, 192, 196, 200, 204, 208, 212, 216, 220, 224, 228, 232, 236];
   const REACH_SRC = [3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 36, 39, 42, 45, 48, 51, 54, 57, 60, 63, 66, 69, 72, 75, 78, 80, 82, 84, 86, 88, 90, 92, 94, 96, 98, 100, 102, 104, 106, 108, 110, 112, 114, 116, 118, 120, 122, 124, 128, 134, 140, 146, 152, 158, 164, 170, 176, 182, 188, 194, 200, 206, 212, 218, 224, 230, 236];
   const LIFT_SRC = [...Array(76).keys()].map(i => i * 2).concat([...Array(11).keys()].map(i => 156 + i * 8));
   const at = (src, t) => { let k = 0; while (k + 1 < src.length && src[k + 1] <= t) k++; return k; };
   let loading = null;
-  // Pliable climbing out (to be made: one picture and one video, about 70 cents). When assets/pliable-climb.pack exists it is
-  // used; until then he wades to his own bank and rises out of the water as he walks into the mist.
+  // Pliable climbing out (build 93): one video, facing right, drawn mirrored. META.climb: ax = the bank's edge, ground = the water
+  // line, top = how high the bank stands in the video (pack pixels), end = where his feet are in the last frame. Without the pack
+  // he wades to his own bank and rises out of the water as he walks into the mist.
   function preload() {
     if (!loading) loading = Promise.all([loadPack('help', HELPF), loadPack('christian-reach', REACH), loadPack('lift', LIFT), loadPack('pliable-climb', PLIC).catch(() => {})]).catch(() => {});
     return loading;
@@ -335,6 +337,13 @@ const SL = (() => {
         const tx = C2.x - 80, v = clamp(tx - pli.x, 0, MAXV * 1.05); pli.x += v; pli.y = bankY(pli.x) + 4;
         pli.anim = stepAnim(pli.anim, v, PLI_STEP, PLI_META); pli.face = 1;
         if (ph === 'fall') pli.mode = 'in';
+      } else if (pli.mode === 'climb' && PLIC.length && !pli.out) {
+        // the video: he wades crossly to the bank, climbs up it and steps off; raised to meet the game's bank as he climbs
+        const M = META.climb, last = PLIC.length - 1, endX = HOME0 - (M.ax - M.end) * CHR_K;
+        pli.ct = Math.min(last, (pli.ct || 0) + .2); const p = pli.ct / last;
+        pli.face = -1; pli.x = HOME0; pli.y = smooth(.5, .85, p) * (bankY(endX) + 4 + M.top * CHR_K);
+        if (p < .45 && G.t % 30 === 0) rings.push({ x: HOME0 + 32, y: 0, t: 0, k: .9 });
+        if (pli.ct >= last) { pli.out = true; pli.x = endX; pli.y = bankY(endX) + 4; pli.anim = 0; }
       } else if (pli.mode === 'climb') {
         // struggling back to the bank next to his own house, then out and away into the mist
         pli.face = -1; const v = pli.x > HOME0 + 10 ? .55 : .9; pli.x -= v; pli.anim += v / PLI_STEP * (pli.x > HOME0 ? 2.2 : 1);
@@ -439,8 +448,8 @@ const SL = (() => {
     for (const s of steps) if (s.lit) { n.globalAlpha = s.lit; n.fillStyle = css(land); n.beginPath(); n.moveTo(s.x - s.w, 1); n.quadraticCurveTo(s.x - s.w * .8 + s.lean, -s.h * 1.5, s.x + s.lean, -s.h); n.quadraticCurveTo(s.x + s.w * .85, -s.h * .6, s.x + s.w, 1); n.fill(); n.globalAlpha = 1; }
     // Pliable
     if (pli) {
-      const climb = PLIC.length && pli.mode === 'climb';
-      figure(n, 'pli', PLI[Math.floor(pli.anim) % (PLI.length || 1)], PLI_META, pli.x, pli.y, pli.face, fig, pli.y > 2 && !climb, pli.alpha);
+      if (PLIC.length && pli.mode === 'climb' && !pli.out) figure(n, 'pli', PLIC[Math.floor(pli.ct || 0)], META.climb, pli.x, pli.y, -1, fig, false, pli.alpha);
+      else figure(n, 'pli', PLI[Math.floor(pli.anim) % (PLI.length || 1)], PLI_META, pli.x, pli.y, pli.face, fig, pli.y > 2 && !(PLIC.length && pli.mode === 'climb'), pli.alpha);
     }
     // Help: he comes out of the mist on the far bank, steps to the edge, kneels and holds out his hand
     const vt = mv ? mv.t : 0, lt = lift ? lift.t : -1, mixIn = lift ? clamp(lt / 3.2) : 0;
