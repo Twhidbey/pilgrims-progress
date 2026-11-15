@@ -26,7 +26,7 @@ The game is `index.html` (one file, no build step). `style-lab.html` is the art-
 - They look at everything closely and answer fast. Show pictures; they notice faces, perspective, scale and anything that does not read.
 - They want my opinion when they ask "what do you think?" and action when they say "do it". When they say "before you code", only talk.
 - **Money:** pictures, videos and voices are made with the owner's Google key and cost them money (picture about 15 cents, video about 56 cents, a voice line about a cent). Their prepaid credit ran out once mid-build. **Say the cost before spending.** Roughly $1.85 was spent after their top-up.
-- **The key** was pasted into the old chat and is NOT in the repo or anywhere a new chat can read. Ask for it. Advise them to delete it and make a new one, since it sat in a chat.
+- **The key** is saved in the `pilgrims-progress` cloud environment as the variable `GEMINI_API_KEY` (build 42; the tools read that name). A chat started on that environment has it: check with `[ -n "$GEMINI_API_KEY" ]`, never print it. It is NOT in the repo. The environment's Network secrets form does not suit Google's `x-goog-api-key` header (tried, it sent the key as a Bearer token and Google refused it); the owner found that form hard, so do not send them back to it. Not yet tested with a real call since it was saved.
 - I cannot hear sound or watch motion: everything was checked from still pictures and by machine (voices by transcription). Say so; the owner's ears and eyes decide.
 - Rules they have set are collected in `CLAUDE.md`; the newest: one special thing in the picture at a time; props flat and quiet; faces plain but his profile must show; the hymn is discovered on the road, never played before; keep files trim.
 
