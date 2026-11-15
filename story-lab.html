@@ -68,7 +68,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">story lab · build 67 · Nov 15 2026</div>
+  <div id="build">story lab · build 68 · Nov 15 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -257,27 +257,29 @@ function buildWheat() {
 }
 // the wind in the middle layer: long slow waves running with the rain (a lean, 0 = upright)
 const wheatWind = (x, t) => .07 * Math.sin(x * .0075 + t * .017) + .025 * Math.sin(x * .019 + t * .031);
-// The trees on the rise behind the wheat are painted (owner, build 67: "trees should be more realistic (maybe a sprite
-// to guide initial composition?)"): a field oak, a tall hedgerow tree and a low hawthorn clump from the image model
-// (assets/tree-a/b/c.webp), each baked once as a one-tone silhouette in the near layer's colour with only a trace of its
-// painting, and drawn sharp on the near layer's ridge. bx = where the trunk meets the ground, across the picture.
-// FIELD_TREES: [which, where on the near layer, height on the screen, 1 or -1 = mirrored].
-const TREE_META = { a: { bx: 368 / 859 }, b: { bx: 209 / 291 }, c: { bx: 255 / 530 } }, TREE = {};
-const FIELD_TREES = [['a', 150, 108, 1], ['c', 365, 38, 1], ['b', 520, 118, -1], ['c', 610, 44, -1], ['a', 835, 96, -1], ['b', 1015, 104, 1]];
-function bakeTree(im) {
+// EVERY TREE IS PAINTED (owner, build 67: "trees should be more realistic (maybe a sprite ...)"; build 68: "no two trees
+// alike and swap all tree ... same tree can show up later just not in same scene"). Six pictures from the image model
+// (assets/tree-a..f.webp: field oak, tall ash, hawthorn clump, pollard willow, high elm, crooked thorn), each baked once per
+// scenery layer as a one-tone silhouette in that layer's colour with a trace of its painting, and drawn on the layer's
+// own ground line. The six on the field's rise are six different trees (FIELD_TREES); elsewhere the six take turns, so a
+// tree only comes round again several trees (most of a screen or more) later. bx = where the trunk meets the ground,
+// across the picture; low = a low kind, drawn about half height.
+const TREE_META = { a: { bx: 368 / 859 }, b: { bx: 209 / 291 }, c: { bx: 255 / 530, low: .42 }, d: { bx: 209 / 342 }, e: { bx: 107 / 211 }, f: { bx: 11 / 203, low: .55 } }, TREE = {}, TREE_KEYS = ['e', 'a', 'f', 'd', 'b', 'c'];
+const FIELD_TREES = [['a', 150, 108, 1], ['f', 365, 95, 1], ['b', 520, 118, -1], ['d', 640, 92, -1], ['e', 835, 122, -1], ['c', 1015, 95, 1]];      // [which, where on the near layer, height, 1 or -1 = mirrored]
+function bakeTree(im, d) {
   const one = col => { const m = mk(im.width, im.height), c = m.getContext('2d'); c.drawImage(im, 0, 0); c.globalCompositeOperation = 'source-in'; c.fillStyle = css(col); c.fillRect(0, 0, m.width, m.height); c.globalCompositeOperation = 'source-atop'; c.globalAlpha = .08; c.drawImage(im, 0, 0); return m; };
-  const col = layerCol(2 / 3); return { cool: one(mix(col[0], PAL.hazeC, .28)), warm: one(mix(col[1], PAL.hazeW, .28)) };
+  const col = layerCol(d); return { cool: one(mix(col[0], PAL.hazeC, .28)), warm: one(mix(col[1], PAL.hazeW, .28)) };
 }
-function drawFieldTrees(cam) {
-  const N2 = SCN[2], off = cam * N2.par, c = ctx;
-  for (const [k, lx, h, face] of FIELD_TREES) {
-    const B = TREE[k]; if (!B) continue;
-    const w = h * B.cool.width / B.cool.height, x = lx - off; if (x < -w || x > VW + w) continue;
-    const wm = warm(x / VW), y = N2.gy(lx) + 3;
-    c.save(); c.translate(x, y); c.scale(face, 1);
-    c.drawImage(B.cool, -w * TREE_META[k].bx, -h, w, h); if (wm > .01) { c.globalAlpha = wm; c.drawImage(B.warm, -w * TREE_META[k].bx, -h, w, h); }
+function drawTrees(i, cam) {
+  const Lr = SCN[i], off = cam * Lr.par, c = ctx, set = TREE[i]; if (!set) return;
+  Lr.trees.forEach((t, n) => {
+    const k = t.k || TREE_KEYS[n % TREE_KEYS.length], B = set[k], M = TREE_META[k]; if (!B) return;
+    const h = t.h * (M.low || 1), w = h * B.cool.width / B.cool.height, x = t.x - off; if (x < -w || x > VW + w) return;
+    const wm = warm(x / VW), y = Lr.gy(t.x) + 3;
+    c.save(); c.translate(x, y); c.scale(t.face, 1);
+    c.drawImage(B.cool, -w * M.bx, -h, w, h); if (wm > .01) { c.globalAlpha = wm; c.drawImage(B.warm, -w * M.bx, -h, w, h); }
     c.restore();
-  }
+  });
 }
 // The field itself, behind the three near layers: a pale plane of crop running back to the hedgerow on the rise (the near
 // scenery layer's ridge, SCN[2].gy), so the wheat is one field and not strips in front of a dark hill. Slow bands of
@@ -436,7 +438,7 @@ function buildScenery() {
       const lift = near ? 1 - smooth(field - 420, field - 40, x) : 0;      // the field rises gently behind the wheat
       return base - amp * v * cityFlat - woods * cityFlat - lift * (62 + 26 * v);
     };
-    L = { d, par, W, base, s, gy, field, shapes: [], wins: [], steeples: [] };
+    L = { d, par, W, base, s, gy, field, shapes: [], wins: [], steeples: [], trees: [] };
     if (first) { const bp = [[-30, VH + 20]]; for (let x = -30; x <= W + 6; x += 2.5) bp.push([x, base - 34 - amp * 1.25 * range(x * .8 + 4321, 1000, 1.5)]); bp.push([W + 6, VH + 20]); poly(bp); L.back = L.shapes.pop(); }
     const hp = [[-30, VH + 20]]; for (let x = -30; x <= W + 6; x += 2.5) hp.push([x, gy(x)]); hp.push([W + 6, VH + 20]);
     poly(hp);
@@ -455,11 +457,16 @@ function buildScenery() {
         x += w + rr(-9, 5) * s; if (R() < .1) x += rr(14, 50) * s;
       }
       // countryside beyond the gate: trees gather in groves, with open fields between
+      // Since build 68 every tree is a painted picture (L.trees, drawTrees), not a code-drawn blob: here only their places
+      // are chosen, fewer than before and well apart.
+      let lastT = -1e9; const plant = x => { if (x - lastT < 210 * s) return; lastT = x; L.trees.push({ x, h: s * rr(82, 122), face: R() < .5 ? 1 : -1 }); };
       for (let x = Math.max(edge + 20 * s, -30); x < W + 30; x += rr(16, 46) * s / (.25 + LOOK.trees)) {
         if (cl(x, 420 * s + 120) * .5 + .5 > LOOK.trees * 1.15 - .08) continue;
-        const k = R(); tree(x, gy(x), s * rr(.75, 1.2), k < .58 ? 0 : k < .78 ? 1 : 2);
+        R(); plant(x);
       }
-      for (let x = Math.max(rr(60, 200), field + 80); x < edge - 60; x += rr(160, 420)) if (R() < LOOK.trees) tree(x, gy(x), s * rr(.7, 1), R() < .6 ? 0 : 1);
+      for (let x = Math.max(rr(60, 200), field + 80); x < edge - 60; x += rr(160, 420)) if (R() < LOOK.trees) { R(); plant(x); }
+      L.trees.sort((a, b) => a.x - b.x);
+      if (near) L.trees.unshift(...FIELD_TREES.map(([k, x, h, face]) => ({ k, x, h, face })));      // the six on the field's rise, each a different tree
       // (the trees on the field's rise are painted pictures since build 67: FIELD_TREES, drawFieldTrees)
       if (i === 2) for (let x = edge + 150; x < W - 200; x += rr(380, 560)) fence(x, gy, 8 + (R() * 8 | 0));
     }
@@ -607,7 +614,6 @@ function buildLevel() {
   }
   flock(GATE - 155, GY - 162, 4);                                    // and on the city wall by the gate
   // words said while walking (nobody stops)
-  CAPS.push({ x: 6380, pli: true, lines: [[PL, 'Come, neighbor Christian, tell me more of the place where we are going.'], [C, 'There shall be no more crying, nor sorrow. And we shall be given garments that make us shine like the sun.'], [PL, 'Glad am I to hear of these things. Come on, let us mend our pace!'], [C, 'I cannot go so fast as I would, because of this burden that is on my back.']] });      // {26} to {28}
 }
 
 // ---------- sound: everything is made in the browser (no sound files) ----------
@@ -726,7 +732,7 @@ function reset() {
   Object.assign(P, { x: START_X, y: GY, vx: 0, face: TEST_X ? 1 : -1, anim: 1, stand: { t: QUIET[0] }, turn: 0, run: false, ranim: 0, blend: null, weep: null, turnTo: 0, wantBack: false, bk: 0 });
   Object.assign(G, { cam: Math.max(0, Math.min(LEVEL_W - VW, TEST_X ? START_X - VW * .38 + 40 : START_X - VW * .62 - 40)), t: 0, got: 0, extra: 0, motes: [], flyers: [], ripples: [], glints: [], taps: [], litw: [], capQ: [], cap: 0, hint: null,
     pli: null, obst: null, flare: 0, gloom: 0, gloomTo: 0, gateOpen: 0, act: null, actT: 0, ring: null, auto: null, finale: null, guard: 0, idle: 0, wins: 0,
-    evanDone: !!TEST_X, evanGone: TEST_X ? 1 : 0, neigh: TEST_X > NEIGH_X + 300, gateSeen: false, walked: false, touched: false, leaving: false, fam: TEST_X > HOME_X ? 2 : 0, door: TEST_X ? (TEST_X > HOME_X ? 1 : 0) : 1, doorShut: false, runZone: false, outSaid: false, watched: TEST_X > HOME_X + 900, ears: TEST_X > HOME_X });
+    evanDone: !!TEST_X, evanGone: TEST_X ? 1 : 0, neigh: TEST_X > NEIGH_X + 300, gateSeen: false, walked: false, touched: false, leaving: false, fam: TEST_X > HOME_X ? 2 : 0, door: TEST_X ? (TEST_X > HOME_X ? 1 : 0) : 1, doorShut: false, roll: TEST_X ? { t: 999, x: 0, y: 0 } : null, runZone: false, outSaid: false, watched: TEST_X > HOME_X + 900, ears: TEST_X > HOME_X });
   G.evan.pt = TEST_X ? 239 : 0; G.evan.go = false; G.evan.st = EVS_META.frames * 100; downs.clear(); pushing = false; keys.r = keys.push = false;
   if (TEST_X) for (const l of LIGHTS) if (l.x < Math.max(TEST_X, 2000)) l.got = true;
   for (const c of CAPS) if (c.x < TEST_X) c.done = true;
@@ -820,7 +826,7 @@ const EVAN = [       // {13} to {17}
   [C, 'Sir, I see by the book in my hand that I am in great danger. And this burden upon my back will sink me.'],
   [E, 'If this is so, why do you stand still?'],
   [C, 'Because I do not know where to go.'],
-  [N, 'Then Evangelist gave him a roll. On it was written: Flee from the wrath to come.'],
+  [N, 'Then Evangelist gave him a roll. On it was written: Flee from the wrath to come.', 0, () => { G.roll = { t: 0, x: G.evan.x - G.cam + 30, y: GY - 92 }; note(79, .035, 2.4); }],
   [C, 'Where must I flee?'],
   [E, 'Do you see that wicket gate, far over the wide field?', 0, () => { G.evan.go = true; }],      // "pointing with his finger over a very wide field"
   [C, 'No.'],
@@ -863,6 +869,18 @@ const PART = [       // {21} to {24}
   [PL, 'If what the good Christian says is true, the things he seeks are better than ours. I will go along with this good man.'],
   [O, 'What! More fools still? I will go back to my place.'],
 ];
+// FOR LEVEL 2 (owner, build 68: "pliable's discussion with christian should move to beginning of level 2"). In the book
+// ({25} to {28}) Christian and Pliable "went talking over the plain" after Obstinate has gone back, and that talk ends
+// with both of them falling into the Slough of Despond ({29}). These four lines were said on the road to the gate here
+// until build 67; they are kept in this file, unused, only so that tools/make-voice.py keeps their recordings
+// (assets/voice: Pliable 79435d33 and 8b9d84ab, Christian 6de755c6 and e7e8bfd6). Level 2 should open with them, said
+// while the two walk, and move this list (and the voice tool's reading of it) to wherever Level 2 lives.
+const LEVEL2_OPENING = [
+  [PL, 'Come, neighbor Christian, tell me more of the place where we are going.'],
+  [C, 'There shall be no more crying, nor sorrow. And we shall be given garments that make us shine like the sun.'],
+  [PL, 'Glad am I to hear of these things. Come on, let us mend our pace!'],
+  [C, 'I cannot go so fast as I would, because of this burden that is on my back.'],
+];
 const GATEWORDS = [
   [N, 'At the edge of the city stood a great gate. It was shut.'],
   [N, 'It was heavy. Help Christian push it open.', 'gate'],
@@ -898,7 +916,7 @@ const runNow = () => G.ears || !RUNP.ready ? [RUN, RUN_META] : [RUNP, RUNP_META]
 function coverEars() { if (G.ears) return; if (P.run) poseChange(); G.ears = true; }
 const CHR = [], PLI = [], OBS = [], EVA = [], STD = [], RUN = [], CHR_K = .52, RUN_STEP = RUN_META.vpx * CHR_K, RUNV = RUN_STEP * .4,   // the run at its video's own speed (24 frames a second)
    CHR_STEP = CHR_META.vpx * CHR_K, PLI_STEP = PLI_META.vpx * CHR_K, OBS_STEP = OBS_META.vpx * CHR_K;
-const PACK_V = 9;                          // bump when the .pack files change, so phones fetch the new ones
+const PACK_V = 10;                          // bump when the .pack files change, so phones fetch the new ones
 // a .pack file: 4 bytes = how many frames, 4 bytes per frame = its length, then the WebP frames end to end
 async function loadPack(name, into) {
   const res = await fetch('assets/' + name + '.pack?v=' + PACK_V); if (!res.ok) throw new Error('no ' + name);      // a missing pack is left out
@@ -1089,6 +1107,7 @@ function update() {
   if (P.turnTo && (P.bk || 0) >= .99) { P.face = P.turnTo; P.turnTo = 0; P.wantBack = false; }      // half way through his turn: now he faces the light
   if (P.wantBack && !P.turnTo && (dir > 0 || G.state === 'play')) P.wantBack = false;      // the child holds to run on: he turns away
   P.bk = Math.max(0, Math.min(1, (P.bk || 0) + (P.wantBack && P.stand ? .022 : -.07)));
+  if (G.roll) G.roll.t++; if (G.hint === 'roll' && --G.rollT <= 0) clearHint('roll');
   people(); gather(); motes(); effects(); capTick(); acts(); ambience(); opening();
   if (G.state === 'play') story();
   const target = Math.max(0, Math.min(LEVEL_W - VW, P.x - VW * (G.evanDone ? .38 : .62) + P.face * 40));      // room in front of him, whichever way he is going
@@ -1363,6 +1382,9 @@ function drawRow(cam) {
 const WATCHERS = [['a', 3950], ['b', 4170], ['c', 4420], ['obs', 4650], ['pli', 4730]].map(([key, a]) => ({ key, a, f: -1 }));
 const WATCH_META = { a: {"ax": 67, "ground": 302}, b: {"ax": 73, "ground": 270}, c: {"ax": 76, "ground": 290} };
 const WATCH_IM = {};
+// their movement: a short loop each from a video (assets/neighbor-a/b/c.pack, build 68), 12 pictures a second; until a
+// pack has loaded (or if it is missing) the still picture stands in, breathing
+const WATCH_PACK = { a: [], b: [], c: [] }, WATCH_VMETA = { a: null, b: null, c: null };
 // Still pictures of people are given a slow breath in code, each in its own time (owner, build 65: "should people be
 // animated?"): enough that nobody stands frozen, without a video for every figure.
 const breath = k => 1 + .011 * Math.sin(G.t / 34 + k * 2.4) + .004 * Math.sin(G.t / 13 + k);
@@ -1372,6 +1394,8 @@ function drawWatchers(cam) {
     const im = w.key === 'obs' ? OBS_ST : w.key === 'pli' ? PLI_ST : WATCH_IM[w.key], meta = w.key === 'obs' ? OBS_ST_META : w.key === 'pli' ? PLI_ST_META : WATCH_META[w.key];
     const x = lineUp(w.a, p) - cam * p; if (!im || !meta || x < -120 || x > VW + 120) continue;
     w.f += ((P.x - cam > x ? 1 : -1) - w.f) * .2; const u = (w.f + 1) / 2;      // 0 = facing left, 1 = facing right
+    const vp = WATCH_PACK[w.key], vm = WATCH_VMETA[w.key];
+    if (vp && vp.ready && vm) { const fr = vp[Math.floor(G.t * .2 + w.a) % vp.length]; if (u < .99) drawFrame(fr, vm, x, y, -1, u < .5 ? 1 : 2 * (1 - u), K); if (u > .01) drawFrame(fr, vm, x, y, 1, u < .5 ? 2 * u : 1, K); continue; }
     const sy = breath(w.a);
     if (u < .99) drawFrame(im, meta, x, y, -1, u < .5 ? 1 : 2 * (1 - u), K, sy);
     if (u > .01) drawFrame(im, meta, x, y, 1, u < .5 ? 2 * u : 1, K, sy);
@@ -1477,6 +1501,7 @@ function draw() {
   for (let i = 0; i < 3; i++) {
     const Lr = SCN[i], off = cam * Lr.par;
     pair(Lr.cool, Lr.warm, off, Lr.q, alpha, Lr.top, GY + 2);
+    if (i) { ctx.setTransform(DPR, 0, 0, DPR, 0, 0); drawTrees(i, cam); ctx.setTransform(1, 0, 0, 1, 0, 0); }      // this layer's trees
     // windows lit by a touch
     if (G.litw.length) {
       ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
@@ -1494,7 +1519,6 @@ function draw() {
       if (vis > .01) { ctx.globalAlpha = vis; ctx.globalCompositeOperation = 'screen'; ctx.drawImage(beamC, 0, 0, cv.width, cv.height); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over'; }
     }
   }
-  ctx.setTransform(DPR, 0, 0, DPR, 0, 0); drawFieldTrees(cam); ctx.setTransform(1, 0, 0, 1, 0, 0);
   drawFog(false);      // (the far bank only: FOG[0] is drawn here, FOG[1] after the lane, see below)
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
   // the road and everything on it
@@ -1633,7 +1657,26 @@ function draw() {
     ctx.globalAlpha = Math.min(1, a); ctx.beginPath(); ctx.moveTo(d.x, d.y); ctx.lineTo(d.x - d.l * .2, d.y + d.l); ctx.stroke();
   }
   ctx.globalAlpha = 1;
+  drawItems();
   if (GUIDES) drawGuides();
+}
+// THE THINGS HE CARRIES (owner, build 68: "when scroll is given it goes into items menu (very subtle but cool)"): a very
+// small, quiet tray in the top left corner. His book is there from the first; when Evangelist gives him the roll, a small
+// roll drifts up from Evangelist's hand into the tray (G.roll). Touching the roll shows what is written on it. Later
+// levels can add to the tray the same way. (For later, from the book: the roll he loses at the Arbour is another one,
+// given to him at the Cross.)
+const ITEM_X = 20, ITEM_Y = 18;
+function drawItems() {
+  if (G.state === 'title') return;
+  const c = ctx, quiet = document.body.classList.contains('talking') ? .34 : .55;
+  c.save(); c.strokeStyle = '#eadfc4'; c.lineWidth = 1.3; c.lineJoin = c.lineCap = 'round'; c.globalAlpha = quiet;
+  c.strokeRect(ITEM_X, ITEM_Y, 15, 19); c.beginPath(); c.moveTo(ITEM_X + 3.5, ITEM_Y); c.lineTo(ITEM_X + 3.5, ITEM_Y + 19); c.moveTo(ITEM_X + 7, ITEM_Y + 6); c.lineTo(ITEM_X + 12, ITEM_Y + 6); c.stroke();      // his book
+  if (G.roll) {
+    const u = Math.min(1, G.roll.t / 90), e = u * u * (3 - 2 * u), x = lerp(G.roll.x, ITEM_X + 36, e), y = lerp(G.roll.y, ITEM_Y + 10, e) - Math.sin(Math.PI * e) * 46, k = lerp(1.7, 1, e);
+    c.globalAlpha = lerp(.95, quiet, e); c.translate(x, y); c.scale(k, k);
+    c.strokeRect(-8, -4, 16, 8); c.beginPath(); c.arc(-8, 0, 4, Math.PI / 2, Math.PI * 1.5); c.moveTo(8, -4); c.arc(8, 0, 4, -Math.PI / 2, Math.PI / 2); c.moveTo(-4, -1); c.lineTo(4, -1); c.moveTo(-4, 1.5); c.lineTo(2, 1.5); c.stroke();      // the roll
+  }
+  c.restore();
 }
 // Perspective guides (?lines in the address): the horizon, each level's ground line with a man-high mark standing on it
 // (150 * p tall: Christian's height at that distance), and floor lines running to the vanishing point.
@@ -1673,6 +1716,7 @@ stage.addEventListener('pointerdown', e => {
     next(); return;
   }
   if (G.state !== 'play') return;
+  if (G.roll && G.roll.t > 90 && sx > ITEM_X + 22 && sx < ITEM_X + 54 && sy < ITEM_Y + 30) { hint('roll', 'The roll says: Flee from the wrath to come.'); G.rollT = 260; return; }      // a touch on the roll in the tray
   downs.set(e.pointerId, G.t); touchAt(sx, sy);
 });
 const lift = e => { if (e.type === 'blur') { downs.clear(); pushing = false; return; } downs.delete(e.pointerId); if (e.pointerId === pushId) pushing = false; };
@@ -1727,7 +1771,7 @@ document.getElementById('again').onclick = start;
   document.getElementById('sub').textContent = 'The City of Destruction';
   document.getElementById('open').style.visibility = 'visible';
   requestAnimationFrame(t => { lastT = t; loop(t); });
-  Promise.all([loadPack('evangelist', EVA), loadPack('evangelist-stand', EVS)]).then(() => Promise.all([loadImg('house.webp').then(im => { HOUSE = im && bakeTint(im, HOUSE_DEPTH, HOUSE_DETAIL); }), ...['b', 'c'].map(key => loadImg('house-' + key + '.webp').then(im => { if (im) NB[key] = bakeTint(im, HOUSE_DEPTH, HOUSE_DETAIL); })), ...['a', 'b', 'c'].map(key => loadImg('tree-' + key + '.webp').then(im => { if (im) TREE[key] = bakeTree(im); })), loadImg('family.webp').then(im => { FAM = im; if (im) FAM_SH = mkShadow(im); }), loadImg('wife.webp').then(im => { WIFE = im; if (im) WIFE_SH = mkShadow(im); }), ...['a', 'b', 'c'].map(key => loadImg('neighbor-' + key + '.webp').then(im => { WATCH_IM[key] = im; })), loadImg('christian-back.webp').then(im => { BACK = im; }), loadPack('christian-run', RUN), loadPack('christian-run-plain', RUNP)]))
+  Promise.all([loadPack('evangelist', EVA), loadPack('evangelist-stand', EVS)]).then(() => Promise.all([loadImg('house.webp').then(im => { HOUSE = im && bakeTint(im, HOUSE_DEPTH, HOUSE_DETAIL); }), ...['b', 'c'].map(key => loadImg('house-' + key + '.webp').then(im => { if (im) NB[key] = bakeTint(im, HOUSE_DEPTH, HOUSE_DETAIL); })), ...Object.keys(TREE_META).map(key => loadImg('tree-' + key + '.webp').then(im => { if (im) for (const i of [1, 2]) (TREE[i] = TREE[i] || {})[key] = bakeTree(im, SCN[i].d); })), loadImg('family.webp').then(im => { FAM = im; if (im) FAM_SH = mkShadow(im); }), loadImg('wife.webp').then(im => { WIFE = im; if (im) WIFE_SH = mkShadow(im); }), ...['a', 'b', 'c'].map(key => loadImg('neighbor-' + key + '.webp').then(im => { WATCH_IM[key] = im; })), ...['a', 'b', 'c'].map(key => loadPack('neighbor-' + key, WATCH_PACK[key]).catch(() => {})), loadImg('christian-back.webp').then(im => { BACK = im; }), loadPack('christian-run', RUN), loadPack('christian-run-plain', RUNP)]))
     .then(() => Promise.all([loadPack('obstinate', OBS), loadPack('pliable', PLI), loadImg('obstinate-stand.webp').then(im => { OBS_ST = im; }), loadImg('pliable-stand.webp').then(im => { PLI_ST = im; })]));
   for (const [who, txt] of INTRO) vox(who, txt);          // the first words, ready before Begin is pressed
 })();
