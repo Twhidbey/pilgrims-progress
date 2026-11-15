@@ -70,7 +70,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">story lab · build 35 · Nov 15 2026</div>
+  <div id="build">story lab · build 36 · Nov 15 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -975,13 +975,24 @@ function finish() {
 // ---------- drawing ----------
 // Things on the road are flat shapes a little paler than the road, with a few faint lines so they read as what they are.
 let INK = '#000', HINT = 'rgba(255,255,255,.1)', SETC = '#333', DOORC = '#222';
-// Things on the road are small watercolour pictures (made with Google's image model, flat side views, cut out by
-// tools/cutout.py). Each is baked once in a rain tint and a golden tint (bakeTint), like the scenery layers, and the two
-// are mixed by the weather where the thing stands: no scratch canvas is touched while playing.
-// They are tinted paler than the people (depth .5 against the people's .8) so Christian shows in front of them.
+// Things on the road keep the hand-drawn OUTLINES of small watercolour pictures (made with Google's image model, flat side
+// views, cut out by tools/cutout.py) but are nearly flat inside: one solid tone with only a faint trace of the drawing
+// (owner, build 36: full watercolour things "distract a bit"; mostly opaque, far less detail than the characters).
+// Three levels of detail: people = the full painting; his house = HOUSE_DETAIL of it; things = PROP_DETAIL of it.
+// Each is baked once in a rain tint and a golden tint (bakeTint), like the scenery layers, and the two are mixed by the
+// weather where the thing stands: no scratch canvas is touched while playing. depth .5 keeps them paler than the people (.8).
+const PROP_DETAIL = .2, HOUSE_DETAIL = .65, FLAT_GREY = .56;      // 0 = a flat shape, 1 = the whole painting; FLAT_GREY = the paintings' average tone
 const PROP_META = { barrel: { w: 64, h: 76 }, crates: { w: 96, h: 96 }, cart: { w: 219, h: 84 }, wall: { w: 259, h: 70 }, lamp: { w: 73, h: 205 } }, PROP = {};
-function bakeTint(im, depth) {
-  const one = col => { const c = mk(im.width, im.height), x = c.getContext('2d'); x.drawImage(im, 0, 0); x.globalCompositeOperation = 'multiply'; x.fillStyle = css(col); x.fillRect(0, 0, c.width, c.height); x.globalCompositeOperation = 'destination-in'; x.drawImage(im, 0, 0); return c; };
+function bakeTint(im, depth, detail) {
+  const one = col => {
+    const flat = mk(im.width, im.height), f = flat.getContext('2d');                // the shape in one solid tone
+    f.drawImage(im, 0, 0); f.globalCompositeOperation = 'source-in'; f.fillStyle = css(col.map(v => v * FLAT_GREY)); f.fillRect(0, 0, flat.width, flat.height);
+    if (detail > 0) {                                                                // then that much of the painting over it
+      const c = mk(im.width, im.height), x = c.getContext('2d'); x.drawImage(im, 0, 0); x.globalCompositeOperation = 'multiply'; x.fillStyle = css(col); x.fillRect(0, 0, c.width, c.height); x.globalCompositeOperation = 'destination-in'; x.drawImage(im, 0, 0);
+      f.globalCompositeOperation = 'source-atop'; f.globalAlpha = detail; f.drawImage(c, 0, 0);
+    }
+    return flat;
+  };
   return { cool: one(mix(PAL.hazeC, PAL.nearC, depth)), warm: one(mix(PAL.hazeW, PAL.nearW, depth)) };
 }
 // x = the thing's left edge in the level; it stands on the road line. Drawn inside the scrolled part of draw().
@@ -1258,12 +1269,12 @@ document.getElementById('again').onclick = start;
   const chr = Promise.all([loadPack('christian-walk', CHR), loadPack('christian-stand', STD), ...Object.keys(PROP_META).map(k => loadImg('prop-' + k + '.webp').then(im => { PROP[k] = im; }))]);
   buildScenery(); seed = 99; buildLevel(); bakeFinish();
   await chr;
-  for (const k in PROP) PROP[k] = PROP[k] && bakeTint(PROP[k], .5);
+  for (const k in PROP) PROP[k] = PROP[k] && bakeTint(PROP[k], .5, PROP_DETAIL);
   reset();
   document.getElementById('sub').textContent = 'The City of Destruction';
   document.getElementById('open').style.visibility = 'visible';
   requestAnimationFrame(t => { lastT = t; loop(t); });
-  loadPack('evangelist', EVA).then(() => Promise.all([loadImg('house.webp').then(im => { HOUSE = im && bakeTint(im, .5); }), loadImg('family.webp').then(im => { FAM = im; }), loadPack('christian-run', RUN)]))
+  loadPack('evangelist', EVA).then(() => Promise.all([loadImg('house.webp').then(im => { HOUSE = im && bakeTint(im, .5, HOUSE_DETAIL); }), loadImg('family.webp').then(im => { FAM = im; }), loadPack('christian-run', RUN)]))
     .then(() => Promise.all([loadPack('obstinate', OBS), loadPack('pliable', PLI), loadImg('obstinate-stand.webp').then(im => { OBS_ST = im; }), loadImg('pliable-stand.webp').then(im => { PLI_ST = im; })]));
   for (const [who, txt] of INTRO) vox(who, txt);          // the first words, ready before Begin is pressed
 })();

@@ -192,6 +192,10 @@ The game is `index.html` (one file, no build step). `style-lab.html` is the art-
 - Owner asked "does his face look funny in the game?": checked close up; walking and running his face is only a dark shadow inside the hood, the same in both.
 - Tested in a headless browser with screenshots: whole level plays, both pictures of the run dissolve in and out; no errors. The run was only seen in stills.
 
+## Built Nov 15, 2026 (build 36): quieter things
+- Owner: "I think the items were better not as watercolor, distracts a bit ... mostly opaque and not nearly as much details as characters (and maybe house)". Agreed and done with no new pictures: the things on the road keep their hand-drawn outlines but are one solid tone with a fifth of the drawing showing (`PROP_DETAIL`); the house shows two thirds of its painting (`HOUSE_DETAIL`); people stay full watercolour.
+- Still waiting on the owner's Google credit: a flatter market stall (left out), and the recording of "The burden was heavy. He could not run for long."
+
 ## Open questions for the owner
 0. **Story lab (build 25):** is this the right shape for the game? How does it sound? Is "Go home" a good choice to offer? Should it replace the game now?
 1. How does the game feel on the phone: smooth? Anything hard to see (dark Christian against dark houses, crates, barrels)?
