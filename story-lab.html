@@ -70,7 +70,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">story lab · build 33 · Nov 15 2026</div>
+  <div id="build">story lab · build 34 · Nov 15 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -387,7 +387,7 @@ const BEAT = 58, NOTE = { D: 62, E: 64, G: 67, A: 69, B: 71, d: 74 };
 const PHRASES = [
   { x: 330, at: 0, n: [[0, 'D'], [1, 'G'], [3, 'B'], [3.5, 'G'], [4, 'B'], [6, 'A'], [7, 'G'], [9, 'E'], [10, 'D']] },
   { x: 1400, at: 12, n: [[0, 'D'], [1, 'G'], [3, 'B'], [3.5, 'G'], [4, 'B'], [6, 'A'], [7, 'd']] },
-  { x: 3070, at: 24, n: [[0, 'B'], [1, 'd'], [2.5, 'B'], [3, 'd'], [3.5, 'B'], [4, 'G'], [6, 'D'], [7, 'E'], [8.5, 'G'], [9, 'G'], [9.5, 'E'], [10, 'D']] },
+  { x: 3100, at: 24, n: [[0, 'B'], [1, 'd'], [2.5, 'B'], [3, 'd'], [3.5, 'B'], [4, 'G'], [6, 'D'], [7, 'E'], [8.5, 'G'], [9, 'G'], [9.5, 'E'], [10, 'D']] },
   { x: 4150, at: 36, n: [[0, 'D'], [1, 'G'], [3, 'B'], [3.5, 'G'], [4, 'B'], [6, 'A'], [7, 'G']] },
 ];
 // the whole tune, sung through once when the gate opens, with a low note under each bar
@@ -408,7 +408,7 @@ function buildLevel() {
   for (const [x, y] of [[1440, 60], [1500, 60], [1500, 120]]) DECOR.push({ x, y: GY - y, w: 60, h: 60, k: 'crate' });
   STALL = { x: 1620, y: GY - 128, w: 170 };
   DECOR.push({ x: 2000, y: GY - 66, w: 150, h: 66, k: 'cart' });
-  DECOR.push({ x: 3000, y: GY - 46, w: 520, h: 46, k: 'wall' });
+  DECOR.push({ x: 3090, y: GY - 46, w: 430, h: 46, k: 'wall' });
   for (const [x, y] of [[4300, 60], [4360, 60], [4360, 120], [4420, 60]]) DECOR.push({ x, y: GY - y, w: 60, h: 60, k: 'crate' });
   DECOR.push({ x: 4980, y: GY - 58, w: 48, h: 58, k: 'barrel' });
   // little flocks of birds, sitting on things
@@ -416,7 +416,7 @@ function buildLevel() {
   flock(564, GY - 58, 2); flock(1705, GY - 128, 4); flock(2075, GY - 66, 3); flock(3190, GY - 46, 5); flock(3440, GY - 46, 3); flock(4390, GY - 120, 2); flock(5185, GY - 162, 4);
   // words said while walking (nobody stops)
   CAPS.push({ x: MUD.x + 20, lines: [[N, 'The road turned to deep mud. His burden felt heavier with every step.']] });
-  CAPS.push({ x: 3045, watch: true, lines: [[N, 'People watched from their windows. Some laughed. Some called him back.'], [C, 'I will not stop. I can still see the light.']] });
+  CAPS.push({ x: 3085, watch: true, lines: [[N, 'People watched from their windows. Some laughed. Some called him back.'], [C, 'I will not stop. I can still see the light.']] });
   CAPS.push({ x: 4130, pli: true, lines: [[PL, 'What is it like, the place where we are going?'], [C, 'No one cries there. Everyone shines like the sun.'], [PL, 'Then let us keep walking!']] });
 }
 
@@ -670,7 +670,7 @@ document.getElementById('chOn').onclick = () => pick(false);
 // walking pace = the pace in Christian's video (owner: "keep things slow, I'm going for an atmospheric feel")
 const MAXV = 1.05, MUDV = .6;
 const CHR = [], PLI = [], OBS = [], EVA = [], STD = [], CHR_K = .52, CHR_STEP = CHR_META.vpx * CHR_K, PLI_STEP = PLI_META.vpx * CHR_K, OBS_STEP = OBS_META.vpx * CHR_K;
-const PACK_V = 1;                          // bump when the .pack files change, so phones fetch the new ones
+const PACK_V = 2;                          // bump when the .pack files change, so phones fetch the new ones
 // a .pack file: 4 bytes = how many frames, 4 bytes per frame = its length, then the WebP frames end to end
 async function loadPack(name, into) {
   const buf = await (await fetch('assets/' + name + '.pack?v=' + PACK_V)).arrayBuffer(), dv = new DataView(buf), n = dv.getUint32(0, true);
@@ -833,7 +833,7 @@ function story() {
   if (G.hint !== 'touch' && G.ring && G.state === 'play') G.ring = null;
   if (G.hint === 'touch' && P.x > 560) clearHint('touch');
   if (!G.fam && P.x > HOME_X - 70) { G.fam = 1; sweep(170, 120, .5, .03); sfx.lamp(); }       // the door of his house opens as he passes
-  if (G.fam === 1 && P.x > HOME_X + 40) { G.fam = 2; P.turn = -1; talk(FAMILY, () => { G.gloomTo = 0; }); return; }
+  if (G.fam === 1 && P.x > HOME_X + 92) { G.fam = 2; P.turn = -1; talk(FAMILY, () => { G.gloomTo = 0; }); return; }
   if (!G.evanDone && P.x > EVAN_X - 120) { G.evanDone = true; talk(EVAN, () => { G.evanGone = 1; }); return; }
   for (const c of CAPS) if (!c.done && P.x > c.x && (!c.pli || (G.pli && G.pli.mode === 'follow'))) { c.done = true; caption(c.lines); if (c.watch) G.watch = 520; }
   if (!G.neigh && P.x > NEIGH_X && OBS.ready && PLI.ready) { G.neigh = true; G.obst = { x: G.cam - 80, mode: 'run' }; G.pli = { x: G.cam - 150, mode: 'run' }; }
@@ -846,12 +846,20 @@ function people() {
     o.x += 2.2; p.x += 2.2;                                   // hurrying after him, but still walking
     if (o.x > P.x - 235 && G.state === 'play') { o.mode = p.mode = 'talk'; P.turn = -1; talk(NEIGH, choose); }
   }
-  if (o && o.mode === 'home' && o.x > G.cam - 200) o.x -= 1.25; // his video's own walking pace
+  // Standing (owner: they should stand while talking, not freeze mid-stride): once a walker has come to rest, his painted
+  // standing pose dissolves in (st 0 = walking picture, 1 = standing picture); before he walks again it dissolves out.
+  const rest = (w, meta) => meta.rest.includes(Math.floor(w.anim ?? meta.rest[0]) % meta.frames);
+  if (o) o.st = clamp((o.st || 0) + (o.mode === 'talk' && rest(o, OBS_META) && OBS_ST ? .035 : -.06));
+  if (o && o.mode === 'home' && o.st <= 0 && o.x > G.cam - 200) o.x -= 1.25; // his video's own walking pace
   if (p && p.mode === 'follow') {                             // Pliable keeps a little behind Christian, hurrying only if he falls back
     const gap = (G.leaving ? DOOR1 - 10 : P.x - 70) - p.x;      // at the end he follows Christian in through the gate
     if (G.leaving && gap < 4) { G.leaving = false; finish(); }
     if (gap > 14) p.go = true; if (gap < 1) p.go = false;
-    if (p.go) p.x += Math.min(gap, gap > 46 ? 2 : MAXV);
+  }
+  if (p) {
+    const still = p.mode === 'talk' || (p.mode === 'follow' && !p.go);
+    p.st = clamp((p.st || 0) + (still && rest(p, PLI_META) && PLI_ST ? .035 : -.06));
+    if (p.mode === 'follow' && p.go && p.st <= 0) { const gap = (G.leaving ? DOOR1 - 10 : P.x - 70) - p.x; p.x += Math.min(gap, gap > 46 ? 2 : MAXV); }
   }
   if (o) { o.anim = stepAnim(o.anim ?? OBS_META.rest[0], Math.abs(o.x - (o.px ?? o.x)), OBS_STEP, OBS_META); o.px = o.x; }
   if (p) { p.anim = stepAnim(p.anim ?? PLI_META.rest[0], Math.abs(p.x - (p.px ?? p.x)), PLI_STEP, PLI_META); p.px = p.x; }
@@ -994,33 +1002,32 @@ function lamp(l) {
   c.beginPath(); c.moveTo(x + 14, GY - 118); c.lineTo(x + 26, GY - 118); c.lineTo(x + 24, GY - 101); c.lineTo(x + 16, GY - 101); c.closePath(); c.fill();
   if (l.lit) { c.fillStyle = css(PAL.win, Math.min(1, (G.t - l.lit) / 30)); c.fillRect(x + 17.5, GY - 115.5, 5, 11.5); }
 }
-// Christian's own house, at the back of the road: a tall gabled front, two dim windows, and a door that opens as he passes.
-// His wife and two children stand in the lit doorway: small plain shapes against the light (drawn in code; a painted
-// picture could replace them later).
-function person(c, x, h, arm) {
-  const k = h / 132;
-  c.beginPath(); c.arc(x, GY - 122 * k, 9.5 * k, 0, 6.2832); c.fill();
-  c.beginPath(); c.moveTo(x - 9 * k, GY - 112 * k); c.lineTo(x + 9 * k, GY - 112 * k); c.lineTo(x + 13 * k, GY - 80 * k); c.lineTo(x + 8 * k, GY - 78 * k);
-  c.lineTo(x + 21 * k, GY + 2); c.lineTo(x - 21 * k, GY + 2); c.lineTo(x - 8 * k, GY - 78 * k); c.lineTo(x - 13 * k, GY - 80 * k); c.closePath(); c.fill();
-  if (arm) { c.lineWidth = 5 * k; c.lineCap = 'round'; c.beginPath(); c.moveTo(x + 8 * k, GY - 106 * k); c.quadraticCurveTo(x + 22 * k, GY - 104 * k, x + 34 * k, GY - 118 * k + Math.sin(G.t / 26 + x) * 3 * k); c.stroke(); }
+// Christian's own house, at the back of the road. The house is a design made with Google's image model as a flat black
+// shape with holes for the door and windows (assets/house.webp); here it is one colour like every other layer, tinted for the
+// weather. The door opens as he passes: warm light inside, and his wife and two children on the step (assets/family.webp,
+// a watercolour made the same way as the other people, tinted by drawFrame).
+const HOUSE_META = {"w": 528, "h": 415, "door": [204.8, 269.1, 79.2, 146.0], "wins": [[222.1, 123.7, 37.1, 53.8], [350.2, 128.7, 31.6, 19.2], [347.1, 150.3, 34.0, 32.8], [358.2, 276.5, 48.3, 61.2]]};
+const HOME_L = HOME_X - HOUSE_META.door[0] - HOUSE_META.door[2] / 2, FAM_META = {"ax": 93, "ground": 254}, OBS_ST_META = {"ax": 89, "ground": 311}, PLI_ST_META = {"ax": 67, "ground": 302};
+let HOUSE = null, FAM = null, OBS_ST = null, PLI_ST = null;
+const loadImg = name => fetch('assets/' + name + '?v=' + PACK_V).then(r => r.blob()).then(toImage);
+function bakeHouse(im) {                   // the stencil in its rain colour and its golden colour, like the scenery layers
+  const tint = col => { const c = mk(im.width, im.height), x = c.getContext('2d'); x.drawImage(im, 0, 0); x.globalCompositeOperation = 'source-in'; x.fillStyle = css(col); x.fillRect(0, 0, c.width, c.height); return c; };
+  const col = layerCol(.66); HOUSE = { cool: tint(col[0]), warm: tint(col[1]) };
 }
-function home() {
-  const c = ctx, x = HOME_X, o = G.door, e = o * o * (3 - 2 * o), dx = x - 40, dw = 80, dt = GY - 176, wm = warm((x - G.cam) / VW);
-  c.fillStyle = SETC;
-  c.beginPath(); c.moveTo(x - 150, GY + 2); c.lineTo(x - 150, GY - 215); c.lineTo(x - 163, GY - 215); c.lineTo(x, GY - 332); c.lineTo(x + 163, GY - 215); c.lineTo(x + 150, GY - 215); c.lineTo(x + 150, GY + 2); c.closePath(); c.fill();
-  c.fillRect(x + 78, GY - 322, 22, 72); c.fillRect(x + 75, GY - 326, 28, 6);
-  c.fillStyle = css(PAL.win, .5 * lerp(1, .4, wm)); c.fillRect(x - 112, GY - 160, 30, 40); c.fillRect(x + 84, GY - 160, 30, 40);
-  c.strokeStyle = HINT; c.lineWidth = 1.4; c.beginPath(); c.moveTo(x - 97, GY - 160); c.lineTo(x - 97, GY - 120); c.moveTo(x + 99, GY - 160); c.lineTo(x + 99, GY - 120); c.moveTo(x - 150, GY - 215); c.lineTo(x + 150, GY - 215); c.stroke();
-  // the doorway: warm light inside, the family in it, and the door swung back against the left
-  c.fillStyle = DOORC; c.fillRect(dx, dt, dw, 178);
+function home(cam) {                       // drawn in screen units, before the road
+  if (!HOUSE) return;
+  const c = ctx, M = HOUSE_META, x = HOME_L - cam, y = GY + 2 - M.h, o = G.door, e = o * o * (3 - 2 * o), wm = warm((HOME_X - cam) / VW);
+  const [dx, dy, dw, dh] = M.door, dark = css(mix(layerCol(.9)[0], layerCol(.9)[1], wm));
+  // behind the stencil: dim light in the windows, and the doorway (dark, then warm light as the door swings back to the left)
+  c.fillStyle = css(PAL.win, .55 * lerp(1, .4, wm)); for (const w of M.wins) c.fillRect(x + w[0] - 2, y + w[1] - 2, w[2] + 4, w[3] + 4);
+  c.fillStyle = dark; c.fillRect(x + dx - 2, y + dy - 2, dw + 4, dh + 4);
   if (e > 0) {
-    c.save(); c.beginPath(); c.rect(dx, dt, dw, 178); c.clip();
-    const g = c.createRadialGradient(x + 6, GY - 90, 0, x + 6, GY - 90, 150); g.addColorStop(0, css(PAL.light, .95 * e)); g.addColorStop(1, css(PAL.win, .75 * e)); c.fillStyle = g; c.fillRect(dx, dt, dw, 178);
-    c.globalAlpha = e; c.fillStyle = c.strokeStyle = css(mix(PAL.nearC, PAL.nearW, wm));
-    person(c, x + 2, 132, true); person(c, x - 20, 78, false); person(c, x + 24, 60, true);
-    c.globalAlpha = 1; c.restore();
-    c.fillStyle = DOORC; c.fillRect(dx, dt, dw * (1 - .86 * e), 178);
+    const g = c.createRadialGradient(x + dx + dw * .55, GY - 80, 0, x + dx + dw * .55, GY - 80, 140); g.addColorStop(0, css(PAL.light, .95 * e)); g.addColorStop(1, css(PAL.win, .8 * e));
+    c.fillStyle = g; c.fillRect(x + dx - 2, y + dy - 2, dw + 4, dh + 4);
+    c.fillStyle = dark; c.fillRect(x + dx - 2, y + dy - 2, (dw + 4) * (1 - .86 * e), dh + 4);
   }
+  c.drawImage(HOUSE.cool, x, y, M.w, M.h); if (wm > .01) { c.globalAlpha = wm; c.drawImage(HOUSE.warm, x, y, M.w, M.h); c.globalAlpha = 1; }
+  if (e > .3) drawFrame(FAM, FAM_META, HOME_X + 4 - cam, GY - FEET_SINK - 1, 1, smooth(.3, 1, e));   // on the step, in front of the wall
 }
 function gate() {                          // the city gate: two towers and an arch, a little paler than the road so Christian shows against it
   const c = ctx; c.fillStyle = SETC;
@@ -1100,12 +1107,12 @@ function draw() {
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
   // the road and everything on it
   const gcol = layerCol(1), wAt = x => warm((x - cam) / VW), on = (x, w = 0, m = 80) => x < cam + VW + m && x + w > cam - m;
+  if (on(HOME_L, HOUSE_META.w)) home(cam);
   ctx.save(); ctx.translate(-cam, 0);
   const grad = hGrad(ctx, gcol[0], gcol[1], 1, 1, cam);
   INK = grad; SETC = hGrad(ctx, ...layerCol(.66), 1, 1, cam); DOORC = hGrad(ctx, ...layerCol(.86), 1, 1, cam);
   HINT = hGrad(ctx, PAL.hazeC, PAL.hazeW, .13, .17, cam);
   if (on(5120, 420)) { doors(); gate(); }
-  if (on(HOME_X - 165, 330)) home();
   if (on(STALL.x, STALL.w)) stall(STALL);
   for (const b of DECOR) if (on(b.x, b.w)) thing(b);
   for (const l of LAMPS) if (on(l.x, 30)) lamp(l);
@@ -1141,8 +1148,11 @@ function draw() {
   ctx.restore();
   // the people
   if (Math.abs(G.evan.x - cam - VW / 2) < VW) { const t = G.evan.pt ? (G.evan.pt < 239 ? G.evan.pt : 212 + 27 * (.5 + .5 * Math.sin(G.t / 50))) : G.evan.idle || 0; drawFrame(EVA[atTime(EVA_META, t)], EVA_META, G.evan.x - cam, GY, 1, 1); }
-  if (G.obst && G.obst.x > cam - 100) drawFrame(OBS[Math.floor(G.obst.anim ?? OBS_META.rest[0]) % OBS.length], OBS_META, G.obst.x - cam, GY, G.obst.mode === 'home' ? -1 : 1, 1);
-  if (G.pli) figure(G.pli.x, a => drawFrame(PLI[Math.floor(G.pli.anim ?? 0) % PLI.length], PLI_META, G.pli.x - cam, GY, 1, a));
+  // a walker: his walking frame, with his standing pose dissolving over it when he has stopped (first the standing pose
+  // comes in on top, then the walking one goes: the background never shows through him)
+  const walker = (w, fr, meta, stIm, stMeta, face, a) => { const st = w.st || 0; if (st < 1) drawFrame(fr, meta, w.x - cam, GY, face, a * (st < .5 ? 1 : 2 * (1 - st))); if (st > 0) drawFrame(stIm, stMeta, w.x - cam, GY, 1, a * (st < .5 ? 2 * st : 1)); };
+  if (G.obst && G.obst.x > cam - 100) walker(G.obst, OBS[Math.floor(G.obst.anim ?? OBS_META.rest[0]) % OBS.length], OBS_META, OBS_ST, OBS_ST_META, G.obst.mode === 'home' ? -1 : 1, 1);
+  if (G.pli) figure(G.pli.x, a => walker(G.pli, PLI[Math.floor(G.pli.anim ?? 0) % PLI.length], PLI_META, PLI_ST, PLI_ST_META, 1, a));
   figure(P.x, a => drawChristian(P.x - cam, P.y + 1, P.face, a));
   // birds in the air
   ctx.lineCap = 'round'; ctx.strokeStyle = css(mix(gcol[0], gcol[1], warm(.5)), .9);
@@ -1267,7 +1277,8 @@ document.getElementById('again').onclick = start;
   document.getElementById('sub').textContent = 'The City of Destruction';
   document.getElementById('open').style.visibility = 'visible';
   requestAnimationFrame(t => { lastT = t; loop(t); });
-  loadPack('evangelist', EVA).then(() => Promise.all([loadPack('obstinate', OBS), loadPack('pliable', PLI)]));
+  loadPack('evangelist', EVA).then(() => Promise.all([loadImg('house.webp').then(bakeHouse), loadImg('family.webp').then(im => { FAM = im; })]))
+    .then(() => Promise.all([loadPack('obstinate', OBS), loadPack('pliable', PLI), loadImg('obstinate-stand.webp').then(im => { OBS_ST = im; }), loadImg('pliable-stand.webp').then(im => { PLI_ST = im; })]));
   for (const [who, txt] of INTRO) vox(who, txt);          // the first words, ready before Begin is pressed
 })();
 </script>
