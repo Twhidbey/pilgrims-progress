@@ -4,6 +4,8 @@ The game is `index.html` (one file, no build step). `style-lab.html` is the art-
 
 ## START HERE (written at build 41, updated at build 43, Nov 15 2026, for a new chat)
 
+**Build 109: the far oak stands in the lowland mist; Christian turns to look before the light can be touched; "began to run" is said before the run (see `CLAUDE.md`, build 109). Nothing spent.**
+
 **Build 108: the gate's "Help Christian push it open" is no longer said by the storyteller; it is a quiet side message (rule in `CLAUDE.md`, build 108). Nothing spent.**
 
 **Build 107: the owner's seven points (four for Level 1, three for Level 2), all done, nothing spent (see "Build 107" in `CLAUDE.md`).** Waiting on the owner to play it, on the iPhone especially (text size, no running on its own). Tell them the run now drops to a walk while the storyteller finishes, which they did not ask for.

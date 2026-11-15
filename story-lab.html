@@ -70,7 +70,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">story lab · build 108 · Nov 15 2026</div>
+  <div id="build">story lab · build 109 · Nov 15 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -284,16 +284,19 @@ function bakeTree(im, d) {
 let FAR_OAK = null;
 function drawFarSlough(cam) {
   const a = 1 - smooth(900, 2400, cam); if (a < .01 || typeof SL === 'undefined' || !SL.oakPic) return;
-  const L0 = SCN[0], lx = 905, x = lx - cam * L0.par, y = L0.gy(lx) + 9, c = ctx, wm = warm(x / VW);
+  // build 109 (owner: "not realistic (it's not on a hill but in lowlands of mud)"): it stood on the far skyline, so it read as
+  // a tree on a hilltop. Its foot is now well down in the flat land beyond the city (LOW below the far ridge), hidden behind
+  // the far rooftops in a wide, flat bank of low mist: only its bare crown rises out of the mist, far off on the plain.
+  const LOW = 34, L0 = SCN[0], lx = 905, x = lx - cam * L0.par, y = L0.gy(lx) + 9 + LOW, c = ctx, wm = warm(x / VW);
   const far = mix(layerCol(0)[0], layerCol(0)[1], wm), dark = mix(far, mix(PAL.nearC, PAL.nearW, wm), .22);
   if (!FAR_OAK) { FAR_OAK = SL.oakPic([255, 255, 255], .25); const t = mk(FAR_OAK.c.width, FAR_OAK.c.height); FAR_OAK.t = t; }
   // the mist lying in the hollow, and still water catching the light
   const mist = (rx, ry, al) => { const g = c.createRadialGradient(0, 0, 0, 0, 0, 1); g.addColorStop(0, css(mix(PAL.hazeC, PAL.light, .3), al * a)); g.addColorStop(.55, css(mix(PAL.hazeC, PAL.light, .15), al * .55 * a)); g.addColorStop(1, css(PAL.hazeC, 0)); c.save(); c.translate(x - 6, y - 3); c.scale(rx, ry); c.fillStyle = g; c.fillRect(-1, -1, 2, 2); c.restore(); };
-  mist(210, 20, .55);
+  mist(420, 16, .6);      // a long flat bank of mist lying on the plain
   // the oak, in the far hills' colour, a little deeper so it reads
   const b = FAR_OAK, tc = b.t.getContext('2d'); tc.globalCompositeOperation = 'source-over'; tc.clearRect(0, 0, b.t.width, b.t.height); tc.drawImage(b.c, 0, 0); tc.globalCompositeOperation = 'source-in'; tc.fillStyle = css(dark); tc.fillRect(0, 0, b.t.width, b.t.height);
   const s = 34 / (b.c.height / b.k); c.globalAlpha = .85 * a; c.drawImage(b.t, x + b.x0 * s, y - 3 + b.y0 * s, b.c.width / b.k * s, b.c.height / b.k * s); c.globalAlpha = 1;
-  mist(150, 9, .6);      // and mist again over its foot, so it stands IN the mist, as in Level 2
+  mist(300, 14, .75);      // and mist again over its foot and trunk, so it stands IN the mist, as in Level 2
   c.fillStyle = css(PAL.light, .35 * a); for (const [dx, dy, w] of [[-70, 1, 22], [-28, 3, 34], [30, 2, 20], [70, 4, 16]]) c.fillRect(x + dx, y + dy, w, .7);      // glints of still water in it
 }
 function drawTrees(i, cam) {
@@ -921,7 +924,7 @@ const EVAN = [       // {13} to {17}
   [C, 'Where must I flee?'],
   [E, 'Do you see that wicket gate, far over the wide field?', 0, () => { G.evan.go = true; }],      // "pointing with his finger over a very wide field"
   [C, 'No.'],
-  [E, 'Do you see that shining light?', 'light'],
+  [E, 'Do you see that shining light?', 'light', () => turnToLight()],      // build 109: he turns to look first; the light can be touched once he has turned
   [C, 'I think I do.'],
   [E, 'Keep that light in your eye, and go straight up to it. Then you will see the gate. Knock, and you will be told what to do.'],
 ];
@@ -1226,7 +1229,12 @@ function touchExtra(sx, sy, wx) {
 // frame already faces the way it should, so it is drawn unmirrored; 4 pictures a second, the video's own pace, about
 // 7 seconds). He turns away from us: halfway, his back and the burden face us. Without the pack, the old dissolve.
 let TURN = []; const TURN_META = {"ax": 90, "ground": 302, "frames": 30, "step": 4 / 60};
-function lightTouched() { G.flare = 1.2; sfx.chord(); if (TURN.ready && P.stand && P.face < 0) P.turnV = { t: 0 }; else if (BACK && P.stand && P.face < 0) { P.turnTo = 1; P.wantBack = true; } else P.turn = 1; next(true); }
+// BUILD 109 (owner: "shouldn't christian turn to see where evangelist is pointing before viewer can click and he says I
+// think i do"): on "Do you see that shining light?" he turns round to look where Evangelist points (turnToLight); only
+// when he has turned (turnedToLight) can the light be touched, and then he answers "I think I do."
+function turnToLight() { if (P.face > 0) return; if (TURN.ready && P.stand) P.turnV = { t: 0 }; else if (BACK && P.stand) { P.turnTo = 1; P.wantBack = true; } else P.turn = 1; }
+const turnedToLight = () => P.face > 0 && !P.turnV && !P.turnTo && !P.turn;
+function lightTouched() { if (!turnedToLight()) return; G.flare = 1.2; sfx.chord(); next(true); }
 function gateOpened() {
   G.gateOpen = 1; G.flare = 1.3; sfx.open(); G.finale = { t: -50, i: 0, bar: 0 };
   next(true);       // the words are finished: on through the gate
@@ -1294,7 +1302,7 @@ function story() {
   // him with his wife and children in its light (owner, build 60: "how do we know it's his?"); it shuts as he walks away.
   if (!G.doorShut && !G.evanDone && P.x < START_X - 45) { G.doorShut = true; sweep(150, 95, .5, .03); hiss(140, .8, .06, .14, 'lowpass', .45); }
   if (!G.outSaid && !G.evanDone && P.x < FIELD_END - 60) { G.outSaid = true; caption(FIELDS); }      // out of the street, into the field
-  if (!G.evanDone && P.x < EVAN_X + 200) { G.evanDone = true; talk(EVAN, () => { G.evanGone = 1; G.runZone = true; G.idle = 0; caption(RUNS); }); return; }   // "So I saw in my dream that the man began to run"
+  if (!G.evanDone && P.x < EVAN_X + 200) { G.evanDone = true; talk(EVAN, () => { G.evanGone = 1; talk(RUNS.map(l => [l[0], l[1]]), () => { G.runZone = true; G.idle = 0; }); }); return; }      // build 109 (owner): "began to run" is said in full before the child can run   // "So I saw in my dream that the man began to run"
   if (G.runZone && !P.run && G.idle === 110) hint('walk', 'Hold to run.');
   for (const c of CAPS) if (!c.done && P.x > c.x && (!c.pli || (G.pli && G.pli.mode === 'follow'))) { c.done = true; caption(c.lines); if (c.watch) G.watch = 520; }
   if (G.fam === 2 && !G.watched && P.x > WATCH_X) { G.watched = true; caption(WATCH); G.watch = 520; }      // the neighbours come out to see him run
@@ -1398,6 +1406,7 @@ function opening() {
 function acts() {
   if (G.state !== 'dialog' || !G.act) return;
   G.actT++;
+  if (G.act === 'light' && !turnedToLight()) G.actT = Math.min(G.actT, 60);      // the hint waits until he has turned
   if (G.act === 'light' && G.actT === 150) { dMore.textContent = 'touch the light ✦'; G.ring = () => { const l = lightPos(); return [l.x, l.y]; }; }
   if (G.act === 'walkon') {                                  // heavy steps away from his own door
     if (G.actT === 70) { dMore.textContent = 'hold to run on ✦'; G.ring = () => [P.x + 130 - G.cam, GY - 70]; }
