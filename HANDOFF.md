@@ -147,6 +147,9 @@ The game is `index.html` (one file, no build step). `style-lab.html` is the art-
 ## Built Nov 15, 2026 (build 28)
 - Owner: "make rain sound slightly quieter". Rain loudness is now one number, `RAIN_VOL` in `story-lab.html` (.05 to .032, about a third quieter).
 
+## Built Nov 15, 2026 (build 29)
+- Owner: "sometimes we accidentally skip to the next speech, how do we go back (or is this prevented)?" Chosen: prevent it. A tap does nothing until the line has been spoken; "tap ▸" only appears then. Lines heard once can be skipped on a second walk. No back button (it would add a control on the scene). If the owner wants more: a "say it again" tap on the speaker's name, or lines moving on by themselves like a film.
+
 ## Open questions for the owner
 0. **Story lab (build 25):** is this the right shape for the game? How does it sound? Is "Go home" a good choice to offer? Should it replace the game now?
 1. How does the game feel on the phone: smooth? Anything hard to see (dark Christian against dark houses, crates, barrels)?

@@ -31,6 +31,7 @@ button{font-family:Georgia,'Times New Roman',serif;-webkit-appearance:none;appea
 #dlg.hint .txt{font-style:italic;color:rgba(244,236,220,.85)}
 #dlg .more{position:absolute;right:1.2%;bottom:6%;font-size:clamp(11px,1.6vw,15px);color:rgba(244,236,220,.7)}
 #dlg.cap .more,#dlg.cap .say{display:none}
+#dlg.wait .more{visibility:hidden}
 #dlg.act .more{color:#e8c27c;font-style:italic;animation:glowtxt 2.2s ease-in-out infinite}
 #dlg .say.off{opacity:.3}
 #dlg .say{position:absolute;right:.6%;top:8%;border:none;background:none;font-size:clamp(15px,2.4vw,22px);cursor:pointer;padding:.1em;opacity:.85;pointer-events:auto}
@@ -67,7 +68,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">story lab · build 28 · Nov 15 2026</div>
+  <div id="build">story lab · build 29 · Nov 15 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -535,6 +536,7 @@ function reset() {
 // caption(): words said while walking; they pass on their own. hint(): a quiet prompt that stays until it is done.
 const dlg = document.getElementById('dlg'), dWho = dlg.querySelector('.who'), dTxt = dlg.querySelector('.t'), dMore = dlg.querySelector('.more');
 let lines = [], li = 0, after = null;
+const HEARD = new Set();                   // lines already heard to the end (they can be skipped next time)
 const C = 'Christian', E = 'Evangelist', N = '', O = 'Obstinate', PL = 'Pliable';
 function words(who, txt, cls) {
   dWho.textContent = who; dTxt.textContent = txt; dlg.className = 'on ' + cls;
@@ -542,13 +544,18 @@ function words(who, txt, cls) {
   if (!cls.includes('hint')) say(who, txt); else hush();
 }
 function talk(arr, then) {
-  lines = arr; li = 0; after = then; G.state = 'dialog'; G.capQ.length = 0; G.cap = 0; G.hint = null; G.guard = 20;
+  lines = arr; li = 0; after = then; G.state = 'dialog'; G.capQ.length = 0; G.cap = 0; G.hint = null;
   document.body.classList.add('talking'); document.body.classList.remove('capped'); show();
 }
 function show() {
   const [who, txt, act, fn] = lines[li];
   G.act = act || null; G.actT = 0; G.ring = null; dMore.textContent = act ? '' : 'tap ▸';
-  words(who, txt, act ? 'act' : ''); if (fn) fn();
+  // No skipping by accident: a line cannot be tapped away until it has been spoken (say() sets the real length once the
+  // recording starts; without a recording, a short reading time). "tap ▸" only shows when the line is ready to move on.
+  // A line already heard once (walking again) can be tapped straight through.
+  const heard = HEARD.has(who + '|' + txt);
+  G.guard = heard ? 20 : 45 + txt.length * 2; G.guardKey = who + '|' + txt;
+  words(who, txt, (act ? 'act' : '') + (heard || act ? '' : ' wait')); if (fn) fn();
 }
 function next(force) {
   if (G.state !== 'dialog' || (!force && (G.act || G.guard > 0))) return;
@@ -579,6 +586,7 @@ async function say(who, txt) {
   if (!buf || me !== sayN) return;
   voxSrc = AC.createBufferSource(); voxSrc.buffer = buf; voxSrc.connect(VOICEG); voxSrc.start();
   if (G.cap > 0) G.cap = Math.max(G.cap, Math.ceil(buf.duration * 60) + 50);     // words said while walking stay until they have been spoken
+  else if (G.state === 'dialog' && G.guardKey === who + '|' + txt && !HEARD.has(G.guardKey)) G.guard = Math.ceil(buf.duration * 60) + 12;   // and a line cannot be skipped while it is being spoken
 }
 // fetch every line's recording quietly, in story order, while the child is already playing
 async function fetchVoices() {
@@ -770,7 +778,7 @@ function gateOpened() {
 // ---------- every tick ----------
 function update() {
   G.t++;
-  if (G.guard > 0) G.guard--;
+  if (G.guard > 0 && --G.guard === 0 && G.state === 'dialog') { dlg.classList.remove('wait'); HEARD.add(G.guardKey); }
   G.flare *= .975; G.gloom += (G.gloomTo - G.gloom) * .02;
   // Evangelist: only the calm start of his video while he waits (a slow breath). On "Do you see that shining light?"
   // he turns all the way round toward the light and raises his arm (video 46..239 at its own pace), and stays pointing.
