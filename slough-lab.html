@@ -20,7 +20,7 @@ a{color:#d9b77c}
 </style>
 </head>
 <body>
-<div id="top"><div id="frame"><canvas id="cv"></canvas><div id="build">slough lab · build 51 · Nov 15 2026</div></div></div>
+<div id="top"><div id="frame"><canvas id="cv"></canvas><div id="build">slough lab · build 52 · Nov 15 2026</div></div></div>
 <div id="panel">
   <div class="row" id="shots"></div>
   <div class="row"><button id="new">Another oak</button></div>
@@ -110,8 +110,9 @@ function oak(seed, hero = true, depth = 4) {
   limb(-4, 2, -.74, 250, 24); limb(0, 0, -.1, 236, 22); limb(4, 2, .54, 262, 24);
   limb(9, 14, 1.24, 304, 23, { w0: 44 });
   // roots gripping the bank
-  grow(-22, -22, -2.3, 92, 14, 0, { wander: .16, elbow: 0, taper: .9, w0: 40, guide: t => lerp(-2.5, -1.72, t * 2) }); grow(24, -22, 2.3, 104, 14, 0, { wander: .16, elbow: 0, taper: .9, w0: 40, guide: t => lerp(2.5, 1.7, t * 2) });
-  grow(4, -14, 2.6, 58, 12, 0, { wander: .16, elbow: 0, taper: .9, w0: 30, guide: t => lerp(2.8, 1.9, t * 2) });
+  // (each root starts deep inside the trunk, so its square end never shows as a notch on the trunk's edge)
+  grow(-2, -30, -2.4, 112, 14, 0, { wander: .12, elbow: 0, taper: .9, w0: 40, guide: t => lerp(-2.5, -1.72, t * 2) });
+  grow(4, -30, 2.4, 124, 14, 0, { wander: .12, elbow: 0, taper: .9, w0: 40, guide: t => lerp(2.5, 1.7, t * 2) });
   return out;
 }
 function ribbons(c, tree) {
