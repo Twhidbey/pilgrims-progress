@@ -68,7 +68,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">story lab · build 69 · Nov 15 2026</div>
+  <div id="build">story lab · build 70 · Nov 15 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -1435,14 +1435,15 @@ function home(cam) {                       // drawn in screen units, before the 
     c.fillStyle = dark; c.fillRect(x + dx - 2, y + dy - 2, (dw + 4) * (1 - .86 * e), dh + 4);
   }
   c.drawImage(HOUSE.cool, x, y, M.w * k, M.h * k); if (wm > .01) { c.globalAlpha = wm; c.drawImage(HOUSE.warm, x, y, M.w * k, M.h * k); c.globalAlpha = 1; }
-  const stepY = L.base - 2;      // the top of the doorstep: whoever is in the door stands on it
+  const stepY = L.base;      // the top of the doorstep: whoever is in the door stands on it
   const alone = !G.fam && WIFE && WIFE_META;      // at the opening only his wife stands in the door (owner, build 62)
   if (e > .3) drawFrame(alone ? WIFE : FAM, alone ? WIFE_META : FAM_META, doorX(cam) + (alone ? 8 : 2), stepY + 2 - FEET_SINK, G.fam ? 1 : -1, smooth(.3, 1, e),      // at the start they look after him, to the left
     CHR_K * .93 * HOUSE_K * L.k, breath(7));   // on the step, in front of the wall
   // the doorstep: a stone sill across the foot of the doorway, a little wider than the door, its top edge catching the
   // light; feet stand on it (owner, build 69: his wife's foot "doesn't look right" at the bottom of the door)
-  c.fillStyle = dark; c.fillRect(x + dx - 7, stepY, dw + 14, L.base + 4 - stepY);
-  if (e > 0) { c.fillStyle = css(PAL.win, .55 * e); c.fillRect(x + dx - 7, stepY, dw + 14, 1.2); }
+  // (kept slight: owner, "mantle can be subtle")
+  c.globalAlpha = .7; c.fillStyle = dark; c.fillRect(x + dx - 4, stepY, dw + 8, L.base + 3 - stepY); c.globalAlpha = 1;
+  if (e > 0) { c.fillStyle = css(PAL.win, .28 * e); c.fillRect(x + dx - 4, stepY, dw + 8, 1); }
 }
 function gate() {                          // the city gate: two towers and an arch, a little paler than the road so Christian shows against it
   const c = ctx; c.fillStyle = SETC;
