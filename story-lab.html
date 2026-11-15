@@ -68,7 +68,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">story lab · build 52 · Nov 15 2026</div>
+  <div id="build">story lab · build 53 · Nov 15 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -212,46 +212,93 @@ function fence(x0, gy, n) {
   }
 }
 
-// ---------- the wheat field (builds 48, 49) ----------
-// The level opens in a field of wheat, drawn in code like the rest of the scenery. Three layers, each ONE solid shape in
-// one tone with a fine fringe of ears along its top, each on its own depth by the perspective rule (owner, build 49):
-//   a far layer that stands still;  a middle layer that moves a little in the wind;  a near, dark layer that stands
-//   still in front of Christian and hides his legs, so he wades through the crop.
-// Nothing bows or parts where he walks. (Tried and dropped: single stalks, "individual strands look unrealistic"; a
-// lively parting, "trying too hard ... think simplicity and elegant effects, not overdoing it"; a soft dip where he
-// passed, "the current bump down looks kinda strange".)
-// Rows: [p (depth), height, tone (layerCol), in front of him?, how much the wind moves it].
+// ---------- the wheat field (builds 48 to 51) ----------
+// The level opens in a field of wheat, drawn in code like the rest of the scenery. Three layers (owner, build 49): a far
+// one that stands still, a middle one that moves a little, a near one that stands still in front of Christian and hides
+// his legs. Nothing bows or parts where he walks.
+// What wheat looks like (build 51, after the owner asked for a look at the real thing): it is the PALEST thing on the
+// ground, an even-topped canopy with a soft, feathery top (the awns), and what the eye reads as "wind in the wheat" is
+// mostly LIGHT: bands of brighter and duller crop that travel across the field as the stalks lean (the Japanese call it
+// honami). So each layer is one pale shape with a soft bristled top, the dark figures wade through it, and on the middle
+// layer slow bands of light drift with the wind while its top leans a little with them.
+// (Tried and dropped: single stalks, "individual strands look unrealistic"; a lively parting, "trying too hard ...
+// think simplicity and elegant effects"; a soft dip where he passed, "looks kinda strange"; dark hedge-like rows.)
+// Rows: [p (depth), height, tone (layerCol: lower = paler), in front of him?, moved by the wind?].
 const WHEAT = [], WHEAT_GAP = 3;
 function buildWheat() {
   const Rw = rng(4177); WHEAT.length = 0;
-  for (const [p, h, d, front, wind] of [[.9, 62, .72, 0, 0], [.96, 78, .84, 0, 1], [1.075, 58, 1, 1, 0]]) {
+  for (const [p, h, d, front, wind] of [[.9, 60, .4, 0, 0], [.96, 74, .52, 0, 1], [1.075, 56, .78, 1, 0]]) {
     const x1 = 325 + (FIELD_END - 325) * p, n = Math.ceil((x1 + 30) / WHEAT_GAP), hs = new Float32Array(n), ph = new Float32Array(n), o = Rw() * 99;
     for (let i = 0; i < n; i++) {
       const x = -30 + i * WHEAT_GAP;                         // a crop stands even-topped: slow swells, no ragged stalks
-      hs[i] = h * (.94 + .04 * Math.sin(x * .017 + o) + .02 * Math.sin(x * .049 + o * 2)) * smooth(x1, x1 - 330 * p, x); ph[i] = Rw();
+      ph[i] = Rw(); hs[i] = (h * (.94 + .04 * Math.sin(x * .017 + o) + .02 * Math.sin(x * .049 + o * 2)) + ph[i] * 2.5) * smooth(x1, x1 - 330 * p, x);
     }
-    WHEAT.push({ p, d, front, wind, n, base: HORIZON + 140 * p + 3, h: hs, ph });
+    WHEAT.push({ p, d, front, wind, n, h0: h, base: HORIZON + 140 * p + 3, h: hs, ph });
   }
 }
 // the wind in the middle layer: long slow waves running with the rain (a lean, 0 = upright)
-const wheatWind = (x, t) => .075 * Math.sin(x * .0075 + t * .017) + .025 * Math.sin(x * .019 + t * .031);
+const wheatWind = (x, t) => .07 * Math.sin(x * .0075 + t * .017) + .025 * Math.sin(x * .019 + t * .031);
 function drawWheat(front) {
   const cam = G.cam, c = ctx; if (cam > FIELD_END + 200) return;
   c.lineCap = 'round';
   for (const r of WHEAT) {
     if (!!r.front !== front) continue;
-    const { h, ph, p, base } = r, off = cam * p + 30, col = layerCol(r.d), dk = r.front ? .4 : 0;
+    const { h, ph, p, base } = r, off = cam * p + 30, col = layerCol(r.d);
     const i0 = Math.max(0, Math.floor((off - 70) / WHEAT_GAP)), i1 = Math.min(r.n, Math.ceil((off + VW + 70) / WHEAT_GAP)); if (i1 - i0 < 2) continue;
-    const body = new Path2D(), ears = new Path2D(); body.moveTo(i0 * WHEAT_GAP - off, base + 4);
+    const body = new Path2D(), awns = new Path2D(); body.moveTo(i0 * WHEAT_GAP - off, base + 4);
     for (let i = i0; i < i1; i++) {
       const sx = i * WHEAT_GAP - off, hh = h[i]; if (hh < 1) { body.lineTo(sx, base + 4); continue; }
       const a = -.08 + (r.wind ? wheatWind(i * WHEAT_GAP, G.t) : 0), bx = sx + a * hh, by = base - hh;
       body.lineTo(bx, by);
-      const el = (4 + 4 * ph[i]) * p * Math.min(1, hh / 30); ears.moveTo(bx, by + 1); ears.lineTo(bx + a * 1.6 * el, by - el);
+      const k = Math.min(1, hh / 30) * p, el = (7 + 7 * ph[i]) * k, sp = (ph[i] - .5) * 5 * k;      // the soft top: fine awns, fanned a little
+      awns.moveTo(bx, by + 2); awns.lineTo(bx + a * 2 * el + sp, by - el); awns.moveTo(bx + 1.5, by + 2); awns.lineTo(bx + 1.5 + a * 2 * el - sp * .6, by - el * .7);
     }
     body.lineTo((i1 - 1) * WHEAT_GAP - off, base + 4); body.closePath();
-    c.strokeStyle = c.fillStyle = hGrad(c, mix(col[0], [8, 8, 12], dk), mix(col[1], [8, 8, 12], dk));
-    c.fill(body); c.lineWidth = 1.5 * p; c.stroke(ears);
+    c.strokeStyle = c.fillStyle = hGrad(c, col[0], col[1]);
+    c.fill(body); c.lineWidth = .9 * p; c.globalAlpha = .7; c.stroke(awns); c.globalAlpha = 1;
+    if (r.wind) {                                            // light travelling through the crop with the wind
+      c.save(); c.clip(body); c.fillStyle = hGrad(c, PAL.hazeC, PAL.hazeW, .26, .3);
+      const span = VW + 700, cy = base - r.h0 * .6;
+      for (let k = 0; k < 5; k++) {
+        const x = (((k * 367 + (k % 2) * 90 - G.t * .55 - cam * p) % span) + span) % span - 350, rx = 130 + (k * 53) % 110;
+        c.save(); c.translate(x, cy); c.rotate(-.18); c.scale(rx, r.h0 * .42);
+        const g = c.createRadialGradient(0, 0, 0, 0, 0, 1); g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(1, 'rgba(255,255,255,0)');
+        c.globalCompositeOperation = 'source-over'; c.globalAlpha = .3; c.fillStyle = g; c.fillRect(-1, -1, 2, 2); c.restore();
+      }
+      c.restore();
+    }
+  }
+}
+
+// ---------- the mist (build 51) ----------
+// The picture's one idea (owner, build 51: "really need an artistic theme ... would mist help here. need something to
+// bring it all together"): a world half lost in mist, and one light that is not. Slow banks of mist drift with the wind
+// between the depth layers and lie along the ground, so the far city, the row of houses, his cottage and the wheat all
+// rise out of the same grey and belong to one place; lamps and windows glow in it; it thins as the weather turns to gold.
+// Each band is a small soft picture (a quarter size: mist has no edges), baked once in the rain colour and the golden
+// colour, tiled sideways, and slid along by the wind and by the camera.
+// Bands: [top, bottom, wisps, parallax, drift per tick, strength, in front of the people?].
+const FOG = [], FOG_T = 1024, FOG_Q = .25;
+function buildFog() {
+  FOG.length = 0;
+  for (const [y0, y1, n, par, drift, a, front] of [[GY - 200, GY - 30, 24, .5, .07, .5, false], [GY - 84, GY + 4, 30, .92, .16, .5, 'lane'], [GY - 22, GY + 46, 16, 1.12, .28, .2, true]]) {
+    const Rf = rng(900 + FOG.length * 31), W = Math.ceil((FOG_T + VW + 8) * FOG_Q), m = mk(W, Math.ceil(VH * FOG_Q) + 2), c = m.getContext('2d'); c.scale(FOG_Q, FOG_Q);
+    for (let i = 0; i < n; i++) {
+      const x = Rf() * FOG_T, y = lerp(y0, y1, .3 + .7 * Math.sqrt(Rf())), rx = 110 + Rf() * 240, ry = (7 + Rf() * 20) * (y1 - y0) / 110, al = .2 + Rf() * .32;
+      for (const dx of [0, FOG_T, FOG_T * 2]) {
+        c.save(); c.translate(x + dx, y); c.scale(rx, ry); const g = c.createRadialGradient(0, 0, 0, 0, 0, 1);
+        g.addColorStop(0, `rgba(255,255,255,${al})`); g.addColorStop(.6, `rgba(255,255,255,${al * .45})`); g.addColorStop(1, 'rgba(255,255,255,0)'); c.fillStyle = g; c.fillRect(-1, -1, 2, 2); c.restore();
+      }
+    }
+    FOG.push({ cool: tinted(m, PAL.hazeC), warm: tinted(m, PAL.hazeW), y0: Math.max(0, y0 - 50), y1: Math.min(VH, y1 + 50), par, drift, a, front });
+  }
+}
+// drawn straight onto the screen in the weather's strips, like the layers (call with the plain pixel transform)
+function drawFog(front) {
+  for (const f of FOG) {
+    if (f.front !== front) continue;
+    const off = (((G.cam * f.par + G.t * f.drift) % FOG_T) + FOG_T) % FOG_T;
+    fade(f.cool, off, FOG_Q, w => f.a * (1 - w), f.y0, f.y1); fade(f.warm, off, FOG_Q, w => f.a * .55 * w, f.y0, f.y1);
   }
 }
 
@@ -591,7 +638,7 @@ function reset() {
   Object.assign(P, { x: START_X, y: GY, vx: 0, face: TEST_X ? 1 : -1, anim: 1, stand: { t: QUIET[0] }, turn: 0, run: false, ranim: 0, blend: null });
   Object.assign(G, { cam: Math.max(0, Math.min(LEVEL_W - VW, TEST_X ? START_X - VW * .38 + 40 : START_X - VW * .62 - 40)), t: 0, got: 0, extra: 0, motes: [], flyers: [], ripples: [], glints: [], taps: [], litw: [], capQ: [], cap: 0, hint: null,
     pli: null, obst: null, flare: 0, gloom: 0, gloomTo: 0, gateOpen: 0, act: null, actT: 0, ring: null, auto: null, finale: null, guard: 0, idle: 0, wins: 0,
-    evanDone: !!TEST_X, evanGone: TEST_X ? 1 : 0, neigh: TEST_X > NEIGH_X + 300, gateSeen: false, walked: false, touched: false, leaving: false, fam: TEST_X > HOME_X ? 2 : 0, door: TEST_X > HOME_X ? 1 : 0, runZone: false });
+    evanDone: !!TEST_X, evanGone: TEST_X ? 1 : 0, neigh: TEST_X > NEIGH_X + 300, gateSeen: false, walked: false, touched: false, leaving: false, fam: TEST_X > HOME_X ? 2 : 0, door: TEST_X > HOME_X ? 1 : 0, runZone: false, outSaid: false });
   G.evan.pt = TEST_X ? 239 : 0; downs.clear(); pushing = false; keys.r = keys.push = false;
   if (TEST_X) for (const l of LIGHTS) if (l.x < Math.max(TEST_X, 2000)) l.got = true;
   for (const c of CAPS) if (c.x < TEST_X) c.done = true;
@@ -658,7 +705,7 @@ async function say(who, txt) {
 }
 // fetch every line's recording quietly, in story order, while the child is already playing
 async function fetchVoices() {
-  const all = [...INTRO, ...EVAN, ...DOOR_WORDS, ...FAMILY, ...LIFE, ...TIRED]; for (const c of CAPS) all.push(...c.lines); all.push(...NEIGH, ...HOME, ...ONWARD, ...PART, ...GATEWORDS, ...END);
+  const all = [...INTRO, ...FIELDS, ...EVAN, ...DOOR_WORDS, ...FAMILY, ...LIFE, ...TIRED]; for (const c of CAPS) all.push(...c.lines); all.push(...NEIGH, ...HOME, ...ONWARD, ...PART, ...GATEWORDS, ...END);
   for (const [who, txt] of all) { const v = vox(who, txt); await v.raw; await voxBuf(v); }
 }
 function caption(arr) { for (const l of arr) G.capQ.push(l); }
@@ -676,6 +723,8 @@ const INTRO = [
   [N, 'One day he read in his book that the city was in danger. A heavy burden grew on his back.'],
   [C, 'What shall I do? Where can I go?'],
 ];
+// {11}, {12}: "he would also walk solitarily in the fields, sometimes reading, and sometimes praying"
+const FIELDS = [[N, 'He walked alone in the fields, reading his book and praying.']];
 const EVAN = [
   [E, 'Why are you crying, Christian?'],
   [C, 'My burden is so heavy, and I do not know where to go.'],
@@ -824,7 +873,7 @@ function walkTick(dir, max) {
   }
   if (!P.vx) return;
   // the way is shut until the gate opens; and wait for Evangelist's pictures if the phone is still fetching them
-  const lim = G.gateOpen >= 1 ? LEVEL_W - 30 : DOOR0 - 44, lo = !EVA.ready && !G.evanDone ? EVAN_X + 125 : 30;
+  const lim = G.gateOpen >= 1 ? LEVEL_W - 30 : DOOR0 - 44, lo = !EVA.ready && !G.evanDone ? EVAN_X + 205 : 30;
   const nx = clamp(P.x + P.vx, lo, lim), moved = Math.abs(nx - P.x), f0 = chrFrame();
   P.x = nx; let down = false;
   if (P.run) { const r0 = Math.floor(P.ranim) % RUN_META.frames; P.ranim += moved / RUN_STEP; const r1 = Math.floor(P.ranim) % RUN_META.frames; down = r1 !== r0 && (r1 === 7 || r1 === 22); }
@@ -933,7 +982,8 @@ function story() {
   if (!G.fam && G.evanDone && P.x > HOME_X - 330) { G.fam = 1; sweep(170, 120, .5, .03); hiss(140, .8, .09, .16, 'lowpass'); sfx.lamp(); caption(DOOR_WORDS); }      // the door of his house is flung open as he comes running
   if (G.fam === 1 && P.stand && P.x > HOME_X - 170) { G.fam = 2; G.capQ.length = 0; talk(FAMILY, () => caption(LIFE)); return; }      // the child let go by the house: he stops (the framed picture)
   if (G.fam === 1 && P.x > HOME_X + 150) { G.fam = 2; caption([...FAMILY_RUN, ...LIFE]); }                                         // the child held on: he runs straight past, as in the book
-  if (!G.evanDone && P.x < EVAN_X + 120) { G.evanDone = true; talk(EVAN, () => { G.evanGone = 1; G.runZone = true; G.idle = 0; }); return; }   // "So I saw in my dream that the man began to run"
+  if (!G.outSaid && !G.evanDone && P.x < FIELD_END - 60) { G.outSaid = true; caption(FIELDS); }      // out of the street, into the field
+  if (!G.evanDone && P.x < EVAN_X + 200) { G.evanDone = true; talk(EVAN, () => { G.evanGone = 1; G.runZone = true; G.idle = 0; }); return; }   // "So I saw in my dream that the man began to run"
   if (G.runZone && !P.run && G.idle === 110) hint('walk', 'Hold to run.');
   for (const c of CAPS) if (!c.done && P.x > c.x && (!c.pli || (G.pli && G.pli.mode === 'follow'))) { c.done = true; caption(c.lines); if (c.watch) G.watch = 520; }
   if (G.runZone && P.x > RUN_END) { G.runZone = false; vox(TIRED[0][0], TIRED[0][1]).raw.then(r => { if (r) caption(TIRED); }); }      // he tires, and walks again
@@ -1155,6 +1205,25 @@ function drawRow(cam) {
   c.fillStyle = css(PAL.win, .42); for (const w of ROW.wins) if (w[4] < .45) c.fillRect(w[0], w[1], w[2], w[3]);
   c.restore();
 }
+// A window looks INTO the house (owner, build 51: "windows should look into interior of house in some way (need this
+// attention to detail)"): painted behind the window's hole, a room lit from one low point (a candle on a table), brighter
+// near the flame and dim in the corners, with a shelf and its jars on the back wall, a curtain to one side, and the
+// window's own bars across it. All in two tones: the lamp colour and the house's dark. v = which room (they differ).
+function room(c, x, y, w, h, a, dark, v) {
+  const fx = x + w * (v % 2 ? .68 : .3), fy = y + h * .68, g = c.createRadialGradient(fx, fy, 0, fx, fy, Math.max(w, h) * .95);
+  g.addColorStop(0, css(PAL.light, a)); g.addColorStop(.3, css(PAL.win, .85 * a)); g.addColorStop(1, css(mix(PAL.win, [40, 22, 10], .62), .8 * a));
+  c.save(); c.beginPath(); c.rect(x, y, w, h); c.clip();
+  c.fillStyle = dark; c.fillRect(x, y, w, h); c.fillStyle = g; c.fillRect(x, y, w, h);
+  c.fillStyle = dark; c.globalAlpha = .8;
+  const sx = v % 2 ? x : x + w * .42;                          // a shelf on the back wall, with a jar and a bowl
+  c.fillRect(sx, y + h * .3, w * .58, Math.max(1, h * .035)); c.fillRect(sx + w * .1, y + h * .3 - h * .15, w * .1, h * .15); c.fillRect(sx + w * .3, y + h * .3 - h * .08, w * .16, h * .08);
+  c.fillRect(x, y + h * .8, w, h * .2);                         // the table's edge along the bottom
+  c.fillRect(fx - w * .025, fy + h * .02, w * .05, h * .11);    // the candle
+  c.beginPath(); if (v % 2) { c.moveTo(x + w, y); c.lineTo(x + w * .72, y); c.quadraticCurveTo(x + w * .86, y + h * .5, x + w, y + h * .62); } else { c.moveTo(x, y); c.lineTo(x + w * .28, y); c.quadraticCurveTo(x + w * .14, y + h * .5, x, y + h * .62); } c.fill();      // a curtain drawn back
+  c.globalAlpha = 1; c.fillStyle = css(PAL.light, a); c.beginPath(); c.ellipse(fx, fy - h * .02, w * .03, h * .06, 0, 0, 6.2832); c.fill();      // the flame
+  c.fillStyle = dark; c.fillRect(x + w / 2 - .9, y, 1.8, h); c.fillRect(x, y + h * .46 - .9, w, 1.8);      // the window's bars
+  c.restore();
+}
 function home(cam) {                       // drawn in screen units, before the road
   if (!HOUSE) return;
   const c = ctx, M = HOUSE_META, L = LEVELS.mid, k = L.k * HOUSE_K, [dx, dy, dw, dh] = M.door.map(v => v * k);
@@ -1162,7 +1231,7 @@ function home(cam) {                       // drawn in screen units, before the 
   if (x > VW + 20 || x + M.w * k < -20) return;
   const wm = warm(doorX(cam) / VW), dark = css(mix(layerCol(.9)[0], layerCol(.9)[1], wm)), cy = y + dy + dh * .5;
   // behind the painting: dim light in the windows, and the doorway (dark, then warm light as the door swings back to the left)
-  c.fillStyle = css(PAL.win, .6 * lerp(1, .45, wm)); for (const w of M.wins) c.fillRect(x + w[0] * k - 2, y + w[1] * k - 2, w[2] * k + 4, w[3] * k + 4);
+  M.wins.forEach((w, i) => room(c, x + w[0] * k - 2, y + w[1] * k - 2, w[2] * k + 4, w[3] * k + 4, lerp(1, .55, wm), dark, i));
   c.fillStyle = dark; c.fillRect(x + dx - 2, y + dy - 2, dw + 4, dh + 4);
   if (e > 0) {
     const g = c.createRadialGradient(x + dx + dw * .55, cy, 0, x + dx + dw * .55, cy, 110); g.addColorStop(0, css(PAL.light, .95 * e)); g.addColorStop(1, css(PAL.win, .8 * e));
@@ -1252,12 +1321,14 @@ function draw() {
       if (vis > .01) { ctx.globalAlpha = vis; ctx.globalCompositeOperation = 'screen'; ctx.drawImage(beamC, 0, 0, cv.width, cv.height); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over'; }
     }
   }
+  drawFog(false);      // (the far bank only: FOG[0] is drawn here, FOG[1] after the lane, see below)
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
   // the road and everything on it
   const gcol = layerCol(1), wAt = x => warm((x - cam) / VW), on = (x, w = 0, m = 80) => x < cam + VW + m && x + w > cam - m;
   // the lane just behind the road: a low bank a little paler than the road, with his house and a few things on it
   ctx.fillStyle = hGrad(ctx, ...layerCol(.93)); ctx.fillRect(0, LEVELS.mid.base, VW, GY - LEVELS.mid.base + 2);
   drawRow(cam); home(cam); drawLevel('mid', cam); drawWheat(false);          // the wheat behind him
+  ctx.setTransform(1, 0, 0, 1, 0, 0); drawFog('lane'); ctx.setTransform(DPR, 0, 0, DPR, 0, 0);      // mist lying along the lane, round the houses' feet and in the wheat
   ctx.save(); ctx.translate(-cam, 0);
   const grad = hGrad(ctx, gcol[0], gcol[1], 1, 1, cam);
   INK = grad; SETC = hGrad(ctx, ...layerCol(.66), 1, 1, cam); DOORC = hGrad(ctx, ...layerCol(.86), 1, 1, cam);
@@ -1331,6 +1402,7 @@ function draw() {
   drawLevel('f1', cam);                                      // things between us and Christian
   // grass in front
   ctx.setTransform(1, 0, 0, 1, 0, 0);
+  drawFog(true);                                             // a thin veil low over the road, in front of everyone
   pair(FRONT.cool, FRONT.warm, cam * FRONT.par, FRONT.q, 1, VH - 70, VH);
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
   // the rain side is dulled, the golden side is warmed
@@ -1451,7 +1523,7 @@ document.getElementById('again').onclick = start;
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.fillStyle = '#5d6b80'; ctx.fillRect(0, 0, VW, VH);
   await new Promise(r => setTimeout(r, 30));
   const chr = Promise.all([loadPack('christian-walk', CHR), loadPack('christian-stand', STD), ...Object.keys(PROP_META).map(k => loadImg('prop-' + k + '.webp').then(im => { PROP[k] = im; }))]);
-  buildScenery(); buildWheat(); buildRow(); seed = 99; buildLevel(); bakeFinish();
+  buildScenery(); buildWheat(); buildFog(); buildRow(); seed = 99; buildLevel(); bakeFinish();
   await chr;
   { const im = Object.assign({}, PROP); for (const k in PROP) delete PROP[k];
     PROP.road = { lamp: im.lamp && bakeTint(im.lamp, .5, PROP_DETAIL) };
