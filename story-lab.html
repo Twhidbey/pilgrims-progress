@@ -68,7 +68,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">story lab · build 66 · Nov 15 2026</div>
+  <div id="build">story lab · build 67 · Nov 15 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -257,6 +257,28 @@ function buildWheat() {
 }
 // the wind in the middle layer: long slow waves running with the rain (a lean, 0 = upright)
 const wheatWind = (x, t) => .07 * Math.sin(x * .0075 + t * .017) + .025 * Math.sin(x * .019 + t * .031);
+// The trees on the rise behind the wheat are painted (owner, build 67: "trees should be more realistic (maybe a sprite
+// to guide initial composition?)"): a field oak, a tall hedgerow tree and a low hawthorn clump from the image model
+// (assets/tree-a/b/c.webp), each baked once as a one-tone silhouette in the near layer's colour with only a trace of its
+// painting, and drawn sharp on the near layer's ridge. bx = where the trunk meets the ground, across the picture.
+// FIELD_TREES: [which, where on the near layer, height on the screen, 1 or -1 = mirrored].
+const TREE_META = { a: { bx: 368 / 859 }, b: { bx: 209 / 291 }, c: { bx: 255 / 530 } }, TREE = {};
+const FIELD_TREES = [['a', 150, 108, 1], ['c', 365, 38, 1], ['b', 520, 118, -1], ['c', 610, 44, -1], ['a', 835, 96, -1], ['b', 1015, 104, 1]];
+function bakeTree(im) {
+  const one = col => { const m = mk(im.width, im.height), c = m.getContext('2d'); c.drawImage(im, 0, 0); c.globalCompositeOperation = 'source-in'; c.fillStyle = css(col); c.fillRect(0, 0, m.width, m.height); c.globalCompositeOperation = 'source-atop'; c.globalAlpha = .08; c.drawImage(im, 0, 0); return m; };
+  const col = layerCol(2 / 3); return { cool: one(mix(col[0], PAL.hazeC, .28)), warm: one(mix(col[1], PAL.hazeW, .28)) };
+}
+function drawFieldTrees(cam) {
+  const N2 = SCN[2], off = cam * N2.par, c = ctx;
+  for (const [k, lx, h, face] of FIELD_TREES) {
+    const B = TREE[k]; if (!B) continue;
+    const w = h * B.cool.width / B.cool.height, x = lx - off; if (x < -w || x > VW + w) continue;
+    const wm = warm(x / VW), y = N2.gy(lx) + 3;
+    c.save(); c.translate(x, y); c.scale(face, 1);
+    c.drawImage(B.cool, -w * TREE_META[k].bx, -h, w, h); if (wm > .01) { c.globalAlpha = wm; c.drawImage(B.warm, -w * TREE_META[k].bx, -h, w, h); }
+    c.restore();
+  }
+}
 // The field itself, behind the three near layers: a pale plane of crop running back to the hedgerow on the rise (the near
 // scenery layer's ridge, SCN[2].gy), so the wheat is one field and not strips in front of a dark hill. Slow bands of
 // light cross it too, flattened by distance.
@@ -438,7 +460,7 @@ function buildScenery() {
         const k = R(); tree(x, gy(x), s * rr(.75, 1.2), k < .58 ? 0 : k < .78 ? 1 : 2);
       }
       for (let x = Math.max(rr(60, 200), field + 80); x < edge - 60; x += rr(160, 420)) if (R() < LOOK.trees) tree(x, gy(x), s * rr(.7, 1), R() < .6 ? 0 : 1);
-      if (near) for (const x of [70, 150, 380, 520, 575, 800, 1010]) tree(x, gy(x) + 4, s * rr(.75, 1), x === 575 || x === 380 ? 2 : 0);      // (more of them in build 62: the owner likes these)      // hedgerow trees in the field
+      // (the trees on the field's rise are painted pictures since build 67: FIELD_TREES, drawFieldTrees)
       if (i === 2) for (let x = edge + 150; x < W - 200; x += rr(380, 560)) fence(x, gy, 8 + (R() * 8 | 0));
     }
     // soft stencil (farther = softer), lit windows, and the mist that settles in front of this layer
@@ -876,7 +898,7 @@ const runNow = () => G.ears || !RUNP.ready ? [RUN, RUN_META] : [RUNP, RUNP_META]
 function coverEars() { if (G.ears) return; if (P.run) poseChange(); G.ears = true; }
 const CHR = [], PLI = [], OBS = [], EVA = [], STD = [], RUN = [], CHR_K = .52, RUN_STEP = RUN_META.vpx * CHR_K, RUNV = RUN_STEP * .4,   // the run at its video's own speed (24 frames a second)
    CHR_STEP = CHR_META.vpx * CHR_K, PLI_STEP = PLI_META.vpx * CHR_K, OBS_STEP = OBS_META.vpx * CHR_K;
-const PACK_V = 8;                          // bump when the .pack files change, so phones fetch the new ones
+const PACK_V = 9;                          // bump when the .pack files change, so phones fetch the new ones
 // a .pack file: 4 bytes = how many frames, 4 bytes per frame = its length, then the WebP frames end to end
 async function loadPack(name, into) {
   const res = await fetch('assets/' + name + '.pack?v=' + PACK_V); if (!res.ok) throw new Error('no ' + name);      // a missing pack is left out
@@ -1472,6 +1494,7 @@ function draw() {
       if (vis > .01) { ctx.globalAlpha = vis; ctx.globalCompositeOperation = 'screen'; ctx.drawImage(beamC, 0, 0, cv.width, cv.height); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over'; }
     }
   }
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0); drawFieldTrees(cam); ctx.setTransform(1, 0, 0, 1, 0, 0);
   drawFog(false);      // (the far bank only: FOG[0] is drawn here, FOG[1] after the lane, see below)
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
   // the road and everything on it
@@ -1704,7 +1727,7 @@ document.getElementById('again').onclick = start;
   document.getElementById('sub').textContent = 'The City of Destruction';
   document.getElementById('open').style.visibility = 'visible';
   requestAnimationFrame(t => { lastT = t; loop(t); });
-  Promise.all([loadPack('evangelist', EVA), loadPack('evangelist-stand', EVS)]).then(() => Promise.all([loadImg('house.webp').then(im => { HOUSE = im && bakeTint(im, HOUSE_DEPTH, HOUSE_DETAIL); }), ...['b', 'c'].map(key => loadImg('house-' + key + '.webp').then(im => { if (im) NB[key] = bakeTint(im, HOUSE_DEPTH, HOUSE_DETAIL); })), loadImg('family.webp').then(im => { FAM = im; if (im) FAM_SH = mkShadow(im); }), loadImg('wife.webp').then(im => { WIFE = im; if (im) WIFE_SH = mkShadow(im); }), ...['a', 'b', 'c'].map(key => loadImg('neighbor-' + key + '.webp').then(im => { WATCH_IM[key] = im; })), loadImg('christian-back.webp').then(im => { BACK = im; }), loadPack('christian-run', RUN), loadPack('christian-run-plain', RUNP)]))
+  Promise.all([loadPack('evangelist', EVA), loadPack('evangelist-stand', EVS)]).then(() => Promise.all([loadImg('house.webp').then(im => { HOUSE = im && bakeTint(im, HOUSE_DEPTH, HOUSE_DETAIL); }), ...['b', 'c'].map(key => loadImg('house-' + key + '.webp').then(im => { if (im) NB[key] = bakeTint(im, HOUSE_DEPTH, HOUSE_DETAIL); })), ...['a', 'b', 'c'].map(key => loadImg('tree-' + key + '.webp').then(im => { if (im) TREE[key] = bakeTree(im); })), loadImg('family.webp').then(im => { FAM = im; if (im) FAM_SH = mkShadow(im); }), loadImg('wife.webp').then(im => { WIFE = im; if (im) WIFE_SH = mkShadow(im); }), ...['a', 'b', 'c'].map(key => loadImg('neighbor-' + key + '.webp').then(im => { WATCH_IM[key] = im; })), loadImg('christian-back.webp').then(im => { BACK = im; }), loadPack('christian-run', RUN), loadPack('christian-run-plain', RUNP)]))
     .then(() => Promise.all([loadPack('obstinate', OBS), loadPack('pliable', PLI), loadImg('obstinate-stand.webp').then(im => { OBS_ST = im; }), loadImg('pliable-stand.webp').then(im => { PLI_ST = im; })]));
   for (const [who, txt] of INTRO) vox(who, txt);          // the first words, ready before Begin is pressed
 })();
