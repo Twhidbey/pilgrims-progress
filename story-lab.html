@@ -70,7 +70,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">story lab · build 93 · Nov 15 2026</div>
+  <div id="build">story lab · build 94 · Nov 15 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -580,7 +580,7 @@ function bakeFinish() {
 // Evangelist there (EVAN_X), then turns and runs RIGHT, back past his own door and on through the city to the gate. One
 // house in one place, and it is the book's geography: he walks out to the fields, then flees past his own door.
 const FIELD_END = 1650;      // where the wheat field ends and the street begins (the wheat sinks away before it)
-const EVAN_X = 420, HOME_X = 2150, RUN_END = 5100, NEIGH_X = 6050, GATE_STOP = 6936, DOOR0 = 6996, DOOR1 = 7136, DOORM = 7066;      // build 91: the gateway is wider (was 7006 to 7120), so the painted gatehouse is bigger
+const EVAN_X = 420, HOME_X = 2150, RUN_END = 5100, NEIGH_X = 6050, GATE_STOP = 6905, DOOR0 = 6980, DOOR1 = 7160, DOORM = 7070;      // build 91: the gateway is wider (was 7006 to 7120), so the painted gatehouse is bigger
 // SKIP AHEAD (owner, build 89: "is there a way to skip ahead to a moment?"): add ?at=NAME to the link. Each name starts
 // the level just before that moment, after Evangelist. (?x=N still works for any place on the road; ?level=2 starts
 // at the Slough of Despond.)
@@ -760,7 +760,7 @@ function reset() {
   Object.assign(G, { cam: Math.max(0, Math.min(LEVEL_W - VW, TEST_X ? START_X - VW * .38 + 40 : START_X - VW * .62 - 40)), t: 0, got: 0, extra: 0, motes: [], flyers: [], ripples: [], glints: [], taps: [], litw: [], capQ: [], cap: 0, hint: null,
     pli: null, obst: null, flare: 0, gloom: 0, gloomTo: 0, gateOpen: 0, act: null, actT: 0, ring: null, auto: null, finale: null, guard: 0, idle: 0, wins: 0,
     evanDone: !!TEST_X, evanGone: TEST_X ? 1 : 0, neigh: TEST_X > NEIGH_X + 300, gateSeen: false, walked: false, touched: false, leaving: false, fam: TEST_X > HOME_X ? 2 : 0, door: TEST_X ? (TEST_X > HOME_X ? 1 : 0) : 1, doorShut: false, roll: TEST_X ? { t: 999, x: 0, y: 0 } : null, runZone: !!TEST_X && TEST_X < RUN_END, outSaid: false, watched: TEST_X > HOME_X + 900, ears: TEST_X > HOME_X });
-  G.zoom = 1 - (1 - ZOOM_GATE) * smooth(GATE - 1050, GATE - 380, START_X);      // starting near the gate (?at=gate): already drawn back
+  G.zoom = 1 - (1 - ZOOM_GATE) * smooth(GATE - 1300, GATE - 380, START_X);      // starting near the gate (?at=gate): already drawn back
   G.evan.pt = TEST_X ? 239 : 0; G.evan.go = false; G.evan.st = EVS_META.frames * 100; downs.clear(); pushing = false; keys.r = keys.push = false;
   if (TEST_X) for (const l of LIGHTS) if (l.x < Math.max(TEST_X, 2000)) l.got = true;
   for (const c of CAPS) if (c.x < TEST_X) c.done = true;
@@ -778,10 +778,18 @@ const C = 'Christian', E = 'Evangelist', N = '', O = 'Obstinate', PL = 'Pliable'
 // THE WORDS FIT THEIR STRIP (owner, build 85: on a phone "the text of some of the characters' dialog is too large"):
 // the long lines wrapped to three rows and ran off the bottom. Each line now starts at its usual size and steps down
 // until it fits the strip, never below 10 px.
+// Build 93 (owner: "text for Christian gets larger in phone - I'd like to stay same size"): every line is the SAME size,
+// the size at which the longest line of the level fits (measured once per screen size), so short lines no longer look
+// bigger than long ones.
+let FIT = { key: '', px: 0 };
 function fitWords(box) {
-  box.style.fontSize = ''; const room = dlg.clientHeight * .86;
-  let px = parseFloat(getComputedStyle(box).fontSize);
-  while (box.offsetHeight > room && px > 10) { px *= .92; box.style.fontSize = px + 'px'; }
+  const key = dlg.clientWidth + 'x' + dlg.clientHeight, cur = dTxt.textContent, curWho = dWho.textContent;
+  const all = [INTRO, FIELDS, EVAN, RUNS, DOOR_WORDS, FAMILY_RUN, FAMILY, LIFE, WATCH, FETCH, NEIGH, HOME, ONWARD, PART, GATEWORDS, END].flat().filter(l => Array.isArray(l) && typeof l[1] === 'string');
+  const longest = all.reduce((a, l) => (l[1].length + l[0].length > a[1].length + a[0].length ? l : a), ['', '']);
+  const fit = (who, txt) => { dWho.textContent = who; dTxt.textContent = txt; box.style.fontSize = ''; const room = dlg.clientHeight * .86; let px = parseFloat(getComputedStyle(box).fontSize); while (box.offsetHeight > room && px > 10) { px *= .92; box.style.fontSize = px + 'px'; } return px; };
+  if (FIT.key !== key) { FIT = { key, px: fit(longest[0], longest[1]) }; dWho.textContent = curWho; dTxt.textContent = cur; }
+  box.style.fontSize = FIT.px + 'px';
+  if (box.offsetHeight > dlg.clientHeight * .86) fit(curWho, cur);      // a line longer than any in this level (Level 2's own): fit it alone
 }
 addEventListener('resize', () => { if (dlg.classList.contains('on')) fitWords(dlg.querySelector('.txt')); });
 function words(who, txt, cls) {
@@ -1200,7 +1208,7 @@ function update() {
   if (G.state === 'play') story();
   const target = Math.max(0, Math.min(LEVEL_W - VW, P.x - VW * (G.evanDone ? .38 : .62) + P.face * 40));      // room in front of him, whichever way he is going
   G.cam += (target - G.cam) * .05;
-  G.zoom = (G.zoom || 1) + ((1 - (1 - ZOOM_GATE) * smooth(GATE - 1050, GATE - 380, P.x)) - (G.zoom || 1)) * .02;      // the camera draws back near the gate
+  G.zoom = (G.zoom || 1) + ((1 - (1 - ZOOM_GATE) * smooth(GATE - 1300, GATE - 380, P.x)) - (G.zoom || 1)) * .02;      // the camera draws back near the gate
 }
 // the story's triggers along the road
 function story() {
@@ -1584,7 +1592,7 @@ function gatePainted() {
     c.globalAlpha = a; c.restore();
   };
   // the wall: one unbroken line from far to the left (it thins into the mist there), through the gate, and off the right
-  const kw = 152 / WALL_META.solid, ww = WALL_META.w * kw, wh = WALL_META.h * kw, W0 = GATE - 760;
+  const kw = 200 / WALL_META.solid, ww = WALL_META.w * kw, wh = WALL_META.h * kw, W0 = GATE - 760;
   let n = 0;
   // Build 90 (owner: "the walls of city gate are transparent"): every piece is solid. Build 92 (owner: "why is left end
   // of wall faded? shouldn't it just start"): no fade at the far end either; the wall simply begins.
@@ -1663,7 +1671,7 @@ let STEPS = 1;
 // the camera steps left so Christian keeps his place, and everything is lowered (OYD) so the road keeps its place at
 // the bottom and more sky shows above. G.zoom eases from 1 to ZOOM_GATE as he walks up to the gate. Touches are
 // mapped back the same way (scenePt). Everything is put back after the frame.
-const ZOOM_GATE = .8;
+const ZOOM_GATE = .66;      // build 93 (owner: "gate needs to be larger (it's a city gate!)"): was .8
 let OYD = 0, ZCAM = 0; const bandC = mk(48, 1);
 function draw() {
   const Z = G.zoom || 1;
@@ -1673,7 +1681,8 @@ function draw() {
   G.cam = Math.max(0, Math.min(LEVEL_W - VW, cam - (VW - VW0) * .3)); ZCAM = G.cam - cam;
   try {
     drawWorld();
-  } finally { VW = VW0; DPR = dpr; G.cam = cam; }
+  } finally { VW = VW0; DPR = dpr; G.cam = cam; OYD = 0; }
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over'; drawItems();      // the tray stays in its corner
 }
 function drawWorld() {
   const cam = G.cam;
@@ -1730,7 +1739,7 @@ function drawWorld() {
   if (on(GATE - 800, 1400)) { doors(); gate(); }
   for (const l of LAMPS) if (on(l.x - 15, 73)) {
     drawProp(PROP.road && PROP.road.lamp, PROP_META.lamp, l.x - 15, cam);
-    if (l.lit) { ctx.fillStyle = css(PAL.win, Math.min(1, (G.t - l.lit) / 30)); ctx.fillRect(l.x + 34.5, GY - 142.6, 10.6, 10.5); }      // the lantern's little window
+    if (l.lit) { ctx.fillStyle = css(PAL.win, Math.min(1, (G.t - l.lit) / 30)); ctx.fillRect(l.x + 34.5, LAMP_Y - 5.6, 10.6, 10.5); }      // the lantern's little window
   }
   // birds sitting on things
   ctx.fillStyle = grad;
@@ -1877,7 +1886,7 @@ function drawWorld() {
     ctx.globalAlpha = Math.min(1, a); ctx.beginPath(); ctx.moveTo(d.x, y); ctx.lineTo(d.x - d.l * .2, y + d.l); ctx.stroke();
   }
   ctx.globalAlpha = 1;
-  drawItems();
+  if (OYD === 0) drawItems();      // when zoomed out, draw() puts the tray in its corner after the frame
   if (GUIDES) drawGuides();
 }
 // THE THINGS HE CARRIES (owner, build 68: "when scroll is given it goes into items menu (very subtle but cool)"): a very
@@ -1927,7 +1936,7 @@ function scenePt(e) { const r = cv.getBoundingClientRect(), Z = SL.on ? 1 : G.zo
 stage.addEventListener('pointerdown', e => {
   if (e.target.closest('button')) return;
   e.preventDefault();
-  const [sx, sy] = scenePt(e);
+  const [sx, sy] = scenePt(e), r0 = cv.getBoundingClientRect(), rx = (e.clientX - r0.left) / r0.width * VW, ry = (e.clientY - r0.top) / r0.height * VH;      // rx, ry: on the screen itself (the tray), not in the zoomed world
   if (G.state !== 'title' && G.state !== 'end') G.taps.push({ x: sx, y: sy, t: 0 });
   if (G.state === 'dialog') {
     if (G.act === 'hand') { SL.touch(sx, sy); return; }
@@ -1937,7 +1946,7 @@ stage.addEventListener('pointerdown', e => {
     next(); return;
   }
   if (G.state !== 'play') return;
-  if (G.roll && G.roll.t > 90 && sx > ITEM_X + 22 && sx < ITEM_X + 54 && sy < ITEM_Y + 30) { hint('roll', 'The roll says: Flee from the wrath to come.'); G.rollT = 260; return; }      // a touch on the roll in the tray
+  if (G.roll && G.roll.t > 90 && rx > ITEM_X + 22 && rx < ITEM_X + 54 && ry < ITEM_Y + 30) { hint('roll', 'The roll says: Flee from the wrath to come.'); G.rollT = 260; return; }      // a touch on the roll in the tray
   downs.set(e.pointerId, G.t); if (SL.on) SL.touch(sx, sy); else touchAt(sx, sy);
 });
 const lift = e => { if (e.type === 'blur') { downs.clear(); pushing = false; return; } downs.delete(e.pointerId); if (e.pointerId === pushId) pushing = false; };
@@ -2015,11 +2024,11 @@ document.getElementById('on2').onclick = () => SL.start();
   document.getElementById('open').style.visibility = 'visible';
   requestAnimationFrame(t => { lastT = t; loop(t); });
   loadPack('christian-turn', TURN).catch(() => {});
-  Promise.all([loadPack('evangelist', EVA), loadPack('evangelist-stand', EVS)]).then(() => Promise.all([loadImg('family.webp').then(im => { FAM = im; if (im) FAM_SH = mkShadow(im); }), loadImg('gate.webp').then(im => { if (im) GATE_P = bakeTint(im, .52, .4); }), loadImg('wall.webp').then(im => { if (im) WALL_P = bakeTint(im, .52, .4); }), ...['a', 'b', 'c'].map(key => loadImg('neighbor-' + key + '.webp').then(im => { WATCH_IM[key] = im; })), ...['a', 'b', 'c'].map(key => loadPack('neighbor-' + key, WATCH_PACK[key]).catch(() => {})), loadImg('christian-back.webp').then(im => { BACK = im; }), loadPack('christian-run', RUN), loadPack('christian-run-plain', RUNP)]))
+  Promise.all([loadPack('evangelist', EVA), loadPack('evangelist-stand', EVS)]).then(() => Promise.all([loadImg('family.webp').then(im => { FAM = im; if (im) FAM_SH = mkShadow(im); }), loadImg('gate.webp').then(im => { if (im) GATE_P = bakeTint(im, .42, .4); }), loadImg('wall.webp').then(im => { if (im) WALL_P = bakeTint(im, .42, .4); }), ...['a', 'b', 'c'].map(key => loadImg('neighbor-' + key + '.webp').then(im => { WATCH_IM[key] = im; })), ...['a', 'b', 'c'].map(key => loadPack('neighbor-' + key, WATCH_PACK[key]).catch(() => {})), loadImg('christian-back.webp').then(im => { BACK = im; }), loadPack('christian-run', RUN), loadPack('christian-run-plain', RUNP)]))
     .then(() => Promise.all([loadPack('obstinate', OBS), loadPack('pliable', PLI), loadImg('obstinate-stand.webp').then(im => { OBS_ST = im; }), loadImg('pliable-stand.webp').then(im => { PLI_ST = im; })]));
   for (const [who, txt] of INTRO) vox(who, txt);          // the first words, ready before Begin is pressed
 })();
 </script>
-<script src="slough.js?v=92"></script>
+<script src="slough.js?v=94"></script>
 </body>
 </html>
