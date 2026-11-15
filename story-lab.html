@@ -70,7 +70,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">story lab · build 100 · Nov 15 2026</div>
+  <div id="build">story lab · build 101 · Nov 15 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -87,7 +87,7 @@ const EVA_META={"ax": 82, "ground": 311, "frames": 80, "src": [0, 4, 8, 12, 16, 
 const STD_META={"ax": 101, "ground": 302, "frames": 79, "src": [0, 2, 4, 6, 8, 10, 12, 14, 16, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35, 37, 39, 41, 43, 45, 47, 49, 51, 53, 55, 57, 59, 61, 63, 65, 67, 69, 71, 73, 75, 77, 79, 81, 83, 85, 87, 89, 91, 93, 95, 96, 100, 104, 108, 112, 116, 120, 124, 128, 132, 136, 140, 144, 148, 152, 156, 160, 164, 168, 172, 176, 180, 184, 188, 192, 196, 200, 204, 208, 212]};
 
 // ---------- setup ----------
-let VW = 960; const VW0 = 960, VH = 540, GY = 440, LEVEL_W = 7500, PANG = LEVEL_W - VW, GATE = 7040;
+let VW = 960; const VW0 = 960, VH = 540, GY = 440, LEVEL_W = 7900, PANG = LEVEL_W - VW, GATE = 7040;
 const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
 const stage = document.getElementById('stage');
 let DPR = 1;
@@ -395,7 +395,7 @@ function drawFog(front) {
 // ---------- build the scenery once ----------
 // Each layer is baked twice, in its rain colour and its golden colour; draw() blends the two by the weather.
 const SCN = [], TUFTS = [];
-let FRONT, skyRain, skyGold, beamC, veilC;
+let FRONT, skyRain, skyGold, beamC, veilC, hiRain, hiGold;
 function stencil(Lr, q) {
   const m = mk(Math.ceil(Lr.W * q) + 4, Math.ceil(VH * q) + 2), c = m.getContext('2d');
   c.scale(q, q); c.fillStyle = '#fff';
@@ -520,6 +520,12 @@ function buildScenery() {
     g.addColorStop(0, css(PAL.light, .95 * v)); g.addColorStop(.12, css(PAL.light, .6 * v)); g.addColorStop(.45, css(PAL.light, .2 * v)); g.addColorStop(1, css(PAL.light, 0));
     c.fillStyle = g; c.fillRect(0, 0, VW, VH); }
   for (let i = 0; i < 22; i++) puff(c, rr(-80, VW + 80), rr(20, 250), rr(80, 220), rr(7, 18), PAL.light, rr(.12, .3) * (.3 + LOOK.gold * .7));
+  // the sky ABOVE the picture's old top edge, seen only when the camera draws back at the gate (build 100): the top
+  // colour of each sky, a little deeper higher up, with its own soft clouds that thin out toward the bottom edge, where
+  // it meets the sky below seamlessly
+  const hi = (top, col, n, a0) => { const m = mk(480, 300), c = m.getContext('2d'); c.scale(.5, .5); const g = c.createLinearGradient(0, 0, 0, 600); g.addColorStop(0, css(mix(top, [20, 24, 34], .25))); g.addColorStop(1, css(top)); c.fillStyle = g; c.fillRect(0, 0, VW, 600);
+    for (let i = 0; i < n; i++) { const y = rr(20, 520); puff(c, rr(-80, VW + 80), y, rr(90, 240), rr(18, 50), col, a0 * rr(.5, 1) * (1 - y / 600)); } return m; };
+  R = rng(77); hiRain = hi(PAL.skyC[0], PAL.cloud, 60, .2 * (.35 + LOOK.rain * .75)); hiGold = hi(PAL.skyW[0], PAL.light, 26, .25 * (.3 + LOOK.gold * .7));
   // glow and soft beams from the light
   beamC = mk(240, 135); c = beamC.getContext('2d'); c.scale(.25, .25); R = rng(12);
   { const g = c.createRadialGradient(SUN[0], SUN[1], 0, SUN[0], SUN[1], 420); g.addColorStop(0, css(PAL.light, .75)); g.addColorStop(.3, css(PAL.light, .3)); g.addColorStop(1, css(PAL.light, 0)); c.fillStyle = g; c.fillRect(0, 0, VW, VH); }
@@ -580,7 +586,7 @@ function bakeFinish() {
 // Evangelist there (EVAN_X), then turns and runs RIGHT, back past his own door and on through the city to the gate. One
 // house in one place, and it is the book's geography: he walks out to the fields, then flees past his own door.
 const FIELD_END = 1650;      // where the wheat field ends and the street begins (the wheat sinks away before it)
-const EVAN_X = 420, HOME_X = 2150, RUN_END = 5100, NEIGH_X = 6050, GATE_STOP = 6905, DOOR0 = 6980, DOOR1 = 7160, DOORM = 7070;      // build 91: the gateway is wider (was 7006 to 7120), so the painted gatehouse is bigger
+const EVAN_X = 420, HOME_X = 2150, RUN_END = 5100, NEIGH_X = 6050, GATE_STOP = 6870, DOOR0 = 6955, DOOR1 = 7185, DOORM = 7070;      // build 100: a 2.6 m gateway (88 units to a metre)      // build 91: the gateway is wider (was 7006 to 7120), so the painted gatehouse is bigger
 // SKIP AHEAD (owner, build 89: "is there a way to skip ahead to a moment?"): add ?at=NAME to the link. Each name starts
 // the level just before that moment, after Evangelist. (?x=N still works for any place on the road; ?level=2 starts
 // at the Slough of Despond.)
@@ -756,8 +762,9 @@ const pushHeld = () => pushing || keys.push;
 const held = () => { for (const t of downs.values()) if (G.t - t >= 9) return true; return false; };
 // Build 99 (owner: the gate "kinda dominates the ending ... make surrounding more prominent (and sun visible)"): as the
 // camera draws back at the gate, the far light rises to stand above the gateway, in the sky over the gatehouse
-// (Evangelist: "Keep that light in your eye, and go straight up to it. Then you will see the gate.").
-const lightPos = () => { const t = smooth(0, 1, (1 - (G.zoom || 1)) / (1 - ZOOM_GATE)); return { x: lerp(880 - G.cam * .02, DOORM - G.cam, t), y: lerp(146, -95, t) }; };
+// (Evangelist: "Keep that light in your eye, and go straight up to it. Then you will see the gate."). Since build 100
+// the gatehouse is tall, so the light stands high in the open sky beside it.
+const lightPos = () => { const t = smooth(0, 1, (1 - (G.zoom || 1)) / (1 - ZOOM_GATE)); return { x: lerp(880 - G.cam * .02, DOORM - G.cam + 600, t), y: lerp(146, -330, t) }; };      // build 100: in the open sky to the right of the tall gatehouse
 
 function reset() {
   seed = 99; buildLevel(); for (const it of ROW) if (it.who) { it.on = TEST_X > it.a; it.open = it.on ? 1 : 0; }
@@ -972,7 +979,7 @@ const runNow = () => G.ears || !RUNP.ready ? [RUN, RUN_META] : [RUNP, RUNP_META]
 function coverEars() { if (G.ears) return; if (P.run) poseChange(8, true); G.ears = true; }
 const CHR = [], PLI = [], OBS = [], EVA = [], STD = [], RUN = [], CHR_K = .52, RUN_STEP = RUN_META.vpx * CHR_K, RUNV = RUN_STEP * .4,   // the run at its video's own speed (24 frames a second)
    CHR_STEP = CHR_META.vpx * CHR_K, PLI_STEP = PLI_META.vpx * CHR_K, OBS_STEP = OBS_META.vpx * CHR_K;
-const PACK_V = 18;                          // bump when the .pack files change, so phones fetch the new ones
+const PACK_V = 19;                          // bump when the .pack files change, so phones fetch the new ones
 // a .pack file: 4 bytes = how many frames, 4 bytes per frame = its length, then the WebP frames end to end
 async function loadPack(name, into) {
   const res = await fetch('assets/' + name + '.pack?v=' + PACK_V); if (!res.ok) throw new Error('no ' + name);      // a missing pack is left out
@@ -1617,7 +1624,7 @@ function home(cam) {                       // drawn in screen units, before the 
 // Both are baked like the houses (bakeTint). The gatehouse is sized and placed so that its hole sits exactly on the
 // doorway the game already uses (DOOR0 to DOOR1); the doors and the light are drawn behind it (doors()).
 // hole = [left, top, right] of the gateway in the picture's pixels; solid = the wall's height below its battlements.
-const GATE_META = {"w": 660, "h": 480, "hole": [235, 156, 425]}, WALL_META = {"w": 1047, "h": 400, "solid": 292};
+const GATE_META = {"w": 646, "h": 700, "hole": [234, 429, 420]}, WALL_META = {"w": 1047, "h": 400, "solid": 292};
 let GATE_P = null, WALL_P = null;
 const gateFit = () => { const k = (DOOR1 - DOOR0) / (GATE_META.hole[2] - GATE_META.hole[0]); return { k, x: DOOR0 - GATE_META.hole[0] * k, y: GY + 2 - GATE_META.h * k, w: GATE_META.w * k, h: GATE_META.h * k }; };
 function gatePainted() {
@@ -1630,7 +1637,8 @@ function gatePainted() {
     c.globalAlpha = a; c.restore();
   };
   // the wall: one unbroken line from far to the left (it thins into the mist there), through the gate, and off the right
-  const kw = 200 / WALL_META.solid, ww = WALL_META.w * kw, wh = WALL_META.h * kw, W0 = GATE - 760;
+  // build 100: 3.5 m of wall to the walkway (308 units), the battlements above
+  const kw = 308 / WALL_META.solid, ww = WALL_META.w * kw, wh = WALL_META.h * kw, W0 = GATE - 760;
   let n = 0;
   // Build 90 (owner: "the walls of city gate are transparent"): every piece is solid. Build 92 (owner: "why is left end
   // of wall faded? shouldn't it just start"): no fade at the far end either; the wall simply begins.
@@ -1661,7 +1669,7 @@ function doors() {
   if (GATE_P && GATE_META) { const f = gateFit(); c.rect(DOOR0 - 3, f.y + GATE_META.hole[1] * f.k - 3, DOOR1 - DOOR0 + 6, GY + 5 - f.y - GATE_META.hole[1] * f.k); }      // behind the painted gateway: the picture's own arch frames the doors
   else { c.moveTo(DOOR0, GY + 2); c.lineTo(DOOR0, top); c.quadraticCurveTo(DOORM, GY - 292, DOOR1, top); c.lineTo(DOOR1, GY + 2); c.closePath(); }
   c.clip();
-  if (o > 0) { const g = c.createRadialGradient(DOORM, GY - 110, 0, DOORM, GY - 110, 190); g.addColorStop(0, css(PAL.light, .95 * e)); g.addColorStop(1, css(PAL.light, .35 * e)); c.fillStyle = g; c.fillRect(DOOR0, GY - 420, DOOR1 - DOOR0, 422); }
+  if (o > 0) { const g = c.createRadialGradient(DOORM, GY - 110, 0, DOORM, GY - 110, 190); g.addColorStop(0, css(PAL.light, .97 * e)); g.addColorStop(1, css(mix(PAL.light, PAL.hazeW, .4), .9 * e)); c.fillStyle = g; c.fillRect(DOOR0, GY - 420, DOOR1 - DOOR0, 422); }      // build 100: nearly opaque, so the town's far rows never show through the open gate
   c.fillStyle = DOORC; c.fillRect(DOOR0, GY - 420, w, 422); c.fillRect(DOOR1 - w, GY - 420, w, 422);
   c.strokeStyle = HINT; c.lineWidth = 1.2; c.beginPath();
   for (let k = 1; k < 4; k++) { const dx = w * k / 4; c.moveTo(DOOR0 + dx, GY - 420); c.lineTo(DOOR0 + dx, GY); c.moveTo(DOOR1 - dx, GY - 420); c.lineTo(DOOR1 - dx, GY); }
@@ -1710,7 +1718,7 @@ let STEPS = 1;
 // the camera steps left so Christian keeps his place, and everything is lowered (OYD) so the road keeps its place at
 // the bottom and more sky shows above. G.zoom eases from 1 to ZOOM_GATE as he walks up to the gate. Touches are
 // mapped back the same way (scenePt). Everything is put back after the frame.
-const ZOOM_GATE = .78;      // build 93 (owner: "gate needs to be larger (it's a city gate!)"): was .8
+const ZOOM_GATE = .48;      // build 93 (owner: "gate needs to be larger (it's a city gate!)"): was .8
 let OYD = 0, ZCAM = 0; const bandC = mk(48, 1);
 function draw() {
   const Z = G.zoom || 1;
@@ -1738,7 +1746,12 @@ function drawWorld() {
   // zoomed out (see draw()): the sky above the old top edge is the sky's own top row, softened and stretched up (the
   // sky there is one smooth gradient, so it matches); the washes and the vignette below reach up over it too (TOPY)
   const TOPY = -OYD / DPR;
-  if (OYD > 0) { const b = bandC.getContext('2d'); ctx.setTransform(1, 0, 0, 1, 0, 0); b.clearRect(0, 0, 48, 1); b.drawImage(cv, 0, Math.ceil(OYD) + 2, cv.width, 1, 0, 0, 48, 1); ctx.drawImage(bandC, 0, 0, 48, 1, 0, 0, cv.width, Math.ceil(OYD) + 3); ctx.setTransform(1, 0, 0, 1, 0, OYD); }
+  if (OYD > 0) {
+    ctx.setTransform(1, 0, 0, 1, 0, 0); const H = Math.ceil(OYD) + 2, hs = Math.min(300, OYD / DPR * .5);      // hs: how much of the high sky shows (it is 600 scene units tall at half size)
+    for (const sg of SEG) { const sx = sg[0] / cv.width * 480, sw = Math.max(.5, (sg[1] - sg[0]) / cv.width * 480);
+      ctx.globalAlpha = 1; ctx.drawImage(hiRain, sx, 300 - hs, sw, hs, sg[0], 0, sg[1] - sg[0], H); if (sg[2] > .004) { ctx.globalAlpha = sg[2]; ctx.drawImage(hiGold, sx, 300 - hs, sw, hs, sg[0], 0, sg[1] - sg[0], H); } }
+    ctx.globalAlpha = 1; ctx.setTransform(1, 0, 0, 1, 0, OYD);
+  }
   ctx.setTransform(DPR, 0, 0, DPR, 0, OYD); drawLight(); ctx.setTransform(1, 0, 0, 1, 0, OYD);
   // the layers, far to near, each one colour, with mist between
   const vis = warm(SUN[0] / VW) * LOOK.gold, alpha = 1 - LOOK.thru * .62;
@@ -2068,6 +2081,6 @@ document.getElementById('on2').onclick = () => SL.start();
   for (const [who, txt] of INTRO) vox(who, txt);          // the first words, ready before Begin is pressed
 })();
 </script>
-<script src="slough.js?v=99"></script>
+<script src="slough.js?v=101"></script>
 </body>
 </html>
