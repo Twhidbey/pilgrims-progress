@@ -4,7 +4,9 @@ The game is `index.html` (one file, no build step). `style-lab.html` is the art-
 
 ## START HERE (written at build 41, updated at build 43, Nov 15 2026, for a new chat)
 
-**Build 110: more road after his house and before the gate, a gentle choice at his door, a worn wall top, Christian and Pliable stand on the Slough's plain (see `CLAUDE.md`, build 110). Nothing spent. Waiting on the owner's yes to record Obstinate's first line again (about 1 cent).**
+**Build 110: more road after his house and before the gate, a gentle choice at his door, a worn wall top, Christian and Pliable stand on the Slough's plain (see `CLAUDE.md`, build 110). Nothing spent. **
+
+**Build 111: Obstinate's first line recorded again (about 1 cent, the only spend since build 106: running total about $0.01).** The owner should listen to it next to his other lines.
 
 **Build 109: the far oak stands in the lowland mist; Christian turns to look before the light can be touched; "began to run" is said before the run (see `CLAUDE.md`, build 109). Nothing spent.**
 
