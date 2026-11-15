@@ -70,7 +70,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">story lab · build 98 · Nov 15 2026</div>
+  <div id="build">story lab · build 99 · Nov 15 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -751,7 +751,10 @@ const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 const pushHeld = () => pushing || keys.push;
 // a quick tap only touches; a finger held a moment (9 ticks) walks
 const held = () => { for (const t of downs.values()) if (G.t - t >= 9) return true; return false; };
-const lightPos = () => ({ x: 880 - G.cam * .02, y: 146 });
+// Build 99 (owner: the gate "kinda dominates the ending ... make surrounding more prominent (and sun visible)"): as the
+// camera draws back at the gate, the far light rises to stand above the gateway, in the sky over the gatehouse
+// (Evangelist: "Keep that light in your eye, and go straight up to it. Then you will see the gate.").
+const lightPos = () => { const t = smooth(0, 1, (1 - (G.zoom || 1)) / (1 - ZOOM_GATE)); return { x: lerp(880 - G.cam * .02, DOORM - G.cam, t), y: lerp(146, -95, t) }; };
 
 function reset() {
   seed = 99; buildLevel(); for (const it of ROW) if (it.who) { it.on = TEST_X > it.a; it.open = it.on ? 1 : 0; }
@@ -966,7 +969,7 @@ const runNow = () => G.ears || !RUNP.ready ? [RUN, RUN_META] : [RUNP, RUNP_META]
 function coverEars() { if (G.ears) return; if (P.run) poseChange(8, true); G.ears = true; }
 const CHR = [], PLI = [], OBS = [], EVA = [], STD = [], RUN = [], CHR_K = .52, RUN_STEP = RUN_META.vpx * CHR_K, RUNV = RUN_STEP * .4,   // the run at its video's own speed (24 frames a second)
    CHR_STEP = CHR_META.vpx * CHR_K, PLI_STEP = PLI_META.vpx * CHR_K, OBS_STEP = OBS_META.vpx * CHR_K;
-const PACK_V = 17;                          // bump when the .pack files change, so phones fetch the new ones
+const PACK_V = 18;                          // bump when the .pack files change, so phones fetch the new ones
 // a .pack file: 4 bytes = how many frames, 4 bytes per frame = its length, then the WebP frames end to end
 async function loadPack(name, into) {
   const res = await fetch('assets/' + name + '.pack?v=' + PACK_V); if (!res.ok) throw new Error('no ' + name);      // a missing pack is left out
@@ -1611,7 +1614,7 @@ function home(cam) {                       // drawn in screen units, before the 
 // Both are baked like the houses (bakeTint). The gatehouse is sized and placed so that its hole sits exactly on the
 // doorway the game already uses (DOOR0 to DOOR1); the doors and the light are drawn behind it (doors()).
 // hole = [left, top, right] of the gateway in the picture's pixels; solid = the wall's height below its battlements.
-const GATE_META = {"w": 660, "h": 700, "hole": [235, 376, 425]}, WALL_META = {"w": 1047, "h": 400, "solid": 292};
+const GATE_META = {"w": 660, "h": 480, "hole": [235, 156, 425]}, WALL_META = {"w": 1047, "h": 400, "solid": 292};
 let GATE_P = null, WALL_P = null;
 const gateFit = () => { const k = (DOOR1 - DOOR0) / (GATE_META.hole[2] - GATE_META.hole[0]); return { k, x: DOOR0 - GATE_META.hole[0] * k, y: GY + 2 - GATE_META.h * k, w: GATE_META.w * k, h: GATE_META.h * k }; };
 function gatePainted() {
@@ -1704,7 +1707,7 @@ let STEPS = 1;
 // the camera steps left so Christian keeps his place, and everything is lowered (OYD) so the road keeps its place at
 // the bottom and more sky shows above. G.zoom eases from 1 to ZOOM_GATE as he walks up to the gate. Touches are
 // mapped back the same way (scenePt). Everything is put back after the frame.
-const ZOOM_GATE = .66;      // build 93 (owner: "gate needs to be larger (it's a city gate!)"): was .8
+const ZOOM_GATE = .78;      // build 93 (owner: "gate needs to be larger (it's a city gate!)"): was .8
 let OYD = 0, ZCAM = 0; const bandC = mk(48, 1);
 function draw() {
   const Z = G.zoom || 1;
@@ -2062,6 +2065,6 @@ document.getElementById('on2').onclick = () => SL.start();
   for (const [who, txt] of INTRO) vox(who, txt);          // the first words, ready before Begin is pressed
 })();
 </script>
-<script src="slough.js?v=98"></script>
+<script src="slough.js?v=99"></script>
 </body>
 </html>
