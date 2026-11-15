@@ -70,7 +70,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">story lab · build 107 · Nov 15 2026</div>
+  <div id="build">story lab · build 108 · Nov 15 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -813,6 +813,9 @@ const dlg = document.getElementById('dlg'), dWho = dlg.querySelector('.who'), dT
 let lines = [], li = 0, after = null;
 const HEARD = new Set();                   // lines already heard to the end (they can be skipped next time)
 const C = 'Christian', E = 'Evangelist', N = '', O = 'Obstinate', PL = 'Pliable', W = 'His wife';
+// TIP: a line that tells the child what to do (owner, build 108: "narrator should only say what's relevant to story - little
+// side messages can tell user what to do"). Shown like a hint (quiet italics, no name), never spoken, inside a talk.
+const TIP = 'tip';
 // THE WORDS FIT THEIR STRIP (owner, build 85: on a phone "the text of some of the characters' dialog is too large"):
 // the long lines wrapped to three rows and ran off the bottom. Each line now starts at its usual size and steps down
 // until it fits the strip, never below 10 px.
@@ -850,6 +853,7 @@ function show() {
   // A line already heard once (walking again) can be tapped straight through.
   const heard = HEARD.has(who + '|' + txt);
   G.guard = heard ? 20 : 45 + txt.length * 2; G.guardKey = who + '|' + txt;
+  if (who === TIP) { dMore.textContent = ''; words('', txt, 'act hint'); if (fn) fn(); return; }
   words(who, txt, (act ? 'act' : '') + (heard || act ? '' : ' wait')); if (fn) fn();
 }
 function next(force) {
@@ -970,7 +974,7 @@ const LEVEL2_OPENING = [
 ];
 const GATEWORDS = [
   [N, 'At the edge of the city stood a great gate. It was shut.'],
-  [N, 'It was heavy. Help Christian push it open.', 'gate'],
+  [TIP, isTouch ? 'Hold the gate to push it open.' : 'Hold the gate (or the space bar) to push it open.', 'gate'],      // build 108: a side message, not the storyteller
 ];
 const END = [[N, 'Christian and Pliable left the city behind. The shining light was ahead of them.']];
 
@@ -1401,7 +1405,7 @@ function acts() {
     if (P.x > G.walkFrom + 230) next(true);
   }
   if (G.act === 'gate') {
-    if (G.actT === 40) { dMore.textContent = isTouch ? 'hold the gate to push ✦' : 'hold the gate (or the space bar) to push ✦'; G.ring = () => [DOORM - G.cam, GY - 110]; }
+    if (G.actT === 40) { G.ring = () => [DOORM - G.cam, GY - 110]; }
     if (pushHeld()) { G.ring = null; G.gateOpen = Math.min(1, G.gateOpen + .0042); if (G.gateOpen >= 1) gateOpened(); }
     else if (G.actT > 40 && !G.ring && G.gateOpen < 1) G.ring = () => [DOORM - G.cam, GY - 110];
   }
