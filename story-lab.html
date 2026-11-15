@@ -70,7 +70,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">story lab · build 97 · Nov 15 2026</div>
+  <div id="build">story lab · build 98 · Nov 15 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -787,10 +787,14 @@ function fitWords(box) {
   const all = [INTRO, FIELDS, EVAN, RUNS, DOOR_WORDS, FAMILY_RUN, FAMILY, LIFE, WATCH, FETCH, NEIGH, HOME, ONWARD, PART, GATEWORDS, END].flat().filter(l => Array.isArray(l) && typeof l[1] === 'string');
   const longest = all.reduce((a, l) => (l[1].length + l[0].length > a[1].length + a[0].length ? l : a), ['', '']);
   const fit = (who, txt) => { dWho.textContent = who; dTxt.textContent = txt; box.style.fontSize = ''; const room = dlg.clientHeight * .86; let px = parseFloat(getComputedStyle(box).fontSize); while (box.offsetHeight > room && px > 10) { px *= .92; box.style.fontSize = px + 'px'; } return px; };
-  if (FIT.key !== key) { FIT = { key, px: fit(longest[0], longest[1]) }; dWho.textContent = curWho; dTxt.textContent = cur; }
+  dlg.style.top = '';
+  if (FIT.key !== key) { FIT = { key, px: Math.max(TXT_MIN, fit(longest[0], longest[1])) }; dWho.textContent = curWho; dTxt.textContent = cur; }
   box.style.fontSize = FIT.px + 'px';
-  if (box.offsetHeight > dlg.clientHeight * .86) fit(curWho, cur);      // a line longer than any in this level (Level 2's own): fit it alone
+  // Build 97 (owner: "I like text size not too small (too large is bad but too small is hard to read)"): never below
+  // TXT_MIN; a line that then needs more room lifts the top of the strip a little instead of shrinking
+  const need = box.offsetHeight / .86 / stage.clientHeight * 100; if (need > 17.5) dlg.style.top = (100 - need) + '%';
 }
+const TXT_MIN = 16;
 addEventListener('resize', () => { if (dlg.classList.contains('on')) fitWords(dlg.querySelector('.txt')); });
 function words(who, txt, cls) {
   dWho.textContent = who; dTxt.textContent = txt; dlg.className = 'on ' + cls;
@@ -1464,6 +1468,7 @@ function buildRow() {
     const M = rowMeta(key), dc = (M.door[0] + M.door[2] / 2) * k;      // the door's middle, from the house's left
     ROW.push({ key, flip, who, a, x: lineUp(a, p) - (flip ? M.w * k - dc : dc), lit: [who === 'b' ? 1 : 0, who === 'a' ? 1 : 0], on: false, open: 0, f: -1 });
   }
+  ROW.forEach((it, i) => { it.st = 1 + i % (WIN_STYLES - 1); });      // each house its own window style (his own is 0), no two alike (build 97)
 }
 function drawRow(cam) {
   const L = LEVELS.home, p = L.par, k = p * HOUSE_K, c = ctx;
@@ -1478,7 +1483,7 @@ function drawRow(cam) {
     const B = rowPic(it.key), M = rowMeta(it.key), x = it.x - cam * p, w = M.w * k, h = M.h * k, y = L.base + 3 - h; if (!B || x > VW + 20 || x + w < -20) continue;
     const wm = warm((x + w / 2) / VW), dark = css(mix(layerCol(.9)[0], layerCol(.9)[1], wm));
     c.save(); if (it.flip) { c.translate(x + w, 0); c.scale(-1, 1); } else c.translate(x, 0);
-    M.wins.forEach((v, i) => { const wx = v[0] * k - 2, wy = y + v[1] * k - 2, ww = v[2] * k + 4, wh = v[3] * k + 4; if (it.lit[i]) room(c, wx, wy, ww, wh, lerp(.8, .45, wm), dark, it.x * .37 + i * 5); else { c.fillStyle = dark; c.fillRect(wx, wy, ww, wh); } });
+    M.wins.forEach((v, i) => { const wx = v[0] * k - 2, wy = y + v[1] * k - 2, ww = v[2] * k + 4, wh = v[3] * k + 4; if (it.lit[i]) room(c, wx, wy, ww, wh, lerp(.8, .45, wm), dark, it.x * .37 + i * 5, it.st, i && M.wins[i][1] === M.wins[0][1] ? 1 : 0); else { c.fillStyle = dark; c.fillRect(wx, wy, ww, wh); } });
     c.drawImage(B.cool, 0, y, w, h); if (wm > .01) { c.globalAlpha = wm; c.drawImage(B.warm, 0, y, w, h); c.globalAlpha = 1; }
     sills(c, M.wins, k, y, dark);
     const o = it.open || 0, e = o * o * (3 - 2 * o);
@@ -1530,17 +1535,44 @@ function drawWatchers(cam) {
 // generic and less copy paste (or different in simple ways)"). So: just lamplight on a wall, seen through the window's
 // bars. Each window differs in plain ways only: where the light sits, how bright it is, and at most ONE simple thing
 // (a curtain drawn to one side, or the dark of a sill or table along the bottom). v = any number; it picks them.
-function room(c, x, y, w, h, a, dark, v) {
+// Build 97 (owner: "windows in house should be consistent within that house (between houses style should vary and can
+// vary quite a bit); curtain on one house should not look anything like curtain on another house"): every house has ONE
+// window style (st, from WIN_STYLES), the same in all its windows (mirrored on the house's other side where it has a
+// side); only the lamp's place and brightness differ a little from window to window (v). No two houses seen together
+// share a style. Styles: 0 two curtains tied back in curves, 1 one long straight curtain down the left with a tie,
+// 2 a half-curtain across the lower part, 3 small diamond leaded panes, 4 wooden shutters half closed, 5 a short
+// frilled cloth across the top and a jug on the sill, 6 plain cross bars and a candle on the sill.
+const WIN_STYLES = 7;
+function room(c, x, y, w, h, a, dark, v, st = 0, side = 0) {
   const r = n => { const t = Math.sin(v * 127.1 + n * 311.7) * 43758.5453; return t - Math.floor(t); };
-  const fx = x + w * (.1 + .8 * r(1)), fy = y + h * (.45 + .5 * r(2)), br = a * (.6 + .4 * r(3)), g = c.createRadialGradient(fx, fy, 0, fx, fy, Math.max(w, h) * (.8 + .5 * r(4)));
+  const fx = x + w * (.3 + .4 * r(1)), fy = y + h * (.5 + .3 * r(2)), br = a * (.75 + .25 * r(3)), g = c.createRadialGradient(fx, fy, 0, fx, fy, Math.max(w, h) * (.9 + .3 * r(4)));
   g.addColorStop(0, css(PAL.light, br)); g.addColorStop(.35, css(PAL.win, .85 * br)); g.addColorStop(1, css(mix(PAL.win, [40, 22, 10], .6), .75 * br));
   c.save(); c.beginPath(); c.rect(x, y, w, h); c.clip();
   c.fillStyle = dark; c.fillRect(x, y, w, h); c.fillStyle = g; c.fillRect(x, y, w, h);
-  c.fillStyle = dark; c.globalAlpha = .75;
-  const thing = Math.floor(r(5) * 3), left = r(6) < .5;
-  if (thing === 1) { c.beginPath(); if (left) { c.moveTo(x, y); c.lineTo(x + w * .34, y); c.quadraticCurveTo(x + w * .16, y + h * .55, x, y + h * .7); } else { c.moveTo(x + w, y); c.lineTo(x + w * .66, y); c.quadraticCurveTo(x + w * .84, y + h * .55, x + w, y + h * .7); } c.fill(); }
-  if (thing === 2) c.fillRect(x, y + h * (.76 + .1 * r(7)), w, h * .3);
-  c.globalAlpha = 1; c.fillRect(x + w / 2 - .9, y, 1.8, h); if (r(8) < .6) c.fillRect(x, y + h * .46 - .9, w, 1.8);      // the window's bars
+  c.fillStyle = dark; c.strokeStyle = dark; const L = side ? -1 : 1, X = u => side ? x + w - u * w : x + u * w;      // side: mirror it on the other side of the house
+  if (st === 0) {                 // two curtains, each tied back in a curve
+    c.globalAlpha = .8; for (const s of [0, 1]) { const ex = s ? x + w : x, d = s ? -1 : 1; c.beginPath(); c.moveTo(ex, y); c.lineTo(ex + d * w * .3, y); c.quadraticCurveTo(ex + d * w * .08, y + h * .45, ex + d * w * .16, y + h * .62); c.lineTo(ex + d * w * .22, y + h); c.lineTo(ex, y + h); c.fill(); }
+  } else if (st === 1) {          // one long straight curtain, gathered by a tie
+    c.globalAlpha = .82; c.beginPath(); c.moveTo(X(0), y); c.lineTo(X(.42), y); c.lineTo(X(.2), y + h * .55); c.lineTo(X(.26), y + h); c.lineTo(X(0), y + h); c.fill();
+    c.globalAlpha = 1; c.fillRect(Math.min(X(.12), X(.28)), y + h * .53, w * .16, 1.6);
+  } else if (st === 2) {          // a half-curtain across the lower part, lamplight glowing through it
+    c.globalAlpha = .55; c.fillRect(x, y + h * .55, w, h * .45); c.globalAlpha = .8; c.fillRect(x, y + h * .55 - 1, w, 2);
+  } else if (st === 3) {          // small diamond panes of leaded glass
+    c.globalAlpha = .7; c.lineWidth = .9; c.beginPath(); const d = w / 3.2;
+    for (let k = -4; k < 8; k++) { c.moveTo(x + k * d, y); c.lineTo(x + k * d + h, y + h); c.moveTo(x + k * d + h, y); c.lineTo(x + k * d, y + h); }
+    c.stroke();
+  } else if (st === 4) {          // wooden shutters, half closed, with plank lines
+    c.globalAlpha = .92; c.fillRect(x, y, w * .3, h); c.fillRect(x + w * .7, y, w * .3, h);
+    c.globalAlpha = .5; c.fillStyle = css(PAL.win, .25 * a); for (const u of [.1, .2, .8, .9]) c.fillRect(x + w * u, y, .8, h);
+  } else if (st === 5) {          // a short frilled cloth across the top, and a jug on the sill
+    c.globalAlpha = .8; c.beginPath(); c.moveTo(x, y); c.lineTo(x + w, y); c.lineTo(x + w, y + h * .2); for (let k = 6; k >= 0; k--) c.quadraticCurveTo(x + w * (k + .5) / 6, y + h * .27, x + w * k / 6, y + h * .2); c.fill();
+    c.globalAlpha = .9; const jx = X(.7); c.beginPath(); c.ellipse(jx, y + h - h * .1, w * .09, h * .1, 0, 0, 7); c.fill(); c.fillRect(jx - w * .04, y + h - h * .26, w * .08, h * .08);
+  } else {                        // plain bars and a candle burning on the sill
+    const cx = X(.3); c.globalAlpha = 1; c.fillStyle = css(PAL.light, Math.min(1, br * 1.2)); c.beginPath(); c.ellipse(cx, y + h * .8, 1.6, 3, 0, 0, 7); c.fill();
+    c.fillStyle = css([250, 235, 205], .9 * a); c.fillRect(cx - 1.5, y + h * .84, 3, h * .16); c.fillStyle = dark;
+  }
+  c.globalAlpha = 1; c.fillStyle = dark;
+  if (st !== 3) { c.fillRect(x + w / 2 - .9, y, 1.8, h); if (st !== 4 && st !== 1) c.fillRect(x, y + h * .46 - .9, w, 1.8); }      // the window's bars (none across the diamond panes)
   c.restore();
 }
 // FEET IN A LIT DOORWAY (owner, build 76: "feet fix for neighbors"): with lamplight all round them right down to the
@@ -1558,7 +1590,7 @@ function home(cam) {                       // drawn in screen units, before the 
   if (x > VW + 20 || x + M.w * k < -20) return;
   const wm = warm(doorX(cam) / VW), dark = css(mix(layerCol(.9)[0], layerCol(.9)[1], wm)), cy = y + dy + dh * .5;
   // behind the painting: dim light in the windows, and the doorway (dark, then warm light as the door swings back to the left)
-  M.wins.forEach((w, i) => room(c, x + w[0] * k - 2, y + w[1] * k - 2, w[2] * k + 4, w[3] * k + 4, lerp(1, .55, wm), dark, 3 + i * 4));
+  M.wins.forEach((w, i) => room(c, x + w[0] * k - 2, y + w[1] * k - 2, w[2] * k + 4, w[3] * k + 4, lerp(1, .55, wm), dark, 3 + i * 4, 0, i));
   c.fillStyle = dark; c.fillRect(x + dx - 2, y + dy - 2, dw + 4, dh + 4);
   if (e > 0) {
     const g = c.createRadialGradient(x + dx + dw * .55, cy, 0, x + dx + dw * .55, cy, 110); g.addColorStop(0, css(PAL.light, .95 * e)); g.addColorStop(1, css(PAL.win, .8 * e));
@@ -2030,6 +2062,6 @@ document.getElementById('on2').onclick = () => SL.start();
   for (const [who, txt] of INTRO) vox(who, txt);          // the first words, ready before Begin is pressed
 })();
 </script>
-<script src="slough.js?v=96"></script>
+<script src="slough.js?v=98"></script>
 </body>
 </html>
