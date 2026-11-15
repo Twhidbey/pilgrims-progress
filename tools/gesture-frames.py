@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Turn an AI video of a figure doing one movement on the spot (not a walk: a kneel, a reach, a climb) into game frames.
 
-  python3 tools/gesture-frames.py video.mp4 assets/help.pack --height 382 --to 300 --frames 0-40:4,42-132:2,136-236:4 [--match assets/christian-walk.pack]
+  python3 tools/gesture-frames.py video.mp4 (or a folder of frames) assets/help.pack --height 382 --to 300 --frames 0-40:4,42-132:2,136-236:4 [--match assets/christian-walk.pack]
 
 --height = how tall the standing figure is in the video, --to = how tall he should be in "video pixels" (Christian is
 288, Help 300). --frames = which video frames to keep (from-to:step). Every frame is cut from the same window, so the
@@ -15,10 +15,11 @@ from PIL import Image, ImageDraw, ImageFilter
 
 def arg(name, default): return type(default)(sys.argv[sys.argv.index(name) + 1]) if name in sys.argv else default
 video, out = sys.argv[1], sys.argv[2]; K = arg('--to', 300.0) / arg('--height', 382.0); match = arg('--match', '')
-tmp = tempfile.mkdtemp(); subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-i', video, tmp + '/%04d.png'], check=True)
-fs = sorted(glob.glob(tmp + '/*.png')); keep = []
-for part in arg('--frames', f'0-{len(fs) - 1}:2').split(','):
-    r, step = part.split(':'); a, b = r.split('-'); keep += list(range(int(a), min(int(b), len(fs) - 1) + 1, int(step)))
+if os.path.isdir(video): tmp = video                           # a folder of frames already pulled out (0003.png = video frame 3)
+else: tmp = tempfile.mkdtemp(); subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-start_number', '0', '-i', video, tmp + '/%04d.png'], check=True)
+fs = {int(os.path.basename(f)[:-4]): f for f in glob.glob(tmp + '/*.png')}; keep = []
+for part in arg('--frames', f'0-{max(fs)}:2').split(','):
+    r, step = part.split(':'); a, b = r.split('-'); keep += [i for i in range(int(a), int(b) + 1, int(step)) if i in fs]
 box = None
 for i in keep:                                                    # one window that holds the figure in every kept frame
     m = np.array(Image.open(fs[i]).convert('L')) < 215; ys = np.where(m.any(1))[0]; xs = np.where(m.any(0))[0]
