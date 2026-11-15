@@ -70,7 +70,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">story lab · build 89 · Nov 15 2026</div>
+  <div id="build">story lab · build 90 · Nov 15 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -581,7 +581,11 @@ function bakeFinish() {
 // house in one place, and it is the book's geography: he walks out to the fields, then flees past his own door.
 const FIELD_END = 1650;      // where the wheat field ends and the street begins (the wheat sinks away before it)
 const EVAN_X = 420, HOME_X = 2150, RUN_END = 5100, NEIGH_X = 6050, GATE_STOP = 6936, DOOR0 = 7006, DOOR1 = 7120, DOORM = 7063;
-const TEST_X = +(new URLSearchParams(location.search).get('x')) || 0, START_X = TEST_X || HOME_X - 280;   // he starts beside his own door; ?x=3600 starts further along, after Evangelist (for testing)
+// SKIP AHEAD (owner, build 89: "is there a way to skip ahead to a moment?"): add ?at=NAME to the link. Each name starts
+// the level just before that moment, after Evangelist. (?x=N still works for any place on the road; ?level=2 starts
+// at the Slough of Despond.)
+const AT = { door: 1500, neighbours: 3500, obstinate: 5700, gate: 6450 };
+const TEST_X = +(new URLSearchParams(location.search).get('x')) || AT[new URLSearchParams(location.search).get('at')] || 0, START_X = TEST_X || HOME_X - 280;   // he starts beside his own door; ?x=3600 starts further along, after Evangelist (for testing)
 // The lights on the road are a tune: "Amazing Grace" (New Britain, 1829), one phrase per stretch of road.
 // Each light is one note. They are spaced by the length of each note, so walking at his steady pace plays the tune in time.
 // A higher note floats higher. [beat, note]; BEAT = road walked per beat.
@@ -755,7 +759,7 @@ function reset() {
   Object.assign(P, { x: START_X, y: GY, vx: 0, face: TEST_X ? 1 : -1, anim: 1, stand: { t: QUIET[0] }, turn: 0, run: false, ranim: 0, blend: null, weep: null, turnTo: 0, turnV: null, wantBack: false, bk: 0 });
   Object.assign(G, { cam: Math.max(0, Math.min(LEVEL_W - VW, TEST_X ? START_X - VW * .38 + 40 : START_X - VW * .62 - 40)), t: 0, got: 0, extra: 0, motes: [], flyers: [], ripples: [], glints: [], taps: [], litw: [], capQ: [], cap: 0, hint: null,
     pli: null, obst: null, flare: 0, gloom: 0, gloomTo: 0, gateOpen: 0, act: null, actT: 0, ring: null, auto: null, finale: null, guard: 0, idle: 0, wins: 0,
-    evanDone: !!TEST_X, evanGone: TEST_X ? 1 : 0, neigh: TEST_X > NEIGH_X + 300, gateSeen: false, walked: false, touched: false, leaving: false, fam: TEST_X > HOME_X ? 2 : 0, door: TEST_X ? (TEST_X > HOME_X ? 1 : 0) : 1, doorShut: false, roll: TEST_X ? { t: 999, x: 0, y: 0 } : null, runZone: false, outSaid: false, watched: TEST_X > HOME_X + 900, ears: TEST_X > HOME_X });
+    evanDone: !!TEST_X, evanGone: TEST_X ? 1 : 0, neigh: TEST_X > NEIGH_X + 300, gateSeen: false, walked: false, touched: false, leaving: false, fam: TEST_X > HOME_X ? 2 : 0, door: TEST_X ? (TEST_X > HOME_X ? 1 : 0) : 1, doorShut: false, roll: TEST_X ? { t: 999, x: 0, y: 0 } : null, runZone: !!TEST_X && TEST_X < RUN_END, outSaid: false, watched: TEST_X > HOME_X + 900, ears: TEST_X > HOME_X });
   G.evan.pt = TEST_X ? 239 : 0; G.evan.go = false; G.evan.st = EVS_META.frames * 100; downs.clear(); pushing = false; keys.r = keys.push = false;
   if (TEST_X) for (const l of LIGHTS) if (l.x < Math.max(TEST_X, 2000)) l.got = true;
   for (const c of CAPS) if (c.x < TEST_X) c.done = true;
@@ -1565,17 +1569,23 @@ function home(cam) {                       // drawn in screen units, before the 
 const GATE_META = {"w": 660, "h": 700, "hole": [235, 376, 425]}, WALL_META = {"w": 716, "h": 400, "solid": 363};
 let GATE_P = null, WALL_P = null;
 const gateFit = () => { const k = (DOOR1 - DOOR0) / (GATE_META.hole[2] - GATE_META.hole[0]); return { k, x: DOOR0 - GATE_META.hole[0] * k, y: GY + 2 - GATE_META.h * k, w: GATE_META.w * k, h: GATE_META.h * k }; };
+const fadeLeft = im => { const m = mk(im.width, im.height), c = m.getContext('2d'); c.drawImage(im, 0, 0); const g = c.createLinearGradient(0, 0, im.width, 0); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(.7, 'rgba(0,0,0,1)'); c.globalCompositeOperation = 'destination-in'; c.fillStyle = g; c.fillRect(0, 0, m.width, m.height); return m; };
 function gatePainted() {
   const c = ctx, f = gateFit(), cam = G.cam, both = (B, x, y, w, h, flip) => {
-    const wm = warm((x + w / 2 - cam) / VW);
+    // the golden copy goes on in thin strips, each as golden as the weather where it stands, so no seam shows between pieces
     c.save(); if (flip) { c.translate(x + w, 0); c.scale(-1, 1); } else c.translate(x, 0);
-    c.drawImage(B.cool, 0, y, w, h); if (wm > .01) { const a = c.globalAlpha; c.globalAlpha = a * wm; c.drawImage(B.warm, 0, y, w, h); c.globalAlpha = a; }
-    c.restore();
+    c.drawImage(B.cool, 0, y, w, h);
+    const N = 8, sw = B.warm.width / N, a = c.globalAlpha;
+    for (let i = 0; i < N; i++) { const lx = i * w / N, sx = flip ? x + w - lx - w / N : x + lx, wm = warm((sx + w / N / 2 - cam) / VW); if (wm > .01) { c.globalAlpha = a * wm; c.drawImage(B.warm, i * sw, 0, sw, B.warm.height, lx - .3, y, w / N + .6, h); } }
+    c.globalAlpha = a; c.restore();
   };
   // the wall: one unbroken line from far to the left (it thins into the mist there), through the gate, and off the right
   const kw = 152 / WALL_META.solid, ww = WALL_META.w * kw, wh = WALL_META.h * kw, W0 = GATE - 760;
   let n = 0;
-  for (let x = f.x + 14 - ww; x > W0 - ww; x -= ww - 1, n++) if (x < cam + VW + 40 && x + ww > cam - 40) { c.globalAlpha = x < W0 ? .3 : x < W0 + ww ? .65 : 1; both(WALL_P, x, GY + 2 - wh, ww, wh, n % 2); c.globalAlpha = 1; }
+  // Build 90 (owner: "the walls of city gate are transparent"): every piece is solid; only the last piece, at the wall's
+  // far end, fades out into the mist toward its own left edge (a faded copy baked once, WALL_P.end).
+  if (!WALL_P.end) WALL_P.end = { cool: fadeLeft(WALL_P.cool), warm: fadeLeft(WALL_P.warm) };
+  for (let x = f.x + 14 - ww; x + ww > W0; x -= ww - 1, n++) if (x < cam + VW + 40 && x + ww > cam - 40) both(x <= W0 ? WALL_P.end : WALL_P, x, GY + 2 - wh, ww, wh, n % 2 && x > W0);
   n = 0;
   for (let x = f.x + f.w - 14; x < LEVEL_W + 80; x += ww - 1, n++) if (x < cam + VW + 40 && x + ww > cam - 40) both(WALL_P, x, GY + 2 - wh, ww, wh, n % 2);
   both(GATE_P, f.x, f.y, f.w, f.h, false);
@@ -1983,6 +1993,6 @@ document.getElementById('on2').onclick = () => SL.start();
   for (const [who, txt] of INTRO) vox(who, txt);          // the first words, ready before Begin is pressed
 })();
 </script>
-<script src="slough.js?v=89"></script>
+<script src="slough.js?v=90"></script>
 </body>
 </html>
