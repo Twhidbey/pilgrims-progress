@@ -68,7 +68,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">story lab · build 71 · Nov 15 2026</div>
+  <div id="build">story lab · build 72 · Nov 15 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -727,7 +727,7 @@ const held = () => { for (const t of downs.values()) if (G.t - t >= 9) return tr
 const lightPos = () => ({ x: 880 - G.cam * .02, y: 146 });
 
 function reset() {
-  seed = 99; buildLevel();
+  seed = 99; buildLevel(); for (const it of ROW) if (it.who) { it.on = TEST_X > it.a; it.open = it.on ? 1 : 0; }
   for (const Lr of SCN) for (const w of Lr.wins) w[5] = false;
   Object.assign(P, { x: START_X, y: GY, vx: 0, face: TEST_X ? 1 : -1, anim: 1, stand: { t: QUIET[0] }, turn: 0, run: false, ranim: 0, blend: null, weep: null, turnTo: 0, wantBack: false, bk: 0 });
   Object.assign(G, { cam: Math.max(0, Math.min(LEVEL_W - VW, TEST_X ? START_X - VW * .38 + 40 : START_X - VW * .62 - 40)), t: 0, got: 0, extra: 0, motes: [], flyers: [], ripples: [], glints: [], taps: [], litw: [], capQ: [], cap: 0, hint: null,
@@ -916,7 +916,7 @@ const runNow = () => G.ears || !RUNP.ready ? [RUN, RUN_META] : [RUNP, RUNP_META]
 function coverEars() { if (G.ears) return; if (P.run) poseChange(); G.ears = true; }
 const CHR = [], PLI = [], OBS = [], EVA = [], STD = [], RUN = [], CHR_K = .52, RUN_STEP = RUN_META.vpx * CHR_K, RUNV = RUN_STEP * .4,   // the run at its video's own speed (24 frames a second)
    CHR_STEP = CHR_META.vpx * CHR_K, PLI_STEP = PLI_META.vpx * CHR_K, OBS_STEP = OBS_META.vpx * CHR_K;
-const PACK_V = 10;                          // bump when the .pack files change, so phones fetch the new ones
+const PACK_V = 11;                          // bump when the .pack files change, so phones fetch the new ones
 // a .pack file: 4 bytes = how many frames, 4 bytes per frame = its length, then the WebP frames end to end
 async function loadPack(name, into) {
   const res = await fetch('assets/' + name + '.pack?v=' + PACK_V); if (!res.ok) throw new Error('no ' + name);      // a missing pack is left out
@@ -1107,6 +1107,7 @@ function update() {
   if (P.turnTo && (P.bk || 0) >= .99) { P.face = P.turnTo; P.turnTo = 0; P.wantBack = false; }      // half way through his turn: now he faces the light
   if (P.wantBack && !P.turnTo && (dir > 0 || G.state === 'play')) P.wantBack = false;      // the child holds to run on: he turns away
   P.bk = Math.max(0, Math.min(1, (P.bk || 0) + (P.wantBack && P.stand ? .022 : -.07)));
+  for (const it of ROW) if (it.who) { if (!it.on && G.fam === 2 && P.x > it.a - 400) { it.on = true; sweep(170, 120, .4, .02); } if (it.on) it.open = Math.min(1, it.open + .05); }      // the neighbours' doors open as he comes
   if (G.roll) G.roll.t++; if (G.hint === 'roll' && --G.rollT <= 0) clearHint('roll');
   people(); gather(); motes(); effects(); capTick(); acts(); ambience(); opening();
   if (G.state === 'play') story();
@@ -1344,17 +1345,25 @@ const doorX = cam => lineUp(HOME_X, LEVELS.home.par) - cam * LEVELS.home.par;   
 // (assets/house-b.webp: tall, gable end toward us; assets/house-c.webp: long and low), in the same tone and with the same
 // share of their painting showing, doors shut, a candle-lit room behind some of their windows. Only his door opens.
 const NB_META = {
-  b: {"w": 334.5, "h": 384.0, "wins": [[150.9, 93.8, 32.2, 42.4], [214.5, 246.7, 36.7, 42.0]]},
-  c: {"w": 647.5, "h": 342.0, "wins": [[91.3, 204.8, 38.2, 43.3], [287.4, 204.8, 36.1, 42.3]]},
+  b: {"w": 334.5, "h": 384.0, "wins": [[150.9, 93.8, 32.2, 42.4], [214.5, 246.7, 36.7, 42.0]], "door": [73.4, 235.7, 86.9, 146.0]},
+  c: {"w": 647.5, "h": 342.0, "wins": [[91.3, 204.8, 38.2, 43.3], [287.4, 204.8, 36.1, 42.3]], "door": [381.2, 192.4, 82.5, 146.0]},
 };
 const NB = {}, ROW = [];      // ROW: { key, x (left edge on the level), flip, lit: which windows show a lit room }
 function buildRow() {
   const p = LEVELS.home.par, k = p * HOUSE_K, D = lineUp(HOME_X, p), left = D - (HOUSE_META.door[0] + HOUSE_META.door[2] / 2) * k, right = left + HOUSE_META.w * k;
   ROW.length = 0;
-  ROW.gaps = [[left - 12, left], [right, right + 12], [right + 12 + NB_META.c.w * k, right + 12 + NB_META.c.w * k + 14]];      // the spaces between the houses
+  ROW.gaps = [[left - 12, left], [right, right + 12]];      // the spaces between the houses
   ROW.push({ key: 'b', x: left - 12 - NB_META.b.w * k, flip: false, lit: [0, 1] });
   ROW.push({ key: 'c', x: right + 12, flip: false, lit: [1, 0] });
-  ROW.push({ key: 'b', x: right + 12 + NB_META.c.w * k + 14, flip: true, lit: [1, 0] });
+  // THE NEIGHBOURS' DOORS (owner, build 72: "should we make neighbors smaller and put them in doorways of houses" ...
+  // "let's build it that way"). A second group of cottages stands further down the street (the same two paintings, so
+  // they must not share the picture with the first group's: mirrored and well apart). As he runs by, each door opens in
+  // turn, lit like his own, with one neighbour in it: who = which neighbour, a = where on the road Christian is when he
+  // is level with that door. [painting, mirrored?, neighbour, a]
+  for (const [key, flip, who, a] of [['b', true, 'a', 3950], ['c', true, 'b', 4290], ['b', false, 'c', 4800]]) {
+    const M = NB_META[key], dc = (M.door[0] + M.door[2] / 2) * k;      // the door's middle, from the house's left
+    ROW.push({ key, flip, who, a, x: lineUp(a, p) - (flip ? M.w * k - dc : dc), lit: [who === 'b' ? 1 : 0, who === 'a' ? 1 : 0], on: false, open: 0, f: -1 });
+  }
 }
 function drawRow(cam) {
   const L = LEVELS.home, p = L.par, k = p * HOUSE_K, c = ctx;
@@ -1371,7 +1380,18 @@ function drawRow(cam) {
     c.save(); if (it.flip) { c.translate(x + w, 0); c.scale(-1, 1); } else c.translate(x, 0);
     M.wins.forEach((v, i) => { const wx = v[0] * k - 2, wy = y + v[1] * k - 2, ww = v[2] * k + 4, wh = v[3] * k + 4; if (it.lit[i]) room(c, wx, wy, ww, wh, lerp(.8, .45, wm), dark, it.x * .37 + i * 5); else { c.fillStyle = dark; c.fillRect(wx, wy, ww, wh); } });
     c.drawImage(B.cool, 0, y, w, h); if (wm > .01) { c.globalAlpha = wm; c.drawImage(B.warm, 0, y, w, h); c.globalAlpha = 1; }
+    const o = it.open || 0, e = o * o * (3 - 2 * o);
+    if (e > 0) {                             // the door stands open: lamplight where the painted door was
+      const [dx, dy, dw, dh] = M.door.map(v => v * k), g = c.createRadialGradient(dx + dw * .5, y + dy + dh * .5, 0, dx + dw * .5, y + dy + dh * .5, 100);
+      g.addColorStop(0, css(PAL.light, .95 * e)); g.addColorStop(1, css(PAL.win, .8 * e)); c.fillStyle = g; c.fillRect(dx + 3, y + dy + 2, dw - 6, dh - 2);
+    }
     c.restore();
+    if (e > .3) {                            // and a neighbour in it, turning to keep facing him, mocking (the video loop, or the still breathing)
+      const sx = lineUp(it.a, p) - cam * p, K = CHR_K * .93 * k, fy = L.base + 2 - FEET_SINK, al = smooth(.3, 1, e);
+      it.f += ((P.x - cam > sx ? 1 : -1) - it.f) * .2; const u = (it.f + 1) / 2, vp = WATCH_PACK[it.who], vm = WATCH_VMETA[it.who];
+      const [im, meta, sy] = vp && vp.ready && vm ? [vp[Math.floor(G.t * .2 + it.a) % vp.length], vm, 1] : [WATCH_IM[it.who], WATCH_META[it.who], breath(it.a)];
+      if (im && meta) { if (u < .99) drawFrame(im, meta, sx, fy, -1, al * (u < .5 ? 1 : 2 * (1 - u)), K, sy); if (u > .01) drawFrame(im, meta, sx, fy, 1, al * (u < .5 ? 2 * u : 1), K, sy); }
+    }
   }
 }
 // The neighbours who come out to see him run ({19}: "some mocked, others threatened, and some cried after him to
@@ -1380,12 +1400,12 @@ function drawRow(cam) {
 // Obstinate and Pliable (their standing pictures), who in the book are two of these neighbours. Each turns to keep
 // facing Christian as he runs by (the picture is mirrored, with a short dissolve).
 // [picture, where on the road Christian is when he is level with them]
-const WATCHERS = [['a', 3950], ['b', 4170], ['c', 4420], ['obs', 4650], ['pli', 4730]].map(([key, a]) => ({ key, a, f: -1 }));
+const WATCHERS = [['obs', 4960], ['pli', 5040]].map(([key, a]) => ({ key, a, f: -1 }));      // only these two stand out in the lane now (they are the two who set off after him); the other three are in their doorways: see buildRow, drawRow
 const WATCH_META = { a: {"ax": 67, "ground": 302}, b: {"ax": 73, "ground": 270}, c: {"ax": 76, "ground": 290} };
 const WATCH_IM = {};
 // their movement: a short loop each from a video (assets/neighbor-a/b/c.pack, build 68), 12 pictures a second; until a
 // pack has loaded (or if it is missing) the still picture stands in, breathing
-const WATCH_PACK = { a: [], b: [], c: [] }, WATCH_VMETA = { a: null, b: null, c: null };
+const WATCH_PACK = { a: [], b: [], c: [] }, WATCH_VMETA = { a: {"ax": 67, "ground": 302}, b: {"ax": 73, "ground": 270}, c: {"ax": 76, "ground": 290} };
 // Still pictures of people are given a slow breath in code, each in its own time (owner, build 65: "should people be
 // animated?"): enough that nobody stands frozen, without a video for every figure.
 const breath = k => 1 + .011 * Math.sin(G.t / 34 + k * 2.4) + .004 * Math.sin(G.t / 13 + k);
@@ -1649,6 +1669,7 @@ function draw() {
   ctx.globalCompositeOperation = 'screen';
   const dim = 1 - .7 * G.gloom;
   for (const l of LAMPS) if (l.lit && on(l.x, 60, 160)) { const a = Math.min(1, (G.t - l.lit) / 40) * lerp(1, .45, wAt(l.x)) * (.94 + .06 * Math.sin(G.t / 9 + l.x)); glow(l.x + LAMP_DX - cam, LAMP_Y, 200, .5 * a); glow(l.x + LAMP_DX - cam, LAMP_Y, 46, .9 * a); ctx.globalAlpha = .34 * a; ctx.drawImage(GLOW, l.x + LAMP_DX - 100 - cam, GY - 6, 200, 30); }
+  for (const it of ROW) if (it.who && it.open > .02) { const sx = lineUp(it.a, LEVELS.home.par) - cam * LEVELS.home.par; if (sx > -200 && sx < VW + 200) glow(sx, LEVELS.home.base - 55, 170, .22 * it.open); }      // the glow of the neighbours' doors
   if (G.door > .02) glow(doorX(cam) + 3, LEVELS.home.base - 62, 260, .32 * G.door * lerp(1, .5, warm(doorX(cam) / VW)));   // the glow of home
   for (const s of LIGHTS) {
     const x = s.x - cam; if (s.got || x < -40 || x > VW + 40) continue;
