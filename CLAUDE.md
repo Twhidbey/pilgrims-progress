@@ -5,7 +5,7 @@ A gentle side-scrolling game for kids ages 7 to 10, following Bunyan's *The Pilg
 ## Working with the owner
 
 - **Repo: `Twhidbey/pilgrims-progress`, branch `main`.** This repo IS the live game: GitHub Pages serves it at https://twhidbey.github.io/pilgrims-progress/ (style lab: `/style-lab.html`). Pushing `main` publishes it (Pages takes 1 to 2 minutes). Commit and push after every change, then tell the owner it is live. A phone may show an old copy, so suggest adding `?v=N` to the link.
-- **Build stamp:** bottom-right corner of the game (`id="build"` in `index.html`), the style lab canvas (`id="build"` in `style-lab.html`), the 2200 concept page (`concept-2200.html`) and the story lab (`story-lab.html`): `build N · date`. Bump N on **every** push, in both files, so one number means one push. Currently **build 26**. Several chats may be pushing at once: `git fetch` and rebase on `origin/main` just before pushing, and take the next number after whatever is there.
+- **Build stamp:** bottom-right corner of the game (`id="build"` in `index.html`), the style lab canvas (`id="build"` in `style-lab.html`), the 2200 concept page (`concept-2200.html`) and the story lab (`story-lab.html`): `build N · date`. Bump N on **every** push, in both files, so one number means one push. Currently **build 27**. Several chats may be pushing at once: `git fetch` and rebase on `origin/main` just before pushing, and take the next number after whatever is there.
 - **Keep `CLAUDE.md` and `HANDOFF.md` updated after every change.** The repo is public: no names, emails or other personal details in notes, code or commits.
 - Players: kids 7 to 10, mostly on a phone. Gentle: **no lives, no game over**, on-screen touch buttons, read-aloud dialogue, short simple sentences.
 - Sister project with the same habits: `Twhidbey/math-jump` (Math Ninja).
@@ -90,7 +90,7 @@ Owner: "leaning away from the mario style initial setup and toward atmospheric s
 - **No jumps, no obstacles, no score, no counter.** One way to go. Walk, then a story moment, then walk.
 - **Built in `story-lab.html` first** (below), because other chats were changing the characters in `index.html` at the same time. **When the owner approves it, it replaces the play code in `index.html`** (or becomes `index.html`).
 
-## `story-lab.html` (Level 1 as a story walk, build 25)
+## `story-lab.html` (Level 1 as a story walk, builds 25 to 27)
 
 Live at `/story-lab.html`. Its scenery code (setup to `bakeFinish`) is a copy of `index.html`'s: keep them in step. **The characters' frames are not inside it:** they load from `assets/*.pack`. Search for these names:
 
@@ -108,6 +108,7 @@ Live at `/story-lab.html`. Its scenery code (setup to `bakeFinish`) is a copy of
 | Story text | `INTRO`, `EVAN`, `NEIGH`, `HOME`, `ONWARD`, `PART`, `GATEWORDS`, `END`; triggers in `story()`; neighbours and Pliable following in `people()` |
 | Weather | In `draw()`: rain through the city, clearing near the gate; **the gold breaks through as the gate is pushed open** (`clearAt` uses `G.gateOpen`); `G.gloom` pulls the rain back |
 | Sound, all made in the browser (no files) | `audio()` (rain hiss, a low hum on G and D, a warm note in the gold, a dark note for gloom, an echo `ECHO`), `note(midi)`, `sfx` (footsteps, mud, splash, lamp, window, puddle, wings, bell, birdsong, gate), `ambience()`. Sound button `#snd`. At the open gate the whole tune plays once with bass notes (`TUNE`, `BASS`, `G.finale`) |
+| Recorded voices (build 27) | `say(who, txt)`, `hush()`, `vox`, `voxBuf`, `voiceName(who, txt)` (a sum of speaker + words = the file name in `assets/voice/`), `fetchVoices`, `VOICE_V` (bump when recordings change), voice button `.say` (`voiceOn`). Hints are not spoken. A line with no recording is silent (the phone's robot voice is no longer used). Captions stay until their recording has finished (`G.cap`). **To record: `GEMINI_API_KEY=... python3 tools/make-voice.py`** reads every `[N/C/E/O/PL, '...']` line out of `story-lab.html`, records only the missing ones with Google's Gemini TTS, checks each by transcription, deletes recordings of lines that no longer exist. `--redo C` (or N, E, O, PL, all) records again. **Change a line's words and you must run it again**, or that line goes silent. Voices: storyteller (also Obstinate and Pliable for now), Christian, Evangelist: designed from descriptions (in `HANDOFF.md`), IDs in the tool. The key is the owner's; **never put it in the repo**; ask the owner for it (the `pilgrims-progress` cloud environment allows `generativelanguage.googleapis.com`) |
 | Things at the back of the road (nothing blocks) | `DECOR`, `thing`, `STALL`, `gate`, `doors` |
 | Testing | `story-lab.html?x=3600` starts further along the road. In a test, `update()` can be called in a loop to fast-forward; `next(true)` skips a line; `pick(true/false)`; `keys.r` / `keys.push` |
 

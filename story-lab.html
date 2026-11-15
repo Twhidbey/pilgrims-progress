@@ -32,6 +32,7 @@ button{font-family:Georgia,'Times New Roman',serif;-webkit-appearance:none;appea
 #dlg .more{position:absolute;right:1.2%;bottom:6%;font-size:clamp(11px,1.6vw,15px);color:rgba(244,236,220,.7)}
 #dlg.cap .more,#dlg.cap .say{display:none}
 #dlg.act .more{color:#e8c27c;font-style:italic;animation:glowtxt 2.2s ease-in-out infinite}
+#dlg .say.off{opacity:.3}
 #dlg .say{position:absolute;right:.6%;top:8%;border:none;background:none;font-size:clamp(15px,2.4vw,22px);cursor:pointer;padding:.1em;opacity:.85;pointer-events:auto}
 @keyframes rise{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 @keyframes glowtxt{0%,100%{opacity:.55}50%{opacity:1}}
@@ -52,7 +53,7 @@ body.portrait #rot{display:block}
 <body>
 <div id="wrap"><div id="stage">
   <canvas id="cv"></canvas>
-  <div id="dlg"><div class="txt"><span class="who"></span><span class="t"></span></div><div class="more">tap ▸</div><button class="say" aria-label="Read to me">🔊</button></div>
+  <div id="dlg"><div class="txt"><span class="who"></span><span class="t"></span></div><div class="more">tap ▸</div><button class="say" aria-label="Voice on or off">🔊</button></div>
   <div id="choice"><button id="chHome">Go home</button><button id="chOn">Go on to the light</button></div>
   <div id="title" class="card">
     <h1>Pilgrim's Progress</h1>
@@ -66,7 +67,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">story lab · build 26 · Nov 14 2026</div>
+  <div id="build">story lab · build 27 · Nov 15 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -75,6 +76,7 @@ body.portrait #rot{display:block}
 //   Things answer a touch (lamps, windows, birds, the bell, puddles, the far light). Story moments ask for one simple act.
 // The scenery code below (setup .. bakeFinish) is copied from index.html: keep the two in step.
 // The characters' frames are NOT in this file: they load from assets/*.pack (made by tools/pack-frames.py from index.html).
+// The spoken lines are recordings in assets/voice (made by tools/make-voice.py from the words in this file).
 const CHR_META={"ax": 93, "ground": 295, "frames": 38, "vpx": 4.9, "rest": [12, 29], "leap": 10};
 const PLI_META={"ax": 98, "ground": 298, "frames": 32, "vpx": 6.0, "rest": [0, 18]};
 const OBS_META={"ax": 95, "ground": 307, "frames": 32, "vpx": 6.0, "rest": [23]};
@@ -416,13 +418,14 @@ function buildLevel() {
 }
 
 // ---------- sound: everything is made in the browser (no sound files) ----------
-let AC = null, OUT, ECHO, NOISE, rainG, padG, warmG, gloomG, creakG, creakO, muted = false;
+let AC = null, OUT, VOICEG, ECHO, NOISE, rainG, padG, warmG, gloomG, creakG, creakO, muted = false;
 function audio() {
   if (AC) return AC;
   try {
     AC = new (window.AudioContext || window.webkitAudioContext)();
     OUT = AC.createGain(); OUT.gain.value = muted ? 0 : 1;
     const comp = AC.createDynamicsCompressor(); OUT.connect(comp); comp.connect(AC.destination);
+    VOICEG = AC.createGain(); VOICEG.gain.value = 1.15; VOICEG.connect(OUT);
     const gain = (v, to) => { const g = AC.createGain(); g.gain.value = v; if (to) g.connect(to); return g; };
     const filt = (type, f, q, to) => { const b = AC.createBiquadFilter(); b.type = type; b.frequency.value = f; if (q) b.Q.value = q; if (to) b.connect(to); return b; };
     // an echo that gives the notes room to ring
@@ -530,12 +533,12 @@ function reset() {
 // and can run a little function when it appears ([who, text, act, fn]).
 // caption(): words said while walking; they pass on their own. hint(): a quiet prompt that stays until it is done.
 const dlg = document.getElementById('dlg'), dWho = dlg.querySelector('.who'), dTxt = dlg.querySelector('.t'), dMore = dlg.querySelector('.more');
-let lines = [], li = 0, after = null, readAloud = false;
+let lines = [], li = 0, after = null;
 const C = 'Christian', E = 'Evangelist', N = '', O = 'Obstinate', PL = 'Pliable';
 function words(who, txt, cls) {
   dWho.textContent = who; dTxt.textContent = txt; dlg.className = 'on ' + cls;
   const box = dlg.querySelector('.txt'); box.style.animation = 'none'; void box.offsetWidth; box.style.animation = '';
-  if (readAloud) say(txt);
+  if (!cls.includes('hint')) say(who, txt); else hush();
 }
 function talk(arr, then) {
   lines = arr; li = 0; after = then; G.state = 'dialog'; G.capQ.length = 0; G.cap = 0; G.hint = null; G.guard = 20;
@@ -550,13 +553,36 @@ function next(force) {
   if (G.state !== 'dialog' || (!force && (G.act || G.guard > 0))) return;
   G.act = null; G.ring = null; li++;
   if (li < lines.length) { show(); return; }
-  dlg.className = ''; document.body.classList.remove('talking'); G.state = 'play'; window.speechSynthesis && speechSynthesis.cancel();
+  dlg.className = ''; document.body.classList.remove('talking'); G.state = 'play'; hush();
   const f = after; after = null; f && f();
 }
-function say(txt) {
-  if (!window.speechSynthesis) return;
-  speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(txt); u.rate = .9; speechSynthesis.speak(u);
+// ---------- the voices: one small recording per line, in assets/voice (made by tools/make-voice.py) ----------
+// A line's file is named by a sum of who says it and the words, so the words on screen and the recording always belong together.
+// A line with no recording is simply silent.
+const VOX = new Map(), VOICE_V = 1;       // bump VOICE_V when recordings change, so phones fetch the new ones
+let voiceOn = true, voxSrc = null, sayN = 0;
+function voiceName(who, txt) { let h = 0x811c9dc5; const t = who + '|' + txt; for (let i = 0; i < t.length; i++) h = Math.imul(h ^ t.charCodeAt(i), 0x01000193) >>> 0; return h.toString(16).padStart(8, '0'); }
+function vox(who, txt) {
+  const n = voiceName(who, txt); let v = VOX.get(n);
+  if (!v) { v = { raw: fetch('assets/voice/' + n + '.mp3?v=' + VOICE_V).then(r => r.ok ? r.arrayBuffer() : null).catch(() => null), buf: null }; VOX.set(n, v); }
+  return v;
+}
+async function voxBuf(v) {
+  if (!v.buf && AC) { const raw = await v.raw; if (raw && !v.buf) v.buf = await new Promise(res => AC.decodeAudioData(raw.slice(0), res, () => res(null))); }
+  return v.buf;
+}
+function hush() { sayN++; if (voxSrc) { try { voxSrc.stop(); } catch (e) {} voxSrc = null; } }
+async function say(who, txt) {
+  hush(); if (!voiceOn || !audio()) return;
+  const me = sayN, buf = await voxBuf(vox(who, txt));
+  if (!buf || me !== sayN) return;
+  voxSrc = AC.createBufferSource(); voxSrc.buffer = buf; voxSrc.connect(VOICEG); voxSrc.start();
+  if (G.cap > 0) G.cap = Math.max(G.cap, Math.ceil(buf.duration * 60) + 50);     // words said while walking stay until they have been spoken
+}
+// fetch every line's recording quietly, in story order, while the child is already playing
+async function fetchVoices() {
+  const all = [...INTRO, ...EVAN]; for (const c of CAPS) all.push(...c.lines); all.push(...NEIGH, ...HOME, ...ONWARD, ...PART, ...GATEWORDS, ...END);
+  for (const [who, txt] of all) { const v = vox(who, txt); await v.raw; await voxBuf(v); }
 }
 function caption(arr) { for (const l of arr) G.capQ.push(l); }
 function hint(key, txt) { if (G.state !== 'play' || G.cap > 0 || G.capQ.length) return; G.hint = key; words('', txt, 'cap hint'); document.body.classList.add('capped'); }
@@ -1113,18 +1139,20 @@ addEventListener('keydown', e => {
   keys.r = true;
 });
 addEventListener('keyup', e => { if (e.code === 'Space' || e.code === 'Enter' || e.code === 'ArrowRight' || e.code === 'KeyD') keys.r = keys.push = false; });
-dlg.querySelector('.say').addEventListener('click', () => { readAloud = !readAloud; if (readAloud) say(dTxt.textContent); else window.speechSynthesis && speechSynthesis.cancel(); });
+const sayEl = dlg.querySelector('.say');
+sayEl.addEventListener('click', () => { voiceOn = !voiceOn; sayEl.classList.toggle('off', !voiceOn); if (voiceOn) say(dWho.textContent, dTxt.textContent); else hush(); });
 const sndEl = document.getElementById('snd');
 sndEl.onclick = () => { muted = !muted; sndEl.classList.toggle('off', muted); if (AC) OUT.gain.setTargetAtTime(muted ? 0 : 1, AC.currentTime, .05); };
 
+let runN = 0;
 function start() {
   document.getElementById('title').style.opacity = 0; setTimeout(() => { document.getElementById('title').style.display = 'none'; }, 900);
   document.getElementById('endc').className = 'card';
   document.body.classList.add('playing');
   reset();
-  if (audio()) { AC.resume(); setTimeout(() => sfx.bell(.6), 900); }
+  hush(); if (audio()) { AC.resume(); setTimeout(() => sfx.bell(.6), 300); fetchVoices(); }
   if (START_X > 140) { G.state = 'play'; return; }
-  talk(INTRO);
+  const run = ++runN; G.state = 'wait'; setTimeout(() => { if (run === runN && G.state === 'wait') talk(INTRO); }, 1700);   // the bell, then the story
 }
 document.getElementById('play').onclick = start;
 document.getElementById('again').onclick = start;
@@ -1141,6 +1169,7 @@ document.getElementById('again').onclick = start;
   document.getElementById('play').style.visibility = 'visible';
   requestAnimationFrame(t => { lastT = t; loop(t); });
   loadPack('evangelist', EVA).then(() => Promise.all([loadPack('obstinate', OBS), loadPack('pliable', PLI)]));
+  for (const [who, txt] of INTRO) vox(who, txt);          // the first words, ready before Begin is pressed
 })();
 </script>
 </body>

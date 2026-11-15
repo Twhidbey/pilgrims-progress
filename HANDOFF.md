@@ -132,6 +132,18 @@ The game is `index.html` (one file, no build step). `style-lab.html` is the art-
 - Owner: "I would like to keep files trim." `walk-lab.html` deleted (nothing used it). Next to trim: the frames inside `index.html` when the story lab replaces the game, and `concept-2200.html` when a 2200 look is chosen.
 - Owner asked about an AI recorded voice for the story. Advice given in chat: one sound file per line, made with an AI voice tool; a list of the lines by speaker is in `story-lab.html` (`INTRO`, `EVAN`, `NEIGH`, `HOME`, `ONWARD`, `PART`, `GATEWORDS`, `END`, `CAPS`). Not built yet: `say()` would play the file for a line and fall back to the phone's voice.
 
+## Built Nov 15, 2026 (build 27): recorded voices in the story lab
+- Owner wanted an AI voice ("deep like Tolkien reading", English accent), then separate voices for Christian and Evangelist ("really mature wise voice, it can be higher"), made through Google's API.
+- **Three voices designed from descriptions** with Google's Gemini TTS voice design, in the owner's Google project:
+  - Storyteller: "An elderly English man with a deep, low, gravelly voice, like an old professor reading his own tale aloud by the fire. Rich and resonant, slow and measured, with long, unhurried pauses. Grave but kind, with quiet wonder underneath. An old-fashioned, educated English accent. Never bright, light, sing-song or cartoonish."
+  - Evangelist: "A very old, wise English man in his late seventies. A calm, kind, knowing voice, a little higher and lighter than a bass, slightly thin and papery with age but steady and clear. He speaks slowly, with certainty and gentleness, like a wise old teacher who has seen a great deal. An educated, old-fashioned English accent. Never booming, hurried or theatrical."
+  - Christian: "An ordinary English working man in his thirties. A quiet, earnest, weary voice of middle pitch: troubled and heavy-hearted, but sincere and gentle. Soft-spoken, plain and natural, with a mild English accent. He speaks slowly and thoughtfully. Never bright, cheerful, hurried or theatrical."
+  - Obstinate and Pliable use the storyteller's voice for now.
+- The owner had designed a storyteller voice of their own in Google's Playground, but it belongs to a different Google project, so the key could not reach it; the storyteller above was made from the same description instead. **If the owner prefers their own:** make it again in the "pilgrims progress" project, send the ID, put it in `tools/make-voice.py` and run `--redo N` (and O, PL).
+- **`tools/make-voice.py`** records each line into `assets/voice/` (one small MP3 per line, 25 lines, 650 KB), checks the words by transcription, and keeps the folder trim. `story-lab.html` plays the recording with each line; the voice button in the strip turns it off. The phone's robot voice is gone.
+- **Nobody has listened to the finished lines in the game yet** (the words were checked by machine, the sound was not): the owner's ear decides. Samples of the three voices were sent in chat.
+- The owner pasted the API key in chat; advised to delete it in AI Studio and make a new one when the voices are settled. It is not in the repo.
+
 ## Open questions for the owner
 0. **Story lab (build 25):** is this the right shape for the game? How does it sound? Is "Go home" a good choice to offer? Should it replace the game now?
 1. How does the game feel on the phone: smooth? Anything hard to see (dark Christian against dark houses, crates, barrels)?
