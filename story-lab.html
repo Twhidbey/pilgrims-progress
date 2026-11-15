@@ -68,7 +68,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">story lab · build 63 · Nov 15 2026</div>
+  <div id="build">story lab · build 64 · Nov 15 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -754,7 +754,7 @@ async function say(who, txt) {
   hush(); if (!audio()) return;
   const me = sayN, buf = await voxBuf(vox(who, txt));
   if (!buf || me !== sayN) return;
-  voxSrc = AC.createBufferSource(); voxSrc.buffer = buf; voxSrc.connect(who === C || who === N ? CLEAR : VOICEG);      // Christian and the storyteller stay clear when his fingers are in his ears voxSrc.start();
+  voxSrc = AC.createBufferSource(); voxSrc.buffer = buf; voxSrc.connect(who === C || who === N ? CLEAR : VOICEG); voxSrc.start();      // Christian and the storyteller stay clear when his fingers are in his ears
   if (G.cap > 0) G.cap = Math.max(G.cap, Math.ceil(buf.duration * 60) + 50);     // words said while walking stay until they have been spoken
   else if (G.state === 'dialog' && G.guardKey === who + '|' + txt && !HEARD.has(G.guardKey)) G.guard = Math.ceil(buf.duration * 60) + 12;   // and a line cannot be skipped while it is being spoken
 }
@@ -1273,6 +1273,9 @@ const HOUSE_DEPTH = .44;      // the tone of his house and its row: paler than t
 const HOUSE_K = .9;      // the cottage's size against its picture's sizes (build 50: it and the family a little smaller)
 const BACK_META = {"ax": 72, "ground": 298};      // Christian seen from behind (assets/christian-back.webp), for the moment his wife calls
 let BACK = null, RIM = null;
+// a figure's shape as a shadow, made once: dark at the feet, fainter toward the head
+const mkShadow = im => { const m = mk(Math.ceil(im.width / 2), Math.ceil(im.height / 2)), c = m.getContext('2d'); c.drawImage(im, 0, 0, m.width, m.height); const f = c.createLinearGradient(0, 0, 0, m.height); f.addColorStop(0, 'rgba(6,8,14,.25)'); f.addColorStop(1, 'rgba(6,8,14,1)'); c.globalCompositeOperation = 'source-in'; c.fillStyle = f; c.fillRect(0, 0, m.width, m.height); return m; };
+let FAM_SH = null, WIFE_SH = null;
 let WIFE = null; const WIFE_META = {"ax": 45, "ground": 254};      // his wife alone, watching him from the door at the opening (assets/wife.webp)
 let HOUSE = null, FAM = null, OBS_ST = null, PLI_ST = null;
 const loadImg = name => fetch('assets/' + name + '?v=' + PACK_V).then(r => r.ok ? r.blob().then(toImage) : null).catch(() => null);   // a missing picture is just left out
@@ -1491,6 +1494,15 @@ function draw() {
     g.addColorStop(0, css(lamp, .95 * G.door)); g.addColorStop(.3, css(lamp, .85 * G.door)); g.addColorStop(.65, css(lamp, .5 * G.door)); g.addColorStop(1, css(lamp, 0));
     ctx.save(); ctx.translate(doorX(cam) + cam + 3, LEVELS.home.base + 2); ctx.scale(1, .14); ctx.globalCompositeOperation = 'color-dodge';
     ctx.fillStyle = g; ctx.beginPath(); ctx.rect(-R, 0, R * 2, R); ctx.fill(); ctx.restore();      // the lower half of the pool: only on the ground, not up the wall
+    // The shadows of those standing in the door (owner, build 64: "can you put shadows of people (wife and kids) when
+    // they are in door"): the light is behind them, so their shapes fall forward out of the doorway onto the lit ground,
+    // flat like the pool (a little way down the picture, never streaming toward us).
+    { const alone = !G.fam && WIFE && WIFE_META, sh = alone ? WIFE_SH : FAM_SH, im = alone ? WIFE : FAM, meta = alone ? WIFE_META : FAM_META, e = G.door * G.door * (3 - 2 * G.door);
+      if (sh && im && e > .3) {
+        const L = LEVELS.home, K = CHR_K * .93 * HOUSE_K * L.k, off = alone ? 8 : 2;
+        ctx.save(); ctx.translate(doorX(cam) + cam + off, L.base + 2); ctx.transform(G.fam ? 1 : -1, 0, -off / 30, -.24, 0, 0);
+        ctx.globalAlpha = .65 * smooth(.3, 1, e); ctx.drawImage(sh, -meta.ax * K, -meta.ground * K, im.width * K, im.height * K); ctx.restore();
+      } }
     // His shadow in that light: his own shape laid down on the ground, pointing away from the door. The ground is seen
     // almost edge-on, so the shadow is long sideways and only a little way down the picture (flat, like the pool).
     const dxs = P.x - cam - doorX(cam), near = G.door * smooth(330, 90, Math.abs(dxs)), bk = BACK ? P.bk || 0 : 0;
@@ -1662,7 +1674,7 @@ document.getElementById('again').onclick = start;
   document.getElementById('sub').textContent = 'The City of Destruction';
   document.getElementById('open').style.visibility = 'visible';
   requestAnimationFrame(t => { lastT = t; loop(t); });
-  Promise.all([loadPack('evangelist', EVA), loadPack('evangelist-stand', EVS)]).then(() => Promise.all([loadImg('house.webp').then(im => { HOUSE = im && bakeTint(im, HOUSE_DEPTH, HOUSE_DETAIL); }), ...['b', 'c'].map(key => loadImg('house-' + key + '.webp').then(im => { if (im) NB[key] = bakeTint(im, HOUSE_DEPTH, HOUSE_DETAIL); })), loadImg('family.webp').then(im => { FAM = im; }), loadImg('wife.webp').then(im => { WIFE = im; }), ...['a', 'b', 'c'].map(key => loadImg('neighbor-' + key + '.webp').then(im => { WATCH_IM[key] = im; })), loadImg('christian-back.webp').then(im => { BACK = im; }), loadPack('christian-run', RUN), loadPack('christian-run-plain', RUNP)]))
+  Promise.all([loadPack('evangelist', EVA), loadPack('evangelist-stand', EVS)]).then(() => Promise.all([loadImg('house.webp').then(im => { HOUSE = im && bakeTint(im, HOUSE_DEPTH, HOUSE_DETAIL); }), ...['b', 'c'].map(key => loadImg('house-' + key + '.webp').then(im => { if (im) NB[key] = bakeTint(im, HOUSE_DEPTH, HOUSE_DETAIL); })), loadImg('family.webp').then(im => { FAM = im; if (im) FAM_SH = mkShadow(im); }), loadImg('wife.webp').then(im => { WIFE = im; if (im) WIFE_SH = mkShadow(im); }), ...['a', 'b', 'c'].map(key => loadImg('neighbor-' + key + '.webp').then(im => { WATCH_IM[key] = im; })), loadImg('christian-back.webp').then(im => { BACK = im; }), loadPack('christian-run', RUN), loadPack('christian-run-plain', RUNP)]))
     .then(() => Promise.all([loadPack('obstinate', OBS), loadPack('pliable', PLI), loadImg('obstinate-stand.webp').then(im => { OBS_ST = im; }), loadImg('pliable-stand.webp').then(im => { PLI_ST = im; })]));
   for (const [who, txt] of INTRO) vox(who, txt);          // the first words, ready before Begin is pressed
 })();
