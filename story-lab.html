@@ -68,7 +68,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">story lab · build 43 · Nov 15 2026</div>
+  <div id="build">story lab · build 44 · Nov 15 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -403,10 +403,11 @@ function buildLevel() {
   // moment at its edges, one leaving as the next arrives.)
   // a = where on the road Christian is when the thing is level with him. Things on 'f1' hide him as he passes, so they
   // must stand where he never stops to talk (build 43).
-  // Sizes on 'mid' must agree with his house: its doorway is 146 high, so the stall's poles are 150 and a cart wheel about 70.
+  // Sizes on 'mid' must agree with his house: its doorway is 146 high, so a cart wheel is about 70.
+  // The market stall and the barrel were removed in build 44 (owner: "need this to be pretty stripped down and elegant").
   THINGS.length = 0;
   const flock = (x, y, n, par = 1, s = 1, lv = 'road') => { const b = []; for (let i = 0; i < n; i++) b.push({ dx: (i - (n - 1) / 2) * 13 + (rnd() - .5) * 5, s: .85 + rnd() * .3, f: rnd() < .5 ? 1 : -1 }); FLOCKS.push({ x, y, b, par, s, lv, away: false }); };
-  for (const [lv, k, a, birds] of [['mid', 'stall', 700, 4], ['f1', 'barrel', 1650, 2], ['mid', 'wall', 3150, 0], ['mid', 'cart', 3850, 3], ['f1', 'crates', 4800, 0]]) {
+  for (const [lv, k, a, birds] of [['mid', 'wall', 3150, 0], ['mid', 'cart', 3850, 3], ['f1', 'crates', 4800, 0]]) {
     const L = LEVELS[lv], m = PROP_META[k], t = { lv, k, w: m.w * L.k, h: m.h * L.k }; t.x = lineUp(a, L.par) - t.w / 2; THINGS.push(t);
     if (birds) flock(t.x + t.w * m.perch[0], L.base + 3 - m.perch[1] * L.k, birds, L.par, L.k, lv);      // birds sit on its top
   }
@@ -988,7 +989,7 @@ let INK = '#000', HINT = 'rgba(255,255,255,.1)', SETC = '#333', DOORC = '#222';
 // weather where the thing stands: no scratch canvas is touched while playing. depth .5 keeps them paler than the people (.8).
 const PROP_DETAIL = .2, HOUSE_DETAIL = .65, FLAT_GREY = .56;      // 0 = a flat shape, 1 = the whole painting; FLAT_GREY = the paintings' average tone
 // perch = where birds sit on it (how far across, how high)
-const PROP_META = { barrel: { w: 64, h: 76, perch: [.5, 76] }, crates: { w: 74, h: 74, perch: [.5, 74] }, cart: { w: 186, h: 71, perch: [.25, 68] }, stall: { w: 182, h: 150, perch: [.54, 129] }, wall: { w: 259, h: 70, perch: [.2, 64] }, lamp: { w: 73, h: 205 } }, PROP = {};
+const PROP_META = { crates: { w: 74, h: 74, perch: [.5, 74] }, cart: { w: 186, h: 71, perch: [.25, 68] }, wall: { w: 259, h: 70, perch: [.2, 64] }, lamp: { w: 73, h: 205 } }, PROP = {};
 // DEPTH (owner, build 40: "need foreground items between viewer and Christian to build depth, at least two levels ... one more
 // level between Christian and the first row of houses"). From far to near: mountains, far houses, near houses (the scenery
 // layers); then 'mid', a lane just behind the road, where his house and family stand; the road itself (Christian, the
