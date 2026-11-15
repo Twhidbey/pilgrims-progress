@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """Turn an AI video of a figure doing one movement on the spot (not a walk: a kneel, a reach, a climb) into game frames.
 
-  python3 tools/gesture-frames.py video.mp4 (or a folder of frames) assets/help.pack --height 382 --to 300 --frames 0-40:4,42-132:2,136-236:4 [--match assets/christian-walk.pack]
+  python3 tools/gesture-frames.py video.mp4 (or a folder of frames) assets/help.pack --height 382 --to 300 --frames 0-40:4,42-132:2,136-236:4 [--match assets/christian-walk.pack] [--holes 400]
 
 --height = how tall the standing figure is in the video, --to = how tall he should be in "video pixels" (Christian is
-288, Help 300). --frames = which video frames to keep (from-to:step). Every frame is cut from the same window, so the
+288, Help 300). --frames = which video frames to keep (from-to:step). --holes N = pure white patches of N pixels or more shut inside
+the figures (the gap between two people, or under an arm) become see-through too. Every frame is cut from the same window, so the
 figure does not jump. Same recipe as the other tools: white that touches the edge becomes see-through,
 grey = .2 + .62 * lightness, matched to the tone of --match. Prints the META line: ground, ax (the middle of what stands
 on the ground in the LAST frame), src (the video frame of each stored frame). Needs ffmpeg, numpy and Pillow.
@@ -14,9 +15,9 @@ import numpy as np
 from PIL import Image, ImageDraw, ImageFilter
 
 def arg(name, default): return type(default)(sys.argv[sys.argv.index(name) + 1]) if name in sys.argv else default
-video, out = sys.argv[1], sys.argv[2]; K = arg('--to', 300.0) / arg('--height', 382.0); match = arg('--match', '')
+video, out = sys.argv[1], sys.argv[2]; K = arg('--to', 300.0) / arg('--height', 382.0); match = arg('--match', ''); HOLES = arg('--holes', 0)
 if os.path.isdir(video): tmp = video                           # a folder of frames already pulled out (0003.png = video frame 3)
-else: tmp = tempfile.mkdtemp(); subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-start_number', '0', '-i', video, tmp + '/%04d.png'], check=True)
+else: tmp = tempfile.mkdtemp(); subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-i', video, '-start_number', '0', tmp + '/%04d.png'], check=True)
 fs = {int(os.path.basename(f)[:-4]): f for f in glob.glob(tmp + '/*.png')}; keep = []
 for part in arg('--frames', f'0-{max(fs)}:2').split(','):
     r, step = part.split(':'); a, b = r.split('-'); keep += [i for i in range(int(a), int(b) + 1, int(step)) if i in fs]
@@ -30,7 +31,14 @@ def frame(i, gain):
     m = L.point(lambda v: 255 if v > 232 else 0); w, h = m.size
     for xy in [(0, 0), (w - 1, 0), (0, h - 1), (w - 1, h - 1), (w // 2, 0), (w // 2, h - 1), (0, h // 2), (w - 1, h // 2)]:
         if m.getpixel(xy) == 255: ImageDraw.floodfill(m, xy, 128)
-    fg = Image.fromarray(((np.array(m) != 128) * 255).astype(np.uint8)).filter(ImageFilter.MinFilter(3)).filter(ImageFilter.GaussianBlur(1.2))
+    bg = np.array(m) == 128
+    if HOLES:                                                     # blank paper shut in between two figures or an arm and a body
+        hm = Image.fromarray((((La > 243) & ~bg) * 255).astype(np.uint8)); side = int(HOLES ** .5) | 1
+        core = np.array(hm.filter(ImageFilter.MinFilter(side))) == 255          # only patches with a solid middle count
+        while core.any():
+            y, x = np.unravel_index(np.argmax(core), core.shape); ImageDraw.floodfill(hm, (int(x), int(y)), 100)
+            reg = np.array(hm) == 100; bg |= reg; core &= ~reg; hm = Image.fromarray(np.where(reg, 0, np.array(hm)).astype(np.uint8))
+    fg = Image.fromarray((~bg * 255).astype(np.uint8)).filter(ImageFilter.MinFilter(3)).filter(ImageFilter.GaussianBlur(1.2))
     a = np.array(fg).astype(float) / 255; g = np.clip((.2 + .62 * La / 255) * gain, 0, 1)
     pre = np.dstack([g * a * 255, a * 255]); W, H = round(w * K), round(h * K)
     small = np.dstack([np.array(Image.fromarray(pre[:, :, c].astype(np.uint8)).resize((W, H), Image.LANCZOS)).astype(float) for c in range(2)])
@@ -51,4 +59,5 @@ with open(out, 'wb') as f:
     for fr in frames: f.write(fr)
 g = round((ground - y0) * K); feet = np.where((last[g - 8:g, :, 3] > 60).any(0))[0]
 print(out, os.path.getsize(out) // 1024, 'KB;', len(frames), 'frames', last.shape[1], 'x', last.shape[0], '; tone gain', round(gain, 2))
-print('META =', json.dumps({'ax': int((feet[0] + feet[-1]) / 2), 'ground': g, 'frames': len(frames), 'src': keep}))
+print(f'window starts at video x {x0}, y {y0}; one stored pixel = {1 / K:.3f} video pixels')
+print('META =', json.dumps({'ax': int((feet[0] + feet[-1]) / 2) if len(feet) else None, 'ground': g, 'frames': len(frames), 'src': keep}))
