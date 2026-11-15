@@ -68,7 +68,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">story lab · build 59 · Nov 15 2026</div>
+  <div id="build">story lab · build 60 · Nov 15 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -231,9 +231,9 @@ function buildWheat() {
     const x1 = 325 + (FIELD_END - 325) * p, n = Math.ceil((x1 + 30) / WHEAT_GAP), hs = new Float32Array(n), ph = new Float32Array(n), o = Rw() * 99;
     for (let i = 0; i < n; i++) {
       const x = -30 + i * WHEAT_GAP;                         // a crop stands even-topped: slow swells, no ragged stalks
-      ph[i] = Rw(); hs[i] = (h * (.94 + .04 * Math.sin(x * .017 + o) + .02 * Math.sin(x * .049 + o * 2)) + ph[i] * 2.5) * smooth(x1, x1 - 330 * p, x);
+      ph[i] = Rw(); hs[i] = (h * (.94 + .04 * Math.sin(x * .017 + o) + .02 * Math.sin(x * .049 + o * 2)) + ph[i] * 2.5) * lerp(.72, 1, smooth(x1, x1 - 330 * p, x));      // a little lower toward the field's edge, where it thins away (fadeGrad)
     }
-    WHEAT.push({ p, d, front, wind, n, h0: h, base: HORIZON + 140 * p + 3, h: hs, ph });
+    WHEAT.push({ p, d, front, wind, n, x1, h0: h, base: HORIZON + 140 * p + 3, h: hs, ph });
   }
 }
 // the wind in the middle layer: long slow waves running with the rain (a lean, 0 = upright)
@@ -241,19 +241,29 @@ const wheatWind = (x, t) => .07 * Math.sin(x * .0075 + t * .017) + .025 * Math.s
 // The field itself, behind the three near layers: a pale plane of crop running back to the hedgerow on the rise (the near
 // scenery layer's ridge, SCN[2].gy), so the wheat is one field and not strips in front of a dark hill. Slow bands of
 // light cross it too, flattened by distance.
+// The field's edge (owner, build 60, of wedges and ledges where the wheat tapered down to the street: "field transition
+// looks strange"): the crop keeps its height and thins away into the mist. fadeGrad = hGrad whose colour goes to nothing
+// toward xe (the field's end on the screen) over len.
+function fadeGrad(c, a, b, xe, len, alpha = 1) {
+  const g = c.createLinearGradient(0, 0, VW, 0), ts = [0, .1, .2, .3, .4, .5, .6, .7, .8, .9, 1];
+  for (const k of [0, .25, .5, .75, 1]) { const t = (xe - len * k) / VW; if (t > 0 && t < 1) ts.push(t); }
+  ts.sort((p, q) => p - q);
+  for (const t of ts) g.addColorStop(t, css(mix(a, b, warm(t)), alpha * smooth(xe, xe - len, t * VW)));
+  return g;
+}
 function wheatPlane(cam) {
   const N2 = SCN[2], off = cam * N2.par, xe = N2.field - 30 - off, c = ctx; if (xe < 0) return;
   const pl = new Path2D(), col = layerCol(.34), x1 = Math.min(VW + 10, xe); pl.moveTo(-10, GY - 30);
   for (let x = -10; x <= x1; x += 10) pl.lineTo(x, N2.gy(x + off) - 4);      // a little over the ridge, so the dark layer behind does not show as a line
   pl.lineTo(x1, GY - 30); pl.closePath();
-  c.fillStyle = hGrad(c, col[0], col[1]); c.fill(pl);
+  c.fillStyle = fadeGrad(c, col[0], col[1], xe, 380); c.fill(pl);
   c.save(); c.clip(pl);
   const span = VW + 900;
   for (let k = 0; k < 6; k++) {
     const d = (k * .37) % 1, y = lerp(GY - 118, GY - 62, d), x = (((k * 311 - G.t * lerp(.22, .4, d) - cam * lerp(.62, .88, d)) % span) + span) % span - 450;
     c.save(); c.translate(x, y); c.rotate(-.03); c.scale(lerp(190, 330, d), lerp(4, 9, d));
     const g = c.createRadialGradient(0, 0, 0, 0, 0, 1); g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(1, 'rgba(255,255,255,0)');
-    c.globalAlpha = .2; c.fillStyle = g; c.fillRect(-1, -1, 2, 2); c.restore();
+    c.globalAlpha = .2 * smooth(xe, xe - 380, x); c.fillStyle = g; c.fillRect(-1, -1, 2, 2); c.restore();
   }
   c.restore();
 }
@@ -276,10 +286,11 @@ function drawWheat(front) {
       if (i % 2) { grain.moveTo(bx, by + 5 * k); grain.lineTo(sx + (ph[i] - .5) * 2, base + 2); }      // the stems: fine upright streaks down the face of the crop
     }
     body.lineTo((i1 - 1) * WHEAT_GAP - off, base + 4); body.closePath();
-    c.strokeStyle = c.fillStyle = hGrad(c, col[0], col[1]);
+    const xe = r.x1 - cam * p, len = 300 * p;
+    c.strokeStyle = c.fillStyle = fadeGrad(c, col[0], col[1], xe, len);
     c.fill(body); c.lineWidth = .9 * p; c.globalAlpha = .7; c.stroke(awns); c.globalAlpha = 1;
     c.lineWidth = 2.1 * p; c.stroke(ears);
-    c.strokeStyle = hGrad(c, layerCol(r.d + .22)[0], layerCol(r.d + .22)[1], .3, .3); c.lineWidth = .8 * p; c.stroke(grain);      // darker between the stems, toward the ground
+    c.strokeStyle = fadeGrad(c, layerCol(r.d + .22)[0], layerCol(r.d + .22)[1], xe, len, .3); c.lineWidth = .8 * p; c.stroke(grain);      // darker between the stems, toward the ground
     if (r.wind) {                                            // light travelling through the crop with the wind
       c.save(); c.clip(body); c.fillStyle = hGrad(c, PAL.hazeC, PAL.hazeW, .26, .3);
       const span = VW + 700, cy = base - r.h0 * .6;
@@ -287,7 +298,7 @@ function drawWheat(front) {
         const x = (((k * 367 + (k % 2) * 90 - G.t * .55 - cam * p) % span) + span) % span - 350, rx = 130 + (k * 53) % 110;
         c.save(); c.translate(x, cy); c.rotate(-.18); c.scale(rx, r.h0 * .42);
         const g = c.createRadialGradient(0, 0, 0, 0, 0, 1); g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(1, 'rgba(255,255,255,0)');
-        c.globalCompositeOperation = 'source-over'; c.globalAlpha = .3; c.fillStyle = g; c.fillRect(-1, -1, 2, 2); c.restore();
+        c.globalCompositeOperation = 'source-over'; c.globalAlpha = .3 * smooth(xe, xe - len, x); c.fillStyle = g; c.fillRect(-1, -1, 2, 2); c.restore();
       }
       c.restore();
     }
@@ -507,15 +518,15 @@ function bakeFinish() {
 // Evangelist there (EVAN_X), then turns and runs RIGHT, back past his own door and on through the city to the gate. One
 // house in one place, and it is the book's geography: he walks out to the fields, then flees past his own door.
 const FIELD_END = 1650;      // where the wheat field ends and the street begins (the wheat sinks away before it)
-const EVAN_X = 650, HOME_X = 2150, RUN_END = 5100, NEIGH_X = 6050, GATE_STOP = 6936, DOOR0 = 7006, DOOR1 = 7120, DOORM = 7063;
-const TEST_X = +(new URLSearchParams(location.search).get('x')) || 0, START_X = TEST_X || HOME_X - 70;   // he starts beside his own door; ?x=3600 starts further along, after Evangelist (for testing)
+const EVAN_X = 420, HOME_X = 2150, RUN_END = 5100, NEIGH_X = 6050, GATE_STOP = 6936, DOOR0 = 7006, DOOR1 = 7120, DOORM = 7063;
+const TEST_X = +(new URLSearchParams(location.search).get('x')) || 0, START_X = TEST_X || HOME_X - 280;   // he starts beside his own door; ?x=3600 starts further along, after Evangelist (for testing)
 // The lights on the road are a tune: "Amazing Grace" (New Britain, 1829), one phrase per stretch of road.
 // Each light is one note. They are spaced by the length of each note, so walking at his steady pace plays the tune in time.
 // A higher note floats higher. [beat, note]; BEAT = road walked per beat.
 const BEAT = 58, NOTE = { D: 62, E: 64, G: 67, A: 69, B: 71, d: 74 };
 const PHRASES = [
-  { x: 1880, back: true, at: 0, n: [[0, 'D'], [1, 'G'], [3, 'B'], [3.5, 'G'], [4, 'B'], [6, 'A'], [7, 'G'], [9, 'E'], [10, 'D']] },
-  { x: 1230, back: true, at: 12, n: [[0, 'D'], [1, 'G'], [3, 'B'], [3.5, 'G'], [4, 'B'], [6, 'A'], [7, 'd']] },
+  { x: 1770, back: true, at: 0, n: [[0, 'D'], [1, 'G'], [3, 'B'], [3.5, 'G'], [4, 'B'], [6, 'A'], [7, 'G'], [9, 'E'], [10, 'D']] },
+  { x: 1100, back: true, at: 12, n: [[0, 'D'], [1, 'G'], [3, 'B'], [3.5, 'G'], [4, 'B'], [6, 'A'], [7, 'd']] },
   { x: 5350, at: 24, n: [[0, 'B'], [1, 'd'], [2.5, 'B'], [3, 'd'], [3.5, 'B'], [4, 'G'], [6, 'D'], [7, 'E'], [8.5, 'G'], [9, 'G'], [9.5, 'E'], [10, 'D']] },
   { x: 6400, at: 36, n: [[0, 'D'], [1, 'G'], [3, 'B'], [3.5, 'G'], [4, 'B'], [6, 'A'], [7, 'G']] },
 ];
@@ -661,10 +672,10 @@ const lightPos = () => ({ x: 880 - G.cam * .02, y: 146 });
 function reset() {
   seed = 99; buildLevel();
   for (const Lr of SCN) for (const w of Lr.wins) w[5] = false;
-  Object.assign(P, { x: START_X, y: GY, vx: 0, face: TEST_X ? 1 : -1, anim: 1, stand: { t: QUIET[0] }, turn: 0, run: false, ranim: 0, blend: null });
+  Object.assign(P, { x: START_X, y: GY, vx: 0, face: TEST_X ? 1 : -1, anim: 1, stand: { t: QUIET[0] }, turn: 0, run: false, ranim: 0, blend: null, weep: null });
   Object.assign(G, { cam: Math.max(0, Math.min(LEVEL_W - VW, TEST_X ? START_X - VW * .38 + 40 : START_X - VW * .62 - 40)), t: 0, got: 0, extra: 0, motes: [], flyers: [], ripples: [], glints: [], taps: [], litw: [], capQ: [], cap: 0, hint: null,
     pli: null, obst: null, flare: 0, gloom: 0, gloomTo: 0, gateOpen: 0, act: null, actT: 0, ring: null, auto: null, finale: null, guard: 0, idle: 0, wins: 0,
-    evanDone: !!TEST_X, evanGone: TEST_X ? 1 : 0, neigh: TEST_X > NEIGH_X + 300, gateSeen: false, walked: false, touched: false, leaving: false, fam: TEST_X > HOME_X ? 2 : 0, door: TEST_X > HOME_X ? 1 : 0, runZone: false, outSaid: false, watched: TEST_X > HOME_X + 900, ears: TEST_X > HOME_X });
+    evanDone: !!TEST_X, evanGone: TEST_X ? 1 : 0, neigh: TEST_X > NEIGH_X + 300, gateSeen: false, walked: false, touched: false, leaving: false, fam: TEST_X > HOME_X ? 2 : 0, door: TEST_X ? (TEST_X > HOME_X ? 1 : 0) : 1, doorShut: false, runZone: false, outSaid: false, watched: TEST_X > HOME_X + 900, ears: TEST_X > HOME_X });
   G.evan.pt = TEST_X ? 239 : 0; G.evan.go = false; G.evan.st = EVS_META.frames * 100; downs.clear(); pushing = false; keys.r = keys.push = false;
   if (TEST_X) for (const l of LIGHTS) if (l.x < Math.max(TEST_X, 2000)) l.got = true;
   for (const c of CAPS) if (c.x < TEST_X) c.done = true;
@@ -748,7 +759,7 @@ function capTick() {
 // the oldest words made plain for a child, in his order ({10} to {28} of book/pilgrims-progress-part-one.txt).
 const INTRO = [      // {10}
   [N, 'I dreamed a dream. I saw a man clothed in rags, with a book in his hand and a great burden upon his back.'],
-  [N, 'He stood with his face turned from his own house. He opened the book and read. And as he read, he wept and trembled.'],
+  [N, 'He stood with his face turned from his own house. He opened the book and read. And as he read, he wept and trembled.', 0, () => { if (WEEP.ready) P.weep = { t: 0 }; }],
   [C, 'What shall I do?'],
 ];
 // {11}, {12}: "he would also walk solitarily in the fields, sometimes reading, and sometimes praying"
@@ -828,6 +839,7 @@ const RUN_META = {"ax": 136, "ground": 309, "frames": 29, "vpx": 17.2, "down": [
 // Two runs (build 54; owner: "when he runs, he doesn't need to cover his ears (that doesn't happen till he runs from
 // family)"): RUNP = a plain run, arms free, from Evangelist to his own door (assets/christian-run-plain.pack); RUN = hands
 // over his ears, from the moment his wife cries after him (G.ears, coverEars()). 'steps' = the frames where a foot lands.
+const WEEP = [], WEEP_META = /*WEEP_META*/{"ax": 0, "ground": 0, "step": .2};      // Christian opens his book, reads, weeps and trembles (assets/christian-weep.pack); step = stored frames per tick
 const EVS = [], EVS_META = {"ax": 82, "ground": 311, "frames": 48};      // Evangelist standing, facing right, breathing
 const RUNP_META = {"ax": 132, "ground": 298, "frames": 28, "vpx": 16.6, "steps": [0, 15]}, RUNP = [];
 RUN_META.steps = [7, 22];
@@ -838,7 +850,8 @@ const CHR = [], PLI = [], OBS = [], EVA = [], STD = [], RUN = [], CHR_K = .52, R
 const PACK_V = 7;                          // bump when the .pack files change, so phones fetch the new ones
 // a .pack file: 4 bytes = how many frames, 4 bytes per frame = its length, then the WebP frames end to end
 async function loadPack(name, into) {
-  const buf = await (await fetch('assets/' + name + '.pack?v=' + PACK_V)).arrayBuffer(), dv = new DataView(buf), n = dv.getUint32(0, true);
+  const res = await fetch('assets/' + name + '.pack?v=' + PACK_V); if (!res.ok) throw new Error('no ' + name);      // a missing pack is left out
+  const buf = await res.arrayBuffer(), dv = new DataView(buf), n = dv.getUint32(0, true);
   const jobs = []; let off = 4 + 4 * n;
   for (let i = 0; i < n; i++) {
     const len = dv.getUint32(4 + 4 * i, true), blob = new Blob([buf.slice(off, off + len)], { type: 'image/webp' }); off += len;
@@ -863,7 +876,7 @@ const chrFrame = () => ((Math.floor(P.anim) % CHR.length) + CHR.length) % CHR.le
 const stdFrame = () => atTime(STD_META, breathT(P.stand.t));
 const figC = mk(8, 8), shC = mk(8, 8), FEET_SINK = 9;
 // which picture he is in: running (fingers in his ears, from his run video), standing, or walking
-const chrPose = () => P.run ? (([set, meta]) => [set[((Math.floor(P.ranim) % set.length) + set.length) % set.length], meta])(runNow()) : P.stand ? [STD[stdFrame()], STD_META] : [CHR[chrFrame()], CHR_META];
+const chrPose = () => P.weep && WEEP.ready ? [WEEP[Math.min(WEEP.length - 1, Math.floor(P.weep.t))], WEEP_META] : P.run ? (([set, meta]) => [set[((Math.floor(P.ranim) % set.length) + set.length) % set.length], meta])(runNow()) : P.stand ? [STD[stdFrame()], STD_META] : [CHR[chrFrame()], CHR_META];
 // Walking and standing join frame to frame. Running does not, so going into or out of the run the old picture dissolves
 // into the new one over a fifth of a second (the new one comes in on top, then the old one goes: nothing shows through).
 function poseChange() { const [im, meta] = chrPose(); P.blend = { im, meta, face: P.face, t: 0 }; }
@@ -902,6 +915,8 @@ function drawFrame(im, meta, x, y, face, alpha, K = CHR_K) {
 function walkTick(dir, max) {
   const still = G.state === 'dialog' || G.state === 'choice';
   if (P.blend && ++P.blend.t >= 12) P.blend = null;
+  // the opening: he reads, weeps and trembles (his own video, once); walking away or its end dissolves him back to standing
+  if (P.weep && (dir || !WEEP.ready || (P.weep.t += WEEP_META.step) >= WEEP.length - 1)) { if (WEEP.ready) poseChange(); P.weep = null; if (!dir) P.stand = { t: QUIET[0] }; }
   // the run: from Evangelist he runs, past his own door with his fingers in his ears, until the burden tires him (G.runZone)
   const run = !!(G.runZone && dir > 0 && RUN.ready);
   if (run !== P.run) {
@@ -999,7 +1014,7 @@ function gateOpened() {
 function update() {
   G.t++;
   if (G.guard > 0 && --G.guard === 0 && G.state === 'dialog') { dlg.classList.remove('wait'); HEARD.add(G.guardKey); }
-  G.flare *= .975; G.gloom += (G.gloomTo - G.gloom) * .02; if (G.fam) G.door = Math.min(1, G.door + .05);      // the door is flung open
+  G.flare *= .975; G.gloom += (G.gloomTo - G.gloom) * .02; if (G.fam) G.door = Math.min(1, G.door + .05); else if (G.doorShut) G.door = Math.max(0, G.door - .02);      // the door is flung open (and, at the start, shut behind him)
   // Evangelist: only the calm start of his video while he waits (a slow breath). On "Do you see that shining light?"
   // he turns all the way round toward the light and raises his arm (video 46..239 at its own pace), and stays pointing.
   // Evangelist waits facing right (Christian comes to him from the right since build 50), breathing: his standing video
@@ -1036,6 +1051,9 @@ function story() {
   if (!G.fam && G.evanDone && P.x > HOME_X - 330) { G.fam = 1; sweep(170, 120, .5, .03); hiss(140, .8, .09, .16, 'lowpass'); sfx.lamp(); caption(DOOR_WORDS); }      // the door of his house is flung open as he comes running
   if (G.fam === 1 && P.stand && P.x > HOME_X - 170) { G.fam = 2; G.capQ.length = 0; talk(FAMILY, () => caption(LIFE)); return; }      // the child let go by the house: he stops (the framed picture)
   if (G.fam === 1 && P.x > HOME_X + 150) { G.fam = 2; coverEars(); caption([...FAMILY_RUN, ...LIFE]); }                                         // the child held on: he runs straight past, as in the book
+  // {10}: "standing ... with his face from his own house". We know the house is his because his door stands open behind
+  // him with his wife and children in its light (owner, build 60: "how do we know it's his?"); it shuts as he walks away.
+  if (!G.doorShut && !G.evanDone && P.x < START_X - 45) { G.doorShut = true; sweep(150, 95, .5, .03); hiss(140, .8, .06, .14, 'lowpass', .45); }
   if (!G.outSaid && !G.evanDone && P.x < FIELD_END - 60) { G.outSaid = true; caption(FIELDS); }      // out of the street, into the field
   if (!G.evanDone && P.x < EVAN_X + 200) { G.evanDone = true; talk(EVAN, () => { G.evanGone = 1; G.runZone = true; G.idle = 0; caption(RUNS); }); return; }   // "So I saw in my dream that the man began to run"
   if (G.runZone && !P.run && G.idle === 110) hint('walk', 'Hold to run.');
@@ -1322,7 +1340,8 @@ function home(cam) {                       // drawn in screen units, before the 
     c.fillStyle = dark; c.fillRect(x + dx - 2, y + dy - 2, (dw + 4) * (1 - .86 * e), dh + 4);
   }
   c.drawImage(HOUSE.cool, x, y, M.w * k, M.h * k); if (wm > .01) { c.globalAlpha = wm; c.drawImage(HOUSE.warm, x, y, M.w * k, M.h * k); c.globalAlpha = 1; }
-  if (e > .3) drawFrame(FAM, FAM_META, doorX(cam) + 2, L.base + 1 - FEET_SINK, 1, smooth(.3, 1, e), CHR_K * .93 * HOUSE_K * L.k);   // on the step, in front of the wall
+  if (e > .3) drawFrame(FAM, FAM_META, doorX(cam) + 2, L.base + 1 - FEET_SINK, G.fam ? 1 : -1, smooth(.3, 1, e),      // at the start they look after him, to the left
+    CHR_K * .93 * HOUSE_K * L.k);   // on the step, in front of the wall
 }
 function gate() {                          // the city gate: two towers and an arch, a little paler than the road so Christian shows against it
   const c = ctx; c.fillStyle = SETC;
@@ -1605,7 +1624,7 @@ document.getElementById('again').onclick = start;
 (async function boot() {
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.fillStyle = '#5d6b80'; ctx.fillRect(0, 0, VW, VH);
   await new Promise(r => setTimeout(r, 30));
-  const chr = Promise.all([loadPack('christian-walk', CHR), loadPack('christian-stand', STD), ...Object.keys(PROP_META).map(k => loadImg('prop-' + k + '.webp').then(im => { PROP[k] = im; }))]);
+  const chr = Promise.all([loadPack('christian-walk', CHR), loadPack('christian-stand', STD), loadPack('christian-weep', WEEP).catch(() => {}), ...Object.keys(PROP_META).map(k => loadImg('prop-' + k + '.webp').then(im => { PROP[k] = im; }))]);
   buildScenery(); buildWheat(); buildFog(); buildRow(); seed = 99; buildLevel(); bakeFinish();
   await chr;
   { const im = Object.assign({}, PROP); for (const k in PROP) delete PROP[k];
