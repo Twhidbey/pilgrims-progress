@@ -20,7 +20,7 @@ a{color:#d9b77c}
 </style>
 </head>
 <body>
-<div id="top"><div id="frame"><canvas id="cv"></canvas><div id="build">slough lab · build 50 · Nov 15 2026</div></div></div>
+<div id="top"><div id="frame"><canvas id="cv"></canvas><div id="build">slough lab · build 51 · Nov 15 2026</div></div></div>
 <div id="panel">
   <div class="row" id="shots"></div>
   <div class="row"><button id="new">Another oak</button></div>
@@ -105,8 +105,8 @@ function oak(seed, hero = true, depth = 4) {
   const [tx, ty, ta] = grow(0, 0, -.06, 92, 58, 0, { wander: .1, elbow: 0, taper: .14, w0: 90, guide: t => lerp(-.06, -.24, t) });
   const limb = (dx, dy, to, len, w, o = {}) => grow(tx + dx, ty + dy, lerp(ta, to, .35), len, w, depth, { w0: 40, ...o,
     guide: t => t < .13 ? lerp(lerp(ta, to, .35), to, t / .13) : o.then ? o.then((t - .13) / .87) : null });
-  // the limb that reaches out over the water: long, low, dipping, then lifting at its end like an open hand
-  limb(-8, 16, -1.42, 372, 25, { wander: .22, elbow: .05, taper: .7, reach: true, w0: 44, then: t => t < .56 ? lerp(-1.42, -1.74, t / .56) : lerp(-1.74, -.95, (t - .56) / .44) });
+  // the limb that reaches out over the water: long and low, nearly level, sagging only a little under its own weight and lifting a little at its end
+  limb(-8, 9, -1.34, 372, 25, { wander: .2, elbow: .03, taper: .7, reach: true, w0: 44, then: t => t < .6 ? lerp(-1.34, -1.61, t / .6) : lerp(-1.61, -1.3, (t - .6) / .4) });
   limb(-4, 2, -.74, 250, 24); limb(0, 0, -.1, 236, 22); limb(4, 2, .54, 262, 24);
   limb(9, 14, 1.24, 304, 23, { w0: 44 });
   // roots gripping the bank
