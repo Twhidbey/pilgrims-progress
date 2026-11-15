@@ -68,7 +68,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">story lab · build 47 · Nov 15 2026</div>
+  <div id="build">story lab · build 48 · Nov 15 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -85,7 +85,7 @@ const EVA_META={"ax": 82, "ground": 311, "frames": 80, "src": [0, 4, 8, 12, 16, 
 const STD_META={"ax": 101, "ground": 302, "frames": 79, "src": [0, 2, 4, 6, 8, 10, 12, 14, 16, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35, 37, 39, 41, 43, 45, 47, 49, 51, 53, 55, 57, 59, 61, 63, 65, 67, 69, 71, 73, 75, 77, 79, 81, 83, 85, 87, 89, 91, 93, 95, 96, 100, 104, 108, 112, 116, 120, 124, 128, 132, 136, 140, 144, 148, 152, 156, 160, 164, 168, 172, 176, 180, 184, 188, 192, 196, 200, 204, 208, 212]};
 
 // ---------- setup ----------
-const VW = 960, VH = 540, GY = 440, LEVEL_W = 5800, PANG = LEVEL_W - VW, GATE = 5340;
+const VW = 960, VH = 540, GY = 440, LEVEL_W = 6400, PANG = LEVEL_W - VW, GATE = 5940;
 const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
 const stage = document.getElementById('stage');
 let DPR = 1;
@@ -134,7 +134,9 @@ for (const k in PAL) PAL[k] = Array.isArray(PAL[k]) ? PAL[k].map(hex) : hex(PAL[
 const SUN = [790, 150];
 // the weather across the screen: 0 = rain, 1 = golden. It clears as Christian walks toward the light.
 let clearAt = 1;
-const warm = fx => smooth(clearAt - .32, clearAt + .32, fx);
+// GOLD_MAX: this level never clears all the way (owner, build 48: the end was "pretty basked in light ... still a tad
+// dreary, though I do want progression"). Raise it level by level as the story goes on.
+const GOLD_MAX = .72, warm = fx => GOLD_MAX * smooth(clearAt - .32, clearAt + .32, fx);
 // a left-to-right gradient that follows the weather. a and b are [r,g,b] with alphas aa, ab
 function hGrad(c, a, b, aa = 1, ab = 1, x0 = 0) {
   const g = c.createLinearGradient(x0, 0, x0 + VW, 0);
@@ -210,6 +212,67 @@ function fence(x0, gy, n) {
   }
 }
 
+// ---------- the wheat field (build 48) ----------
+// The level opens in a field of wheat, drawn in code like the rest of the scenery. Each row is ONE shape in one tone
+// (paler behind Christian, dark in front), on its own depth by the perspective rule: a solid body of crop with a fine
+// fringe of ears along its top. Kept simple on purpose (owner: "the wheat should hold together more, individual strands
+// look unrealistic", then "trying too hard ... think simplicity and elegant effects, not overdoing it"): a slow wind
+// moves through it, and where Christian passes (or a finger touches) it bows softly and stands up again behind him.
+// Rows: [p (depth), height, tone (layerCol), in front of him?].
+const WHEAT = [], WHEAT_GAP = 3;
+function buildWheat() {
+  const Rw = rng(4177); WHEAT.length = 0;
+  for (const [p, h, d, front] of [[.9, 62, .72, 0], [.96, 76, .84, 0], [1.075, 40, 1, 1]]) {
+    const x1 = 325 + (FIELD_END - 325) * p, n = Math.ceil((x1 + 30) / WHEAT_GAP), hs = new Float32Array(n), ph = new Float32Array(n), o = Rw() * 99;
+    for (let i = 0; i < n; i++) {
+      const x = -30 + i * WHEAT_GAP;                         // a crop stands even-topped: slow swells, no ragged stalks
+      hs[i] = h * (.94 + .04 * Math.sin(x * .017 + o) + .02 * Math.sin(x * .049 + o * 2)) * smooth(x1, x1 - 330 * p, x); ph[i] = Rw();
+    }
+    WHEAT.push({ p, d, front, n, base: HORIZON + 140 * p + 3, h: hs, ph, b: new Float32Array(n) });
+  }
+}
+// the wind: long slow waves running with the rain (a lean, 0 = upright)
+const wheatWind = (x, t) => -.1 + .09 * Math.sin(x * .0075 + t * .017) + .03 * Math.sin(x * .019 + t * .031);
+// b = how far the wheat is bowed at each point (0 standing .. 1 pressed): down quickly under the people, up again slowly
+function wheatTick() {
+  const cam = G.cam; if (cam > FIELD_END + 200) return;
+  const who = [[P.x - cam, 46 + 14 * Math.min(1, Math.abs(P.vx) / 3)]];
+  if (Math.abs(G.evan.x - cam - VW / 2) < VW) who.push([G.evan.x - cam, 36]);
+  for (const r of WHEAT) {
+    const { b, p } = r, off = cam * p + 30, i0 = Math.max(0, Math.floor((off - 80) / WHEAT_GAP)), i1 = Math.min(r.n, Math.ceil((off + VW + 80) / WHEAT_GAP));
+    for (let i = i0; i < i1; i++) {
+      const sx = i * WHEAT_GAP - off; let to = 0;
+      for (const w of who) { const u = 1 - Math.abs(sx - w[0]) / (w[1] * p); if (u > to) to = u; }
+      to = to * to * (3 - 2 * to); b[i] += (to - b[i]) * (to > b[i] ? .14 : .012);
+    }
+  }
+}
+// a finger in the wheat: it bows under the touch
+function wheatTouch(sx, sy) {
+  if (sx + G.cam > FIELD_END - 150 || sy < GY - 86 || sy > GY + 26) return false;
+  for (const r of WHEAT) { const off = G.cam * r.p + 30; for (let i = 0; i < r.n; i++) { const u = 1 - Math.abs(i * WHEAT_GAP - off - sx) / 70; if (u > 0) r.b[i] = Math.max(r.b[i], u * u * (3 - 2 * u) * .8); } }
+  return true;
+}
+function drawWheat(front) {
+  const cam = G.cam, c = ctx; if (cam > FIELD_END + 200) return;
+  c.lineCap = 'round';
+  for (const r of WHEAT) {
+    if (!!r.front !== front) continue;
+    const { h, ph, b, p, base } = r, off = cam * p + 30, col = layerCol(r.d), dk = r.front ? .4 : 0;
+    const i0 = Math.max(0, Math.floor((off - 70) / WHEAT_GAP)), i1 = Math.min(r.n, Math.ceil((off + VW + 70) / WHEAT_GAP)); if (i1 - i0 < 2) continue;
+    const body = new Path2D(), ears = new Path2D(); body.moveTo(i0 * WHEAT_GAP - off, base + 4);
+    for (let i = i0; i < i1; i++) {
+      const sx = i * WHEAT_GAP - off, hh = h[i] * (1 - .45 * b[i]); if (hh < 1) { body.lineTo(sx, base + 4); continue; }
+      const a = wheatWind(i * WHEAT_GAP, G.t), bx = sx + a * hh, by = base - hh;
+      body.lineTo(bx, by);
+      const el = (4 + 4 * ph[i]) * p * Math.min(1, hh / 30); ears.moveTo(bx, by + 1); ears.lineTo(bx + a * 1.6 * el, by - el);
+    }
+    body.lineTo((i1 - 1) * WHEAT_GAP - off, base + 4); body.closePath();
+    c.strokeStyle = c.fillStyle = hGrad(c, mix(col[0], [8, 8, 12], dk), mix(col[1], [8, 8, 12], dk));
+    c.fill(body); c.lineWidth = 1.5 * p; c.stroke(ears);
+  }
+}
+
 // ---------- build the scenery once ----------
 // Each layer is baked twice, in its rain colour and its golden colour; draw() blends the two by the weather.
 const SCN = [], TUFTS = [];
@@ -240,6 +303,9 @@ function buildScenery() {
     const near = i === 2, par = near ? .62 : .05 + .95 * Math.pow(d, 1.6), W = VW + PANG * par + 60;
     const s = (.26 + .74 * Math.pow(d, 1.15)) * (near ? 1.3 : 1), base = lerp(280, GY, Math.pow(d, .9)) - [44, 54, 0][i];
     const edge = 420 + (GATE - 420) * par;                  // where the city ends in this layer: lines up with the gate
+    // STORY LAB (build 48): the level opens in a field, as the book does. The nearest row of houses only begins where the
+    // field ends; the far row stays, so the city is seen across the field. The field rises to a hedgerow with a few trees.
+    const field = near ? 420 + (FIELD_END - 420) * par : -1e9;
     const amp = lerp(105, 24, Math.pow(d, .55)) * LOOK.hills * (first ? 1.25 : 1);
     const nz = mkNoise(), cl = mkNoise(), wd = mkNoise(), fine = mkNoise(), wl = lerp(380, 640, d);
     // a mountain range: long ridgelines that rise to rounded peaks, with shoulders and small crags
@@ -254,8 +320,9 @@ function buildScenery() {
       let v = clamp(nz(x + 90 * wd(x, 500, 2), wl, 5, .46) * 1.9 * .5 + .5);
       v = Math.pow(v, 1.25);
       const woods = smooth(.05, .4, wd(x + 300, 260 * s + 90, 2)) * (fine(x, 15 * s + 3, 2, .6) * .5 + .5) * 5.5 * s;
-      const cityFlat = lerp(.5, 1, smooth(edge - 120, edge + 260, x));
-      return base - amp * v * cityFlat - woods * cityFlat;
+      const cityFlat = lerp(.5, 1, Math.max(smooth(edge - 120, edge + 260, x), 1 - smooth(field - 300, field + 40, x)));
+      const lift = near ? 1 - smooth(field - 420, field - 40, x) : 0;      // the field rises gently behind the wheat
+      return base - amp * v * cityFlat - woods * cityFlat - lift * (62 + 26 * v);
     };
     L = { d, par, W, base, s, shapes: [], wins: [], steeples: [] };
     if (first) { const bp = [[-30, VH + 20]]; for (let x = -30; x <= W + 6; x += 2.5) bp.push([x, base - 34 - amp * 1.25 * range(x * .8 + 4321, 1000, 1.5)]); bp.push([W + 6, VH + 20]); poly(bp); L.back = L.shapes.pop(); }
@@ -265,8 +332,8 @@ function buildScenery() {
       // the city
       const hh = lerp(62, 118, d) * (near ? 1.45 : 1.2);
       let nextSteeple = rr(300, 700) * s;
-      for (let x = -50 * s - R() * 50 * s; x < edge;) {
-        const tp = clamp((edge - x) / (300 * s), .5, 1);
+      for (let x = near ? field : -50 * s - R() * 50 * s; x < edge;) {
+        const tp = clamp((edge - x) / (300 * s), .5, 1) * clamp(.55 + (x - field) / 260, .55, 1);
         const w = rr(44, 88) * s, h = rr(.5, 1) * hh * tp;
         if (d < .55 && x > nextSteeple) { nextSteeple = x + rr(500, 1100) * s; const tw = rr(20, 26) * s; house(x, gy(x + tw / 2), tw, hh * 1.25, s, true); x += tw * .7; continue; }
         house(x, gy(x + w / 2), w, h, s);
@@ -277,7 +344,8 @@ function buildScenery() {
         if (cl(x, 420 * s + 120) * .5 + .5 > LOOK.trees * 1.15 - .08) continue;
         const k = R(); tree(x, gy(x), s * rr(.75, 1.2), k < .58 ? 0 : k < .78 ? 1 : 2);
       }
-      for (let x = rr(60, 200); x < edge - 60; x += rr(160, 420)) if (R() < LOOK.trees) tree(x, gy(x), s * rr(.7, 1), R() < .6 ? 0 : 1);
+      for (let x = Math.max(rr(60, 200), field + 80); x < edge - 60; x += rr(160, 420)) if (R() < LOOK.trees) tree(x, gy(x), s * rr(.7, 1), R() < .6 ? 0 : 1);
+      if (near) for (const x of [150, 520, 575, 1010]) tree(x, gy(x) + 4, s * rr(.75, 1), x === 575 ? 2 : 0);      // hedgerow trees in the field
       if (i === 2) for (let x = edge + 150; x < W - 200; x += rr(380, 560)) fence(x, gy, 8 + (R() * 8 | 0));
     }
     // soft stencil (farther = softer), lit windows, and the mist that settles in front of this layer
@@ -344,7 +412,7 @@ function weatherSegs() {
   const W = cv.width, a = Math.round(clamp(clearAt - .32) * W), b = Math.round(clamp(clearAt + .32) * W), n = Math.ceil((b - a) / (14 * DPR));
   if (a > 0) SEG.push([0, a, 0]);
   for (let i = 0; i < n; i++) { const x0 = Math.round(a + (b - a) * i / n), x1 = Math.round(a + (b - a) * (i + 1) / n); if (x1 > x0) SEG.push([x0, x1, warm((x0 + x1) / 2 / W)]); }
-  if (b < W) SEG.push([b, W, 1]);
+  if (b < W) SEG.push([b, W, GOLD_MAX]);
 }
 // y0..y1 (scene units) limits the draw to the band that has something in it
 function strip(src, off, q, x0, x1, alpha, y0, y1) {
@@ -373,9 +441,14 @@ function bakeFinish() {
 }
 
 // ---------- the level: a road of lights, things that answer a touch, and story moments ----------
-// The order follows the book: Evangelist, then his own door (his family calls; he runs on with his fingers in his ears),
-// the neighbours watching, Obstinate and Pliable, the road with Pliable, the edge of the city. No mud here: the mud is the Slough, next level.
-const EVAN_X = 1150, HOME_X = 2250, RUN_END = 3500, NEIGH_X = 4250, GATE_STOP = 5236, DOOR0 = 5306, DOOR1 = 5420, DOORM = 5363;
+// STAY CLOSE TO THE BOOK (owner, build 48; the text is in book/pilgrims-progress-part-one.txt, {10} to {28}). The order is
+// Bunyan's: he walks in the fields with his book; Evangelist meets him there and shows him the light; he begins to run;
+// he has not run far from his own door when his wife and children cry after him; he puts his fingers in his ears and runs
+// on crying "Life! Life! Eternal life!" and does not look behind him; the neighbours watch; Obstinate and Pliable come
+// after him. Ours, not the book's: he stops for a moment at his door (the owner's picture of him and his family framed in
+// the light, build 45) and answers them; and the city gate at the end. No mud here: the mud is the Slough, next level.
+const FIELD_END = 2200;      // where the wheat field ends and the street begins (the wheat sinks away before it)
+const EVAN_X = 1600, HOME_X = 2700, RUN_END = 4000, NEIGH_X = 4950, GATE_STOP = 5836, DOOR0 = 5906, DOOR1 = 6020, DOORM = 5963;
 const START_X = +(new URLSearchParams(location.search).get('x')) || 140;   // ?x=3600 starts further along (for testing)
 // The lights on the road are a tune: "Amazing Grace" (New Britain, 1829), one phrase per stretch of road.
 // Each light is one note. They are spaced by the length of each note, so walking at his steady pace plays the tune in time.
@@ -383,9 +456,9 @@ const START_X = +(new URLSearchParams(location.search).get('x')) || 140;   // ?x
 const BEAT = 58, NOTE = { D: 62, E: 64, G: 67, A: 69, B: 71, d: 74 };
 const PHRASES = [
   { x: 330, at: 0, n: [[0, 'D'], [1, 'G'], [3, 'B'], [3.5, 'G'], [4, 'B'], [6, 'A'], [7, 'G'], [9, 'E'], [10, 'D']] },
-  { x: 1400, at: 12, n: [[0, 'D'], [1, 'G'], [3, 'B'], [3.5, 'G'], [4, 'B'], [6, 'A'], [7, 'd']] },
-  { x: 3600, at: 24, n: [[0, 'B'], [1, 'd'], [2.5, 'B'], [3, 'd'], [3.5, 'B'], [4, 'G'], [6, 'D'], [7, 'E'], [8.5, 'G'], [9, 'G'], [9.5, 'E'], [10, 'D']] },
-  { x: 4700, at: 36, n: [[0, 'D'], [1, 'G'], [3, 'B'], [3.5, 'G'], [4, 'B'], [6, 'A'], [7, 'G']] },
+  { x: 1010, at: 12, n: [[0, 'D'], [1, 'G'], [3, 'B'], [3.5, 'G'], [4, 'B'], [6, 'A'], [7, 'd']] },
+  { x: 4250, at: 24, n: [[0, 'B'], [1, 'd'], [2.5, 'B'], [3, 'd'], [3.5, 'B'], [4, 'G'], [6, 'D'], [7, 'E'], [8.5, 'G'], [9, 'G'], [9.5, 'E'], [10, 'D']] },
+  { x: 5300, at: 36, n: [[0, 'D'], [1, 'G'], [3, 'B'], [3.5, 'G'], [4, 'B'], [6, 'A'], [7, 'G']] },
 ];
 // the whole tune, sung through once when the gate opens, with a low note under each bar
 const TUNE = [], BASS = [43, 43, 48, 43, 43, 43, 50, 50, 43, 43, 48, 43, 43, 50, 43, 43];
@@ -396,7 +469,7 @@ function buildLevel() {
   LIGHTS.length = LAMPS.length = FLOCKS.length = CAPS.length = 0;
   const light = (x, midi) => LIGHTS.push({ x, y: GY - 60 - clamp(midi - 62, -6, 12) * 5.2, midi, got: false, ph: rnd() * 6 });
   for (const ph of PHRASES) for (const [b, k] of ph.n) light(ph.x + b * BEAT, NOTE[k]);
-  for (const x of [300, 2700, 4900]) LAMPS.push({ x, lit: 0 });                  // few and far apart: they count as special things too
+  for (const x of [3250, 5500]) LAMPS.push({ x, lit: 0 });                       // few and far apart: they count as special things too (none in the field)
   // Things, each on a depth level (LEVELS). Owner's rule (build 40): no more than one special thing in the picture at a
   // time, because their likeness distracts. So there are few of them, about one every 600 of road counting the lamps and his
   // house, never two of a kind near each other, and they take turns between the levels. (Two can share the picture for a
@@ -407,14 +480,14 @@ function buildLevel() {
   // The market stall and the barrel were removed in build 44 (owner: "need this to be pretty stripped down and elegant").
   THINGS.length = 0;
   const flock = (x, y, n, par = 1, s = 1, lv = 'road') => { const b = []; for (let i = 0; i < n; i++) b.push({ dx: (i - (n - 1) / 2) * 13 + (rnd() - .5) * 5, s: .85 + rnd() * .3, f: rnd() < .5 ? 1 : -1 }); FLOCKS.push({ x, y, b, par, s, lv, away: false }); };
-  for (const [lv, k, a, birds] of [['mid', 'wall', 3150, 0], ['mid', 'cart', 3850, 3], ['f1', 'crates', 4800, 0]]) {
+  for (const [lv, k, a, birds] of [['mid', 'wall', 3700, 0], ['mid', 'cart', 4450, 3], ['f1', 'crates', 5400, 0]]) {
     const L = LEVELS[lv], m = PROP_META[k], t = { lv, k, w: m.w * L.k, h: m.h * L.k }; t.x = lineUp(a, L.par) - t.w / 2; THINGS.push(t);
     if (birds) flock(t.x + t.w * m.perch[0], L.base + 3 - m.perch[1] * L.k, birds, L.par, L.k, lv);      // birds sit on its top
   }
-  flock(5185, GY - 162, 4);                                    // and on the city wall by the gate
+  flock(5785, GY - 162, 4);                                    // and on the city wall by the gate
   // words said while walking (nobody stops)
-  CAPS.push({ x: 3620, watch: true, lines: [[N, 'People watched from their windows. Some laughed. Some called him back.'], [C, 'I will not stop. I can still see the light.']] });
-  CAPS.push({ x: 4680, pli: true, lines: [[PL, 'What is it like, the place where we are going?'], [C, 'No one cries there. Everyone shines like the sun.'], [PL, 'Then let us keep walking!']] });
+  CAPS.push({ x: 4300, watch: true, lines: [[N, 'People watched from their windows. Some laughed. Some called him back.'], [C, 'I will not stop. I can still see the light.']] });
+  CAPS.push({ x: 5280, pli: true, lines: [[PL, 'What is it like, the place where we are going?'], [C, 'No one cries there. Everyone shines like the sun.'], [PL, 'Then let us keep walking!']] });
 }
 
 // ---------- sound: everything is made in the browser (no sound files) ----------
@@ -487,6 +560,7 @@ const sfx = {
     hiss(170, 9, .05 * heavy, .16, 'bandpass', .05); sweep(74, 62, .22, .028 * heavy, false, .04);
   },
   splash: () => hiss(2600, .9, .03, .28),
+  swish: (v = 1) => { hiss(5200, 1.1, .011 * v, .3, 'bandpass'); hiss(3300, .8, .008 * v, .22, 'bandpass', .06); },      // dry stalks brushing past
   lamp: () => { hiss(3200, 2, .025, .12); note(79, .04, 2.6); note(67, .04, 3); },
   window: () => note([55, 57, 59, 62, 64][Math.random() * 5 | 0], .04, 2.2),
   plink: () => sweep(1500, 880, .18, .05, true),
@@ -609,7 +683,7 @@ function capTick() {
   if (G.state !== 'play' && G.state !== 'auto' && G.state !== 'end') return;
   if (G.state === 'end' && G.cap <= 0 && !G.capQ.length && !G.ended) { G.ended = true; document.getElementById('endc').className = 'card on'; }
   if (G.cap > 0 && --G.cap === 0 && !G.capQ.length) { dlg.className = ''; document.body.classList.remove('capped'); }
-  if (G.cap <= 0 && G.capQ.length) { const [who, txt] = G.capQ.shift(); G.hint = null; words(who, txt, 'cap'); document.body.classList.add('capped'); G.cap = 170 + txt.length * 4; }
+  if (G.cap <= 0 && G.capQ.length) { const [who, txt, quick] = G.capQ.shift(); G.hint = null; words(who, txt, 'cap'); document.body.classList.add('capped'); G.cap = quick ? 80 + txt.length * 2 : 170 + txt.length * 4; }
 }
 
 const INTRO = [
@@ -624,15 +698,16 @@ const EVAN = [
   [C, 'I think I do.'],
   [E, 'Keep that light in front of you. It will lead you to the Wicket Gate.'],
 ];
-// The middle of the level: his family calls him back from the door of his own house, and the child has to keep walking.
-// (In the book he runs on crying "Life! Life! Eternal life!" and does not look behind him.)
+// He is already running (from Evangelist, as in the book) when his family see him from the door of his own house and cry
+// after him. He stops for a moment, and the child has to hold to run on. (In the book he does not stop: he puts his
+// fingers in his ears and runs on crying "Life! Life! Eternal life!" and does not look behind him.)
 const FAMILY = [
   [N, 'His wife and children came to the door.'],
   [W, 'Come back! Come home to us!', 0, () => { P.wantBack = true; }],      // he turns to look: his back to us, his family framed in the lit door
   [C, 'I cannot stay. I must find the way, for all of us.'],
   [W, 'Christian! Come back!', 'walkon', () => { P.turn = 1; G.walkFrom = P.x; G.runZone = true; }],
 ];
-const LIFE = [[C, 'Life! Life! Eternal life!'], [N, 'He did not look back.']];      // said as he runs
+const LIFE = [[C, 'Life! Life! Eternal life!', 'quick'], [N, 'He did not look back.', 'quick']];      // said as he runs ('quick': they pass as soon as they are heard)
 const TIRED = [[N, 'The burden was heavy. He could not run for long.']];
 const NEIGH = [
   [N, 'Two neighbors hurried after him.'],
@@ -741,7 +816,7 @@ function drawFrame(im, meta, x, y, face, alpha, K = CHR_K) {
 function walkTick(dir, max) {
   const still = G.state === 'dialog' || G.state === 'choice';
   if (P.blend && ++P.blend.t >= 12) P.blend = null;
-  // the run: past his own door he runs with his fingers in his ears, until the burden tires him (G.runZone)
+  // the run: from Evangelist he runs, past his own door with his fingers in his ears, until the burden tires him (G.runZone)
   const run = !!(G.runZone && dir > 0 && RUN.ready);
   if (run !== P.run) {
     poseChange(); P.run = run;
@@ -770,6 +845,7 @@ function walkTick(dir, max) {
     // the road is wet wherever it is raining: every step sends rings out (owner loved this), fading as the weather clears
     const wet = 1 - warm((P.x - G.cam) / VW);
     sfx.step(false, P.run ? 1.3 : Math.max(.35, 1 - G.got / 60)); if (wet > .15) { G.ripples.push({ x: P.x + P.face * 14, y: GY + 9, t: 0, a: wet, r: 1 }); if (wet > .5) sfx.splash(); }
+    if (P.x < FIELD_END - 200) sfx.swish(P.run ? 1.5 : 1);      // wading through the wheat
   }
 }
 // going in through the open gate: 0 outside, 1 gone into the light. A figure in the archway grows a little smaller,
@@ -816,6 +892,7 @@ function touchAt(sx, sy) {
   if (Math.hypot(sx - lp.x, sy - lp.y) < 58) { pulseLight(); return true; }
   for (const l of LAMPS) if (!l.lit && Math.abs(wx - (l.x + 18)) < 50 && sy > GY - 215 && sy < GY + 14) { lightLamp(l); return true; }
   for (const fl of FLOCKS) if (!fl.away && Math.abs(sx - (fl.x - cam * fl.par)) < 52 && Math.abs(sy - fl.y + 6) < 46) { scatter(fl); touched(); return true; }
+  if (wheatTouch(sx, sy)) { sfx.swish(1.6); if (!(G.wheatT > G.t - 600)) { G.wheatT = G.t; free(wx, sy - 20); } touched(); return true; }      // a finger in the wheat: it sways, and now and then a light rises
   if (sy > GY + 2 && warm(sx / VW) < .85) {                  // a finger on the wet road: rings, and now and then a light
     G.ripples.push({ x: wx, y: sy, t: 0, a: 1, r: (sy - HORIZON) / 149 }); sfx.plink(); if (!(G.roadT > G.t - 600)) { G.roadT = G.t; free(wx, sy); } touched(); return true;
   }
@@ -853,7 +930,7 @@ function update() {
   if (G.state === 'auto' && G.auto && !G.auto.dir && P.stand) { const a = G.auto; G.auto = null; G.state = 'play'; a.then && a.then(); }
   if (P.wantBack && (dir > 0 || G.state === 'play')) P.wantBack = false;      // the child holds to run on: he turns away
   P.bk = Math.max(0, Math.min(1, (P.bk || 0) + (P.wantBack && P.stand ? .022 : -.07)));
-  people(); gather(); motes(); effects(); capTick(); acts(); ambience(); opening();
+  people(); gather(); motes(); effects(); wheatTick(); capTick(); acts(); ambience(); opening();
   if (G.state === 'play') story();
   const target = Math.max(0, Math.min(LEVEL_W - VW, P.x - VW * .38 + P.face * 40));
   G.cam += (target - G.cam) * .05;
@@ -863,12 +940,13 @@ function story() {
   const walking = !P.stand;
   if (walking) { G.walked = true; G.idle = 0; clearHint('walk'); } else G.idle++;
   if ((!G.walked && G.idle === 30) || G.idle === 720) hint('walk', isTouch ? 'Hold your finger on the picture to walk.' : 'Hold the space bar, or hold the mouse on the picture, to walk.');
-  if (!G.touched && !G.hintT && P.x > 190 && P.x < 420 && !LAMPS[0].lit) { G.hintT = true; hint('touch', 'Touch the lamp. The world answers when you touch it.'); G.ring = () => [LAMPS[0].x + LAMP_DX - G.cam, LAMP_Y]; }
+  if (!G.touched && !G.hintT && P.x > 190 && P.x < 420) { G.hintT = true; const hx = P.x + 190; hint('touch', 'Touch the wheat. The world answers when you touch it.'); G.ring = () => [hx - G.cam, GY - 40]; }
   if (G.hint !== 'touch' && G.ring && G.state === 'play') G.ring = null;
   if (G.hint === 'touch' && P.x > 560) clearHint('touch');
-  if (!G.fam && P.x > HOME_X - 70) { G.fam = 1; sweep(170, 120, .5, .03); sfx.lamp(); }       // the door of his house opens as he passes
+  if (!G.fam && P.x > HOME_X - 440) { G.fam = 1; sweep(170, 120, .5, .03); sfx.lamp(); }      // the door of his house opens as he comes running
   if (G.fam === 1 && P.x > HOME_X + 92) { G.fam = 2; talk(FAMILY, () => caption(LIFE)); return; }
-  if (!G.evanDone && P.x > EVAN_X - 120) { G.evanDone = true; talk(EVAN, () => { G.evanGone = 1; }); return; }
+  if (!G.evanDone && P.x > EVAN_X - 120) { G.evanDone = true; talk(EVAN, () => { G.evanGone = 1; G.runZone = true; G.idle = 0; }); return; }   // "So I saw in my dream that the man began to run"
+  if (G.runZone && !P.run && G.idle === 110) hint('walk', 'Hold to run.');
   for (const c of CAPS) if (!c.done && P.x > c.x && (!c.pli || (G.pli && G.pli.mode === 'follow'))) { c.done = true; caption(c.lines); if (c.watch) G.watch = 520; }
   if (G.runZone && P.x > RUN_END) { G.runZone = false; vox(TIRED[0][0], TIRED[0][1]).raw.then(r => { if (r) caption(TIRED); }); }      // he tires, and walks again
   if (!G.neigh && P.x > NEIGH_X && OBS.ready && PLI.ready) { G.neigh = true; G.obst = { x: G.cam - 80, mode: 'run' }; G.pli = { x: G.cam - 150, mode: 'run' }; }
@@ -1089,12 +1167,16 @@ function home(cam) {                       // drawn in screen units, before the 
 }
 function gate() {                          // the city gate: two towers and an arch, a little paler than the road so Christian shows against it
   const c = ctx; c.fillStyle = SETC;
-  for (const gx of [5250, 5420]) { c.fillRect(gx, GY - 300, 56, 302); for (let k = 0; k < 3; k++) c.fillRect(gx - 4 + k * 24, GY - 314, 16, 16); }
-  c.beginPath(); c.moveTo(5306, GY - 300); c.lineTo(5306, GY - 236); c.quadraticCurveTo(5363, GY - 292, 5420, GY - 236); c.lineTo(5420, GY - 300);
-  c.lineTo(5400, GY - 300); c.lineTo(5363, GY - 348); c.lineTo(5326, GY - 300); c.closePath(); c.fill();
-  // the city wall runs off behind the houses
-  c.fillRect(5120, GY - 150, 130, 152); for (let k = 0; k < 6; k++) c.fillRect(5120 + k * 24, GY - 162, 14, 14);
-  c.fillRect(5476, GY - 150, 60, 152); for (let k = 0; k < 3; k++) c.fillRect(5478 + k * 24, GY - 162, 14, 14);
+  for (const gx of [5850, 6020]) { c.fillRect(gx, GY - 300, 56, 302); for (let k = 0; k < 3; k++) c.fillRect(gx - 4 + k * 24, GY - 314, 16, 16); }
+  c.beginPath(); c.moveTo(5906, GY - 300); c.lineTo(5906, GY - 236); c.quadraticCurveTo(5963, GY - 292, 6020, GY - 236); c.lineTo(6020, GY - 300);
+  c.lineTo(6000, GY - 300); c.lineTo(5963, GY - 348); c.lineTo(5926, GY - 300); c.closePath(); c.fill();
+  // The gate stands in the city wall, and the wall is one unbroken line (owner, build 48: the gate "doesn't block off left
+  // from right, it should be part of a continuous wall"): from a corner tower far to the left, through the gate, and on
+  // off the right of the picture. Nobody could walk round it; the only way on is through.
+  const W0 = GATE - 760, W1 = LEVEL_W + 80;
+  c.fillRect(W0, GY - 150, GATE - 90 - W0, 152); c.fillRect(GATE + 136, GY - 150, W1 - GATE - 136, 152);
+  for (let x = W0 + 6; x < W1; x += 24) if (x < GATE - 104 || x > GATE + 136) c.fillRect(x, GY - 162, 14, 14);
+  c.fillRect(W0 - 34, GY - 196, 52, 198); for (let k = 0; k < 3; k++) c.fillRect(W0 - 38 + k * 22, GY - 209, 16, 15);      // the corner tower
 }
 // the gate's two doors: shut, with a thread of light between them; as they are pushed they swing away and light pours through
 function doors() {
@@ -1132,7 +1214,8 @@ function draw() {
   const cam = G.cam;
   // the weather: rain through the city, clearing toward the gate; the gold breaks through when the gate is pushed open.
   // Turning back for home pulls the rain over the scene again.
-  clearAt = lerp(1.02, -.32, .55 * smooth(.3, 1, cam / PANG) + .45 * smooth(0, 1, G.gateOpen)) + G.gloom * .5;
+  // It ends with the light won only in the right-hand part of the picture (.12, was -.32 = gold from edge to edge).
+  clearAt = lerp(1.02, .12, .55 * smooth(.3, 1, cam / PANG) + .45 * smooth(0, 1, G.gateOpen)) + G.gloom * .5;
   weatherSegs();
   ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
   // sky
@@ -1167,12 +1250,12 @@ function draw() {
   const gcol = layerCol(1), wAt = x => warm((x - cam) / VW), on = (x, w = 0, m = 80) => x < cam + VW + m && x + w > cam - m;
   // the lane just behind the road: a low bank a little paler than the road, with his house and a few things on it
   ctx.fillStyle = hGrad(ctx, ...layerCol(.93)); ctx.fillRect(0, LEVELS.mid.base, VW, GY - LEVELS.mid.base + 2);
-  home(cam); drawLevel('mid', cam);
+  home(cam); drawLevel('mid', cam); drawWheat(false);          // the wheat behind him
   ctx.save(); ctx.translate(-cam, 0);
   const grad = hGrad(ctx, gcol[0], gcol[1], 1, 1, cam);
   INK = grad; SETC = hGrad(ctx, ...layerCol(.66), 1, 1, cam); DOORC = hGrad(ctx, ...layerCol(.86), 1, 1, cam);
   HINT = hGrad(ctx, PAL.hazeC, PAL.hazeW, .13, .17, cam);
-  if (on(5120, 420)) { doors(); gate(); }
+  if (on(GATE - 800, 1400)) { doors(); gate(); }
   for (const l of LAMPS) if (on(l.x - 15, 73)) {
     drawProp(PROP.road && PROP.road.lamp, PROP_META.lamp, l.x - 15, cam);
     if (l.lit) { ctx.fillStyle = css(PAL.win, Math.min(1, (G.t - l.lit) / 30)); ctx.fillRect(l.x + 34.5, GY - 142.6, 10.6, 10.5); }      // the lantern's little window
@@ -1237,6 +1320,7 @@ function draw() {
     ctx.beginPath(); ctx.moveTo(x - 7.5 * s, f.y - w); ctx.quadraticCurveTo(x - 3 * s, f.y - w * .25 - 1.6 * s, x, f.y); ctx.quadraticCurveTo(x + 3 * s, f.y - w * .25 - 1.6 * s, x + 7.5 * s, f.y - w); ctx.stroke();
   }
   ctx.globalAlpha = 1;
+  drawWheat(true);                                           // the wheat he wades through
   drawLevel('f1', cam);                                      // things between us and Christian
   // grass in front
   ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -1360,7 +1444,7 @@ document.getElementById('again').onclick = start;
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.fillStyle = '#5d6b80'; ctx.fillRect(0, 0, VW, VH);
   await new Promise(r => setTimeout(r, 30));
   const chr = Promise.all([loadPack('christian-walk', CHR), loadPack('christian-stand', STD), ...Object.keys(PROP_META).map(k => loadImg('prop-' + k + '.webp').then(im => { PROP[k] = im; }))]);
-  buildScenery(); seed = 99; buildLevel(); bakeFinish();
+  buildScenery(); buildWheat(); seed = 99; buildLevel(); bakeFinish();
   await chr;
   { const im = Object.assign({}, PROP); for (const k in PROP) delete PROP[k];
     PROP.road = { lamp: im.lamp && bakeTint(im.lamp, .5, PROP_DETAIL) };
