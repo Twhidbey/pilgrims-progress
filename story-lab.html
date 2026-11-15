@@ -70,7 +70,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">story lab · build 31 · Nov 15 2026</div>
+  <div id="build">story lab · build 32 · Nov 15 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -525,7 +525,7 @@ function reset() {
   Object.assign(P, { x: START_X, y: GY, vx: 0, face: 1, anim: 1, stand: { t: QUIET[0] }, turn: 0 });
   Object.assign(G, { cam: Math.max(0, Math.min(LEVEL_W - VW, START_X - VW * .38 + 40)), t: 0, got: 0, extra: 0, motes: [], flyers: [], ripples: [], glints: [], taps: [], litw: [], capQ: [], cap: 0, hint: null,
     pli: null, obst: null, flare: 0, gloom: 0, gloomTo: 0, gateOpen: 0, act: null, actT: 0, ring: null, auto: null, finale: null, guard: 0, idle: 0, wins: 0,
-    evanDone: START_X > EVAN_X, evanGone: START_X > EVAN_X ? 1 : 0, neigh: START_X > NEIGH_X + 300, gateSeen: false, walked: false, touched: false });
+    evanDone: START_X > EVAN_X, evanGone: START_X > EVAN_X ? 1 : 0, neigh: START_X > NEIGH_X + 300, gateSeen: false, walked: false, touched: false, leaving: false });
   G.evan.pt = START_X > EVAN_X ? 239 : 0; downs.clear(); pushing = false; keys.r = keys.push = false;
   for (const l of LIGHTS) if (l.x < START_X) l.got = true;
   for (const c of CAPS) if (c.x < START_X) c.done = true;
@@ -726,6 +726,15 @@ function walkTick(dir, max) {
   }
 }
 const inMud = x => x > MUD.x && x < MUD.x + MUD.w;
+// going in through the open gate: 0 outside, 1 gone into the light. A figure in the archway grows a little smaller,
+// rises a little and fades into the gold, so they go INTO the gate and not past it (owner asked).
+const intoGate = x => G.gateOpen >= 1 ? smooth(DOOR0 + 16, DOOR1 - 24, x) : 0;
+function figure(x, fn) {
+  const g = intoGate(x); if (g >= 1) return;
+  if (!g) { fn(1); return; }
+  const sx = x - G.cam, k = 1 - .2 * g;
+  ctx.save(); ctx.translate(sx, GY - 14 * g); ctx.scale(k, k); ctx.translate(-sx, -GY); fn(1 - g * g); ctx.restore();
+}
 
 // ---------- things that answer a touch ----------
 function free(wx, wy) { G.motes.push({ x: wx, y: wy, free: true, tw: Math.random() * 6 }); }   // a light set free; it flies to Christian
@@ -810,7 +819,7 @@ function story() {
   if (!G.evanDone && P.x > EVAN_X - 120) { G.evanDone = true; talk(EVAN, () => { G.evanGone = 1; }); return; }
   for (const c of CAPS) if (!c.done && P.x > c.x && (!c.pli || (G.pli && G.pli.mode === 'follow'))) { c.done = true; caption(c.lines); if (c.watch) G.watch = 520; }
   if (!G.neigh && P.x > NEIGH_X && OBS.ready && PLI.ready) { G.neigh = true; G.obst = { x: G.cam - 80, mode: 'run' }; G.pli = { x: G.cam - 150, mode: 'run' }; }
-  if (!G.gateSeen && P.x > GATE_STOP) { G.gateSeen = true; talk(GATEWORDS, () => { G.state = 'auto'; G.auto = { dir: 1, to: 5650, wait: true, then: finish }; caption(END); }); }
+  if (!G.gateSeen && P.x > GATE_STOP) { G.gateSeen = true; talk(GATEWORDS, () => { G.state = 'auto'; G.auto = { dir: 1, to: DOOR1 - 12, wait: true, then: () => { G.state = 'auto'; G.leaving = true; } }; caption(END); }); }
 }
 // Obstinate and Pliable
 function people() {
@@ -821,7 +830,8 @@ function people() {
   }
   if (o && o.mode === 'home' && o.x > G.cam - 200) o.x -= 1.25; // his video's own walking pace
   if (p && p.mode === 'follow') {                             // Pliable keeps a little behind Christian, hurrying only if he falls back
-    const gap = P.x - 70 - p.x;
+    const gap = (G.leaving ? DOOR1 - 10 : P.x - 70) - p.x;      // at the end he follows Christian in through the gate
+    if (G.leaving && gap < 4) { G.leaving = false; finish(); }
     if (gap > 14) p.go = true; if (gap < 1) p.go = false;
     if (p.go) p.x += Math.min(gap, gap > 46 ? 2 : MAXV);
   }
@@ -1075,8 +1085,8 @@ function draw() {
   // the people
   if (Math.abs(G.evan.x - cam - VW / 2) < VW) { const t = G.evan.pt ? (G.evan.pt < 239 ? G.evan.pt : 212 + 27 * (.5 + .5 * Math.sin(G.t / 50))) : G.evan.idle || 0; drawFrame(EVA[atTime(EVA_META, t)], EVA_META, G.evan.x - cam, GY, 1, 1); }
   if (G.obst && G.obst.x > cam - 100) drawFrame(OBS[Math.floor(G.obst.anim ?? OBS_META.rest[0]) % OBS.length], OBS_META, G.obst.x - cam, GY, G.obst.mode === 'home' ? -1 : 1, 1);
-  if (G.pli) drawFrame(PLI[Math.floor(G.pli.anim ?? 0) % PLI.length], PLI_META, G.pli.x - cam, GY, 1, 1);
-  drawChristian(P.x - cam, P.y + 1, P.face, 1);
+  if (G.pli) figure(G.pli.x, a => drawFrame(PLI[Math.floor(G.pli.anim ?? 0) % PLI.length], PLI_META, G.pli.x - cam, GY, 1, a));
+  figure(P.x, a => drawChristian(P.x - cam, P.y + 1, P.face, a));
   // birds in the air
   ctx.lineCap = 'round'; ctx.strokeStyle = css(mix(gcol[0], gcol[1], warm(.5)), .9);
   for (const f of G.flyers) {
@@ -1108,7 +1118,7 @@ function draw() {
     const y = s.y + Math.sin(G.t / 26 + s.ph) * 4, tw = .82 + .18 * Math.sin(G.t / 11 + s.ph * 3);
     glow(x, y, 54, .5 * tw); glow(x, y, 17, 1);
   }
-  if (G.state !== 'title') glow(P.x - cam, GY - 84, 210 + G.got * 2.2, (.1 + Math.min(.2, G.got * .0045)) * dim);   // the warmth he carries
+  if (G.state !== 'title') glow(P.x - cam, GY - 84, 210 + G.got * 2.2, (.1 + Math.min(.2, G.got * .0045)) * dim * (1 - intoGate(P.x)));   // the warmth he carries
   for (const m of G.motes) { const x = m.x - cam, tw = .75 + .25 * Math.sin(G.t / 9 + m.tw); glow(x, m.y, 26, .5 * tw * dim); glow(x, m.y, 8.5, dim); }
   for (const g of G.glints) { const x = g.x - cam * g.par, a = Math.sin(Math.PI * g.t / 56); glow(x, g.y, 30, .5 * a); ctx.globalAlpha = .9 * a; ctx.strokeStyle = '#fff6da'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(x - 8, g.y); ctx.lineTo(x + 8, g.y); ctx.moveTo(x, g.y - 8); ctx.lineTo(x, g.y + 8); ctx.stroke(); }
   for (const t of G.taps) { ctx.globalAlpha = .5 * (1 - t.t / 26); ctx.strokeStyle = '#fff3d0'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(t.x, t.y, 6 + t.t * 1.3, 0, 6.2832); ctx.stroke(); }

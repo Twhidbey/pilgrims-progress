@@ -157,6 +157,10 @@ The game is `index.html` (one file, no build step). `style-lab.html` is the art-
 ## Built Nov 15, 2026 (build 31)
 - Owner: "I think Amazing Grace should be discovered; let's open up with something else, very subtle." The title's music is now only single soft notes, far apart, at random (no tune), over the rain and hum. **Rule: don't play the hymn anywhere before the lights sing it on the road.**
 
+## Built Nov 15, 2026 (build 32)
+- Owner: "make them go into the gate, not next to it". Christian and then Pliable now walk into the open archway and fade into the golden light (a little smaller and higher as they go), and the end card follows. Before, they walked across in front of the gate and on along the road.
+- Owner asked what I think of the level. Said in chat: the look, the gate and the choice are strong; the middle (Evangelist to the neighbours) is thin; Obstinate and Pliable need their own voices; the burden is told but not felt. **Suggested next: a moment in the middle where his family calls from a lit doorway and the child keeps walking** (from the book: he ran on, crying "Life! Life!"). Waiting for the owner's view.
+
 ## Open questions for the owner
 0. **Story lab (build 25):** is this the right shape for the game? How does it sound? Is "Go home" a good choice to offer? Should it replace the game now?
 1. How does the game feel on the phone: smooth? Anything hard to see (dark Christian against dark houses, crates, barrels)?
