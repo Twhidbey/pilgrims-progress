@@ -2,12 +2,14 @@
 
 A gentle side-scrolling game for kids ages 7 to 10, following Bunyan's *The Pilgrim's Progress*. No build step, no dependencies. **`HANDOFF.md` starts with "START HERE": read that first in a new chat.**
 
-**Where the work is (build 45):** all current work is in **`story-lab.html`** (the story walk: no jumps, recorded voices, depth levels) with its pictures, frames and voices in `assets/`. **`index.html` is the OLD jumping game**, untouched since build 24 apart from its build stamp; it is to be replaced by the story lab once the owner confirms no other chat is still editing it. `style-lab.html` is the art-style test page; `concept-2200.html` waits on the owner's choice.
+**The book is in the repo (build 46):** `book/pilgrims-progress-part-one.txt` is Bunyan's own text of Part One (public domain; no later editors' introductions), with section numbers like `{18}` for reference. Level 1 covers `{10}` to about `{26}`; the Slough of Despond starts at `{27}`. Check the book before writing or changing story lines.
+
+**Where the work is (build 46):** all current work is in **`story-lab.html`** (the story walk: no jumps, recorded voices, depth levels) with its pictures, frames and voices in `assets/`. **`index.html` is the OLD jumping game**, untouched since build 24 apart from its build stamp; it is to be replaced by the story lab once the owner confirms no other chat is still editing it. `style-lab.html` is the art-style test page; `concept-2200.html` waits on the owner's choice.
 
 ## Working with the owner
 
 - **Repo: `Twhidbey/pilgrims-progress`, branch `main`.** This repo IS the live game: GitHub Pages serves it at https://twhidbey.github.io/pilgrims-progress/ (style lab: `/style-lab.html`). Pushing `main` publishes it (Pages takes 1 to 2 minutes). Commit and push after every change, then tell the owner it is live. A phone may show an old copy, so suggest adding `?v=N` to the link.
-- **Build stamp:** bottom-right corner of the game (`id="build"` in `index.html`), the style lab canvas (`id="build"` in `style-lab.html`), the 2200 concept page (`concept-2200.html`) and the story lab (`story-lab.html`): `build N · date`. Bump N on **every** push, in both files, so one number means one push. Currently **build 45**. Several chats may be pushing at once: `git fetch` and rebase on `origin/main` just before pushing, and take the next number after whatever is there.
+- **Build stamp:** bottom-right corner of the game (`id="build"` in `index.html`), the style lab canvas (`id="build"` in `style-lab.html`), the 2200 concept page (`concept-2200.html`) and the story lab (`story-lab.html`): `build N · date`. Bump N on **every** push, in both files, so one number means one push. Currently **build 46**. Several chats may be pushing at once: `git fetch` and rebase on `origin/main` just before pushing, and take the next number after whatever is there.
 - **Keep `CLAUDE.md` and `HANDOFF.md` updated after every change.** The repo is public: no names, emails or other personal details in notes, code or commits.
 - Players: kids 7 to 10, mostly on a phone. Gentle: **no lives, no game over**, on-screen touch buttons, read-aloud dialogue, short simple sentences.
 - Sister project with the same habits: `Twhidbey/math-jump` (Math Ninja).
