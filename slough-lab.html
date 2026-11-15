@@ -20,7 +20,7 @@ a{color:#d9b77c}
 </style>
 </head>
 <body>
-<div id="top"><div id="frame"><canvas id="cv"></canvas><div id="build">slough lab · build 77 · Nov 15 2026</div></div></div>
+<div id="top"><div id="frame"><canvas id="cv"></canvas><div id="build">slough lab · build 79 · Nov 15 2026</div></div></div>
 <div id="panel">
   <div class="row" id="shots"></div>
   <div class="row"><button id="new">Another oak</button><button id="play">Watch them move</button></div>
@@ -147,7 +147,7 @@ const META = { chr: { ax: 93, ground: 295 }, pli: { ax: 98, ground: 298 }, std: 
 // Christian's fingertips are 129 right of his feet and 283 up. He stands so that his hand overlaps Help's by 15.
 const GRASP = { dx: -(82 - 15 + 129), dy: 283 - 55 };   // Help's frames (assets/help.pack) are placed by his front boot, which stays put while he kneels
 async function loadPack(name, into, only) {
-  const buf = await (await fetch('assets/' + name + '.pack?v=6')).arrayBuffer(), dv = new DataView(buf), n = dv.getUint32(0, true);
+  const buf = await (await fetch('assets/' + name + '.pack?v=7')).arrayBuffer(), dv = new DataView(buf), n = dv.getUint32(0, true);
   let off = 4 + 4 * n; const jobs = [];
   for (let i = 0; i < n; i++) { const len = dv.getUint32(4 + 4 * i, true), o = off; off += len;
     if (!only || only.includes(i)) jobs.push(createImageBitmap(new Blob([buf.slice(o, o + len)], { type: 'image/webp' })).then(im => { into[i] = im; })); }
