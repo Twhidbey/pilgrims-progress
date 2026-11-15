@@ -150,6 +150,10 @@ The game is `index.html` (one file, no build step). `style-lab.html` is the art-
 ## Built Nov 15, 2026 (build 29)
 - Owner: "sometimes we accidentally skip to the next speech, how do we go back (or is this prevented)?" Chosen: prevent it. A tap does nothing until the line has been spoken; "tap ▸" only appears then. Lines heard once can be skipped on a second walk. No back button (it would add a control on the scene). If the owner wants more: a "say it again" tap on the speaker's name, or lines moving on by themselves like a film.
 
+## Built Nov 15, 2026 (build 30)
+- Owner: "can I get some opening music before I start game". The title now asks for one touch ("Open the book"), because a browser may not make sound before a touch; then quiet music plays (the hymn's chords like a slow harp, the first half of the tune above like a music box) with the rain, and "Begin" appears. Made in the browser, no sound file. Not heard by me: the owner's ear decides.
+- Owner noticed the main game and the story lab are "out of sync". Asked the owner to confirm the other chats are finished before the story walk replaces `index.html` (see build 25's "Next").
+
 ## Open questions for the owner
 0. **Story lab (build 25):** is this the right shape for the game? How does it sound? Is "Go home" a good choice to offer? Should it replace the game now?
 1. How does the game feel on the phone: smooth? Anything hard to see (dark Christian against dark houses, crates, barrels)?

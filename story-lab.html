@@ -43,7 +43,8 @@ button{font-family:Georgia,'Times New Roman',serif;-webkit-appearance:none;appea
 #choice button{font-size:clamp(14px,2.3vw,21px);font-style:italic;color:#f4ecdc;background:rgba(20,22,30,.3);border:1px solid rgba(244,236,220,.55);border-radius:40px;padding:.35em 1.4em;cursor:pointer;text-shadow:0 1px 3px rgba(0,0,0,.8);animation:rise .6s ease both}
 #choice button:active{transform:scale(.96)}
 #snd{position:absolute;right:1%;top:1.5%;width:2.2em;height:2.2em;border-radius:50%;border:none;background:rgba(20,22,30,.22);color:rgba(244,236,220,.8);font-size:clamp(14px,2vw,19px);cursor:pointer;display:none}
-body.playing #snd{display:block}
+body.playing #snd,body.opened #snd{display:block}
+#play{animation:rise 1.4s ease both}
 #snd.off{color:rgba(244,236,220,.35);text-decoration:line-through}
 #build{position:absolute;right:1.2%;bottom:1%;font:12px Georgia,serif;color:rgba(255,250,235,.7);text-shadow:0 0 3px rgba(0,0,0,.7);pointer-events:none}
 body.talking #build,body.capped #build{visibility:hidden}
@@ -59,7 +60,8 @@ body.portrait #rot{display:block}
   <div id="title" class="card">
     <h1>Pilgrim's Progress</h1>
     <h2 id="sub">Getting ready…</h2>
-    <button class="btn" id="play" style="visibility:hidden">Begin</button>
+    <button class="btn" id="open" style="visibility:hidden">Open the book</button>
+    <button class="btn" id="play" style="display:none">Begin</button>
   </div>
   <div id="endc" class="card">
     <h1 style="font-size:clamp(24px,5vw,48px)">Out of the city</h1>
@@ -68,7 +70,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">story lab · build 29 · Nov 15 2026</div>
+  <div id="build">story lab · build 30 · Nov 15 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -792,7 +794,7 @@ function update() {
   walkTick(dir, inMud(P.x) ? MUDV : MAXV);
   if (G.state === 'auto' && G.auto && (G.auto.dir > 0 ? P.x >= G.auto.to : P.x <= G.auto.to)) { const a = G.auto; G.auto = null; if (P.stand || !a.wait) { G.state = 'play'; a.then && a.then(); } else G.auto = { dir: 0, to: a.dir > 0 ? -1e9 : 1e9, then: a.then }; }
   if (G.state === 'auto' && G.auto && !G.auto.dir && P.stand) { const a = G.auto; G.auto = null; G.state = 'play'; a.then && a.then(); }
-  people(); gather(); motes(); effects(); capTick(); acts(); ambience();
+  people(); gather(); motes(); effects(); capTick(); acts(); ambience(); opening();
   if (G.state === 'play') story();
   const target = Math.max(0, Math.min(LEVEL_W - VW, P.x - VW * .38 + P.face * 40));
   G.cam += (target - G.cam) * .05;
@@ -878,6 +880,19 @@ function effects() {
     while (F.bar < BASS.length && F.t >= (1 + F.bar * 3) * 28) { note(BASS[F.bar], .06, 3.4, 0, false); note(BASS[F.bar] + 12, .03, 3, 0, false); F.bar++; }
     if (F.i >= TUNE.length && F.t > 47 * 28) { for (const m of G.motes) m.go = true; G.finale = null; }
   }
+}
+// ---------- the opening: quiet music on the title page ----------
+// A browser may not make any sound until the screen has been touched, so the title asks for one touch ("Open the book").
+// Then, for as long as the title is up: a slow harp-like figure on the tune's own chords (a low note, then two higher ones
+// in each bar), with the first half of the tune above it like a music box, then eight bars of the figure alone, round again.
+// It is the tune the lights will sing on the road. Pressing Begin lets the last notes ring out into the rain.
+const CHORD = { 43: [59, 62], 48: [60, 64], 50: [57, 66] }, BAR = 144, BEAT_S = .8;
+function opening() {
+  const o = G.opening; if (!o || o.t++ % BAR) return;
+  const bar = (o.t - 1) / BAR % 16, low = BASS[bar], [x, y] = CHORD[low];
+  note(low, .07, 4, 0, false); note(low + 12, .03, 3, 0, false); note(x, .045, 3, BEAT_S); note(y, .045, 3, BEAT_S * 2);
+  for (const [beat, m] of TUNE) { const at = beat - 1 - bar * 3; if (beat < 24 && at >= 0 && at < 3) note(m + 12, .04, 3, at * BEAT_S); }
+  if (bar === 15) note(TUNE[0][1] + 12, .04, 3, BEAT_S * 2);       // the tune's first note leads back in
 }
 // the two acts that wait for the child
 function acts() {
@@ -1157,13 +1172,18 @@ let runN = 0;
 function start() {
   document.getElementById('title').style.opacity = 0; setTimeout(() => { document.getElementById('title').style.display = 'none'; }, 900);
   document.getElementById('endc').className = 'card';
-  document.body.classList.add('playing');
+  document.body.classList.add('playing'); G.opening = null;
   reset();
   hush(); if (audio()) { AC.resume(); setTimeout(() => sfx.bell(.6), 300); fetchVoices(); }
   if (START_X > 140) { G.state = 'play'; return; }
   const run = ++runN; G.state = 'wait'; setTimeout(() => { if (run === runN && G.state === 'wait') talk(INTRO); }, 1700);   // the bell, then the story
 }
 document.getElementById('play').onclick = start;
+document.getElementById('open').onclick = () => {
+  document.getElementById('open').style.display = 'none'; document.body.classList.add('opened');
+  if (audio()) { AC.resume(); G.opening = { t: 0 }; fetchVoices(); }
+  setTimeout(() => { document.getElementById('play').style.display = ''; }, 2600);
+};
 document.getElementById('again').onclick = start;
 
 // ---------- boot: build the scenery, fetch Christian, then the others while the child is already playing ----------
@@ -1175,7 +1195,7 @@ document.getElementById('again').onclick = start;
   await chr;
   reset();
   document.getElementById('sub').textContent = 'The City of Destruction';
-  document.getElementById('play').style.visibility = 'visible';
+  document.getElementById('open').style.visibility = 'visible';
   requestAnimationFrame(t => { lastT = t; loop(t); });
   loadPack('evangelist', EVA).then(() => Promise.all([loadPack('obstinate', OBS), loadPack('pliable', PLI)]));
   for (const [who, txt] of INTRO) vox(who, txt);          // the first words, ready before Begin is pressed
