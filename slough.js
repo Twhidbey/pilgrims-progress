@@ -186,6 +186,11 @@ const SL = (() => {
   const STOP_ENTRY = [[0, 0], [1, 1], [1, 1], null, null, [33, 69], [14, 25], null, [15, 28], [16, 31], [16, 31], null, null, null, null, [29, 57], [29, 57], [30, 61], [31, 65], [12, 22], [32, 68], [13, 24], [33, 70], [14, 26], [15, 29], [15, 28], [16, 31], [16, 30], [17, 33], [17, 33], [0, -1], [0, -1]];
   const STOP_OFFS = [0, 0.1, 2.1, 4.1, 4.7, 5.2, 7.4, 9.8, 12.3, 13.8, 14.8, 17.1, 20.2, 22.3, 24.6, 28.5, 31.7, 34.5, 36.3, 37, 37.4, 39.8, 41.2, 42.1, 44, 46.5, 49.7, 52.5, 54.8, 56.5, 59.2, 63.3, 66.2, 68.5, 71.2, 75.1, 77.5, 78.7, 79.2, 79.2, 77.6, 76.1, 75, 74.7, 74.3, 73.8, 73.4, 72.8, 72.5, 72.5];
   const stopOff = t => (t >= 49 ? 72.5 : STOP_OFFS[Math.floor(t)]) * CHR_K, STOPD = 72.5 * CHR_K;
+  // build 116 (owner, with a picture: "see how theres space between foot and ground!"): standing, his front foot is drawn
+  // 14 pack px higher than his back foot (the pose is seen a little from the front), so it hung above the ground. As he
+  // comes to rest he is set FOOT_DROP lower: the front foot meets the ground and the back foot overlaps it a little,
+  // which reads as nearer to us (the owner's rule: feet overlapping the ground look right, a gap looks wrong)
+  const FOOT_DROP = 16 * CHR_K;
   const HELP_SRC = [0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 42, 44, 46, 48, 50, 52, 54, 56, 58, 60, 62, 64, 66, 68, 70, 72, 74, 76, 78, 80, 82, 84, 86, 88, 90, 92, 94, 96, 98, 100, 102, 104, 106, 108, 110, 112, 114, 116, 118, 120, 122, 124, 126, 128, 130, 132, 136, 140, 144, 148, 152, 156, 160, 164, 168, 172, 176, 180, 184, 188, 192, 196, 200, 204, 208, 212, 216, 220, 224, 228, 232, 236];
   const REACH_SRC = [3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 36, 39, 42, 45, 48, 51, 54, 57, 60, 63, 66, 69, 72, 75, 78, 80, 82, 84, 86, 88, 90, 92, 94, 96, 98, 100, 102, 104, 106, 108, 110, 112, 114, 116, 118, 120, 122, 124, 128, 134, 140, 146, 152, 158, 164, 170, 176, 182, 188, 194, 200, 206, 212, 218, 224, 230, 236];
   const LIFT_SRC = [...Array(76).keys()].map(i => i * 2).concat([...Array(11).keys()].map(i => 156 + i * 8));
@@ -532,10 +537,10 @@ const SL = (() => {
       if (PLIC.length && pli.mode === 'climb' && !pli.out) figure(n, 'pli', PLIC[Math.floor(pli.ct || 0)], META.climb, pli.x, pli.y, -1, fig, true, pli.alpha);
       else if (pli.stop && pli.mode === 'follow' && PSTOP.length) {
         const t = pli.stop.t, L = PSTOP.length - 50, f = t < 50 ? Math.floor(t) : 50 + Math.floor(((u => u < L ? u : 2 * L - u))((t - 50) % (2 * L)));
-        figure(n, 'plistop', PSTOP[Math.min(PSTOP.length - 1, f)], META.stop, pli.stop.x0, pli.y, pli.face, fig, pli.y > 2, pli.alpha);
+        figure(n, 'plistop', PSTOP[Math.min(PSTOP.length - 1, f)], META.stop, pli.stop.x0, pli.y + FOOT_DROP * smooth(38, 49, t), pli.face, fig, pli.y > 2, pli.alpha);
       }
       else {
-        if (pli.leave && pli.mode === 'follow') figure(n, 'plileave', PSTOP[pli.leave.f], META.stop, pli.leave.x, pli.y, pli.face, fig, pli.y > 2, pli.alpha * pli.leave.a);
+        if (pli.leave && pli.mode === 'follow') figure(n, 'plileave', PSTOP[pli.leave.f], META.stop, pli.leave.x, pli.y + FOOT_DROP * smooth(38, 49, pli.leave.f), pli.face, fig, pli.y > 2, pli.alpha * pli.leave.a);
         const st = pli.mode === 'follow' && PLI_ST ? pli.st || 0 : 0;
         if (st < 1) figure(n, 'pli', PLI[Math.floor(pli.anim) % (PLI.length || 1)], PLI_META, pli.x, pli.y, pli.face, fig, pli.y > 2 && !(PLIC.length && pli.mode === 'climb'), pli.alpha * (1 - smooth(.5, 1, st)));
         if (st > 0) figure(n, 'plist', PLI_ST, PLI_ST_META, pli.x, pli.y, pli.face, fig, pli.y > 2, pli.alpha * smooth(0, .5, st));

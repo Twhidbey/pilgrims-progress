@@ -70,7 +70,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">story lab · build 115 · Nov 15 2026</div>
+  <div id="build">story lab · build 116 · Nov 15 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -1510,7 +1510,7 @@ function drawLevel(lv, cam) {
 // see-through holes for the door and windows; light is painted behind the holes. The door opens as he passes: warm light
 // inside, and his wife and two children on the step (assets/family.webp, drawn by drawFrame like everyone else).
 const HOUSE_META = {"w": 438.0, "h": 336.8, "door": [183.6, 189.6, 70.4, 146.0], "wins": [[88.8, 200.4, 37.6, 61.8], [314.8, 199.6, 37.2, 61.0]]};      // a small one-room cottage (build 45; the long one of build 40 was too big), sizes at the road's scale (its doorway is 146 high, just taller than his wife)
-const FAM_META = {"ax": 93, "ground": 254}, OBS_ST_META = {"ax": 89, "ground": 311}, PLI_ST_META = {"ax": 67, "ground": 302};
+const FAM_META = {"ax": 93, "ground": 254}, OBS_ST_META = {"ax": 89, "ground": 311}, PLI_ST_META = {"ax": 67, "ground": 288};      // build 116: ground set at his front foot, which the picture draws 13 px above the back one, so no foot hangs above the ground
 const HOUSE_DEPTH = .44;      // the tone of his house and its row: paler than the people, so Christian shows in front of them
 const HOUSE_K = .9;      // the cottage's size against its picture's sizes (build 50: it and the family a little smaller)
 const BACK_META = {"ax": 72, "ground": 298};      // Christian seen from behind (assets/christian-back.webp), for the moment his wife calls
@@ -2187,6 +2187,6 @@ document.getElementById('on2').onclick = () => SL.start();
   for (const [who, txt] of INTRO) vox(who, txt);          // the first words, ready before Begin is pressed
 })();
 </script>
-<script src="slough.js?v=115"></script>
+<script src="slough.js?v=116"></script>
 </body>
 </html>
