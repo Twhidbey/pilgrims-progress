@@ -20,7 +20,7 @@ a{color:#d9b77c}
 </style>
 </head>
 <body>
-<div id="top"><div id="frame"><canvas id="cv"></canvas><div id="build">slough lab · build 49 · Nov 15 2026</div></div></div>
+<div id="top"><div id="frame"><canvas id="cv"></canvas><div id="build">slough lab · build 50 · Nov 15 2026</div></div></div>
 <div id="panel">
   <div class="row" id="shots"></div>
   <div class="row"><button id="new">Another oak</button></div>
@@ -57,7 +57,7 @@ const SHOTS = [
   { name: '3 · Looking back', z: .74, cx: -330, wl: 372, mist: .25, veil: 0, gold: 1, disc: 1, sky: .26,
     note: 'On sound ground he looks back. His lights settle on the steps that were there all along, each doubled in the water, and the gold comes back from the oak outward.' }
 ];
-let shot = Math.max(0, Math.min(2, (parseInt(location.hash.slice(1)) || 2) - 1)), oakSeed = parseInt(location.hash.split('.')[1]) || 12;
+let shot = Math.max(0, Math.min(2, (parseInt(location.hash.slice(1)) || 2) - 1)), oakSeed = parseInt(location.hash.split('.')[1]) || 18;
 
 // ---------- noise ----------
 function noise2(seed) {
@@ -78,14 +78,14 @@ function oak(seed, hero = true, depth = 4) {
       const t = i / n;
       a += (R() - .5) * (o.wander ?? .36);
       if (R() < (o.elbow ?? .08)) a += (R() < .5 ? -1 : 1) * rr(.3, .65);          // a sudden elbow: what makes an oak look old
-      if (o.guide) a += (o.guide(t) - a) * .2; else a -= a * t * t * .13;          // tips turn up toward the sky
+      const ga = o.guide ? o.guide(t) : null; if (ga != null) a += (ga - a) * .22; else a -= a * t * t * .13;          // tips turn up toward the sky
       if (y > -14 && !o.guide) a *= .8;                                            // nothing grows into the ground
       x += Math.sin(a) * step; y -= Math.cos(a) * step;
       // a branch leaves its parent as thick as the parent and narrows over a short way: the collar that makes a fork look grown, not stuck on
       const ww = w * (1 - taper * t) + Math.max(0, w0 - w) * Math.exp(-i * step / (w0 * .6)); pts.push([x, y, ww]);
       if (d > 0 && i >= nextKid && i < n) {
         side = -side; if (R() < .25) side = -side;
-        if (o.guide && R() < .75) side = 1;                                        // the reaching limb sends its shoots upward
+        if (o.reach && R() < .75) side = 1;                                        // the reaching limb sends its shoots upward
         const ka = a + side * rr(.45, 1.15), kl = len * (1 - t * .6) * rr(.42, .78), kw = ww * rr(.5, .76);
         if (kl > 6 && kw > .3) grow(x, y, ka, kl, kw, d - 1, { w0: ww * .9 });
         nextKid = i + rr(.09, .22) * n;
@@ -100,18 +100,15 @@ function oak(seed, hero = true, depth = 4) {
     for (const a of [-1.1, -.45, .2, .9]) grow(x, y, a + rr(-.2, .2), rr(150, 230), rr(9, 13), depth);
     return out;
   }
-  // The trunk does not end in a bunch of branches. It leans, then divides in two great leaders, and each leader divides again,
-  // every fork at its own height, every limb starting as thick as what it grew from (thickness is shared out, never added).
-  const still = { wander: .1, elbow: 0 };
-  const [tx, ty, ta] = grow(0, 0, -.06, 74, 60, 0, { ...still, taper: .1, w0: 90, guide: t => lerp(-.06, -.3, t) });
-  const A = grow(tx - 4, ty, ta - .1, 66, 43, 0, { ...still, taper: .2, w0: 56, guide: t => lerp(ta - .1, -.82, t) });       // the leader toward the water
-  const B = grow(tx + 4, ty, ta + .3, 84, 41, 0, { ...still, taper: .22, w0: 56, guide: t => lerp(ta + .3, .46, t * 1.3) }); // the leader away from it
+  // The great limbs sweep out wide from the head of a short thick trunk. Each one leaves the trunk along the trunk's own line,
+  // as thick as the trunk can spare, and curves away to its own direction while it narrows: a smooth join, not a stuck-on one.
+  const [tx, ty, ta] = grow(0, 0, -.06, 92, 58, 0, { wander: .1, elbow: 0, taper: .14, w0: 90, guide: t => lerp(-.06, -.24, t) });
+  const limb = (dx, dy, to, len, w, o = {}) => grow(tx + dx, ty + dy, lerp(ta, to, .35), len, w, depth, { w0: 40, ...o,
+    guide: t => t < .13 ? lerp(lerp(ta, to, .35), to, t / .13) : o.then ? o.then((t - .13) / .87) : null });
   // the limb that reaches out over the water: long, low, dipping, then lifting at its end like an open hand
-  grow(A[0], A[1], A[2] - .12, 356, 25, depth, { wander: .22, elbow: .05, taper: .7, w0: 35,
-    guide: t => t < .14 ? lerp(A[2] - .12, -1.42, t / .14) : t < .62 ? lerp(-1.42, -1.74, (t - .14) / .48) : lerp(-1.74, -.95, (t - .62) / .38) });
-  grow(A[0], A[1], A[2] + .42, 246, 25, depth, { w0: 35 });
-  grow(B[0], B[1], B[2] - .5, 232, 24, depth, { w0: 33 });
-  grow(B[0], B[1], B[2] + .3, 292, 25, depth, { w0: 33 });
+  limb(-8, 16, -1.42, 372, 25, { wander: .22, elbow: .05, taper: .7, reach: true, w0: 44, then: t => t < .56 ? lerp(-1.42, -1.74, t / .56) : lerp(-1.74, -.95, (t - .56) / .44) });
+  limb(-4, 2, -.74, 250, 24); limb(0, 0, -.1, 236, 22); limb(4, 2, .54, 262, 24);
+  limb(9, 14, 1.24, 304, 23, { w0: 44 });
   // roots gripping the bank
   grow(-22, -22, -2.3, 92, 14, 0, { wander: .16, elbow: 0, taper: .9, w0: 40, guide: t => lerp(-2.5, -1.72, t * 2) }); grow(24, -22, 2.3, 104, 14, 0, { wander: .16, elbow: 0, taper: .9, w0: 40, guide: t => lerp(2.5, 1.7, t * 2) });
   grow(4, -14, 2.6, 58, 12, 0, { wander: .16, elbow: 0, taper: .9, w0: 30, guide: t => lerp(2.8, 1.9, t * 2) });
