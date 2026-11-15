@@ -68,7 +68,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">story lab · build 81 · Nov 15 2026</div>
+  <div id="build">story lab · build 82 · Nov 15 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -907,16 +907,16 @@ document.getElementById('chOn').onclick = () => pick(false);
 // ---------- Christian and the others: the video frames ----------
 // walking pace = the pace in Christian's video (owner: "keep things slow, I'm going for an atmospheric feel")
 const MAXV = 1.05;
-const RUN_META = {"ax": 136, "ground": 309, "frames": 29, "vpx": 17.2, "down": [0, 1, 2, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 22, 23, 24, 25, 26, 27, 28]};
+const RUN_META = {"ax": 136, "ground": 309, "frames": 29, "start": 27, "vpx": 17.2, "down": [0, 1, 2, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 22, 23, 24, 25, 26, 27, 28]};
 // Two runs (build 54; owner: "when he runs, he doesn't need to cover his ears (that doesn't happen till he runs from
 // family)"): RUNP = a plain run, arms free, from Evangelist to his own door (assets/christian-run-plain.pack); RUN = hands
 // over his ears, from the moment his wife cries after him (G.ears, coverEars()). 'steps' = the frames where a foot lands.
 const WEEP = [], WEEP_META = {"ax": 101, "ground": 302, "frames": 96, "step": .13};      // Christian opens his book, reads, weeps and trembles (assets/christian-weep.pack); step = stored frames per tick
 const EVS = [], EVS_META = {"ax": 82, "ground": 311, "frames": 48};      // Evangelist standing, facing right, breathing
-const RUNP_META = {"ax": 132, "ground": 298, "frames": 28, "vpx": 16.6, "steps": [0, 15]}, RUNP = [];
+const RUNP_META = {"ax": 132, "ground": 298, "frames": 28, "start": 20, "vpx": 16.6, "steps": [0, 15]}, RUNP = [];
 RUN_META.steps = [7, 22];
 const runNow = () => G.ears || !RUNP.ready ? [RUN, RUN_META] : [RUNP, RUNP_META];
-function coverEars() { if (G.ears) return; if (P.run) poseChange(); G.ears = true; }
+function coverEars() { if (G.ears) return; if (P.run) poseChange(8, true); G.ears = true; }
 const CHR = [], PLI = [], OBS = [], EVA = [], STD = [], RUN = [], CHR_K = .52, RUN_STEP = RUN_META.vpx * CHR_K, RUNV = RUN_STEP * .4,   // the run at its video's own speed (24 frames a second)
    CHR_STEP = CHR_META.vpx * CHR_K, PLI_STEP = PLI_META.vpx * CHR_K, OBS_STEP = OBS_META.vpx * CHR_K;
 const PACK_V = 14;                          // bump when the .pack files change, so phones fetch the new ones
@@ -951,7 +951,9 @@ const figC = mk(8, 8), shC = mk(8, 8), FEET_SINK = 9;
 const chrPose = () => P.weep && WEEP.ready ? [WEEP[Math.min(WEEP.length - 1, Math.floor(P.weep.t))], WEEP_META] : P.run ? (([set, meta]) => [set[((Math.floor(P.ranim) % set.length) + set.length) % set.length], meta])(runNow()) : P.stand ? [STD[stdFrame()], STD_META] : [CHR[chrFrame()], CHR_META];
 // Walking and standing join frame to frame. Running does not, so going into or out of the run the old picture dissolves
 // into the new one over a fifth of a second (the new one comes in on top, then the old one goes: nothing shows through).
-function poseChange() { const [im, meta] = chrPose(); P.blend = { im, meta, face: P.face, t: 0 }; }
+// n = ticks; quick = the new picture is there at once and the old one fades off it (used into and out of the run:
+// owner, build 76, "when christian switches to run he gets thicker": a slow dissolve showed both figures at once)
+function poseChange(n = 12, quick = false) { const [im, meta] = chrPose(); P.blend = { im, meta, face: P.face, t: 0, n, quick }; }
 function drawChristian(x, y, face, alpha) {
   const [im, meta] = chrPose(), b = P.blend, bk = BACK ? P.bk || 0 : 0;
   if (bk > 0) {                              // turned to look back at his door: the back view comes in on top, then the side view goes
@@ -959,7 +961,9 @@ function drawChristian(x, y, face, alpha) {
     drawFrame(BACK, BACK_META, x, y, 1, alpha * (bk < .5 ? 2 * bk : 1)); return;
   }
   if (!b) { drawFrame(im, meta, x, y, face, alpha); return; }
-  const k = b.t / 12; drawFrame(b.im, b.meta, x, y, b.face, alpha * (k < .5 ? 1 : 2 * (1 - k))); drawFrame(im, meta, x, y, face, alpha * (k < .5 ? 2 * k : 1));
+  const k = b.t / b.n;
+  if (b.quick) { drawFrame(im, meta, x, y, face, alpha); drawFrame(b.im, b.meta, x, y, b.face, alpha * (1 - k) * (1 - k) * .8); return; }
+  drawFrame(b.im, b.meta, x, y, b.face, alpha * (k < .5 ? 1 : 2 * (1 - k))); drawFrame(im, meta, x, y, face, alpha * (k < .5 ? 2 * k : 1));
 }
 // one video frame: the grey painting multiplied by the weather's tint on a small canvas, cut back to the figure's shape
 function drawFrame(im, meta, x, y, face, alpha, K = CHR_K, sy = 1) {      // sy: a still picture's slow breath (it grows and sinks a hair from the feet)
@@ -990,14 +994,15 @@ function drawFrame(im, meta, x, y, face, alpha, K = CHR_K, sy = 1) {      // sy:
 // so his feet never slide and the pictures never jump.
 function walkTick(dir, max) {
   const still = G.state === 'dialog' || G.state === 'choice';
-  if (P.blend && ++P.blend.t >= 12) P.blend = null;
+  if (P.blend && ++P.blend.t >= P.blend.n) P.blend = null;
   // the opening: he reads, weeps and trembles (his own video, once); walking away or its end dissolves him back to standing
   // (unhurried, owner build 73: he stays bowed, weeping, until the next line; only then lowers his hand and stands)
   if (P.weep && (dir || !WEEP.ready || (P.weep.t = Math.min(P.weep.t + WEEP_META.step, G.state === 'dialog' && lines === INTRO && li === 1 ? 64 : 1e9)) >= WEEP.length - 1)) { if (WEEP.ready) poseChange(); P.weep = null; if (!dir) P.stand = { t: QUIET[0] }; }
   // the run: from Evangelist he runs, past his own door with his fingers in his ears, until the burden tires him (G.runZone)
   const run = !!(G.runZone && dir > 0 && RUN.ready);
   if (run !== P.run) {
-    poseChange(); P.run = run;
+    poseChange(6, true); P.run = run;
+    if (run) P.ranim = runNow()[1].start || 0;      // he sets off from the run's narrowest stride, the frame nearest a standing figure
     if (!run) { if (dir) { P.stand = null; P.anim = 1; } else P.stand = { t: QUIET[0] }; }      // out of the run: into a walk, or standing quietly
   }
   if (P.run) { P.stand = null; P.face = 1; P.vx = runNow()[1].vpx * CHR_K * .4; }      // each run at its own video's speed
@@ -1070,6 +1075,7 @@ function touchAt(sx, sy) {
   if (Math.hypot(sx - lp.x, sy - lp.y) < 58) { pulseLight(); return true; }
   for (const l of LAMPS) if (!l.lit && Math.abs(wx - (l.x + 18)) < 50 && sy > GY - 215 && sy < GY + 14) { lightLamp(l); return true; }
   for (const fl of FLOCKS) if (!fl.away && Math.abs(sx - (fl.x - cam * fl.par)) < 52 && Math.abs(sy - fl.y + 6) < 46) { scatter(fl); touched(); return true; }
+  if (touchExtra(sx, sy, wx)) return true;
   if (sy > GY + 2 && warm(sx / VW) < .85) {                  // a finger on the wet road: rings, and now and then a light
     G.ripples.push({ x: wx, y: sy, t: 0, a: 1, r: (sy - HORIZON) / 149 }); sfx.plink(); if (!(G.roadT > G.t - 600)) { G.roadT = G.t; free(wx, sy); } touched(); return true;
   }
@@ -1079,6 +1085,35 @@ function touchAt(sx, sy) {
   const w = nearWindow(2, sx, sy, 46); if (w) { lightWindow(2, w); return true; }
   const w1 = nearWindow(1, sx, sy, 30); if (w1) { lightWindow(1, w1); return true; }
   return false;
+}
+// MORE THINGS THAT ANSWER A TOUCH (owner, build 76: "add some more easter egg clickables through out"). Small and quiet,
+// nothing new in the picture: a dark window of a painted cottage lights up; birds lift out of a tree on the field's rise;
+// a gleam of light runs away through the wheat both ways, with a rustle.
+function touchExtra(sx, sy, wx) {
+  const L = LEVELS.home, p = L.par, k = p * HOUSE_K;
+  for (const it of ROW) {
+    const M = rowMeta(it.key), w = M.w * k, x = it.x - G.cam * p, y = L.base + 3 - M.h * k; if (x > sx || x + w < sx) continue;
+    for (let i = 0; i < M.wins.length; i++) {
+      if (it.lit[i]) continue; const v = M.wins[i], wx0 = it.flip ? x + w - (v[0] + v[2]) * k : x + v[0] * k, wy0 = y + v[1] * k;
+      if (sx > wx0 - 10 && sx < wx0 + v[2] * k + 10 && sy > wy0 - 10 && sy < wy0 + v[3] * k + 10) { it.lit[i] = 1; sfx.window(); free(wx0 + v[2] * k / 2 + G.cam, wy0 + 10); touched(); return true; }
+    }
+  }
+  const Lr = SCN[2], set = TREE[2];
+  if (set) for (let n = 0; n < Lr.trees.length; n++) {
+    const t = Lr.trees[n], kk = t.k || TREE_KEYS[n % TREE_KEYS.length], B = set[kk]; if (!B) continue;
+    const h = t.h, w = h * B.cool.width / B.cool.height, x = t.x - G.cam * Lr.par - w * (t.face > 0 ? TREE_META[kk].bx : 1 - TREE_META[kk].bx), y = Lr.gy(t.x) + 3;
+    if (sx < x || sx > x + w || sy < y - h || sy > y - h * .35 || G.t - (t.bt || -1e9) < 240) continue;
+    t.bt = G.t; sfx.flutter(); setTimeout(sfx.chirp, 300);
+    for (let i = 0; i < 3 + (Math.random() * 3 | 0); i++) G.flyers.push({ x: t.x + (Math.random() - .5) * w * .6, y: y - h * (.55 + Math.random() * .3), vx: .5 + Math.random() * .8, vy: -.9 - Math.random() * .6, ph: Math.random() * 6, s: .55, par: Lr.par, life: 0 });
+    touched(); return true;
+  }
+  if (wx < FIELD_END - 60 && sy > GY - 50 && sy < GY + 30 && !(G.t - (G.gleam && G.gleam.t) < 50)) { G.gleam = { x: wx, y: Math.min(GY - 8, sy), t: G.t }; sfx.swish(2.5); touched(); return true; }
+  return false;
+}
+function drawGleam(cam) {                  // in the shining pass: the gleam running through the wheat
+  const g = G.gleam; if (!g) return; const a = G.t - g.t; if (a > 110) { G.gleam = null; return; }
+  const al = Math.sin(Math.PI * a / 110) * .5;
+  for (const d of [-1, 1]) { const x = g.x - cam + d * a * 3.2; ctx.globalAlpha = al; ctx.drawImage(GLOW, x - 70, g.y - 14, 140, 30); }
 }
 // the story's own acts
 // He turns round to look at the light: not a flip, but a turn away from us (owner, build 65: animate his "turning to see
@@ -1741,6 +1776,7 @@ function draw() {
   // everything that shines, drawn last so it glows in the gloom
   ctx.globalCompositeOperation = 'screen';
   const dim = 1 - .7 * G.gloom;
+  drawGleam(cam);
   for (const l of LAMPS) if (l.lit && on(l.x, 60, 160)) { const a = Math.min(1, (G.t - l.lit) / 40) * lerp(1, .45, wAt(l.x)) * (.94 + .06 * Math.sin(G.t / 9 + l.x)); lampLight(l, a, cam); }
   for (const it of ROW) if (it.who && it.open > .02) { const sx = lineUp(it.a, LEVELS.home.par) - cam * LEVELS.home.par; if (sx > -200 && sx < VW + 200) glow(sx, LEVELS.home.base - 55, 170, .22 * it.open); }      // the glow of the neighbours' doors
   if (G.door > .02) glow(doorX(cam) + 3, LEVELS.home.base - 62, 260, .32 * G.door * lerp(1, .5, warm(doorX(cam) / VW)));   // the glow of home
