@@ -68,7 +68,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">story lab · build 82 · Nov 15 2026</div>
+  <div id="build">story lab · build 83 · Nov 15 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -1087,8 +1087,8 @@ function touchAt(sx, sy) {
   return false;
 }
 // MORE THINGS THAT ANSWER A TOUCH (owner, build 76: "add some more easter egg clickables through out"). Small and quiet,
-// nothing new in the picture: a dark window of a painted cottage lights up; birds lift out of a tree on the field's rise;
-// a gleam of light runs away through the wheat both ways, with a rustle.
+// nothing new in the picture: a dark window of a painted cottage lights up; birds lift out of a tree on the field's rise.
+// (A gleam running through the wheat was tried in build 82 and taken out: owner, "don't like glow in wheat".)
 function touchExtra(sx, sy, wx) {
   const L = LEVELS.home, p = L.par, k = p * HOUSE_K;
   for (const it of ROW) {
@@ -1107,13 +1107,7 @@ function touchExtra(sx, sy, wx) {
     for (let i = 0; i < 3 + (Math.random() * 3 | 0); i++) G.flyers.push({ x: t.x + (Math.random() - .5) * w * .6, y: y - h * (.55 + Math.random() * .3), vx: .5 + Math.random() * .8, vy: -.9 - Math.random() * .6, ph: Math.random() * 6, s: .55, par: Lr.par, life: 0 });
     touched(); return true;
   }
-  if (wx < FIELD_END - 60 && sy > GY - 50 && sy < GY + 30 && !(G.t - (G.gleam && G.gleam.t) < 50)) { G.gleam = { x: wx, y: Math.min(GY - 8, sy), t: G.t }; sfx.swish(2.5); touched(); return true; }
   return false;
-}
-function drawGleam(cam) {                  // in the shining pass: the gleam running through the wheat
-  const g = G.gleam; if (!g) return; const a = G.t - g.t; if (a > 110) { G.gleam = null; return; }
-  const al = Math.sin(Math.PI * a / 110) * .5;
-  for (const d of [-1, 1]) { const x = g.x - cam + d * a * 3.2; ctx.globalAlpha = al; ctx.drawImage(GLOW, x - 70, g.y - 14, 140, 30); }
 }
 // the story's own acts
 // He turns round to look at the light: not a flip, but a turn away from us (owner, build 65: animate his "turning to see
@@ -1689,8 +1683,23 @@ function draw() {
   // Builds 40 to 43 drew a shape streaming down the picture toward us; the owner: "it sets up an angle of perspective
   // that doesn't match the perspective of the rest". Never draw light (or anything) running down the ground toward us.
   // 'color-dodge' brightens what is there, so the lane and the road each keep their own colour.
+  // WHERE THE WIDE GLOW COMES FROM (owner, build 82: the diffuse light "is really cool but not sure how it got there
+  // realistically ... can we justify it somehow?"): his two windows are lamplit too, so each lays its own soft pool on the
+  // wet ground below it, there whether the door is open or shut; with the door's pool between them they make the wide glow.
+  // The wet ground spreads it (a rain-soaked road shines), so it fades as the weather turns golden.
+  if (HOUSE) {
+    const lamp = mix(PAL.win, [0, 0, 0], .22), kk = LEVELS.home.k * HOUSE_K, x0 = doorX(cam) + cam - (HOUSE_META.door[0] + HOUSE_META.door[2] / 2) * kk, wet = 1 - .6 * warm(doorX(cam) / VW);
+    ctx.save(); ctx.globalCompositeOperation = 'color-dodge';
+    for (const w of HOUSE_META.wins) {
+      const R = 100, g = ctx.createRadialGradient(0, 0, 0, 0, 0, R); g.addColorStop(0, css(lamp, .5 * wet)); g.addColorStop(.45, css(lamp, .3 * wet)); g.addColorStop(1, css(lamp, 0));
+      ctx.save(); ctx.translate(x0 + (w[0] + w[2] / 2) * kk, LEVELS.home.base + 2); ctx.scale(1, .16); ctx.fillStyle = g; ctx.fillRect(-R, 0, R * 2, R); ctx.restore();
+    }
+    ctx.globalCompositeOperation = 'screen';      // and each window shines a little into the wet air, so we see where the light on the ground comes from
+    for (const w of HOUSE_META.wins) { ctx.globalAlpha = .22 * wet; ctx.drawImage(GLOW, x0 + (w[0] + w[2] / 2) * kk - 45, LEVELS.home.base + 3 - HOUSE_META.h * kk + (w[1] + w[3] / 2) * kk - 45, 90, 90); }
+    ctx.globalAlpha = 1; ctx.restore();
+  }
   if (G.door > .02) {
-    const R = 330, g = ctx.createRadialGradient(0, 0, 0, 0, 0, R), lamp = mix(PAL.win, [0, 0, 0], .22);
+    const R = 260, g = ctx.createRadialGradient(0, 0, 0, 0, 0, R), lamp = mix(PAL.win, [0, 0, 0], .22);
     g.addColorStop(0, css(lamp, .6 * G.door)); g.addColorStop(.3, css(lamp, .5 * G.door)); g.addColorStop(.65, css(lamp, .26 * G.door)); g.addColorStop(1, css(lamp, 0));
     ctx.save(); ctx.translate(doorX(cam) + cam + 3, LEVELS.home.base + 2); ctx.scale(1, .14); ctx.globalCompositeOperation = 'color-dodge';
     ctx.fillStyle = g; ctx.beginPath(); ctx.rect(-R, 0, R * 2, R); ctx.fill(); ctx.restore();      // the lower half of the pool: only on the ground, not up the wall
@@ -1776,7 +1785,6 @@ function draw() {
   // everything that shines, drawn last so it glows in the gloom
   ctx.globalCompositeOperation = 'screen';
   const dim = 1 - .7 * G.gloom;
-  drawGleam(cam);
   for (const l of LAMPS) if (l.lit && on(l.x, 60, 160)) { const a = Math.min(1, (G.t - l.lit) / 40) * lerp(1, .45, wAt(l.x)) * (.94 + .06 * Math.sin(G.t / 9 + l.x)); lampLight(l, a, cam); }
   for (const it of ROW) if (it.who && it.open > .02) { const sx = lineUp(it.a, LEVELS.home.par) - cam * LEVELS.home.par; if (sx > -200 && sx < VW + 200) glow(sx, LEVELS.home.base - 55, 170, .22 * it.open); }      // the glow of the neighbours' doors
   if (G.door > .02) glow(doorX(cam) + 3, LEVELS.home.base - 62, 260, .32 * G.door * lerp(1, .5, warm(doorX(cam) / VW)));   // the glow of home
