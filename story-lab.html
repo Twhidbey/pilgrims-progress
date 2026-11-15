@@ -68,7 +68,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">story lab · build 73 · Nov 15 2026</div>
+  <div id="build">story lab · build 74 · Nov 15 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -824,8 +824,7 @@ const FIELDS = [[N, 'He walked alone in the fields, reading his book and praying
 const EVAN = [       // {13} to {17}
   [E, 'Why do you cry?'],
   [C, 'Sir, I see by the book in my hand that I am in great danger. And this burden upon my back will sink me.'],
-  [E, 'If this is so, why do you stand still?'],
-  [C, 'Because I do not know where to go.'],
+  // (cut in build 74 to shorten the talk, the owner asked: Evangelist's "why do you stand still?" and "Because I do not know where to go.", {16})
   [N, 'Then Evangelist gave him a roll. On it was written: Flee from the wrath to come.', 0, () => { G.roll = { t: 0, x: G.evan.x - G.cam + 30, y: GY - 92 }; note(79, .035, 2.4); }],
   [C, 'Where must I flee?'],
   [E, 'Do you see that wicket gate, far over the wide field?', 0, () => { G.evan.go = true; }],      // "pointing with his finger over a very wide field"
@@ -1469,7 +1468,32 @@ function home(cam) {                       // drawn in screen units, before the 
   if (e > .3) drawFrame(alone ? WIFE : FAM, alone ? WIFE_META : FAM_META, doorX(cam) + (alone ? 8 : 2), stepY + 2 - FEET_SINK, G.fam ? 1 : -1, smooth(.3, 1, e),      // at the start they look after him, to the left
     CHR_K * DOOR_FIG * HOUSE_K * L.k, breath(7));   // on the step, in front of the wall
 }
+// THE GATE IS PAINTED (owner, build 74, asked "does gate look good enough?": it was the last code-drawn block beside
+// painted cottages and trees). assets/gate.webp is a stone gatehouse seen flat from the front with its gateway left as a
+// see-through hole; assets/wall.webp is a stretch of the city wall, laid side by side with every other piece mirrored.
+// Both are baked like the houses (bakeTint). The gatehouse is sized and placed so that its hole sits exactly on the
+// doorway the game already uses (DOOR0 to DOOR1); the doors and the light are drawn behind it (doors()).
+// hole = [left, top, right] of the gateway in the picture's pixels; solid = the wall's height below its battlements.
+const GATE_META = /*GATE_META*/null, WALL_META = /*WALL_META*/null;
+let GATE_P = null, WALL_P = null;
+const gateFit = () => { const k = (DOOR1 - DOOR0) / (GATE_META.hole[2] - GATE_META.hole[0]); return { k, x: DOOR0 - GATE_META.hole[0] * k, y: GY + 2 - GATE_META.h * k, w: GATE_META.w * k, h: GATE_META.h * k }; };
+function gatePainted() {
+  const c = ctx, f = gateFit(), cam = G.cam, both = (B, x, y, w, h, flip) => {
+    const wm = warm((x + w / 2 - cam) / VW);
+    c.save(); if (flip) { c.translate(x + w, 0); c.scale(-1, 1); } else c.translate(x, 0);
+    c.drawImage(B.cool, 0, y, w, h); if (wm > .01) { const a = c.globalAlpha; c.globalAlpha = a * wm; c.drawImage(B.warm, 0, y, w, h); c.globalAlpha = a; }
+    c.restore();
+  };
+  // the wall: one unbroken line from far to the left (it thins into the mist there), through the gate, and off the right
+  const kw = 152 / WALL_META.solid, ww = WALL_META.w * kw, wh = WALL_META.h * kw, W0 = GATE - 760;
+  let n = 0;
+  for (let x = f.x + 14 - ww; x > W0 - ww; x -= ww - 1, n++) if (x < cam + VW + 40 && x + ww > cam - 40) { c.globalAlpha = x < W0 ? .3 : x < W0 + ww ? .65 : 1; both(WALL_P, x, GY + 2 - wh, ww, wh, n % 2); c.globalAlpha = 1; }
+  n = 0;
+  for (let x = f.x + f.w - 14; x < LEVEL_W + 80; x += ww - 1, n++) if (x < cam + VW + 40 && x + ww > cam - 40) both(WALL_P, x, GY + 2 - wh, ww, wh, n % 2);
+  both(GATE_P, f.x, f.y, f.w, f.h, false);
+}
 function gate() {                          // the city gate: two towers and an arch, a little paler than the road so Christian shows against it
+  if (GATE_P && WALL_P && GATE_META && WALL_META) { gatePainted(); return; }
   const c = ctx; c.fillStyle = SETC;
   for (const gx of [GATE - 90, GATE + 80]) { c.fillRect(gx, GY - 300, 56, 302); for (let k = 0; k < 3; k++) c.fillRect(gx - 4 + k * 24, GY - 314, 16, 16); }
   c.beginPath(); c.moveTo(GATE - 34, GY - 300); c.lineTo(GATE - 34, GY - 236); c.quadraticCurveTo(GATE + 23, GY - 292, GATE + 80, GY - 236); c.lineTo(GATE + 80, GY - 300);
@@ -1486,14 +1510,17 @@ function gate() {                          // the city gate: two towers and an a
 function doors() {
   const c = ctx, o = G.gateOpen, e = o * o * (3 - 2 * o), top = GY - 236, w = (DOORM - DOOR0) * (1 - .88 * e);
   c.save();
-  c.beginPath(); c.moveTo(DOOR0, GY + 2); c.lineTo(DOOR0, top); c.quadraticCurveTo(DOORM, GY - 292, DOOR1, top); c.lineTo(DOOR1, GY + 2); c.closePath(); c.clip();
-  if (o > 0) { const g = c.createRadialGradient(DOORM, GY - 110, 0, DOORM, GY - 110, 190); g.addColorStop(0, css(PAL.light, .95 * e)); g.addColorStop(1, css(PAL.light, .35 * e)); c.fillStyle = g; c.fillRect(DOOR0, GY - 300, DOOR1 - DOOR0, 302); }
-  c.fillStyle = DOORC; c.fillRect(DOOR0, GY - 300, w, 302); c.fillRect(DOOR1 - w, GY - 300, w, 302);
+  c.beginPath();
+  if (GATE_P && GATE_META) { const f = gateFit(); c.rect(DOOR0 - 3, f.y + GATE_META.hole[1] * f.k - 3, DOOR1 - DOOR0 + 6, GY + 5 - f.y - GATE_META.hole[1] * f.k); }      // behind the painted gateway: the picture's own arch frames the doors
+  else { c.moveTo(DOOR0, GY + 2); c.lineTo(DOOR0, top); c.quadraticCurveTo(DOORM, GY - 292, DOOR1, top); c.lineTo(DOOR1, GY + 2); c.closePath(); }
+  c.clip();
+  if (o > 0) { const g = c.createRadialGradient(DOORM, GY - 110, 0, DOORM, GY - 110, 190); g.addColorStop(0, css(PAL.light, .95 * e)); g.addColorStop(1, css(PAL.light, .35 * e)); c.fillStyle = g; c.fillRect(DOOR0, GY - 420, DOOR1 - DOOR0, 422); }
+  c.fillStyle = DOORC; c.fillRect(DOOR0, GY - 420, w, 422); c.fillRect(DOOR1 - w, GY - 420, w, 422);
   c.strokeStyle = HINT; c.lineWidth = 1.2; c.beginPath();
-  for (let k = 1; k < 4; k++) { const dx = w * k / 4; c.moveTo(DOOR0 + dx, GY - 300); c.lineTo(DOOR0 + dx, GY); c.moveTo(DOOR1 - dx, GY - 300); c.lineTo(DOOR1 - dx, GY); }
+  for (let k = 1; k < 4; k++) { const dx = w * k / 4; c.moveTo(DOOR0 + dx, GY - 420); c.lineTo(DOOR0 + dx, GY); c.moveTo(DOOR1 - dx, GY - 420); c.lineTo(DOOR1 - dx, GY); }
   for (const yy of [GY - 190, GY - 60]) { c.moveTo(DOOR0, yy); c.lineTo(DOOR0 + w, yy); c.moveTo(DOOR1 - w, yy); c.lineTo(DOOR1, yy); }
   c.stroke();
-  if (o < 1) { c.fillStyle = css(PAL.light, (.4 + .2 * Math.sin(G.t / 40)) * (1 - e) + .4 * e); c.fillRect(DOORM - .9 - e * 2, GY - 300, 1.8 + e * 4, 302); }
+  if (o < 1) { c.fillStyle = css(PAL.light, (.4 + .2 * Math.sin(G.t / 40)) * (1 - e) + .4 * e); c.fillRect(DOORM - .9 - e * 2, GY - 420, 1.8 + e * 4, 422); }
   c.restore();
 }
 function birdSit(c, x, y, s, f) {
@@ -1809,7 +1836,7 @@ document.getElementById('again').onclick = start;
   document.getElementById('sub').textContent = 'The City of Destruction';
   document.getElementById('open').style.visibility = 'visible';
   requestAnimationFrame(t => { lastT = t; loop(t); });
-  Promise.all([loadPack('evangelist', EVA), loadPack('evangelist-stand', EVS)]).then(() => Promise.all([loadImg('house.webp').then(im => { HOUSE = im && bakeTint(im, HOUSE_DEPTH, HOUSE_DETAIL); }), ...['b', 'c'].map(key => loadImg('house-' + key + '.webp').then(im => { if (im) NB[key] = bakeTint(im, HOUSE_DEPTH, HOUSE_DETAIL); })), ...Object.keys(TREE_META).map(key => loadImg('tree-' + key + '.webp').then(im => { if (im) for (const i of [1, 2]) (TREE[i] = TREE[i] || {})[key] = bakeTree(im, SCN[i].d); })), loadImg('family.webp').then(im => { FAM = im; if (im) FAM_SH = mkShadow(im); }), loadImg('wife.webp').then(im => { WIFE = im; if (im) WIFE_SH = mkShadow(im); }), ...['a', 'b', 'c'].map(key => loadImg('neighbor-' + key + '.webp').then(im => { WATCH_IM[key] = im; })), ...['a', 'b', 'c'].map(key => loadPack('neighbor-' + key, WATCH_PACK[key]).catch(() => {})), loadImg('christian-back.webp').then(im => { BACK = im; }), loadPack('christian-run', RUN), loadPack('christian-run-plain', RUNP)]))
+  Promise.all([loadPack('evangelist', EVA), loadPack('evangelist-stand', EVS)]).then(() => Promise.all([loadImg('house.webp').then(im => { HOUSE = im && bakeTint(im, HOUSE_DEPTH, HOUSE_DETAIL); }), ...['b', 'c'].map(key => loadImg('house-' + key + '.webp').then(im => { if (im) NB[key] = bakeTint(im, HOUSE_DEPTH, HOUSE_DETAIL); })), ...Object.keys(TREE_META).map(key => loadImg('tree-' + key + '.webp').then(im => { if (im) for (const i of [1, 2]) (TREE[i] = TREE[i] || {})[key] = bakeTree(im, SCN[i].d); })), loadImg('family.webp').then(im => { FAM = im; if (im) FAM_SH = mkShadow(im); }), loadImg('wife.webp').then(im => { WIFE = im; if (im) WIFE_SH = mkShadow(im); }), loadImg('gate.webp').then(im => { if (im) GATE_P = bakeTint(im, .52, .4); }), loadImg('wall.webp').then(im => { if (im) WALL_P = bakeTint(im, .52, .4); }), ...['a', 'b', 'c'].map(key => loadImg('neighbor-' + key + '.webp').then(im => { WATCH_IM[key] = im; })), ...['a', 'b', 'c'].map(key => loadPack('neighbor-' + key, WATCH_PACK[key]).catch(() => {})), loadImg('christian-back.webp').then(im => { BACK = im; }), loadPack('christian-run', RUN), loadPack('christian-run-plain', RUNP)]))
     .then(() => Promise.all([loadPack('obstinate', OBS), loadPack('pliable', PLI), loadImg('obstinate-stand.webp').then(im => { OBS_ST = im; }), loadImg('pliable-stand.webp').then(im => { PLI_ST = im; })]));
   for (const [who, txt] of INTRO) vox(who, txt);          // the first words, ready before Begin is pressed
 })();
