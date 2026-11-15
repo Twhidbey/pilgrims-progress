@@ -68,7 +68,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">story lab · build 74 · Nov 15 2026</div>
+  <div id="build">story lab · build 75 · Nov 15 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -915,7 +915,7 @@ const runNow = () => G.ears || !RUNP.ready ? [RUN, RUN_META] : [RUNP, RUNP_META]
 function coverEars() { if (G.ears) return; if (P.run) poseChange(); G.ears = true; }
 const CHR = [], PLI = [], OBS = [], EVA = [], STD = [], RUN = [], CHR_K = .52, RUN_STEP = RUN_META.vpx * CHR_K, RUNV = RUN_STEP * .4,   // the run at its video's own speed (24 frames a second)
    CHR_STEP = CHR_META.vpx * CHR_K, PLI_STEP = PLI_META.vpx * CHR_K, OBS_STEP = OBS_META.vpx * CHR_K;
-const PACK_V = 12;                          // bump when the .pack files change, so phones fetch the new ones
+const PACK_V = 13;                          // bump when the .pack files change, so phones fetch the new ones
 // a .pack file: 4 bytes = how many frames, 4 bytes per frame = its length, then the WebP frames end to end
 async function loadPack(name, into) {
   const res = await fetch('assets/' + name + '.pack?v=' + PACK_V); if (!res.ok) throw new Error('no ' + name);      // a missing pack is left out
@@ -1330,7 +1330,7 @@ function drawLevel(lv, cam) {
 // Christian's own house, at the back of the road: a watercolour like the people and the things (assets/house.webp), with
 // see-through holes for the door and windows; light is painted behind the holes. The door opens as he passes: warm light
 // inside, and his wife and two children on the step (assets/family.webp, drawn by drawFrame like everyone else).
-const HOUSE_META = {"w": 438.0, "h": 336.8, "door": [183.6, 189.6, 70.4, 146.0], "wins": [[88.8, 200.4, 37.6, 42.8], [314.8, 199.6, 37.2, 42.0]]};      // a small one-room cottage (build 45; the long one of build 40 was too big), sizes at the road's scale (its doorway is 146 high, just taller than his wife)
+const HOUSE_META = {"w": 438.0, "h": 336.8, "door": [183.6, 189.6, 70.4, 146.0], "wins": [[88.8, 200.4, 37.6, 61.8], [314.8, 199.6, 37.2, 61.0]]};      // a small one-room cottage (build 45; the long one of build 40 was too big), sizes at the road's scale (its doorway is 146 high, just taller than his wife)
 const FAM_META = {"ax": 93, "ground": 254}, OBS_ST_META = {"ax": 89, "ground": 311}, PLI_ST_META = {"ax": 67, "ground": 302};
 const HOUSE_DEPTH = .44;      // the tone of his house and its row: paler than the people, so Christian shows in front of them
 const HOUSE_K = .9;      // the cottage's size against its picture's sizes (build 50: it and the family a little smaller)
@@ -1340,7 +1340,12 @@ let BACK = null, RIM = null;
 const mkShadow = im => { const m = mk(Math.ceil(im.width / 7), Math.ceil(im.height / 7)),      // kept very small, so it is soft when stretched out on the ground
   c = m.getContext('2d'); c.drawImage(im, 0, 0, m.width, m.height); const f = c.createLinearGradient(0, 0, 0, m.height); f.addColorStop(0, 'rgba(6,8,14,.25)'); f.addColorStop(1, 'rgba(6,8,14,1)'); c.globalCompositeOperation = 'source-in'; c.fillStyle = f; c.fillRect(0, 0, m.width, m.height); return m; };
 let FAM_SH = null, WIFE_SH = null;
-const DOOR_FIG = .74;      // people standing in a doorway, against the other figures (was .93; owner, build 73: "need to be smaller to be more proportional to size of door")
+// Windows and people (build 75; owner: the people "look right but now a tad small relative to windows height"): the
+// cottages were painted with small windows set high (sills at two thirds of the door's height). The window openings in
+// the three pictures were cut lower, to half the door's height, with a plain sill drawn in code (sills()), and the people
+// in doorways came up a little. If it still looks off, repaint the cottages with true proportions (about 45 cents).
+const sills = (c, wins, k, y, dark) => { c.fillStyle = dark; for (const w of wins) if (w[3] > 50) c.fillRect(w[0] * k - 4, y + (w[1] + w[3]) * k - 1, w[2] * k + 8, 2.2); };
+const DOOR_FIG = .78;      // people standing in a doorway, against the other figures (was .93; owner, build 73: "need to be smaller to be more proportional to size of door")
 let WIFE = null; const WIFE_META = {"ax": 45, "ground": 254};      // his wife alone, watching him from the door at the opening (assets/wife.webp)
 let HOUSE = null, FAM = null, OBS_ST = null, PLI_ST = null;
 const loadImg = name => fetch('assets/' + name + '?v=' + PACK_V).then(r => r.ok ? r.blob().then(toImage) : null).catch(() => null);   // a missing picture is just left out
@@ -1353,8 +1358,8 @@ const doorX = cam => lineUp(HOME_X, LEVELS.home.par) - cam * LEVELS.home.par;   
 // (assets/house-b.webp: tall, gable end toward us; assets/house-c.webp: long and low), in the same tone and with the same
 // share of their painting showing, doors shut, a candle-lit room behind some of their windows. Only his door opens.
 const NB_META = {
-  b: {"w": 334.5, "h": 384.0, "wins": [[150.9, 93.8, 32.2, 42.4], [214.5, 246.7, 36.7, 42.0]], "door": [73.4, 235.7, 86.9, 146.0]},
-  c: {"w": 647.5, "h": 342.0, "wins": [[91.3, 204.8, 38.2, 43.3], [287.4, 204.8, 36.1, 42.3]], "door": [381.2, 192.4, 82.5, 146.0]},
+  b: {"w": 334.5, "h": 384.0, "wins": [[150.9, 93.8, 32.2, 42.4], [214.5, 246.7, 36.7, 62.0]], "door": [73.4, 235.7, 86.9, 146.0]},
+  c: {"w": 647.5, "h": 342.0, "wins": [[91.3, 204.8, 38.2, 60.3], [287.4, 204.8, 36.1, 59.3]], "door": [381.2, 192.4, 82.5, 146.0]},
 };
 const NB = {}, ROW = [];      // ROW: { key, x (left edge on the level), flip, lit: which windows show a lit room }
 function buildRow() {
@@ -1388,6 +1393,7 @@ function drawRow(cam) {
     c.save(); if (it.flip) { c.translate(x + w, 0); c.scale(-1, 1); } else c.translate(x, 0);
     M.wins.forEach((v, i) => { const wx = v[0] * k - 2, wy = y + v[1] * k - 2, ww = v[2] * k + 4, wh = v[3] * k + 4; if (it.lit[i]) room(c, wx, wy, ww, wh, lerp(.8, .45, wm), dark, it.x * .37 + i * 5); else { c.fillStyle = dark; c.fillRect(wx, wy, ww, wh); } });
     c.drawImage(B.cool, 0, y, w, h); if (wm > .01) { c.globalAlpha = wm; c.drawImage(B.warm, 0, y, w, h); c.globalAlpha = 1; }
+    sills(c, M.wins, k, y, dark);
     const o = it.open || 0, e = o * o * (3 - 2 * o);
     if (e > 0) {                             // the door stands open: lamplight where the painted door was
       const [dx, dy, dw, dh] = M.door.map(v => v * k), g = c.createRadialGradient(dx + dw * .5, y + dy + dh * .5, 0, dx + dw * .5, y + dy + dh * .5, 100);
@@ -1463,6 +1469,7 @@ function home(cam) {                       // drawn in screen units, before the 
     c.fillStyle = dark; c.fillRect(x + dx - 2, y + dy - 2, (dw + 4) * (1 - .86 * e), dh + 4);
   }
   c.drawImage(HOUSE.cool, x, y, M.w * k, M.h * k); if (wm > .01) { c.globalAlpha = wm; c.drawImage(HOUSE.warm, x, y, M.w * k, M.h * k); c.globalAlpha = 1; }
+  c.save(); c.translate(x, 0); sills(c, M.wins, k, y, dark); c.restore();
   const stepY = L.base;      // the top of the doorstep: whoever is in the door stands on it
   const alone = !G.fam && WIFE && WIFE_META;      // at the opening only his wife stands in the door (owner, build 62)
   if (e > .3) drawFrame(alone ? WIFE : FAM, alone ? WIFE_META : FAM_META, doorX(cam) + (alone ? 8 : 2), stepY + 2 - FEET_SINK, G.fam ? 1 : -1, smooth(.3, 1, e),      // at the start they look after him, to the left
