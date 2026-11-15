@@ -70,7 +70,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">story lab · build 106 · Nov 15 2026</div>
+  <div id="build">story lab · build 107 · Nov 15 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -605,11 +605,11 @@ function bakeFinish() {
 // Evangelist there (EVAN_X), then turns and runs RIGHT, back past his own door and on through the city to the gate. One
 // house in one place, and it is the book's geography: he walks out to the fields, then flees past his own door.
 const FIELD_END = 1650;      // where the wheat field ends and the street begins (the wheat sinks away before it)
-const EVAN_X = 420, HOME_X = 2150, RUN_END = 5100, NEIGH_X = 6050, GATE_STOP = 6870, DOOR0 = 6955, DOOR1 = 7185, DOORM = 7070;      // build 100: a 2.6 m gateway (88 units to a metre)      // build 91: the gateway is wider (was 7006 to 7120), so the painted gatehouse is bigger
+const EVAN_X = 420, HOME_X = 2150, RUN_END = 5400, NEIGH_X = 6050, GATE_STOP = 6870, DOOR0 = 6955, DOOR1 = 7185, DOORM = 7070;      // build 100: a 2.6 m gateway (88 units to a metre)      // build 91: the gateway is wider (was 7006 to 7120), so the painted gatehouse is bigger
 // SKIP AHEAD (owner, build 89: "is there a way to skip ahead to a moment?"): add ?at=NAME to the link. Each name starts
 // the level just before that moment, after Evangelist. (?x=N still works for any place on the road; ?level=2 starts
 // at the Slough of Despond.)
-const AT = { door: 1500, neighbours: 3500, obstinate: 5700, gate: 6700 };
+const AT = { door: 1500, neighbours: 3800, obstinate: 5700, gate: 6700 };
 const TEST_X = +(new URLSearchParams(location.search).get('x')) || AT[new URLSearchParams(location.search).get('at')] || 0, START_X = TEST_X || HOME_X - 280;   // he starts beside his own door; ?x=3600 starts further along, after Evangelist (for testing)
 // The lights on the road are a tune: "Amazing Grace" (New Britain, 1829), one phrase per stretch of road.
 // Each light is one note. They are spaced by the length of each note, so walking at his steady pace plays the tune in time.
@@ -778,7 +778,12 @@ let pushing = false, pushId = null;
 const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 const pushHeld = () => pushing || keys.push;
 // a quick tap only touches; a finger held a moment (9 ticks) walks
-const held = () => { for (const t of downs.values()) if (G.t - t >= 9) return true; return false; };
+// NOTHING MOVES ON ITS OWN (owner, build 106: "after talking to evangelist, christian starts to run automatically (this
+// happens on iphone) - i'd like for run to always be user initiated. in fact no action should happen on its own. except
+// dialogue"). A finger walks him only if it went down after the last words ended (G.calm: a tap meant for the words,
+// still on the glass as they end, does not count) and has been held a moment (HOLD ticks: a quick tap only touches).
+const HOLD = 16;
+const held = () => { for (const t of downs.values()) if (t >= (G.calm || 0) && G.t - t >= HOLD) return true; return false; };
 // Build 99 (owner: the gate "kinda dominates the ending ... make surrounding more prominent (and sun visible)"): as the
 // camera draws back at the gate, the far light rises to stand above the gateway, in the sky over the gatehouse
 // (Evangelist: "Keep that light in your eye, and go straight up to it. Then you will see the gate."). Since build 100
@@ -792,7 +797,7 @@ function reset() {
   Object.assign(G, { cam: Math.max(0, Math.min(LEVEL_W - VW, TEST_X ? START_X - VW * .38 + 40 : START_X - VW * .62 - 40)), t: 0, got: 0, extra: 0, motes: [], flyers: [], ripples: [], glints: [], taps: [], litw: [], capQ: [], cap: 0, hint: null,
     pli: null, obst: null, flare: 0, gloom: 0, gloomTo: 0, gateOpen: 0, act: null, actT: 0, ring: null, auto: null, finale: null, guard: 0, idle: 0, wins: 0,
     evanDone: !!TEST_X, evanGone: TEST_X ? 1 : 0, neigh: TEST_X > NEIGH_X + 300, gateSeen: false, walked: false, touched: false, leaving: false, fam: TEST_X > HOME_X ? 2 : 0, door: TEST_X ? (TEST_X > HOME_X ? 1 : 0) : 1, doorShut: false, roll: TEST_X ? { t: 999, x: 0, y: 0 } : null, runZone: !!TEST_X && TEST_X < RUN_END, outSaid: false, watched: TEST_X > HOME_X + 900, ears: TEST_X > HOME_X });
-  G.sunUp = 0;
+  G.sunUp = 0; G.through = false; G.homeTo = null; G.calm = 0;
   G.zoom = 1 - (1 - ZOOM_GATE) * smooth(GATE - 1300, GATE - 380, START_X);      // starting near the gate (?at=gate): already drawn back
   G.evan.pt = TEST_X ? 239 : 0; G.evan.go = false; G.evan.st = EVS_META.frames * 100; downs.clear(); pushing = false; keys.r = keys.push = false;
   if (TEST_X) for (const l of LIGHTS) if (l.x < Math.max(TEST_X, 2000)) l.got = true;
@@ -814,20 +819,18 @@ const C = 'Christian', E = 'Evangelist', N = '', O = 'Obstinate', PL = 'Pliable'
 // Build 93 (owner: "text for Christian gets larger in phone - I'd like to stay same size"): every line is the SAME size,
 // the size at which the longest line of the level fits (measured once per screen size), so short lines no longer look
 // bigger than long ones.
-let FIT = { key: '', px: 0 };
+// BUILD 106 (owner, iPhone held sideways: "text is still various sizes ... it first happens when christian is talking
+// with evangelist. can you standardize text size to not too small but definitely not too large"). The old way measured
+// the size from the strip's own height, and a long line lifts the strip's top, so the next line was measured again in a
+// taller strip and came out bigger. Now the size comes only from the picture's height (TXT_K of it), between TXT_MIN and
+// TXT_MAX, and is the same for every line, hint and caption, in both levels. A line that needs more room lifts the top of
+// the strip; the letters never change size.
 function fitWords(box) {
-  const key = dlg.clientWidth + 'x' + dlg.clientHeight, cur = dTxt.textContent, curWho = dWho.textContent;
-  const all = [INTRO, FIELDS, EVAN, RUNS, DOOR_WORDS, FAMILY_RUN, FAMILY, LIFE, WATCH, FETCH, NEIGH, HOME, ONWARD, PART, GATEWORDS, END].flat().filter(l => Array.isArray(l) && typeof l[1] === 'string');
-  const longest = all.reduce((a, l) => (l[1].length + l[0].length > a[1].length + a[0].length ? l : a), ['', '']);
-  const fit = (who, txt) => { dWho.textContent = who; dTxt.textContent = txt; box.style.fontSize = ''; const room = dlg.clientHeight * .86; let px = parseFloat(getComputedStyle(box).fontSize); while (box.offsetHeight > room && px > 10) { px *= .92; box.style.fontSize = px + 'px'; } return px; };
+  box.style.fontSize = Math.round(clamp(stage.clientHeight * TXT_K, TXT_MIN, TXT_MAX)) + 'px';
   dlg.style.top = '';
-  if (FIT.key !== key) { FIT = { key, px: Math.max(TXT_MIN, fit(longest[0], longest[1])) }; dWho.textContent = curWho; dTxt.textContent = cur; }
-  box.style.fontSize = FIT.px + 'px';
-  // Build 97 (owner: "I like text size not too small (too large is bad but too small is hard to read)"): never below
-  // TXT_MIN; a line that then needs more room lifts the top of the strip a little instead of shrinking
   const need = box.offsetHeight / .86 / stage.clientHeight * 100; if (need > 17.5) dlg.style.top = (100 - need) + '%';
 }
-const TXT_MIN = 16;
+const TXT_MIN = 16, TXT_MAX = 21, TXT_K = .036;
 addEventListener('resize', () => { if (dlg.classList.contains('on')) fitWords(dlg.querySelector('.txt')); });
 function words(who, txt, cls) {
   dWho.textContent = who; dTxt.textContent = txt; dlg.className = 'on ' + cls;
@@ -851,9 +854,10 @@ function show() {
 }
 function next(force) {
   if (G.state !== 'dialog' || (!force && (G.act || G.guard > 0))) return;
+  const holdOn = G.act === 'walkon';      // he is already being held on his way: that finger keeps him going
   G.act = null; G.ring = null; li++;
   if (li < lines.length) { show(); return; }
-  dlg.className = ''; document.body.classList.remove('talking'); G.state = 'play'; hush();
+  dlg.className = ''; document.body.classList.remove('talking'); G.state = 'play'; hush(); if (!holdOn) { downs.clear(); keys.r = keys.push = false; G.calm = G.t + 20; }
   const f = after; after = null; f && f();
 }
 // ---------- the voices: one small recording per line, in assets/voice (made by tools/make-voice.py) ----------
@@ -877,7 +881,7 @@ async function say(who, txt) {
   const me = sayN, buf = await voxBuf(vox(who, txt));
   if (!buf || me !== sayN) return;
   voxSrc = AC.createBufferSource(); voxSrc.buffer = buf; voxSrc.connect(who === C || who === N ? CLEAR : VOICEG); voxSrc.start();      // Christian and the storyteller stay clear when his fingers are in his ears
-  if (G.cap > 0) G.cap = Math.max(G.cap, Math.ceil(buf.duration * 60) + 50);     // words said while walking stay until they have been spoken
+  if (G.cap > 0) { G.cap = Math.max(G.cap, Math.ceil(buf.duration * 60) + 50); G.capEnd = G.t + Math.ceil(buf.duration * 60); }     // words said while walking stay until they have been spoken
   else if (G.state === 'dialog' && G.guardKey === who + '|' + txt && !HEARD.has(G.guardKey)) G.guard = Math.ceil(buf.duration * 60) + 12;   // and a line cannot be skipped while it is being spoken
 }
 // fetch every line's recording quietly, in story order, while the child is already playing
@@ -892,7 +896,8 @@ function capTick() {
   if (G.state !== 'play' && G.state !== 'auto' && G.state !== 'end') return;
   if (G.state === 'end' && G.cap <= 0 && !G.capQ.length && !G.ended) { G.ended = true; document.getElementById('endc').className = 'card on'; }
   if (G.cap > 0 && --G.cap === 0 && !G.capQ.length) { dlg.className = ''; document.body.classList.remove('capped'); }
-  if (G.cap <= 0 && G.capQ.length) { const [who, txt, quick] = G.capQ.shift(); G.hint = null; words(who, txt, 'cap'); document.body.classList.add('capped'); G.cap = quick ? 80 + txt.length * 2 : 170 + txt.length * 4; }
+  if (G.cap > 0 && G.capQ.length && G.t > (G.capEnd || 0) + 12) G.cap = 0;      // build 106: the next words wait only for the voice, not for the last words to linger
+  if (G.cap <= 0 && G.capQ.length) { const [who, txt, quick] = G.capQ.shift(); G.hint = null; words(who, txt, 'cap'); document.body.classList.add('capped'); G.cap = quick ? 80 + txt.length * 2 : 170 + txt.length * 4; G.capEnd = Infinity; }      // capEnd: when its recording ends (set in say())
 }
 
 // THE WORDS KEEP CLOSE TO BUNYAN'S (owner, build 56: "bring the words closer to book"): his sentences, shortened and with
@@ -979,7 +984,7 @@ function pick(home) {
   const part = () => talk(PART, () => { G.obst.mode = 'home'; G.pli.mode = 'follow'; P.turn = 1; });
   if (!home) { note(67, .05, 3); talk(ONWARD, part); return; }
   // going home: a few steps back into the rain. The light dims, then he turns round again. Nothing is lost.
-  G.gloomTo = 1; G.state = 'auto'; G.auto = { dir: -1, to: P.x - 85, then: () => talk(HOME, part) };
+  G.gloomTo = 1; G.homeTo = { to: P.x - 85, then: () => talk(HOME, part) }; G.idle = 0;      // build 106: the child walks him back (nothing moves on its own)
 }
 document.getElementById('chHome').onclick = () => pick(true);
 document.getElementById('chOn').onclick = () => pick(false);
@@ -1073,6 +1078,18 @@ function drawFrame(im, meta, x, y, face, alpha, K = CHR_K, sy = 1) {      // sy:
 // Christian's legs. dir: 1 = walk on, -1 = walk back (only when he turns for home), 0 = stop.
 // He never stops mid-stride: letting go, he finishes the step he is in (to walk frame 28 or 1, where his standing video joins on),
 // so his feet never slide and the pictures never jump.
+// the next place where new words begin, while words are still being said (see "STOP POINTS FOR THE WORDS" in update())
+// words are still being SAID (queued, or a recording still playing), not just lingering on the screen (both levels use this)
+const saying = () => !!(G.capQ.length || (G.cap > 0 && G.t <= (G.capEnd || 0) + 6));
+const WATCH_X = 3850, DOOR_OPEN = 640, SLOW_D = 700;      // DOOR_OPEN: how far before his house the door flies open (was 330; earlier, so its words are done by the house)      // where the first neighbour's door opens
+function narrStop() {
+  if (SL.on || G.state !== 'play' || !saying()) return null;
+  if (!G.evanDone) return { lo: EVAN_X + 202 };      // walking out: Evangelist waits until the words in the field are done
+  if (G.homeTo) return null;
+  let hi = Infinity;
+  for (const [x, on] of [[HOME_X + 150, G.fam < 2], [WATCH_X, !G.watched], [RUN_END, G.runZone], [NEIGH_X, !G.neigh], [GATE_STOP, !G.gateSeen]]) if (on && x > P.x - 1 && x < hi) hi = x;
+  return hi < Infinity ? { hi: hi - 1 } : null;
+}
 function walkTick(dir, max) {
   const still = G.state === 'dialog' || G.state === 'choice';
   if (P.blend && ++P.blend.t >= P.blend.n) P.blend = null;
@@ -1080,7 +1097,10 @@ function walkTick(dir, max) {
   // (unhurried, owner build 73: he stays bowed, weeping, until the next line; only then lowers his hand and stands)
   if (P.weep && (dir || !WEEP.ready || (P.weep.t = Math.min(P.weep.t + WEEP_META.step, G.state === 'dialog' && lines === INTRO && li === 1 ? 64 : 1e9)) >= WEEP.length - 1)) { if (WEEP.ready) poseChange(); P.weep = null; if (!dir) P.stand = { t: QUIET[0] }; }
   // the run: from Evangelist he runs, past his own door with his fingers in his ears, until the burden tires him (G.runZone)
-  const run = !!(G.runZone && dir > 0 && RUN.ready);
+  // build 106: if the storyteller is still speaking and the next place with new words is near, he drops from the run to
+  // his heavy walk until the words are done (then runs on), rather than running up to that place and stopping dead
+  const nsw = narrStop(), slow = !!(nsw && nsw.hi != null && nsw.hi - P.x < SLOW_D);
+  const run = !!(G.runZone && dir > 0 && RUN.ready && !slow);
   if (run !== P.run) {
     poseChange(6, true); P.run = run;
     if (run) P.ranim = runNow()[1].start || 0;      // he sets off from the run's narrowest stride, the frame nearest a standing figure
@@ -1100,8 +1120,9 @@ function walkTick(dir, max) {
   }
   if (!P.vx) return;
   // the way is shut until the gate opens; and wait for Evangelist's pictures if the phone is still fetching them
-  const lim = G.gateOpen >= 1 ? LEVEL_W - 30 : DOOR0 - 44, lo = !EVA.ready && !G.evanDone ? EVAN_X + 205 : 30;
-  const nx = clamp(P.x + P.vx, lo, lim), moved = Math.abs(nx - P.x), f0 = chrFrame();
+  const lim = G.gateOpen >= 1 ? (G.through ? DOOR1 + 90 : LEVEL_W - 30) : DOOR0 - 44, lo = !EVA.ready && !G.evanDone ? EVAN_X + 205 : 30;
+  const ns = narrStop(), lo2 = ns && ns.lo != null ? Math.max(lo, Math.min(P.x, ns.lo)) : lo, lim2 = ns && ns.hi != null ? Math.min(lim, Math.max(P.x, ns.hi)) : lim;
+  const nx = clamp(P.x + P.vx, lo2, lim2), moved = Math.abs(nx - P.x), f0 = chrFrame();
   P.x = nx; let down = false;
   if (P.run) { const m = runNow()[1], r0 = Math.floor(P.ranim) % m.frames; P.ranim += moved / (m.vpx * CHR_K); const r1 = Math.floor(P.ranim) % m.frames; down = r1 !== r0 && m.steps.includes(r1); }
   else { P.anim += Math.max(moved, .25) / CHR_STEP; const f1 = chrFrame(); down = f1 !== f0 && CHR_META.rest.includes(f1); }
@@ -1230,8 +1251,14 @@ function update() {
   // walking
   let dir = 0;
   if (G.state === 'auto' && G.auto) dir = G.auto.dir;
-  else if (G.state === 'play' && (keys.r || held())) dir = G.evanDone ? 1 : -1;      // out to the field first (left), then on toward the light
+  else if (G.state === 'play' && (keys.r || held())) dir = G.homeTo ? -1 : G.evanDone ? 1 : -1;      // out to the field first (left), then on toward the light
   else if (G.act === 'walkon' && G.state === 'dialog' && P.turn !== 1 && (keys.push || held())) dir = 1;   // walking on while they call
+  // STOP POINTS FOR THE WORDS (owner, build 106: "need narration to not skip or start playing when character is past what
+  // it's talking about. maybe put in stop point to keep things synced (thinking about the running scene - one can run past
+  // everything before it starts being talked about)"). While the storyteller is still speaking, he cannot reach the next
+  // place where new words begin: he comes to a stop there and goes on (if still held) as soon as the words are done.
+  const ns = narrStop();
+  if (ns && ((dir > 0 && ns.hi != null && P.x >= ns.hi - 2) || (dir < 0 && ns.lo != null && P.x <= ns.lo + 2))) dir = 0;
   walkTick(dir, MAXV);
   if (G.state === 'auto' && G.auto && (G.auto.dir > 0 ? P.x >= G.auto.to : P.x <= G.auto.to)) { const a = G.auto; G.auto = null; if (P.stand || !a.wait) { G.state = 'play'; a.then && a.then(); } else G.auto = { dir: 0, to: a.dir > 0 ? -1e9 : 1e9, then: a.then }; }
   if (G.state === 'auto' && G.auto && !G.auto.dir && P.stand) { const a = G.auto; G.auto = null; G.state = 'play'; a.then && a.then(); }
@@ -1256,8 +1283,8 @@ function story() {
   if (!G.touched && !G.hintT && !G.evanDone && P.x < START_X - 50) { G.hintT = true; const hx = P.x - 190; hint('touch', 'Touch the road. The world answers when you touch it.'); G.ring = () => [hx - G.cam, GY + 60]; }
   if (G.hint !== 'touch' && G.ring && G.state === 'play') G.ring = null;
   if (G.hint === 'touch' && P.x < START_X - 470) clearHint('touch');
-  if (!G.fam && G.evanDone && P.x > HOME_X - 330) { G.fam = 1; sweep(170, 120, .5, .03); hiss(140, .8, .09, .16, 'lowpass'); sfx.lamp(); caption(DOOR_WORDS); }      // the door of his house is flung open as he comes running
-  if (G.fam === 1 && P.stand && P.x > HOME_X - 170 && G.cap <= 0 && !G.capQ.length) { G.fam = 2; talk(FAMILY, () => caption(LIFE)); return; }      // (once the storyteller's line is over: build 62, his wife used to cut in on it)      // the child let go by the house: he stops (the framed picture)
+  if (!G.fam && G.evanDone && P.x > HOME_X - DOOR_OPEN) { G.fam = 1; sweep(170, 120, .5, .03); hiss(140, .8, .09, .16, 'lowpass'); sfx.lamp(); caption(DOOR_WORDS); }      // the door of his house is flung open as he comes running
+  if (G.fam === 1 && P.stand && !held() && !keys.r && P.x > HOME_X - 170 && G.cap <= 0 && !G.capQ.length) { G.fam = 2; talk(FAMILY, () => caption(LIFE)); return; }      // (once the storyteller's line is over: build 62, his wife used to cut in on it)      // the child let go by the house: he stops (the framed picture)
   if (G.fam === 1 && P.x > HOME_X + 150) { G.fam = 2; coverEars(); caption([...FAMILY_RUN, ...LIFE]); }                                         // the child held on: he runs straight past, as in the book
   // {10}: "standing ... with his face from his own house". We know the house is his because his door stands open behind
   // him with his wife and children in its light (owner, build 60: "how do we know it's his?"); it shuts as he walks away.
@@ -1266,10 +1293,14 @@ function story() {
   if (!G.evanDone && P.x < EVAN_X + 200) { G.evanDone = true; talk(EVAN, () => { G.evanGone = 1; G.runZone = true; G.idle = 0; caption(RUNS); }); return; }   // "So I saw in my dream that the man began to run"
   if (G.runZone && !P.run && G.idle === 110) hint('walk', 'Hold to run.');
   for (const c of CAPS) if (!c.done && P.x > c.x && (!c.pli || (G.pli && G.pli.mode === 'follow'))) { c.done = true; caption(c.lines); if (c.watch) G.watch = 520; }
-  if (G.fam === 2 && !G.watched && P.x > HOME_X + 900) { G.watched = true; caption(WATCH); G.watch = 520; }      // the neighbours come out to see him run
+  if (G.fam === 2 && !G.watched && P.x > WATCH_X) { G.watched = true; caption(WATCH); G.watch = 520; }      // the neighbours come out to see him run
   if (G.runZone && P.x > RUN_END) { G.runZone = false; caption(FETCH); }      // by now he is a good way off, and walks
   if (!G.neigh && P.x > NEIGH_X && OBS.ready && PLI.ready) { G.neigh = true; G.obst = { x: G.cam - 80, mode: 'run' }; G.pli = { x: G.cam - 150, mode: 'run' }; }
-  if (!G.gateSeen && P.x > GATE_STOP) { G.gateSeen = true; talk(GATEWORDS, () => { G.state = 'auto'; G.auto = { dir: 1, to: DOOR1 + 90, wait: true, then: () => { G.state = 'auto'; G.leaving = true; } }; caption(END); }); }
+  if (!G.gateSeen && P.x > GATE_STOP) { G.gateSeen = true; talk(GATEWORDS, () => { G.through = true; G.idle = 0; caption(END); }); }
+  if (G.through && !G.leaving && P.x >= DOOR1 + 89) { G.state = 'auto'; G.leaving = true; clearHint('walk'); }      // through the gate (the child walked him there): Pliable follows, then the end
+  if (G.homeTo && P.x <= G.homeTo.to + 1) { const h = G.homeTo; G.homeTo = null; clearHint('walk'); h.then(); return; }
+  if (G.homeTo && P.stand && G.idle === 150) hint('walk', 'Hold to walk back toward home.');
+  if (G.through && P.stand && G.idle === 200) hint('walk', 'Hold to walk through the gate.');
 }
 // Obstinate and Pliable
 function people() {
@@ -1498,7 +1529,8 @@ function buildRow() {
   // Build 78 (owner: Obstinate and Pliable "should be lower and large or smaller and where they are (but maybe in
   // house?)"): they are now at the neighbours' size on the same level, Obstinate in a doorway of his own (a cottage of
   // the same painting as Christian's, mirrored; his own is far back up the street) and Pliable on the step outside it.
-  for (const [key, flip, who, a] of [['b', true, 'a', 3950], ['c', true, 'b', 4290], ['b', false, 'c', 4800], ['h', true, 'obs', 5230]]) {
+  // build 106: the neighbours stand 300 further on, so his family's words are done before theirs begin
+  for (const [key, flip, who, a] of [['b', true, 'a', 4250], ['c', true, 'b', 4590], ['b', false, 'c', 5100], ['h', true, 'obs', 5530]]) {
     const M = rowMeta(key), dc = (M.door[0] + M.door[2] / 2) * k;      // the door's middle, from the house's left
     ROW.push({ key, flip, who, a, x: lineUp(a, p) - (flip ? M.w * k - dc : dc), lit: [who === 'b' ? 1 : 0, who === 'a' ? 1 : 0], on: false, open: 0, f: -1 });
   }
@@ -1647,6 +1679,14 @@ function home(cam) {                       // drawn in screen units, before the 
 // hole = [left, top, right] of the gateway in the picture's pixels; solid = the wall's height below its battlements.
 const GATE_META = {"w": 646, "h": 700, "hole": [234, 429, 420]}, WALL_META = {"w": 1047, "h": 400, "solid": 292};
 let GATE_P = null, WALL_P = null;
+// BUILD 106 (owner: "remove blocks from top of city wall - they look ok on gate, but too big on wall - maybe just clean
+// top (especially for that height)"): the wall's battlements are cut away, so the wall ends in a plain straight top.
+// Rows above WALL_TOP of the picture (merlons and the gaps between them) are dropped from both baked copies.
+const WALL_TOP = 112;
+function wallTop(B) {
+  const cut = cv0 => { const y0 = Math.round(cv0.height * WALL_TOP / WALL_META.h), c = document.createElement('canvas'); c.width = cv0.width; c.height = cv0.height - y0; c.getContext('2d').drawImage(cv0, 0, -y0); return c; };
+  return Object.assign({}, B, { cool: cut(B.cool), warm: cut(B.warm) });
+}
 const gateFit = () => { const k = (DOOR1 - DOOR0) / (GATE_META.hole[2] - GATE_META.hole[0]); return { k, x: DOOR0 - GATE_META.hole[0] * k, y: GY + 2 - GATE_META.h * k, w: GATE_META.w * k, h: GATE_META.h * k }; };
 function gatePainted() {
   const c = ctx, f = gateFit(), cam = G.cam, both = (B, x, y, w, h, flip) => {
@@ -1659,7 +1699,7 @@ function gatePainted() {
   };
   // the wall: one unbroken line from far to the left (it thins into the mist there), through the gate, and off the right
   // build 100: 3.5 m of wall to the walkway (308 units), the battlements above
-  const kw = 308 / WALL_META.solid, ww = WALL_META.w * kw, wh = WALL_META.h * kw, W0 = GATE - 760;
+  const kw = 308 / WALL_META.solid, ww = WALL_META.w * kw, wh = (WALL_META.h - WALL_TOP) * kw, W0 = GATE - 760;
   let n = 0;
   // Build 90 (owner: "the walls of city gate are transparent"): every piece is solid. Build 92 (owner: "why is left end
   // of wall faded? shouldn't it just start"): no fade at the far end either; the wall simply begins.
@@ -2098,11 +2138,11 @@ document.getElementById('on2').onclick = () => SL.start();
   document.getElementById('open').style.visibility = 'visible';
   requestAnimationFrame(t => { lastT = t; loop(t); });
   loadPack('christian-turn', TURN).catch(() => {});
-  Promise.all([loadPack('evangelist', EVA), loadPack('evangelist-stand', EVS)]).then(() => Promise.all([loadImg('family.webp').then(im => { FAM = im; if (im) FAM_SH = mkShadow(im); }), loadImg('gate.webp').then(im => { if (im) GATE_P = bakeTint(im, .42, .4); }), loadImg('wall.webp').then(im => { if (im) WALL_P = bakeTint(im, .42, .4); }), ...['a', 'b', 'c'].map(key => loadImg('neighbor-' + key + '.webp').then(im => { WATCH_IM[key] = im; })), ...['a', 'b', 'c'].map(key => loadPack('neighbor-' + key, WATCH_PACK[key]).catch(() => {})), loadImg('christian-back.webp').then(im => { BACK = im; }), loadPack('christian-run', RUN), loadPack('christian-run-plain', RUNP)]))
+  Promise.all([loadPack('evangelist', EVA), loadPack('evangelist-stand', EVS)]).then(() => Promise.all([loadImg('family.webp').then(im => { FAM = im; if (im) FAM_SH = mkShadow(im); }), loadImg('gate.webp').then(im => { if (im) GATE_P = bakeTint(im, .42, .4); }), loadImg('wall.webp').then(im => { if (im) WALL_P = wallTop(bakeTint(im, .42, .4)); }), ...['a', 'b', 'c'].map(key => loadImg('neighbor-' + key + '.webp').then(im => { WATCH_IM[key] = im; })), ...['a', 'b', 'c'].map(key => loadPack('neighbor-' + key, WATCH_PACK[key]).catch(() => {})), loadImg('christian-back.webp').then(im => { BACK = im; }), loadPack('christian-run', RUN), loadPack('christian-run-plain', RUNP)]))
     .then(() => Promise.all([loadPack('obstinate', OBS), loadPack('pliable', PLI), loadImg('obstinate-stand.webp').then(im => { OBS_ST = im; }), loadImg('pliable-stand.webp').then(im => { PLI_ST = im; })]));
   for (const [who, txt] of INTRO) vox(who, txt);          // the first words, ready before Begin is pressed
 })();
 </script>
-<script src="slough.js?v=102"></script>
+<script src="slough.js?v=107"></script>
 </body>
 </html>

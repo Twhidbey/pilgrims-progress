@@ -4,6 +4,8 @@ The game is `index.html` (one file, no build step). `style-lab.html` is the art-
 
 ## START HERE (written at build 41, updated at build 43, Nov 15 2026, for a new chat)
 
+**Build 107: the owner's seven points (four for Level 1, three for Level 2), all done, nothing spent (see "Build 107" in `CLAUDE.md`).** Waiting on the owner to play it, on the iPhone especially (text size, no running on its own). Tell them the run now drops to a walk while the storyteller finishes, which they did not ask for.
+
 **Build 106: THE OWNER ASKED TO MINIMIZE SPENDING** ("it's been pretty expensive for me last few days"). Read "SPEND AS LITTLE AS POSSIBLE" in `CLAUDE.md` before any paid call. Ask before every paid call, with its cost; keep a running total here. **Spent since build 106: $0.00.** The session moved to the `pilgrims-progress` environment from the phone (the owner could not switch it there); the Google key loads at the next restart.
 
 **Builds 80 to 84 (overnight and the next morning): ALL TEN items below are DONE (see `CLAUDE.md`, builds 80 to 84). Waiting on the owner's verdict. Builds 83 to 85 after the owner woke: the wide glow at his house now comes from his lit windows; no glow in the wheat; the real turn; lights no longer collected (they sing and drift into the far light).** **THE OWNER'S TO-DO LIST FOR THE NEXT CHAT (written at build 76; do these when the owner has topped up the Google credit, which was EMPTY at build 74: check with a one-cent voice line or ask before starting; say each cost first).** All in `story-lab.html`, Level 1. The owner's own words are quoted.

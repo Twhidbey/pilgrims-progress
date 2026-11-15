@@ -140,7 +140,7 @@ const SL = (() => {
     return { c, x0: x0 - 2 / k, y0: y0 - 2 / k, k };
   }
   const putTree = (c, b, x, y, s, sy = s) => c.drawImage(b.c, x + b.x0 * s, y + b.y0 * sy, b.c.width / b.k * s, b.c.height / b.k * sy);
-  let OAK = null, GHOSTS = null, skyMist = null, skyClear = null, paper = null, threads = null, built = false;
+  let OAK = null, GHOSTS = null, skyMist = null, skyClear = null, paper = null, threads = null, puff = null, built = false;
   function build() {
     if (built) return; built = true;
     OAK = bakeTree(oak(18), tone(.02), 1.3);
@@ -160,6 +160,8 @@ const SL = (() => {
       for (let i = 0; i < d.data.length; i += 4) { const v = 200 + r() * 55; d.data[i] = v; d.data[i + 1] = v - 1; d.data[i + 2] = v - 4; d.data[i + 3] = 255; }
       c.putImageData(d, 0, 0); }
     // thin mist lying low over the water: drawn small and stretched, so it is soft
+    // one soft round of mist, drawn many times over for the banks of mist that hide Help and the steps (build 106)
+    puff = mk(64, 64); { const c = puff.getContext('2d'), g = c.createRadialGradient(32, 32, 0, 32, 32, 32); g.addColorStop(0, css(tone(.93), 1)); g.addColorStop(.5, css(tone(.93), .6)); g.addColorStop(1, css(tone(.93), 0)); c.fillStyle = g; c.fillRect(0, 0, 64, 64); }
     threads = mk(240, 40); { const c = threads.getContext('2d'); 
       for (let i = 0; i < 7; i++) { const g = c.createRadialGradient(0, 0, 0, 0, 0, 1); g.addColorStop(0, css(LIGHT, .5)); g.addColorStop(1, css(LIGHT, 0)); c.save(); c.translate((i * 67 + 20) % 240, 14 + (i % 3) * 6); c.scale(48, 5); c.fillStyle = g; c.beginPath(); c.arc(0, 0, 1, 0, 7); c.fill(); c.restore(); } }
   }
@@ -167,7 +169,7 @@ const SL = (() => {
   // ---------- the people ----------
   const HELPF = [], REACH = [], LIFT = [], PLIC = [], WADE = [];
   const META = { help: { ax: 94, ground: 309 }, reach: { ax: 70, ground: 307 }, lift: { ax: 257, ground: 307 },
-    climb: { ax: 363, ground: 342, top: 38, end: 440, sink: 39 },
+    climb: { ax: 363, ground: 342, top: 38, end: 440, sink: 39, c0: 168, top0: 143 },      // c0, top0: the middle and the head of him in the first frame (build 106)
     // Christian struggling through the mud (build 104): a loop, waist-deep in the video; ground = where his feet would be
     wade: { ax: 174, ground: 294 } };
   const HELP_SRC = [0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 42, 44, 46, 48, 50, 52, 54, 56, 58, 60, 62, 64, 66, 68, 70, 72, 74, 76, 78, 80, 82, 84, 86, 88, 90, 92, 94, 96, 98, 100, 102, 104, 106, 108, 110, 112, 114, 116, 118, 120, 122, 124, 126, 128, 130, 132, 136, 140, 144, 148, 152, 156, 160, 164, 168, 172, 176, 180, 184, 188, 192, 196, 200, 204, 208, 212, 216, 220, 224, 228, 232, 236];
@@ -222,7 +224,7 @@ const SL = (() => {
   // ---------- state ----------
   let ph = 'plain', cam = { cx: 0, z: 1, wl: 440 }, look = { mist: 0, veil: 0, gold: 1, disc: 1, sky: 0 };
   let pli = null, help = null, mv = null, lift = null, rings = [], motes = [], steps = [], gloom = 0, gloomTo = 0, noteI = 0, lastFoot = 0;
-  let strain = 0, slipT = 0, fearT = 0, fearsSaid = false, goldT = 0, onwayT = 0, capsSaid = new Set(), nearSaid = false;
+  let fogH = 1, fogS = 1, strain = 0, slipT = 0, fearT = 0, fearsSaid = false, goldT = 0, onwayT = 0, capsSaid = new Set(), nearSaid = false;
   const C2 = { x: START, y: 0, face: 1, anim: 12, alpha: 1, sink: 0, reach: 0, stand: 0, st: 0 };
 
   function start() {
@@ -234,7 +236,7 @@ const SL = (() => {
     downs.clear(); keys.r = keys.push = false;
     ph = 'plain'; Object.assign(C2, { x: START, y: bankY(START) + 4, face: 1, anim: 12, alpha: 1, sink: 0, reach: 0, stand: 0, st: 0, faceA: 1, done: 0 });
     pli = { x: START - 80, y: 0, face: 1, anim: 0, alpha: 1, sink: 0, mode: 'follow', px: START - 80 };
-    help = null; mv = null; lift = null; rings = []; steps = []; gloom = gloomTo = 0; noteI = 0; strain = 0; slipT = 0; fearT = 300; fearsSaid = false; goldT = 0; onwayT = 0; capsSaid = new Set(); nearSaid = false;
+    fogH = 1; fogS = 1; help = null; mv = null; lift = null; rings = []; steps = []; gloom = gloomTo = 0; noteI = 0; strain = 0; slipT = 0; fearT = 300; fearsSaid = false; goldT = 0; onwayT = 0; capsSaid = new Set(); nearSaid = false;
     motes = [...Array(LAST.length)].map((_, i) => ({ ox: -30 - Math.random() * 50, oy: -112 - Math.random() * 40, x: START, y: -150, tw: Math.random() * 6, i }));
     // the steps through the bog, hidden until the lights settle on them: low flat stones, no two alike (from the approved still)
     const R = rngS(33); let sx = BANK0 - 6;
@@ -281,7 +283,11 @@ const SL = (() => {
     const want = G.state === 'play' && (keys.r || held());
     // --- Christian ---
     if (ph === 'plain' || ph === 'on') {
-      const v = want ? MAXV : 0; C2.x += v;
+      // stop points for the words (owner, build 106; as in Level 1): while the storyteller or the two of them are still
+      // speaking, he cannot reach the next place where new words begin (so nothing is cut off by the fall, or said late)
+      let v = want ? MAXV : 0;
+      if (v && ph === 'plain' && saying()) { const nx = Math.min(...OPEN_AT.filter((x, i) => !capsSaid.has(i)), nearSaid ? Infinity : -1300, FALL_X); if (C2.x + v >= nx - 1) v = 0; }
+      C2.x += v;
       C2.anim = stepAnim(C2.anim, v, CHR_STEP, CHR_META); C2.y = bankY(C2.x) + 4;
       if (ph === 'plain') {
         OPEN_AT.forEach((x, i) => { if (C2.x > x && !capsSaid.has(i)) { capsSaid.add(i); caption([LEVEL2_OPENING[i]]); } });
@@ -330,17 +336,26 @@ const SL = (() => {
       if (lift) { lift.t = Math.min(236, lift.t + .4); if (lift.t >= 236) { ph = 'drawn'; C2.done = 0; C2.x = HX + (LIFT_CHR - META.lift.ax) * CHR_K; C2.y = bankY(C2.x) + 4; C2.face = 1; C2.faceA = 1; C2.stand = 1; } }
     } else if (ph === 'drawn') {
       // the lift's last picture dissolves into the two men standing apart, then he turns to look back
-      C2.done += .03;
-      if (C2.done >= 1) { C2.face = -1; ph = 'look'; goldT = 0; }
+      C2.done = Math.min(1, C2.done + .03);
+      // BUILD 106, the book's order ({32} then {35}): Help bids him go on his way first; only then is the dreamer told of
+      // the steps, so he looks back and the lights settle on them after "Go on your way" (it was the other way round)
+      if (C2.done >= 1 && ph === 'drawn' && G.state === 'play' && !saying()) { ph = 'onway'; talk(ONWAY, () => { C2.face = -1; ph = 'look'; goldT = 0; }); }
     } else if (ph === 'look') {
       goldT++;
       // the lights leave him one by one and settle on the steps, each a note of the last phrase
       motes.forEach((mo, i) => { if (!mo.to && goldT > 60 + i * 55) { mo.to = steps[i]; } });
       if (goldT === 60) caption(STEPS);
-      if (goldT > 60 + LAST.length * 55 + 160 && G.cap <= 0 && !G.capQ.length && G.state === 'play') { ph = 'onway'; talk(ONWAY, () => { C2.face = 1; ph = 'on'; G.state = 'play'; hint('walk2', 'Hold to go on your way.'); }); }
+      if (goldT > 60 + LAST.length * 55 + 160 && !saying() && G.state === 'play') { C2.face = 1; ph = 'on'; hint('walk2', 'Hold to go on your way.'); }
     }
     if (ph === 'on' && want) clearHint('walk2');
-    if (help) { help.a = Math.min(1, help.a + .012); }
+    // MIST THAT HIDES (owner, build 106: "help appears out of nowhere. it would be nice if there were mist there hiding him
+    // and it blows away - justifying why you can't see him. for that matter mist over the stones would justify why
+    // christian can't see them and falls in"). A bank of mist lies on the far bank, where Help will stand; when Help comes
+    // it drifts away to the right and thins (about 4 s, with a breath of wind) and he is seen coming out of it. A low mist
+    // lies over the middle of the bog where the steps are (the book, {35}: "these steps are hardly seen"); it thins as the
+    // lights settle on the steps.
+    if (help) { if (fogH === 1) hiss(260, .5, .05, 3.5, 'lowpass'); fogH = Math.max(0, fogH - .0024); help.a = 1 - smooth(.3, .8, fogH); }
+    fogS = ph === 'look' ? 1 - smooth(60, 60 + LAST.length * 55 + 120, goldT) : ph === 'on' ? Math.max(0, fogS - .01) : fogS;
     if (mv) mv.t = Math.min(150, mv.t + .4);
     if (G.act === 'hand') { G.actT++; if (mv && mv.t >= 150 && !G.ring && G.actT > 20) { dMore.textContent = 'take his hand ✦'; const [hx, hy] = handPt(); G.ring = () => [(hx - cam.cx) * cam.z + VW / 2, cam.wl + hy * cam.z]; } }
     // --- Pliable ---
@@ -351,9 +366,15 @@ const SL = (() => {
         if (ph === 'fall') pli.mode = 'in';
       } else if (pli.mode === 'climb' && PLIC.length && !pli.out) {
         // the video: he wades crossly to the bank, climbs up it and steps off; raised to meet the game's bank as he climbs
-        const M = META.climb, last = PLIC.length - 1, endX = HOME0 - (M.ax - M.end) * CHR_K;
-        pli.ct = Math.min(last, (pli.ct || 0) + .2); const p = pli.ct / last;
-        pli.face = -1; pli.x = HOME0; const up = smooth(.68, .85, p); pli.y = (1 - up) * M.sink + up * (bankY(endX) + 4 + M.top * CHR_K);
+        // BUILD 106 (owner: "when pliable gets out sprite jumps around (skips locations)"): two jumps fixed. (1) At the end
+        // he jumped 80 sideways into his walk: the video is drawn mirrored, so his feet in its last frame are LEFT of the
+        // bank's edge (endX had the wrong sign). (2) At the start the video's first frame stood him about 36 to the right
+        // of where he had sunk, and a little lower: that difference (dx0, dy0, measured once when the climb begins) is
+        // carried and faded out over the first quarter of the climb, so he wades from where he was into the video's path.
+        const M = META.climb, last = PLIC.length - 1, endX = HOME0 + (M.ax - M.end) * CHR_K;
+        if (pli.ct == null) { pli.dx0 = pli.x - (HOME0 + (M.ax - M.c0) * CHR_K); pli.dy0 = (pli.y - (PLI_META.ground - 5) * CHR_K) - (M.sink - (M.ground - M.top0) * CHR_K); }
+        pli.ct = Math.min(last, (pli.ct || 0) + .2); const p = pli.ct / last, fade = 1 - smooth(0, .25, p);
+        pli.face = -1; pli.x = HOME0 + pli.dx0 * fade; const up = smooth(.68, .85, p); pli.y = (1 - up) * M.sink + up * (bankY(endX) + 4 + M.top * CHR_K) + pli.dy0 * fade;
         if (p < .75 && G.t % 18 === 0) rings.push({ x: HOME0 + 20 + 40 * Math.random(), y: 0, t: 0, k: .7 + .5 * Math.random() });
         if (pli.ct >= last) { pli.out = true; pli.x = endX; pli.y = bankY(endX) + 4; pli.anim = 0; }
       } else if (pli.mode === 'climb') {
@@ -391,7 +412,7 @@ const SL = (() => {
     else if (ph === 'fall' || ph === 'pli' || ph === 'back' || ph === 'backtalk') L = { mist: 1, veil: .84, gold: 0, disc: .3, sky: 1 };
     else if (ph === 'wade' || ph === 'stuck' || ph === 'help') L = { mist: lerp(1, .3, p), veil: lerp(.84, 0, smooth(.3, 1, p)), gold: .1 * p, disc: lerp(.3, 1, p), sky: lerp(1, .5, p) };
     else if (ph === 'drawn') L = { mist: .3, veil: 0, gold: .1, disc: 1, sky: .5 };
-    else L = { mist: .25, veil: 0, gold: ph === 'look' ? lerp(.1, 1, smooth(60, 60 + LAST.length * 55 + 120, goldT)) : 1, disc: 1, sky: .4 };
+    else L = { mist: .25, veil: 0, gold: ph === 'look' ? lerp(.1, 1, smooth(60, 60 + LAST.length * 55 + 120, goldT)) : ph === 'onway' ? .1 : 1, disc: 1, sky: .4 };
     for (const k in L) look[k] += (L[k] - look[k]) * .03;
     // --- sound: no rain here; a dark hum in the mist, a warm one in the gold, the burden's creak while he strains ---
     if (AC && G.t % 8 === 0) {
@@ -497,7 +518,24 @@ const SL = (() => {
         ctx.lineWidth = 1.1; ctx.strokeStyle = css(LIGHT, .6 * a); ctx.beginPath(); ctx.ellipse(cxr, cyr, rx, rx * .11, 0, 0, 7); ctx.stroke();
         ctx.strokeStyle = css(DARK, .22 * a); ctx.beginPath(); ctx.ellipse(cxr, cyr + 1.6, rx, rx * .11, 0, 0, Math.PI); ctx.stroke(); }
     }
-    // a thin mist drifting low over the water, and the veil over the far bank
+    // the banks of mist (see "MIST THAT HIDES" in update)
+    // bank(from, to, base, height, size of each puff, strength, how many, seed, flat): soft rounds of mist laid between
+    // two places along the level, thicker low down; each drifts a little
+    const bank = (xa, xb, y0, h, rad, a, n, seed, flat) => { if (a <= .01) return; const R = rngS(seed);
+      for (let i = 0; i < n; i++) { const u = R(), v = R() * R(), r = (.6 + .5 * R()) * rad * z, e = flat ? .25 + .15 * R() : .55 + .3 * R(), ph = R() * 6, k = .35 + .3 * R();
+        const x = X(xa + u * (xb - xa) + Math.sin(G.t * .003 + ph) * 8), y = Y(y0 - v * h);
+        if (x + r < 0 || x - r > VW) continue;
+        ctx.globalAlpha = Math.min(1, a * k); ctx.drawImage(puff, x - r, y - r * e, 2 * r, 2 * r * e); }
+      ctx.globalAlpha = 1; };
+    // the mist round Help: one soft dense veil just to the right of where he stands (Christian, stuck close by on the
+    // left, stays clear of it), with a few slow puffs in it; it drifts right as it thins
+    if (fogH > .01) { const go = (1 - fogH) * 150, mx = X(HX + 50 + go), my = Y(-95), rx = 150 * z, ry = 190 * z, a = smooth(0, 1, fogH);
+      ctx.save(); ctx.translate(mx, my); ctx.scale(rx, ry); const g = ctx.createRadialGradient(0, 0, 0, 0, 0, 1);
+      g.addColorStop(0, css(tone(.93), .97 * a)); g.addColorStop(.5, css(tone(.93), .86 * a)); g.addColorStop(.8, css(tone(.93), .3 * a)); g.addColorStop(1, css(tone(.93), 0));
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, 1, 0, 7); ctx.fill(); ctx.restore();
+      bank(HX + 20 + go, HX + 200 + go * 1.4, 20, 200, 85, a * .7, 14, 7, false); }
+    // the low mist over the middle of the bog, where the steps are: wide, flat and smooth
+    bank(HOME0 + 60, BANK0 - 60, 14, 10, 230, fogS * (.35 + .25 * look.mist), 12, 11, true);
     ctx.globalAlpha = .55 * look.mist; { const o = (G.t * .15) % VW; ctx.drawImage(threads, -o, wl - 22, VW, 40); ctx.drawImage(threads, VW - o, wl - 22, VW, 40); } ctx.globalAlpha = 1;
     if (look.veil > .01) { const g = ctx.createLinearGradient(VW * .42, 0, VW, 0); g.addColorStop(0, css(LIGHT, 0)); g.addColorStop(.55, css(tone(.93), look.veil * .86)); g.addColorStop(1, css(tone(.93), look.veil)); ctx.fillStyle = g; ctx.fillRect(0, 0, VW, VH); }
     // the gold coming back from the oak outward
