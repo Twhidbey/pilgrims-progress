@@ -203,6 +203,11 @@ The game is `index.html` (one file, no build step). `style-lab.html` is the art-
 - **Stall back** with its table drawn edge-on ("the table is drawn ONLY as its front edge: one single thick horizontal plank line, with NO table-top surface visible at all"). **"The burden was heavy. He could not run for long." recorded.**
 - Spent this build: 2 pictures, 1 video, 1 voice line (about a dollar).
 
+## Built Nov 15, 2026 (build 38): the run's face, third time
+- Owner on build 37's run: "his face looks like a blank instead of nondescript (like his nose shows in original)". Close-ups confirmed it: the walk shows his profile in the hood (nose, lips, chin in grey wash); my "hide the face" prompt had produced an empty wedge.
+- Start picture re-painted with: "Look closely at his head: inside the hood we see his face in side profile, facing right: forehead, a clear nose, lips and bearded chin, painted simply in a mid-grey wash, with no eye detail. Paint the SAME man, with exactly that same head and the same profile face showing inside the hood (the nose and chin must be clearly visible in profile, facing right, in the same mid-grey wash: not hidden, not blank, not black) ... His near hand is raised and pressed flat over his ear, on the side of the hood BEHIND his face (the hand must not cover his face or his nose)". Video prompt adds: "His face stays just as it is in the picture: a simple side profile inside the hood, with his nose and bearded chin showing ... it never turns black, never disappears, and his hands never cover it."
+- New loop: 29 frames (video frames 70 to 98), `vpx` 17.2, feet come down at frames 7 and 22. Spent: 1 picture, 1 video (about 70 cents).
+
 ## Open questions for the owner
 0. **Story lab (build 25):** is this the right shape for the game? How does it sound? Is "Go home" a good choice to offer? Should it replace the game now?
 1. How does the game feel on the phone: smooth? Anything hard to see (dark Christian against dark houses, crates, barrels)?
