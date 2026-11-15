@@ -70,7 +70,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">story lab · build 88 · Nov 15 2026</div>
+  <div id="build">story lab · build 89 · Nov 15 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -1963,7 +1963,10 @@ document.getElementById('on2').onclick = () => SL.start();
 (async function boot() {
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.fillStyle = '#5d6b80'; ctx.fillRect(0, 0, VW, VH);
   await new Promise(r => setTimeout(r, 30));
-  const chr = Promise.all([loadPack('christian-walk', CHR), loadPack('christian-stand', STD), loadPack('christian-weep', WEEP).catch(() => {}), ...Object.keys(PROP_META).map(k => loadImg('prop-' + k + '.webp').then(im => { PROP[k] = im; }))]);
+  const chr = Promise.all([loadPack('christian-walk', CHR), loadPack('christian-stand', STD), loadPack('christian-weep', WEEP).catch(() => {}), 
+    // build 89 (owner: "when I first open link house isn't there then flickers there"): what the first picture shows (his
+    // house and its row, the trees, his wife in the door) now loads before "Open the book" appears, not after
+    loadImg('house.webp').then(im => { HOUSE = im && bakeTint(im, HOUSE_DEPTH, HOUSE_DETAIL); }), ...['b', 'c'].map(key => loadImg('house-' + key + '.webp').then(im => { if (im) NB[key] = bakeTint(im, HOUSE_DEPTH, HOUSE_DETAIL); })), ...Object.keys(TREE_META).map(key => loadImg('tree-' + key + '.webp').then(im => { if (im) for (const i of [1, 2]) (TREE[i] = TREE[i] || {})[key] = bakeTree(im, SCN[i].d); })), loadImg('wife.webp').then(im => { WIFE = im; if (im) WIFE_SH = mkShadow(im); }), ...Object.keys(PROP_META).map(k => loadImg('prop-' + k + '.webp').then(im => { PROP[k] = im; }))]);
   buildScenery(); buildWheat(); buildFog(); buildRow(); seed = 99; buildLevel(); bakeFinish();
   await chr;
   { const im = Object.assign({}, PROP); for (const k in PROP) delete PROP[k];
@@ -1975,11 +1978,11 @@ document.getElementById('on2').onclick = () => SL.start();
   document.getElementById('open').style.visibility = 'visible';
   requestAnimationFrame(t => { lastT = t; loop(t); });
   loadPack('christian-turn', TURN).catch(() => {});
-  Promise.all([loadPack('evangelist', EVA), loadPack('evangelist-stand', EVS)]).then(() => Promise.all([loadImg('house.webp').then(im => { HOUSE = im && bakeTint(im, HOUSE_DEPTH, HOUSE_DETAIL); }), ...['b', 'c'].map(key => loadImg('house-' + key + '.webp').then(im => { if (im) NB[key] = bakeTint(im, HOUSE_DEPTH, HOUSE_DETAIL); })), ...Object.keys(TREE_META).map(key => loadImg('tree-' + key + '.webp').then(im => { if (im) for (const i of [1, 2]) (TREE[i] = TREE[i] || {})[key] = bakeTree(im, SCN[i].d); })), loadImg('family.webp').then(im => { FAM = im; if (im) FAM_SH = mkShadow(im); }), loadImg('wife.webp').then(im => { WIFE = im; if (im) WIFE_SH = mkShadow(im); }), loadImg('gate.webp').then(im => { if (im) GATE_P = bakeTint(im, .52, .4); }), loadImg('wall.webp').then(im => { if (im) WALL_P = bakeTint(im, .52, .4); }), ...['a', 'b', 'c'].map(key => loadImg('neighbor-' + key + '.webp').then(im => { WATCH_IM[key] = im; })), ...['a', 'b', 'c'].map(key => loadPack('neighbor-' + key, WATCH_PACK[key]).catch(() => {})), loadImg('christian-back.webp').then(im => { BACK = im; }), loadPack('christian-run', RUN), loadPack('christian-run-plain', RUNP)]))
+  Promise.all([loadPack('evangelist', EVA), loadPack('evangelist-stand', EVS)]).then(() => Promise.all([loadImg('family.webp').then(im => { FAM = im; if (im) FAM_SH = mkShadow(im); }), loadImg('gate.webp').then(im => { if (im) GATE_P = bakeTint(im, .52, .4); }), loadImg('wall.webp').then(im => { if (im) WALL_P = bakeTint(im, .52, .4); }), ...['a', 'b', 'c'].map(key => loadImg('neighbor-' + key + '.webp').then(im => { WATCH_IM[key] = im; })), ...['a', 'b', 'c'].map(key => loadPack('neighbor-' + key, WATCH_PACK[key]).catch(() => {})), loadImg('christian-back.webp').then(im => { BACK = im; }), loadPack('christian-run', RUN), loadPack('christian-run-plain', RUNP)]))
     .then(() => Promise.all([loadPack('obstinate', OBS), loadPack('pliable', PLI), loadImg('obstinate-stand.webp').then(im => { OBS_ST = im; }), loadImg('pliable-stand.webp').then(im => { PLI_ST = im; })]));
   for (const [who, txt] of INTRO) vox(who, txt);          // the first words, ready before Begin is pressed
 })();
 </script>
-<script src="slough.js?v=87"></script>
+<script src="slough.js?v=89"></script>
 </body>
 </html>
