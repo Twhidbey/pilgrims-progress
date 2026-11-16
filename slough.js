@@ -335,6 +335,10 @@ const SL = (() => {
     document.body.classList.add('playing', 'slough'); G.opening = null; hush();
     Object.assign(G, { t: 0, capQ: [], cap: 0, hint: null, act: null, actT: 0, ring: null, auto: null, guard: 0, autoT: 0, taps: [], roll: { t: 999, x: 0, y: 0 }, ended: false });
     downs.clear(); keys.r = keys.push = false;
+    // build 134 (owner: "level 2 opening - can't move on phone"): G.t starts again from 0 here, but G.calm (the moment
+    // the last words ended; a finger only walks him if it went down after that) still held Level 1's clock, thousands
+    // of ticks ahead, so no finger counted until the clock caught up. Keys were never affected, so the tests passed.
+    G.calm = 0;
     C2.rt = 0; C2.tv = null; C2.fy = null; drops = []; churns = [];
     ph = 'plain'; Object.assign(C2, { x: START, y: bankY(START) + 4, face: 1, anim: 12, alpha: 1, sink: 0, reach: 0, stand: 1, sd: QUIET[0], st: 0, faceA: 1, done: 0 });
     pli = { x: START - 80, y: 0, face: 1, anim: 0, alpha: 1, sink: 0, mode: 'follow', px: START - 80, stop: { t: 50, x0: START - 80 - 72.5 * CHR_K } };      // he starts standing (his stop video's breathing part)

@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>Pilgrim's Progress</title>
 <style>
-html,body{margin:0;height:100%;background:#1b1c22;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:#1b1c22;overflow:hidden;-webkit-text-size-adjust:100%;text-size-adjust:100%;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
 #wrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
 body.portrait #wrap{align-items:flex-start;padding-top:max(14px,env(safe-area-inset-top))}
 #stage{position:relative;overflow:hidden;border-radius:6px}
@@ -77,7 +77,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">build 135 · Nov 16 2026</div>
+  <div id="build">build 136 · Nov 16 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -844,8 +844,23 @@ const TIP = 'tip';
 // taller strip and came out bigger. Now the size comes only from the picture's height (TXT_K of it), between TXT_MIN and
 // TXT_MAX, and is the same for every line, hint and caption, in both levels. A line that needs more room lifts the top of
 // the strip; the letters never change size.
+// BUILD 134, THE REAL CAUSE ON iPHONE (owner: "text size continues to be an issue on iPhone - I really want this fixed once
+// and for all - what exactly is going on? I like narrator text size but character text size sometimes gets too large"):
+// Safari on an iPhone enlarges text BY ITSELF, after the page has set its size ("text size adjust"), most of all with
+// the phone held sideways, and it decides block by block from what the block holds, so one line came out bigger than
+// the next though the page asked for the same size. Every earlier fix changed the size the page asks for, which was
+// never the problem. Two things now: the page tells Safari to leave text sizes alone (text-size-adjust: 100% on html
+// and body), and fitWords MEASURES what was really drawn: the words' own first line on the screen is compared with the
+// height that font has at the asked size (taken from a canvas, which no browser enlarges); if the line is taller, the
+// browser has enlarged the text, and the asked size is brought down by that much. So whatever enlarges text, a line
+// ends up the size we chose.
+const fitC = document.createElement('canvas').getContext('2d');
 function fitWords(box) {
-  box.style.fontSize = Math.round(clamp(stage.clientHeight * TXT_K, TXT_MIN, TXT_MAX)) + 'px';
+  const want = Math.round(clamp(stage.clientHeight * TXT_K, TXT_MIN, TXT_MAX));
+  box.style.fontSize = want + 'px';
+  { const t = box.querySelector('.t'), r = t && t.getClientRects()[0];
+    if (r) { fitC.font = want + 'px Georgia, serif'; const m = fitC.measureText('Mg'), ref = (m.fontBoundingBoxAscent || 0) + (m.fontBoundingBoxDescent || 0);
+      if (ref > 4 && r.height > ref * 1.06) box.style.fontSize = (want * ref / r.height).toFixed(1) + 'px'; } }
   dlg.style.top = '';
   const need = box.offsetHeight / .86 / stage.clientHeight * 100; if (need > 17.5) dlg.style.top = (100 - need) + '%';
 }
@@ -2229,7 +2244,7 @@ document.getElementById('on2').onclick = () => SL.on ? go3() : go2();
   for (const [who, txt] of INTRO) vox(who, txt);          // the first words, ready before Begin is pressed
 })();
 </script>
-<script src="slough.js?v=134"></script>
-<script src="hill.js?v=135"></script>
+<script src="slough.js?v=136"></script>
+<script src="hill.js?v=136"></script>
 </body>
 </html>
