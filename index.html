@@ -83,7 +83,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">build 137 · Nov 16 2026</div>
+  <div id="build">build 138 · Nov 16 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -862,7 +862,10 @@ const TIP = 'tip';
 // ends up the size we chose.
 const fitC = document.createElement('canvas').getContext('2d');
 function fitWords(box) {
-  const want = Math.round(clamp(stage.clientHeight * TXT_K, TXT_MIN, TXT_MAX));
+  // phone held upright (build 138): the picture is only about 220 px high there, and 16 px words filled a third of it; so
+  // upright the words are smaller, in proportion to the small picture (never below TXT_MIN_UP)
+  const up = document.body.classList.contains('portrait');
+  const want = up ? Math.round(clamp(stage.clientHeight * TXT_K_UP, TXT_MIN_UP, TXT_MIN) * 2) / 2 : Math.round(clamp(stage.clientHeight * TXT_K, TXT_MIN, TXT_MAX));
   box.style.fontSize = want + 'px';
   { const t = box.querySelector('.t'), r = t && t.getClientRects()[0];
     if (r) { fitC.font = want + 'px Georgia, serif'; const m = fitC.measureText('Mg'), ref = (m.fontBoundingBoxAscent || 0) + (m.fontBoundingBoxDescent || 0);
@@ -870,7 +873,7 @@ function fitWords(box) {
   dlg.style.top = '';
   const need = box.offsetHeight / .86 / stage.clientHeight * 100; if (need > 17.5) dlg.style.top = (100 - need) + '%';
 }
-const TXT_MIN = 16, TXT_MAX = 21, TXT_K = .036;
+const TXT_MIN = 16, TXT_MAX = 21, TXT_K = .036, TXT_MIN_UP = 11, TXT_K_UP = .052;
 addEventListener('resize', () => { if (dlg.classList.contains('on')) fitWords(dlg.querySelector('.txt')); });
 function words(who, txt, cls) {
   dWho.textContent = who; dTxt.textContent = txt; dlg.className = 'on ' + cls;
@@ -2250,7 +2253,7 @@ document.getElementById('on2').onclick = () => SL.on ? go3() : go2();
   for (const [who, txt] of INTRO) vox(who, txt);          // the first words, ready before Begin is pressed
 })();
 </script>
-<script src="slough.js?v=137"></script>
-<script src="hill.js?v=137"></script>
+<script src="slough.js?v=138"></script>
+<script src="hill.js?v=138"></script>
 </body>
 </html>

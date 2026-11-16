@@ -11,6 +11,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 3. Level 2 leftovers: Pliable's turn in the bog still flips by dissolving; one more close-up pass.
 4. Level 4 sketch in code (the Wicket-Gate, Good-will, book `{60}` to `{69}`), the same way: stand-ins, no voices, departures listed.
 
+**Builds 137, 138 (this older chat):** a Home Screen app with no browser bar (manifest, icon; the owner re-adds the icon); smaller words when the phone is upright. See `CLAUDE.md`.
+
 **Build 136 (this older chat, after the handover):** Level 2 could not be walked by touch (a stale `G.calm` after `SL.start()` reset the clock; fixed, and `tools/phone-touch-test.js` tests real touches); iPhone text size: Safari's own text enlargement was the cause (`text-size-adjust: 100%` plus a measured correction in `fitWords`). Waiting for the owner to confirm both on the phone. Nothing spent. See `CLAUDE.md`, "Build 136".
 
 **HANDOVER AT BUILD 133 (Nov 16 2026), for the next chat. Read this first, then `CLAUDE.md`.**
