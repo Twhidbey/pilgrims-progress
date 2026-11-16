@@ -85,7 +85,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">build 177 · Nov 16 2026</div>
+  <div id="build">build 178 · Nov 16 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -1277,6 +1277,19 @@ function touchExtra(sx, sy, wx) {
       if (sx > wx0 - 10 && sx < wx0 + v[2] * k + 10 && sy > wy0 - 10 && sy < wy0 + v[3] * k + 10) { it.lit[i] = 1; sfx.window(); free(wx0 + v[2] * k / 2 + G.cam, wy0 + 10); touched(); return true; }
     }
   }
+  // build 178: a touch on a cottage's roof (above its windows) sends a curl of smoke up out of its chimney, drifting
+  // with the wind. His own house too. Each chimney rests a few seconds between curls.
+  { const L2 = LEVELS.home, p2 = L2.par, k2 = p2 * HOUSE_K, roofs = ROW.map(it => ({ it, M: rowMeta(it.key), x: it.x - G.cam * p2, flip: it.flip, k: k2 }));
+    if (HOUSE) { const M = HOUSE_META, kh = L2.k * HOUSE_K; roofs.push({ it: G, M, x: doorX(G.cam) - (M.door[0] + M.door[2] / 2) * kh, flip: false, k: kh, own: 1 }); }
+    for (const r of roofs) {
+      const M = r.M, w = M.w * r.k, y = L2.base + 3 - M.h * r.k; if (!M.ch || sx < r.x || sx > r.x + w || sy < y - 10 || sy > y + M.wins[0][1] * r.k) continue;
+      if (G.t - ((r.own ? G : r.it).smokeT || -1e9) < 240) return true;
+      (r.own ? G : r.it).smokeT = G.t;
+      const cx = r.flip ? r.x + w - M.ch[0] * r.k : r.x + M.ch[0] * r.k, cy = y + M.ch[1] * r.k;
+      G.smoke = G.smoke || []; for (let i = 0; i < 40; i++) G.smoke.push({ x: cx + G.cam * p2, y: cy + 2, t: -i * 4, ph: Math.random() * 6, s: .8 + Math.random() * .5 });
+      note(55, .02, 3.2); touched(); return true;
+    }
+  }
   const Lr = SCN[2], set = TREE[2];
   if (set) for (let n = 0; n < Lr.trees.length; n++) {
     const t = Lr.trees[n], kk = t.k || TREE_KEYS[n % TREE_KEYS.length], B = set[kk]; if (!B) continue;
@@ -1437,6 +1450,7 @@ function motes() {
 function effects() {
   for (const f of G.flyers) { f.x += f.vx; f.y += f.vy; f.vy = f.vy * .992 - .002; f.ph += .42; f.life++; }
   G.flyers = G.flyers.filter(f => f.life < 700 && f.y > -30);
+  if (G.smoke) { for (const m of G.smoke) { m.t++; if (m.t > 0) { const u = m.t / 320; m.x += .12 + .55 * u + .1 * Math.sin(m.t * .04 + m.ph); m.y -= .62 * (1 - .55 * u); } } G.smoke = G.smoke.filter(m => m.t < 320); }
   for (const r of G.ripples) r.t++; G.ripples = G.ripples.filter(r => r.t < 70);
   // raindrops ring the wet road too: small rings anywhere on it where the rain is falling
   for (let i = 0; i < 2; i++) { const sx = Math.random() * VW; if (Math.random() < (1 - warm(sx / VW)) * LOOK.rain * .55) { const y = GY + 4 + Math.random() * (VH - GY - 10); G.ripples.push({ x: sx + G.cam * (y - HORIZON) / 140, y, t: 44, a: .55, r: .35 * (y - HORIZON) / 149, par: (y - HORIZON) / 140 }); } }
@@ -1568,7 +1582,7 @@ function drawLevel(lv, cam) {
 // Christian's own house, at the back of the road: a watercolour like the people and the things (assets/house.webp), with
 // see-through holes for the door and windows; light is painted behind the holes. The door opens as he passes: warm light
 // inside, and his wife and two children on the step (assets/family.webp, drawn by drawFrame like everyone else).
-const HOUSE_META = {"w": 438.0, "h": 336.8, "door": [183.6, 189.6, 70.4, 146.0], "wins": [[88.8, 200.4, 37.6, 61.8], [314.8, 199.6, 37.2, 61.0]]};      // a small one-room cottage (build 45; the long one of build 40 was too big), sizes at the road's scale (its doorway is 146 high, just taller than his wife)
+const HOUSE_META = {"w": 438.0, "h": 336.8, "door": [183.6, 189.6, 70.4, 146.0], "wins": [[88.8, 200.4, 37.6, 61.8], [314.8, 199.6, 37.2, 61.0]], "ch": [333, 2]};      // a small one-room cottage (build 45; the long one of build 40 was too big), sizes at the road's scale (its doorway is 146 high, just taller than his wife)
 const FAM_META = {"ax": 93, "ground": 254}, OBS_ST_META = {"ax": 89, "ground": 311}, PLI_ST_META = {"ax": 67, "ground": 300};      // build 116: ground set at his front foot, which the picture draws 13 px above the back one, so no foot hangs above the ground
 const HOUSE_DEPTH = .44;      // the tone of his house and its row: paler than the people, so Christian shows in front of them
 const HOUSE_K = .9;      // the cottage's size against its picture's sizes (build 50: it and the family a little smaller)
@@ -1597,8 +1611,8 @@ const doorX = cam => lineUp(HOME_X, LEVELS.home.par) - cam * LEVELS.home.par;   
 // (assets/house-b.webp: tall, gable end toward us; assets/house-c.webp: long and low), in the same tone and with the same
 // share of their painting showing, doors shut, a candle-lit room behind some of their windows. Only his door opens.
 const NB_META = {
-  b: {"w": 334.5, "h": 384.0, "wins": [[150.9, 93.8, 32.2, 42.4], [214.5, 246.7, 36.7, 62.0]], "door": [73.4, 235.7, 86.9, 146.0]},
-  c: {"w": 647.5, "h": 342.0, "wins": [[91.3, 204.8, 38.2, 60.3], [287.4, 204.8, 36.1, 59.3]], "door": [381.2, 192.4, 82.5, 146.0]},
+  b: {"w": 334.5, "h": 384.0, "wins": [[150.9, 93.8, 32.2, 42.4], [214.5, 246.7, 36.7, 62.0]], "door": [73.4, 235.7, 86.9, 146.0], "ch": [238, 25]},
+  c: {"w": 647.5, "h": 342.0, "wins": [[91.3, 204.8, 38.2, 60.3], [287.4, 204.8, 36.1, 59.3]], "door": [381.2, 192.4, 82.5, 146.0], "ch": [540, 3]},
 };
 const NB = {}, ROW = [];
 const rowMeta = key => key === 'h' ? HOUSE_META : NB_META[key], rowPic = key => key === 'h' ? HOUSE : NB[key];      // ROW: { key, x (left edge on the level), flip, lit: which windows show a lit room }
@@ -1626,6 +1640,17 @@ function buildRow() {
     ROW.push({ key, flip, who, a, x: lineUp(a, p) - (flip ? M.w * k - dc : dc), lit: [who === 'b' || who === 'obs' ? 1 : 0, who === 'a' || who === 'pli' ? 1 : 0], on: false, open: 0, f: -1 });
   }
   ROW.forEach((it, i) => { it.st = 1 + i % (WIN_STYLES - 1); });      // each house its own window style (his own is 0), no two alike (build 97)
+}
+// chimney smoke (a touch on a roof): soft pale puffs that swell, drift with the wind and fade
+function drawSmoke(cam) {
+  if (!G.smoke || !G.smoke.length) return;
+  const c = ctx, p = LEVELS.home.par;
+  for (const m of G.smoke) {
+    if (m.t <= 0) continue; const x = m.x - cam * p; if (x < -80 || x > VW + 80) continue;
+    const u = m.t / 320, r = (3 + 22 * Math.sqrt(u)) * m.s, a = .2 * Math.min(1, m.t / 20) * (1 - u) * (1 - u);
+    const tone = mix(mix(PAL.hazeC, [226, 228, 232], .45), mix(PAL.hazeW, [240, 232, 214], .45), warm(x / VW)), g = c.createRadialGradient(x, m.y, 0, x, m.y, r);
+    g.addColorStop(0, css(tone, a)); g.addColorStop(1, css(tone, 0)); c.fillStyle = g; c.fillRect(x - r, m.y - r, r * 2, r * 2);
+  }
 }
 function drawRow(cam) {
   const L = LEVELS.home, p = L.par, k = p * HOUSE_K, c = ctx;
@@ -1949,7 +1974,7 @@ function drawWorld() {
   const gcol = layerCol(1), wAt = x => warm((x - cam) / VW), on = (x, w = 0, m = 80) => x < cam + VW + m && x + w > cam - m;
   // the lane just behind the road: a low bank a little paler than the road, with his house and a few things on it
   ctx.fillStyle = hGrad(ctx, ...layerCol(.93)); ctx.fillRect(0, LEVELS.home.base, VW, GY - LEVELS.home.base + 2);
-  drawRow(cam); home(cam); drawLevel('mid', cam); drawWatchers(cam); drawWheat(false);          // the wheat behind him
+  drawRow(cam); home(cam); drawSmoke(cam); drawLevel('mid', cam); drawWatchers(cam); drawWheat(false);          // the wheat behind him
   ctx.setTransform(1, 0, 0, 1, 0, OYD); drawFog('lane'); ctx.setTransform(DPR, 0, 0, DPR, 0, OYD);      // mist lying along the lane, round the houses' feet and in the wheat
   ctx.save(); ctx.translate(-cam, 0);
   const grad = hGrad(ctx, gcol[0], gcol[1], 1, 1, cam);
@@ -2242,7 +2267,7 @@ document.getElementById('on2').onclick = () => SL.on ? go3() : go2();
 (async function boot() {
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.fillStyle = '#5d6b80'; ctx.fillRect(0, 0, VW, VH);
   await new Promise(r => setTimeout(r, 30));
-  const chr = Promise.all([loadPack('christian-walk', CHR), loadPack('christian-stand', STD), loadPack('christian-weep', WEEP).catch(() => {}), 
+  const chr = Promise.all([loadPack('christian-walk', CHR), loadPack('christian-stand', STD), 
     // build 89 (owner: "when I first open link house isn't there then flickers there"): what the first picture shows (his
     // house and its row, the trees, his wife in the door) now loads before "Open the book" appears, not after
     loadImg('house.webp').then(im => { HOUSE = im && bakeTint(im, HOUSE_DEPTH, HOUSE_DETAIL); }), ...['b', 'c'].map(key => loadImg('house-' + key + '.webp').then(im => { if (im) NB[key] = bakeTint(im, HOUSE_DEPTH, HOUSE_DETAIL); })), ...Object.keys(TREE_META).map(key => loadImg('tree-' + key + '.webp').then(im => { if (im) for (const i of [1, 2]) (TREE[i] = TREE[i] || {})[key] = bakeTree(im, SCN[i].d); })), loadImg('wife.webp').then(im => { WIFE = im; if (im) WIFE_SH = mkShadow(im); }), ...Object.keys(PROP_META).map(k => loadImg('prop-' + k + '.webp').then(im => { PROP[k] = im; }))]);
@@ -2256,7 +2281,9 @@ document.getElementById('on2').onclick = () => SL.on ? go3() : go2();
   if (LV === 2) SL.title(); if (LV === 3) HL.title();
   document.getElementById('open').style.visibility = 'visible';
   requestAnimationFrame(t => { lastT = t; loop(t); });
-  loadPack('christian-turn', TURN).catch(() => {});
+  // the weeping (second opening line) is no longer waited for before "Open the book": a third less to fetch first.
+  // If it is not ready by its line he simply stands (WEEP.ready is checked there).
+  loadPack('christian-weep', WEEP).catch(() => {}).then(() => loadPack('christian-turn', TURN)).catch(() => {});
   Promise.all([loadPack('evangelist', EVA), loadPack('evangelist-stand', EVS)]).then(() => Promise.all([loadImg('family.webp').then(im => { FAM = im; if (im) FAM_SH = mkShadow(im); }), loadImg('gate.webp').then(im => { if (im) GATE_P = bakeTint(im, .42, .4); }), loadImg('wall.webp').then(im => { if (im) WALL_P = wallTop(bakeTint(im, .42, .4)); }), ...['a', 'b', 'c'].map(key => loadImg('neighbor-' + key + '.webp').then(im => { WATCH_IM[key] = im; })), ...['a', 'b', 'c'].map(key => loadPack('neighbor-' + key, WATCH_PACK[key]).catch(() => {})), loadImg('christian-back.webp').then(im => { BACK = im; }), loadPack('christian-run', RUN), loadPack('christian-run-plain', RUNP)]))
     .then(() => Promise.all([loadPack('obstinate', OBS), loadPack('pliable', PLI), loadImg('obstinate-stand.webp').then(im => { OBS_ST = im; }), loadImg('pliable-stand.webp').then(im => { PLI_ST = im; })]));
   for (const [who, txt] of INTRO) vox(who, txt);          // the first words, ready before Begin is pressed
