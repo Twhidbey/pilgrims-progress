@@ -308,7 +308,7 @@ const SL = (() => {
     document.body.classList.add('playing', 'slough'); G.opening = null; hush();
     Object.assign(G, { t: 0, capQ: [], cap: 0, hint: null, act: null, actT: 0, ring: null, auto: null, guard: 0, autoT: 0, taps: [], roll: { t: 999, x: 0, y: 0 }, ended: false });
     downs.clear(); keys.r = keys.push = false;
-    C2.rt = 0; C2.tv = null; C2.fy = null; drops = [];
+    C2.rt = 0; C2.tv = null; C2.fy = null; drops = []; churns = [];
     ph = 'plain'; Object.assign(C2, { x: START, y: bankY(START) + 4, face: 1, anim: 12, alpha: 1, sink: 0, reach: 0, stand: 1, sd: QUIET[0], st: 0, faceA: 1, done: 0 });
     pli = { x: START - 80, y: 0, face: 1, anim: 0, alpha: 1, sink: 0, mode: 'follow', px: START - 80, stop: { t: 50, x0: START - 80 - 72.5 * CHR_K } };      // he starts standing (his stop video's breathing part)
     prints = []; fogH = 1; fogS = 1; help = null; mv = null; lift = null; rings = []; steps = []; gloom = gloomTo = 0; noteI = 0; strain = 0; slipT = 0; fearT = 300; fearsSaid = false; goldT = 0; onwayT = 0; capsSaid = new Set(); nearSaid = false;
@@ -343,8 +343,8 @@ const SL = (() => {
   }
   // SPLASHES (build 121, owner: "splashes are great - maybe crank that up a bit"): drops of mud thrown up from the water
   // line wherever someone heaves, falls or is hauled out; they rise, fall back and leave a small ring
-  let drops = [];
-  function splash(x, n = 7, k = 1) { for (let i = 0; i < n; i++) drops.push({ x: x + (Math.random() - .5) * 26, y: 0, vx: (Math.random() - .5) * 2.2 * k, vy: -(1.2 + Math.random() * 2.6) * k, r: .8 + Math.random() * 1.5, t: 0 }); }
+  let drops = [], churns = [];
+  function splash(x, n = 7, k = 1, still) { if (!still) churns.push({ x, a: Math.min(1, .5 + n * .05) }); for (let i = 0; i < n; i++) drops.push({ x: x + (Math.random() - .5) * 26, y: 0, vx: (Math.random() - .5) * 2.2 * k, vy: -(1.2 + Math.random() * 2.6) * k, r: .8 + Math.random() * 1.5, t: 0 }); }
   function wadeOn() { ph = 'wade'; G.state = 'play'; caption(ALONE); }
   // CHRISTIAN REALLY TURNS (build 120, owner: "christian turns and looks a couple times and i don't like the flip back and
   // forth without body moving, could we use turns from other levels"): Level 1's turning video (TURN, left to right),
@@ -368,7 +368,7 @@ const SL = (() => {
   }
   function grip() {
     if (G.act !== 'hand' || lift || !mv || mv.t < 150) return;
-    lift = { t: 0 }; sfxS.grip(); splash(C2.x + 10, 12, 1.4); G.ring = null; next(true); caption(DRAWN);
+    lift = { t: 0 }; sfxS.grip(); splash(C2.x + 10, 12, 1.4, true); G.ring = null; next(true); caption(DRAWN);
   }
 
   // ---------- each tick ----------
@@ -569,6 +569,7 @@ const SL = (() => {
     for (const r of rings) r.t++; rings = rings.filter(r => r.t < 150);
     for (const d of drops) { d.t++; d.x += d.vx; d.y += d.vy; d.vy += .13; if (d.y > 0 && Math.random() < .25) rings.push({ x: d.x, y: 0, t: 70, k: .28 }); }
     drops = drops.filter(d => d.y <= 0 && d.t < 120);
+    for (const c of churns) c.a -= .0045; churns = churns.filter(c => c.a > 0); if (churns.length > 40) churns.splice(0, churns.length - 40);
     // --- the camera draws back in the mire, and the look follows the story: gold on the plain, mist and grey in the bog ---
     let t, p = clamp((C2.x - FALL_X) / (STUCK_X - FALL_X));
     if (ph === 'plain') { const f = smooth(-1350, FALL_X, C2.x); t = { cx: lerp(C2.x + 150, -470, f), z: lerp(1, .8, f), wl: lerp(440, 392, f) }; }
@@ -716,8 +717,26 @@ const SL = (() => {
     if (wx0 < VW) {
       for (let y = 0; y < VH - wl; y += 2) {
         const d = y / (VH - wl), dx = (wob(y * .21 + G.t * .004, 2) - .5) * (1.5 + 13 * d) + Math.sin(y * .9 + G.t * .02) * d * 1.6;
-        ctx.globalAlpha = lerp(.82, .5, d);
+        ctx.globalAlpha = lerp(.9, .56, d);
         ctx.drawImage(nearC, wx0 * S, Math.max(0, (wl - y - 2)) * S, (VW - wx0) * S, 2 * S, wx0 + dx, wl + y, VW - wx0, 2);
+      }
+      ctx.globalAlpha = 1;
+    }
+    // MIRE, NOT A MIRROR, WHERE THEY FLOUNDER (build 123, owner: "the reflection [is] stunningly beautiful but i'm not sure it
+    // works where characters are (maybe where tree is it could be watery-er)"). The clear mirror belongs to still water:
+    // under the oak and along the far bank, where it is now a little stronger. Across the slough where they fall and wade
+    // the surface is thick mud with only a dull sheen (mud(x): thickest by the home bank, clearing toward the far side),
+    // and wherever someone has just heaved or splashed it is churned for a few seconds (churns, fed by splash()) and then
+    // settles. It is laid over the mirror in narrow upright bands of the mire's own tones. The grip and the lift at the
+    // far bank are left clear on purpose.
+    if (wx0 < VW) {
+      const g = ctx.createLinearGradient(0, hor, 0, VH); g.addColorStop(0, css(tone(.9))); g.addColorStop(.3, css(tone(lerp(.78, .85, look.mist)))); g.addColorStop(1, css(tone(lerp(.46, .6, look.mist))));
+      ctx.fillStyle = g; const bw = 10;
+      for (let sx = Math.floor(wx0 / bw) * bw; sx < VW; sx += bw) {
+        const x = (sx + bw / 2 - VW / 2) / z + cx;
+        let m = .8 * smooth(HOME0 + 30, HOME0 + 120, x) * (1 - smooth(-640, -300, x));
+        for (const c of churns) { const u = (x - c.x) / 75; if (u > -2.2 && u < 2.2) m += .75 * Math.min(1, c.a * 2.2) * Math.exp(-u * u); }
+        if (m > .02) { ctx.globalAlpha = Math.min(.92, m); ctx.fillRect(sx, wl + 1, bw, VH - wl); }
       }
       ctx.globalAlpha = 1;
     }
