@@ -714,6 +714,23 @@ const SL = (() => {
     // build 114 (owner: "not sure about light dots above pliable's head"): the lights he gathered are no longer shown
     // following him; they first appear behind his shoulder when he looks back, and fly to the steps
     for (const mo of motes) { if (!mo.to && ph !== 'look') continue; const a = (.55 + .3 * Math.sin(mo.tw * 1.7)) * (ph === 'look' ? smooth(0, 50, goldT) : 1); mote(n, mo.x, mo.y, mo.to ? 3 : 1.8, mo.to ? 1 : a); }
+    // BEHIND THE PEOPLE, NOT ACROSS THEM (build 128, owner: "you don't think white mist between mud and the character looks
+    // strange?"): the thin mist over the water and the low mist round the two in the bog were drawn over the figures, so a
+    // white band lay between each body and the dark mud it stands in. Both are now laid BEFORE the near picture: the
+    // mist lies behind and beside them and their bodies go straight down into the mud. (On the plain, at the bog's edge,
+    // the thin mist still lies over their feet, as the owner chose in build 115: see further down.)
+    const threadsNow = () => { ctx.globalAlpha = .55 * look.mist; const o = (G.t * .15) % VW; ctx.drawImage(threads, -o, wl - 22, VW, 40); ctx.drawImage(threads, VW - o, wl - 22, VW, 40); ctx.globalAlpha = 1; };
+    if (ph !== 'plain') threadsNow();
+    // LOW MIST ROUND THE TWO IN THE BOG (build 125, owner: "more fog beneath Christian and pliable when they're in [the] bog
+    // but not as much near their faces"): a flat lens of mist hugs the surface round each of them, thickest at the mud
+    // line and gone by chest height, so heads and shoulders stand clear above it
+    { const low = (x, a, ry = 40) => { if (a <= .02) return; const mx = X(x), my = wl - 9 * z; if (mx < -200 || mx > VW + 200) return;
+        ctx.save(); ctx.translate(mx, my); ctx.scale(150 * z, ry * z); const g = ctx.createRadialGradient(0, 0, 0, 0, 0, 1);
+        g.addColorStop(0, css(tone(.93), .5 * a)); g.addColorStop(.5, css(tone(.93), .3 * a)); g.addColorStop(1, css(tone(.93), 0));
+        ctx.fillStyle = g; ctx.fillRect(-1, -1, 2, 2); ctx.restore(); };
+      if (['fall', 'pli', 'back', 'backtalk', 'wade', 'stuck', 'help'].includes(ph)) { const deep = smooth(C_SINK + 10, SINK + DEEP, C2.y);      // the deeper he is, the lower and thinner it lies: his head must stay clear
+        low(C2.x + 6, (ph === 'fall' ? smooth(20, 120, C2.fallT) : 1) * (lift ? 1 - clamp(lift.t / 60) : 1) * (1 - .45 * deep), lerp(40, 13, deep)); }
+      if (pli && pli.mode === 'climb' && !pli.out) low(pli.x + (META.climb.ax - META.climb.c0) * CHR_K * (1 - .6 * smooth(.25, .7, (pli.ct || 0) / 119)), (pli.wk ?? 1) * (1 - smooth(.6, .85, (pli.ct || 0) / 119))); }
     ctx.drawImage(nearC, 0, 0, VW, VH);
     // --- the mirror: the near picture upside down under the water line, in thin strips that wander more the nearer they are ---
     const wx0 = Math.max(0, X(WATER_L));
@@ -736,7 +753,7 @@ const SL = (() => {
       const g = ctx.createLinearGradient(0, hor, 0, VH); g.addColorStop(0, css(tone(.86))); g.addColorStop(.3, css(tone(lerp(.7, .78, look.mist)))); g.addColorStop(1, css(tone(lerp(.44, .56, look.mist))));
       // build 127 (owner: "let's see more of the mud instead"): the mire is a shade darker than the water, and where it has
       // just been churned a dark wet patch shows at the surface round whoever is struggling, with the rings lying on it
-      const gd = ctx.createLinearGradient(0, wl - 2, 0, wl + 44 * z); gd.addColorStop(0, css(tone(.26), 0)); gd.addColorStop(.1, css(tone(.26), .6)); gd.addColorStop(.4, css(tone(.3), .34)); gd.addColorStop(1, css(tone(.34), 0));
+      const gd = ctx.createLinearGradient(0, wl - 16 * z, 0, wl + 44 * z); gd.addColorStop(0, css(tone(.24), 0)); gd.addColorStop(.2, css(tone(.24), .5)); gd.addColorStop(.3, css(tone(.24), .72)); gd.addColorStop(.55, css(tone(.3), .36)); gd.addColorStop(1, css(tone(.34), 0));      // it begins a little above the surface: the figures' own pictures fade out just above the mud line, and the churned mud must come up to meet them
       const bw = 5; mudCh.length = 0; mudGd = gd;
       for (let sx = Math.floor(wx0 / bw) * bw; sx < VW; sx += bw) {
         const x = (sx + bw / 2 - VW / 2) / z + cx;
@@ -801,9 +818,9 @@ const SL = (() => {
     // so the stones are uncovered in place, one by one, from the far bank back toward the plain. Straight across, flat
     // (an arc toward us was offered and advised against: it would bring back the perspective the picture avoids)
     for (const st of steps) { const c = st.lit || 0; bank(st.x - 70 + c * 90, st.x + 70 + c * 90, 12, 10, 120, (1 - smooth(0, 1, c)) * (.55 + .3 * look.mist) * (ph === 'look' || ph === 'on' ? 1 : fogS), 6, 11 + st.i, true); }
-    ctx.globalAlpha = .55 * look.mist; { const o = (G.t * .15) % VW; ctx.drawImage(threads, -o, wl - 22, VW, 40); ctx.drawImage(threads, VW - o, wl - 22, VW, 40); } ctx.globalAlpha = 1;
+    if (ph === 'plain') threadsNow();
     // the dark churned mud (found above, laid here so the thin mist over the water does not whiten it away)
-    if (mudGd) { ctx.fillStyle = mudGd; for (const [sx, a] of mudCh) { ctx.globalAlpha = a; ctx.fillRect(sx, wl - 2, 5, 46 * z + 2); } ctx.globalAlpha = 1; }
+    if (mudGd) { ctx.fillStyle = mudGd; for (const [sx, a] of mudCh) { ctx.globalAlpha = a; ctx.fillRect(sx, wl - 16 * z, 5, 60 * z); } ctx.globalAlpha = 1; }
     // rings in the mud, under the mist. Build 126 put them back under the low mist after build 125's heavy rings on top of it
     // "stuck out"; build 127 thins that mist at the surface, so the dark churned mud and its rings are seen together
     for (const r of rings) {
@@ -812,16 +829,6 @@ const SL = (() => {
         ctx.lineWidth = 1.3; ctx.strokeStyle = css(LIGHT, .62 * a); ctx.beginPath(); ctx.ellipse(cxr, cyr, rx, rx * .12, 0, 0, 7); ctx.stroke();
         ctx.strokeStyle = css(DARK, .34 * a); ctx.beginPath(); ctx.ellipse(cxr, cyr + 1.7, rx, rx * .12, 0, 0, Math.PI); ctx.stroke(); }
     }
-    // LOW MIST ROUND THE TWO IN THE BOG (build 125, owner: "more fog beneath Christian and pliable when they're in [the] bog
-    // but not as much near their faces"): a flat lens of mist hugs the surface round each of them, thickest at the mud
-    // line and gone by chest height, so heads and shoulders stand clear above it
-    { const low = (x, a, ry = 40) => { if (a <= .02) return; const mx = X(x), my = wl - 9 * z; if (mx < -200 || mx > VW + 200) return;
-        ctx.save(); ctx.translate(mx, my); ctx.scale(150 * z, ry * z); const g = ctx.createRadialGradient(0, 0, 0, 0, 0, 1);
-        g.addColorStop(0, css(tone(.93), .5 * a)); g.addColorStop(.5, css(tone(.93), .3 * a)); g.addColorStop(1, css(tone(.93), 0));
-        ctx.fillStyle = g; ctx.fillRect(-1, -1, 2, 2); ctx.restore(); };
-      if (['fall', 'pli', 'back', 'backtalk', 'wade', 'stuck', 'help'].includes(ph)) { const deep = smooth(C_SINK + 10, SINK + DEEP, C2.y);      // the deeper he is, the lower and thinner it lies: his head must stay clear
-        low(C2.x + 6, (ph === 'fall' ? smooth(20, 120, C2.fallT) : 1) * (lift ? 1 - clamp(lift.t / 60) : 1) * (1 - .45 * deep), lerp(40, 13, deep)); }
-      if (pli && pli.mode === 'climb' && !pli.out) low(pli.x + (META.climb.ax - META.climb.c0) * CHR_K * (1 - .6 * smooth(.25, .7, (pli.ct || 0) / 119)), (pli.wk ?? 1) * (1 - smooth(.6, .85, (pli.ct || 0) / 119))); }
     if (look.veil > .01) { const g = ctx.createLinearGradient(VW * .42, 0, VW, 0); g.addColorStop(0, css(LIGHT, 0)); g.addColorStop(.55, css(tone(.93), look.veil * .86)); g.addColorStop(1, css(tone(.93), look.veil)); ctx.fillStyle = g; ctx.fillRect(0, 0, VW, VH); }
     // the gold coming back from the oak outward
     if (warmth > .01) { ctx.globalCompositeOperation = 'soft-light'; const g = ctx.createRadialGradient(discX, discY + 60, 20, discX, discY + 60, 760);
