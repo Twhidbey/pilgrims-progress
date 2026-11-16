@@ -6,6 +6,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 Older handovers (builds 41 to 137, with the picture and video prompts used for Help, Christian reaching, the grip and lift, the gate and the wall) were folded away in build 140; they are in git (`HANDOFF.md` at build 137). The voice descriptions and the first picture prompts are kept in the build notes below.
 
+**Build 147: Level 2's mud answers the men's own pictures (surface swells, collars, plops, strings, wet mud; the two halves of each ring are one ring). See `CLAUDE.md`, "THE MUD ANSWERS THE FIGURES". Nothing spent. Waiting on the owner's look at `?level=2&at=bog`.**
+
 **What is live (build 140):** the title page offers three levels and remembers the child's level. Level 1 (City of Destruction, `index.html`) and Level 2 (Slough of Despond, `slough.js`) are played and shaped by the owner; Level 3 (Mr. Worldly Wiseman and the hill, `hill.js`) is a first sketch with stand-in figures and no voices, not yet seen by the owner (another chat is reworking its hill, sky, gate and wall pictures). Level 4 is a plan in `CLAUDE.md`. Read `CLAUDE.md` before anything: its rules, lessons, departures from the book and code maps.
 
 **Waiting on the owner (they play on an iPhone):**
