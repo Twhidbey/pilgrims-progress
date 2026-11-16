@@ -102,6 +102,10 @@ const HL = (() => {
   // (`mercy`), the only warm thing under the black hill; when he says the man at the gate will receive him, the
   // hill's fire sinks low and its flashes stop (`calm`). Both are ours, not the book's.
   let mercy = 0, mercyTo = 0, calm = 0, calmTo = 0;
+  // THE HILL IS NOT SHOWN AT FIRST (owner, build 167: "Maybe don't show mountain at first, just some foothills, the reveal
+  // will be cooler later"). `reveal` stays 0 across the plain and the talk: only foothills stand where it will be. At
+  // "Do you see that hill?" the camera draws back and the hill comes out of the haze (about a second and a half).
+  let reveal = 0;
   let wise = null, evan = null, dark = 0, hope = 0, flash = 0, flashT = 0, veil = 0, veilTo = 0, knocks = 0, knockT = 0, door = 0, doorTo = 0;
   let saidSeen = false, saidHigh = false, stillT = 0, hasteSaid = false, gateSaid = false, hintT = 0, noteI = 0, noteX = 0, lastFr = 0, hillSeen = false;
   let OAKT = null, hillBox = [0, 0, 1];
@@ -275,10 +279,11 @@ const HL = (() => {
     Object.assign(C3, { x: START, face: 1, faceA: 1, anim: 12, sd: QUIET[0], alpha: 1, run: 0, ranim: RUNP_META.start || 0, weep: false, wt: 0, wa: 0, tv: null, fired: false });
     mercy = mercyTo = calm = calmTo = 0;
     wise = null; evan = null; dark = 0; hope = 0; flash = 0; flashT = 200; veil = 0; veilTo = 0; knocks = 0; knockT = 0; door = 0; doorTo = 0;
+    reveal = 0;
     saidSeen = saidHigh = hasteSaid = gateSaid = hillSeen = false; stillT = 0; hintT = 0; noteI = 0; noteX = 0;
   }
   // the picture behind the title page when Level 3 is the child's level: the hill hanging over the way, nobody there
-  function title() { build(); preload(); HL.show = true; reset0(); ph = 'title'; dark = 1; Object.assign(cam, { cx: STILL + 60, z: .42, wl: 399 }); }
+  function title() { build(); preload(); HL.show = true; reset0(); ph = 'title'; dark = 1; reveal = 1; Object.assign(cam, { cx: STILL + 60, z: .42, wl: 399 }); }
   function start() {
     HL.on = true; HL.show = false; build(); preload();
     document.getElementById('title').style.display = 'none';
@@ -293,7 +298,7 @@ const HL = (() => {
     if (at === 'hill') { ph = 'aside'; C3.x = STILL - 760; saidSeen = true; hillSeen = true; }
     if (at === 'evangelist') { ph = 'still'; C3.x = STILL; saidSeen = saidHigh = true; dark = 1; stillT = 1e4; }
     if (at === 'gate') { ph = 'gate'; C3.x = GATE_FROM; saidSeen = true; hope = 1; }
-    if (at) { cam.cx = C3.x + 150; }
+    if (at) { cam.cx = C3.x + 150; reveal = 1; }
     G.state = 'wait'; setTimeout(() => { if (HL.on && G.state === 'wait') { G.state = ph === 'still' ? 'auto' : 'play'; } }, 1400);
   }
   function finish() {
@@ -338,6 +343,7 @@ const HL = (() => {
     mercy += (mercyTo - mercy) * .012; calm += (calmTo - calm) * .008; if (ph === 'back' || ph === 'mist') mercyTo = 0;
     flash *= .93; door += (doorTo - door) * .02; veil = clamp(veil + Math.sign(veilTo - veil) * .012);
     hintT++;
+    reveal = clamp(reveal + (G.act === 'hill' || (ph !== 'plain' && ph !== 'meet') ? .011 : 0));
     if (dark > .4 && Math.random() < .07 * dark) embers.push({ x: 20 + Math.random() * 70, y: 10 - Math.random() * 40, vx: -.2 - Math.random() * .4, vy: -.35 - Math.random() * .5, r: .6 + Math.random() * .8, h: Math.random(), t: 0, life: 140 + Math.random() * 160 });
     for (const e of embers) { e.t++; e.x += e.vx + .3 * Math.sin((e.t + e.life) / 23); e.y += e.vy; } for (let i = embers.length - 1; i >= 0; i--) if (embers[i].t >= embers[i].life) embers.splice(i, 1);
 
@@ -474,6 +480,11 @@ const HL = (() => {
     // the far ridge
     { const col = mix(mix(mix(low, top, .45), [122, 144, 172], .55 * (1 - dark) * (1 - gateish)), [60, 52, 60], dark * .6); c.fillStyle = css(col); c.beginPath(); c.moveTo(0, hor + 2);
       for (let sx = 0; sx <= VW + 16; sx += 16) { const u = cx * .1 + (sx - VW / 2) / z; c.lineTo(sx, hor - (26 + 96 * nz(u * .0035, 5) + 22 * nz2(u * .02, 1)) * z * .8); }
+      c.lineTo(VW, hor + 2); c.fill();
+      // FOOTHILLS: a nearer, lower line of hills in front of the far ridge. At first they are all there is to see where
+      // the hill will be (the hill is not shown until Wiseman points to it: see `reveal`)
+      c.fillStyle = css(mix(col, mix([98, 112, 126], [44, 40, 48], dark), .5)); c.beginPath(); c.moveTo(0, hor + 2);
+      for (let sx = 0; sx <= VW + 16; sx += 16) { const u = cx * .2 + (sx - VW / 2) / z; c.lineTo(sx, hor - (6 + 50 * nz(u * .005, 9) + 12 * nz2(u * .026, 4)) * z * .8); }
       c.lineTo(VW, hor + 2); c.fill(); }
     // the plain, from the horizon down to the road
     { const far = mix(mix([204, 190, 142], [50, 48, 56], gateish), [78, 68, 70], dark), near = mix(mix([80, 84, 56], [24, 24, 32], gateish), [38, 36, 44], dark);
@@ -506,7 +517,7 @@ const HL = (() => {
           c.globalCompositeOperation = 'source-over'; c.globalAlpha = 1; }
         // the hill: fair and far off at first, black under its own cloud when he stands by it
         const dx = hx - HOX * k, dy = hy - HOY * k;
-        c.globalAlpha = 1; c.drawImage(HILL[0], dx, dy, HW * k, HH * k); if (dark > .01) { c.globalAlpha = dark; c.drawImage(HILL[1], dx, dy, HW * k, HH * k); c.globalAlpha = 1; }
+        c.globalAlpha = reveal; c.drawImage(HILL[0], dx, dy, HW * k, HH * k); if (dark > .01) { c.globalAlpha = dark * reveal; c.drawImage(HILL[1], dx, dy, HW * k, HH * k); } c.globalAlpha = 1;
         // the burning edge down the overhanging face, and fire in the cracks when it flashes
         c.save(); c.globalCompositeOperation = 'lighter'; c.lineCap = c.lineJoin = 'round';
         if (burn > .01 || F > .02) {
@@ -535,8 +546,8 @@ const HL = (() => {
         c.restore();
         // the village of Morality, at the hill's long foot on its far side
         const tx = hx + 560 * k, ty = hy + 2 * z, tw = 480 * z, th = 84 * z;
-        { const tc = tintC.town || (tintC.town = mk(400, 70)), t = tc.getContext('2d'); t.globalCompositeOperation = 'source-over'; t.clearRect(0, 0, 400, 70); t.drawImage(TOWN, 0, 0); t.globalCompositeOperation = 'source-in'; t.fillStyle = css(mix(mix(far, top, .4), [46, 42, 50], dark * .7)); t.fillRect(0, 0, 400, 70); c.drawImage(tc, tx, ty - th, tw, th); }
-        for (const [wx, wy] of TOWN.lit) { c.fillStyle = css([255, 214, 140], .5 + .4 * dark); c.fillRect(tx + wx * tw / 400, ty - th + wy * th / 70, Math.max(1.5, 3.6 * z), Math.max(1.5, 3.6 * z)); }
+        { const tc = tintC.town || (tintC.town = mk(400, 70)), t = tc.getContext('2d'); t.globalCompositeOperation = 'source-over'; t.clearRect(0, 0, 400, 70); t.drawImage(TOWN, 0, 0); t.globalCompositeOperation = 'source-in'; t.fillStyle = css(mix(mix(far, top, .4), [46, 42, 50], dark * .7)); t.fillRect(0, 0, 400, 70); c.globalAlpha = reveal; c.drawImage(tc, tx, ty - th, tw, th); c.globalAlpha = 1; }
+        for (const [wx, wy] of TOWN.lit) { c.fillStyle = css([255, 214, 140], (.5 + .4 * dark) * reveal); c.fillRect(tx + wx * tw / 400, ty - th + wy * th / 70, Math.max(1.5, 3.6 * z), Math.max(1.5, 3.6 * z)); }
         // the cloud on the summit: a towering column that leans with the wind and spreads, dark, lit from within
         // THE SMOKE IN THE SKY (owner, build 146, of the reference painting: "the red ... was too much but I did like
         // smoke in sky - that was cool"). A great slow plume: it rises from the summit, bends with the wind and
@@ -547,7 +558,7 @@ const HL = (() => {
           for (let i = 0; i < N; i++) { const h1 = Math.sin(i * 12.9898) * 43758.5453, h2 = Math.sin(i * 78.233) * 12543.123; ps.push([(i / N + G.t / 3400) % 1, h1 - Math.floor(h1), h2 - Math.floor(h2), i]); }
           ps.sort((a, b) => b[0] - a[0]);
           for (const [u, r1, r2, i] of ps) { const rise = 1 - Math.pow(1 - u, 3), spread = (40 + 230 * u) * k, px = sx0 - (240 * u + 900 * u * u) * k + (r1 - .5) * spread, py = sy0 - (14 + 150 * rise - 60 * u * u) * k + (r2 - .5) * spread * .7, rr = (40 + 210 * u) * k * (.8 + .4 * r2), a = smooth(0, .05, u) * (1 - smooth(.72, 1, u)), P = PUFF[i % 3];
-            c.globalCompositeOperation = 'source-over'; c.globalAlpha = a * (.07 + .73 * dark); c.drawImage(P.d, px - rr, py - rr, 2 * rr, 2 * rr);
+            c.globalCompositeOperation = 'source-over'; c.globalAlpha = a * (.07 + .73 * dark) * reveal; c.drawImage(P.d, px - rr, py - rr, 2 * rr, 2 * rr);
             const la = a * (burn * (.3 + .7 * Math.pow(1 - u, 2)) + F * .3 * (1 - u)); if (la > .01) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = la; c.drawImage(P.l, px - rr, py - rr, 2 * rr, 2 * rr); } } }
         c.globalCompositeOperation = 'source-over'; c.globalAlpha = 1;
         if (flames) { c.save(); c.globalCompositeOperation = 'lighter'; flames(); c.restore(); }
@@ -670,7 +681,7 @@ const HL = (() => {
       TALKM = null;
     } else if (evan && EVS.ready) { TALKM = talkMove(E); foot(c, EV_X, evan.a); figure(c, 'evan', EVS[Math.floor(G.t * .2) % EVS_META.frames], EVS_META, EV_X, 1, tintM, smooth(.25, 1, evan.a)); TALKM = null; }
     if (wise && (WIS.ready || OBS.ready)) {
-      const wt = mix([168, 150, 132], [120, 104, 100], dark); TALKM = talkMove(WW); foot(c, wise.x, wise.alpha);
+      const wt = mix([134, 126, 120], [92, 82, 84], dark); TALKM = talkMove(WW); foot(c, wise.x, wise.alpha);
       const { W, M, S, SM } = wFig(), wim = W[Math.floor(wise.anim) % W.length];
       if (S && wise.st > 0) { figure(c, 'wst', S, SM, wise.x, -1, wt, wise.alpha * smooth(0, .6, wise.st), breath(2)); figure(c, 'wis', wim, M, wise.x, -1, wt, wise.alpha * (1 - smooth(.4, 1, wise.st))); }
       else figure(c, 'wis', wim, M, wise.x, -1, wt, wise.alpha);
