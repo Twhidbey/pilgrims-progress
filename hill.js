@@ -111,7 +111,7 @@ const HL = (() => {
   let OAKT = null, hillBox = [0, 0, 1];
 
   // ---------- pictures baked once ----------
-  let HILL = null, SMOKE = null, CLOUD = null, TOWN = null; const CRACKS = [], STONES = [], SEAMS = [];
+  let HILL = null, SMOKE = null, CLOUD = null, TOWN = null; const CRACKS = [], STONES = [], SEAMS = [], PUFF = [];
   // the hill's outline: h = height above its foot, 0 to TOP; its left side hangs far out over the way
   const TOP = 520, HW = 1500, HH = 640, HOX = 300, HOY = 610;      // the baked picture's size and where the foot's left end lies in it
   const FACE = [[0, 0], [36, -30], [84, -62], [112, -44], [150, -70], [240, -138], [320, -182], [358, -176], [420, -116], [480, -44], [520, 36]];      // a second, lower overhang under the great one
@@ -144,6 +144,11 @@ const HL = (() => {
       for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { const e = Math.sin(Math.PI * y / h) * Math.min(1, x / 30, (w - x) / 30), v = smooth(thr, thr + .22, n(x * sx, y * sy)) * e; const i = (y * w + x) * 4; im.data[i] = im.data[i + 1] = im.data[i + 2] = 255; im.data[i + 3] = 255 * v; }
       k.putImageData(im, 0, 0); return c; };
     SMOKE = cloud(240, 80, 5, .4, .022, .05); CLOUD = cloud(400, 90, 31, .46, .014, .045);
+    // billows of smoke: three soft round shapes, each baked dark and again as the light the fire lays on its underside
+    for (const seed of [5, 17, 29]) { const base = mk(160, 160), b2 = base.getContext('2d'), Rp = rngS(seed);
+      for (let j = 0; j < 8; j++) { const an = Rp() * 6.283, d = j ? 22 + Rp() * 22 : 0, r = j ? 30 + Rp() * 18 : 50, x = 80 + Math.cos(an) * d, y = 80 + Math.sin(an) * d * .8, g = b2.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, 'rgba(255,255,255,.8)'); g.addColorStop(.55, 'rgba(255,255,255,.45)'); g.addColorStop(1, 'rgba(255,255,255,0)'); b2.fillStyle = g; b2.fillRect(x - r, y - r, 2 * r, 2 * r); }
+      const tinted = fill => { const c2 = mk(160, 160), k2 = c2.getContext('2d'); k2.drawImage(base, 0, 0); k2.globalCompositeOperation = 'source-in'; k2.fillStyle = fill(k2); k2.fillRect(0, 0, 160, 160); return c2; };
+      PUFF.push({ d: tinted(() => 'rgb(62,46,50)'), l: tinted(k2 => { const g = k2.createLinearGradient(130, 150, 60, 60); g.addColorStop(0, 'rgba(255,200,146,1)'); g.addColorStop(.5, 'rgba(240,150,100,.35)'); g.addColorStop(1, 'rgba(220,120,90,0)'); return g; }) }); }
     // the wall's stones by the wicket-gate: rough courses, no two stones alike (shown only where light falls)
     { const Rs = rngS(71); for (let y = 0; y < 330;) { const h = 30 + Rs() * 24; for (let x = GATE_X - 560 - Rs() * 60; x < GATE_X + 560;) { const w = 44 + Rs() * 80; STONES.push({ x, y, w, h, t: Rs(), j: Rs() }); x += w; } y += h; } }
     // the village of Morality beyond the hill: low houses, pleasant, a lamp in some windows (never reached)
@@ -198,7 +203,7 @@ const HL = (() => {
     saidSeen = saidHigh = hasteSaid = gateSaid = hillSeen = false; stillT = 0; hintT = 0; noteI = 0; noteX = 0;
   }
   // the picture behind the title page when Level 3 is the child's level: the hill hanging over the way, nobody there
-  function title() { build(); preload(); HL.show = true; reset0(); ph = 'title'; dark = 1; Object.assign(cam, { cx: STILL + 60, z: .5, wl: 405 }); }
+  function title() { build(); preload(); HL.show = true; reset0(); ph = 'title'; dark = 1; Object.assign(cam, { cx: STILL + 60, z: .42, wl: 399 }); }
   function start() {
     HL.on = true; HL.show = false; build(); preload();
     document.getElementById('title').style.display = 'none';
@@ -333,7 +338,7 @@ const HL = (() => {
     if (ph === 'plain') tz = wise ? .86 : 1;
     if (ph === 'meet') { tx = C3.x + 60; tz = 1; if (G.act === 'hill') { tx = C3.x + 800; tz = .5; } }
     if (ph === 'aside') tz = lerp(1, .5, smooth(STILL - 1000, STILL - 100, C3.x));
-    if (ph === 'still' || ph === 'come' || ph === 'evan') { tx = STILL + 60 - (ph === 'still' ? 0 : 50); tz = ph === 'evan' ? .6 : .46; }
+    if (ph === 'still' || ph === 'come' || ph === 'evan') { tx = STILL + 60 - (ph === 'still' ? 0 : 50); tz = ph === 'evan' ? .6 : .4; }
     if (ph === 'back' || ph === 'mist') { tx = C3.x - 150; tz = lerp(1, .62, smooth(STILL - 900, STILL - 100, C3.x)); }
     if (ph === 'gate' || ph === 'knock' || ph === 'open') { tx = Math.min(C3.x + 150, GATE_X - 215); tz = lerp(1, .96, smooth(GATE_X - 500, GATE_STOP, C3.x)); }
     cam.cx += (tx - cam.cx) * .035; cam.z += (tz - cam.z) * .03; cam.wl = 440 - (1 - cam.z) * 70;
@@ -434,9 +439,17 @@ const HL = (() => {
         for (const [wx, wy] of TOWN.lit) { c.fillStyle = css([255, 214, 140], .5 + .4 * dark); c.fillRect(tx + wx * tw / 400, ty - th + wy * th / 70, Math.max(1.5, 3.6 * z), Math.max(1.5, 3.6 * z)); }
         // the cloud on the summit: a towering column that leans with the wind and spreads, dark, lit from within
         if (dark > .02) { c.globalCompositeOperation = 'multiply'; c.globalAlpha = .8 * dark; c.drawImage(CLOUD, sx0 - 1500 * k, sy0 - 520 * k, 2300 * k, 520 * k); c.globalAlpha = .55 * dark; c.drawImage(CLOUD, sx0 - 700 * k, sy0 - 400 * k, 1700 * k, 380 * k); }
-        for (let i = 0; i < 9; i++) { const w = (420 + i * 170) * k, lean = -i * i * 9 * k + 30 * k * Math.sin(G.t / 260 + i * 1.7), px = sx0 + lean - w / 2, py = sy0 - (40 + i * 74) * k - w * .16;
-          c.globalAlpha = (.2 + .62 * dark) * (1 - i * .09); c.globalCompositeOperation = 'multiply'; c.drawImage(SMOKE, px, py, w, w * .36);
-          if (burn > .01) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = burn * .24 * Math.max(0, 1 - i / 5) + F * .2 * Math.max(0, 1 - i / 9.5); tintSmoke(); c.drawImage(tintC.smoke, px + w * .06, py + w * .05, w * .88, w * .3); } }
+        // THE SMOKE IN THE SKY (owner, build 146, of the reference painting: "the red ... was too much but I did like
+        // smoke in sky - that was cool"). A great slow plume: it rises from the summit, bends with the wind and
+        // rolls away across the sky over his head, growing and thinning as it goes. Soft round billows, dark, the
+        // near ones lit from beneath by the fire (amber, never red). Each billow travels the whole way in about a
+        // minute and melts away at the end; the far ones are drawn first.
+        { const N = 46, ps = [];
+          for (let i = 0; i < N; i++) { const h1 = Math.sin(i * 12.9898) * 43758.5453, h2 = Math.sin(i * 78.233) * 12543.123; ps.push([(i / N + G.t / 3400) % 1, h1 - Math.floor(h1), h2 - Math.floor(h2), i]); }
+          ps.sort((a, b) => b[0] - a[0]);
+          for (const [u, r1, r2, i] of ps) { const rise = 1 - Math.pow(1 - u, 3), spread = (40 + 230 * u) * k, px = sx0 - (240 * u + 900 * u * u) * k + (r1 - .5) * spread, py = sy0 - (14 + 150 * rise - 60 * u * u) * k + (r2 - .5) * spread * .7, rr = (40 + 210 * u) * k * (.8 + .4 * r2), a = smooth(0, .05, u) * (1 - smooth(.72, 1, u)), P = PUFF[i % 3];
+            c.globalCompositeOperation = 'source-over'; c.globalAlpha = a * (.22 + .58 * dark); c.drawImage(P.d, px - rr, py - rr, 2 * rr, 2 * rr);
+            const la = a * (burn * (.3 + .7 * Math.pow(1 - u, 2)) + F * .3 * (1 - u)); if (la > .01) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = la; c.drawImage(P.l, px - rr, py - rr, 2 * rr, 2 * rr); } } }
         c.globalCompositeOperation = 'source-over'; c.globalAlpha = 1;
         // lightning in the cloud, and sparks carried up
         c.save(); c.globalCompositeOperation = 'lighter'; c.lineCap = c.lineJoin = 'round';
