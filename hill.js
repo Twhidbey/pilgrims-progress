@@ -137,7 +137,7 @@ const HL = (() => {
   function build() {
     if (built) return; built = true;
     // the hill, twice: in the fair day's far blue-grey, and nearly black under its own cloud
-    HILL = [[114, 116, 140], [24, 22, 30]].map(col => {
+    HILL = [[108, 112, 128], [24, 22, 30]].map(col => {
       const c = mk(HW, HH), k = c.getContext('2d'); k.translate(HOX, HOY);
       k.beginPath(); k.moveTo(-8, 12);
       for (let h = 0; h <= TOP; h += 6) k.lineTo(faceX(h), -h);
@@ -197,14 +197,14 @@ const HL = (() => {
     const mkc = () => { const c = mk(Math.ceil(x1 - x0), Math.ceil(y1 - y0)), k = c.getContext('2d'); k.translate(-x0, -y0); return [c, k]; };
     const [c, k] = mkc(), [d, kd] = mkc();
     const dab = (g, x, y, r, col, al) => { g.save(); g.translate(x, y); g.rotate(R() * 3.14); g.fillStyle = css(col, al); g.beginPath(); g.ellipse(0, 0, r, r * .58, 0, 0, 7); g.fill(); g.restore(); };
-    // the leaves behind the limbs: deep green, the whole mass of the crown
-    for (const [x, y] of A) for (let j = 0; j < 2; j++) dab(k, x + (R() - .5) * 26, y + (R() - .5) * 22, 8 + R() * 7, mix([24, 40, 34], [38, 58, 40], R()), .92);
-    // the trunk and limbs: nearly black, warm
-    k.fillStyle = css([26, 22, 22]); SL.ribbons(k, tree);
-    // the leaves toward us: lighter on the side of the low sun (it stands to the right), gold in the crown's outer edge
-    for (const [x, y] of A) { if (R() < .3) continue; const ex = (x - mx) / rad, ey = (y - my) / rad, sun = clamp(.5 + ex * .7 - ey * .45), edge = smooth(.55, 1, Math.hypot(ex, ey));
-      const col = mix(mix([34, 52, 40], [80, 100, 62], sun), [168, 160, 96], sun * edge * .7);
-      dab(k, x + (R() - .5) * 22, y + (R() - .5) * 18, 5 + R() * 6, col, .5 + .4 * R()); }
+    // (Build 158's crown of big dabs in three greens was "an awful tree" to the owner: a cartoon. The game's rule holds
+    // here too: ONE dark tone. The oak is a silhouette like the Slough's, its leaves only a fine broken edge of small
+    // dabs in that same tone, with the sky showing through the crown; the low sun touches the far edge very faintly.)
+    const TONE = [26, 34, 30];
+    for (const [x, y] of A) for (let j = 0; j < 3; j++) { if (R() < .22) continue; dab(k, x + (R() - .5) * 20, y + (R() - .5) * 16, 2.6 + R() * 3.4, TONE, .96); }
+    k.fillStyle = css(TONE); SL.ribbons(k, tree);
+    for (const [x, y] of A) { if (R() < .72) continue; const ex = (x - mx) / rad, ey = (y - my) / rad, sun = clamp(ex * .9 - ey * .5) * smooth(.6, 1, Math.hypot(ex, ey));
+      if (sun > .05) dab(k, x + (R() - .5) * 16, y + (R() - .5) * 12, 2.2 + R() * 2.4, mix(TONE, [120, 124, 78], .5), sun * .5); }
     // the same shape all dark, to lay over it when the sky darkens
     kd.drawImage(c, x0, y0); kd.globalCompositeOperation = 'source-in'; kd.fillStyle = 'rgb(20,20,26)'; kd.fillRect(x0, y0, x1 - x0, y1 - y0);
     return { c, d, x0, y0 };
@@ -448,11 +448,11 @@ const HL = (() => {
     { const g = c.createRadialGradient(lx, ly, 0, lx, ly, 330); g.addColorStop(0, css([255, 236, 190], .85 * la)); g.addColorStop(.12, css([255, 222, 160], .5 * la)); g.addColorStop(.45, css([255, 214, 150], .16 * la)); g.addColorStop(1, css([255, 214, 150], 0));
       c.fillStyle = g; c.fillRect(lx - 330, ly - 330, 660, 660); c.fillStyle = css([255, 248, 226], la); c.beginPath(); c.arc(lx, ly, 7 + 1.2 * Math.sin(G.t / 40), 0, 7); c.fill(); }
     // the far ridge
-    { const col = mix(mix(mix(low, top, .45), [140, 138, 170], .35 * (1 - dark) * (1 - gateish)), [60, 52, 60], dark * .6); c.fillStyle = css(col); c.beginPath(); c.moveTo(0, hor + 2);
+    { const col = mix(mix(mix(low, top, .45), [140, 140, 164], .2 * (1 - dark) * (1 - gateish)), [60, 52, 60], dark * .6); c.fillStyle = css(col); c.beginPath(); c.moveTo(0, hor + 2);
       for (let sx = 0; sx <= VW + 16; sx += 16) { const u = cx * .1 + (sx - VW / 2) / z; c.lineTo(sx, hor - (26 + 96 * nz(u * .0035, 5) + 22 * nz2(u * .02, 1)) * z * .8); }
       c.lineTo(VW, hor + 2); c.fill(); }
     // the plain, from the horizon down to the road
-    { const far = mix(mix([190, 182, 126], [50, 48, 56], gateish), [78, 68, 70], dark), near = mix(mix([72, 90, 64], [24, 24, 32], gateish), [38, 36, 44], dark);
+    { const far = mix(mix([176, 170, 132], [50, 48, 56], gateish), [78, 68, 70], dark), near = mix(mix([74, 84, 68], [24, 24, 32], gateish), [38, 36, 44], dark);
       const g = c.createLinearGradient(0, hor, 0, Y(0)); g.addColorStop(0, css(far)); g.addColorStop(1, css(near)); c.fillStyle = g; c.fillRect(0, hor, VW, Y(0) - hor + 1);
       // the village and the hill stand on the plain, further back
       const hx = VW / 2 + (HILL_A - cx) * PH * z, hy = Y(HILL_Y), k = z * HS;
@@ -553,7 +553,7 @@ const HL = (() => {
         c.drawImage(OAKL.c, x0, y0, w, h); if (dark > .02) { c.globalAlpha = Math.min(1, dark * .85); c.drawImage(OAKL.d, x0, y0, w, h); c.globalAlpha = 1; }
         // a few leaves let go and drift down
         if (dark < .6) for (let i = 0; i < 7; i++) { const T = 620 + i * 97, u = ((G.t + i * 233) % T) / T, lx2 = tx + (-110 + i * 46 + 34 * Math.sin(u * 7 + i)) * z + 50 * u * z, ly2 = ty - (220 - 30 * (i % 3)) * z * (1 - u), al = Math.sin(Math.PI * u) * .9 * (1 - dark);
-          c.save(); c.translate(lx2, ly2); c.rotate(u * 9 + i); c.fillStyle = css([150, 150, 70], al); c.beginPath(); c.ellipse(0, 0, 3.4 * z, 1.5 * z, 0, 0, 7); c.fill(); c.restore(); } } }
+          c.save(); c.translate(lx2, ly2); c.rotate(u * 9 + i); c.fillStyle = css([40, 48, 40], al); c.beginPath(); c.ellipse(0, 0, 3 * z, 1.3 * z, 0, 0, 7); c.fill(); c.restore(); } } }
     // THE WICKET-GATE, AFTER REMBRANDT (builds 139, 140). Owner on build 139: "I like light on gate - bricks not doing it
     // for me - something about the light - door: not a fan - mountains ... their elevation compared to wall is distracting
     // - need artistic analysis especially regarding composition - think Rembrandt". What was wrong, and the rule kept
