@@ -17,7 +17,7 @@ Older handovers (builds 41 to 137, with the picture and video prompts used for H
 - Level 2: whether Help's hurried walk, Christian's turn, Pliable's new heave round in the mud (build 140) and where the pools open look right.
 - Level 3: everything (the open questions are in `CLAUDE.md`, "Level 3"), including the departures from the book found in build 140's check; Wiseman's own walk and standing picture are in (build 149); Wiseman's voice (build 143); 16 lines still to record (Google's daily limit).
 - Level 4 (agreed, build 149): no recap, and the wicket-gate opens the Interpreter's House level (17 levels now); still open: the castle's arrows shown or heard, Good-will's figure.
-- Evangelist's walk (build 156): he now walks up to Christian at the hill, feet flat ("2d flat - NOT one leg higher"); his standing frames and Wiseman's standing picture were levelled too. Does it look right on the phone? Level 1's turn-and-point frames still have the high far foot (free to level, frame by frame).
+- Evangelist's walk (build 156): he now walks up to Christian at the hill, feet flat ("2d flat - NOT one leg higher"); his standing frames and Wiseman's standing picture were levelled too. Does it look right on the phone? Level 1's turn-and-point frames were levelled too (build 158).
 - The concept art from the picture chat is not in the repo (it was only shown in that chat); ask that chat to put any keepers in a `concept/` folder.
 - Earlier offers not answered: the sketch of Levels 3 to 6 as a first whole game; a child playing it; carrying the tune through the levels; Evangelist handing over the roll as an animation; repainting the three cottages with true door and window proportions (about 45 cents).
 
