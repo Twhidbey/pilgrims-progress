@@ -440,13 +440,13 @@ const HL = (() => {
           // different heights, each a chain of soft lights along its own wavering line (no hard-edged tongues),
           // leaning with the wind into the smoke. White-gold at the heart, gold, then amber; nothing redder.
           { const hb = (80 + 10 * Math.sin(G.t / 9) + 6 * Math.sin(G.t / 3.7)) * k, hxm = sx0 - 4 * k, hym = sy0 + 4 * k, g = c.createRadialGradient(hxm, hym, 0, hxm, hym, hb); g.addColorStop(0, css([255, 240, 206], .32 * burn)); g.addColorStop(.3, css([255, 204, 128], .2 * burn)); g.addColorStop(1, css([226, 150, 80], 0)); c.fillStyle = g; c.fillRect(hxm - hb, hym - hb, 2 * hb, 2 * hb); }
-          flames = () => { for (let s = 0; s < 5; s++) { const bx = sx0 + (-30 + s * 12 + 5 * Math.sin(s * 4.1)) * k, hgt = [120, 210, 150, 250, 100][s] * (.8 + .5 * nz(G.t * .011 + s * 9.3, 30 + s)) * k, n = 15;
-            for (let i = 0; i < n; i++) { const u = i / (n - 1), wob = (nz(G.t * .016 + u * 2.1 + s * 5, 12 + s) - .5) * 70 * u * k, px = bx + wob - 60 * u * u * k, py = sy0 + 8 * k - hgt * u, rr = (30 - 19 * u) * k, al = (.26 * Math.pow(1 - u, 1.1) + .02) * (burn + .8 * F);
-              const g = c.createRadialGradient(px, py, 0, px, py, rr); g.addColorStop(0, css([255, 240, 204], al)); g.addColorStop(.5, css([255, 200, 120], al * .5)); g.addColorStop(1, css([224, 146, 78], 0)); c.fillStyle = g; c.fillRect(px - rr, py - rr, 2 * rr, 2 * rr); } } };
+          flames = () => { for (let s = 0; s < 5; s++) { const bx = sx0 + (-30 + s * 12 + 5 * Math.sin(s * 4.1)) * k, hgt = [170, 300, 210, 360, 140][s] * (.8 + .5 * nz(G.t * .011 + s * 9.3, 30 + s)) * k, n = 15;
+            for (let i = 0; i < n; i++) { const u = i / (n - 1), wob = (nz(G.t * .016 + u * 2.1 + s * 5, 12 + s) - .5) * 70 * u * k, px = bx + wob - 60 * u * u * k, py = sy0 + 8 * k - hgt * u, rr = (34 - 21 * u) * k, al = (.27 * Math.pow(1 - u, 1.1) + .02) * (burn + .8 * F);
+              const g = c.createRadialGradient(px, py, 0, px, py, rr); g.addColorStop(0, css([255, 240, 204], al)); g.addColorStop(.45, css([255, 190, 104], al * .55)); g.addColorStop(.8, css([232, 104, 56], al * .22)); g.addColorStop(1, css([200, 70, 44], 0)); c.fillStyle = g; c.fillRect(px - rr, py - rr, 2 * rr, 2 * rr); } } };
           // the seam: fire from the same source, running down inside the overhang, thinning and dying away
           for (const [seam, len] of SEAMS) for (let j = 1; j < seam.length; j++) { const u = j / len, fade = (1 - u) * (1 - u), breathe = .62 + .38 * Math.sin(G.t / 61 - u * 5), al = fade * breathe * (burn * 1.4 + F);
             if (al < .02) continue; const [x0, y0] = seam[j - 1], [x1, y1] = seam[j];
-            for (const [w, a2, col] of [[7 * fade + 2, .14, [240, 150, 78]], [1.1 + 2 * fade, .85, [255, 222, 160]]]) { c.strokeStyle = css(col, Math.min(1, a2 * al)); c.lineWidth = w * k; c.beginPath(); c.moveTo(hx + x0 * k, hy + y0 * k); c.lineTo(hx + x1 * k, hy + y1 * k); c.stroke(); } }
+            for (const [w, a2, col] of [[7 * fade + 2, .16, [236, 112, 58]], [1.1 + 2 * fade, .85, [255, 222, 160]]]) { c.strokeStyle = css(col, Math.min(1, a2 * al)); c.lineWidth = w * k; c.beginPath(); c.moveTo(hx + x0 * k, hy + y0 * k); c.lineTo(hx + x1 * k, hy + y1 * k); c.stroke(); } }
         }
         if (F > .02) { const g = c.createRadialGradient(sx0, sy0, 0, sx0, sy0, 420 * k); g.addColorStop(0, css([255, 190, 120], .22 * F)); g.addColorStop(1, css([255, 150, 90], 0)); c.fillStyle = g; c.fillRect(sx0 - 420 * k, sy0 - 420 * k, 840 * k, 840 * k); }
         c.restore();
