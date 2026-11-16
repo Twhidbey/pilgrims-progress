@@ -149,7 +149,14 @@ const HL = (() => {
     });
     // the cracks that the fire shows in (in the hill's own units, from its foot's left end)
     const R = rngS(11);
-    for (const [dx, h1, sd] of [[52, 130, 5], [96, 310, 9]]) { const seam = []; for (let h = TOP - 4; h >= h1; h -= 9) { const u = (TOP - h) / (TOP - h1); seam.push([faceX(h) + dx * Math.min(1, u * 3 + .25) + 70 * u * (1 - u) + (nz(h * .06, sd) - .5) * 22 * Math.min(1, u * 4), -h]); } SEAMS.push([seam, seam.length]); }
+    // LINES OF FIRE DOWN THE ROCK (owner, build 157: "The lava lines were nice - more of those and glowing"). They all start
+    // at the one light on the peak and run down the rock like slow streams: a few long ones, each throwing off short
+    // branches; they wander, keep inside the rock, and thin as they go. Each has its own slow pulse of light.
+    { const Rs = rngS(41), inside = (x, h) => Math.max(faceX(h) + 14, Math.min(backX(h) - 30, x));
+      const run = (x, h, dir, h1, depth) => { const seam = [[x, -h]]; while (h > h1) { h -= 7 + Rs() * 7; dir += (Rs() - .5) * .5; dir *= .93; x = inside(x + dir * 9 + (Rs() - .5) * 7, h); seam.push([x, -h]);
+          if (depth < 2 && Rs() < .11 && h > h1 + 50) run(x, h, dir + (Rs() < .5 ? -1.5 : 1.5), h - 40 - Rs() * 70, depth + 1); }
+        SEAMS.push([seam, seam.length, Rs() * 60, depth]); };
+      for (const [dir, h1] of [[-2.6, 150], [-1.5, 250], [-.7, 110], [.2, 300], [1.0, 200], [1.9, 330]]) run(58 + dir * 3, TOP - 4, dir, h1, 0); }
     for (let i = 0; i < 6; i++) { let x = -90 + R() * 200, y = -(150 + R() * 280); const p = [[x, y]]; for (let j = 0; j < 9; j++) { x += (R() - .4) * 30; y += 14 + R() * 22; if (y > -20) break; p.push([x, y]); } CRACKS.push(p); }
     // smoke and cloud: soft shapes from noise (white, laid in light or dark)
     const cloud = (w, h, seed, thr, sx, sy) => { const c = mk(w, h), k = c.getContext('2d'), im = k.createImageData(w, h), n = noise2(seed);
@@ -463,9 +470,9 @@ const HL = (() => {
           for (let i = 0; i < 16; i++) { const u = i / 15, wob = (nz(G.t * .006 + u * 1.7, 12) - .5) * 50 * u * k, px = sx0 - 6 * k + wob - 26 * u * u * k, py = sy0 + (10 - 190 * u) * k, rr = (20 - 14 * u) * k, al = (.44 * (1 - u) * (1 - u) + .04) * (burn + .8 * F);
             const g = c.createRadialGradient(px, py, 0, px, py, rr); g.addColorStop(0, css([255, 232, 190], al)); g.addColorStop(.5, css([255, 170, 96], al * .45)); g.addColorStop(1, css([240, 110, 60], 0)); c.fillStyle = g; c.fillRect(px - rr, py - rr, 2 * rr, 2 * rr); }
           // the seam: fire from the same source, running down inside the overhang, thinning and dying away
-          for (const [seam, len] of SEAMS) for (let j = 1; j < seam.length; j++) { const u = j / len, fade = (1 - u) * (1 - u), breathe = .62 + .38 * Math.sin(G.t / 61 - u * 5), al = fade * breathe * (burn * 1.1 + F);
+          for (const [seam, len, ph0, depth] of SEAMS) for (let j = 1; j < seam.length; j++) { const u = j / len, fade = Math.pow(1 - u, 1.25) * (depth ? .7 : 1), breathe = .55 + .45 * Math.sin(G.t / 58 - u * 6 + ph0), al = fade * breathe * (burn * 1.25 + F);
             if (al < .02) continue; const [x0, y0] = seam[j - 1], [x1, y1] = seam[j];
-            for (const [w, a2, col] of [[5, .12, [255, 96, 40]], [1.1 + 1.2 * fade, .75, [255, 206, 140]]]) { c.strokeStyle = css(col, Math.min(1, a2 * al)); c.lineWidth = w * k; c.beginPath(); c.moveTo(hx + x0 * k, hy + y0 * k); c.lineTo(hx + x1 * k, hy + y1 * k); c.stroke(); } }
+            for (const [w, a2, col] of [[9, .07, [236, 96, 50]], [4, .16, [250, 150, 80]], [.9 + 1.3 * fade, .9, [255, 224, 164]]]) { c.strokeStyle = css(col, Math.min(1, a2 * al)); c.lineWidth = w * k; c.beginPath(); c.moveTo(hx + x0 * k, hy + y0 * k); c.lineTo(hx + x1 * k, hy + y1 * k); c.stroke(); } }
         }
         if (F > .02) { const g = c.createRadialGradient(sx0, sy0, 0, sx0, sy0, 420 * k); g.addColorStop(0, css([255, 190, 120], .22 * F)); g.addColorStop(1, css([255, 150, 90], 0)); c.fillStyle = g; c.fillRect(sx0 - 420 * k, sy0 - 420 * k, 840 * k, 840 * k); }
         c.restore();
