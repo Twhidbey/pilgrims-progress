@@ -70,7 +70,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">story lab · build 117 · Nov 16 2026</div>
+  <div id="build">story lab · build 118 · Nov 16 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -888,11 +888,30 @@ async function voxBuf(v) {
   if (!v.buf && AC) { const raw = await v.raw; if (raw && !v.buf) v.buf = await new Promise(res => AC.decodeAudioData(raw.slice(0), res, () => res(null))); }
   return v.buf;
 }
-function hush() { sayN++; if (voxSrc) { try { voxSrc.stop(); } catch (e) {} voxSrc = null; } }
+// PEOPLE MOVE A LITTLE AS THEY SPEAK (owner, build 118: "when characters talk can you make them move slightly to make
+// it more organic"). Each recording's loudness is measured once (20 values a second: voiceEnv); while a line is being
+// said, whoever says it leans and lifts a hair with the rise and fall of their own voice (talkMove(who), used through
+// TALKM in drawFrame here and in Level 2's figure()). Listeners only breathe. Nothing moves without a recording.
+let SPK = null, TALKM = null;
+function voiceEnv(buf) {
+  if (buf.env) return buf.env;
+  const d = buf.getChannelData(0), n = Math.floor(buf.sampleRate / 20), env = []; let top = 1e-4;
+  for (let i = 0; i + n <= d.length; i += n) { let q = 0; for (let j = i; j < i + n; j += 8) q += d[j] * d[j]; const v = Math.sqrt(q * 8 / n); env.push(v); if (v > top) top = v; }
+  return buf.env = env.map(v => Math.min(1, v / top * 1.6));
+}
+function talkMove(who) {
+  if (!SPK || SPK.who !== who || !AC) return null;
+  const i = (AC.currentTime - SPK.t0) * 20, e = SPK.env; if (i < 0 || i > e.length + 8) return null;
+  let lv = 0; for (let k = -5; k <= 0; k++) lv += e[Math.floor(i) + k] || 0; lv /= 6;      // the last third of a second, so it is soft
+  const slow = Math.sin(G.t / 47) * .6 + Math.sin(G.t / 19 + 1.3) * .4;
+  return { sh: (.006 + .02 * lv) * slow, sy: 1 + .012 * lv };
+}
+function hush() { sayN++; SPK = null; if (voxSrc) { try { voxSrc.stop(); } catch (e) {} voxSrc = null; } }
 async function say(who, txt) {
   hush(); if (!audio()) return;
   const me = sayN, buf = await voxBuf(vox(who, txt));
   if (!buf || me !== sayN) return;
+  SPK = { who, t0: AC.currentTime, env: voiceEnv(buf) };
   voxSrc = AC.createBufferSource(); voxSrc.buffer = buf; voxSrc.connect(who === C || who === N ? CLEAR : VOICEG); voxSrc.start();      // Christian and the storyteller stay clear when his fingers are in his ears
   if (G.cap > 0) { G.cap = Math.max(G.cap, Math.ceil(buf.duration * 60) + 50); G.capEnd = G.t + Math.ceil(buf.duration * 60); }     // words said while walking stay until they have been spoken
   else if (G.state === 'dialog' && G.guardKey === who + '|' + txt && !HEARD.has(G.guardKey)) G.guard = Math.ceil(buf.duration * 60) + 12;   // and a line cannot be skipped while it is being spoken
@@ -1023,7 +1042,7 @@ const runNow = () => G.ears || !RUNP.ready ? [RUN, RUN_META] : [RUNP, RUNP_META]
 function coverEars() { if (G.ears) return; if (P.run) poseChange(8, true); G.ears = true; }
 const CHR = [], PLI = [], OBS = [], EVA = [], STD = [], RUN = [], CHR_K = .52, RUN_STEP = RUN_META.vpx * CHR_K, RUNV = RUN_STEP * .4,   // the run at its video's own speed (24 frames a second)
    CHR_STEP = CHR_META.vpx * CHR_K, PLI_STEP = PLI_META.vpx * CHR_K, OBS_STEP = OBS_META.vpx * CHR_K;
-const PACK_V = 20;                          // bump when the .pack files change, so phones fetch the new ones
+const PACK_V = 21;                          // bump when the .pack files change, so phones fetch the new ones
 // a .pack file: 4 bytes = how many frames, 4 bytes per frame = its length, then the WebP frames end to end
 async function loadPack(name, into) {
   const res = await fetch('assets/' + name + '.pack?v=' + PACK_V); if (!res.ok) throw new Error('no ' + name);      // a missing pack is left out
@@ -1091,7 +1110,7 @@ function drawFrame(im, meta, x, y, face, alpha, K = CHR_K, sy = 1) {      // sy:
   // solid"): a soft dark patch lies under every figure, flat on the ground, so nobody hovers.
   { const rx = Math.max(10, w * .3), g = ctx.createRadialGradient(0, 0, 0, 0, 0, 1); g.addColorStop(0, 'rgba(6,8,14,.55)'); g.addColorStop(.6, 'rgba(6,8,14,.3)'); g.addColorStop(1, 'rgba(6,8,14,0)');
     ctx.save(); ctx.translate(x, y + FEET_SINK - 1); ctx.scale(rx, Math.max(2.5, rx * .16)); ctx.globalAlpha = alpha; ctx.fillStyle = g; ctx.fillRect(-1, -1, 2, 2); ctx.restore(); }
-  ctx.save(); ctx.translate(x, y + FEET_SINK); ctx.scale(face, sy); ctx.globalAlpha = alpha;
+  ctx.save(); ctx.translate(x, y + FEET_SINK); if (TALKM) { ctx.transform(1, 0, TALKM.sh, 1, 0, 0); sy *= TALKM.sy; } ctx.scale(face, sy); ctx.globalAlpha = alpha;
   ctx.drawImage(figC, -meta.ax * K, -meta.ground * K, w, h); ctx.restore();
 }
 // Christian's legs. dir: 1 = walk on, -1 = walk back (only when he turns for home), 0 = stop.
@@ -1134,7 +1153,7 @@ function walkTick(dir, max) {
     else P.vx = P.face * max;
   } else {
     P.vx = 0; if (P.turn) { P.face = P.turn; P.turn = 0; }
-    if (!still || P.stand.t < 16) P.stand.t += .4;      // while someone talks he finishes stopping, then holds still
+    if (!still || P.stand.t < 16 || P.stand.t >= QUIET[0]) P.stand.t += .4;      // while someone talks he finishes stopping, then holds still (no lifting of the book); build 118: once in his quiet breathing he goes on breathing through the talk
   }
   if (!P.vx) return;
   // the way is shut until the gate opens; and wait for Evangelist's pictures if the phone is still fetching them
@@ -1510,7 +1529,7 @@ function drawLevel(lv, cam) {
 // see-through holes for the door and windows; light is painted behind the holes. The door opens as he passes: warm light
 // inside, and his wife and two children on the step (assets/family.webp, drawn by drawFrame like everyone else).
 const HOUSE_META = {"w": 438.0, "h": 336.8, "door": [183.6, 189.6, 70.4, 146.0], "wins": [[88.8, 200.4, 37.6, 61.8], [314.8, 199.6, 37.2, 61.0]]};      // a small one-room cottage (build 45; the long one of build 40 was too big), sizes at the road's scale (its doorway is 146 high, just taller than his wife)
-const FAM_META = {"ax": 93, "ground": 254}, OBS_ST_META = {"ax": 89, "ground": 311}, PLI_ST_META = {"ax": 67, "ground": 288};      // build 116: ground set at his front foot, which the picture draws 13 px above the back one, so no foot hangs above the ground
+const FAM_META = {"ax": 93, "ground": 254}, OBS_ST_META = {"ax": 89, "ground": 311}, PLI_ST_META = {"ax": 67, "ground": 300};      // build 116: ground set at his front foot, which the picture draws 13 px above the back one, so no foot hangs above the ground
 const HOUSE_DEPTH = .44;      // the tone of his house and its row: paler than the people, so Christian shows in front of them
 const HOUSE_K = .9;      // the cottage's size against its picture's sizes (build 50: it and the family a little smaller)
 const BACK_META = {"ax": 72, "ground": 298};      // Christian seen from behind (assets/christian-back.webp), for the moment his wife calls
@@ -1700,8 +1719,10 @@ function home(cam) {                       // drawn in screen units, before the 
   c.save(); c.translate(x, 0); sills(c, M.wins, k, y, dark); c.restore();
   const stepY = L.base;      // the top of the doorstep: whoever is in the door stands on it
   const alone = !G.fam && WIFE && WIFE_META;      // at the opening only his wife stands in the door (owner, build 62)
+  TALKM = talkMove(W);
   if (e > .3) drawFrame(alone ? WIFE : FAM, alone ? WIFE_META : FAM_META, doorX(cam) + (alone ? WIFE_DX : 2), stepY + 2 - FEET_SINK, G.fam ? 1 : -1, smooth(.3, 1, e),      // at the start they look after him, to the left
     CHR_K * DOOR_FIG * HOUSE_K * L.k, breath(7));   // on the step, in front of the wall
+  TALKM = null;
 }
 // THE GATE IS PAINTED (owner, build 74, asked "does gate look good enough?": it was the last code-drawn block beside
 // painted cottages and trees). assets/gate.webp is a stone gatehouse seen flat from the front with its gateway left as a
@@ -1985,14 +2006,18 @@ function drawWorld() {
   }
   ctx.restore();
   // the people
+  TALKM = talkMove(E);
   if (Math.abs(G.evan.x - cam - VW / 2) < VW) { const t = G.evan.pt ? (G.evan.pt < 239 ? G.evan.pt : 212 + 27 * (.5 + .5 * Math.sin(G.t / 50))) : G.evan.idle || 0; if (!G.evan.pt && EVS.ready) drawFrame(EVS[Math.floor(G.evan.st) % EVS_META.frames], EVS_META, G.evan.x - cam, GY, 1, 1); else drawFrame(EVA[atTime(EVA_META, t)], EVA_META, G.evan.x - cam, GY, 1, 1); }
   // a walker: his walking frame, with his standing pose dissolving over it when he has stopped (first the standing pose
   // comes in on top, then the walking one goes: the background never shows through him)
   const walker = (w, fr, meta, stIm, stMeta, face, a) => { const st = w.st || 0; if (st < 1) drawFrame(fr, meta, w.x - cam, GY, face, a * (st < .5 ? 1 : 2 * (1 - st))); if (st > 0) drawFrame(stIm, stMeta, w.x - cam, GY, 1, a * (st < .5 ? 2 * st : 1)); };
+  TALKM = talkMove(O);
   if (G.obst && G.obst.x > cam - 100) walker(G.obst, OBS[Math.floor(G.obst.anim ?? OBS_META.rest[0]) % OBS.length], OBS_META, OBS_ST, OBS_ST_META, G.obst.mode === 'home' ? -1 : 1, 1);
+  TALKM = talkMove(PL);
   if (G.pli && G.pli.mode !== 'gone') figure(G.pli.x, a => walker(G.pli, PLI[Math.floor(G.pli.anim ?? 0) % PLI.length], PLI_META, PLI_ST, PLI_ST_META, 1, a));
   { const dxs = P.x - cam - doorX(cam), a = G.door * smooth(300, 60, Math.abs(dxs)); RIM = a > .02 ? { dir: dxs > 0 ? -1 : 1, a } : null; }      // the door's light on him
-  figure(P.x, a => drawChristian(P.x - cam, P.y + 1, P.face, a)); RIM = null;
+  TALKM = talkMove(C);
+  figure(P.x, a => drawChristian(P.x - cam, P.y + 1, P.face, a)); RIM = null; TALKM = null;
   // birds in the air
   ctx.lineCap = 'round'; ctx.strokeStyle = css(mix(gcol[0], gcol[1], warm(.5)), .9);
   for (const f of G.flyers) {

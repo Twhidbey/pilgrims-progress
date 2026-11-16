@@ -63,7 +63,11 @@ const SL = (() => {
   const BANK0 = -160, HOME0 = -905;                       // where each bank meets the water
   const WATER_L = -1250;                                  // the water in front of everything begins here; to the left is the plain
   const bankY = x => x >= BANK0 ? -(30 * smooth(BANK0, BANK0 + 105, x) + (bankN(x * .012, 1) - .5) * 14 * smooth(BANK0, BANK0 + 150, x))
-                   : x <= HOME0 ? -(20 * smooth(HOME0, HOME0 - 90, x) + (bankN(x * .012, 7) - .5) * 10 * smooth(HOME0, HOME0 - 120, x)) : 0;
+                   : x <= HOME0 + 55 ? -(20 * smooth(HOME0 + 55, HOME0 + 15, x) + (bankN(x * .012, 7) - .5) * 10 * smooth(HOME0 - 10, HOME0 - 130, x)) : 0;
+  // build 118 (owner: "check the pliable leaving - making sure feet are always in contact with ground"): the home bank used
+  // to rise slowly over 90 units, but Pliable's climbing video hauls him up a bank with a short steep face, so for a few
+  // steps after he stood up his feet were in the air beyond the land's end. The bank now has that short face, standing
+  // where the video's bank stood, at its full height by HOME0 + 15
   const START = -2750, FALL_X = -760, PLI_FALL = -840, END_X = 420;
   // Help kneels at the edge of the far bank; Christian must come to where his hand meets Help's (measured in slough-lab.html)
   const HX = BANK0 + 34, GRASP = { dx: -(82 - 15 + 129), dy: 283 - 55 };
@@ -113,7 +117,7 @@ const SL = (() => {
     const [tx, ty, ta] = grow(0, 0, -.06, 92, 58, 0, { wander: .1, elbow: 0, taper: .14, w0: 90, guide: t => lerp(-.06, -.24, t) });
     const limb = (dx, dy, to, len, w, o = {}) => grow(tx + dx, ty + dy, lerp(ta, to, .35), len, w, depth, { w0: 40, ...o,
       guide: t => t < .13 ? lerp(lerp(ta, to, .35), to, t / .13) : o.then ? o.then((t - .13) / .87) : null });
-    limb(-8, 9, -1.22, 372, 25, { wander: .2, elbow: .03, taper: .7, reach: true, w0: 44, then: t => t < .6 ? lerp(-1.22, -1.47, t / .6) : lerp(-1.47, -1.2, (t - .6) / .4) });      // build 115 (owner: "helps head is in branch ... can you move branch up"): the long limb leaves higher and sags less (was -1.34, -1.61, -1.3)
+    limb(-8, 9, -1.0, 372, 25, { wander: .2, elbow: .03, taper: .7, reach: true, w0: 44, then: t => t < .6 ? lerp(-1.0, -1.3, t / .6) : lerp(-1.3, -1.08, (t - .6) / .4) });      // build 115 (owner: "helps head is in branch ... can you move branch up"): the long limb leaves higher and sags less (was -1.34, -1.61, -1.3)
     limb(-4, 2, -.74, 250, 24); limb(0, 0, -.1, 236, 22); limb(4, 2, .54, 262, 24);
     limb(9, 14, 1.24, 304, 23, { w0: 44 });
     grow(-2, -30, -2.4, 112, 14, 0, { wander: .12, elbow: 0, taper: .9, w0: 40, guide: t => lerp(-2.5, -1.72, t * 2) });
@@ -143,7 +147,7 @@ const SL = (() => {
     return { c, x0: x0 - 2 / k, y0: y0 - 2 / k, k };
   }
   const putTree = (c, b, x, y, s, sy = s) => c.drawImage(b.c, x + b.x0 * s, y + b.y0 * sy, b.c.width / b.k * s, b.c.height / b.k * sy);
-  let OAK = null, GHOSTS = null, skyMist = null, skyClear = null, paper = null, threads = null, puff = null, built = false;
+  let OAK = null, GHOSTS = null, skyMist = null, skyClear = null, paper = null, threads = null, puff = null, fogBank = null, built = false;
   function build() {
     if (built) return; built = true;
     OAK = bakeTree(oak(18), tone(.02), 1.3);
@@ -165,6 +169,18 @@ const SL = (() => {
     // thin mist lying low over the water: drawn small and stretched, so it is soft
     // one soft round of mist, drawn many times over for the banks of mist that hide Help and the steps (build 106)
     puff = mk(64, 64); { const c = puff.getContext('2d'), g = c.createRadialGradient(32, 32, 0, 32, 32, 32); g.addColorStop(0, css(tone(.93), 1)); g.addColorStop(.5, css(tone(.93), .6)); g.addColorStop(1, css(tone(.93), 0)); c.fillStyle = g; c.fillRect(0, 0, 64, 64); }
+    // THE MIST ROUND HELP, build 118 (owner: "make fog / mist around help less circular"): one long bank baked once from
+    // cloud noise: a ragged top, tall and thick at its left end (where Help stands) and lower and thinner to the right,
+    // torn into wisps, its left edge uneven. No round shapes. Drawn small and stretched, so it is soft.
+    fogBank = mk(360, 96); { const c = fogBank.getContext('2d'), d = c.createImageData(360, 96), col = tone(.93);
+      for (let j = 0; j < 96; j++) for (let i = 0; i < 360; i++) {
+        const u = i / 359, up = 1 - j / 95;
+        const top = (.92 - .5 * smooth(.05, .9, u)) * (.72 + .56 * cloudN(u * 7 + 3, 9.5)) ;
+        let a = smooth(0, .3, top - up) * (.5 + .7 * cloudN(i * .035, j * .1 + 20)) * (.75 + .5 * cloudN(i * .09 + 50, j * .22));
+        a *= smooth(0, .05 + .07 * cloudN(up * 5, 31), u) * (1 - smooth(.55, 1, u)) * smooth(0, .2, up);      // it melts away downward over the water too
+        const o = (j * 360 + i) * 4; d.data[o] = col[0]; d.data[o + 1] = col[1]; d.data[o + 2] = col[2]; d.data[o + 3] = 255 * clamp(a * 1.25);
+      }
+      c.putImageData(d, 0, 0); }
     threads = mk(240, 40); { const c = threads.getContext('2d'); 
       for (let i = 0; i < 7; i++) { const g = c.createRadialGradient(0, 0, 0, 0, 0, 1); g.addColorStop(0, css(LIGHT, .5)); g.addColorStop(1, css(LIGHT, 0)); c.save(); c.translate((i * 67 + 20) % 240, 14 + (i % 3) * 6); c.scale(48, 5); c.fillStyle = g; c.beginPath(); c.arc(0, 0, 1, 0, 7); c.fill(); c.restore(); } }
   }
@@ -190,7 +206,7 @@ const SL = (() => {
   // 14 pack px higher than his back foot (the pose is seen a little from the front), so it hung above the ground. As he
   // comes to rest he is set FOOT_DROP lower: the front foot meets the ground and the back foot overlaps it a little,
   // which reads as nearer to us (the owner's rule: feet overlapping the ground look right, a gap looks wrong)
-  const FOOT_DROP = 16 * CHR_K;
+  const FOOT_DROP = 0;      // build 118: his raised leg was lengthened in the pictures themselves (stop frames 41 on, and his standing picture), so both feet are level and nothing is lowered
   const HELP_SRC = [0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 42, 44, 46, 48, 50, 52, 54, 56, 58, 60, 62, 64, 66, 68, 70, 72, 74, 76, 78, 80, 82, 84, 86, 88, 90, 92, 94, 96, 98, 100, 102, 104, 106, 108, 110, 112, 114, 116, 118, 120, 122, 124, 126, 128, 130, 132, 136, 140, 144, 148, 152, 156, 160, 164, 168, 172, 176, 180, 184, 188, 192, 196, 200, 204, 208, 212, 216, 220, 224, 228, 232, 236];
   const REACH_SRC = [3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 36, 39, 42, 45, 48, 51, 54, 57, 60, 63, 66, 69, 72, 75, 78, 80, 82, 84, 86, 88, 90, 92, 94, 96, 98, 100, 102, 104, 106, 108, 110, 112, 114, 116, 118, 120, 122, 124, 128, 134, 140, 146, 152, 158, 164, 170, 176, 182, 188, 194, 200, 206, 212, 218, 224, 230, 236];
   const LIFT_SRC = [...Array(76).keys()].map(i => i * 2).concat([...Array(11).keys()].map(i => 156 + i * 8));
@@ -214,7 +230,8 @@ const SL = (() => {
     f.globalCompositeOperation = 'destination-in'; f.drawImage(im, 0, 0); f.globalCompositeOperation = 'source-over';
     c.save(); c.globalAlpha = alpha;
     if (cut) { c.beginPath(); c.rect(-1e5, -1e5, 2e5, 1e5); c.clip(); }
-    c.translate(x, y); c.scale(face * CHR_K, CHR_K); c.drawImage(fc, -meta.ax, -meta.ground); c.restore();
+    c.translate(x, y); if (TALKM) c.transform(1, 0, TALKM.sh, 1, 0, 0);      // build 118: whoever is speaking leans a hair with his own voice (talkMove in story-lab.html)
+    c.scale(face * CHR_K, CHR_K * (TALKM ? TALKM.sy : 1)); c.drawImage(fc, -meta.ax, -meta.ground); c.restore();
   }
 
   // ---------- sound: the tune in the minor, low and slow on bowed tones ----------
@@ -533,6 +550,7 @@ const SL = (() => {
     // the steps, once lit
     for (const s of steps) if (s.lit) { n.globalAlpha = s.lit; n.fillStyle = css(land); n.beginPath(); n.moveTo(s.x - s.w, 1); n.quadraticCurveTo(s.x - s.w * .8 + s.lean, -s.h * 1.5, s.x + s.lean, -s.h); n.quadraticCurveTo(s.x + s.w * .85, -s.h * .6, s.x + s.w, 1); n.fill(); n.globalAlpha = 1; }
     // Pliable
+    TALKM = talkMove(PL);
     if (pli) {
       if (PLIC.length && pli.mode === 'climb' && !pli.out) figure(n, 'pli', PLIC[Math.floor(pli.ct || 0)], META.climb, pli.x, pli.y, -1, fig, true, pli.alpha);
       else if (pli.stop && pli.mode === 'follow' && PSTOP.length) {
@@ -547,16 +565,18 @@ const SL = (() => {
       }
     }
     // Help: he comes out of the mist on the far bank, steps to the edge, kneels and holds out his hand
-    const vt = mv ? mv.t : 0, lt = lift ? lift.t : -1, mixIn = lift ? clamp(lt / 3.2) : 0;
+    TALKM = null;
+    const vt = mv ? mv.t : 0, lt = lift ? lift.t : -1, mixIn = lift ? clamp(lt / 3.2) : 0, talkH = talkMove(H), talkC = talkMove(C);
     if (ph === 'drawn' || ph === 'look' || ph === 'onway' || ph === 'on') {
       const d = ph === 'drawn' ? C2.done : 1;
       if (d < 1) figure(n, 'lift', LIFT[LIFT.length - 1], META.lift, HX, HY(), 1, fig, true, 1 - d);
-      figure(n, 'help', HELPF[0], META.help, HX + (LIFT_HELP - META.lift.ax) * CHR_K, HY(), 1, fig, false, d);
-      drawChr(n, fig, d);
+      TALKM = talkH; figure(n, 'help', HELPF[0], META.help, HX + (LIFT_HELP - META.lift.ax) * CHR_K, HY(), 1, fig, false, d);
+      TALKM = talkC; drawChr(n, fig, d); TALKM = null;
     } else {
-      if (help && mixIn < 1) figure(n, 'help', HELPF[at(HELP_SRC, vt)], META.help, HX, HY(), 1, fig, false, help.a * (1 - mixIn));
+      TALKM = vt > 0 ? null : talkH;      // not while he kneels and reaches: his hand must stay where Christian's meets it
+      if (help && mixIn < 1) figure(n, 'help', HELPF[at(HELP_SRC, vt)], META.help, HX, HY(), 1, fig, false, help.a * (1 - mixIn)); TALKM = null;
       if (lift) figure(n, 'lift', LIFT[at(LIFT_SRC, lt)], META.lift, HX, HY(), 1, fig, true, mixIn);
-      if (!lift || mixIn < 1) drawChr(n, fig, 1 - mixIn);
+      TALKM = C2.reach > 0 ? null : talkC; if (!lift || mixIn < 1) drawChr(n, fig, 1 - mixIn); TALKM = null;
     }
     // the lights he gathered
     // FEET IN THE SOFT GROUND (owner, build 114: feet "floating above ground a little - maybe sink them in a bit", and
@@ -603,13 +623,13 @@ const SL = (() => {
     // natural"): a long bank of mist lies along the far shore from where Help will stand far off to the right, highest
     // and thickest at his place and lower and thinner further right, with slow soft rounds drifting in it; it all drifts
     // right as it thins
-    if (fogH > .01) { const go = smooth(0, .85, 1 - fogH) * 520, a = smooth(0, .45, fogH);
-      for (const [dx, rx0, ry0, al] of [[40, 170, 200, 1], [250, 230, 160, .85], [520, 300, 120, .62], [850, 340, 95, .42]]) {
-        const mx = X(HX + dx + go * (1 + dx / 500)), my = Y(-ry0 * .5), rx = rx0 * z, ry = ry0 * z;
-        ctx.save(); ctx.translate(mx, my); ctx.scale(rx, ry); const g = ctx.createRadialGradient(0, 0, 0, 0, 0, 1);
-        g.addColorStop(0, css(tone(.93), al * a)); g.addColorStop(.5, css(tone(.93), al * .88 * a)); g.addColorStop(.8, css(tone(.93), al * .3 * a)); g.addColorStop(1, css(tone(.93), 0));
-        ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, 1, 0, 7); ctx.fill(); ctx.restore(); }
-      bank(HX + 20 + go, HX + 1000 + go * 2, 20, 200, 110, a * .55, 34, 7, false); }
+    // build 118: the long ragged bank (fogBank), laid twice so it is dense enough to hide him, the second a little wider
+    // and slower so the two slide over each other as it moves off to the right and thins
+    if (fogH > .01) { const go = smooth(0, .85, 1 - fogH) * 520, a = smooth(0, .45, fogH), by = Y(64);
+      ctx.imageSmoothingEnabled = true;
+      ctx.globalAlpha = a; ctx.drawImage(fogBank, X(HX - 105 + go), by - 345 * z, 1250 * z, 345 * z);
+      ctx.globalAlpha = a * .8; ctx.drawImage(fogBank, X(HX - 95 + go * 1.25 + Math.sin(G.t * .004) * 10), by - 305 * z, 1500 * z, 305 * z);
+      ctx.globalAlpha = 1; }
     // the low mist over the middle of the bog, where the steps are: wide, flat and smooth
     // build 115 (owner: "fog clears to reveal them instead of them appearing out of nowhere"): the low mist over the
     // steps is laid step by step; over each step it moves off to the right and thins as that step's light lands (s.lit),
