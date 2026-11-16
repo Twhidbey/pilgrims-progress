@@ -79,14 +79,14 @@ const HL = (() => {
     [E, 'The just shall live by faith. You have begun to draw back your foot from the way of peace.'],
     [N, 'Then Christian fell down at his feet, crying:', 0, () => { C3.weep = true; C3.wt = 0; }],
     [C, 'Woe is me, for I am undone!'],
-    [N, 'At the sight of this, Evangelist caught him by the right hand.', 0, () => { note(67, .04, 4); note(71, .035, 4, .12); }],
+    [N, 'At the sight of this, Evangelist caught him by the right hand.', 0, () => { note(67, .04, 4); note(71, .035, 4, .12); mercyTo = 1; }],
     [E, 'All manner of sin shall be forgiven unto men. Be not faithless, but believing.'],
     [N, 'Then Christian revived a little, and stood up trembling.', 0, () => { C3.weep = false; }],
     [E, 'The man that met you is one Worldly Wiseman. And Mr. Legality is not able to set you free from your burden. No man was ever yet rid of his burden by him.'],
     [N, 'With that there came fire out of the mountain under which poor Christian stood.', 0, () => { fire(1.4); }],
     [N, 'Then Christian cried out, and called himself a thousand fools for listening to his counsel.'],      // {58}
     [C, 'Sir, what do you think? Is there hope? May I now go back, and go up to the wicket-gate? I am sorry I listened to this man. But may my sin be forgiven?'],      // {59}
-    [E, 'Your sin is very great. Yet the man at the gate will receive you, for he has goodwill for men.'],
+    [E, 'Your sin is very great. Yet the man at the gate will receive you, for he has goodwill for men.', 0, () => { calmTo = 1; }],
     [E, 'Only take heed that you do not turn aside again.'],
     [N, 'Then Evangelist gave him one smile, and bid him God-speed.'],
   ];
@@ -118,6 +118,11 @@ const HL = (() => {
   let ph = 'plain', built = false, loading = null;
   const cam = { cx: 0, z: 1, wl: 440 };
   const C3 = { x: 0, face: 1, faceA: 1, anim: 12, sd: null, alpha: 1, run: 0, ranim: 0, weep: false, wt: 0, wa: 0, tv: null };
+  // MERCY, AFTER REMBRANDT (build 159; agreed master for this moment: one warm light in a great dark). When Evangelist
+  // takes him by the right hand a small warm light gathers on the two men and lies in a flat pool at their feet
+  // (`mercy`), the only warm thing under the black hill; when he says the man at the gate will receive him, the
+  // hill's fire sinks low and its flashes stop (`calm`). Both are ours, not the book's.
+  let mercy = 0, mercyTo = 0, calm = 0, calmTo = 0;
   let wise = null, evan = null, dark = 0, hope = 0, flash = 0, flashT = 0, veil = 0, veilTo = 0, knocks = 0, knockT = 0, door = 0, doorTo = 0;
   let saidSeen = false, saidHigh = false, stillT = 0, hasteSaid = false, gateSaid = false, hintT = 0, noteI = 0, noteX = 0, lastFr = 0, hillSeen = false;
   let OAKT = null, hillBox = [0, 0, 1];
@@ -244,6 +249,7 @@ const HL = (() => {
   // ---------- start, title, end ----------
   function reset0() {
     Object.assign(C3, { x: START, face: 1, faceA: 1, anim: 12, sd: QUIET[0], alpha: 1, run: 0, ranim: RUNP_META.start || 0, weep: false, wt: 0, wa: 0, tv: null, fired: false });
+    mercy = mercyTo = calm = calmTo = 0;
     wise = null; evan = null; dark = 0; hope = 0; flash = 0; flashT = 200; veil = 0; veilTo = 0; knocks = 0; knockT = 0; door = 0; doorTo = 0;
     saidSeen = saidHigh = hasteSaid = gateSaid = hillSeen = false; stillT = 0; hintT = 0; noteI = 0; noteX = 0;
   }
@@ -305,6 +311,7 @@ const HL = (() => {
     C3.faceA = clamp(C3.faceA + (C3.face - C3.faceA) * .06, -1, 1);
     if (C3.tv) { C3.tv.t += C3.tv.d * TURN_META.step * C3.tv.k; if (C3.tv.t >= TURN.length - 1 || C3.tv.t <= 0) { C3.face = C3.faceA = C3.tv.d; C3.tv = null; } }
     C3.wa = clamp(C3.wa + (C3.weep ? .05 : -.04)); if (C3.weep) C3.wt = Math.min(64, C3.wt + WEEP_META.step);
+    mercy += (mercyTo - mercy) * .012; calm += (calmTo - calm) * .008; if (ph === 'back' || ph === 'mist') mercyTo = 0;
     flash *= .93; door += (doorTo - door) * .02; veil = clamp(veil + Math.sign(veilTo - veil) * .012);
     hintT++;
     if (dark > .4 && Math.random() < .07 * dark) embers.push({ x: 20 + Math.random() * 70, y: 10 - Math.random() * 40, vx: -.2 - Math.random() * .4, vy: -.35 - Math.random() * .5, r: .6 + Math.random() * .8, h: Math.random(), t: 0, life: 140 + Math.random() * 160 });
@@ -384,7 +391,7 @@ const HL = (() => {
     // the sky darkens as he goes out of the way, and clears as he comes back; fire out of the hill while he stands under it
     const dTo = ph === 'aside' || ph === 'back' || ph === 'mist' ? smooth(MEET + 250, STILL - 150, C3.x) : ph === 'still' || ph === 'come' || ph === 'evan' ? 1 : 0;
     dark += (dTo - dark) * .03;
-    if (ph === 'still' || ph === 'come' || ph === 'evan') { if (--flashT < 0 && stillT > 61) { fire(ph === 'evan' ? .45 : .7 + Math.random() * .3); flashT = (ph === 'evan' ? 700 : 330) + Math.random() * 500; } }
+    if (ph === 'still' || ph === 'come' || ph === 'evan') { if (--flashT < 0 && stillT > 61 && calmTo < .5) { fire(ph === 'evan' ? .45 : .7 + Math.random() * .3); flashT = (ph === 'evan' ? 700 : 330) + Math.random() * 500; } }
 
     // the camera
     let tx = C3.x + 150, tz = 1;
@@ -457,7 +464,7 @@ const HL = (() => {
         // summit inside a towering cloud; the fire lights the cloud from within, runs down the overhanging face as a
         // thin burning edge, and lies as a red sheen on the plain. A flash adds lightning in the cloud and fire in
         // the cracks. Everything grows with `dark` (0 far off on a fair day .. 1 beneath it).
-        const sx0 = hx + 60 * k, sy0 = hy - TOP * k, burn = dark * (.72 + .18 * Math.sin(G.t / 53) + .1 * Math.sin(G.t / 17)), F = Math.min(1, flash);
+        const sx0 = hx + 60 * k, sy0 = hy - TOP * k, burn = dark * (.72 + .18 * Math.sin(G.t / 53) + .1 * Math.sin(G.t / 17)) * (1 - .6 * calm), F = Math.min(1, flash);
         let flames = null;
         // the fire behind the summit: the hill is cut out black against it
         if (burn > .01) { c.save(); c.globalCompositeOperation = 'screen';
@@ -613,13 +620,18 @@ const HL = (() => {
     // the people (in the world's own units)
     c.save(); c.translate(VW / 2 - cx * z, wl); c.scale(z, z);
     const tint = mix([122, 118, 122], [78, 72, 82], dark), fl = Math.min(1, flash) * dark, lit = gateish * smooth(GATE_X - 330, GATE_X - 60, C3.x), tintF = mix(mix(mix(tint, [66, 62, 72], gateish), [255, 170, 110], fl * .35), [255, 188, 120], lit * (.3 + .4 * door));
+    const tintM = mix(tintF, [255, 204, 150], mercy * .42);
+    if (mercy > .01) { const mx = (C3.x + EV_X) / 2; c.save(); c.globalCompositeOperation = 'lighter';
+      { c.save(); c.translate(mx, 5); c.scale(1, .1); const g = c.createRadialGradient(0, 0, 0, 0, 0, 210); g.addColorStop(0, css([255, 196, 126], .5 * mercy)); g.addColorStop(1, css([255, 180, 110], 0)); c.fillStyle = g; c.fillRect(-210, -210, 420, 420); c.restore(); }
+      { const g = c.createRadialGradient(mx, -84, 0, mx, -84, 170); g.addColorStop(0, css([255, 206, 150], .2 * mercy)); g.addColorStop(1, css([255, 190, 130], 0)); c.fillStyle = g; c.fillRect(mx - 170, -254, 340, 340); }
+      c.restore(); }
     if (evan && evan.x != null && EVW.ready) {
       // walking in out of the haze, then his standing frames dissolve in over the walk frame
       const ex = evan.x, fa = smooth(EV_X - EV_FROM, EV_X - EV_FROM + 220, ex), st = evan.st; TALKM = talkMove(E); foot(c, ex, fa);
-      if (st < 1) figure(c, 'evw', EVW[Math.floor(evan.anim) % EVW.length], EVW_META, ex, 1, tintF, fa * (1 - smooth(.4, 1, st)));
-      if (st > 0 && EVS.ready) figure(c, 'evan', EVS[Math.floor(G.t * .2) % EVS_META.frames], EVS_META, ex, 1, tintF, smooth(0, .6, st));
+      if (st < 1) figure(c, 'evw', EVW[Math.floor(evan.anim) % EVW.length], EVW_META, ex, 1, tintM, fa * (1 - smooth(.4, 1, st)));
+      if (st > 0 && EVS.ready) figure(c, 'evan', EVS[Math.floor(G.t * .2) % EVS_META.frames], EVS_META, ex, 1, tintM, smooth(0, .6, st));
       TALKM = null;
-    } else if (evan && EVS.ready) { TALKM = talkMove(E); foot(c, EV_X, evan.a); figure(c, 'evan', EVS[Math.floor(G.t * .2) % EVS_META.frames], EVS_META, EV_X, 1, tintF, smooth(.25, 1, evan.a)); TALKM = null; }
+    } else if (evan && EVS.ready) { TALKM = talkMove(E); foot(c, EV_X, evan.a); figure(c, 'evan', EVS[Math.floor(G.t * .2) % EVS_META.frames], EVS_META, EV_X, 1, tintM, smooth(.25, 1, evan.a)); TALKM = null; }
     if (wise && (WIS.ready || OBS.ready)) {
       const wt = mix([168, 150, 132], [120, 104, 100], dark); TALKM = talkMove(WW); foot(c, wise.x, wise.alpha);
       const { W, M, S, SM } = wFig(), wim = W[Math.floor(wise.anim) % W.length];
@@ -627,7 +639,7 @@ const HL = (() => {
       else figure(c, 'wis', wim, M, wise.x, -1, wt, wise.alpha);
       TALKM = null;
     }
-    drawChr(c, tintF);
+    drawChr(c, tintM);
     c.restore();
     // the smoke Evangelist comes out of
     if (evan && evan.a < 1) { const ex = X(EV_X - 30), ey = Y(-90), a = Math.sin(Math.PI * clamp(evan.a * 1.1)) * .8 + (1 - evan.a) * .0; c.globalAlpha = a; for (let i = 0; i < 3; i++) c.drawImage(SMOKE, ex - (200 + i * 40) * z + 30 * Math.sin(G.t / 90 + i), ey - (110 - i * 30) * z, 400 * z, 200 * z); c.globalAlpha = 1; }
