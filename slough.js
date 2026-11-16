@@ -429,7 +429,7 @@ const SL = (() => {
     // build 121 (owner: "struggling feels a bit repetitive"): they struggle in bursts with a breath between, each at his own
     // changing pace (burst(k): 0 resting .. 1 heaving), so no two heaves fall alike; drops fly while they heave
     const burst = k => smooth(.3, .7, .5 + .5 * Math.sin(G.t / (52 + 9 * k) + 2.2 * Math.sin(G.t / (131 + 17 * k) + k)));
-    if (['fall', 'pli', 'backtalk'].includes(ph)) { const b = burst(1); C2.wa = (C2.wa || 0) + (calm ? .04 : .05 + .19 * b); if (!calm && b > .6 && C2.fallT > 70 && G.t % 24 === 0) { rings.push({ x: C2.x + 12, y: 0, t: 0, k: .8 }); splash(C2.x + 6, 6); sfxS.wade(); } }
+    if (['fall', 'pli', 'backtalk'].includes(ph)) { const b = burst(1); C2.wa = (C2.wa || 0) + (calm ? .04 : .05 + .19 * b); if (!calm && b > .6 && C2.fallT > 70 && G.t % 24 === 0) { rings.push({ x: C2.x + 4, y: 0, t: 0, k: .8 }); splash(C2.x + 6, 6); sfxS.wade(); } }
     if (ph === 'fall') {
       if (C2.fallT === 8 || C2.fallT === 14) { rings.push({ x: C2.x, y: 0, t: 0, k: 1.3 }); rings.push({ x: pli.x, y: 0, t: 0, k: 1.1 }); }
       if (C2.fallT === 120) { ph = 'pli'; talk(FALL, choose2); }
@@ -608,7 +608,7 @@ const SL = (() => {
   function footfall() {
     const f = Math.floor(C2.anim) % CHR_META.frames, down = CHR_META.rest.includes(f);
     if (down && lastFoot !== f) {
-      rings.push({ x: C2.x + 10 * C2.face, y: 0, t: 0, k: .75 }); sfxS.wade(); splash(C2.x + 8 * C2.face, 6);
+      rings.push({ x: C2.x + 4 * C2.face, y: 0, t: 0, k: .75 }); sfxS.wade(); splash(C2.x + 8 * C2.face, 6);
       if (ph === 'wade' && noteI < WADE_TUNE.length) bowed(WADE_TUNE[noteI++], .05, 1.9);
     }
     lastFoot = down ? f : -1;
@@ -744,6 +744,18 @@ const SL = (() => {
         ctx.globalAlpha = Math.min(1, a * k); ctx.drawImage(puff, x - r, y - r * e, 2 * r, 2 * r * e); }
       ctx.globalAlpha = 1; };
     for (const st of steps) { const c = st.lit || 0; bank(st.x - 70 + c * 90, st.x + 70 + c * 90, 12, 10, 120, (1 - smooth(0, 1, c)) * (.55 + .3 * look.mist) * (ph === 'look' || ph === 'on' ? 1 : fogS), 6, 11 + st.i, true); }
+    // RIPPLES GO ROUND THEM (build 130, owner: "how do we make circles go around them?"). Each ripple was drawn whole, on top
+    // of everything, in front of the body, so it lay before him like a hoop on the ground. Now its FAR half is drawn
+    // here, before the near picture (the body hides its middle), and its NEAR half later, in front of him: the ripple
+    // passes behind his waist and comes round in front. Ripples in thick mud: two slow dull swells to each, a dark trough
+    // with a faint light on the near lip (bright thin rings read as clear water; broken pieces looked like a target).
+    const ripples = far => { for (const r of rings) {
+      const u = r.t / 150, cxr = X(r.x), cyr = wl + 1 + r.y * z, a0 = far ? Math.PI : 0, a1 = far ? 2 * Math.PI : Math.PI;
+      for (let i = 1; i <= 2; i++) { const rx = (14 + i * 18 + u * 46) * z * r.k, ry = rx * .17, a = (1 - u) * (1 - i * .28) * (far ? .75 : 1);
+        ctx.lineWidth = far ? 2 : 2.6; ctx.strokeStyle = css(DARK, (far ? .28 : .38) * a); ctx.beginPath(); ctx.ellipse(cxr, cyr, rx, ry, 0, a0, a1); ctx.stroke();
+        if (!far) { ctx.lineWidth = 1; ctx.strokeStyle = css(LIGHT, .3 * a); ctx.beginPath(); ctx.ellipse(cxr, cyr + 1.9, rx, ry, 0, .2, 2.94); ctx.stroke(); } }
+    } };
+    ripples(true);
     if (ph !== 'plain') threadsNow();
     // LOW MIST ROUND THE TWO IN THE BOG (build 125, owner: "more fog beneath Christian and pliable when they're in [the] bog
     // but not as much near their faces"): a flat lens of mist hugs the surface round each of them, thickest at the mud
@@ -840,14 +852,7 @@ const SL = (() => {
     if (mudGd) { ctx.fillStyle = mudGd; for (const [sx, a] of mudCh) { ctx.globalAlpha = a; ctx.fillRect(sx, wl - 16 * z, 5, 60 * z); } ctx.globalAlpha = 1; }
     // rings in the mud, under the mist. Build 126 put them back under the low mist after build 125's heavy rings on top of it
     // "stuck out"; build 127 thins that mist at the surface, so the dark churned mud and its rings are seen together
-    // ripples in thick mud (build 129): two slow, heavy, dull swells to each, mostly a dark trough with only a faint light on
-    // its near lip (bright thin rings read as clear water; rings drawn in broken pieces were tried and looked like a target)
-    for (const r of rings) {
-      const u = r.t / 150, cxr = X(r.x), cyr = wl + 2 + r.y * z;
-      for (let i = 1; i <= 2; i++) { const rx = (12 + i * 18 + u * 46) * z * r.k, ry = rx * .13, a = (1 - u) * (1 - i * .28);
-        ctx.lineWidth = 2.6; ctx.strokeStyle = css(DARK, .26 * a); ctx.beginPath(); ctx.ellipse(cxr, cyr, rx, ry, 0, 0, 7); ctx.stroke();
-        ctx.lineWidth = 1; ctx.strokeStyle = css(LIGHT, .3 * a); ctx.beginPath(); ctx.ellipse(cxr, cyr + 1.9, rx, ry, 0, .2, 2.94); ctx.stroke(); }
-    }
+    ripples(false);      // the near half of every ripple, in front of the figures
     if (look.veil > .01) { const g = ctx.createLinearGradient(VW * .42, 0, VW, 0); g.addColorStop(0, css(LIGHT, 0)); g.addColorStop(.55, css(tone(.93), look.veil * .86)); g.addColorStop(1, css(tone(.93), look.veil)); ctx.fillStyle = g; ctx.fillRect(0, 0, VW, VH); }
     // the gold coming back from the oak outward
     if (warmth > .01) { ctx.globalCompositeOperation = 'soft-light'; const g = ctx.createRadialGradient(discX, discY + 60, 20, discX, discY + 60, 760);
