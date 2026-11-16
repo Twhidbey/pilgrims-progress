@@ -28,32 +28,31 @@ const SL = (() => {
 
   // ---------- the words: Bunyan's, shortened and made plain ----------
   const OPEN = [[N, 'Then Christian and Pliable went talking over the plain.']].concat(LEVEL2_OPENING);      // {25} to {28}
-  const NEAR = cut([[N, 'Just as they ended this talk, they drew near to a very miry bog in the middle of the plain.']]);      // {29}
-  const FALL = cut([      // {29}, {30}
+  const NEAR = [[N, 'Just as they ended this talk, they drew near to a very miry bog in the middle of the plain.']];      // {29}
+  const FALL = [      // {29}, {30}
     [N, 'Not looking where they went, they both fell suddenly into the bog. Its name was Despond.'],
-    [N, 'Because of the burden on his back, Christian began to sink in the mire.'],
     [PL, 'Ah, neighbor Christian, where are you now?'],
     [C, 'Truly, I do not know.'],
-    [PL, 'Is this the happiness you have told me of? If I get out again with my life, you shall have the brave country alone for me!', null, () => { if (pli) pli.turn = 1; }],      // he turns from Christian toward his own side
-    [N, 'With a desperate struggle or two, he got out on the side next to his own house. So away he went, and Christian saw him no more.', null, () => { pli.mode = 'climb'; pli.wal = false; pli.turn = 1; }],
-  ]);
+    [PL, 'Is this the happiness you told me of? If I ever get out, you can have your fine country all to yourself!', null, () => { if (pli) pli.turn = 1; }],      // he turns from Christian toward his own side
+    [N, 'He struggled out on the side nearest his own house, and away he went. Christian saw him no more.', null, () => { pli.mode = 'climb'; pli.wal = false; pli.turn = 1; }],
+  ];
   // the choice is ours, not the book's (as in Level 1): going back loses nothing
   const BACK = [
     [N, 'Christian turned back toward his own house. The mist grew thick and dark.'],
     [C, 'No. I must struggle on, toward the gate.', null, () => { gloomTo = 0; }],
   ];
-  const ALONE = cut([[N, 'So Christian was left to struggle in the Slough of Despond alone.']]);      // {31}
-  const FEARS = cut([[N, 'Many fears and doubts came over him, and settled in that place.']]);      // {33}: the fears are sound only, and this one line
+  const ALONE = [[N, 'So Christian was left to struggle in the Slough of Despond alone.']];      // {31}
+  const FEARS = [[N, 'Many fears and doubts came over him, and settled in that place.']];      // {33}: the fears are sound only, and this one line
   const STUCK = [[N, 'He came to the far side. But he could not get out, because of the burden upon his back.']];      // {31}
   const HELP = [      // {31}, {32}
     [N, 'Then a man came to him, whose name was Help.'],
     [H, 'What are you doing there?'],
-    [C, 'Sir, I was told to go this way by a man called Evangelist. As I was going to the gate, I fell in here.'],
+    [C, 'Sir, a man called Evangelist sent me this way to the gate, and I fell in here.'],
     [H, 'But why did you not look for the steps?'],
     [C, 'Fear followed me so hard that I fled the nearest way, and fell in.'],
     [H, 'Give me your hand.', 'hand', () => { mv = mv || { t: 0 }; mv.to = 150; }],      // he is already down on his knee: now he holds out his hand
   ];
-  const DRAWN = cut([[N, 'So he gave him his hand. And Help drew him out, and set him upon sound ground.']]);      // {32}
+  const DRAWN = [];      // {32}
   const STEPS = [[N, 'There were good, strong steps through the very middle of the bog. But in the mist, they were hard to see.']];      // {35}
   const ONWAY = [[H, 'Go on your way.']];      // {32}: "and bid him go on his way"
   const ALL = [...OPEN, ...NEAR, ...FALL, ...BACK, ...ALONE, ...FEARS, ...STUCK, ...HELP, ...DRAWN, ...STEPS, ...ONWAY];

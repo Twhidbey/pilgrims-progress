@@ -35,69 +35,48 @@ const HL = (() => {
   const EV_X = STILL - 135;
 
   // ---------- the words: Bunyan's, shortened and made plain ----------
-  const SEEN = cut([      // {37}
-    [N, 'Now as Christian was walking by himself, he saw one far off, coming across the field to meet him.'],
-    [N, 'The gentleman\'s name was Mr. Worldly Wiseman. He lived in the town of Carnal Policy, a very great town, close by the city Christian came from.'],
-  ]);
-  const WISE = cut([      // {38} to {45}
+  const SEEN = [      // {37}
+    [N, 'His name was Mr. Worldly Wiseman, from the great town of Carnal Policy, near Christian\'s own city.'],
+  ];
+  const WISE = [      // {38} to {45}
     [WW, 'How now, good fellow! Where are you going, with such a burden?'],
-    [C, 'Sir, I am going to that wicket-gate before me. There I shall be put into a way to be rid of my heavy burden.'],
-    [WW, 'Will you listen to me, if I give you counsel?'],
-    [C, 'If it is good, I will. For I stand in need of good counsel.'],
-    [WW, 'Who told you to go this way to be rid of your burden?'],
-    [C, 'A man who seemed to me a very great and honourable person. His name, as I remember, is Evangelist.'],
-    [WW, 'There is not a more dangerous and troublesome way in the world than the one he has sent you! I see the dirt of the Slough of Despond is upon you already.'],
-    [WW, 'In the way you are going, you are like to meet with weariness, painfulness, hunger, perils, lions, dragons, darkness, and what not!'],
-    [C, 'Sir, this burden upon my back is more terrible to me than all these things.'],
-    [WW, 'In that village, named Morality, there lives a gentleman whose name is Legality. He has skill to help men off with such burdens as yours.'],
-    [N, 'Now Christian stood a while in doubt. But soon he thought: if what this gentleman says is true, my wisest course is to take his advice.'],      // {44}
-    [C, 'Sir, which is my way to this honest man\'s house?'],
+    [C, 'Sir, I am going to that little gate ahead. There I will be shown how to be rid of my heavy burden.'],
+    [WW, 'Who sent you this way?'],
+    [C, 'A great and good man, called Evangelist.'],
+    [WW, 'There is no more dangerous way in all the world! I see the mud of the Slough of Despond is on you already.'],
+    [WW, 'In that village, Morality, lives a gentleman named Legality. He can take burdens like yours away.'],
+    [C, 'Sir, which way is his house?'],
     [WW, 'Do you see that hill?', 'hill'],
-    [C, 'Yes, very well.'],
-    [WW, 'By that hill you must go, and the first house you come to is his.'],
-  ]);
+    [WW, 'Go by that hill. The first house you come to is his.'],
+  ];
   const TURNED = [[N, 'So Christian turned out of his way, to go to Mr. Legality\'s house for help.']];      // {46}
-  const HIGH = [[N, 'But when he had come close to the hill, it seemed so high, and its side hung so far over the way, that Christian was afraid to go further, lest the hill should fall on his head.']];
-  const STOOD = cut([
-    [N, 'There he stood still, and did not know what to do.'],
-    [N, 'Also his burden now seemed heavier to him than when he was in his way.'],
-    [N, 'There came also flashes of fire out of the hill, and Christian was afraid that he should be burned.', 0, () => { fire(1); }],
-    [N, 'Here he sweated, and shook for fear.'],
-    [N, 'And now he began to be sorry that he had taken Mr. Worldly Wiseman\'s counsel.'],      // {47}
-  ]);
-  const COMING = cut([[N, 'With that he saw Evangelist coming to meet him, and he began to blush for shame.']]);
-  const EVANW = cut([      // {48} to {59}
+  const HIGH = [[N, 'But close to, the hill was so high, and hung so far over the way, that Christian was afraid it would fall on his head.']];
+  const STOOD = [
+    [N, 'Flashes of fire came out of the hill, and Christian was afraid he would be burned.', 0, () => { fire(1); }],
+    [N, 'Now he was sorry he had listened to Mr. Worldly Wiseman.'],      // {47}
+  ];
+  const COMING = [];
+  const EVANW = [      // {48} to {59}
     [E, 'What are you doing here, Christian?'],
-    [N, 'At these words Christian did not know what to answer. He stood speechless before him.'],
-    [E, 'Are you not the man that I found crying outside the walls of the City of Destruction?'],
-    [C, 'Yes, dear sir, I am the man.'],
-    [E, 'Did I not show you the way to the little wicket-gate?'],
-    [C, 'Yes, dear sir.'],
-    [E, 'How is it, then, that you are so quickly turned aside? For you are now out of the way.'],
-    [C, 'I met a gentleman, as soon as I had got over the Slough of Despond. He persuaded me that in the village before me I might find a man who could take off my burden.'],
-    [E, 'Stand still a little, that I may show you the words of God.'],
-    [E, 'The just shall live by faith. You have begun to draw back your foot from the way of peace.'],
+    [E, 'Why have you turned aside so soon? You are out of the way.'],
+    [C, 'Just after the Slough, I met a gentleman. He said a man in that village could take my burden off.'],
     [N, 'Then Christian fell down at his feet, crying:', 0, () => { C3.weep = true; C3.wt = 0; }],
     [C, 'Woe is me, for I am undone!'],
     [N, 'At the sight of this, Evangelist caught him by the right hand.', 0, () => { note(67, .04, 4); note(71, .035, 4, .12); mercyTo = 1; }],
     [E, 'All manner of sin shall be forgiven unto men. Be not faithless, but believing.'],
     [N, 'Then Christian revived a little, and stood up trembling.', 0, () => { C3.weep = false; }],
-    [E, 'The man that met you is one Worldly Wiseman. And Mr. Legality is not able to set you free from your burden. No man was ever yet rid of his burden by him.'],
-    [N, 'With that there came fire out of the mountain under which poor Christian stood.', 0, () => { fire(1.4); }],
-    [N, 'Then Christian cried out, and called himself a thousand fools for listening to his counsel.'],      // {58}
-    [C, 'Sir, what do you think? Is there hope? May I now go back, and go up to the wicket-gate? I am sorry I listened to this man. But may my sin be forgiven?'],      // {59}
+    [E, 'That man was Worldly Wiseman. Mr. Legality cannot free you from your burden. No one was ever freed by him.'],
+    [C, 'Sir, is there hope? May I go back to the gate? I am sorry I listened to him. May I be forgiven?'],      // {59}
     [E, 'Your sin is very great. Yet the man at the gate will receive you, for he has goodwill for men.', 0, () => { calmTo = 1; }],
-    [E, 'Only take heed that you do not turn aside again.'],
     [N, 'Then Evangelist gave him one smile, and bid him God-speed.'],
-  ]);
-  const HASTE = cut([      // {59}
-    [N, 'So he went on with haste, and spoke to no man by the way.'],
-    [N, 'He went like one treading on forbidden ground, and could not think himself safe till he was again in the way which he had left.'],
-  ]);
+  ];
+  const HASTE = [      // {59}
+    [N, 'He hurried like one treading on forbidden ground, and did not feel safe until he was back on the right way.'],
+  ];
   const ATGATE = [[N, 'So, in time, Christian got up to the gate. Now over the gate there was written: Knock, and it shall be opened unto you.']];
   const KNOCK = [      // {60}
-    [N, 'He knocked, therefore, more than once or twice, saying:', 'knock'],
-    [C, 'May I now enter here? Will he within open to sorry me?'],
+    [N, 'He knocked, more than once or twice, saying:', 'knock'],
+    [C, 'May I come in? Will he open to me, sorry as I am?'],
     [N, 'At last there came a grave person to the gate, named Good-will.', 0, () => { doorTo = 1; sfx.chord(); }],
   ];
   const ALL = [...SEEN, ...WISE, ...TURNED, ...HIGH, ...STOOD, ...COMING, ...EVANW, ...HASTE, ...ATGATE, ...KNOCK];
@@ -372,7 +351,7 @@ const HL = (() => {
       walk(1, 0); stillT++;
       if (stillT === 60 || stillT > 9999) { stillT = 61; caption(STOOD); }
       // the lines' own happenings (captions carry no fn): the fire comes with its words
-      if (dlg.querySelector('.t').textContent.startsWith('There came also flashes of fire') && !C3.fired) { C3.fired = true; fire(1); }
+      if (dlg.querySelector('.t').textContent.startsWith('Flashes of fire came out of the hill') && !C3.fired) { C3.fired = true; fire(1); }
       if (stillT > 200 && !saying() && G.cap <= 0 && C3.sd != null) { ph = 'come'; caption(COMING); evan = EVW.ready ? { a: 1, t: 0, x: EV_X - EV_FROM, anim: 0, walk: true, st: 0 } : { a: 0, t: 0 }; turnC(-1); }
     } else if (ph === 'come') {
       walk(1, 0);

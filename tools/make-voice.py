@@ -33,16 +33,14 @@ KEY = os.environ.get('GEMINI_API_KEY', '')
 STYLE = {
     "Ah, neighbor Christian, where are you now?": "[alarmed, breathless, frightened]",
     "Truly, I do not know.": "[shaken, breathless, weary]",
-    "Is this the happiness you have told me of? If I get out again with my life, you shall have the brave country alone for me!": "[angry, frightened, breathless, almost shouting]",
+    "Is this the happiness you told me of? If I ever get out, you can have your fine country all to yourself!": "[angry, frightened, breathless, almost shouting]",
     "No. I must struggle on, toward the gate.": "[straining, through gritted teeth, determined, out of breath]",
-    "Sir, I was told to go this way by a man called Evangelist. As I was going to the gate, I fell in here.": "[exhausted, out of breath, pleading]",
+    "Sir, a man called Evangelist sent me this way to the gate, and I fell in here.": "[exhausted, out of breath, pleading]",
     "Fear followed me so hard that I fled the nearest way, and fell in.": "[exhausted, ashamed, out of breath]",
     # Level 3 (build 143): under the burning hill and before Evangelist
     "Woe is me, for I am undone!": "[crying out, broken, in tears]",
-    "Yes, dear sir, I am the man.": "[ashamed, quiet, trembling]",
-    "Yes, dear sir.": "[ashamed, quiet]",
-    "Sir, what do you think? Is there hope? May I now go back, and go up to the wicket-gate? I am sorry I listened to this man. But may my sin be forgiven?": "[trembling, pleading, close to tears]",
-    "May I now enter here? Will he within open to sorry me?": "[hopeful, humble, a little out of breath]",
+    "Sir, is there hope? May I go back to the gate? I am sorry I listened to him. May I be forgiven?": "[trembling, pleading, close to tears]",
+    "May I come in? Will he open to me, sorry as I am?": "[hopeful, humble, a little out of breath]",
 }
 
 def call(path, body):
@@ -63,7 +61,7 @@ def name(who, text):                      # FNV-1a, the same sum as voiceName() 
 SAME = {'towards': 'toward', 'neighbour': 'neighbor', 'colour': 'color'}
 def words(s): return [SAME.get(w, w) for w in re.sub(r'[^a-z ]', '', s.lower().replace('-', ' ')).split() if w not in ('ah', 'oh')]
 def close(a, b, attempt):           # from the second take, one misheard word (e.g. "No" heard as "Now") is let through
-    return a == b or (attempt > 0 and len(a) == len(b) and sum(x != y for x, y in zip(a, b)) <= 1)
+    return a == b or ''.join(a) == ''.join(b) or (attempt > 0 and len(a) == len(b) and sum(x != y for x, y in zip(a, b)) <= 1)
 
 def record(code, text, dest):
     for attempt in range(4):
