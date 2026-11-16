@@ -73,7 +73,7 @@ const SL = (() => {
   // to rise slowly over 90 units, but Pliable's climbing video hauls him up a bank with a short steep face, so for a few
   // steps after he stood up his feet were in the air beyond the land's end. The bank now has that short face, standing
   // where the video's bank stood, at its full height by HOME0 + 15
-  const START = -2750, FALL_X = -760, PLI_FALL = -840, END_X = 420;
+  const START = -2750, FALL_X = -760, PLI_FALL = -840, END_X = 660;
   const WADE0 = FALL_X + 70;      // build 119: falling, Christian pitches on this much further, so the two are not on top of each other in the mire
   // Help kneels at the edge of the far bank; Christian must come to where his hand meets Help's (measured in slough-lab.html)
   const HX = BANK0 + 34, GRASP = { dx: -(82 - 15 + 129), dy: 283 - 55 };
@@ -403,7 +403,7 @@ const SL = (() => {
         if (want) clearHint('walk');
       } else {
         C2.stand = clamp(C2.stand + (want ? -.08 : .04));
-        if (C2.x > END_X - 300) C2.alpha = clamp((END_X - C2.x) / 300);
+        if (C2.x > END_X - 170) C2.alpha = clamp((END_X - C2.x) / 170);      // build 124: he lasts until he is well into the mist, which hides him first
         if (C2.x >= END_X && G.state === 'play') finish();
       }
     }
@@ -493,7 +493,7 @@ const SL = (() => {
     if (help) {
       if (fogH === 1) hiss(260, .5, .05, 3.5, 'lowpass');
       // the mist thins once he has come; it gathers again as he walks back into it, and closes behind Christian at the end
-      const to = ph === 'on' ? .8 : help.lv && help.lv.t >= HTURN.length - 1 ? .5 : 0;
+      const to = ph === 'on' ? .28 : help.lv && help.lv.t >= HTURN.length - 1 ? .5 : 0;
       fogH = to < fogH ? Math.max(to, fogH - .0013) : Math.min(to, fogH + .004); help.a = 1;
       const lv = help.lv;
       if (lv && !help.gone) {
@@ -617,7 +617,9 @@ const SL = (() => {
     const warmth = look.gold, lightCol = mix(LIGHT, GOLD, warmth * .8);
     // the far light: in the oak's branches when he is near, far off over the plain before
     const near = smooth(-1300, -250, cx);
-    const discX = lerp(VW / 2 + (OAK_X + 72 * OAK_S - cx) * z * .12, X(OAK_X + 72 * OAK_S), near), discY = lerp(150, Y(-258 * OAK_S), near);      // the far light in the oak's branches
+    // build 124: as he goes on his way the far light is ahead of him again, low in the mist on the right (ahead: 0 at the oak .. 1)
+    const ahead = ph === 'on' ? smooth(-120, 360, C2.x) : 0;
+    const discX = lerp(lerp(VW / 2 + (OAK_X + 72 * OAK_S - cx) * z * .12, X(OAK_X + 72 * OAK_S), near), VW * .8, ahead), discY = lerp(lerp(150, Y(-258 * OAK_S), near), hor - 105, ahead);      // the far light in the oak's branches
     ctx.setTransform(S, 0, 0, S, 0, 0); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
     // sky: the clear one, the misty one over it
     ctx.imageSmoothingEnabled = true;
@@ -774,6 +776,26 @@ const SL = (() => {
       ctx.globalAlpha = a; ctx.drawImage(fogBank, 0, by - 470 * z, 800 * z, 470 * z);
       ctx.globalAlpha = a * .8; ctx.drawImage(fogBank, (-50 + Math.sin(G.t * .004) * 10) * z, by - 410 * z, 900 * z, 410 * z);
       ctx.restore(); ctx.globalAlpha = 1; }
+    // THE MIST HE WALKS INTO, AND THE LIGHT THROUGH IT (build 124, owner: "make fog get more and more on the right (but make
+    // light shining thru in cool way)"): as he goes on his way the mist ahead thickens, more and more toward the right
+    // (it stands in the world, from 380 to 840 and solid beyond, so he walks into it and it hides him), and the far
+    // light, ahead of him again, glows through it and throws long soft shafts down across the mist, slowly shifting
+    if (ph === 'on') {
+      const s1 = smooth(-150, 260, C2.x), xa = X(380), xb = X(840), fogCol = mix(tone(.93), GOLD, .22 * warmth);
+      if (s1 > .01 && xa < VW) { const g = ctx.createLinearGradient(xa, 0, xb, 0); g.addColorStop(0, css(fogCol, 0)); g.addColorStop(.45, css(fogCol, .5 * s1)); g.addColorStop(1, css(fogCol, .97 * s1));
+        ctx.fillStyle = g; ctx.fillRect(Math.max(0, xa), 0, VW, VH); }
+      if (ahead > .02) {
+        ctx.save(); ctx.globalCompositeOperation = 'screen';
+        glow(ctx, discX, discY, 380, mix(LIGHT, GOLD, .5), .55 * ahead); glow(ctx, discX, discY, 120, LIGHT, .6 * ahead);
+        for (let i = 0; i < 9; i++) {
+          const a0 = (i < 7 ? 1.75 + i * .2 : .95 - (i - 7) * .3) + .05 * Math.sin(G.t * .004 + i * 1.7), hw = .028 + .022 * ((i * 7) % 3), len = 1000;
+          const k = .21 * ahead * (.55 + .45 * Math.sin(G.t * .007 + i * 2.3)), g = ctx.createRadialGradient(discX, discY, 30, discX, discY, len);
+          g.addColorStop(0, css(mix(LIGHT, GOLD, .45), k)); g.addColorStop(.5, css(mix(LIGHT, GOLD, .45), k * .45)); g.addColorStop(1, css(GOLD, 0));
+          ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(discX, discY); ctx.lineTo(discX + Math.cos(a0 - hw) * len, discY + Math.sin(a0 - hw) * len); ctx.lineTo(discX + Math.cos(a0 + hw) * len, discY + Math.sin(a0 + hw) * len); ctx.fill();
+        }
+        ctx.restore();
+      }
+    }
     // the low mist over the middle of the bog, where the steps are: wide, flat and smooth
     // build 115 (owner: "fog clears to reveal them instead of them appearing out of nowhere"): the low mist over the
     // steps is laid step by step; over each step it moves off to the right and thins as that step's light lands (s.lit),
