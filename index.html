@@ -11,6 +11,8 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="assets/icon-180.png">
 <title>Pilgrim's Progress</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=La+Belle+Aurore&family=UnifrakturMaguntia&display=swap" rel="stylesheet">
 <style>
 html,body{margin:0;height:100%;background:#1b1c22;overflow:hidden;-webkit-text-size-adjust:100%;text-size-adjust:100%;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
 #wrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
@@ -83,7 +85,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">build 175 · Nov 16 2026</div>
+  <div id="build">build 176 · Nov 16 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -2146,6 +2148,7 @@ function drawGuides() {
 // the same speed on every screen: the world ticks 60 times a second however often the screen redraws
 let lastT = 0, acc = 0;
 function loop(ts) {
+  if (KS.paused) { lastT = ts; acc = 0; requestAnimationFrame(loop); return; }      // the pause menu, the book or the roll is open (keepsakes.js)
   acc += Math.min(100, ts - lastT); lastT = ts; STEPS = 0;
   while (acc >= 16.6 && STEPS < 5) { update(); acc -= 16.667; STEPS++; }
   if (STEPS) HL.on || HL.show ? HL.draw() : SL.on || SL.show ? SL.draw() : draw();
@@ -2158,6 +2161,8 @@ stage.addEventListener('pointerdown', e => {
   if (e.target.closest('button')) return;
   e.preventDefault();
   const [sx, sy] = scenePt(e), r0 = cv.getBoundingClientRect(), rx = (e.clientX - r0.left) / r0.width * VW, ry = (e.clientY - r0.top) / r0.height * VH;      // rx, ry: on the screen itself (the tray), not in the zoomed world
+  // his book and the roll in the tray open up close (keepsakes.js, build 176), whatever else is going on
+  if (G.state !== 'title' && rx < ITEM_X + 58 && ry < ITEM_Y + 36) { if (rx < ITEM_X + 23) { KS.book(); return; } if (G.roll && G.roll.t > 90) { KS.roll(); return; } }
   if (G.state !== 'title' && G.state !== 'end') G.taps.push({ x: sx, y: sy, t: 0 });
   if (G.state === 'dialog') {
     if (HL.on && G.act) { HL.touch(sx, sy); return; }
@@ -2168,7 +2173,6 @@ stage.addEventListener('pointerdown', e => {
     next(); return;
   }
   if (G.state !== 'play') return;
-  if (G.roll && G.roll.t > 90 && rx > ITEM_X + 22 && rx < ITEM_X + 54 && ry < ITEM_Y + 30) { hint('roll', 'The roll says: Flee from the wrath to come.'); G.rollT = 260; return; }      // a touch on the roll in the tray
   downs.set(e.pointerId, G.t); if (HL.on) HL.touch(sx, sy); else if (SL.on) SL.touch(sx, sy); else touchAt(sx, sy);
 });
 const lift = e => { if (e.type === 'blur') { downs.clear(); pushing = false; return; } downs.delete(e.pointerId); if (e.pointerId === pushId) pushing = false; };
@@ -2260,5 +2264,6 @@ document.getElementById('on2').onclick = () => SL.on ? go3() : go2();
 </script>
 <script src="slough.js?v=164"></script>
 <script src="hill.js?v=175"></script>
+<script src="keepsakes.js?v=176"></script>
 </body>
 </html>

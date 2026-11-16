@@ -6,6 +6,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 Older handovers (builds 41 to 137, with the picture and video prompts used for Help, Christian reaching, the grip and lift, the gate and the wall) were folded away in build 140; they are in git (`HANDOFF.md` at build 137). The voice descriptions and the first picture prompts are kept in the build notes below.
 
+**Build 176: a pause menu (go on, or begin any level), and the two things he carries seen up close: his Bible open at Romans 3 (KJV) with his own underlinings and margin notes, two spreads that turn; the roll as unrolling parchment with a red wax seal. `keepsakes.js`; see `CLAUDE.md`, "Keepsakes and the pause menu". Nothing spent.**
+
 **Build 155: Level 2's shores back to clean lines (the owner found build 152's grass too busy); the far shore only gently contoured, the oak's foot flared. Nothing spent.**
 
 **Build 147: Level 2's mud answers the men's own pictures (surface swells, collars, plops, strings, wet mud; the two halves of each ring are one ring). See `CLAUDE.md`, "THE MUD ANSWERS THE FIGURES". Nothing spent. Waiting on the owner's look at `?level=2&at=bog`.**
