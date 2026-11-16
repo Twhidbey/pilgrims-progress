@@ -93,7 +93,9 @@ const SL = (() => {
   const MUDDY = x => 6 * smooth(-6, 0, bankY(x)) + (x <= FALL_X + 5 ? 13 * smooth(HOME0 + 60, FALL_X, x) : 0);      // build 121: walking out over the mire they go in deeper at every step, before the fall                        // how deep each stands in the mire when they fall (feet below the water line)
   // the fall is slow (owner, build 105: "go deeper ... drop more slow ... what it looks like to get [stuck in] mud"): a soft first
   // drop to the knees, then a slow sink over about 5 seconds that goes on while the words begin
-  const sunk = t => .4 * smooth(0, 40, t) + .6 * smooth(25, 330, t);
+  // build 180 (owner: "make sure motions look clean and not jerky or drawn out"): they plunge to the thigh at once, under the splash,
+  // so the struggling pictures can take over there, then sink slowly on to the waist (it was .4 then .6: two seconds stiff and upright)
+  const sunk = t => .8 * smooth(0, 42, t) + .2 * smooth(30, 330, t);
   // where each man stands when the lift is over, in the lift picture's own pixels (measured from its last frame)
   const LIFT_CHR = 260, LIFT_HELP = 399;
 
@@ -399,7 +401,7 @@ const SL = (() => {
   // SPLASHES (build 121, owner: "splashes are great - maybe crank that up a bit"): drops of mud thrown up from the water
   // line wherever someone heaves, falls or is hauled out; they rise, fall back and leave a small ring
   let drops = [], churns = [];
-  function splash(x, n = 7, k = 1, still) { if (!still) churns.push({ x, a: Math.min(1, .5 + n * .05) }); for (let i = 0; i < n; i++) drops.push({ x: x + (Math.random() - .5) * 30, y: 0, vx: (Math.random() - .5) * 2.6 * k, vy: -(1.4 + Math.random() * 2.8) * k, r: .7 + Math.random() * 1.1, t: 0 }); }
+  function splash(x, n = 7, k = 1, still) { if (!still) churns.push({ x, a: Math.min(1, .5 + n * .05) }); for (let i = 0; i < n; i++) drops.push({ x: x + (Math.random() - .5) * 30, y: 0, vx: (Math.random() - .5) * 2 * k, vy: -(1.1 + Math.random() * 2.1) * k, r: .7 + Math.random() * 1.1, t: 0 }); }
   // ============================================================
   // THE MUD ANSWERS THE FIGURES (build 143; owner, build 141: "the way it acts does not look good - it doesn't stick to
   // character [or] act like coordinated response to their movements"). The figures move by their videos; the mud used to
@@ -475,6 +477,14 @@ const SL = (() => {
         for (const u of r.arms) if (!near(u, S.arms)) plop((u[0] + u[1]) / 2, u[1] - u[0], S);
         for (const u of S.arms) if (!near(u, r.arms)) pullOut(o, (u[0] + u[1]) / 2, S);
       }
+      // build 180: the collar's own shape follows the body softly (a run of body could jump 20 units in one picture when an
+      // arm joined it, and the collar jumped with it); an arm's collar grows in as it enters and fades as it leaves
+      const kk = 1 - Math.pow(.7, Math.min(dt, 6)), same = S.meta === r.meta && dt <= 10;
+      if (r.body) { if (!S.sb || !same) S.sb = r.body.slice(); else { S.sb[0] += (r.body[0] - S.sb[0]) * kk; S.sb[1] += (r.body[1] - S.sb[1]) * kk; } } else S.sb = null;
+      const prevA = same ? S.armRuns || [] : [];
+      S.armRuns = r.arms.map(u => { const m = prevA.find(v => v[0] - 5 < u[1] && v[1] + 5 > u[0]); return [u[0], u[1], (m ? m[2] : 0) + dt]; });
+      S.ghost = (S.ghost || []).map(g => [g[0], g[1], g[2] - dt * .1]).filter(g => g[2] > 0);
+      for (const v of prevA) if (!S.armRuns.find(u => v[0] - 5 < u[1] && v[1] + 5 > u[0])) S.ghost.push([v[0], v[1], 1]);
       S.cd -= dt; S.t = G.t; S.meta = r.meta; S.body = r.body; S.arms = r.arms; S.y = r.y;
     }
     for (const o in MS) if (!RECS[o]) { MS[o].body = null; MS[o].arms = []; MS[o].act *= .9; MS[o].meta = null; }
@@ -550,7 +560,7 @@ const SL = (() => {
       if (ph === 'plain') {
         OPEN_AT.forEach((x, i) => { if (C2.x > x && !capsSaid.has(i)) { capsSaid.add(i); caption([LEVEL2_OPENING[i]]); } });
         if (C2.x > -1300 && !nearSaid) { nearSaid = true; caption(NEAR); }
-        if (C2.x >= FALL_X) { C2.stand = 0; C2.sd = null; ph = 'fall'; G.state = 'auto'; G.capQ.length = 0; C2.fallT = 0; C2.fy = C2.y; sfxS.fall(); clearHint('walk'); splash(C2.x, 16, 1.5); if (pli) splash(pli.x, 14, 1.4); for (const fx of [C2.x, pli ? pli.x : null]) if (fx != null) { fPush(fx, -3, 9); fPush(fx - 20, 2.4, 8); fPush(fx + 20, 2.4, 8); } }
+        if (C2.x >= FALL_X) { C2.stand = 0; C2.sd = null; ph = 'fall'; G.state = 'auto'; G.capQ.length = 0; C2.fallT = 0; C2.fy = C2.y; sfxS.fall(); clearHint('walk'); splash(C2.x, 13, 1.15); if (pli) splash(pli.x, 11, 1.1); for (const fx of [C2.x, pli ? pli.x : null]) if (fx != null) { fPush(fx, -3, 9); fPush(fx - 20, 2.4, 8); fPush(fx + 20, 2.4, 8); } }
         if (!G.walked && G.t > 400 && C2.x < START + 20) { G.walked = true; hint('walk', 'Hold to walk.'); }
         if (want) clearHint('walk');
       } else {
@@ -684,10 +694,10 @@ const SL = (() => {
         const M = META.climb, last = PLIC.length - 1, endX = HOME0 + (M.ax - M.end) * CHR_K;
         if (pli.ct == null) { pli.dx0 = pli.x - (HOME0 + (M.ax - M.c0) * CHR_K); pli.dy0 = (pli.y - (PLI_META.ground - 5) * CHR_K) - (M.sink - (M.ground - M.top0) * CHR_K); pli.c0 = 0; }
         if (pli.dxo == null) pli.dxo = pli.dx0;
-        const pong = () => { const L = 34, u = pli.wt % (2 * L); pli.ct = 2 + (u < L ? u : 2 * L - u); pli.c0 = pli.ct; };
+        const pong = () => { const L = 34; pli.ct = 2 + L * (1 - Math.cos(Math.PI * pli.wt / L)) / 2; pli.c0 = pli.ct; };      // build 180: eased at each turn (it reversed at full speed, a jerk)
         if (pli.wal) {      // wallowing: the video's first three seconds back and forth, in bursts, sinking with Christian
           const b = burst(4); pli.wt = (pli.wt || 0) + (calm ? .03 : .04 + .2 * b); pong();
-          pli.dy0 = ((pli.sy ?? pli.y) - (PLI_META.ground - 5) * CHR_K) - (M.sink - (M.ground - M.top0) * CHR_K); pli.wk = Math.min(1, pli.wk + .04);
+          pli.dy0 = ((pli.sy ?? pli.y) - (PLI_META.ground - 5) * CHR_K) - (M.sink - (M.ground - M.top0) * CHR_K); pli.wk = Math.min(1, pli.wk + .11);
         } else if (pli.dxo > .5) {      // build 121: he is well out in the slough: he struggles back toward his own side first
           pli.dxo = Math.max(0, pli.dxo - .32); pli.wt = (pli.wt || 0) + .2; pong();
         } else { pli.ct = Math.min(last, (pli.ct || 0) + .2); }
@@ -723,7 +733,7 @@ const SL = (() => {
     }
     for (const s of steps) if (s.lit) s.lit = Math.min(1, s.lit + .02);
     for (const r of rings) r.t++; rings = rings.filter(r => r.t < 150);
-    for (const d of drops) { d.t++; d.x += d.vx; d.y += d.vy; d.vy += .16; if (d.y > 0 && Math.random() < .25) rings.push({ x: d.x, y: 0, t: 70, k: .28 }); }
+    for (const d of drops) { d.t++; d.x += d.vx * .97; d.y += d.vy; d.vy += .21; if (d.y > 0 && Math.random() < .25) rings.push({ x: d.x, y: 0, t: 70, k: .28 }); }
     drops = drops.filter(d => d.y <= 0 && d.t < 120);
     for (const c of churns) c.a -= .0045; churns = churns.filter(c => c.a > 0); if (churns.length > 40) churns.splice(0, churns.length - 40);
     // --- the camera draws back in the mire, and the look follows the story: gold on the plain, mist and grey in the bog ---
@@ -989,7 +999,10 @@ const SL = (() => {
     { // (1), (2): the surface line, lifted by the field and by a collar hugging every crossing; seen near the bodies and
       // wherever the mud has been moved, and only where there is mud
       const runs = [];
-      for (const o in RECS) { const r = RECS[o], act = MS[o] ? MS[o].act : 0; if (r.body) runs.push([r.body[0], r.body[1], 3.2 + 4.5 * act]); for (const u of r.arms || []) runs.push([u[0], u[1], 2.2 + 2 * act]); }
+      for (const o in RECS) { const r = RECS[o], S = MS[o] || {}, act = S.act || 0, b = S.sb || r.body;
+        if (b) runs.push([b[0], b[1], 3.2 + 4.5 * act]);
+        for (const u of S.armRuns || []) runs.push([u[0], u[1], (2.2 + 2 * act) * smooth(0, 8, u[2])]);
+        for (const g of S.ghost || []) runs.push([g[0], g[1], (2.2 + 2 * act) * g[2]]); }
       const coll = x => { let c = 0, p = 0;
         for (const [a, b, C] of runs) { const d = x < a ? a - x : x > b ? x - b : 0;
           if (!d) { c = Math.max(c, C * (.62 + .38 * Math.exp(-(((Math.min(x - a, b - x)) / 5) ** 2)))); p = 1; }
@@ -1120,7 +1133,9 @@ const SL = (() => {
     // in the mire he heaves and struggles (one video loop) instead of walking
     // build 141: his floundering picture ends at the waist, so it only comes in once he has sunk nearly that far (it came
     // in by the clock, while he was still knee-deep, and blank paper showed under him)
-    const wk = Math.min(ph === 'fall' ? smooth(20, 50, C2.fallT) : 1, smooth(44, 57, C2.y)); let wa = 1;      // build 119: he flounders from the fall on
+    // build 180: the struggling picture comes in quickly (about a sixth of a second) once he is in to the hips, under the
+    // splash, instead of a long double picture while he sank from 44 to 57
+    const wk = ph === 'fall' ? smooth(36, 46, C2.fallT) : smooth(36, 40, C2.y); let wa = 1;      // build 119: he flounders from the fall on
     if (WADE.length && inWater && wk > 0 && ['fall', 'pli', 'back', 'backtalk', 'wade', 'stuck', 'help'].includes(ph)) {
       if (wk < 1) figure(n, 'chr0', walkIm, CHR_META, C2.x, C2.y, C2.face, fig, true, alpha * C2.alpha * (1 - smooth(.5, 1, wk)));
       walkIm = WADE[Math.floor(C2.wa || 0) % WADE.length]; walkM = META.wade; wa = smooth(0, .5, wk); FIG_DIP = 46; }
@@ -1138,11 +1153,13 @@ const SL = (() => {
       if (C2.stand < 1) figure(n, 'chr', walkIm, CHR_META, C2.x, C2.y, C2.face, fig, false, alpha * (1 - C2.stand) * C2.alpha);
       return;
     }
-    figure(n, 'chr', walkIm, walkM, C2.x, C2.y, C2.face, fig, inWater, alpha * C2.alpha * wa); FIG_DIP = 0;
+    // build 180: the struggling picture is never shown higher than its own mud line (58: five units of filled body, hidden by the
+    // collar); while he is still shallower than that it stands a little deeper than his walking picture, under the splash
+    figure(n, 'chr', walkIm, walkM, C2.x, walkM === META.wade ? Math.max(C2.y, 58) : C2.y, C2.face, fig, inWater, alpha * C2.alpha * wa); FIG_DIP = 0;
   }
 
   // for testing: SL.peek() tells where the story is
   // grow, ribbons: the tree grower and its painter, for Level 3's oak in leaf (hill.js, bakeOak): keep these exports
   // oakPic: the great oak baked small in one colour, for Level 1's far glimpse of the Slough (index.html, drawFarSlough)
-  return { on: false, show: false, title, start, update, draw, touch, grip, pick, preload, lines: ALL, oakPic: (col, k) => bakeTree(oak(18), col, k), grow: (seed, hero, depth) => oak(seed, hero, depth), ribbons, peek: () => ({ ph, x: C2.x, y: C2.y, mv: mv && mv.t, lift: lift && lift.t, pli: pli && pli.mode, plx: pli && Math.round(pli.x), plStop: !!(pli && pli.stop), cam, mud: { strings: strings.length, hmax: Math.max(...fh), hmin: Math.min(...fh), drops: drops.length, rings: rings.length } }) };
+  return { on: false, show: false, title, start, update, draw, touch, grip, pick, preload, lines: ALL, oakPic: (col, k) => bakeTree(oak(18), col, k), grow: (seed, hero, depth) => oak(seed, hero, depth), ribbons, peek: () => ({ ph, x: C2.x, y: C2.y, mv: mv && mv.t, lift: lift && lift.t, pli: pli && pli.mode, plx: pli && Math.round(pli.x), plStop: !!(pli && pli.stop), cam, mud: { strings: strings.length, hmax: Math.max(...fh), hmin: Math.min(...fh), drops: drops.length, rings: rings.length, recs: Object.fromEntries(Object.entries(RECS).map(([o, r]) => [o, { body: r.body, arms: (r.arms || []).length, act: MS[o] ? MS[o].act : 0, y: r.y, a: r.a }])) }, c2: { wa: C2.wa, D: C2.D, rt: C2.rt, reach: C2.reach, fallT: C2.fallT }, pl: pli && { y: pli.y, ct: pli.ct, wt: pli.wt, x: pli.x, duck: pli.duck, mode: pli.mode, out: pli.out } }) };
 })();
