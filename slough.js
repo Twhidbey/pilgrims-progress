@@ -60,6 +60,14 @@ const SL = (() => {
 
   // ---------- the land ----------
   const bankN = noise2(4), cloudN = noise2(21);
+  // how much standing water there is across the slough (0 by the home bank .. 1 by the far bank), and whether a place
+  // (x along the level, yy down the picture from the surface line) is pool (1) or mud (0): see mudMap in build()
+  const wetAt = x => smooth(-800, -215, x);
+  // (the noise runs between about .3 and .7, so the threshold crosses that range slowly from one bank to the other: a few
+  // small pools at first, more and bigger ones further on, open water at last; long across and thin down the picture,
+  // since pools are seen edge-on)
+  const poolAt = (x, yy) => { const w = smooth(-770, -225, x), T = .86 - .52 * w, n = .6 * cloudN(x * .009, yy * .3 + 3) + .4 * cloudN(x * .024 + 9, yy * .55 + 1); return smooth(T - .022, T + .022, n); };
+  const MUD_X0 = -1010, MUD_W = 880, MUD_H = 270;
   const BANK0 = -160, HOME0 = -1010;                       // where each bank meets the water
   const WATER_L = -1250;                                  // the water in front of everything begins here; to the left is the plain
   // build 121 (owner: "feet connecting with ground once Christian hits the right side is a continuous problem"): the far
@@ -154,7 +162,7 @@ const SL = (() => {
     return { c, x0: x0 - 2 / k, y0: y0 - 2 / k, k };
   }
   const putTree = (c, b, x, y, s, sy = s) => c.drawImage(b.c, x + b.x0 * s, y + b.y0 * sy, b.c.width / b.k * s, b.c.height / b.k * sy);
-  let OAK = null, GHOSTS = null, skyMist = null, skyClear = null, paper = null, threads = null, puff = null, fogBank = null, built = false;
+  let OAK = null, GHOSTS = null, skyMist = null, skyClear = null, paper = null, threads = null, puff = null, fogBank = null, mudMap = null, built = false;
   function build() {
     if (built) return; built = true;
     OAK = bakeTree(oak(18), tone(.02), 1.3);
@@ -179,6 +187,19 @@ const SL = (() => {
     // THE MIST ROUND HELP, build 118 (owner: "make fog / mist around help less circular"): one long bank baked once from
     // cloud noise: a ragged top, tall and thick at its left end (where Help stands) and lower and thinner to the right,
     // torn into wisps, its left edge uneven. No round shapes. Drawn small and stretched, so it is soft.
+    // THE SLOUGH IS MUD WITH POOLS IN IT (build 132, owner: "maybe reflection can taper on as we go right. think pools and
+    // mud and how they interact - really stress big picture thinking"). One map of the whole surface between the banks
+    // says, for every place, mud (opaque, dull, nothing mirrored) or standing water (clear: it mirrors). By the home
+    // bank it is all mud; going right, small flat pools open in it, grow, join, and by the far bank it is open water
+    // with only a few tongues of mud. The mirror is never faded: a place either mirrors or it does not, and "more
+    // reflection to the right" comes from more water. Pools are long and flat (we see them edge-on) and bigger toward
+    // us. mudMap: 1 px to the unit across, MUD_H rows down from the surface line; white, its alpha = mud.
+    mudMap = mk(MUD_W, MUD_H); { const c = mudMap.getContext('2d'), d = c.createImageData(MUD_W, MUD_H);
+      for (let j = 0; j < MUD_H; j++) for (let i = 0; i < MUD_W; i++) {
+        const x = MUD_X0 + i, yy = Math.pow(j + 1, .82), a = 1 - poolAt(x, yy);
+        const o = (j * MUD_W + i) * 4; d.data[o] = d.data[o + 1] = d.data[o + 2] = 255; d.data[o + 3] = 255 * clamp(a * smooth(HOME0 + 5, HOME0 + 75, x));
+      }
+      c.putImageData(d, 0, 0); }
     fogBank = mk(360, 96); { const c = fogBank.getContext('2d'), d = c.createImageData(360, 96), col = tone(.93);
       for (let j = 0; j < 96; j++) for (let i = 0; i < 360; i++) {
         const u = i / 359, up = 1 - j / 95;
@@ -615,7 +636,7 @@ const SL = (() => {
   }
 
   // ---------- drawing ----------
-  let nearC = null, mudGd = null, chrLate = 0; const mudCh = [];
+  let nearC = null, mudC = null, mudGd = null, chrLate = 0; const mudCh = [];
   function draw() {
     if (!nearC || nearC.width !== cv.width || nearC.height !== cv.height) nearC = mk(cv.width, cv.height);
     const { z, cx, wl } = cam, hor = wl - 140 * z, S = DPR;
@@ -751,9 +772,10 @@ const SL = (() => {
     // with a faint light on the near lip (bright thin rings read as clear water; broken pieces looked like a target).
     const ripples = far => { for (const r of rings) {
       const u = r.t / 150, cxr = X(r.x), cyr = wl + 1 + r.y * z, a0 = far ? Math.PI : 0, a1 = far ? 2 * Math.PI : Math.PI;
-      for (let i = 1; i <= 2; i++) { const rx = (14 + i * 18 + u * 46) * z * r.k, ry = rx * .17, a = (1 - u) * (1 - i * .28) * (far ? .75 : 1);
-        ctx.lineWidth = far ? 2 : 2.6; ctx.strokeStyle = css(DARK, (far ? .28 : .38) * a); ctx.beginPath(); ctx.ellipse(cxr, cyr, rx, ry, 0, a0, a1); ctx.stroke();
-        if (!far) { ctx.lineWidth = 1; ctx.strokeStyle = css(LIGHT, .3 * a); ctx.beginPath(); ctx.ellipse(cxr, cyr + 1.9, rx, ry, 0, .2, 2.94); ctx.stroke(); } }
+      const wet = wetAt(r.x);      // build 132: in mud a slow dark swell; the more water there is, the quicker, wider and brighter the ring
+      for (let i = 1; i <= 2; i++) { const rx = (14 + i * 18 + u * lerp(46, 78, wet)) * z * r.k, ry = rx * .17, a = (1 - u) * (1 - i * .28) * (far ? .75 : 1);
+        ctx.lineWidth = (far ? 2 : 2.6) * (1 - .45 * wet); ctx.strokeStyle = css(DARK, (far ? .28 : .38) * a * (1 - .5 * wet)); ctx.beginPath(); ctx.ellipse(cxr, cyr, rx, ry, 0, a0, a1); ctx.stroke();
+        if (!far || wet > .3) { ctx.lineWidth = 1; ctx.strokeStyle = css(LIGHT, (.3 + .4 * wet) * a * (far ? wet : 1)); ctx.beginPath(); ctx.ellipse(cxr, cyr + 1.9, rx, ry, 0, far ? Math.PI : .2, far ? 2 * Math.PI : 2.94); ctx.stroke(); } }
     } };
     ripples(true);
     if (ph !== 'plain') threadsNow();
@@ -797,16 +819,22 @@ const SL = (() => {
       // just been churned a dark wet patch shows at the surface round whoever is struggling, with the rings lying on it
       const gd = ctx.createLinearGradient(0, wl - 16 * z, 0, wl + 44 * z); gd.addColorStop(0, css(tone(.24), 0)); gd.addColorStop(.2, css(tone(.24), .5)); gd.addColorStop(.3, css(tone(.24), .72)); gd.addColorStop(.55, css(tone(.3), .36)); gd.addColorStop(1, css(tone(.34), 0));      // it begins a little above the surface: the figures' own pictures fade out just above the mud line, and the churned mud must come up to meet them
       const bw = 5; mudCh.length = 0; mudGd = gd;
+      // the mud, laid over the mirror through the map of mud and pools; wherever someone has just churned it, a pool is
+      // stirred to mud for a few seconds (churns) and then clears again. (Christian in the mire is drawn after the mirror
+      // is made, chrLate, so he never has a reflection: where he flounders no pool would stay clear.)
+      if (!mudC || mudC.width !== cv.width || mudC.height !== cv.height) mudC = mk(cv.width, cv.height);
+      { const mc = mudC.getContext('2d'); mc.setTransform(S, 0, 0, S, 0, 0); mc.globalCompositeOperation = 'source-over'; mc.globalAlpha = 1; mc.clearRect(0, 0, VW, VH);
+        mc.imageSmoothingEnabled = true; mc.drawImage(mudMap, X(MUD_X0), wl + 1, MUD_W * z, MUD_H * z);
+        for (const c of churns) { const a = Math.min(1, c.a * 2.2), mx = X(c.x); if (mx < -200 || mx > VW + 200) continue;
+          mc.save(); mc.translate(mx, wl); mc.scale(105 * z, 95 * z); const q = mc.createRadialGradient(0, 0, 0, 0, 0, 1); q.addColorStop(0, 'rgba(255,255,255,' + a + ')'); q.addColorStop(.6, 'rgba(255,255,255,' + a * .85 + ')'); q.addColorStop(1, 'rgba(255,255,255,0)');
+          mc.fillStyle = q; mc.fillRect(-1, 0, 2, 1); mc.restore(); }
+        mc.globalCompositeOperation = 'source-in'; const q = mc.createLinearGradient(0, hor, 0, VH); q.addColorStop(0, css(tone(.86))); q.addColorStop(.3, css(tone(lerp(.7, .78, look.mist)))); q.addColorStop(1, css(tone(lerp(.44, .56, look.mist))));
+        mc.fillStyle = q; mc.fillRect(0, wl, VW, VH - wl); mc.globalCompositeOperation = 'source-over'; }
+      ctx.drawImage(mudC, 0, 0, VW, VH);
       for (let sx = Math.floor(wx0 / bw) * bw; sx < VW; sx += bw) {
         const x = (sx + bw / 2 - VW / 2) / z + cx;
-        // build 131 (owner: "can probably kick out reflection all together in mud"): the mire is opaque now, nothing is
-        // mirrored in it; and Christian, while he is in it, is drawn after the mirror is
-        // made (chrLate, below), so he has no reflection even by the far bank where the water is clear. Only what stands on
-        // land or in clear water is mirrored.
-        let m = smooth(HOME0 + 5, HOME0 + 75, x) * (1 - smooth(-640, -300, x)), ch = 0;
+        let ch = 0;
         for (const c of churns) { const u = (x - c.x) / 75; if (u > -2.6 && u < 2.6) ch = Math.max(ch, Math.min(1, c.a * 2.2) * Math.exp(-u * u)); }      // the strongest one counts (summed, many churns made a flat slab with hard ends)
-        m += .75 * ch;
-        if (m > .02) { ctx.fillStyle = g; const am = Math.min(1, m); ctx.globalAlpha = am * .35; ctx.fillRect(sx, wl + 1, bw, 3); ctx.globalAlpha = am * .7; ctx.fillRect(sx, wl + 4, bw, 4); ctx.globalAlpha = am; ctx.fillRect(sx, wl + 8, bw, VH - wl); }
         if (ch > .01) mudCh.push([sx, Math.pow(ch, 1.4)]);
       }
       ctx.globalAlpha = 1;
