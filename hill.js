@@ -420,6 +420,16 @@ const HL = (() => {
         if (burn > .01) { c.save(); c.globalCompositeOperation = 'screen';
           const g = c.createRadialGradient(sx0, sy0 + 40 * k, 0, sx0, sy0 + 40 * k, 620 * k); g.addColorStop(0, css([255, 224, 176], .8 * burn)); g.addColorStop(.12, css([246, 170, 110], .5 * burn)); g.addColorStop(.42, css([176, 92, 70], .24 * burn)); g.addColorStop(1, css([110, 50, 50], 0));
           c.fillStyle = g; c.fillRect(sx0 - 620 * k, sy0 - 580 * k, 1240 * k, 1240 * k); c.restore(); }
+        // A CANOPY OF CLOUD, THE MIDDLE WAY (owner, build 151: asked for pros and cons of more cloud, chose the middle
+        // way). The sky BEHIND THE HILL'S OUTLINE stays clear and glowing, so the black shape still reads; cloud
+        // gathers only in the top of the sky and on the far left, where the plume flows into it. Dark billows,
+        // those near the summit faintly lit from beneath; at a flash the light is inside the cloud. Drawn before
+        // the hill, so nothing of it lies over the hill.
+        if (dark > .02) { for (let i = 0; i < 34; i++) { const h1 = Math.sin(i * 39.3468) * 24634.6345, h2 = Math.sin(i * 11.135) * 7541.931, h3 = Math.sin(i * 73.156) * 3141.59, r1 = h1 - Math.floor(h1), r2 = h2 - Math.floor(h2), r3 = h3 - Math.floor(h3);
+            const left = r1 * r1, px = sx0 + (420 - 2100 * r1) * k + 26 * k * Math.sin(G.t / 700 + i), py = sy0 - (60 + 250 * r2) * k + left * 430 * r3 * k, rr = (120 + 200 * r3) * k, P = PUFF[i % 3];
+            c.globalCompositeOperation = 'source-over'; c.globalAlpha = dark * (.5 + .3 * r2); c.drawImage(P.d, px - rr, py - rr * .62, 2 * rr, 1.24 * rr);
+            const near = Math.max(0, 1 - Math.hypot(px - sx0, py - sy0) / (760 * k)), la = burn * (.13 + .36 * near * near) + F * .3 * near; if (la > .01) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = la; c.drawImage(P.l, px - rr, py - rr * .62, 2 * rr, 1.24 * rr); } }
+          c.globalCompositeOperation = 'source-over'; c.globalAlpha = 1; }
         // the hill: fair and far off at first, black under its own cloud when he stands by it
         const dx = hx - HOX * k, dy = hy - HOY * k;
         c.globalAlpha = 1; c.drawImage(HILL[0], dx, dy, HW * k, HH * k); if (dark > .01) { c.globalAlpha = dark; c.drawImage(HILL[1], dx, dy, HW * k, HH * k); c.globalAlpha = 1; }
@@ -455,7 +465,6 @@ const HL = (() => {
         { const tc = tintC.town || (tintC.town = mk(400, 70)), t = tc.getContext('2d'); t.globalCompositeOperation = 'source-over'; t.clearRect(0, 0, 400, 70); t.drawImage(TOWN, 0, 0); t.globalCompositeOperation = 'source-in'; t.fillStyle = css(mix(mix(far, top, .4), [46, 42, 50], dark * .7)); t.fillRect(0, 0, 400, 70); c.drawImage(tc, tx, ty - th, tw, th); }
         for (const [wx, wy] of TOWN.lit) { c.fillStyle = css([255, 214, 140], .5 + .4 * dark); c.fillRect(tx + wx * tw / 400, ty - th + wy * th / 70, Math.max(1.5, 3.6 * z), Math.max(1.5, 3.6 * z)); }
         // the cloud on the summit: a towering column that leans with the wind and spreads, dark, lit from within
-        if (dark > .02) { c.globalCompositeOperation = 'multiply'; c.globalAlpha = .8 * dark; c.drawImage(CLOUD, sx0 - 1500 * k, sy0 - 520 * k, 2300 * k, 520 * k); c.globalAlpha = .55 * dark; c.drawImage(CLOUD, sx0 - 700 * k, sy0 - 400 * k, 1700 * k, 380 * k); }
         // THE SMOKE IN THE SKY (owner, build 146, of the reference painting: "the red ... was too much but I did like
         // smoke in sky - that was cool"). A great slow plume: it rises from the summit, bends with the wind and
         // rolls away across the sky over his head, growing and thinning as it goes. Soft round billows, dark, the
