@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Record the story's spoken lines with Google's speech service (Gemini TTS) into assets/voice/*.mp3.
 
-It reads every spoken line straight out of index.html and slough.js (Level 2) (anything written as [N, '...'], [C, '...'],
-[E, '...'], [O, '...'], [PL, '...'], [W, '...'] or [H, '...']), so the words on screen and the recordings cannot drift apart. Each line becomes one small
+It reads every spoken line straight out of index.html, slough.js (Level 2) and hill.js (Level 3) (anything written as [N, '...'], [C, '...'],
+[E, '...'], [O, '...'], [PL, '...'], [W, '...'], [H, '...'] or [WW, '...']), so the words on screen and the recordings cannot drift apart. Each line becomes one small
 MP3 named by a hash of who says it and the words; the game works out the same name (voiceName() in index.html).
 Only missing lines are recorded; recordings of lines that no longer exist are deleted (keep the files trim).
 
@@ -21,8 +21,9 @@ API = 'https://generativelanguage.googleapis.com/v1beta'
 TTS, EAR = 'gemini-3.8-flash-tts', 'gemini-3.8-flash'
 VOICES = {'N': 'voice_zqnt5xdln1kq', 'C': 'voice_xp9kua42jfe2', 'E': 'voice_x361phwkq8td',      # storyteller, Christian, Evangelist
           'O': 'voice_a69c9ezmlhxf', 'PL': 'voice_42c9jyj3oc93', 'W': 'voice_ttq297s4wa5y',     # Obstinate, Pliable (boyish), Christian's wife
-          'H': 'voice_njlpqcyvcd0a'}      # Help (Level 2), designed in build 91 from the description in HANDOFF.md (build 87)
-WHO = {'N': '', 'C': 'Christian', 'E': 'Evangelist', 'O': 'Obstinate', 'PL': 'Pliable', 'W': 'His wife', 'H': 'Help'}
+          'H': 'voice_njlpqcyvcd0a',      # Help (Level 2), designed in build 91 from the description in HANDOFF.md (build 87)
+          'WW': 'voice_5pb813zhf90w'}     # Mr. Worldly Wiseman (Level 3), designed in build 143 (description in HANDOFF.md)
+WHO = {'N': '', 'C': 'Christian', 'E': 'Evangelist', 'O': 'Obstinate', 'PL': 'Pliable', 'W': 'His wife', 'H': 'Help', 'WW': 'Mr. Worldly Wiseman'}
 KEY = os.environ.get('GEMINI_API_KEY', '')
 # HOW A LINE IS SAID (build 125, owner: "are him and Christian voices stressed as they sink ?? Seems like they would be more
 # desperate"): a line listed here is recorded with these tags in square brackets in front of it. The speech model acts
@@ -36,6 +37,12 @@ STYLE = {
     "No. I must struggle on, toward the gate.": "[straining, through gritted teeth, determined, out of breath]",
     "Sir, I was told to go this way by a man called Evangelist. As I was going to the gate, I fell in here.": "[exhausted, out of breath, pleading]",
     "Fear followed me so hard that I fled the nearest way, and fell in.": "[exhausted, ashamed, out of breath]",
+    # Level 3 (build 143): under the burning hill and before Evangelist
+    "Woe is me, for I am undone!": "[crying out, broken, in tears]",
+    "Yes, dear sir, I am the man.": "[ashamed, quiet, trembling]",
+    "Yes, dear sir.": "[ashamed, quiet]",
+    "Sir, what do you think? Is there hope? May I now go back, and go up to the wicket-gate? I am sorry I listened to this man. But may my sin be forgiven?": "[trembling, pleading, close to tears]",
+    "May I now enter here? Will he within open to sorry me?": "[hopeful, humble, a little out of breath]",
 }
 
 def call(path, body):
@@ -75,9 +82,9 @@ def record(code, text, dest):
 
 def main():
     redo = sys.argv[sys.argv.index('--redo') + 1] if '--redo' in sys.argv else ''
-    src = ''.join(open(os.path.join(ROOT, f), encoding='utf-8').read() for f in ('index.html', 'slough.js'))
+    src = ''.join(open(os.path.join(ROOT, f), encoding='utf-8').read() for f in ('index.html', 'slough.js', 'hill.js'))
     lines = []
-    for code, text in re.findall(r"\[(N|C|E|O|PL|W|H), '((?:[^'\\]|\\.)*)'", src):
+    for code, text in re.findall(r"\[(N|C|E|O|PL|WW|W|H), '((?:[^'\\]|\\.)*)'", src):
         text = text.replace("\\'", "'")
         if (code, text) not in lines: lines.append((code, text))
     os.makedirs(OUT, exist_ok=True)
