@@ -20,10 +20,10 @@ canvas{display:block;width:100%;height:100%}
 button{font-family:Georgia,'Times New Roman',serif;-webkit-appearance:none;appearance:none}
 /* title and end: pale words over the living scene, no box */
 .card{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;font-family:Georgia,'Times New Roman',serif;color:#f4ecdc;text-shadow:0 1px 10px rgba(8,10,16,.75);transition:opacity 1.6s ease}
-.card h1{font-weight:400;font-style:italic;font-size:clamp(28px,6.5vw,64px);margin:0 0 .12em;letter-spacing:.5px}
-.card h2{font-weight:400;font-size:clamp(13px,2.3vw,22px);margin:0 0 1.3em;color:rgba(244,236,220,.82);letter-spacing:.14em;text-transform:uppercase}
-.card p{font-size:clamp(14px,2.2vw,20px);margin:.25em 1em;color:rgba(244,236,220,.9)}
-.btn{font-size:clamp(16px,2.6vw,24px);font-style:italic;padding:.4em 1.7em;border-radius:40px;border:1px solid rgba(244,236,220,.7);background:rgba(20,22,30,.28);color:#f4ecdc;cursor:pointer;margin:.7em .3em 0}
+.card h1{font-weight:400;font-style:italic;font-size:calc(var(--s,1) * 56px);margin:0 0 .12em;letter-spacing:.5px}
+.card h2{font-weight:400;font-size:calc(var(--s,1) * 19px);margin:0 0 1.3em;color:rgba(244,236,220,.82);letter-spacing:.14em;text-transform:uppercase}
+.card p{font-size:calc(var(--s,1) * 19px);margin:.25em 1em;color:rgba(244,236,220,.9)}
+.btn{font-size:calc(var(--s,1) * 22px);font-style:italic;padding:.4em 1.7em;border-radius:40px;border:1px solid rgba(244,236,220,.7);background:rgba(20,22,30,.28);color:#f4ecdc;cursor:pointer;margin:.7em .3em 0}
 .btn:active{transform:scale(.96)}
 #title{background:radial-gradient(ellipse at 50% 45%,rgba(18,20,28,.2),rgba(18,20,28,.62))}
 #endc{background:radial-gradient(ellipse at 50% 45%,rgba(60,40,10,.05),rgba(40,26,8,.42));opacity:0;pointer-events:none}
@@ -54,7 +54,7 @@ body.playing #snd,body.opened #snd{display:block}
 #levels .btn i{font-style:normal;opacity:.6;margin-right:.5em}
 #levels .btn.dim{border-color:rgba(244,236,220,.3);color:rgba(244,236,220,.72)}
 #snd.off{color:rgba(244,236,220,.35);text-decoration:line-through}
-#build{position:absolute;right:1.2%;bottom:1%;font:12px Georgia,serif;color:rgba(255,250,235,.7);text-shadow:0 0 3px rgba(0,0,0,.7);pointer-events:none}
+#build{position:absolute;right:1.2%;bottom:1%;font:max(8px,calc(var(--s,1) * 12px)) Georgia,serif;color:rgba(255,250,235,.7);text-shadow:0 0 3px rgba(0,0,0,.7);pointer-events:none}
 body.talking #build,body.capped #build{visibility:hidden}
 #rot{position:fixed;left:0;right:0;text-align:center;font:15px Georgia,serif;color:#cfc6bb;display:none}
 body.portrait #rot{display:block}
@@ -76,7 +76,7 @@ body.portrait #rot{display:block}
     </div>
   </div>
   <div id="endc" class="card">
-    <h1 style="font-size:clamp(24px,5vw,48px)">Out of the city</h1>
+    <h1 style="font-size:calc(var(--s,1) * 44px)">Out of the city</h1>
     <p>He went on toward the light, and Pliable with him.</p>
     <p style="color:rgba(244,236,220,.7)">Next: the Slough of Despond</p>
     <button class="btn" id="on2">Go on</button>
@@ -113,7 +113,10 @@ function fit() {
   stage.style.width = sw + 'px'; stage.style.height = sh + 'px';
   DPR = Math.min(2, (window.devicePixelRatio || 1) * sw / VW);
   cv.width = Math.round(VW * DPR); cv.height = Math.round(VH * DPR);
-  document.getElementById('rot').style.top = (sh + 26) + 'px';
+  // BUILD 143: the title and end cards are sized by the picture, not the screen, so they never spill out of it
+  // (portrait iPhone: the picture is only about 240 tall). A phone held upright gets them a little larger.
+  stage.style.setProperty('--s', Math.min(1.25, sw / VW * (portrait ? 1.4 : 1.12)).toFixed(3));
+  document.getElementById('rot').style.top = (stage.getBoundingClientRect().bottom + 22) + 'px';
 }
 addEventListener('resize', fit); fit();
 
