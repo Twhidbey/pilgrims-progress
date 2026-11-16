@@ -196,7 +196,10 @@ const HL = (() => {
       const W = im.width, H = im.height, src = mk(W, H), sk = src.getContext('2d'); sk.drawImage(im, 0, 0);
       const px = sk.getImageData(0, 0, W, H).data, R = rngS(91), c = mk(W, H), k = c.getContext('2d'), tw = [];
       // the form: the painting's own shape in one dark tone, the bark and the roots showing through faintly
-      k.drawImage(im, 0, 0); k.globalCompositeOperation = 'source-atop'; k.fillStyle = 'rgba(30,30,27,' + OAK_SIL + ')'; k.fillRect(0, 0, W, H); k.globalCompositeOperation = 'source-over';
+      k.drawImage(im, 0, 0); k.globalCompositeOperation = 'source-atop'; k.fillStyle = 'rgba(30,30,27,' + OAK_SIL + ')'; k.fillRect(0, 0, W, H);
+      // its foot: the grass the painting put there is turned to the road's own dark earth, so the roots end in the ground
+      { const g = k.createLinearGradient(0, OAK_META.ground - 26, 0, OAK_META.ground + 6); g.addColorStop(0, 'rgba(40,37,36,0)'); g.addColorStop(1, 'rgba(40,37,36,1)'); k.fillStyle = g; k.fillRect(0, OAK_META.ground - 26, W, H); }
+      k.globalCompositeOperation = 'source-over';
       // the leaves, drawn: one small touch wherever the painting has a leaf (a jittered grid), toned by how light that leaf was
       for (let y = 3; y < H * .7; y += 5) for (let x = 3; x < W; x += 5) { const xx = Math.min(W - 1, Math.max(0, Math.round(x + (R() - .5) * 5))), yy = Math.round(y + (R() - .5) * 5), i = (yy * W + xx) * 4;
         if (px[i + 3] < 190) continue; const r = px[i], g = px[i + 1], b = px[i + 2]; if (g < b * 1.22 || r > g * 1.22) continue;
@@ -590,34 +593,6 @@ const HL = (() => {
         fg.addColorStop(0, css(fc, 0)); fg.addColorStop(.7, css(fc, .9)); fg.addColorStop(1, css(fc, 1)); c.fillStyle = fg; c.fillRect(0, hy - 34 * k, VW, 48 * k);
       }
     }
-    // THE OAK IN LEAF where the two ways cross (owner, build 158: "the tree at beginning needs redo - the color scheme too -
-    // like the green but we need beautiful and intriguing entry - think about the artist we are using - maybe a
-    // generated tree like slough but with leaves"). Grown by the Slough's own tree code with another seed, so it is
-    // kin to the bare black oak over the mire, but alive: he is out of the slough. It stands as the great dark tree
-    // of John Martin's quiet pictures (The Plains of Heaven), its long limb reaching over the place where the two
-    // meet, with the light of late afternoon in the edge of its crown.
-    if (OAKP) { const M = OAK_META, s = M.k * z, tx = VW / 2 + (MEET - 150 - cx) * .92 * z, ty = Y(-2), x0 = tx - M.ax * s, y0 = ty - M.ground * s, w = M.w * s, h = M.h * s;
-      if (x0 < VW && x0 + w > 0) {
-        { c.save(); c.translate(tx + 70 * z, Y(-1)); c.scale(1, .09); const g = c.createRadialGradient(0, 0, 0, 0, 0, 360 * z); g.addColorStop(0, css([14, 26, 20], .46 * (1 - dark))); g.addColorStop(1, css([14, 26, 20], 0)); c.fillStyle = g; c.fillRect(-360 * z, -360 * z, 720 * z, 720 * z); c.restore(); }
-        c.drawImage(OAKP.c, x0, y0, w, h);
-        if (dark < .5) { c.save(); c.globalCompositeOperation = 'lighter'; OAKP.tw.forEach(([px, py], i) => { const v = Math.sin(G.t / (26 + (i * 37) % 60) + i * 2.4); if (v < .55) return; const al = Math.pow((v - .55) / .45, 2) * .7 * (1 - 2 * dark);
-            c.fillStyle = css([255, 238, 180], al); c.beginPath(); c.arc(x0 + px * s, y0 + py * s, (1 + 1.1 * al) * z, 0, 7); c.fill(); }); c.restore(); }
-        if (dark > .02) { c.globalAlpha = Math.min(1, dark * .85); c.drawImage(OAKP.d, x0, y0, w, h); c.globalAlpha = 1; }
-        if (dark < .6) for (let i = 0; i < 7; i++) { const T = 620 + i * 97, u = ((G.t + i * 233) % T) / T, lx2 = tx + (-90 + i * 60 + 34 * Math.sin(u * 7 + i)) * z + 50 * u * z, ly2 = ty - (260 - 30 * (i % 3)) * z * (1 - u), al = Math.sin(Math.PI * u) * .9 * (1 - dark);
-          c.save(); c.translate(lx2, ly2); c.rotate(u * 9 + i); c.fillStyle = css([44, 50, 36], al); c.beginPath(); c.ellipse(0, 0, 3 * z, 1.3 * z, 0, 0, 7); c.fill(); c.restore(); } } }
-    if (!OAKP && !OAKL && typeof SL !== 'undefined' && SL.grow) OAKL = bakeOak();
-    if (!OAKP && OAKL) { const s = .88 * z, tx = VW / 2 + (MEET - 185 - cx) * .92 * z, ty = Y(-6), w = OAKL.c.width * s, h = OAKL.c.height * s, x0 = tx + OAKL.x0 * s, y0 = ty + OAKL.y0 * s;
-      if (x0 < VW && x0 + w > 0) {
-        // its shade on the field, flat
-        { c.save(); c.translate(tx + 60 * z, Y(-2)); c.scale(1, .1); const g = c.createRadialGradient(0, 0, 0, 0, 0, 330 * z); g.addColorStop(0, css([14, 30, 22], .42 * (1 - dark))); g.addColorStop(1, css([14, 30, 22], 0)); c.fillStyle = g; c.fillRect(-330 * z, -330 * z, 660 * z, 660 * z); c.restore(); }
-        c.drawImage(OAKL.c, x0, y0, w, h);
-        // sunlight twinkling in the leaves: each sunlit touch brightens for a moment in its own time
-        if (dark < .5) { c.save(); c.globalCompositeOperation = 'lighter'; for (const [lx3, ly3, ph3, per] of OAKL.tw) { const v = Math.sin(G.t / per + ph3); if (v < .55) continue; const al = Math.pow((v - .55) / .45, 2) * .75 * (1 - 2 * dark);
-            c.fillStyle = css([255, 238, 180], al); c.beginPath(); c.arc(tx + lx3 * s, ty + ly3 * s, (1.1 + 1.2 * al) * s, 0, 7); c.fill(); } c.restore(); }
-        if (dark > .02) { c.globalAlpha = Math.min(1, dark * .85); c.drawImage(OAKL.d, x0, y0, w, h); c.globalAlpha = 1; }
-        // a few leaves let go and drift down
-        if (dark < .6) for (let i = 0; i < 7; i++) { const T = 620 + i * 97, u = ((G.t + i * 233) % T) / T, lx2 = tx + (-110 + i * 46 + 34 * Math.sin(u * 7 + i)) * z + 50 * u * z, ly2 = ty - (220 - 30 * (i % 3)) * z * (1 - u), al = Math.sin(Math.PI * u) * .9 * (1 - dark);
-          c.save(); c.translate(lx2, ly2); c.rotate(u * 9 + i); c.fillStyle = css([40, 48, 40], al); c.beginPath(); c.ellipse(0, 0, 3 * z, 1.3 * z, 0, 0, 7); c.fill(); c.restore(); } } }
     // THE WICKET-GATE, AFTER REMBRANDT (builds 139, 140). Owner on build 139: "I like light on gate - bricks not doing it
     // for me - something about the light - door: not a fan - mountains ... their elevation compared to wall is distracting
     // - need artistic analysis especially regarding composition - think Rembrandt". What was wrong, and the rule kept
@@ -681,6 +656,36 @@ const HL = (() => {
     if (gateOn) { c.save(); c.globalCompositeOperation = 'lighter';
       for (const [px, rr, al, col] of [[lnx + 10 * z, 230 * z, .26 * flick, [255, 170, 90]], [gx - 30 * z, 400 * z, .6 * door, [255, 208, 134]]]) { if (al < .01) continue; c.save(); c.translate(px, Y(5)); c.scale(1, .09); const g = c.createRadialGradient(0, 0, 0, 0, 0, rr); g.addColorStop(0, css(col, al)); g.addColorStop(1, css(col, 0)); c.fillStyle = g; c.fillRect(-rr, -rr, 2 * rr, 2 * rr); c.restore(); }
       c.restore(); }
+    // (build 170, owner: "The tree roots need to reach brown ground or they didn't look right": the oak is drawn AFTER the road now,
+    // standing at the road's own edge and sliding with it, so its roots go down into the dark earth of the road)
+    // THE OAK IN LEAF where the two ways cross (owner, build 158: "the tree at beginning needs redo - the color scheme too -
+    // like the green but we need beautiful and intriguing entry - think about the artist we are using - maybe a
+    // generated tree like slough but with leaves"). Grown by the Slough's own tree code with another seed, so it is
+    // kin to the bare black oak over the mire, but alive: he is out of the slough. It stands as the great dark tree
+    // of John Martin's quiet pictures (The Plains of Heaven), its long limb reaching over the place where the two
+    // meet, with the light of late afternoon in the edge of its crown.
+    if (OAKP) { const M = OAK_META, s = M.k * z, tx = VW / 2 + (MEET - 150 - cx) * z, ty = Y(7), x0 = tx - M.ax * s, y0 = ty - M.ground * s, w = M.w * s, h = M.h * s;
+      if (x0 < VW && x0 + w > 0) {
+        { c.save(); c.translate(tx + 70 * z, Y(-1)); c.scale(1, .09); const g = c.createRadialGradient(0, 0, 0, 0, 0, 360 * z); g.addColorStop(0, css([14, 26, 20], .46 * (1 - dark))); g.addColorStop(1, css([14, 26, 20], 0)); c.fillStyle = g; c.fillRect(-360 * z, -360 * z, 720 * z, 720 * z); c.restore(); }
+        c.drawImage(OAKP.c, x0, y0, w, h);
+        if (dark < .5) { c.save(); c.globalCompositeOperation = 'lighter'; OAKP.tw.forEach(([px, py], i) => { const v = Math.sin(G.t / (26 + (i * 37) % 60) + i * 2.4); if (v < .55) return; const al = Math.pow((v - .55) / .45, 2) * .7 * (1 - 2 * dark);
+            c.fillStyle = css([255, 238, 180], al); c.beginPath(); c.arc(x0 + px * s, y0 + py * s, (1 + 1.1 * al) * z, 0, 7); c.fill(); }); c.restore(); }
+        if (dark > .02) { c.globalAlpha = Math.min(1, dark * .85); c.drawImage(OAKP.d, x0, y0, w, h); c.globalAlpha = 1; }
+        if (dark < .6) for (let i = 0; i < 7; i++) { const T = 620 + i * 97, u = ((G.t + i * 233) % T) / T, lx2 = tx + (-90 + i * 60 + 34 * Math.sin(u * 7 + i)) * z + 50 * u * z, ly2 = ty - (260 - 30 * (i % 3)) * z * (1 - u), al = Math.sin(Math.PI * u) * .9 * (1 - dark);
+          c.save(); c.translate(lx2, ly2); c.rotate(u * 9 + i); c.fillStyle = css([44, 50, 36], al); c.beginPath(); c.ellipse(0, 0, 3 * z, 1.3 * z, 0, 0, 7); c.fill(); c.restore(); } } }
+    if (!OAKP && !OAKL && typeof SL !== 'undefined' && SL.grow) OAKL = bakeOak();
+    if (!OAKP && OAKL) { const s = .88 * z, tx = VW / 2 + (MEET - 185 - cx) * .92 * z, ty = Y(-6), w = OAKL.c.width * s, h = OAKL.c.height * s, x0 = tx + OAKL.x0 * s, y0 = ty + OAKL.y0 * s;
+      if (x0 < VW && x0 + w > 0) {
+        // its shade on the field, flat
+        { c.save(); c.translate(tx + 60 * z, Y(-2)); c.scale(1, .1); const g = c.createRadialGradient(0, 0, 0, 0, 0, 330 * z); g.addColorStop(0, css([14, 30, 22], .42 * (1 - dark))); g.addColorStop(1, css([14, 30, 22], 0)); c.fillStyle = g; c.fillRect(-330 * z, -330 * z, 660 * z, 660 * z); c.restore(); }
+        c.drawImage(OAKL.c, x0, y0, w, h);
+        // sunlight twinkling in the leaves: each sunlit touch brightens for a moment in its own time
+        if (dark < .5) { c.save(); c.globalCompositeOperation = 'lighter'; for (const [lx3, ly3, ph3, per] of OAKL.tw) { const v = Math.sin(G.t / per + ph3); if (v < .55) continue; const al = Math.pow((v - .55) / .45, 2) * .75 * (1 - 2 * dark);
+            c.fillStyle = css([255, 238, 180], al); c.beginPath(); c.arc(tx + lx3 * s, ty + ly3 * s, (1.1 + 1.2 * al) * s, 0, 7); c.fill(); } c.restore(); }
+        if (dark > .02) { c.globalAlpha = Math.min(1, dark * .85); c.drawImage(OAKL.d, x0, y0, w, h); c.globalAlpha = 1; }
+        // a few leaves let go and drift down
+        if (dark < .6) for (let i = 0; i < 7; i++) { const T = 620 + i * 97, u = ((G.t + i * 233) % T) / T, lx2 = tx + (-110 + i * 46 + 34 * Math.sin(u * 7 + i)) * z + 50 * u * z, ly2 = ty - (220 - 30 * (i % 3)) * z * (1 - u), al = Math.sin(Math.PI * u) * .9 * (1 - dark);
+          c.save(); c.translate(lx2, ly2); c.rotate(u * 9 + i); c.fillStyle = css([40, 48, 40], al); c.beginPath(); c.ellipse(0, 0, 3 * z, 1.3 * z, 0, 0, 7); c.fill(); c.restore(); } } }
     // the people (in the world's own units)
     c.save(); c.translate(VW / 2 - cx * z, wl); c.scale(z, z);
     const tint = mix([122, 118, 122], [78, 72, 82], dark), fl = Math.min(1, flash) * dark, lit = gateish * smooth(GATE_X - 330, GATE_X - 60, C3.x), tintF = mix(mix(mix(tint, [66, 62, 72], gateish), [255, 170, 110], fl * .35), [255, 188, 120], lit * (.3 + .4 * door));
