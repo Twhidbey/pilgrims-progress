@@ -38,9 +38,13 @@ const HL = (() => {
   const SEEN = [      // {37}
     [N, 'His name was Mr. Worldly Wiseman, from the great town of Carnal Policy, near Christian\'s own city.'],
   ];
-  const WISE = [      // {38} to {45}
+  // build 175 (owner: say lines while walking): the greeting is said as the two come toward each other (GREET, captions
+  // while he walks); the talk at the crossing begins with "Who sent you this way?"
+  const GREET = [      // {38}
     [WW, 'How now, good fellow! Where are you going, with such a burden?'],
     [C, 'Sir, I am going to that little gate ahead. There I will be shown how to be rid of my heavy burden.'],
+  ];
+  const WISE = [      // {39} to {45}
     [WW, 'Who sent you this way?'],
     [C, 'A great and good man, called Evangelist.'],
     [WW, 'There is no more dangerous way in all the world! I see the mud of the Slough of Despond is on you already.'],
@@ -79,7 +83,7 @@ const HL = (() => {
     [C, 'May I come in? Will he open to me, sorry as I am?'],
     [N, 'At last there came a grave person to the gate, named Good-will.', 0, () => { doorTo = 1; sfx.chord(); }],
   ];
-  const ALL = [...SEEN, ...WISE, ...TURNED, ...HIGH, ...STOOD, ...COMING, ...EVANW, ...HASTE, ...ATGATE, ...KNOCK];
+  const ALL = [...SEEN, ...GREET, ...WISE, ...TURNED, ...HIGH, ...STOOD, ...COMING, ...EVANW, ...HASTE, ...ATGATE, ...KNOCK];
 
   // MR. WORLDLY WISEMAN'S OWN FIGURE (build 149): a walk from one video (37 frames, walking right like Obstinate's, so it
   // is drawn mirrored to come from the right) and a standing painting; until they load, Obstinate's pictures stand in.
@@ -107,7 +111,7 @@ const HL = (() => {
   // "Do you see that hill?" the camera draws back and the hill comes out of the haze (about a second and a half).
   let reveal = 0;
   let wise = null, evan = null, dark = 0, hope = 0, flash = 0, flashT = 0, veil = 0, veilTo = 0, knocks = 0, knockT = 0, door = 0, doorTo = 0;
-  let saidSeen = false, saidHigh = false, stillT = 0, hasteSaid = false, gateSaid = false, hintT = 0, noteI = 0, noteX = 0, lastFr = 0, hillSeen = false;
+  let greeted = false, saidSeen = false, saidHigh = false, stillT = 0, hasteSaid = false, gateSaid = false, hintT = 0, noteI = 0, noteX = 0, lastFr = 0, hillSeen = false;
   let OAKT = null, hillBox = [0, 0, 1];
 
   // ---------- pictures baked once ----------
@@ -314,7 +318,7 @@ const HL = (() => {
     mercy = mercyTo = calm = calmTo = 0;
     wise = null; evan = null; dark = 0; hope = 0; flash = 0; flashT = 200; veil = 0; veilTo = 0; knocks = 0; knockT = 0; door = 0; doorTo = 0;
     reveal = 0;
-    saidSeen = saidHigh = hasteSaid = gateSaid = hillSeen = false; stillT = 0; hintT = 0; noteI = 0; noteX = 0;
+    saidSeen = saidHigh = hasteSaid = gateSaid = hillSeen = greeted = false; stillT = 0; hintT = 0; noteI = 0; noteX = 0;
   }
   // the picture behind the title page when Level 3 is the child's level: the hill hanging over the way, nobody there
   function title() { build(); preload(); HL.show = true; reset0(); ph = 'title'; dark = 1; reveal = 1; Object.assign(cam, { cx: STILL + 60, z: .42, wl: 399 }); }
@@ -388,7 +392,8 @@ const HL = (() => {
       // build 149: Wiseman starts far enough off that he is seen coming across the field (before, he appeared already
       // past his meeting place and stood behind Christian's stopping place, so the two ended back to back)
       if (!saidSeen && C3.x > 220) { saidSeen = true; caption(SEEN); wise = { x: Math.max(cam.cx + VW / 2 / cam.z + 60, MEET + 508), anim: 0, mode: 'come', st: 0, alpha: 1 }; }
-      if (wise && wise.mode === 'stand' && wise.st >= 1 && C3.x >= MEET - 30 && C3.sd != null && !saying()) { ph = 'meet'; talk(WISE, () => { ph = 'aside'; wise.mode = 'go'; hintT = 0; noteX = C3.x + 60; caption(TURNED); }); }
+      if (wise && !greeted && wise.x - C3.x < 520) { greeted = true; caption(GREET); }
+      if (wise && greeted && wise.mode === 'stand' && wise.st >= 1 && C3.x >= MEET - 30 && C3.sd != null && !saying()) { ph = 'meet'; talk(WISE, () => { ph = 'aside'; wise.mode = 'go'; hintT = 0; noteX = C3.x + 60; caption(TURNED); }); }
     } else if (ph === 'meet') {
       walk(1, 0);
     } else if (ph === 'aside') {

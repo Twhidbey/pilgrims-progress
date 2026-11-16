@@ -1,6 +1,6 @@
 // A machine play-through of the game in a headless browser (no sound is heard: see CLAUDE.md, build 64).
 //   python3 -m http.server 8123 &          (in the repo)
-//   node tools/playtest.js 3               (level 1, 2, 2back or 3; add a folder for stills: node tools/playtest.js 3 /tmp/shots)
+//   node tools/playtest.js 3               (level 1, 1back, 2, 2back or 3; "back" = choose going home / going back; add a folder for stills: node tools/playtest.js 3 /tmp/shots)
 // It opens the book, picks the level, holds to walk, passes every line, does every act, and stops at the end card.
 // It prints the phases it went through and fails (exit 1) on any page error or if the end card is not reached.
 const { chromium } = require('playwright');
@@ -24,7 +24,7 @@ const which = process.argv[2] || '3', shots = process.argv[3], lv = parseInt(whi
       }
       if (M) M.draw(); else draw();
       return { st: G.state, ph: M ? M.peek().ph : 'x' + Math.round(P.x / 500), txt: document.querySelector('#dlg .t').textContent.slice(0, 40) };
-    }, which === '2back');
+    }, which.endsWith('back'));
     const key = r.st + ':' + r.ph;
     if (key !== last) { console.log(key, '|', r.txt); last = key; if (shots) await p.screenshot({ path: `${shots}/${which}-${String(n++).padStart(2, '0')}-${r.ph}.png` }); }
     if (r.st === 'end') break;

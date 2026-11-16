@@ -83,7 +83,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">build 174 · Nov 16 2026</div>
+  <div id="build">build 175 · Nov 16 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -952,7 +952,7 @@ async function say(who, txt) {
 }
 // fetch every line's recording quietly, in story order, while the child is already playing
 async function fetchVoices() {
-  const all = [...INTRO, ...FIELDS, ...EVAN, ...RUNS, ...DOOR_WORDS, ...FAMILY, ...LIFE, ...WATCH, ...FETCH]; for (const c of CAPS) all.push(...c.lines); all.push(...NEIGH, ...HOME, ...ONWARD, ...PART, ...GATEWORDS, ...END);
+  const all = [...INTRO, ...FIELDS, ...EVAN, ...RUNS, ...DOOR_WORDS, ...FAMILY, ...LIFE, ...WATCH, ...FETCH, ...NEIGH_CALL]; for (const c of CAPS) all.push(...c.lines); all.push(...NEIGH, ...HOME, ...ONWARD, ...PART, ...GATEWORDS, ...END);
   for (const [who, txt] of all) { if (who === TIP) continue; const v = vox(who, txt); await v.raw; await voxBuf(v); }
 }
 function caption(arr) { for (const l of arr) G.capQ.push(l); }
@@ -1004,9 +1004,10 @@ const LIFE = [[C, 'Life! Life! Eternal life!', 'quick']];      // said as he run
 // {19} to {24}: the neighbours come out while he is still running; two set out to fetch him back, and overtake him
 const WATCH = [[N, 'The neighbors also came out to see him run.', 'quick'], [N, 'Some mocked. Some threatened. And some cried after him to come back.', 'quick']];
 const FETCH = [[N, 'Two of them, Obstinate and Pliable, set out to bring him back by force.']];
+// build 175 (owner: say lines while walking): the first two are called out as the two catch up with him (NEIGH_CALL,
+// captions while he walks); the rest is said once they have come up to him
+const NEIGH_CALL = [[C, 'Neighbors, why have you come?'], [O, 'To persuade you to go back with us.']];
 const NEIGH = [
-  [C, 'Neighbors, why have you come?'],
-  [O, 'To persuade you to go back with us.'],
   [C, 'That cannot be. Come with me instead, good neighbors.'],
   [O, 'What! And leave our friends and our comforts behind us?'],      // {20}; then the child chooses (the choice is ours, not the book's)
 ];
@@ -1051,7 +1052,9 @@ function pick(home) {
     else { G.state = 'play'; coverEars(); caption(LIFE); G.idle = 0; }
     return;
   }
-  const part = () => talk(PART, () => { G.obst.mode = 'home'; G.pli.mode = 'follow'; P.turn = 1; });
+  // build 175 (owner: say lines while walking): Obstinate's and Pliable's parting is said as they go: Obstinate already
+// stomping home, Pliable already following, the child walking Christian on
+  const part = () => { G.obst.mode = 'home'; G.pli.mode = 'follow'; P.turn = 1; caption(PART); };
   if (!home) { note(67, .05, 3); talk(ONWARD, part); return; }
   // going home: a few steps back into the rain. The light dims, then he turns round again. Nothing is lost.
   G.state = 'play'; G.gloomTo = 1; G.homeTo = { to: P.x - 85, then: () => talk(HOME, part) }; G.idle = 0;      // build 106: the child walks him back (nothing moves on its own)
@@ -1305,7 +1308,7 @@ function gateOpened() {
 // ---------- every tick ----------
 function update() {
   G.t++;
-  if (G.guard > 0 && --G.guard === 0 && G.state === 'dialog') { dlg.classList.remove('wait'); HEARD.add(G.guardKey); if (!G.act) G.autoT = 75; }
+  if (G.guard > 0 && --G.guard === 0 && G.state === 'dialog') { dlg.classList.remove('wait'); HEARD.add(G.guardKey); if (!G.act) G.autoT = 30; }      // build 175, owner: quicker hand-offs (was 75: 1.25 s)
   // LESS TAPPING (owner, build 73: "there's a lot of click thru text"): a line moves on by itself a moment after it has
   // been spoken; a tap still moves it on sooner. Lines that ask the child to do something wait as before.
   if (G.autoT > 0 && --G.autoT === 0 && G.state === 'dialog' && !G.act) next();
@@ -1386,8 +1389,9 @@ function story() {
 function people() {
   const o = G.obst, p = G.pli;
   if (o && o.mode === 'run') {
-    o.x += 2.2; p.x += 2.2;                                   // hurrying after him, but still walking
-    if (o.x > P.x - 235 && G.state === 'play') { o.mode = p.mode = 'talk'; P.turn = -1; talk(NEIGH, choose); }
+    if (o.x <= P.x - 235) { o.x += 2.2; p.x += 2.2; }        // hurrying after him, but still walking; they wait a step behind while words are said
+    if (!o.called && o.x > P.x - 700 && G.state === 'play') { o.called = true; caption(NEIGH_CALL); }
+    if (o.x > P.x - 235 && G.state === 'play' && !saying()) { o.mode = p.mode = 'talk'; P.turn = -1; talk(NEIGH, choose); }
   }
   // Standing (owner: they should stand while talking, not freeze mid-stride): once a walker has come to rest, his painted
   // standing pose dissolves in (st 0 = walking picture, 1 = standing picture); before he walks again it dissolves out.
@@ -2255,6 +2259,6 @@ document.getElementById('on2').onclick = () => SL.on ? go3() : go2();
 })();
 </script>
 <script src="slough.js?v=164"></script>
-<script src="hill.js?v=174"></script>
+<script src="hill.js?v=175"></script>
 </body>
 </html>

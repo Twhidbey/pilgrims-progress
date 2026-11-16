@@ -12,7 +12,7 @@ Older handovers (builds 41 to 137, with the picture and video prompts used for H
 
 **What is live (build 140):** the title page offers three levels and remembers the child's level. Level 1 (City of Destruction, `index.html`) and Level 2 (Slough of Despond, `slough.js`) are played and shaped by the owner; Level 3 (Mr. Worldly Wiseman and the hill, `hill.js`) is a first sketch with stand-in figures and no voices, not yet seen by the owner (another chat is reworking its hill, sky, gate and wall pictures). Level 4 is a plan in `CLAUDE.md`. Read `CLAUDE.md` before anything: its rules, lessons, departures from the book and code maps.
 
-**Build 164: the owner's script choices are in** (27 lines cut, 31 reworded; see `CLAUDE.md`, "LESS WAITING"). Still to ask: saying more lines while walking; quicker hand-offs; whether to delete `script.html` and `SCRIPT-CUTS.md` (`script.html` keeps a plainer version of every line).
+**Build 164: the owner's script choices are in** (27 lines cut, 31 reworded; see `CLAUDE.md`, "LESS WAITING"). **Build 175:** walking lines and quicker hand-offs done (owner said yes); `script.html` kept, `SCRIPT-CUTS.md` deleted.
 
 **Waiting on the owner (they play on an iPhone):**
 - From the picture chat, built while the owner slept (builds 157 to 159; nothing spent): Level 3's lines of fire down the rock (asked for); the new opening (a great oak in leaf grown by the Slough's tree code, late golden afternoon; agreed in words, not yet seen); the warm light of mercy when Evangelist takes his hand and the fire sinking at his promise (my own addition: ask if it stays); four concept sketches for Level 4 in `concept/level4-four-sketches.jpg` (which pictures to build).
