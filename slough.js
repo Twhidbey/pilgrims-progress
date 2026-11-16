@@ -255,12 +255,17 @@ const SL = (() => {
     return plCenC[f] = sa ? sx / sa * im.width / w : META.climb.c0;
   }
   // one tinted figure, feet at world (x, y); nothing below the water line when `cut` (each figure has its own small canvas)
-  const tintC = {};
+  const tintC = {}; let FIG_DIP = 0;
   function figure(c, slot, im, meta, x, y, face, tint, cut, alpha = 1) {
     if (!im || alpha <= 0) return;
     const fc = tintC[slot] || (tintC[slot] = mk(8, 8)); if (fc.width !== im.width || fc.height !== im.height) { fc.width = im.width; fc.height = im.height; }
     const f = fc.getContext('2d'); f.globalCompositeOperation = 'source-over'; f.clearRect(0, 0, fc.width, fc.height);
     f.drawImage(im, 0, 0); f.globalCompositeOperation = 'multiply'; f.fillStyle = css(tint); f.fillRect(0, 0, im.width, im.height);
+    // build 129: the wading and climbing videos painted PALE mud over the men's waists, which read as their bodies fading to
+    // white above the surface. FIG_DIP (pack px, set by the caller) darkens that much of the figure above the mud line
+    // to the tone of his own dark clothes, so he goes into the mire as a solid body.
+    if (FIG_DIP && cut) { const r0 = meta.ground - y / CHR_K, g = f.createLinearGradient(0, r0 - FIG_DIP, 0, r0), d = [tint[0] * .34, tint[1] * .34, tint[2] * .34];
+      g.addColorStop(0, css(d, 0)); g.addColorStop(.55, css(d, .8)); g.addColorStop(1, css(d, .96)); f.globalCompositeOperation = 'source-atop'; f.fillStyle = g; f.fillRect(0, r0 - FIG_DIP, im.width, FIG_DIP + 4); }
     f.globalCompositeOperation = 'destination-in'; f.drawImage(im, 0, 0); f.globalCompositeOperation = 'source-over';
     c.save(); c.globalAlpha = alpha;
     if (cut) { c.beginPath(); c.rect(-1e5, -1e5, 2e5, 1e5); c.clip(); }
@@ -345,7 +350,7 @@ const SL = (() => {
   // SPLASHES (build 121, owner: "splashes are great - maybe crank that up a bit"): drops of mud thrown up from the water
   // line wherever someone heaves, falls or is hauled out; they rise, fall back and leave a small ring
   let drops = [], churns = [];
-  function splash(x, n = 7, k = 1, still) { if (!still) churns.push({ x, a: Math.min(1, .5 + n * .05) }); for (let i = 0; i < n; i++) drops.push({ x: x + (Math.random() - .5) * 26, y: 0, vx: (Math.random() - .5) * 2.2 * k, vy: -(1.2 + Math.random() * 2.6) * k, r: .8 + Math.random() * 1.5, t: 0 }); }
+  function splash(x, n = 7, k = 1, still) { if (!still) churns.push({ x, a: Math.min(1, .5 + n * .05) }); for (let i = 0; i < n; i++) drops.push({ x: x + (Math.random() - .5) * 30, y: 0, vx: (Math.random() - .5) * 2.6 * k, vy: -(1.4 + Math.random() * 2.8) * k, r: .7 + Math.random() * 1.1, t: 0 }); }
   function wadeOn() { ph = 'wade'; G.state = 'play'; caption(ALONE); }
   // CHRISTIAN REALLY TURNS (build 120, owner: "christian turns and looks a couple times and i don't like the flip back and
   // forth without body moving, could we use turns from other levels"): Level 1's turning video (TURN, left to right),
@@ -568,7 +573,7 @@ const SL = (() => {
     }
     for (const s of steps) if (s.lit) s.lit = Math.min(1, s.lit + .02);
     for (const r of rings) r.t++; rings = rings.filter(r => r.t < 150);
-    for (const d of drops) { d.t++; d.x += d.vx; d.y += d.vy; d.vy += .13; if (d.y > 0 && Math.random() < .25) rings.push({ x: d.x, y: 0, t: 70, k: .28 }); }
+    for (const d of drops) { d.t++; d.x += d.vx; d.y += d.vy; d.vy += .16; if (d.y > 0 && Math.random() < .25) rings.push({ x: d.x, y: 0, t: 70, k: .28 }); }
     drops = drops.filter(d => d.y <= 0 && d.t < 120);
     for (const c of churns) c.a -= .0045; churns = churns.filter(c => c.a > 0); if (churns.length > 40) churns.splice(0, churns.length - 40);
     // --- the camera draws back in the mire, and the look follows the story: gold on the plain, mist and grey in the bog ---
@@ -665,8 +670,9 @@ const SL = (() => {
         // wallowing he faces Christian (the same frames, mirrored about his own middle), then turns to his own side
         const im = PLIC[Math.floor(pli.ct || 0)], wk = pli.wal ? pli.wk : 1, fl = (1 - (pli.fa ?? -1)) / 2, cw = 2 * (META.climb.ax - plCen(Math.floor(pli.ct || 0))) * CHR_K;
         if (wk < 1) figure(n, 'pli0', PLI[pli.wf || 0], PLI_META, pli.wx, pli.sy, 1, fig, true, pli.alpha * (1 - smooth(.5, 1, wk)));
+        FIG_DIP = 60 * (1 - smooth(.6, .8, (pli.ct || 0) / 119));
         if (fl < .99) figure(n, 'pli2', im, META.climb, pli.x + cw, pli.y, 1, fig, true, pli.alpha * smooth(0, .5, wk) * (1 - smooth(.5, 1, fl)));
-        if (fl > .01) figure(n, 'pli', im, META.climb, pli.x, pli.y, -1, fig, true, pli.alpha * smooth(0, .5, wk) * smooth(0, .5, fl));
+        if (fl > .01) figure(n, 'pli', im, META.climb, pli.x, pli.y, -1, fig, true, pli.alpha * smooth(0, .5, wk) * smooth(0, .5, fl)); FIG_DIP = 0;
       }
       else if (pli.stop && pli.mode === 'follow' && PSTOP.length) {
         const t = pli.stop.t, L = PSTOP.length - 50, f = t < 50 ? Math.floor(t) : 50 + Math.floor(((u => u < L ? u : 2 * L - u))((t - 50) % (2 * L)));
@@ -709,7 +715,17 @@ const SL = (() => {
     // everyone standing on it, a little ragged, so feet sink slightly into the ground; and faint wet prints (a little
     // sky caught in them) are left in the soft ground near the bog
     n.fillStyle = css(land); n.beginPath(); n.moveTo(x0, 0); for (let x = x0; x <= x1; x += 3 / z) n.lineTo(x, bankY(x) < -2 ? bankY(x) - 1.2 - 1.6 * bankN(x * .09, 2) : 0);      // build 115: only on real ground (it ran as a dark line along the bog) n.lineTo(x1, 0); n.fill();
-    n.fillStyle = css(fig); for (const d of drops) { n.globalAlpha = clamp(1.3 - d.t / 70); n.beginPath(); n.ellipse(d.x, d.y, d.r, d.r * (1 + Math.min(1.2, Math.abs(d.vy) * .3)), 0, 0, 7); n.fill(); } n.globalAlpha = 1;
+    // REALISM IN THE BOG (build 129, owner: "look for realism here"). Seen close, three things were false. (1) The bodies
+    // faded to white just above the surface (their pictures fade out there), so nobody was IN anything: a low dark heave
+    // of mud now stands round each body where it goes in, in the figures' own tone, and the body runs straight into it
+    // (mound()). (2) The drops were big pale ovals hanging like confetti: they are small dark streaks along their own
+    // flight now. (3) The rings were neat bright circles, as on clear water: see "ripples in thick mud" further down.
+    const mound = (x, w, a) => { if (a <= .02) return; n.save(); n.translate(x, 1.5); n.scale(w, 11); const g = n.createRadialGradient(0, 0, 0, 0, 0, 1);
+      g.addColorStop(0, css(fig, a)); g.addColorStop(.62, css(fig, a)); g.addColorStop(1, css(fig, 0)); n.fillStyle = g; n.fillRect(-1, -1, 2, 1.1); n.restore(); };
+    if (['fall', 'pli', 'back', 'backtalk', 'wade', 'stuck', 'help'].includes(ph) && !lift) mound(C2.x + 4 * C2.face, 40, (ph === 'fall' ? smooth(30, 90, C2.fallT) : 1) * (ph === 'help' ? 1 - .5 * C2.reach : 1));
+    if (pli && pli.mode === 'climb' && !pli.out && PLIC.length) { const pf = Math.floor(pli.ct || 0); mound(pli.x + (META.climb.ax - plCen(pf)) * CHR_K, 36, (pli.wk ?? 1) * (1 - smooth(.6, .8, pf / 119))); }
+    n.strokeStyle = css(fig); n.lineCap = 'round';
+    for (const d of drops) { n.globalAlpha = clamp(1.4 - d.t / 60); n.lineWidth = d.r; n.beginPath(); n.moveTo(d.x, d.y); n.lineTo(d.x - d.vx * 1.3, d.y - d.vy * 1.3); n.stroke(); } n.globalAlpha = 1;
     for (const pr of prints) { const a = .22 * (1 - smooth(900, 1600, pr.t)); if (a < .01) continue; n.fillStyle = css(LIGHT, a); n.beginPath(); n.ellipse(pr.x, bankY(pr.x) + 1.2, 6, .9, 0, 0, 7); n.fill(); }
     // build 114 (owner: "not sure about light dots above pliable's head"): the lights he gathered are no longer shown
     // following him; they first appear behind his shoulder when he looks back, and fly to the steps
@@ -720,6 +736,14 @@ const SL = (() => {
     // mist lies behind and beside them and their bodies go straight down into the mud. (On the plain, at the bog's edge,
     // the thin mist still lies over their feet, as the owner chose in build 115: see further down.)
     const threadsNow = () => { ctx.globalAlpha = .55 * look.mist; const o = (G.t * .15) % VW; ctx.drawImage(threads, -o, wl - 22, VW, 40); ctx.drawImage(threads, VW - o, wl - 22, VW, 40); ctx.globalAlpha = 1; };
+    // (build 129: the low mist over the hidden steps lay across the two men's waists as well; it is behind the near picture now)
+    const bank = (xa, xb, y0, h, rad, a, n, seed, flat) => { if (a <= .01) return; const R = rngS(seed);
+      for (let i = 0; i < n; i++) { const u = R(), v = R() * R(), r = (.6 + .5 * R()) * rad * z, e = flat ? .25 + .15 * R() : .55 + .3 * R(), ph = R() * 6, k = .35 + .3 * R();
+        const x = X(xa + u * (xb - xa) + Math.sin(G.t * .003 + ph) * 8), y = Y(y0 - v * h);
+        if (x + r < 0 || x - r > VW) continue;
+        ctx.globalAlpha = Math.min(1, a * k); ctx.drawImage(puff, x - r, y - r * e, 2 * r, 2 * r * e); }
+      ctx.globalAlpha = 1; };
+    for (const st of steps) { const c = st.lit || 0; bank(st.x - 70 + c * 90, st.x + 70 + c * 90, 12, 10, 120, (1 - smooth(0, 1, c)) * (.55 + .3 * look.mist) * (ph === 'look' || ph === 'on' ? 1 : fogS), 6, 11 + st.i, true); }
     if (ph !== 'plain') threadsNow();
     // LOW MIST ROUND THE TWO IN THE BOG (build 125, owner: "more fog beneath Christian and pliable when they're in [the] bog
     // but not as much near their faces"): a flat lens of mist hugs the surface round each of them, thickest at the mud
@@ -757,10 +781,10 @@ const SL = (() => {
       const bw = 5; mudCh.length = 0; mudGd = gd;
       for (let sx = Math.floor(wx0 / bw) * bw; sx < VW; sx += bw) {
         const x = (sx + bw / 2 - VW / 2) / z + cx;
-        let m = .8 * smooth(HOME0 + 30, HOME0 + 120, x) * (1 - smooth(-640, -300, x)), ch = 0;
+        let m = .8 * smooth(HOME0 + 5, HOME0 + 75, x) * (1 - smooth(-640, -300, x)), ch = 0;
         for (const c of churns) { const u = (x - c.x) / 75; if (u > -2.6 && u < 2.6) ch = Math.max(ch, Math.min(1, c.a * 2.2) * Math.exp(-u * u)); }      // the strongest one counts (summed, many churns made a flat slab with hard ends)
         m += .75 * ch;
-        if (m > .02) { ctx.fillStyle = g; ctx.globalAlpha = Math.min(.92, m); ctx.fillRect(sx, wl + 1, bw, VH - wl); }
+        if (m > .02) { ctx.fillStyle = g; const am = Math.min(.92, m); ctx.globalAlpha = am * .35; ctx.fillRect(sx, wl + 1, bw, 3); ctx.globalAlpha = am * .7; ctx.fillRect(sx, wl + 4, bw, 4); ctx.globalAlpha = am; ctx.fillRect(sx, wl + 8, bw, VH - wl); }      // it comes in over a few pixels, not at a hard line
         if (ch > .01) mudCh.push([sx, Math.pow(ch, 1.4)]);
       }
       ctx.globalAlpha = 1;
@@ -770,12 +794,6 @@ const SL = (() => {
     // the banks of mist (see "MIST THAT HIDES" in update)
     // bank(from, to, base, height, size of each puff, strength, how many, seed, flat): soft rounds of mist laid between
     // two places along the level, thicker low down; each drifts a little
-    const bank = (xa, xb, y0, h, rad, a, n, seed, flat) => { if (a <= .01) return; const R = rngS(seed);
-      for (let i = 0; i < n; i++) { const u = R(), v = R() * R(), r = (.6 + .5 * R()) * rad * z, e = flat ? .25 + .15 * R() : .55 + .3 * R(), ph = R() * 6, k = .35 + .3 * R();
-        const x = X(xa + u * (xb - xa) + Math.sin(G.t * .003 + ph) * 8), y = Y(y0 - v * h);
-        if (x + r < 0 || x - r > VW) continue;
-        ctx.globalAlpha = Math.min(1, a * k); ctx.drawImage(puff, x - r, y - r * e, 2 * r, 2 * r * e); }
-      ctx.globalAlpha = 1; };
     // the mist round Help: one soft dense veil just to the right of where he stands (Christian, stuck close by on the
     // left, stays clear of it), with a few slow puffs in it; it drifts right as it thins
     // build 114 (owner: "fog hiding help is too localized - would be nice if it spread more to the right and looked more
@@ -817,17 +835,18 @@ const SL = (() => {
     // steps is laid step by step; over each step it moves off to the right and thins as that step's light lands (s.lit),
     // so the stones are uncovered in place, one by one, from the far bank back toward the plain. Straight across, flat
     // (an arc toward us was offered and advised against: it would bring back the perspective the picture avoids)
-    for (const st of steps) { const c = st.lit || 0; bank(st.x - 70 + c * 90, st.x + 70 + c * 90, 12, 10, 120, (1 - smooth(0, 1, c)) * (.55 + .3 * look.mist) * (ph === 'look' || ph === 'on' ? 1 : fogS), 6, 11 + st.i, true); }
     if (ph === 'plain') threadsNow();
     // the dark churned mud (found above, laid here so the thin mist over the water does not whiten it away)
     if (mudGd) { ctx.fillStyle = mudGd; for (const [sx, a] of mudCh) { ctx.globalAlpha = a; ctx.fillRect(sx, wl - 16 * z, 5, 60 * z); } ctx.globalAlpha = 1; }
     // rings in the mud, under the mist. Build 126 put them back under the low mist after build 125's heavy rings on top of it
     // "stuck out"; build 127 thins that mist at the surface, so the dark churned mud and its rings are seen together
+    // ripples in thick mud (build 129): two slow, heavy, dull swells to each, mostly a dark trough with only a faint light on
+    // its near lip (bright thin rings read as clear water; rings drawn in broken pieces were tried and looked like a target)
     for (const r of rings) {
       const u = r.t / 150, cxr = X(r.x), cyr = wl + 2 + r.y * z;
-      for (let i = 1; i <= 3; i++) { const rx = (9 + i * 15 + u * 60) * z * r.k, a = (1 - u) * (1 - i * .25);
-        ctx.lineWidth = 1.3; ctx.strokeStyle = css(LIGHT, .62 * a); ctx.beginPath(); ctx.ellipse(cxr, cyr, rx, rx * .12, 0, 0, 7); ctx.stroke();
-        ctx.strokeStyle = css(DARK, .34 * a); ctx.beginPath(); ctx.ellipse(cxr, cyr + 1.7, rx, rx * .12, 0, 0, Math.PI); ctx.stroke(); }
+      for (let i = 1; i <= 2; i++) { const rx = (12 + i * 18 + u * 46) * z * r.k, ry = rx * .13, a = (1 - u) * (1 - i * .28);
+        ctx.lineWidth = 2.6; ctx.strokeStyle = css(DARK, .26 * a); ctx.beginPath(); ctx.ellipse(cxr, cyr, rx, ry, 0, 0, 7); ctx.stroke();
+        ctx.lineWidth = 1; ctx.strokeStyle = css(LIGHT, .3 * a); ctx.beginPath(); ctx.ellipse(cxr, cyr + 1.9, rx, ry, 0, .2, 2.94); ctx.stroke(); }
     }
     if (look.veil > .01) { const g = ctx.createLinearGradient(VW * .42, 0, VW, 0); g.addColorStop(0, css(LIGHT, 0)); g.addColorStop(.55, css(tone(.93), look.veil * .86)); g.addColorStop(1, css(tone(.93), look.veil)); ctx.fillStyle = g; ctx.fillRect(0, 0, VW, VH); }
     // the gold coming back from the oak outward
@@ -864,10 +883,10 @@ const SL = (() => {
     const wk = ph === 'fall' ? smooth(20, 50, C2.fallT) : 1; let wa = 1;      // build 119: he flounders from the fall on
     if (WADE.length && inWater && wk > 0 && ['fall', 'pli', 'back', 'backtalk', 'wade', 'stuck', 'help'].includes(ph)) {
       if (wk < 1) figure(n, 'chr0', walkIm, CHR_META, C2.x, C2.y, C2.face, fig, true, alpha * C2.alpha * (1 - smooth(.5, 1, wk)));
-      walkIm = WADE[Math.floor(C2.wa || 0) % WADE.length]; walkM = META.wade; wa = smooth(0, .5, wk); }
+      walkIm = WADE[Math.floor(C2.wa || 0) % WADE.length]; walkM = META.wade; wa = smooth(0, .5, wk); FIG_DIP = 46; }
     if (ph === 'help' && C2.reach > 0) {
       const gx = HX + GRASP.dx * CHR_K, gy = STUCK_Y() + (C2.y - STUCK_Y()) * (1 - smooth(20, 140, C2.rt || 0));      // he heaves up out of the deep as he reaches (build 114)
-      if (C2.reach < 1) figure(n, 'chr', walkIm, walkM, C2.x, C2.y, 1, fig, true, alpha * (1 - C2.reach));
+      if (C2.reach < 1) figure(n, 'chr', walkIm, walkM, C2.x, C2.y, 1, fig, true, alpha * (1 - C2.reach)); FIG_DIP = 0;
       figure(n, 'reach', REACH[at(REACH_SRC, C2.rt || 0)], META.reach, gx, gy, 1, fig, true, alpha * C2.reach);
       return;
     }
@@ -879,7 +898,7 @@ const SL = (() => {
       if (C2.stand < 1) figure(n, 'chr', walkIm, CHR_META, C2.x, C2.y, C2.face, fig, false, alpha * (1 - C2.stand) * C2.alpha);
       return;
     }
-    figure(n, 'chr', walkIm, walkM, C2.x, C2.y, C2.face, fig, inWater, alpha * C2.alpha * wa);
+    figure(n, 'chr', walkIm, walkM, C2.x, C2.y, C2.face, fig, inWater, alpha * C2.alpha * wa); FIG_DIP = 0;
   }
 
   // for testing: SL.peek() tells where the story is
