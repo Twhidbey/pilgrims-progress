@@ -132,7 +132,7 @@ const HL = (() => {
   function build() {
     if (built) return; built = true;
     // the hill, twice: in the fair day's far blue-grey, and nearly black under its own cloud
-    HILL = [[94, 100, 118], [24, 22, 30]].map(col => {
+    HILL = [[114, 116, 140], [24, 22, 30]].map(col => {
       const c = mk(HW, HH), k = c.getContext('2d'); k.translate(HOX, HOY);
       k.beginPath(); k.moveTo(-8, 12);
       for (let h = 0; h <= TOP; h += 6) k.lineTo(faceX(h), -h);
@@ -177,6 +177,32 @@ const HL = (() => {
         if (i === 5) { k.fillRect(x + w / 2 - 4, 70 - h - 30, 8, 30); k.beginPath(); k.moveTo(x + w / 2 - 5, 70 - h - 30); k.lineTo(x + w / 2, 70 - h - 52); k.lineTo(x + w / 2 + 5, 70 - h - 30); k.fill(); }
         if (Rv() < .6) lit.push([x + 4 + Rv() * (w - 10), 70 - h + 4]); }
       TOWN.lit = lit; }
+  }
+  // the oak in leaf, baked once: back leaves, the limbs, then the leaves toward us, lighter where the low sun reaches them
+  let OAKL = null;
+  function bakeOak() {
+    const tree = SL.grow(27).map(p => p.map(([x, y, w]) => [-x, y, w])), R = rngS(77), pts = [];
+    for (const p of tree) if (p[0][2] < 8) for (let i = 1; i < p.length; i += 2) pts.push([p[i][0], p[i][1]]);
+    const step = Math.max(1, Math.floor(pts.length / 5200)), A = pts.filter((_, i) => i % step === 0);
+    let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9, mx = 0, my = 0;
+    for (const p of tree) for (const [x, y, w] of p) { x0 = Math.min(x0, x - w); x1 = Math.max(x1, x + w); y0 = Math.min(y0, y - w); y1 = Math.max(y1, y + w); }
+    for (const [x, y] of A) { mx += x / A.length; my += y / A.length; }
+    let rad = 1; for (const [x, y] of A) rad = Math.max(rad, Math.hypot(x - mx, y - my));
+    x0 -= 26; x1 += 26; y0 -= 26; y1 += 8;
+    const mkc = () => { const c = mk(Math.ceil(x1 - x0), Math.ceil(y1 - y0)), k = c.getContext('2d'); k.translate(-x0, -y0); return [c, k]; };
+    const [c, k] = mkc(), [d, kd] = mkc();
+    const dab = (g, x, y, r, col, al) => { g.save(); g.translate(x, y); g.rotate(R() * 3.14); g.fillStyle = css(col, al); g.beginPath(); g.ellipse(0, 0, r, r * .58, 0, 0, 7); g.fill(); g.restore(); };
+    // the leaves behind the limbs: deep green, the whole mass of the crown
+    for (const [x, y] of A) for (let j = 0; j < 2; j++) dab(k, x + (R() - .5) * 26, y + (R() - .5) * 22, 8 + R() * 7, mix([24, 40, 34], [38, 58, 40], R()), .92);
+    // the trunk and limbs: nearly black, warm
+    k.fillStyle = css([26, 22, 22]); SL.ribbons(k, tree);
+    // the leaves toward us: lighter on the side of the low sun (it stands to the right), gold in the crown's outer edge
+    for (const [x, y] of A) { if (R() < .3) continue; const ex = (x - mx) / rad, ey = (y - my) / rad, sun = clamp(.5 + ex * .7 - ey * .45), edge = smooth(.55, 1, Math.hypot(ex, ey));
+      const col = mix(mix([34, 52, 40], [80, 100, 62], sun), [168, 160, 96], sun * edge * .7);
+      dab(k, x + (R() - .5) * 22, y + (R() - .5) * 18, 5 + R() * 6, col, .5 + .4 * R()); }
+    // the same shape all dark, to lay over it when the sky darkens
+    kd.drawImage(c, x0, y0); kd.globalCompositeOperation = 'source-in'; kd.fillStyle = 'rgb(20,20,26)'; kd.fillRect(x0, y0, x1 - x0, y1 - y0);
+    return { c, d, x0, y0 };
   }
   function preload() {
     if (!loading) loading = Promise.all([loadPack('wiseman', WIS).catch(() => {}), loadPack('evangelist-walk', EVW).catch(() => {}), loadImg('wiseman-stand.webp').then(im => { if (im) WIS_ST = im; }), OBS.ready || loadPack('obstinate', OBS).catch(() => {}), EVS.ready || loadPack('evangelist-stand', EVS).catch(() => {}), RUNP.ready || loadPack('christian-run-plain', RUNP).catch(() => {}),
@@ -402,7 +428,7 @@ const HL = (() => {
     const gateish = smooth(0, 1, hope);
     c.setTransform(S, 0, 0, S, 0, 0); c.globalAlpha = 1; c.globalCompositeOperation = 'source-over'; c.imageSmoothingEnabled = true;
     // the sky: a fair day over the plain, a heavy red-brown dark by the hill, a warmer morning at the gate
-    const top = mix(mix([124, 148, 176], [15, 14, 20], gateish), [32, 32, 44], dark), low = mix(mix([238, 226, 200], [50, 40, 40], gateish), [124, 94, 88], dark);
+    const top = mix(mix([96, 132, 146], [15, 14, 20], gateish), [32, 32, 44], dark), low = mix(mix([250, 224, 164], [50, 40, 40], gateish), [124, 94, 88], dark);
     { const g = c.createLinearGradient(0, 0, 0, hor); g.addColorStop(0, css(top)); g.addColorStop(1, css(low)); c.fillStyle = g; c.fillRect(0, 0, VW, hor + 2); }
     // clouds, pale by day and heavy near the hill
     { const off = ((cx * .05 + G.t * .02) % 800 + 800) % 800;
@@ -415,11 +441,11 @@ const HL = (() => {
     { const g = c.createRadialGradient(lx, ly, 0, lx, ly, 330); g.addColorStop(0, css([255, 236, 190], .85 * la)); g.addColorStop(.12, css([255, 222, 160], .5 * la)); g.addColorStop(.45, css([255, 214, 150], .16 * la)); g.addColorStop(1, css([255, 214, 150], 0));
       c.fillStyle = g; c.fillRect(lx - 330, ly - 330, 660, 660); c.fillStyle = css([255, 248, 226], la); c.beginPath(); c.arc(lx, ly, 7 + 1.2 * Math.sin(G.t / 40), 0, 7); c.fill(); }
     // the far ridge
-    { const col = mix(mix(low, top, .45), [60, 52, 60], dark * .6); c.fillStyle = css(col); c.beginPath(); c.moveTo(0, hor + 2);
+    { const col = mix(mix(mix(low, top, .45), [140, 138, 170], .35 * (1 - dark) * (1 - gateish)), [60, 52, 60], dark * .6); c.fillStyle = css(col); c.beginPath(); c.moveTo(0, hor + 2);
       for (let sx = 0; sx <= VW + 16; sx += 16) { const u = cx * .1 + (sx - VW / 2) / z; c.lineTo(sx, hor - (26 + 96 * nz(u * .0035, 5) + 22 * nz2(u * .02, 1)) * z * .8); }
       c.lineTo(VW, hor + 2); c.fill(); }
     // the plain, from the horizon down to the road
-    { const far = mix(mix([176, 172, 140], [50, 48, 56], gateish), [78, 68, 70], dark), near = mix(mix([104, 108, 88], [24, 24, 32], gateish), [38, 36, 44], dark);
+    { const far = mix(mix([190, 182, 126], [50, 48, 56], gateish), [78, 68, 70], dark), near = mix(mix([72, 90, 64], [24, 24, 32], gateish), [38, 36, 44], dark);
       const g = c.createLinearGradient(0, hor, 0, Y(0)); g.addColorStop(0, css(far)); g.addColorStop(1, css(near)); c.fillStyle = g; c.fillRect(0, hor, VW, Y(0) - hor + 1);
       // the village and the hill stand on the plain, further back
       const hx = VW / 2 + (HILL_A - cx) * PH * z, hy = Y(HILL_Y), k = z * HS;
@@ -490,7 +516,7 @@ const HL = (() => {
           for (let i = 0; i < N; i++) { const h1 = Math.sin(i * 12.9898) * 43758.5453, h2 = Math.sin(i * 78.233) * 12543.123; ps.push([(i / N + G.t / 3400) % 1, h1 - Math.floor(h1), h2 - Math.floor(h2), i]); }
           ps.sort((a, b) => b[0] - a[0]);
           for (const [u, r1, r2, i] of ps) { const rise = 1 - Math.pow(1 - u, 3), spread = (40 + 230 * u) * k, px = sx0 - (240 * u + 900 * u * u) * k + (r1 - .5) * spread, py = sy0 - (14 + 150 * rise - 60 * u * u) * k + (r2 - .5) * spread * .7, rr = (40 + 210 * u) * k * (.8 + .4 * r2), a = smooth(0, .05, u) * (1 - smooth(.72, 1, u)), P = PUFF[i % 3];
-            c.globalCompositeOperation = 'source-over'; c.globalAlpha = a * (.22 + .58 * dark); c.drawImage(P.d, px - rr, py - rr, 2 * rr, 2 * rr);
+            c.globalCompositeOperation = 'source-over'; c.globalAlpha = a * (.07 + .73 * dark); c.drawImage(P.d, px - rr, py - rr, 2 * rr, 2 * rr);
             const la = a * (burn * (.3 + .7 * Math.pow(1 - u, 2)) + F * .3 * (1 - u)); if (la > .01) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = la; c.drawImage(P.l, px - rr, py - rr, 2 * rr, 2 * rr); } } }
         c.globalCompositeOperation = 'source-over'; c.globalAlpha = 1;
         if (flames) { c.save(); c.globalCompositeOperation = 'lighter'; flames(); c.restore(); }
@@ -506,10 +532,21 @@ const HL = (() => {
         fg.addColorStop(0, css(fc, 0)); fg.addColorStop(.7, css(fc, .9)); fg.addColorStop(1, css(fc, 1)); c.fillStyle = fg; c.fillRect(0, hy - 34 * k, VW, 48 * k);
       }
     }
-    // the lone tree where the two ways cross
-    if (OAKT) { const tx = VW / 2 + (MEET - 70 - cx) * .92 * z, h = 330 * z, w = h * OAKT.width / OAKT.height;
-      if (tx > -w && tx < VW + w) { const tc = tintC.oak || (tintC.oak = mk(OAKT.width, OAKT.height)), t = tc.getContext('2d'); t.globalCompositeOperation = 'source-over'; t.clearRect(0, 0, tc.width, tc.height); t.drawImage(OAKT, 0, 0); t.globalCompositeOperation = 'source-in'; t.fillStyle = css(mix([70, 78, 74], [30, 30, 38], dark)); t.fillRect(0, 0, tc.width, tc.height);
-        c.drawImage(tc, tx - w / 2, Y(-12) - h + 6 * z, w, h); } }
+    // THE OAK IN LEAF where the two ways cross (owner, build 158: "the tree at beginning needs redo - the color scheme too -
+    // like the green but we need beautiful and intriguing entry - think about the artist we are using - maybe a
+    // generated tree like slough but with leaves"). Grown by the Slough's own tree code with another seed, so it is
+    // kin to the bare black oak over the mire, but alive: he is out of the slough. It stands as the great dark tree
+    // of John Martin's quiet pictures (The Plains of Heaven), its long limb reaching over the place where the two
+    // meet, with the light of late afternoon in the edge of its crown.
+    if (!OAKL && typeof SL !== 'undefined' && SL.grow) OAKL = bakeOak();
+    if (OAKL) { const s = .7 * z, tx = VW / 2 + (MEET - 170 - cx) * .92 * z, ty = Y(-6), w = OAKL.c.width * s, h = OAKL.c.height * s, x0 = tx + OAKL.x0 * s, y0 = ty + OAKL.y0 * s;
+      if (x0 < VW && x0 + w > 0) {
+        // its shade on the field, flat
+        { c.save(); c.translate(tx + 60 * z, Y(-2)); c.scale(1, .1); const g = c.createRadialGradient(0, 0, 0, 0, 0, 330 * z); g.addColorStop(0, css([14, 30, 22], .42 * (1 - dark))); g.addColorStop(1, css([14, 30, 22], 0)); c.fillStyle = g; c.fillRect(-330 * z, -330 * z, 660 * z, 660 * z); c.restore(); }
+        c.drawImage(OAKL.c, x0, y0, w, h); if (dark > .02) { c.globalAlpha = Math.min(1, dark * .85); c.drawImage(OAKL.d, x0, y0, w, h); c.globalAlpha = 1; }
+        // a few leaves let go and drift down
+        if (dark < .6) for (let i = 0; i < 7; i++) { const T = 620 + i * 97, u = ((G.t + i * 233) % T) / T, lx2 = tx + (-110 + i * 46 + 34 * Math.sin(u * 7 + i)) * z + 50 * u * z, ly2 = ty - (220 - 30 * (i % 3)) * z * (1 - u), al = Math.sin(Math.PI * u) * .9 * (1 - dark);
+          c.save(); c.translate(lx2, ly2); c.rotate(u * 9 + i); c.fillStyle = css([150, 150, 70], al); c.beginPath(); c.ellipse(0, 0, 3.4 * z, 1.5 * z, 0, 0, 7); c.fill(); c.restore(); } } }
     // THE WICKET-GATE, AFTER REMBRANDT (builds 139, 140). Owner on build 139: "I like light on gate - bricks not doing it
     // for me - something about the light - door: not a fan - mountains ... their elevation compared to wall is distracting
     // - need artistic analysis especially regarding composition - think Rembrandt". What was wrong, and the rule kept
