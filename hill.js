@@ -111,7 +111,7 @@ const HL = (() => {
   let OAKT = null, hillBox = [0, 0, 1];
 
   // ---------- pictures baked once ----------
-  let HILL = null, SMOKE = null, CLOUD = null, TOWN = null; const CRACKS = [], STONES = [];
+  let HILL = null, SMOKE = null, CLOUD = null, TOWN = null; const CRACKS = [], STONES = [], SEAMS = [];
   // the hill's outline: h = height above its foot, 0 to TOP; its left side hangs far out over the way
   const TOP = 520, HW = 1500, HH = 640, HOX = 300, HOY = 610;      // the baked picture's size and where the foot's left end lies in it
   const FACE = [[0, 0], [36, -30], [84, -62], [112, -44], [150, -70], [240, -138], [320, -182], [358, -176], [420, -116], [480, -44], [520, 36]];      // a second, lower overhang under the great one
@@ -137,6 +137,7 @@ const HL = (() => {
     });
     // the cracks that the fire shows in (in the hill's own units, from its foot's left end)
     const R = rngS(11);
+    for (const [dx, h1, sd] of [[52, 130, 5], [96, 310, 9]]) { const seam = []; for (let h = TOP - 4; h >= h1; h -= 9) { const u = (TOP - h) / (TOP - h1); seam.push([faceX(h) + dx * Math.min(1, u * 3 + .25) + 70 * u * (1 - u) + (nz(h * .06, sd) - .5) * 22 * Math.min(1, u * 4), -h]); } SEAMS.push([seam, seam.length]); }
     for (let i = 0; i < 6; i++) { let x = -90 + R() * 200, y = -(150 + R() * 280); const p = [[x, y]]; for (let j = 0; j < 9; j++) { x += (R() - .4) * 30; y += 14 + R() * 22; if (y > -20) break; p.push([x, y]); } CRACKS.push(p); }
     // smoke and cloud: soft shapes from noise (white, laid in light or dark)
     const cloud = (w, h, seed, thr, sx, sy) => { const c = mk(w, h), k = c.getContext('2d'), im = k.createImageData(w, h), n = noise2(seed);
@@ -248,7 +249,7 @@ const HL = (() => {
     return v;
   }
   function update() {
-    if (ph === 'title') { G.t % 4 || embers.push({ x: -60 + Math.random() * 180, y: 20 - Math.random() * 60, vx: -.25 - Math.random() * .5, vy: -.5 - Math.random() * .7, r: .8 + Math.random() * 1.3, h: Math.random(), t: 0, life: 140 + Math.random() * 160 }); for (const e of embers) { e.t++; e.x += e.vx; e.y += e.vy; } for (let i = embers.length - 1; i >= 0; i--) if (embers[i].t >= embers[i].life) embers.splice(i, 1); flashT--; if (flashT < 0) { fire(.5 + Math.random() * .4); flashT = 300 + Math.random() * 500; } flash *= .9; return; }
+    if (ph === 'title') { G.t % 14 || embers.push({ x: 20 + Math.random() * 70, y: 10 - Math.random() * 40, vx: -.25 - Math.random() * .5, vy: -.5 - Math.random() * .7, r: .8 + Math.random() * 1.3, h: Math.random(), t: 0, life: 140 + Math.random() * 160 }); for (const e of embers) { e.t++; e.x += e.vx; e.y += e.vy; } for (let i = embers.length - 1; i >= 0; i--) if (embers[i].t >= embers[i].life) embers.splice(i, 1); flashT--; if (flashT < 0) { fire(.5 + Math.random() * .4); flashT = 300 + Math.random() * 500; } flash *= .9; return; }
     const want = G.state === 'play' && (keys.r || held());
     if (C3.sd != null) C3.sd += .4;
     C3.faceA = clamp(C3.faceA + (C3.face - C3.faceA) * .06, -1, 1);
@@ -256,7 +257,7 @@ const HL = (() => {
     C3.wa = clamp(C3.wa + (C3.weep ? .05 : -.04)); if (C3.weep) C3.wt = Math.min(64, C3.wt + WEEP_META.step);
     flash *= .93; door += (doorTo - door) * .02; veil = clamp(veil + Math.sign(veilTo - veil) * .012);
     hintT++;
-    if (dark > .4 && Math.random() < .25 * dark) embers.push({ x: -60 + Math.random() * 180, y: 20 - Math.random() * 60, vx: -.25 - Math.random() * .5, vy: -.5 - Math.random() * .7, r: .8 + Math.random() * 1.3, h: Math.random(), t: 0, life: 140 + Math.random() * 160 });
+    if (dark > .4 && Math.random() < .07 * dark) embers.push({ x: 20 + Math.random() * 70, y: 10 - Math.random() * 40, vx: -.2 - Math.random() * .4, vy: -.35 - Math.random() * .5, r: .6 + Math.random() * .8, h: Math.random(), t: 0, life: 140 + Math.random() * 160 });
     for (const e of embers) { e.t++; e.x += e.vx + .3 * Math.sin((e.t + e.life) / 23); e.y += e.vy; } for (let i = embers.length - 1; i >= 0; i--) if (embers[i].t >= embers[i].life) embers.splice(i, 1);
 
     if (ph === 'plain') {
@@ -401,7 +402,7 @@ const HL = (() => {
         const sx0 = hx + 60 * k, sy0 = hy - TOP * k, burn = dark * (.72 + .18 * Math.sin(G.t / 53) + .1 * Math.sin(G.t / 17)), F = Math.min(1, flash);
         // the fire behind the summit: the hill is cut out black against it
         if (burn > .01) { c.save(); c.globalCompositeOperation = 'screen';
-          const g = c.createRadialGradient(sx0, sy0 + 40 * k, 0, sx0, sy0 + 40 * k, 620 * k); g.addColorStop(0, css([255, 214, 150], .95 * burn)); g.addColorStop(.12, css([255, 150, 70], .7 * burn)); g.addColorStop(.4, css([200, 70, 40], .32 * burn)); g.addColorStop(1, css([120, 30, 30], 0));
+          const g = c.createRadialGradient(sx0, sy0 + 40 * k, 0, sx0, sy0 + 40 * k, 620 * k); g.addColorStop(0, css([255, 224, 176], .8 * burn)); g.addColorStop(.12, css([246, 170, 110], .5 * burn)); g.addColorStop(.42, css([176, 92, 70], .24 * burn)); g.addColorStop(1, css([110, 50, 50], 0));
           c.fillStyle = g; c.fillRect(sx0 - 620 * k, sy0 - 580 * k, 1240 * k, 1240 * k); c.restore(); }
         // the hill: fair and far off at first, black under its own cloud when he stands by it
         const dx = hx - HOX * k, dy = hy - HOY * k;
@@ -409,19 +410,23 @@ const HL = (() => {
         // the burning edge down the overhanging face, and fire in the cracks when it flashes
         c.save(); c.globalCompositeOperation = 'lighter'; c.lineCap = c.lineJoin = 'round';
         if (burn > .01 || F > .02) {
-          for (const [w, al, col] of [[7, .1, [255, 80, 30]], [2.2, .34, [255, 170, 90]]]) { c.strokeStyle = css(col, Math.min(1, al * (burn + 1.5 * F))); c.lineWidth = w * k; c.beginPath();
+          for (const [w, al, col] of [[6, .06, [255, 100, 50]], [1.6, .22, [255, 190, 120]]]) { c.strokeStyle = css(col, Math.min(1, al * (burn + 1.2 * F))); c.lineWidth = w * k; c.beginPath();
             for (let h = 150; h <= TOP; h += 10) { const px = hx + (faceX(h) + 2) * k, py = hy - h * k; h === 150 ? c.moveTo(px, py) : c.lineTo(px, py); } c.stroke(); } }
-        // VEINS OF FIRE: the cracks glow the nearer he comes, breathing one after another (a flash lights them all)
-        if (burn > .01) { CRACKS.forEach((p, i) => { const va = dark * dark * (.24 + .2 * Math.sin(G.t / 37 + i * 1.9)); if (va < .02) return;
-            for (const [w, al, col] of [[5, .25, [255, 80, 30]], [1.3, 1, [255, 190, 110]]]) { c.strokeStyle = css(col, Math.min(1, al * va)); c.lineWidth = w * k; c.beginPath(); p.forEach(([px, py], j) => j ? c.lineTo(hx + px * k, hy + py * k) : c.moveTo(hx + px * k, hy + py * k)); c.stroke(); } });
-          // TONGUES OF FLAME on the summit: each its own height and sway, never two alike
-          for (let i = 0; i < 11; i++) { const bx = hx + (30 + i * 6.4 + 3 * Math.sin(i * 5.1)) * k, by = hy - (TOP - 6 + 10 * Math.sin(i * 2.3)) * k, n = nz(G.t * .035 + i * 3.7, i), hgt = (16 + 66 * n * n * 1.6) * k * burn, sway = (nz(G.t * .02 + i, 40) - .62) * 40 * k, wd = (5 + 5 * n) * k;
-            const g = c.createLinearGradient(0, by, 0, by - hgt); g.addColorStop(0, css([255, 90, 20], 0)); g.addColorStop(.22, css([255, 130, 30], .75 * burn)); g.addColorStop(.45, css([255, 190, 80], .7 * burn)); g.addColorStop(1, css([255, 60, 20], 0)); c.fillStyle = g;
-            c.beginPath(); c.moveTo(bx - wd, by); c.quadraticCurveTo(bx - wd * .6 + sway * .3, by - hgt * .5, bx + sway, by - hgt); c.quadraticCurveTo(bx + wd * .8 + sway * .3, by - hgt * .5, bx + wd, by); c.fill(); } }
-        if (F > .02) {
-          for (const [w, al, col] of [[9, .12, [255, 90, 30]], [4, .4, [255, 150, 60]], [1.5, .9, [255, 236, 190]]]) { c.strokeStyle = css(col, Math.min(1, al * flash)); c.lineWidth = w * k;
-            CRACKS.forEach((p, i) => { if (i % 2 === (flash > .9 ? i % 2 : Math.floor(G.t / 7) % 2)) { c.beginPath(); p.forEach(([px, py], j) => j ? c.lineTo(hx + px * k, hy + py * k) : c.moveTo(hx + px * k, hy + py * k)); c.stroke(); } }); }
-          const g = c.createRadialGradient(hx - 40 * k, hy - 260 * k, 0, hx - 40 * k, hy - 260 * k, 420 * k); g.addColorStop(0, css([255, 130, 50], .34 * F)); g.addColorStop(1, css([255, 130, 50], 0)); c.fillStyle = g; c.fillRect(hx - 460 * k, hy - 680 * k, 880 * k, 840 * k); }
+        // THE FIRE, WITH RESTRAINT (owner, build 145: "more subtle and nuanced and beautiful and awe inspiring in its
+        // balance and restraint, like a good artist, not video game punch in the gut"). The fire itself is hardly
+        // seen: what is seen is its LIGHT. One slender pillar of light stands on the summit and is lost in the
+        // cloud; one seam of fire runs down from that same source inside the overhang and dies away; the cloud is
+        // lit from within. No tongues of flame, no scattered burning cracks. A flash only makes these brighter.
+        if (burn > .01) {
+          // the pillar: soft lights along a slowly wavering line, widest and brightest at its foot
+          for (let i = 0; i < 16; i++) { const u = i / 15, wob = (nz(G.t * .006 + u * 1.7, 12) - .5) * 50 * u * k, px = sx0 - 6 * k + wob - 26 * u * u * k, py = sy0 + (10 - 190 * u) * k, rr = (20 - 14 * u) * k, al = (.44 * (1 - u) * (1 - u) + .04) * (burn + .8 * F);
+            const g = c.createRadialGradient(px, py, 0, px, py, rr); g.addColorStop(0, css([255, 232, 190], al)); g.addColorStop(.5, css([255, 170, 96], al * .45)); g.addColorStop(1, css([240, 110, 60], 0)); c.fillStyle = g; c.fillRect(px - rr, py - rr, 2 * rr, 2 * rr); }
+          // the seam: fire from the same source, running down inside the overhang, thinning and dying away
+          for (const [seam, len] of SEAMS) for (let j = 1; j < seam.length; j++) { const u = j / len, fade = (1 - u) * (1 - u), breathe = .62 + .38 * Math.sin(G.t / 61 - u * 5), al = fade * breathe * (burn * 1.1 + F);
+            if (al < .02) continue; const [x0, y0] = seam[j - 1], [x1, y1] = seam[j];
+            for (const [w, a2, col] of [[5, .12, [255, 96, 40]], [1.1 + 1.2 * fade, .75, [255, 206, 140]]]) { c.strokeStyle = css(col, Math.min(1, a2 * al)); c.lineWidth = w * k; c.beginPath(); c.moveTo(hx + x0 * k, hy + y0 * k); c.lineTo(hx + x1 * k, hy + y1 * k); c.stroke(); } }
+        }
+        if (F > .02) { const g = c.createRadialGradient(sx0, sy0, 0, sx0, sy0, 420 * k); g.addColorStop(0, css([255, 190, 120], .22 * F)); g.addColorStop(1, css([255, 150, 90], 0)); c.fillStyle = g; c.fillRect(sx0 - 420 * k, sy0 - 420 * k, 840 * k, 840 * k); }
         c.restore();
         // the village of Morality, at the hill's long foot on its far side
         const tx = hx + 560 * k, ty = hy + 2 * z, tw = 480 * z, th = 84 * z;
@@ -431,14 +436,14 @@ const HL = (() => {
         if (dark > .02) { c.globalCompositeOperation = 'multiply'; c.globalAlpha = .8 * dark; c.drawImage(CLOUD, sx0 - 1500 * k, sy0 - 520 * k, 2300 * k, 520 * k); c.globalAlpha = .55 * dark; c.drawImage(CLOUD, sx0 - 700 * k, sy0 - 400 * k, 1700 * k, 380 * k); }
         for (let i = 0; i < 9; i++) { const w = (420 + i * 170) * k, lean = -i * i * 9 * k + 30 * k * Math.sin(G.t / 260 + i * 1.7), px = sx0 + lean - w / 2, py = sy0 - (40 + i * 74) * k - w * .16;
           c.globalAlpha = (.2 + .62 * dark) * (1 - i * .09); c.globalCompositeOperation = 'multiply'; c.drawImage(SMOKE, px, py, w, w * .36);
-          if (burn > .01) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = burn * .2 * (1 - i / 6.5) + F * .16; tintSmoke(); c.drawImage(tintC.smoke, px + w * .06, py + w * .05, w * .88, w * .3); } }
+          if (burn > .01) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = burn * .24 * Math.max(0, 1 - i / 5) + F * .2 * Math.max(0, 1 - i / 9.5); tintSmoke(); c.drawImage(tintC.smoke, px + w * .06, py + w * .05, w * .88, w * .3); } }
         c.globalCompositeOperation = 'source-over'; c.globalAlpha = 1;
         // lightning in the cloud, and sparks carried up
         c.save(); c.globalCompositeOperation = 'lighter'; c.lineCap = c.lineJoin = 'round';
-        if (bolt && flash > .35) for (const [w, al] of [[6, .14], [1.6, .9]]) { c.strokeStyle = css([255, 240, 214], Math.min(1, al * flash)); c.lineWidth = w * k; c.beginPath(); bolt.forEach(([bx, by], j) => j ? c.lineTo(sx0 + bx * k, sy0 + by * k) : c.moveTo(sx0 + bx * k, sy0 + by * k)); c.stroke(); }
+        if (bolt && flash > .5) for (const [w, al] of [[7, .06], [1.2, .32]]) { c.strokeStyle = css([255, 240, 214], Math.min(1, al * flash)); c.lineWidth = w * k; c.beginPath(); bolt.forEach(([bx, by], j) => j ? c.lineTo(sx0 + bx * k, sy0 + by * k) : c.moveTo(sx0 + bx * k, sy0 + by * k)); c.stroke(); }
         for (const e of embers) { const al = Math.sin(Math.PI * e.t / e.life) * .9; c.fillStyle = css([255, 170 + 60 * e.h, 90], al); c.beginPath(); c.arc(sx0 + e.x * k, sy0 + e.y * k, Math.max(.7, e.r * k), 0, 7); c.fill(); }
         // the red sheen the fire lays on the plain
-        if (burn > .01) { c.translate(hx - 120 * k, hy + 22 * z); c.scale(1, .1); const g = c.createRadialGradient(0, 0, 0, 0, 0, 640 * k); g.addColorStop(0, css([255, 120, 60], .3 * burn + .3 * F)); g.addColorStop(1, css([255, 120, 60], 0)); c.fillStyle = g; c.fillRect(-640 * k, -640 * k, 1280 * k, 1280 * k); }
+        if (burn > .01) { c.translate(hx - 120 * k, hy + 22 * z); c.scale(1, .1); const g = c.createRadialGradient(0, 0, 0, 0, 0, 640 * k); g.addColorStop(0, css([236, 130, 84], .2 * burn + .2 * F)); g.addColorStop(1, css([236, 130, 84], 0)); c.fillStyle = g; c.fillRect(-640 * k, -640 * k, 1280 * k, 1280 * k); }
         c.restore();
         // the field's haze at its foot, so it stands in the plain and not on it
         const fg = c.createLinearGradient(0, hy - 34 * k, 0, hy + 14 * k), fc = mix(far, near, clamp((hy - hor) / (Y(0) - hor)));
@@ -528,7 +533,7 @@ const HL = (() => {
     // the smoke Evangelist comes out of
     if (evan && evan.a < 1) { const ex = X(EV_X - 30), ey = Y(-90), a = Math.sin(Math.PI * clamp(evan.a * 1.1)) * .8 + (1 - evan.a) * .0; c.globalAlpha = a; for (let i = 0; i < 3; i++) c.drawImage(SMOKE, ex - (200 + i * 40) * z + 30 * Math.sin(G.t / 90 + i), ey - (110 - i * 30) * z, 400 * z, 200 * z); c.globalAlpha = 1; }
     // the flash over everything, the veil of mist between the hill and the gate, the burned edges
-    if (flash > .02) { c.fillStyle = css([255, 150, 80], .16 * Math.min(1, flash)); c.fillRect(0, 0, VW, VH); }
+    if (flash > .02) { c.fillStyle = css([255, 176, 120], .07 * Math.min(1, flash)); c.fillRect(0, 0, VW, VH); }
     if (veil > .003) { c.fillStyle = css(mix([226, 222, 214], [150, 146, 150], dark), smooth(0, 1, veil)); c.fillRect(0, 0, VW, VH); }
     { const g = c.createRadialGradient(VW * .5, VH * .5, VH * .42, VW * .5, VH * .5, VW * .78); g.addColorStop(0, 'rgba(12,12,18,0)'); g.addColorStop(1, css([12, 12, 18], .42 + .2 * dark + .22 * gateish)); c.fillStyle = g; c.fillRect(0, 0, VW, VH); }
     // touches, the ring that shows where to touch, the things he carries
