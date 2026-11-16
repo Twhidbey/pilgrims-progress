@@ -615,7 +615,7 @@ const SL = (() => {
   }
 
   // ---------- drawing ----------
-  let nearC = null, mudGd = null; const mudCh = [];
+  let nearC = null, mudGd = null, chrLate = 0; const mudCh = [];
   function draw() {
     if (!nearC || nearC.width !== cv.width || nearC.height !== cv.height) nearC = mk(cv.width, cv.height);
     const { z, cx, wl } = cam, hor = wl - 140 * z, S = DPR;
@@ -707,7 +707,8 @@ const SL = (() => {
       else if (help && mixIn < 1) figure(n, 'help', HELPF[at(HELP_SRC, vt)], META.help, HX, HY(), 1, fig, false, help.a * (1 - mixIn));
       TALKM = null;
       if (lift) figure(n, 'lift', LIFT[at(LIFT_SRC, lt)], META.lift, HX, HY(), 1, fig, true, mixIn);
-      TALKM = C2.reach > 0 ? null : talkC; if (!lift || mixIn < 1) drawChr(n, fig, 1 - mixIn); TALKM = null;
+      chrLate = 0;
+      if (!lift || mixIn < 1) { if (['fall', 'pli', 'back', 'backtalk', 'wade', 'stuck', 'help'].includes(ph)) chrLate = 1 - mixIn; else { TALKM = C2.reach > 0 ? null : talkC; drawChr(n, fig, 1 - mixIn); TALKM = null; } }
     }
     // the lights he gathered
     // FEET IN THE SOFT GROUND (owner, build 114: feet "floating above ground a little - maybe sink them in a bit", and
@@ -720,9 +721,8 @@ const SL = (() => {
     // of mud now stands round each body where it goes in, in the figures' own tone, and the body runs straight into it
     // (mound()). (2) The drops were big pale ovals hanging like confetti: they are small dark streaks along their own
     // flight now. (3) The rings were neat bright circles, as on clear water: see "ripples in thick mud" further down.
-    const mound = (x, w, a) => { if (a <= .02) return; n.save(); n.translate(x, 1.5); n.scale(w, 11); const g = n.createRadialGradient(0, 0, 0, 0, 0, 1);
-      g.addColorStop(0, css(fig, a)); g.addColorStop(.62, css(fig, a)); g.addColorStop(1, css(fig, 0)); n.fillStyle = g; n.fillRect(-1, -1, 2, 1.1); n.restore(); };
-    if (['fall', 'pli', 'back', 'backtalk', 'wade', 'stuck', 'help'].includes(ph) && !lift) mound(C2.x + 4 * C2.face, 40, (ph === 'fall' ? smooth(30, 90, C2.fallT) : 1) * (ph === 'help' ? 1 - .5 * C2.reach : 1));
+    const mound = (x, w, a, c = n) => { if (a <= .02) return; c.save(); c.translate(x, 1.5); c.scale(w, 11); const g = c.createRadialGradient(0, 0, 0, 0, 0, 1);
+      g.addColorStop(0, css(fig, a)); g.addColorStop(.62, css(fig, a)); g.addColorStop(1, css(fig, 0)); c.fillStyle = g; c.fillRect(-1, -1, 2, 1.1); c.restore(); };
     if (pli && pli.mode === 'climb' && !pli.out && PLIC.length) { const pf = Math.floor(pli.ct || 0); mound(pli.x + (META.climb.ax - plCen(pf)) * CHR_K, 36, (pli.wk ?? 1) * (1 - smooth(.6, .8, pf / 119))); }
     n.strokeStyle = css(fig); n.lineCap = 'round';
     for (const d of drops) { n.globalAlpha = clamp(1.4 - d.t / 60); n.lineWidth = d.r; n.beginPath(); n.moveTo(d.x, d.y); n.lineTo(d.x - d.vx * 1.3, d.y - d.vy * 1.3); n.stroke(); } n.globalAlpha = 1;
@@ -768,6 +768,12 @@ const SL = (() => {
         low(C2.x + 6, (ph === 'fall' ? smooth(20, 120, C2.fallT) : 1) * (lift ? 1 - clamp(lift.t / 60) : 1) * (1 - .45 * deep), lerp(40, 13, deep)); }
       if (pli && pli.mode === 'climb' && !pli.out) low(pli.x + (META.climb.ax - META.climb.c0) * CHR_K * (1 - .6 * smooth(.25, .7, (pli.ct || 0) / 119)), (pli.wk ?? 1) * (1 - smooth(.6, .85, (pli.ct || 0) / 119))); }
     ctx.drawImage(nearC, 0, 0, VW, VH);
+    if (chrLate > 0) {      // Christian in the mire, and the heave of mud round him: on the screen only, never in the mirror
+      ctx.setTransform(S * z, 0, 0, S * z, S * (VW / 2 - cx * z), S * wl);
+      TALKM = C2.reach > 0 ? null : talkMove(C); drawChr(ctx, fig, chrLate); TALKM = null;
+      if (!lift) mound(C2.x + 4 * C2.face, 40, (ph === 'fall' ? smooth(30, 90, C2.fallT) : 1) * (ph === 'help' ? 1 - .5 * C2.reach : 1), ctx);
+      ctx.setTransform(S, 0, 0, S, 0, 0); ctx.globalAlpha = 1;
+    }
     // --- the mirror: the near picture upside down under the water line, in thin strips that wander more the nearer they are ---
     const wx0 = Math.max(0, X(WATER_L));
     if (wx0 < VW) {
@@ -793,10 +799,14 @@ const SL = (() => {
       const bw = 5; mudCh.length = 0; mudGd = gd;
       for (let sx = Math.floor(wx0 / bw) * bw; sx < VW; sx += bw) {
         const x = (sx + bw / 2 - VW / 2) / z + cx;
-        let m = .8 * smooth(HOME0 + 5, HOME0 + 75, x) * (1 - smooth(-640, -300, x)), ch = 0;
+        // build 131 (owner: "can probably kick out reflection all together in mud"): the mire is opaque now, nothing is
+        // mirrored in it; and Christian, while he is in it, is drawn after the mirror is
+        // made (chrLate, below), so he has no reflection even by the far bank where the water is clear. Only what stands on
+        // land or in clear water is mirrored.
+        let m = smooth(HOME0 + 5, HOME0 + 75, x) * (1 - smooth(-640, -300, x)), ch = 0;
         for (const c of churns) { const u = (x - c.x) / 75; if (u > -2.6 && u < 2.6) ch = Math.max(ch, Math.min(1, c.a * 2.2) * Math.exp(-u * u)); }      // the strongest one counts (summed, many churns made a flat slab with hard ends)
         m += .75 * ch;
-        if (m > .02) { ctx.fillStyle = g; const am = Math.min(.92, m); ctx.globalAlpha = am * .35; ctx.fillRect(sx, wl + 1, bw, 3); ctx.globalAlpha = am * .7; ctx.fillRect(sx, wl + 4, bw, 4); ctx.globalAlpha = am; ctx.fillRect(sx, wl + 8, bw, VH - wl); }      // it comes in over a few pixels, not at a hard line
+        if (m > .02) { ctx.fillStyle = g; const am = Math.min(1, m); ctx.globalAlpha = am * .35; ctx.fillRect(sx, wl + 1, bw, 3); ctx.globalAlpha = am * .7; ctx.fillRect(sx, wl + 4, bw, 4); ctx.globalAlpha = am; ctx.fillRect(sx, wl + 8, bw, VH - wl); }
         if (ch > .01) mudCh.push([sx, Math.pow(ch, 1.4)]);
       }
       ctx.globalAlpha = 1;
