@@ -111,6 +111,7 @@ const HL = (() => {
   let OAKT = null, hillBox = [0, 0, 1];
 
   // ---------- pictures baked once ----------
+  let CLOUDW = null, CLOUDG = null;
   let HILL = null, SMOKE = null, CLOUD = null, TOWN = null; const CRACKS = [], STONES = [], SEAMS = [], PUFF = [];
   // the hill's outline: h = height above its foot, 0 to TOP; its left side hangs far out over the way
   const TOP = 520, HW = 1500, HH = 640, HOX = 300, HOY = 610;      // the baked picture's size and where the foot's left end lies in it
@@ -167,6 +168,7 @@ const HL = (() => {
       for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { const e = Math.sin(Math.PI * y / h) * Math.min(1, x / 30, (w - x) / 30), v = smooth(thr, thr + .22, n(x * sx, y * sy)) * e; const i = (y * w + x) * 4; im.data[i] = im.data[i + 1] = im.data[i + 2] = 255; im.data[i + 3] = 255 * v; }
       k.putImageData(im, 0, 0); return c; };
     SMOKE = cloud(240, 80, 5, .4, .022, .05); CLOUD = cloud(400, 90, 31, .46, .014, .045);
+    { const tintOf = col => { const t = mk(CLOUD.width, CLOUD.height), q = t.getContext('2d'); q.drawImage(CLOUD, 0, 0); q.globalCompositeOperation = 'source-in'; q.fillStyle = col; q.fillRect(0, 0, t.width, t.height); return t; }; CLOUDW = tintOf('rgb(255,226,176)'); CLOUDG = tintOf('rgb(168,160,176)'); }
     // billows of smoke: three soft round shapes, each baked dark and again as the light the fire lays on its underside
     for (const seed of [5, 17, 29]) { const base = mk(160, 160), b2 = base.getContext('2d'), Rp = rngS(seed);
       for (let j = 0; j < 8; j++) { const an = Rp() * 6.283, d = j ? 22 + Rp() * 22 : 0, r = j ? 30 + Rp() * 18 : 50, x = 80 + Math.cos(an) * d, y = 80 + Math.sin(an) * d * .8, g = b2.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, 'rgba(255,255,255,.8)'); g.addColorStop(.55, 'rgba(255,255,255,.45)'); g.addColorStop(1, 'rgba(255,255,255,0)'); b2.fillStyle = g; b2.fillRect(x - r, y - r, 2 * r, 2 * r); }
@@ -215,7 +217,11 @@ const HL = (() => {
         k.save(); k.translate(xx, yy); k.rotate(R() * 3.14); k.fillStyle = css(mix([30, 38, 29], [112, 112, 62], l * .62), .9); k.beginPath(); k.ellipse(0, 0, 2.3 + R() * 2.3, 1.3 + R() * 1.2, 0, 0, 7); k.fill(); k.restore();
         if (l > .55 && R() < .2 && tw.length < 320) tw.push([xx, yy]); }
       const d = mk(W, H), kd = d.getContext('2d'); kd.drawImage(c, 0, 0); kd.globalCompositeOperation = 'source-in'; kd.fillStyle = 'rgb(20,20,26)'; kd.fillRect(0, 0, W, H);
-      OAKP = { c, d, tw }; }).catch(() => {});
+      // the trunk's bright edge toward the sun, one for each side (the sun passes from one side of it to the other as he walks)
+      const rim = sgn => { const r = mk(W, H), q = r.getContext('2d'); q.drawImage(c, 0, 0); q.globalCompositeOperation = 'destination-out'; q.drawImage(c, -3 * sgn, 1); q.globalCompositeOperation = 'source-in'; q.fillStyle = 'rgb(255,224,168)'; q.fillRect(0, 0, W, H);
+        q.globalCompositeOperation = 'destination-in'; const g = q.createLinearGradient(0, H * .52, 0, H * .66); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,1)'); q.fillStyle = g; q.fillRect(0, 0, W, H);
+        q.globalCompositeOperation = 'destination-out'; const g2 = q.createLinearGradient(0, OAK_META.ground - 64, 0, OAK_META.ground - 34); g2.addColorStop(0, 'rgba(0,0,0,0)'); g2.addColorStop(1, 'rgba(0,0,0,1)'); q.fillStyle = g2; q.fillRect(0, OAK_META.ground - 64, W, H); return r; };
+      OAKP = { c, d, tw, rimR: rim(1), rimL: rim(-1) }; }).catch(() => {});
     return oakLoading;
   }
   setTimeout(loadOak, 3500);
@@ -498,7 +504,9 @@ const HL = (() => {
     // clouds, pale by day and heavy near the hill
     { const off = ((cx * .05 + G.t * .02) % 800 + 800) % 800;
       for (let i = -1; i < 2; i++) { const x0 = i * 800 - off + 200;
-        c.globalAlpha = .5 * (1 - dark) * (1 - .9 * gateish); c.drawImage(CLOUD, x0, 30, 800, 180);
+        // (build 174: with the sun low behind them the clouds are grey-violet above and bright along their lower edges:
+        // the warm copy is laid first, a little lower, and the grey one over it)
+        { const fa = (1 - dark) * (1 - .9 * gateish); c.globalAlpha = Math.min(1, .8 * fa); c.drawImage(CLOUDW, x0, 39, 800, 180); c.globalAlpha = .62 * fa; c.drawImage(CLOUDG, x0, 30, 800, 180); }
         if (dark > .02) { c.globalAlpha = .55 * dark; c.globalCompositeOperation = 'multiply'; c.drawImage(CLOUD, x0 - 260, 0, 900, 230); c.globalCompositeOperation = 'source-over'; } }
       c.globalAlpha = 1; }
     // the far light: ahead of him on the plain; over the gate at the end. The hill, drawn after it, comes between.
@@ -688,6 +696,7 @@ const HL = (() => {
       if (x0 < VW && x0 + w > 0) {
         { c.save(); c.translate(tx + 70 * z, Y(-1)); c.scale(1, .09); const g = c.createRadialGradient(0, 0, 0, 0, 0, 360 * z); g.addColorStop(0, css([14, 26, 20], .46 * (1 - dark))); g.addColorStop(1, css([14, 26, 20], 0)); c.fillStyle = g; c.fillRect(-360 * z, -360 * z, 720 * z, 720 * z); c.restore(); }
         c.drawImage(OAKP.c, x0, y0, w, h);
+        { const ra = (1 - dark) * (1 - gateish) * .75; if (ra > .02) { c.globalAlpha = ra; c.drawImage(lx > tx ? OAKP.rimR : OAKP.rimL, x0, y0, w, h); c.globalAlpha = 1; } }
         if (dark < .5) { c.save(); c.globalCompositeOperation = 'lighter'; OAKP.tw.forEach(([px, py], i) => { const v = Math.sin(G.t / (26 + (i * 37) % 60) + i * 2.4); if (v < .55) return; const al = Math.pow((v - .55) / .45, 2) * .7 * (1 - 2 * dark);
             c.fillStyle = css([255, 238, 180], al); c.beginPath(); c.arc(x0 + px * s, y0 + py * s, (1 + 1.1 * al) * z, 0, 7); c.fill(); }); c.restore(); }
         // THE SUN THROUGH THE LEAVES (owner, build 173): when the low sun stands behind the crown it breaks through the gaps: a
