@@ -169,18 +169,30 @@ const HL = (() => {
   // trunk's middle, ground = the row that stands on the field's edge (the grass at its foot goes a little below, behind
   // the road), tw = sunlit leaves that twinkle. It is toned a little darker here to sit in the game's quiet tones,
   // and has an all-dark copy for when the sky darkens. Until it has loaded, the code-drawn oak (bakeOak) stands in.
-  const OAK_META = { w: 890, h: 630, ax: 306.5, ground: 602, k: 0.781, tw: [[787,253],[480,364],[694,265],[852,350],[568,103],[862,274],[687,256],[839,333],[552,186],[441,78],[565,95],[808,234],[608,265],[648,156],[864,274],[858,345],[498,332],[434,23],[542,71],[522,107],[548,142],[795,261],[794,258],[562,134],[835,287],[855,251],[853,257],[794,278],[836,236],[439,11],[869,256],[884,303],[543,78],[724,272],[836,235],[799,242],[555,113],[554,107],[527,49],[788,308],[544,145],[859,260],[722,278],[548,49],[665,255],[492,370],[449,32],[562,95],[696,259],[537,112],[449,53],[679,288],[835,235],[826,324],[723,267],[506,356],[830,298],[447,59],[801,316],[854,256],[855,260],[833,297],[718,258],[806,288],[875,306],[727,335],[546,81],[854,340],[789,250],[854,312],[501,47],[654,145],[793,252],[549,142],[664,251],[613,284],[397,27],[814,328],[633,158],[570,101],[538,95],[867,265],[879,329],[731,252],[683,262],[603,259],[599,158],[682,252],[785,307],[536,59],[839,249],[537,53],[827,332],[720,259],[496,34],[437,274],[551,91],[632,150],[461,25],[825,308],[694,266],[872,258],[725,265],[873,311],[704,370],[579,201],[866,327],[504,354],[646,313],[717,279],[494,386],[811,229],[508,50],[540,49],[518,99],[857,247],[831,334],[446,80],[815,228],[253,265],[536,112],[547,48],[806,340],[504,94],[688,290],[862,311],[447,225],[489,334],[860,342],[877,358],[855,311],[782,336],[442,75],[853,309],[533,77],[498,389],[854,341],[496,389],[787,309],[503,44],[539,99],[803,310],[670,276],[780,267],[672,262],[861,228],[539,92],[851,267],[542,48],[804,244],[724,264],[551,72],[791,247],[851,261],[861,280],[553,124],[652,176],[884,321],[551,71],[715,274],[510,381],[542,125],[840,330],[817,341],[788,283],[507,362],[372,41],[784,308],[519,53],[813,312],[729,258],[873,263],[593,133],[821,239],[771,278],[666,265],[497,49],[866,244],[818,245],[856,342],[479,44],[663,251],[697,256],[815,235],[525,106],[440,78],[507,29],[556,125],[462,39],[855,231],[550,129],[539,63],[783,339],[541,62],[841,294],[671,281],[577,186],[705,373],[773,279],[858,261],[840,285],[511,120],[538,77],[543,46],[798,253],[504,51],[824,339],[261,299],[413,263],[858,313],[860,226],[794,260],[758,298],[462,24],[616,145],[517,365],[648,266],[873,318],[496,35],[432,8],[588,174],[859,225],[864,235],[568,105],[514,110],[790,266],[834,296],[543,122],[563,137],[560,114],[856,259],[541,191],[719,257],[662,252],[519,98],[840,245],[527,67],[797,247],[704,284],[495,380],[787,314],[432,50],[759,299],[796,247],[568,104],[556,68],[692,286],[560,97],[515,121],[864,262],[843,336],[862,347],[827,328],[589,136],[434,68],[589,304],[848,278],[840,290],[651,169],[853,310],[761,332],[442,13],[881,311],[703,282],[627,152],[520,107],[446,78],[598,210],[858,262],[756,305],[862,319],[847,334],[430,19],[514,378],[568,133],[855,258],[495,45],[513,108],[559,108],[730,267],[858,307],[702,267],[461,40],[516,365],[876,328],[762,278],[548,96],[858,280],[629,156],[440,272],[794,274],[836,289],[436,80],[514,377],[659,273],[542,78],[601,157],[457,31],[789,251],[861,272]] };
+  const OAK_META = { w: 665, h: 630, ax: 306.5, ground: 602, k: .86 };
   // OAK_SIL: how far the painting is pulled toward one dark tone (owner, build 165: "Tone it down to slightly more silhouette"): 0 = the painting, 1 = a flat silhouette
-  const OAK_SIL = .42;
+  const OAK_SIL = .8;
   let OAKP = null, oakLoading = null;
+  // A DRAWN TREE ON THE PAINTING'S FORM (owner, build 166: "can you make it back into drawn tree using Google tree as
+  // template (remove that branch that sticks way off to the right) and made it slightly bigger so it doesn't interfere
+  // with heads of characters"). The painting (its long right limb taken out of the picture file) is only the
+  // TEMPLATE: its outline gives the trunk, the roots in the grass and the boughs, laid in as one dark tone with a
+  // faint trace of the bark; the leaves are then DRAWN over the crown as small touches in close dark olives,
+  // lighter where the painting's own leaves were sunlit, and some of the lightest are kept to twinkle (tw).
   function loadOak() {
     if (!oakLoading) oakLoading = loadImg('oak-leaf.webp').then(im => { if (!im) return;
-      // (the pale grass at its foot is toned to the field)
-      const mkc = fill => { const c = mk(im.width, im.height), k = c.getContext('2d'); k.drawImage(im, 0, 0);
-        k.globalCompositeOperation = 'source-atop'; { const g = k.createLinearGradient(0, im.height - 90, 0, im.height); g.addColorStop(0, 'rgba(58,62,40,0)'); g.addColorStop(.5, 'rgba(58,62,40,.7)'); g.addColorStop(1, 'rgba(50,54,36,.9)'); k.fillStyle = g; k.fillRect(0, im.height - 90, im.width, 90); }
-        k.globalCompositeOperation = 'source-over'; fill(k); return c; };
-      OAKP = { c: mkc(k => { const keep = mk(im.width, im.height); keep.getContext('2d').drawImage(k.canvas, 0, 0); k.globalCompositeOperation = 'multiply'; k.fillStyle = 'rgb(172,166,156)'; k.fillRect(0, 0, im.width, im.height); k.globalCompositeOperation = 'source-over'; k.globalAlpha = OAK_SIL; k.fillStyle = 'rgb(30,34,29)'; k.fillRect(0, 0, im.width, im.height); k.globalAlpha = 1; k.globalCompositeOperation = 'destination-in'; k.drawImage(keep, 0, 0); }),
-               d: mkc(k => { k.globalCompositeOperation = 'source-in'; k.fillStyle = 'rgb(20,20,26)'; k.fillRect(0, 0, im.width, im.height); }) }; }).catch(() => {});
+      const W = im.width, H = im.height, src = mk(W, H), sk = src.getContext('2d'); sk.drawImage(im, 0, 0);
+      const px = sk.getImageData(0, 0, W, H).data, R = rngS(91), c = mk(W, H), k = c.getContext('2d'), tw = [];
+      // the form: the painting's own shape in one dark tone, the bark and the roots showing through faintly
+      k.drawImage(im, 0, 0); k.globalCompositeOperation = 'source-atop'; k.fillStyle = 'rgba(30,30,27,' + OAK_SIL + ')'; k.fillRect(0, 0, W, H); k.globalCompositeOperation = 'source-over';
+      // the leaves, drawn: one small touch wherever the painting has a leaf (a jittered grid), toned by how light that leaf was
+      for (let y = 3; y < H * .7; y += 5) for (let x = 3; x < W; x += 5) { const xx = Math.min(W - 1, Math.max(0, Math.round(x + (R() - .5) * 5))), yy = Math.round(y + (R() - .5) * 5), i = (yy * W + xx) * 4;
+        if (px[i + 3] < 190) continue; const r = px[i], g = px[i + 1], b = px[i + 2]; if (g < b * 1.22 || r > g * 1.22) continue;
+        const l = clamp(((r + g) / 2 - 46) / 105); if (R() < .12) continue;
+        k.save(); k.translate(xx, yy); k.rotate(R() * 3.14); k.fillStyle = css(mix([30, 38, 29], [112, 112, 62], l * .62), .9); k.beginPath(); k.ellipse(0, 0, 2.3 + R() * 2.3, 1.3 + R() * 1.2, 0, 0, 7); k.fill(); k.restore();
+        if (l > .55 && R() < .2 && tw.length < 320) tw.push([xx, yy]); }
+      const d = mk(W, H), kd = d.getContext('2d'); kd.drawImage(c, 0, 0); kd.globalCompositeOperation = 'source-in'; kd.fillStyle = 'rgb(20,20,26)'; kd.fillRect(0, 0, W, H);
+      OAKP = { c, d, tw }; }).catch(() => {});
     return oakLoading;
   }
   setTimeout(loadOak, 3500);
@@ -407,8 +419,8 @@ const HL = (() => {
 
     // the camera
     let tx = C3.x + 150, tz = 1;
-    if (ph === 'plain') tz = wise ? .86 : 1;
-    if (ph === 'meet') { tx = C3.x + 60; tz = 1; if (G.act === 'hill') { tx = C3.x + 800; tz = .5; } }
+    if (ph === 'plain') tz = wise ? .84 : .9;
+    if (ph === 'meet') { tx = C3.x + 60; tz = .86; if (G.act === 'hill') { tx = C3.x + 800; tz = .5; } }
     if (ph === 'aside') tz = lerp(1, .5, smooth(STILL - 1000, STILL - 100, C3.x));
     if (ph === 'still' || ph === 'come' || ph === 'evan') { tx = STILL + 60 - (ph === 'still' ? 0 : 50); tz = ph === 'evan' ? .6 : .4; }
     if (ph === 'back' || ph === 'mist') { tx = C3.x - 150; tz = lerp(1, .62, smooth(STILL - 900, STILL - 100, C3.x)); }
@@ -557,11 +569,11 @@ const HL = (() => {
     // kin to the bare black oak over the mire, but alive: he is out of the slough. It stands as the great dark tree
     // of John Martin's quiet pictures (The Plains of Heaven), its long limb reaching over the place where the two
     // meet, with the light of late afternoon in the edge of its crown.
-    if (OAKP) { const M = OAK_META, s = M.k * z, tx = VW / 2 + (MEET - 185 - cx) * .92 * z, ty = Y(-2), x0 = tx - M.ax * s, y0 = ty - M.ground * s, w = M.w * s, h = M.h * s;
+    if (OAKP) { const M = OAK_META, s = M.k * z, tx = VW / 2 + (MEET - 150 - cx) * .92 * z, ty = Y(-2), x0 = tx - M.ax * s, y0 = ty - M.ground * s, w = M.w * s, h = M.h * s;
       if (x0 < VW && x0 + w > 0) {
         { c.save(); c.translate(tx + 70 * z, Y(-1)); c.scale(1, .09); const g = c.createRadialGradient(0, 0, 0, 0, 0, 360 * z); g.addColorStop(0, css([14, 26, 20], .46 * (1 - dark))); g.addColorStop(1, css([14, 26, 20], 0)); c.fillStyle = g; c.fillRect(-360 * z, -360 * z, 720 * z, 720 * z); c.restore(); }
         c.drawImage(OAKP.c, x0, y0, w, h);
-        if (dark < .5) { c.save(); c.globalCompositeOperation = 'lighter'; M.tw.forEach(([px, py], i) => { const v = Math.sin(G.t / (26 + (i * 37) % 60) + i * 2.4); if (v < .55) return; const al = Math.pow((v - .55) / .45, 2) * .7 * (1 - 2 * dark);
+        if (dark < .5) { c.save(); c.globalCompositeOperation = 'lighter'; OAKP.tw.forEach(([px, py], i) => { const v = Math.sin(G.t / (26 + (i * 37) % 60) + i * 2.4); if (v < .55) return; const al = Math.pow((v - .55) / .45, 2) * .7 * (1 - 2 * dark);
             c.fillStyle = css([255, 238, 180], al); c.beginPath(); c.arc(x0 + px * s, y0 + py * s, (1 + 1.1 * al) * z, 0, 7); c.fill(); }); c.restore(); }
         if (dark > .02) { c.globalAlpha = Math.min(1, dark * .85); c.drawImage(OAKP.d, x0, y0, w, h); c.globalAlpha = 1; }
         if (dark < .6) for (let i = 0; i < 7; i++) { const T = 620 + i * 97, u = ((G.t + i * 233) % T) / T, lx2 = tx + (-90 + i * 60 + 34 * Math.sin(u * 7 + i)) * z + 50 * u * z, ly2 = ty - (260 - 30 * (i % 3)) * z * (1 - u), al = Math.sin(Math.PI * u) * .9 * (1 - dark);
