@@ -6,7 +6,7 @@
 It finds the cleanest loop of one cycle, cuts each frame out of the white, makes it grey like the other frames
 (g = .2 + .62 * lightness, then matched to the tone of --match), shrinks it so a figure --height pixels tall in the
 video becomes 288 (Christian's height in his walk frames), and writes a .pack. It prints the META line for
-story-lab.html: ax, ground, frames, vpx (how far the ground moves per frame, so feet do not slide), down (frames with
+index.html: ax, ground, frames, vpx (how far the ground moves per frame, so feet do not slide), down (frames with
 a foot on the ground). Needs ffmpeg, numpy and Pillow. Look at the frames yourself before trusting it.
 """
 import glob, io, json, os, struct, subprocess, sys, tempfile

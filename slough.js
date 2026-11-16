@@ -1,5 +1,5 @@
 // ============================================================
-// LEVEL 2: THE SLOUGH OF DESPOND (book {25} to {35}). Loaded by story-lab.html after its own script, and run by its
+// LEVEL 2: THE SLOUGH OF DESPOND (book {25} to {35}). Loaded by index.html after its own script, and run by its
 // engine: the words (talk, caption, hint), the voices, holding to walk, the sound. Everything of its own is inside SL,
 // so nothing here can clash with Level 1's names. The look comes from slough-lab.html (approved by the owner):
 // a silver picture with a breath of colour, still water that mirrors, one black twisted oak.
@@ -34,8 +34,8 @@ const SL = (() => {
     [N, 'Because of the burden on his back, Christian began to sink in the mire.'],
     [PL, 'Ah, neighbor Christian, where are you now?'],
     [C, 'Truly, I do not know.'],
-    [PL, 'Is this the happiness you have told me of? If I get out again with my life, you shall have the brave country alone for me!'],
-    [N, 'With a desperate struggle or two, he got out on the side next to his own house. So away he went, and Christian saw him no more.', null, () => { pli.mode = 'climb'; }],
+    [PL, 'Is this the happiness you have told me of? If I get out again with my life, you shall have the brave country alone for me!', null, () => { if (pli) pli.turn = 1; }],      // he turns from Christian toward his own side
+    [N, 'With a desperate struggle or two, he got out on the side next to his own house. So away he went, and Christian saw him no more.', null, () => { pli.mode = 'climb'; pli.wal = false; pli.turn = 1; }],
   ];
   // the choice is ours, not the book's (as in Level 1): going back loses nothing
   const BACK = [
@@ -69,6 +69,7 @@ const SL = (() => {
   // steps after he stood up his feet were in the air beyond the land's end. The bank now has that short face, standing
   // where the video's bank stood, at its full height by HOME0 + 15
   const START = -2750, FALL_X = -760, PLI_FALL = -840, END_X = 420;
+  const WADE0 = FALL_X + 70;      // build 119: falling, Christian pitches on this much further, so the two are not on top of each other in the mire
   // Help kneels at the edge of the far bank; Christian must come to where his hand meets Help's (measured in slough-lab.html)
   const HX = BANK0 + 34, GRASP = { dx: -(82 - 15 + 129), dy: 283 - 55 };
   const HY = () => bankY(HX) + 4;
@@ -186,7 +187,7 @@ const SL = (() => {
   }
 
   // ---------- the people ----------
-  const HELPF = [], REACH = [], LIFT = [], PLIC = [], WADE = [], PSTOP = [];
+  const HELPF = [], REACH = [], LIFT = [], PLIC = [], WADE = [], PSTOP = [], HWALK = [];
   const META = { help: { ax: 94, ground: 309 }, reach: { ax: 70, ground: 307 }, lift: { ax: 257, ground: 307 },
     climb: { ax: 363, ground: 342, top: 38, end: 440, sink: 39, c0: 168, top0: 143 },      // c0, top0: the middle and the head of him in the first frame (build 106)
     // Christian struggling through the mud (build 104): a loop, waist-deep in the video; ground = where his feet would be
@@ -195,7 +196,16 @@ const SL = (() => {
     // picture one step further on): pack frames 0..49 he slows over two or three steps and stops (video 0..98), 50..119 he
     // stands breathing (video 100..238, played back and forth). ax/ground = where walk frame 0's ax and ground fall in the
     // pack, so frame 0 lies exactly on the walk frame; at the end his feet are STOPD further on
-    stop: { ax: 100.8, ground: 308 } };
+    stop: { ax: 100.8, ground: 308 },
+    // HELP WALKS IN (build 119, owner: "can bring in help by walking"; the book, {31}: "a man came to him"): one video
+    // (about 56 cents, right first time; first frame a striding frame of his kneel video, last frame his standing
+    // picture; the camera still, he walks across). assets/help-walk.pack: 96 frames (every second video frame), each cut
+    // round his own middle, so the pack holds no travel: HW_OFF is how far (pack px) each frame stands from where he
+    // stops. The video's feet slid (he walked faster than he travelled), so HW_OFF was worked out from the planted foot
+    // instead (each foot stays where it lands), not from where the video put him. ax/ground: the last frame lies exactly
+    // on HELPF[0].
+    hwalk: { ax: 92, ground: 317 } };
+  const HW_OFF = [1106.2, 1097.2, 1084.2, 1072.2, 1059.2, 1046.2, 1033.2, 1020.2, 1007.2, 994.2, 981.2, 968.2, 955.2, 944.7, 930.7, 916.2, 902.7, 890.7, 877.7, 864.7, 851.7, 838.7, 825.2, 812.2, 799.2, 786.2, 773.2, 760.2, 747.2, 733.7, 719.2, 705.7, 693.2, 680.2, 667.2, 654.2, 641.2, 627.2, 614.2, 601.2, 588.2, 575.2, 562.2, 549.2, 535.2, 521.2, 506.7, 493.7, 480.2, 469.7, 456.7, 443.7, 429.7, 414.7, 401.7, 388.7, 375.2, 362.7, 351.2, 338.2, 325.2, 313.2, 301.2, 290.2, 279.2, 269.2, 256.2, 243.2, 231.7, 218.7, 208.2, 196.7, 187.2, 177.2, 167.7, 158.7, 145.7, 132.7, 119.7, 106.7, 93.7, 80.7, 67.7, 54.7, 41.7, 28.7, 24.0, 18.0, 14.0, 11.0, 7.5, 5.0, 3.0, 1.5, 1.0, 0.0];
   // where the stop video can begin (build 115, measured by shape overlap): for each walk frame, the stop video frame that
   // matches it best and how far ahead (pack px) that frame's figure stands, or null (no good match: walk on a frame or
   // two); and how far each of the first 50 stop frames' figure has come from walk frame 0's place (pack px; 72.5 standing)
@@ -217,8 +227,17 @@ const SL = (() => {
   // line, top = how high the bank stands in the video (pack pixels), end = where his feet are in the last frame. Without the pack
   // he wades to his own bank and rises out of the water as he walks into the mist.
   function preload() {
-    if (!loading) loading = Promise.all([loadPack('help', HELPF), loadPack('christian-reach', REACH), loadPack('lift', LIFT), loadPack('pliable-climb', PLIC).catch(() => {}), loadPack('christian-wade', WADE).catch(() => {}), loadPack('pliable-stop', PSTOP).catch(() => {})]).catch(() => {});
+    if (!loading) loading = Promise.all([loadPack('help', HELPF), loadPack('help-walk', HWALK).catch(() => {}), loadPack('christian-reach', REACH), loadPack('lift', LIFT), loadPack('pliable-climb', PLIC).catch(() => {}), loadPack('christian-wade', WADE).catch(() => {}), loadPack('pliable-stop', PSTOP).catch(() => {})]).catch(() => {});
     return loading;
+  }
+  // the middle of Pliable in a frame of his climbing video (measured once per frame, on a small copy), to mirror him about himself
+  const plCenC = {};
+  function plCen(f) {
+    if (plCenC[f] != null) return plCenC[f];
+    const im = PLIC[f], w = 64, h = Math.round(64 * im.height / im.width), c = mk(w, h), k = c.getContext('2d'); k.drawImage(im, 0, 0, w, h);
+    const d = k.getImageData(0, 0, w, Math.round(h * .8)).data; let sx = 0, sa = 0;      // the lower fifth is left out: splashes
+    for (let i = 0; i < d.length; i += 4) { sx += d[i + 3] * ((i / 4) % w + .5); sa += d[i + 3]; }
+    return plCenC[f] = sa ? sx / sa * im.width / w : META.climb.c0;
   }
   // one tinted figure, feet at world (x, y); nothing below the water line when `cut` (each figure has its own small canvas)
   const tintC = {};
@@ -230,7 +249,7 @@ const SL = (() => {
     f.globalCompositeOperation = 'destination-in'; f.drawImage(im, 0, 0); f.globalCompositeOperation = 'source-over';
     c.save(); c.globalAlpha = alpha;
     if (cut) { c.beginPath(); c.rect(-1e5, -1e5, 2e5, 1e5); c.clip(); }
-    c.translate(x, y); if (TALKM) c.transform(1, 0, TALKM.sh, 1, 0, 0);      // build 118: whoever is speaking leans a hair with his own voice (talkMove in story-lab.html)
+    c.translate(x, y); if (TALKM) c.transform(1, 0, TALKM.sh, 1, 0, 0);      // build 118: whoever is speaking leans a hair with his own voice (talkMove in index.html)
     c.scale(face * CHR_K, CHR_K * (TALKM ? TALKM.sy : 1)); c.drawImage(fc, -meta.ax, -meta.ground); c.restore();
   }
 
@@ -263,8 +282,13 @@ const SL = (() => {
   let prints = [], fogH = 1, fogS = 1, strain = 0, slipT = 0, fearT = 0, fearsSaid = false, goldT = 0, onwayT = 0, capsSaid = new Set(), nearSaid = false;
   const C2 = { x: START, y: 0, face: 1, anim: 12, alpha: 1, sink: 0, reach: 0, stand: 0, st: 0 };
 
+  // the picture behind the title page when Level 2 is the child's level (build 119): the oak over the bog, nobody in it
+  function title() {
+    build(); preload(); SL.show = true; ph = 'plain'; help = null; mv = null; lift = null; pli = null; fogH = 0; steps = []; rings = []; motes = [];
+    Object.assign(cam, { cx: -240, z: .6, wl: 392 }); Object.assign(look, { mist: .55, veil: 0, gold: .12, disc: 1, sky: .5 });
+  }
   function start() {
-    SL.on = true; build(); preload();
+    SL.on = true; SL.show = false; build(); preload();
     document.getElementById('title').style.display = 'none';
     document.getElementById('endc').className = 'card';
     document.body.classList.add('playing', 'slough'); G.opening = null; hush();
@@ -351,17 +375,25 @@ const SL = (() => {
     if ((ph === 'fall' || ph === 'pli') && C2.fallT < 340) {
       C2.fallT++; const top = smooth(0, 40, C2.fallT), topP = smooth(4, 44, C2.fallT);
       C2.sink = SINK * sunk(C2.fallT); C2.y = lerp(bankY(FALL_X) + 4, C2.sink, top);
-      if (pli && pli.mode !== 'climb') { pli.sink = PLI_SINK * sunk(C2.fallT - 4); pli.y = lerp(bankY(pli.x) + 4, pli.sink, topP); }
+      C2.x = lerp(FALL_X, WADE0, smooth(6, 210, C2.fallT));
+      if (pli && (pli.mode !== 'climb' || pli.wal)) { pli.sink = PLI_SINK * sunk(C2.fallT - 4); pli.sy = lerp(bankY(pli.wx ?? pli.x) + 4, pli.sink, topP); if (pli.mode !== 'climb') pli.y = pli.sy; }
+      // THEY WALLOW (build 119; the book, {29}: "they wallowed for a time"; owner: "can we [have] some flailing from both?
+      // the in water action seems a little stale"): from the fall on, Christian heaves in his wading loop and Pliable in
+      // the opening of his climbing video, played back and forth, with rings and a slosh; each is nearly still while one
+      // of them speaks. Pliable faces Christian until his angry speech, then turns toward his own side.
+      if (pli && pli.mode === 'in' && PLIC.length && C2.fallT >= 24) { pli.mode = 'climb'; pli.wal = true; pli.wk = 0; pli.fa = 1; pli.wx = pli.x; pli.wf = Math.floor(pli.anim) % (PLI.length || 1); }
       if (C2.fallT % 50 === 0) { rings.push({ x: C2.x, y: 0, t: 0, k: .7 }); if (pli && pli.mode !== 'climb') rings.push({ x: pli.x, y: 0, t: 0, k: .6 }); }
     }
+    const calm = !!(SPK && SPK.who !== N);      // one of the two is speaking: they hold nearly still
+    if (['fall', 'pli', 'backtalk'].includes(ph)) { C2.wa = (C2.wa || 0) + (calm ? .04 : .2); if (!calm && C2.fallT > 70 && G.t % 46 === 0) { rings.push({ x: C2.x + 12, y: 0, t: 0, k: .8 }); sfxS.wade(); } }
     if (ph === 'fall') {
       if (C2.fallT === 8 || C2.fallT === 14) { rings.push({ x: C2.x, y: 0, t: 0, k: 1.3 }); rings.push({ x: pli.x, y: 0, t: 0, k: 1.1 }); }
       if (C2.fallT === 120) { ph = 'pli'; talk(FALL, choose2); }
     } else if (ph === 'back') {
-      C2.x -= .3; C2.anim += .3 / CHR_STEP * 2.6; C2.face = -1; footfall();
-      if (C2.x <= FALL_X - 60) { ph = 'backtalk'; talk(BACK, () => { C2.face = 1; wadeOn(); }); }
+      C2.x -= .3; C2.anim += .3 / CHR_STEP * 2.6; C2.face = -1; footfall(); C2.wa = (C2.wa || 0) + .2;
+      if (C2.x <= WADE0 - 60) { ph = 'backtalk'; talk(BACK, () => { C2.face = 1; wadeOn(); }); }
     } else if (ph === 'wade') {
-      const v = want ? .32 : 0, p = clamp((C2.x - FALL_X) / (STUCK_X - FALL_X));
+      const v = want ? .32 : 0, p = clamp((C2.x - WADE0) / (STUCK_X - WADE0));
       C2.x = Math.min(STUCK_X, C2.x + v); C2.face = 1;
       C2.wa = (C2.wa || 0) + (v ? .2 : .07);
       if (v) { C2.anim += v / CHR_STEP * 2.6; footfall(); } else C2.anim = stepAnim(C2.anim, 0, CHR_STEP, CHR_META);
@@ -375,14 +407,17 @@ const SL = (() => {
       if (want) clearHint('wade');
       if (C2.x >= STUCK_X) { ph = 'stuck'; strain = 0; slipT = 0; }
     } else if (ph === 'stuck') {
+      // (build 119: Help walks in while the storyteller says he came; he speaks when he has come)
       // THE HEART OF THE LEVEL: he cannot get out alone. Holding does nothing but strain; he slips back; then Help comes.
       slipT++;
       C2.wa = (C2.wa || 0) + (want ? .26 : .06);
       if (want) { strain++; C2.anim += .5; if (strain % 40 === 1) { sfxS.strain(); rings.push({ x: C2.x, y: 0, t: 0, k: .8 }); } }
       C2.x = STUCK_X - 4 * Math.max(0, Math.sin(slipT / 50)) * smooth(60, 160, slipT);
-      if (strain > 230 || slipT > 420) { ph = 'help'; C2.x = STUCK_X; talk(STUCK, () => { help = { a: 0, t: 0 }; talk(HELP, () => {}); }); }
+      if (strain > 230 || slipT > 420) { ph = 'help'; C2.x = STUCK_X; talk(STUCK, () => { help = { a: 0, t: 0, w: HWALK.length ? 0 : 1e9 }; talk(HELP.slice(0, 1), () => {}); }); }
     } else if (ph === 'help') {
       if (help && C2.reach < 1) C2.reach = Math.min(1, C2.reach + .05);
+      if (help && help.w < HWALK.length - 1) help.w += .2;
+      else if (help && !help.said && G.state === 'play') { help.said = true; talk(HELP.slice(1), () => {}); }
       if (lift) { lift.t = Math.min(236, lift.t + .4); if (lift.t >= 236) { ph = 'drawn'; C2.done = 0; C2.x = HX + (LIFT_CHR - META.lift.ax) * CHR_K; C2.y = bankY(C2.x) + 4; C2.face = 1; C2.faceA = 1; C2.stand = 1; C2.sd = QUIET[0]; } }
     } else if (ph === 'drawn') {
       // the lift's last picture dissolves into the two men standing apart, then he turns to look back
@@ -438,10 +473,15 @@ const SL = (() => {
         // of where he had sunk, and a little lower: that difference (dx0, dy0, measured once when the climb begins) is
         // carried and faded out over the first quarter of the climb, so he wades from where he was into the video's path.
         const M = META.climb, last = PLIC.length - 1, endX = HOME0 + (M.ax - M.end) * CHR_K;
-        if (pli.ct == null) { pli.dx0 = pli.x - (HOME0 + (M.ax - M.c0) * CHR_K); pli.dy0 = (pli.y - (PLI_META.ground - 5) * CHR_K) - (M.sink - (M.ground - M.top0) * CHR_K); }
-        pli.ct = Math.min(last, (pli.ct || 0) + .2); const p = pli.ct / last, fade = 1 - smooth(0, .25, p);
+        if (pli.ct == null) { pli.dx0 = pli.x - (HOME0 + (M.ax - M.c0) * CHR_K); pli.dy0 = (pli.y - (PLI_META.ground - 5) * CHR_K) - (M.sink - (M.ground - M.top0) * CHR_K); pli.c0 = 0; }
+        if (pli.wal) {      // wallowing: the video's first three seconds back and forth, sinking with Christian
+          pli.wt = (pli.wt || 0) + (calm ? .03 : .16); const L = 34, u = pli.wt % (2 * L); pli.ct = 2 + (u < L ? u : 2 * L - u); pli.c0 = pli.ct;
+          pli.dy0 = ((pli.sy ?? pli.y) - (PLI_META.ground - 5) * CHR_K) - (M.sink - (M.ground - M.top0) * CHR_K); pli.wk = Math.min(1, pli.wk + .04);
+        } else pli.ct = Math.min(last, (pli.ct || 0) + .2);
+        pli.fa = (pli.fa ?? -1) + ((pli.turn ? -1 : 1) - (pli.fa ?? -1)) * .035;
+        const p = pli.ct / last, fade = 1 - smooth(0, .25, (pli.ct - pli.c0) / Math.max(1, last - pli.c0));
         pli.face = -1; pli.x = HOME0 + pli.dx0 * fade; const up = smooth(.68, .85, p); pli.y = (1 - up) * M.sink + up * (bankY(endX) + 4 + M.top * CHR_K) + pli.dy0 * fade;
-        if (p < .75 && G.t % 18 === 0) rings.push({ x: HOME0 + 20 + 40 * Math.random(), y: 0, t: 0, k: .7 + .5 * Math.random() });
+        if (p < .75 && G.t % (pli.wal ? 30 : 18) === 0 && !(pli.wal && calm)) rings.push({ x: pli.x + (M.ax - M.c0) * CHR_K * (1 - .6 * smooth(.25, .7, p)) + 40 * (Math.random() - .5), y: 0, t: 0, k: .7 + .5 * Math.random() });      // round him, wherever he is
         if (pli.ct >= last) { pli.out = true; pli.x = endX; pli.y = bankY(endX) + 4; pli.anim = 0; }
       } else if (pli.mode === 'climb') {
         // struggling back to the bank next to his own house, then out and away into the mist
@@ -552,7 +592,13 @@ const SL = (() => {
     // Pliable
     TALKM = talkMove(PL);
     if (pli) {
-      if (PLIC.length && pli.mode === 'climb' && !pli.out) figure(n, 'pli', PLIC[Math.floor(pli.ct || 0)], META.climb, pli.x, pli.y, -1, fig, true, pli.alpha);
+      if (PLIC.length && pli.mode === 'climb' && !pli.out) {
+        // wallowing he faces Christian (the same frames, mirrored about his own middle), then turns to his own side
+        const im = PLIC[Math.floor(pli.ct || 0)], wk = pli.wal ? pli.wk : 1, fl = (1 - (pli.fa ?? -1)) / 2, cw = 2 * (META.climb.ax - plCen(Math.floor(pli.ct || 0))) * CHR_K;
+        if (wk < 1) figure(n, 'pli0', PLI[pli.wf || 0], PLI_META, pli.wx, pli.sy, 1, fig, true, pli.alpha * (1 - smooth(.5, 1, wk)));
+        if (fl < .99) figure(n, 'pli2', im, META.climb, pli.x + cw, pli.y, 1, fig, true, pli.alpha * smooth(0, .5, wk) * (1 - smooth(.5, 1, fl)));
+        if (fl > .01) figure(n, 'pli', im, META.climb, pli.x, pli.y, -1, fig, true, pli.alpha * smooth(0, .5, wk) * smooth(0, .5, fl));
+      }
       else if (pli.stop && pli.mode === 'follow' && PSTOP.length) {
         const t = pli.stop.t, L = PSTOP.length - 50, f = t < 50 ? Math.floor(t) : 50 + Math.floor(((u => u < L ? u : 2 * L - u))((t - 50) % (2 * L)));
         figure(n, 'plistop', PSTOP[Math.min(PSTOP.length - 1, f)], META.stop, pli.stop.x0, pli.y + FOOT_DROP * smooth(38, 49, t), pli.face, fig, pli.y > 2, pli.alpha);
@@ -574,7 +620,9 @@ const SL = (() => {
       TALKM = talkC; drawChr(n, fig, d); TALKM = null;
     } else {
       TALKM = vt > 0 ? null : talkH;      // not while he kneels and reaches: his hand must stay where Christian's meets it
-      if (help && mixIn < 1) figure(n, 'help', HELPF[at(HELP_SRC, vt)], META.help, HX, HY(), 1, fig, false, help.a * (1 - mixIn)); TALKM = null;
+      if (help && help.w < HWALK.length - 1) { const f = Math.floor(help.w), hx = HX + HW_OFF[f] * CHR_K; figure(n, 'help', HWALK[f], META.hwalk, hx, bankY(hx) + 4, 1, fig, false, help.a); }
+      else if (help && mixIn < 1) figure(n, 'help', HELPF[at(HELP_SRC, vt)], META.help, HX, HY(), 1, fig, false, help.a * (1 - mixIn));
+      TALKM = null;
       if (lift) figure(n, 'lift', LIFT[at(LIFT_SRC, lt)], META.lift, HX, HY(), 1, fig, true, mixIn);
       TALKM = C2.reach > 0 ? null : talkC; if (!lift || mixIn < 1) drawChr(n, fig, 1 - mixIn); TALKM = null;
     }
@@ -650,7 +698,7 @@ const SL = (() => {
     for (const tp of G.taps) { tp.t++; ctx.strokeStyle = css(LIGHT, .5 * (1 - tp.t / 40)); ctx.lineWidth = 1.2; ctx.beginPath(); ctx.arc(tp.x, tp.y, 6 + tp.t * .8, 0, 7); ctx.stroke(); }
     G.taps = G.taps.filter(tp => tp.t < 40);
     if (G.ring) { const [x, y] = G.ring(); ctx.strokeStyle = '#ffe6ae'; ctx.lineWidth = 2; for (const k of [0, .5]) { const q = (G.t / 80 + k) % 1; ctx.globalAlpha = .65 * (1 - q); ctx.beginPath(); ctx.arc(x, y, 14 + q * 40, 0, 6.2832); ctx.stroke(); } ctx.globalAlpha = 1; }
-    drawItems();
+    if (SL.on) drawItems();
   }
   const wob = noise2(9);
   function glow(c, x, y, r, col, a) { const g = c.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, css(col, a)); g.addColorStop(.35, css(col, a * .45)); g.addColorStop(1, css(col, 0)); c.fillStyle = g; c.fillRect(x - r, y - r, 2 * r, 2 * r); }
@@ -661,7 +709,10 @@ const SL = (() => {
     const inWater = C2.y > 2 && ph !== 'look' && ph !== 'onway' && ph !== 'on' && ph !== 'drawn';
     let walkIm = CHR[((Math.floor(C2.anim) % CHR.length) + CHR.length) % CHR.length], walkM = CHR_META;
     // in the mire he heaves and struggles (one video loop) instead of walking
-    if (WADE.length && inWater && (ph === 'wade' || ph === 'stuck' || ph === 'help')) { walkIm = WADE[Math.floor(C2.wa || 0) % WADE.length]; walkM = META.wade; }
+    const wk = ph === 'fall' ? smooth(20, 50, C2.fallT) : 1; let wa = 1;      // build 119: he flounders from the fall on
+    if (WADE.length && inWater && wk > 0 && ['fall', 'pli', 'back', 'backtalk', 'wade', 'stuck', 'help'].includes(ph)) {
+      if (wk < 1) figure(n, 'chr0', walkIm, CHR_META, C2.x, C2.y, C2.face, fig, true, alpha * C2.alpha * (1 - smooth(.5, 1, wk)));
+      walkIm = WADE[Math.floor(C2.wa || 0) % WADE.length]; walkM = META.wade; wa = smooth(0, .5, wk); }
     if (ph === 'help' && C2.reach > 0) {
       const gx = HX + GRASP.dx * CHR_K, gy = STUCK_Y() + (C2.y - STUCK_Y()) * (1 - smooth(20, 140, mv ? mv.t : 0));      // he heaves up out of the deep as he reaches (build 114)
       if (C2.reach < 1) figure(n, 'chr', walkIm, walkM, C2.x, C2.y, 1, fig, true, alpha * (1 - C2.reach));
@@ -676,10 +727,10 @@ const SL = (() => {
       if (C2.stand < 1) figure(n, 'chr', walkIm, CHR_META, C2.x, C2.y, C2.face, fig, false, alpha * (1 - C2.stand) * C2.alpha);
       return;
     }
-    figure(n, 'chr', walkIm, walkM, C2.x, C2.y, C2.face, fig, inWater, alpha * C2.alpha);
+    figure(n, 'chr', walkIm, walkM, C2.x, C2.y, C2.face, fig, inWater, alpha * C2.alpha * wa);
   }
 
   // for testing: SL.peek() tells where the story is
-  // oakPic: the great oak baked small in one colour, for Level 1's far glimpse of the Slough (story-lab.html, drawFarSlough)
-  return { on: false, start, update, draw, touch, grip, pick, preload, lines: ALL, oakPic: (col, k) => bakeTree(oak(18), col, k), peek: () => ({ ph, x: C2.x, y: C2.y, mv: mv && mv.t, lift: lift && lift.t, pli: pli && pli.mode, plx: pli && Math.round(pli.x), plStop: !!(pli && pli.stop), cam }) };
+  // oakPic: the great oak baked small in one colour, for Level 1's far glimpse of the Slough (index.html, drawFarSlough)
+  return { on: false, show: false, title, start, update, draw, touch, grip, pick, preload, lines: ALL, oakPic: (col, k) => bakeTree(oak(18), col, k), peek: () => ({ ph, x: C2.x, y: C2.y, mv: mv && mv.t, lift: lift && lift.t, pli: pli && pli.mode, plx: pli && Math.round(pli.x), plStop: !!(pli && pli.stop), cam }) };
 })();

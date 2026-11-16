@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Record the story's spoken lines with Google's speech service (Gemini TTS) into assets/voice/*.mp3.
 
-It reads every spoken line straight out of story-lab.html and slough.js (Level 2) (anything written as [N, '...'], [C, '...'],
+It reads every spoken line straight out of index.html and slough.js (Level 2) (anything written as [N, '...'], [C, '...'],
 [E, '...'], [O, '...'], [PL, '...'], [W, '...'] or [H, '...']), so the words on screen and the recordings cannot drift apart. Each line becomes one small
-MP3 named by a hash of who says it and the words; the game works out the same name (voiceName() in story-lab.html).
+MP3 named by a hash of who says it and the words; the game works out the same name (voiceName() in index.html).
 Only missing lines are recorded; recordings of lines that no longer exist are deleted (keep the files trim).
 
   GEMINI_API_KEY=... python3 tools/make-voice.py            record what is missing
@@ -35,7 +35,7 @@ def call(path, body):
             if e.code != 429 or 'per_day' in msg: sys.exit(f'Google said {e.code}: {msg}')
     sys.exit('Google kept saying "too many requests". Try again later.')
 
-def name(who, text):                      # FNV-1a, the same sum as voiceName() in story-lab.html
+def name(who, text):                      # FNV-1a, the same sum as voiceName() in index.html
     h = 0x811c9dc5
     for ch in who + '|' + text: h = ((h ^ ord(ch)) * 0x01000193) & 0xffffffff
     return f'{h:08x}'
@@ -62,7 +62,7 @@ def record(code, text, dest):
 
 def main():
     redo = sys.argv[sys.argv.index('--redo') + 1] if '--redo' in sys.argv else ''
-    src = ''.join(open(os.path.join(ROOT, f), encoding='utf-8').read() for f in ('story-lab.html', 'slough.js'))
+    src = ''.join(open(os.path.join(ROOT, f), encoding='utf-8').read() for f in ('index.html', 'slough.js'))
     lines = []
     for code, text in re.findall(r"\[(N|C|E|O|PL|W|H), '((?:[^'\\]|\\.)*)'", src):
         text = text.replace("\\'", "'")

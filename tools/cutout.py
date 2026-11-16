@@ -4,7 +4,7 @@
   python3 tools/cutout.py picture.png 296 assets/name.webp
 
 296 = how tall the figure should be in "video pixels" (Christian is about 288, Obstinate 296, Pliable 290; the game
-shows them at 0.52 of that). It prints the META line for story-lab.html (ax = the middle of the feet, ground = the feet).
+shows them at 0.52 of that). It prints the META line for index.html (ax = the middle of the feet, ground = the feet).
 The recipe matches the video frames: white that touches the picture's edge becomes see-through (white inside the figure
 stays), grey = .2 + .62 * lightness, shrunk with clean edges, saved as WebP.
 The standing poses and the family were made with Google's image model (prompts in HANDOFF.md, build 34).
