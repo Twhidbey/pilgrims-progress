@@ -31,7 +31,7 @@ const HL = (() => {
 
   // ---------- the places ----------
   const START = 0, MEET = 900, STILL = 2400, GATE_X = 9000, GATE_FROM = GATE_X - 640, GATE_STOP = GATE_X - 58;
-  const PH = .3, HILL_A = STILL + 330, HILL_Y = -60;      // the hill: how much it slides with the camera, the place on the road it stands beside, its foot above the road line
+  const PH = .3, HS = 1.35, HILL_A = STILL + 330, HILL_Y = -60;      // the hill: how much it slides with the camera, the place on the road it stands beside, its foot above the road line
   const EV_X = STILL - 135;
 
   // ---------- the words: Bunyan's, shortened and made plain ----------
@@ -168,7 +168,10 @@ const HL = (() => {
 
   // ---------- sound ----------
   // fire out of the hill: a flash and thunder (no words out of the mountain: left out for young children)
-  function fire(k = 1) { flash = Math.max(flash, k); if (audio()) { sweep(64, 30, 1.8, .09 * k); hiss(190, .7, .11 * k, 1.6, 'lowpass'); hiss(900, 1, .03 * k, .5, 'bandpass', .05); } }
+  let bolt = null; const embers = [];
+  function tintSmoke() { if (tintC.smoke) return; const tc = tintC.smoke = mk(SMOKE.width, SMOKE.height), t = tc.getContext('2d'); t.drawImage(SMOKE, 0, 0); t.globalCompositeOperation = 'source-in'; t.fillStyle = 'rgb(255,120,50)'; t.fillRect(0, 0, tc.width, tc.height); }
+  function fire(k = 1) { flash = Math.max(flash, k);
+    { let x = -40 + Math.random() * 120, y = -260 - Math.random() * 120; bolt = [[x, y]]; while (y < 60) { x += (Math.random() - .62) * 70; y += 22 + Math.random() * 40; bolt.push([x, y]); } } if (audio()) { sweep(64, 30, 1.8, .09 * k); hiss(190, .7, .11 * k, 1.6, 'lowpass'); hiss(900, 1, .03 * k, .5, 'bandpass', .05); } }
   // the tune on the wrong path: Amazing Grace's first phrase with its bright notes bent flat, low and slow
   const WRONG = [62, 67, 70, 67, 70, 68, 67, 63, 62].map(m => m - 12);
   const RIGHT = [62, 67, 71, 67, 71, 69, 67];
@@ -186,7 +189,7 @@ const HL = (() => {
     saidSeen = saidHigh = hasteSaid = gateSaid = hillSeen = false; stillT = 0; hintT = 0; noteI = 0; noteX = 0;
   }
   // the picture behind the title page when Level 3 is the child's level: the hill hanging over the way, nobody there
-  function title() { build(); preload(); HL.show = true; reset0(); ph = 'title'; dark = .75; Object.assign(cam, { cx: STILL + 60, z: .72, wl: 420 }); }
+  function title() { build(); preload(); HL.show = true; reset0(); ph = 'title'; dark = 1; Object.assign(cam, { cx: STILL + 60, z: .5, wl: 405 }); }
   function start() {
     HL.on = true; HL.show = false; build(); preload();
     document.getElementById('title').style.display = 'none';
@@ -237,7 +240,7 @@ const HL = (() => {
     return v;
   }
   function update() {
-    if (ph === 'title') { flashT--; if (flashT < 0) { flash = .5 + Math.random() * .4; flashT = 300 + Math.random() * 500; } flash *= .9; return; }
+    if (ph === 'title') { G.t % 4 || embers.push({ x: -60 + Math.random() * 180, y: 20 - Math.random() * 60, vx: -.25 - Math.random() * .5, vy: -.5 - Math.random() * .7, r: .8 + Math.random() * 1.3, h: Math.random(), t: 0, life: 140 + Math.random() * 160 }); for (const e of embers) { e.t++; e.x += e.vx; e.y += e.vy; } for (let i = embers.length - 1; i >= 0; i--) if (embers[i].t >= embers[i].life) embers.splice(i, 1); flashT--; if (flashT < 0) { fire(.5 + Math.random() * .4); flashT = 300 + Math.random() * 500; } flash *= .9; return; }
     const want = G.state === 'play' && (keys.r || held());
     if (C3.sd != null) C3.sd += .4;
     C3.faceA = clamp(C3.faceA + (C3.face - C3.faceA) * .06, -1, 1);
@@ -245,6 +248,8 @@ const HL = (() => {
     C3.wa = clamp(C3.wa + (C3.weep ? .05 : -.04)); if (C3.weep) C3.wt = Math.min(64, C3.wt + WEEP_META.step);
     flash *= .93; door += (doorTo - door) * .02; veil = clamp(veil + Math.sign(veilTo - veil) * .012);
     hintT++;
+    if (dark > .4 && Math.random() < .25 * dark) embers.push({ x: -60 + Math.random() * 180, y: 20 - Math.random() * 60, vx: -.25 - Math.random() * .5, vy: -.5 - Math.random() * .7, r: .8 + Math.random() * 1.3, h: Math.random(), t: 0, life: 140 + Math.random() * 160 });
+    for (const e of embers) { e.t++; e.x += e.vx + .3 * Math.sin((e.t + e.life) / 23); e.y += e.vy; } for (let i = embers.length - 1; i >= 0; i--) if (embers[i].t >= embers[i].life) embers.splice(i, 1);
 
     if (ph === 'plain') {
       let v = want ? MAXV : 0; if (v && C3.x + v >= MEET) v = 0;
@@ -318,9 +323,9 @@ const HL = (() => {
     let tx = C3.x + 150, tz = 1;
     if (ph === 'plain') tz = wise ? .86 : 1;
     if (ph === 'meet') { tx = C3.x + 60; tz = 1; if (G.act === 'hill') { tx = C3.x + 800; tz = .5; } }
-    if (ph === 'aside') tz = lerp(1, .72, smooth(STILL - 900, STILL - 100, C3.x));
-    if (ph === 'still' || ph === 'come' || ph === 'evan') { tx = STILL + 60 - (ph === 'still' ? 0 : 50); tz = .72; }
-    if (ph === 'back' || ph === 'mist') { tx = C3.x - 150; tz = lerp(1, .8, smooth(STILL - 900, STILL - 100, C3.x)); }
+    if (ph === 'aside') tz = lerp(1, .5, smooth(STILL - 1000, STILL - 100, C3.x));
+    if (ph === 'still' || ph === 'come' || ph === 'evan') { tx = STILL + 60 - (ph === 'still' ? 0 : 50); tz = ph === 'evan' ? .6 : .46; }
+    if (ph === 'back' || ph === 'mist') { tx = C3.x - 150; tz = lerp(1, .62, smooth(STILL - 900, STILL - 100, C3.x)); }
     if (ph === 'gate' || ph === 'knock' || ph === 'open') { tx = Math.min(C3.x + 150, GATE_X - 120); tz = lerp(1, .9, smooth(GATE_X - 500, GATE_STOP, C3.x)); }
     cam.cx += (tx - cam.cx) * .035; cam.z += (tz - cam.z) * .03; cam.wl = 440 - (1 - cam.z) * 70;
   }
@@ -376,29 +381,52 @@ const HL = (() => {
     { const far = mix(mix([176, 172, 140], [190, 180, 136], gateish), [78, 68, 70], dark), near = mix(mix([104, 108, 88], [112, 110, 82], gateish), [38, 36, 44], dark);
       const g = c.createLinearGradient(0, hor, 0, Y(0)); g.addColorStop(0, css(far)); g.addColorStop(1, css(near)); c.fillStyle = g; c.fillRect(0, hor, VW, Y(0) - hor + 1);
       // the village and the hill stand on the plain, further back
-      const hx = VW / 2 + (HILL_A - cx) * PH * z, hy = Y(HILL_Y), k = z;
+      const hx = VW / 2 + (HILL_A - cx) * PH * z, hy = Y(HILL_Y), k = z * HS;
       hillBox = [hx, hy, k];
       if (hx > -1300 * k && hx < VW + 400 * k) {
+        // AWE FIRST (owner, build 135: "the burning hill can be frightening - but most importantly stunning - it should
+        // awe first"). After John Martin's pictures of the sublime and the book's own Sinai (Exodus 19: fire at the top,
+        // thick cloud, lightnings): the hill is far taller than the people, black against a fire that burns at its
+        // summit inside a towering cloud; the fire lights the cloud from within, runs down the overhanging face as a
+        // thin burning edge, and lies as a red sheen on the plain. A flash adds lightning in the cloud and fire in
+        // the cracks. Everything grows with `dark` (0 far off on a fair day .. 1 beneath it).
+        const sx0 = hx + 60 * k, sy0 = hy - TOP * k, burn = dark * (.72 + .18 * Math.sin(G.t / 53) + .1 * Math.sin(G.t / 17)), F = Math.min(1, flash);
+        // the fire behind the summit: the hill is cut out black against it
+        if (burn > .01) { c.save(); c.globalCompositeOperation = 'screen';
+          const g = c.createRadialGradient(sx0, sy0 + 40 * k, 0, sx0, sy0 + 40 * k, 620 * k); g.addColorStop(0, css([255, 214, 150], .95 * burn)); g.addColorStop(.12, css([255, 150, 70], .7 * burn)); g.addColorStop(.4, css([200, 70, 40], .32 * burn)); g.addColorStop(1, css([120, 30, 30], 0));
+          c.fillStyle = g; c.fillRect(sx0 - 620 * k, sy0 - 580 * k, 1240 * k, 1240 * k); c.restore(); }
         // the hill: fair and far off at first, black under its own cloud when he stands by it
         const dx = hx - HOX * k, dy = hy - HOY * k;
         c.globalAlpha = 1; c.drawImage(HILL[0], dx, dy, HW * k, HH * k); if (dark > .01) { c.globalAlpha = dark; c.drawImage(HILL[1], dx, dy, HW * k, HH * k); c.globalAlpha = 1; }
-        // fire in its cracks
-        if (flash > .02) { c.save(); c.globalCompositeOperation = 'lighter'; c.lineCap = c.lineJoin = 'round';
-          for (const [w, a, col] of [[9, .12, [255, 90, 30]], [4, .4, [255, 150, 60]], [1.5, .9, [255, 236, 190]]]) { c.strokeStyle = css(col, Math.min(1, a * flash)); c.lineWidth = w * k;
+        // the burning edge down the overhanging face, and fire in the cracks when it flashes
+        c.save(); c.globalCompositeOperation = 'lighter'; c.lineCap = c.lineJoin = 'round';
+        if (burn > .01 || F > .02) {
+          for (const [w, al, col] of [[7, .1, [255, 80, 30]], [2.2, .34, [255, 170, 90]]]) { c.strokeStyle = css(col, Math.min(1, al * (burn + 1.5 * F))); c.lineWidth = w * k; c.beginPath();
+            for (let h = 150; h <= TOP; h += 10) { const px = hx + (faceX(h) + 2) * k, py = hy - h * k; h === 150 ? c.moveTo(px, py) : c.lineTo(px, py); } c.stroke(); } }
+        if (F > .02) {
+          for (const [w, al, col] of [[9, .12, [255, 90, 30]], [4, .4, [255, 150, 60]], [1.5, .9, [255, 236, 190]]]) { c.strokeStyle = css(col, Math.min(1, al * flash)); c.lineWidth = w * k;
             CRACKS.forEach((p, i) => { if (i % 2 === (flash > .9 ? i % 2 : Math.floor(G.t / 7) % 2)) { c.beginPath(); p.forEach(([px, py], j) => j ? c.lineTo(hx + px * k, hy + py * k) : c.moveTo(hx + px * k, hy + py * k)); c.stroke(); } }); }
-          const g = c.createRadialGradient(hx - 40 * k, hy - 260 * k, 0, hx - 40 * k, hy - 260 * k, 420 * k); g.addColorStop(0, css([255, 130, 50], .34 * Math.min(1, flash))); g.addColorStop(1, css([255, 130, 50], 0)); c.fillStyle = g; c.fillRect(hx - 460 * k, hy - 680 * k, 880 * k, 840 * k);
-          c.restore(); }
-        // the village of Morality, at the hill's long foot on its far side
-        const tx = hx + 560 * k, ty = hy + 2 * k, tw = 400 * k, th = 70 * k;
-        c.save(); c.globalAlpha = 1; { const tc = tintC.town || (tintC.town = mk(400, 70)), t = tc.getContext('2d'); t.globalCompositeOperation = 'source-over'; t.clearRect(0, 0, 400, 70); t.drawImage(TOWN, 0, 0); t.globalCompositeOperation = 'source-in'; t.fillStyle = css(mix(mix(far, top, .4), [46, 42, 50], dark * .7)); t.fillRect(0, 0, 400, 70); c.drawImage(tc, tx, ty - th, tw, th); }
-        for (const [wx, wy] of TOWN.lit) { c.fillStyle = css([255, 214, 140], .5 + .4 * dark); c.fillRect(tx + wx * k, ty - th + wy * k, Math.max(1.5, 3 * k), Math.max(1.5, 3 * k)); }
+          const g = c.createRadialGradient(hx - 40 * k, hy - 260 * k, 0, hx - 40 * k, hy - 260 * k, 420 * k); g.addColorStop(0, css([255, 130, 50], .34 * F)); g.addColorStop(1, css([255, 130, 50], 0)); c.fillStyle = g; c.fillRect(hx - 460 * k, hy - 680 * k, 880 * k, 840 * k); }
         c.restore();
-        // its own smoke along the top
-        for (let i = 0; i < 3; i++) { const w = (520 + i * 120) * k, sxm = hx + (-60 + i * 70 + 40 * Math.sin(G.t / 300 + i * 2)) * k - w * .3; c.globalAlpha = (.25 + .5 * dark) * (1 - i * .22); c.globalCompositeOperation = 'multiply'; c.drawImage(SMOKE, sxm, hy - (TOP + 90 - i * 34) * k, w, w * .3); }
+        // the village of Morality, at the hill's long foot on its far side
+        const tx = hx + 560 * k, ty = hy + 2 * z, tw = 480 * z, th = 84 * z;
+        { const tc = tintC.town || (tintC.town = mk(400, 70)), t = tc.getContext('2d'); t.globalCompositeOperation = 'source-over'; t.clearRect(0, 0, 400, 70); t.drawImage(TOWN, 0, 0); t.globalCompositeOperation = 'source-in'; t.fillStyle = css(mix(mix(far, top, .4), [46, 42, 50], dark * .7)); t.fillRect(0, 0, 400, 70); c.drawImage(tc, tx, ty - th, tw, th); }
+        for (const [wx, wy] of TOWN.lit) { c.fillStyle = css([255, 214, 140], .5 + .4 * dark); c.fillRect(tx + wx * tw / 400, ty - th + wy * th / 70, Math.max(1.5, 3.6 * z), Math.max(1.5, 3.6 * z)); }
+        // the cloud on the summit: a towering column that leans with the wind and spreads, dark, lit from within
+        for (let i = 0; i < 6; i++) { const w = (380 + i * 150) * k, lean = -i * i * 9 * k + 30 * k * Math.sin(G.t / 260 + i * 1.7), px = sx0 + lean - w / 2, py = sy0 - (40 + i * 74) * k - w * .16;
+          c.globalAlpha = (.2 + .62 * dark) * (1 - i * .09); c.globalCompositeOperation = 'multiply'; c.drawImage(SMOKE, px, py, w, w * .36);
+          if (burn > .01) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = burn * .2 * (1 - i / 6.5) + F * .16; tintSmoke(); c.drawImage(tintC.smoke, px + w * .06, py + w * .05, w * .88, w * .3); } }
         c.globalCompositeOperation = 'source-over'; c.globalAlpha = 1;
+        // lightning in the cloud, and sparks carried up
+        c.save(); c.globalCompositeOperation = 'lighter'; c.lineCap = c.lineJoin = 'round';
+        if (bolt && flash > .35) for (const [w, al] of [[6, .14], [1.6, .9]]) { c.strokeStyle = css([255, 240, 214], Math.min(1, al * flash)); c.lineWidth = w * k; c.beginPath(); bolt.forEach(([bx, by], j) => j ? c.lineTo(sx0 + bx * k, sy0 + by * k) : c.moveTo(sx0 + bx * k, sy0 + by * k)); c.stroke(); }
+        for (const e of embers) { const al = Math.sin(Math.PI * e.t / e.life) * .9; c.fillStyle = css([255, 170 + 60 * e.h, 90], al); c.beginPath(); c.arc(sx0 + e.x * k, sy0 + e.y * k, Math.max(.7, e.r * k), 0, 7); c.fill(); }
+        // the red sheen the fire lays on the plain
+        if (burn > .01) { c.translate(hx - 120 * k, hy + 22 * z); c.scale(1, .1); const g = c.createRadialGradient(0, 0, 0, 0, 0, 640 * k); g.addColorStop(0, css([255, 120, 60], .3 * burn + .3 * F)); g.addColorStop(1, css([255, 120, 60], 0)); c.fillStyle = g; c.fillRect(-640 * k, -640 * k, 1280 * k, 1280 * k); }
+        c.restore();
         // the field's haze at its foot, so it stands in the plain and not on it
         const fg = c.createLinearGradient(0, hy - 34 * k, 0, hy + 14 * k), fc = mix(far, near, clamp((hy - hor) / (Y(0) - hor)));
-        fg.addColorStop(0, css(fc, 0)); fg.addColorStop(.7, css(fc, .9)); fg.addColorStop(1, css(fc, 1)); c.fillStyle = fg; c.fillRect(Math.max(0, hx - 260 * k), hy - 34 * k, 1700 * k, 48 * k);
+        fg.addColorStop(0, css(fc, 0)); fg.addColorStop(.7, css(fc, .9)); fg.addColorStop(1, css(fc, 1)); c.fillStyle = fg; for (let i = 0; i < 8; i++) { c.globalAlpha = (i + 1) / 8; c.fillRect(hx - (420 - i * 30) * k, hy - 34 * k, i < 7 ? 30 * k + 1 : 1700 * k, 48 * k); } c.globalAlpha = 1;
       }
     }
     // the lone tree where the two ways cross
