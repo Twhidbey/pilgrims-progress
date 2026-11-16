@@ -102,6 +102,13 @@ const HL = (() => {
   ];
   const ALL = [...SEEN, ...WISE, ...TURNED, ...HIGH, ...STOOD, ...COMING, ...EVANW, ...HASTE, ...ATGATE, ...KNOCK];
 
+  // MR. WORLDLY WISEMAN'S OWN FIGURE (build 149): a walk from one video (37 frames, walking right like Obstinate's, so it
+  // is drawn mirrored to come from the right) and a standing painting; until they load, Obstinate's pictures stand in.
+  const WIS = [], WIS_META = { ax: 142, ground: 322, frames: 37, vpx: 5.4, rest: [2, 19] }, WIS_ST_META = { ax: 86, ground: 290 };
+  let WIS_ST = null;
+  const wFig = () => WIS.ready ? { W: WIS, M: WIS_META, S: WIS_ST, SM: WIS_ST_META } : { W: OBS, M: OBS_META, S: OBS_ST, SM: OBS_ST_META };
+  const WIS_V = WIS_META.vpx * CHR_K * .4;      // his video's own pace: 24 pictures a second, 60 ticks a second
+
   // ---------- state ----------
   let ph = 'plain', built = false, loading = null;
   const cam = { cx: 0, z: 1, wl: 440 };
@@ -160,7 +167,7 @@ const HL = (() => {
       TOWN.lit = lit; }
   }
   function preload() {
-    if (!loading) loading = Promise.all([OBS.ready || loadPack('obstinate', OBS).catch(() => {}), EVS.ready || loadPack('evangelist-stand', EVS).catch(() => {}), RUNP.ready || loadPack('christian-run-plain', RUNP).catch(() => {}),
+    if (!loading) loading = Promise.all([loadPack('wiseman', WIS).catch(() => {}), loadImg('wiseman-stand.webp').then(im => { if (im) WIS_ST = im; }), OBS.ready || loadPack('obstinate', OBS).catch(() => {}), EVS.ready || loadPack('evangelist-stand', EVS).catch(() => {}), RUNP.ready || loadPack('christian-run-plain', RUNP).catch(() => {}),
       WEEP.ready || loadPack('christian-weep', WEEP).catch(() => {}), TURN.ready || loadPack('christian-turn', TURN).catch(() => {}),
       OBS_ST ? 0 : loadImg('obstinate-stand.webp').then(im => { if (im && !OBS_ST) OBS_ST = im; }),
       loadImg('tree-a.webp').then(im => { if (!im) return; const c = mk(im.width, im.height), k = c.getContext('2d'); k.drawImage(im, 0, 0); k.globalCompositeOperation = 'source-in'; k.fillStyle = '#fff'; k.fillRect(0, 0, c.width, c.height); OAKT = c; })]).catch(() => {});
@@ -269,7 +276,9 @@ const HL = (() => {
       let v = want ? MAXV : 0; if (v && C3.x + v >= MEET) v = 0;
       v = walk(1, v);
       if (want) clearHint('walk'); else if (hintT === 400 && C3.x < START + 20) hint('walk', 'Hold to walk.');
-      if (!saidSeen && C3.x > 220) { saidSeen = true; caption(SEEN); wise = { x: cam.cx + VW / 2 / cam.z + 60, anim: 0, mode: 'come', st: 0, alpha: 1 }; }
+      // build 149: Wiseman starts far enough off that he is seen coming across the field (before, he appeared already
+      // past his meeting place and stood behind Christian's stopping place, so the two ended back to back)
+      if (!saidSeen && C3.x > 220) { saidSeen = true; caption(SEEN); wise = { x: Math.max(cam.cx + VW / 2 / cam.z + 60, MEET + 508), anim: 0, mode: 'come', st: 0, alpha: 1 }; }
       if (wise && wise.mode === 'stand' && wise.st >= 1 && C3.x >= MEET - 30 && C3.sd != null && !saying()) { ph = 'meet'; talk(WISE, () => { ph = 'aside'; wise.mode = 'go'; hintT = 0; noteX = C3.x + 60; caption(TURNED); }); }
     } else if (ph === 'meet') {
       walk(1, 0);
@@ -323,9 +332,10 @@ const HL = (() => {
 
     // Mr. Worldly Wiseman crosses the field to meet him, stands, and afterwards goes on his own way
     if (wise) {
-      if (wise.mode === 'come') { if (wise.x > MEET + 108) { wise.x -= 1.25; wise.anim = stepAnim(wise.anim, 1.25, OBS_STEP, OBS_META); } else { wise.anim = stepAnim(wise.anim, 0, OBS_STEP, OBS_META); if (OBS_META.rest.includes(Math.floor(wise.anim) % OBS_META.frames)) wise.mode = 'stand'; } }
+      const { M } = wFig(), v = WIS.ready ? WIS_V : 1.25, st = M.vpx * CHR_K;
+      if (wise.mode === 'come') { if (wise.x > MEET + 135) { wise.x -= v; wise.anim = stepAnim(wise.anim, v, st, M); } else { wise.anim = stepAnim(wise.anim, 0, st, M); if (M.rest.includes(Math.floor(wise.anim) % M.frames)) wise.mode = 'stand'; } }
       else if (wise.mode === 'stand') wise.st = clamp(wise.st + .05);
-      else if (wise.mode === 'go') { wise.st = clamp(wise.st - .06); if (wise.st <= 0) { wise.x -= 1.25; wise.anim = stepAnim(wise.anim, 1.25, OBS_STEP, OBS_META); wise.alpha = clamp((wise.x - (MEET - 760)) / 260); if (wise.alpha <= 0) wise = null; } }
+      else if (wise.mode === 'go') { wise.st = clamp(wise.st - .06); if (wise.st <= 0) { wise.x -= v; wise.anim = stepAnim(wise.anim, v, st, M); wise.alpha = clamp((wise.x - (MEET - 760)) / 260); if (wise.alpha <= 0) wise = null; } }
     }
 
     // the sky darkens as he goes out of the way, and clears as he comes back; fire out of the hill while he stands under it
@@ -542,11 +552,11 @@ const HL = (() => {
     c.save(); c.translate(VW / 2 - cx * z, wl); c.scale(z, z);
     const tint = mix([122, 118, 122], [78, 72, 82], dark), fl = Math.min(1, flash) * dark, lit = gateish * smooth(GATE_X - 330, GATE_X - 60, C3.x), tintF = mix(mix(mix(tint, [66, 62, 72], gateish), [255, 170, 110], fl * .35), [255, 188, 120], lit * (.3 + .4 * door));
     if (evan && EVS.ready) { TALKM = talkMove(E); foot(c, EV_X, evan.a); figure(c, 'evan', EVS[Math.floor(G.t * .2) % EVS_META.frames], EVS_META, EV_X, 1, tintF, smooth(.25, 1, evan.a)); TALKM = null; }
-    if (wise && OBS.ready) {
+    if (wise && (WIS.ready || OBS.ready)) {
       const wt = mix([168, 150, 132], [120, 104, 100], dark); TALKM = talkMove(WW); foot(c, wise.x, wise.alpha);
-      const wim = OBS[Math.floor(wise.anim) % OBS.length];
-      if (OBS_ST && wise.st > 0) { figure(c, 'wst', OBS_ST, OBS_ST_META, wise.x, -1, wt, wise.alpha * smooth(0, .6, wise.st), breath(2)); figure(c, 'wis', wim, OBS_META, wise.x, -1, wt, wise.alpha * (1 - smooth(.4, 1, wise.st))); }
-      else figure(c, 'wis', wim, OBS_META, wise.x, -1, wt, wise.alpha);
+      const { W, M, S, SM } = wFig(), wim = W[Math.floor(wise.anim) % W.length];
+      if (S && wise.st > 0) { figure(c, 'wst', S, SM, wise.x, -1, wt, wise.alpha * smooth(0, .6, wise.st), breath(2)); figure(c, 'wis', wim, M, wise.x, -1, wt, wise.alpha * (1 - smooth(.4, 1, wise.st))); }
+      else figure(c, 'wis', wim, M, wise.x, -1, wt, wise.alpha);
       TALKM = null;
     }
     drawChr(c, tintF);
@@ -565,5 +575,5 @@ const HL = (() => {
   }
 
   // for testing: HL.peek() tells where the story is
-  return { on: false, show: false, title, start, update, draw, touch, key, preload, lines: ALL, pt: k => k === 'hill' ? hillPt() : gatePt(), peek: () => ({ ph, x: Math.round(C3.x), stand: C3.sd != null, dark: +dark.toFixed(2), wise: wise && wise.mode, evan: evan && +evan.a.toFixed(2), knocks, cam: { ...cam } }) };
+  return { on: false, show: false, title, start, update, draw, touch, key, preload, lines: ALL, pt: k => k === 'hill' ? hillPt() : gatePt(), peek: () => ({ ph, x: Math.round(C3.x), stand: C3.sd != null, wx: wise && Math.round(wise.x), dark: +dark.toFixed(2), wise: wise && wise.mode, evan: evan && +evan.a.toFixed(2), knocks, cam: { ...cam } }) };
 })();

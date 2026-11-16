@@ -30,7 +30,7 @@ A gentle side-scrolling story walk for kids ages 7 to 10, following Bunyan's *Th
 ## Working with the owner
 
 - **Repo `Twhidbey/pilgrims-progress`, branch `main`. Pushing `main` publishes the game** (GitHub Pages, https://twhidbey.github.io/pilgrims-progress/, 1 to 2 minutes). Commit and push after every change, then tell the owner it is live; a phone may show an old copy, so suggest `?v=N`.
-- **Build stamp** (`id="build"`, bottom right): `build N · date` in `index.html` and `story-lab.html`. Bump N on **every** push that changes the game, so one number means one push. Keep the form `id="build">... build N` (the page's self-update reads it). **Currently build 148.** The two script tags at the end of `index.html` carry `?v=N` (`slough.js?v=`, `hill.js?v=`): set them to the build that last changed each file, so phones fetch the new copy. Several chats push at once: `git fetch` and rebase on `origin/main` just before pushing, and take the next number after whatever is there.
+- **Build stamp** (`id="build"`, bottom right): `build N · date` in `index.html` and `story-lab.html`. Bump N on **every** push that changes the game, so one number means one push. Keep the form `id="build">... build N` (the page's self-update reads it). **Currently build 149.** The two script tags at the end of `index.html` carry `?v=N` (`slough.js?v=`, `hill.js?v=`): set them to the build that last changed each file, so phones fetch the new copy. Several chats push at once: `git fetch` and rebase on `origin/main` just before pushing, and take the next number after whatever is there.
 - **SPEND AS LITTLE AS POSSIBLE (owner, build 106: "can you minimize spending - it's been pretty expensive for me last few days").** Video about 56 cents a try; a picture about 15 cents (`gemini-3-pro-image`); voice about a cent a line. **Before any paid call: say the cost and wait for a yes; keep the running total in `HANDOFF.md`.** Ways to save, in order: (1) do it in code first (breathing, sway, cloth and hair movement, small moves by warping a still, mirroring, tinting, reusing a figure); (2) build first and last frames from frames we already have; (3) draft pictures on `gemini-2.5-flash-image` (about a third of the price), the pro model only for the final; (4) show the owner a still before any video; (5) get two clips from one video (play backwards or back and forth); (6) write video prompts that pass the safety filter first time (no "sunk", "drowning", "thrashing", "desperate", "frightened"; say "thick sticky mud", "heaves", "cross and grumbling"); (7) a shorter video if the API offers one cheaper (not yet checked).
 - **Keep `CLAUDE.md` and `HANDOFF.md` updated after every change.** The repo is public: no names, emails or other personal details in notes, code or commits.
 - **Players:** kids 7 to 10, mostly on an iPhone. Gentle: no lives, no game over, read-aloud words, short simple sentences.
@@ -158,11 +158,11 @@ Plus a syntax check of `index.html`'s script, `slough.js` and `hill.js` (`new Fu
 
 **Code map:** places `START`, `MEET`, `STILL`, `EV_X`, `GATE_X`, `GATE_FROM`, `GATE_STOP`, `HILL_A`, `PH`, `HS`; words `SEEN`, `WISE`, `TURNED`, `HIGH`, `STOOD`, `COMING`, `EVANW`, `HASTE`, `ATGATE`, `KNOCK`; phases `ph` (`plain`, `meet`, `aside`, `still`, `come`, `evan`, `back`, `mist`, `gate`, `knock`, `open`); `C3`, `wise`, `evan`; moods `dark`, `hope`, `flash`, `veil`, `door`; `walk(dir, v)`, `sawHill`, `knock`, `turnC`, `hillPt`/`gatePt` (`HL.pt('hill'|'gate')` for tests), `HL.title()`, `HL.peek()`.
 
-**Owner, build 143: "Level 3 let's do it all except big costs - maybe make some art requests with google image but check with me before the big video request to see if I like the look of characters".** Done: Wiseman's voice designed and the lines recorded (37 of 53 by build 143; the rest stopped at Google's daily limit: run `tools/make-voice.py` again); Wiseman's standing painting (well off: fur-collared cloak, smooth sash, riding boots, a cane; faces left; the faint eye in the painting softened away in code), shown to the owner, **not yet in the game**. **Waiting on the owner's yes to the look before the videos:** Wiseman's walk (one video, about 56 cents, from his standing painting), Evangelist's walk (about 56 cents). Until then Wiseman is Obstinate's pictures in a paler, warmer tone, and Evangelist appears out of smoke; the hand-taking is not shown.
+**Wiseman has his own figure (build 149; the owner liked the look: "Ok sounds good"):** `assets/wiseman.pack` (a 37-frame walk from one video, about 56 cents, right first time: made from his standing painting placed small in a white 1280 x 720 picture, "walking steadily to the LEFT ... the camera tracks with him ... does not zoom"; the video zoomed in during its first second anyway, and the loop is cut from the steady part; the video was MIRRORED before `tools/video-frames.py`, because the tool measures foot slide for figures walking right, and scaled to 85% with white padding, because the tool's crop window (488 video px) cut off his hat) and `assets/wiseman-stand.webp` (the painting mirrored, cut with `tools/cutout.py`, ground at the higher, front foot). In `hill.js`: `WIS`, `WIS_META` (`rest` 2 and 19: both feet down), `WIS_ST`, `WIS_V` (his video's own pace), `wFig()` (Obstinate's pictures stand in until his load). He keeps the stand-in's warmer, paler tone. **Bug fixed with it:** he used to appear already past his meeting place, so he never walked and stood behind Christian's stopping place (the two ended back to back); he now starts at `MEET + 508`, is seen coming across the field, and waits at `MEET + 135`. Lines: 37 of 53 recorded (the rest stopped at Google's daily limit: run `tools/make-voice.py` again). **Still waiting on the owner's yes:** Evangelist's walk (about 56 cents); until then he appears out of smoke. The hand-taking is not shown.
 
 **Departures from the book in Level 3 (checked line by line in build 140):** the talk with Wiseman cut to its bones (his question about wife and children, his first advice to be rid of the burden with speed, "how came you by the burden", the remedy "at hand", Civility, the empty houses and cheap provision left out); his list of dangers shortened and "death" left out of it; Evangelist's questioning of what Wiseman said (`{49}`, `{50}`) and most of his sermon (the verse about refusing him that speaks, the three things to abhor, Legality as the bond-woman's son, Civility) left out; Evangelist's "severe and dreadful countenance" not shown; the words spoken out of the mountain left out (fire and thunder only); Evangelist calling to the heavens left out; "fell down at his feet as dead" made "fell down at his feet", and "looked for nothing but death" before his crying out left out; his question to Evangelist shortened ("Shall I not be abandoned for this?" dropped); Evangelist's kiss left out (the smile and God-speed kept); the lone oak at the crossing, the veil of mist between the crossing and the gate, and the wall beside the wicket-gate are ours; three knocks stand for "more than once or twice"; evening at the gate (build 139; the book only says "in process of time"); Christian's knocking verse cut to its first question; the verses Bunyan sets between sections (`{46}`, `{60}`) are left out. **Open questions for the owner:** the hill's look (a painted hill?); how frightening the fire; whether the child should hold Evangelist's hand to raise Christian (an echo of Help's hand); whether the geography reads (out to the hill and back, then mist to the gate).
 
-## Level 4, the Wicket-Gate (Good-will), book `{60}` to `{69}`: PLAN ONLY, not yet built
+## Level 4 opens at the Wicket-Gate (Good-will), book `{60}` to `{69}`, then the Interpreter's House: PLAN ONLY, not yet built
 
 **Nothing is built.** The other chat designs the picture first; then a file `gate.js` (object like `SL`/`HL`), a title button 4, `go4()`, Level 3's end card "Go on".
 
@@ -182,7 +182,9 @@ Plus a syntax check of `index.html`'s script, `slough.js` and `hill.js` (`new Fu
 
 **NO RECAP (owner, build 143: "remove recap - keep it going").** Good-will's questions that retell Levels 1 to 3 (`{63}` from "how is it that you came alone" to `{65}`: the neighbours, Obstinate and Pliable, the Slough, Wiseman and the mountain) and "We make no objections against any, whatever they have done before" are left out. **Departures (proposed; tell the owner):** the recap above; "the celestial glory" not needed now; who made the narrow way ("the patriarchs, prophets, Christ, and his apostles") left out; "gird up his loins" made "made ready"; the child holding Good-will's hand for the pull, the arrows falling short, and the far light along the narrow way are ours; the verse over the gate (`{60}`) left out as in Level 3.
 
-## The whole game: about 18 levels (a plan, not agreed level by level)
+**ONE LEVEL WITH THE INTERPRETER'S HOUSE (owner, build 149, agreeing to my advice: "Ok sounds good").** Asked "is this level now as necessary?": without the recap the gate is about 20 lines and a minute and a half, too thin to stand alone. The book runs straight on (`{69}` Good-will names the Interpreter's house; `{70}` "he went on till he came to the house of the Interpreter"), so the wicket-gate OPENS the Interpreter's House level: the gate opening in its one warm light is its first picture, the pull and the narrow way its first walk, the knock at the Interpreter's door its first act (an echo of the gate). Not instead: adding the gate to the end of Level 3, already the longest talk in the game. **Still open for the owner:** the castle and arrows shown, or sound only; Good-will's figure (a picture and a gesture video to pull Christian in: about 71 cents; or an arm reaching out of the light, drawn in code, free); the Interpreter's House itself is not yet planned (book `{70}` to `{92}`).
+
+## The whole game: about 17 levels (a plan, not agreed level by level)
 
 Counted by episode from the book's section numbers (later long conversations shrink to a few lines each). Find each start in the book file by searching for the name.
 
@@ -191,20 +193,19 @@ Counted by episode from the book's section numbers (later long conversations shr
 | 1 | City of Destruction | `{10}` |
 | 2 | Slough of Despond | `{25}`/`{29}` |
 | 3 | Mr. Worldly Wiseman and the hill | `{37}` |
-| 4 | The Wicket-Gate (Good-will) | `{60}` |
-| 5 | The Interpreter's House | `{70}` |
-| 6 | The Cross: the burden falls off | `{93}` |
-| 7 | Hill Difficulty, the lost roll, the lions | |
-| 8 | Palace Beautiful | |
-| 9 | Apollyon, in the Valley of Humiliation | |
-| 10 | Valley of the Shadow of Death | |
-| 11 | Faithful (and Talkative) | |
-| 12 | Vanity Fair | |
-| 13 | Hopeful, By-ends, the silver mine | |
-| 14 | By-path Meadow and Doubting Castle | |
-| 15 | The Delectable Mountains | `{295}` |
-| 16 | Ignorance, the Flatterer's net | |
-| 17 | The Enchanted Ground | |
-| 18 | Beulah, the River, the Celestial City | to `{404}` |
+| 4 | The Wicket-Gate and the Interpreter's House (owner agreed, build 149: the gate opens the level) | `{60}`, `{70}` |
+| 5 | The Cross: the burden falls off | `{93}` |
+| 6 | Hill Difficulty, the lost roll, the lions | |
+| 7 | Palace Beautiful | |
+| 8 | Apollyon, in the Valley of Humiliation | |
+| 9 | Valley of the Shadow of Death | |
+| 10 | Faithful (and Talkative) | |
+| 11 | Vanity Fair | |
+| 12 | Hopeful, By-ends, the silver mine | |
+| 13 | By-path Meadow and Doubting Castle | |
+| 14 | The Delectable Mountains | `{295}` |
+| 15 | Ignorance, the Flatterer's net | |
+| 16 | The Enchanted Ground | |
+| 17 | Beulah, the River, the Celestial City | to `{404}` |
 
-A first finish line: **Level 6, the Cross** (the burden carried since the first screen falls off), so Levels 1 to 6 stand as a whole game. Could be about 14 by joining 4 with 5, 15 with 16, and 17 into 18. Rough size: about $3 a level for pictures, videos and voices, more where there are many new people.
+A first finish line: **Level 5, the Cross** (the burden carried since the first screen falls off), so Levels 1 to 5 stand as a whole game. Could be about 14 by also joining the Delectable Mountains with Ignorance, and the Enchanted Ground into the last level. Rough size: about $3 a level for pictures, videos and voices, more where there are many new people.
