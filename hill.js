@@ -287,8 +287,12 @@ const HL = (() => {
   // burning edge are no longer drawn once it has loaded. Until then the code-drawn hill stands in.
   let LAVA = null, LAVAB = null, HILLV = null;
   function paintHill(rock, fire) {
-    HILL = [[[74, 62, 66], .74], [[22, 20, 26], .58]].map(([col, a]) => { const c = mk(HW, HH), k = c.getContext('2d'); k.drawImage(rock, 0, 0, HW, HH);
-      k.globalCompositeOperation = 'source-atop'; k.globalAlpha = a; k.fillStyle = css(col); k.fillRect(0, 0, HW, HH); return c; });
+    // (build 183, owner: "Gotta increase resolution, no?": the painting was made again at the image model's highest
+    // size, 6336 px wide, and kept at 3000 x 1280, twice the hill's own units, so the close-up and the summit stay
+    // sharp on a phone; the baked hills take the picture's own size, R times the units)
+    const R = rock.width / HW;
+    HILL = [[[74, 62, 66], .74], [[22, 20, 26], .58]].map(([col, a]) => { const c = mk(HW * R, HH * R), k = c.getContext('2d'); k.drawImage(rock, 0, 0, HW * R, HH * R);
+      k.globalCompositeOperation = 'source-atop'; k.globalAlpha = a; k.fillStyle = css(col); k.fillRect(0, 0, HW * R, HH * R); return c; });
     // the hill veiled (build 181): the same shape washed with the fair evening's haze, the summit almost lost in it
     // (its tones follow the sky behind it at each height, a trace of the rock shows through, and it is baked at a
     // quarter size and stretched, so its edges are soft, as a far mountain's are through haze)
@@ -621,8 +625,8 @@ const HL = (() => {
         // gathers only in the top of the sky and on the far left, where the plume flows into it. Dark billows,
         // those near the summit faintly lit from beneath; at a flash the light is inside the cloud. Drawn before
         // the hill, so nothing of it lies over the hill.
-        if (dark > .02) { for (let i = 0; i < 34; i++) { const h1 = Math.sin(i * 39.3468) * 24634.6345, h2 = Math.sin(i * 11.135) * 7541.931, h3 = Math.sin(i * 73.156) * 3141.59, r1 = h1 - Math.floor(h1), r2 = h2 - Math.floor(h2), r3 = h3 - Math.floor(h3);
-            const left = r1 * r1, px = sx0 + (420 - 2100 * r1) * k + 26 * k * Math.sin(G.t / 700 + i), py = sy0 - (60 + 250 * r2) * k + left * 430 * r3 * k, rr = (120 + 200 * r3) * k, P = PUFF[i % 3];
+        if (dark > .02) { const kS = Math.min(k, z * HS * 1.25); for (let i = 0; i < 34; i++) { const h1 = Math.sin(i * 39.3468) * 24634.6345, h2 = Math.sin(i * 11.135) * 7541.931, h3 = Math.sin(i * 73.156) * 3141.59, r1 = h1 - Math.floor(h1), r2 = h2 - Math.floor(h2), r3 = h3 - Math.floor(h3);
+            const left = r1 * r1, px = sx0 + (420 - 2100 * r1) * kS + 26 * kS * Math.sin(G.t / 700 + i), py = sy0 - (60 + 250 * r2) * kS + left * 430 * r3 * kS, rr = (120 + 200 * r3) * kS, P = PUFF[i % 3];
             c.globalCompositeOperation = 'source-over'; c.globalAlpha = dark * (.5 + .3 * r2); c.drawImage(P.d, px - rr, py - rr * .62, 2 * rr, 1.24 * rr);
             const near = Math.max(0, 1 - Math.hypot(px - sx0, py - sy0) / (760 * k)), la = burn * (.13 + .36 * near * near) + F * .3 * near; if (la > .01) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = la; c.drawImage(P.l, px - rr, py - rr * .62, 2 * rr, 1.24 * rr); } }
           c.globalCompositeOperation = 'source-over'; c.globalAlpha = 1; }
@@ -680,10 +684,12 @@ const HL = (() => {
         // rolls away across the sky over his head, growing and thinning as it goes. Soft round billows, dark, the
         // near ones lit from beneath by the fire (amber, never red). Each billow travels the whole way in about a
         // minute and melts away at the end; the far ones are drawn first.
-        { const N = 46, ps = [];
+        // (build 183: the smoke and the cloud keep the size they have from a distance, `kS`: stretched to the near hill's
+        // size the soft billows became one huge blur filling the close-up)
+        { const N = 46, ps = [], kS = Math.min(k, z * HS * 1.25);
           for (let i = 0; i < N; i++) { const h1 = Math.sin(i * 12.9898) * 43758.5453, h2 = Math.sin(i * 78.233) * 12543.123; ps.push([(i / N + G.t / 3400) % 1, h1 - Math.floor(h1), h2 - Math.floor(h2), i]); }
           ps.sort((a, b) => b[0] - a[0]);
-          for (const [u, r1, r2, i] of ps) { const rise = 1 - Math.pow(1 - u, 3), spread = (40 + 230 * u) * k, px = sx0 - (240 * u + 900 * u * u) * k + (r1 - .5) * spread, py = sy0 - (14 + 150 * rise - 60 * u * u) * k + (r2 - .5) * spread * .7, rr = (40 + 210 * u) * k * (.8 + .4 * r2), a = smooth(0, .05, u) * (1 - smooth(.72, 1, u)), P = PUFF[i % 3];
+          for (const [u, r1, r2, i] of ps) { const rise = 1 - Math.pow(1 - u, 3), spread = (40 + 230 * u) * kS, px = sx0 - (240 * u + 900 * u * u) * kS + (r1 - .5) * spread, py = sy0 - (14 + 150 * rise - 60 * u * u) * kS + (r2 - .5) * spread * .7, rr = (40 + 210 * u) * kS * (.8 + .4 * r2), a = smooth(0, .05, u) * (1 - smooth(.72, 1, u)), P = PUFF[i % 3];
             c.globalCompositeOperation = 'source-over'; c.globalAlpha = a * (.07 + .73 * dark) * reveal; c.drawImage(P.d, px - rr, py - rr, 2 * rr, 2 * rr);
             const la = a * (burn * (.3 + .7 * Math.pow(1 - u, 2)) + F * .3 * (1 - u)); if (la > .01) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = la; c.drawImage(P.l, px - rr, py - rr, 2 * rr, 2 * rr); } } }
         c.globalCompositeOperation = 'source-over'; c.globalAlpha = 1;
@@ -853,5 +859,5 @@ const HL = (() => {
   }
 
   // for testing: HL.peek() tells where the story is
-  return { on: false, show: false, hillPics: () => HILL, title, start, update, draw, touch, key, preload, lines: ALL, pt: k => k === 'hill' ? hillPt() : gatePt(), peek: () => ({ ph, x: Math.round(C3.x), st: stillT, stand: C3.sd != null, wx: wise && Math.round(wise.x), ex: evan && evan.x != null ? Math.round(evan.x) : null, dark: +dark.toFixed(2), wise: wise && wise.mode, evan: evan && +evan.a.toFixed(2), knocks, cam: { ...cam } }) };
+  return { on: false, show: false, hillPics: () => HILL, title, start, update, draw, touch, key, preload, lines: ALL, pt: k => k === 'hill' ? hillPt() : gatePt(), peek: () => ({ ph, x: Math.round(C3.x), stillT, stand: C3.sd != null, wx: wise && Math.round(wise.x), ex: evan && evan.x != null ? Math.round(evan.x) : null, dark: +dark.toFixed(2), wise: wise && wise.mode, evan: evan && +evan.a.toFixed(2), knocks, cam: { ...cam } }) };
 })();
