@@ -129,7 +129,13 @@ const HL = (() => {
     // base haze are drawn in draw() (see "LOW CLOUD ACROSS ITS FOOT").
     // (build 171, owner: "blue doesn't look right": the far ridges keep the blue of distance, but the hill is a warm dusky
     // brown-grey, the colour of rock in evening light: it stands in front of those ridges, nearer and heavier than they)
-    HILL = [[104, 88, 84], [24, 22, 30]].map((col, hi) => {
+    // ONE LIGHT, AND IT IS BEHIND EVERYTHING (owner, build 173: "Rock has sun behind it. Should it cast shadow and be more
+    // dark? Think about any big picture things like this"). The low sun stands at the horizon in the middle of the
+    // picture, beyond the tree, the men and the hill. So on the fair day: everything between us and it is DARK with a
+    // bright edge toward it (the oak, the people, and now the hill: a darker dusky mass, no light on its face, a
+    // bright rim down its sunward edge); the land is brightest far off, where the light skims it, and falls into
+    // shadow toward us; shadows lie on our side of things, flat (the oak's shade, the hill's long shade on the plain).
+    HILL = [[80, 68, 68], [24, 22, 30]].map((col, hi) => {
       const c = mk(HW, HH), k = c.getContext('2d'); k.translate(HOX, HOY);
       k.beginPath(); k.moveTo(-8, 12);
       for (let h = 0; h <= TOP; h += 6) k.lineTo(faceX(h), -h);
@@ -138,8 +144,8 @@ const HL = (() => {
       k.lineTo(backX(0) + 30, 12); k.closePath();
       // rocks that have fallen from the overhang lie at its foot
       { const Rr = rngS(23); for (const [bx, bw] of [[-236, 16], [-150, 30], [-128, 12], [-62, 44], [-20, 20]]) { const bh = bw * (.45 + Rr() * .25); k.moveTo(bx - bw / 2, 12); k.lineTo(bx - bw * .42, -bh * .6); k.lineTo(bx - bw * .1, -bh); k.lineTo(bx + bw * .3, -bh * .8); k.lineTo(bx + bw / 2, 12); k.closePath(); } }
-      const g = k.createLinearGradient(0, -TOP, 0, 0); g.addColorStop(0, css(col)); if (hi === 0) { g.addColorStop(.45, css(mix(col, [168, 150, 138], .45))); g.addColorStop(1, css([196, 184, 170])); } else g.addColorStop(1, css(mix(col, [150, 150, 150], .1))); k.fillStyle = g; k.fill();
-      if (hi === 0) { k.save(); k.clip(); const w = k.createRadialGradient(-150, -400, 0, -150, -400, 420); w.addColorStop(0, 'rgba(244,196,150,.4)'); w.addColorStop(1, 'rgba(244,196,150,0)'); k.fillStyle = w; k.fillRect(-400, -640, 900, 700); k.restore(); }
+      const g = k.createLinearGradient(0, -TOP, 0, 0); g.addColorStop(0, css(col)); if (hi === 0) { g.addColorStop(.5, css(mix(col, [150, 136, 128], .4))); g.addColorStop(1, css([184, 172, 158])); } else g.addColorStop(1, css(mix(col, [150, 150, 150], .1))); k.fillStyle = g; k.fill();
+      if (hi === 0) { k.save(); k.clip(); k.lineJoin = k.lineCap = 'round'; for (const [w, a] of [[30, .06], [11, .13], [2.6, .42]]) { k.strokeStyle = 'rgba(255,222,172,' + a + ')'; k.lineWidth = w; k.beginPath(); k.moveTo(faceX(0), 0); for (let h = 6; h <= TOP; h += 6) k.lineTo(faceX(h), -h); for (const [sx, sy] of [[46, -529], [60, -524], [72, -537], [86, -527]]) k.lineTo(sx, sy); k.stroke(); } k.restore(); }
       // a few faint ledges across the face, so it reads as rock
       k.save(); k.clip(); k.fillStyle = css(mix(col, [0, 0, 0], .22), hi === 0 ? .5 : 1); k.beginPath(); k.moveTo(40, 14); for (let h = 0; h <= 330; h += 6) k.lineTo(150 + 150 * Math.pow(h / 330, .7) - 60 * smooth(200, 330, h) + (nz(h * .04, 21) - .5) * 30, -h); for (let h = 330; h >= 0; h -= 6) k.lineTo(330 + 420 * Math.pow(1 - h / 330, 1.6) + (nz(h * .05, 25) - .5) * 26, -h); k.lineTo(800, 14); k.fill(); k.strokeStyle = css(mix(col, [255, 255, 255], .5), .1); k.lineWidth = 2;
       for (let i = 0; i < 9; i++) { const h = 40 + i * 52; k.beginPath(); for (let x = -200; x <= 1100; x += 20) { const y = -h - (nz(x * .01, i) - .5) * 40 - x * .06; x === -200 ? k.moveTo(x, y) : k.lineTo(x, y); } k.stroke(); }
@@ -500,7 +506,7 @@ const HL = (() => {
     { const g = c.createRadialGradient(lx, ly, 0, lx, ly, 330); g.addColorStop(0, css([255, 236, 190], .85 * la)); g.addColorStop(.12, css([255, 222, 160], .5 * la)); g.addColorStop(.45, css([255, 214, 150], .16 * la)); g.addColorStop(1, css([255, 214, 150], 0));
       c.fillStyle = g; c.fillRect(lx - 330, ly - 330, 660, 660); c.fillStyle = css([255, 248, 226], la); c.beginPath(); c.arc(lx, ly, 7 + 1.2 * Math.sin(G.t / 40), 0, 7); c.fill(); }
     // the far ridge
-    { const col = mix(mix(mix(low, top, .45), [122, 144, 172], .55 * (1 - dark) * (1 - gateish)), [60, 52, 60], dark * .6); c.fillStyle = css(col); c.beginPath(); c.moveTo(0, hor + 2);
+    { const col = mix(mix(mix(low, top, .45), [150, 138, 160], .5 * (1 - dark) * (1 - gateish)), [60, 52, 60], dark * .6); c.fillStyle = css(col); c.beginPath(); c.moveTo(0, hor + 2);
       for (let sx = 0; sx <= VW + 16; sx += 16) { const u = cx * .1 + (sx - VW / 2) / z; c.lineTo(sx, hor - (26 + 96 * nz(u * .0035, 5) + 22 * nz2(u * .02, 1)) * z * .8); }
       c.lineTo(VW, hor + 2); c.fill();
       // FOOTHILLS: a nearer, lower line of hills in front of the far ridge. At first they are all there is to see where
@@ -509,8 +515,9 @@ const HL = (() => {
       for (let sx = 0; sx <= VW + 16; sx += 16) { const u = cx * .2 + (sx - VW / 2) / z; c.lineTo(sx, hor - (6 + 50 * nz(u * .005, 9) + 12 * nz2(u * .026, 4)) * z * .8); }
       c.lineTo(VW, hor + 2); c.fill(); }
     // the plain, from the horizon down to the road
-    { const far = mix(mix([204, 190, 142], [50, 48, 56], gateish), [78, 68, 70], dark), near = mix(mix([80, 84, 56], [24, 24, 32], gateish), [38, 36, 44], dark);
-      const g = c.createLinearGradient(0, hor, 0, Y(0)); g.addColorStop(0, css(far)); g.addColorStop(1, css(near)); c.fillStyle = g; c.fillRect(0, hor, VW, Y(0) - hor + 1);
+    { const far = mix(mix([214, 196, 138], [50, 48, 56], gateish), [78, 68, 70], dark), near = mix(mix([52, 54, 40], [24, 24, 32], gateish), [38, 36, 44], dark);
+      const g = c.createLinearGradient(0, hor, 0, Y(0)); g.addColorStop(0, css(far)); g.addColorStop(.35, css(mix(far, near, .5))); g.addColorStop(1, css(near)); c.fillStyle = g; c.fillRect(0, hor, VW, Y(0) - hor + 1);
+      { const fk = (1 - dark) * (1 - gateish); if (fk > .02) { const hg = c.createLinearGradient(0, hor - 34 * z, 0, hor + 26 * z); hg.addColorStop(0, css(low, 0)); hg.addColorStop(.55, css(low, .62 * fk)); hg.addColorStop(1, css(low, 0)); c.fillStyle = hg; c.fillRect(0, hor - 34 * z, VW, 60 * z); } }
       // the village and the hill stand on the plain, further back
       const hx = VW / 2 + (HILL_A - cx) * PH * z, hy = Y(HILL_Y), k = z * HS;
       hillBox = [hx, hy, k];
@@ -595,13 +602,15 @@ const HL = (() => {
         // level band of low cloud lies across its lower slopes, drifting very slowly; the mountain rises clear above
         // it. That band is what tells the eye how big it is. It thins away as the sky darkens and he comes near.
         { const fair = (1 - dark) * reveal; if (fair > .02) { const hz = mix(low, [226, 222, 214], .5);
-            const bg = c.createLinearGradient(0, hy - 210 * k, 0, hy + 10 * k); bg.addColorStop(0, css(hz, 0)); bg.addColorStop(.6, css(hz, .5 * fair)); bg.addColorStop(1, css(hz, .86 * fair)); c.fillStyle = bg; c.fillRect(0, hy - 210 * k, VW, 222 * k);
+            const bg = c.createLinearGradient(0, hy - 210 * k, 0, hy + 50 * k); bg.addColorStop(0, css(hz, 0)); bg.addColorStop(.55, css(hz, .5 * fair)); bg.addColorStop(.82, css(hz, .7 * fair)); bg.addColorStop(1, css(hz, 0)); c.fillStyle = bg; c.fillRect(0, hy - 210 * k, VW, 260 * k);
             for (let i = 0; i < 4; i++) { const w = (900 + i * 260) * k, h2 = (64 + i * 16) * k, xx = hx + (-420 + i * 190 + 60 * Math.sin(G.t / 1100 + i * 1.9)) * k, yy = hy - (70 + i * 36 + (i % 2) * 22) * k - h2 / 2;
               c.globalAlpha = (.62 - i * .1) * fair; c.drawImage(CLOUD, xx, yy, w, h2); }
-            c.globalAlpha = 1; } }
+            c.globalAlpha = 1;
+            // its shadow lies on the plain on our side of it: a flat band of shade, widest under the mass
+            { c.save(); c.translate(hx + 260 * k, hy + 26 * z); c.scale(1, .1); const sg = c.createRadialGradient(0, 0, 0, 0, 0, 760 * k); sg.addColorStop(0, css([22, 26, 22], .46 * fair)); sg.addColorStop(.6, css([22, 26, 22], .26 * fair)); sg.addColorStop(1, css([22, 26, 22], 0)); c.fillStyle = sg; c.fillRect(-760 * k, -760 * k, 1520 * k, 1520 * k); c.restore(); } } }
         // the field's haze at its foot, so it stands in the plain and not on it
-        const fg = c.createLinearGradient(0, hy - 34 * k, 0, hy + 14 * k), fc = mix(far, near, clamp((hy - hor) / (Y(0) - hor)));
-        fg.addColorStop(0, css(fc, 0)); fg.addColorStop(.7, css(fc, .9)); fg.addColorStop(1, css(fc, 1)); c.fillStyle = fg; c.fillRect(0, hy - 34 * k, VW, 48 * k);
+        const fg = c.createLinearGradient(0, hy - 34 * k, 0, hy + 14 * k), ft = clamp((hy - hor) / (Y(0) - hor)), fc = ft < .35 ? mix(far, mix(far, near, .5), ft / .35) : mix(mix(far, near, .5), near, (ft - .35) / .65);
+        fg.addColorStop(0, css(fc, 0)); fg.addColorStop(.6, css(fc, .85 * reveal)); fg.addColorStop(1, css(fc, 0)); c.fillStyle = fg; c.fillRect(0, hy - 34 * k, VW, 48 * k);
       }
     }
     // THE WICKET-GATE, AFTER REMBRANDT (builds 139, 140). Owner on build 139: "I like light on gate - bricks not doing it
@@ -662,7 +671,7 @@ const HL = (() => {
       for (let i = 0; i < knocks; i++) { const q = clamp(knockT / 40); if (i === knocks - 1 && q < 1) { c.strokeStyle = css([255, 236, 190], .7 * (1 - q)); c.lineWidth = 2; c.beginPath(); c.arc(gx, Y(-70), (10 + 46 * q) * z, 0, 7); c.stroke(); } }
     }
     // the road under everyone's feet
-    { const g = c.createLinearGradient(0, Y(0), 0, VH); const rc = mix([44, 44, 46], [22, 22, 30], Math.max(dark, .9 * gateish)); g.addColorStop(0, css(mix(rc, [120, 116, 100], .25))); g.addColorStop(.08, css(rc)); g.addColorStop(1, css(mix(rc, [0, 0, 0], .35))); c.fillStyle = g; c.fillRect(0, Y(0), VW, VH - Y(0)); }
+    { const g = c.createLinearGradient(0, Y(0), 0, VH); const rc = mix([46, 40, 36], [22, 22, 30], Math.max(dark, .9 * gateish)); g.addColorStop(0, css(mix(rc, [120, 116, 100], .25))); g.addColorStop(.08, css(rc)); g.addColorStop(1, css(mix(rc, [0, 0, 0], .35))); c.fillStyle = g; c.fillRect(0, Y(0), VW, VH - Y(0)); }
     // the lantern's and the open door's light lie in flat pools on the road
     if (gateOn) { c.save(); c.globalCompositeOperation = 'lighter';
       for (const [px, rr, al, col] of [[lnx + 10 * z, 230 * z, .26 * flick, [255, 170, 90]], [gx - 30 * z, 400 * z, .6 * door, [255, 208, 134]]]) { if (al < .01) continue; c.save(); c.translate(px, Y(5)); c.scale(1, .09); const g = c.createRadialGradient(0, 0, 0, 0, 0, rr); g.addColorStop(0, css(col, al)); g.addColorStop(1, css(col, 0)); c.fillStyle = g; c.fillRect(-rr, -rr, 2 * rr, 2 * rr); c.restore(); }
@@ -681,6 +690,16 @@ const HL = (() => {
         c.drawImage(OAKP.c, x0, y0, w, h);
         if (dark < .5) { c.save(); c.globalCompositeOperation = 'lighter'; OAKP.tw.forEach(([px, py], i) => { const v = Math.sin(G.t / (26 + (i * 37) % 60) + i * 2.4); if (v < .55) return; const al = Math.pow((v - .55) / .45, 2) * .7 * (1 - 2 * dark);
             c.fillStyle = css([255, 238, 180], al); c.beginPath(); c.arc(x0 + px * s, y0 + py * s, (1 + 1.1 * al) * z, 0, 7); c.fill(); }); c.restore(); }
+        // THE SUN THROUGH THE LEAVES (owner, build 173): when the low sun stands behind the crown it breaks through the gaps: a
+        // small flare, a few soft spokes of light that turn as he walks, and dapples of light in the oak's shade
+        { const inX = smooth(x0 + w * .04, x0 + w * .22, lx) * (1 - smooth(x0 + w * .8, x0 + w * .98, lx)), inY = smooth(y0, y0 + h * .1, ly) * (1 - smooth(y0 + h * .62, y0 + h * .74, ly)), sun = inX * inY * (1 - dark) * (1 - gateish);
+          if (sun > .02) { c.save(); c.globalCompositeOperation = 'lighter';
+            const fl2 = .75 + .25 * Math.sin(cx * .05) * Math.sin(cx * .017 + 1), g = c.createRadialGradient(lx, ly, 0, lx, ly, 70 * z); g.addColorStop(0, css([255, 244, 210], .75 * sun * fl2)); g.addColorStop(.3, css([255, 224, 160], .3 * sun * fl2)); g.addColorStop(1, css([255, 210, 140], 0)); c.fillStyle = g; c.fillRect(lx - 70 * z, ly - 70 * z, 140 * z, 140 * z);
+            c.lineCap = 'round'; for (let i = 0; i < 9; i++) { const an = i * .698 + cx * .004 + .3 * Math.sin(i * 2.7), len = (70 + 80 * ((i * 37) % 10) / 10) * z * (.6 + .4 * Math.sin(cx * .03 + i * 1.3)), gr = c.createLinearGradient(lx, ly, lx + Math.cos(an) * len, ly + Math.sin(an) * len); gr.addColorStop(0, css([255, 236, 190], .34 * sun)); gr.addColorStop(1, css([255, 226, 170], 0));
+              c.strokeStyle = gr; c.lineWidth = (2 + (i % 3)) * z; c.beginPath(); c.moveTo(lx, ly); c.lineTo(lx + Math.cos(an) * len, ly + Math.sin(an) * len); c.stroke(); }
+            c.restore(); }
+          // (dapples of light in the shade were tried here and read as stepping stones: taken out)
+        }
         if (dark > .02) { c.globalAlpha = Math.min(1, dark * .85); c.drawImage(OAKP.d, x0, y0, w, h); c.globalAlpha = 1; }
         if (dark < .6) for (let i = 0; i < 7; i++) { const T = 620 + i * 97, u = ((G.t + i * 233) % T) / T, lx2 = tx + (-90 + i * 60 + 34 * Math.sin(u * 7 + i)) * z + 50 * u * z, ly2 = ty - (260 - 30 * (i % 3)) * z * (1 - u), al = Math.sin(Math.PI * u) * .9 * (1 - dark);
           c.save(); c.translate(lx2, ly2); c.rotate(u * 9 + i); c.fillStyle = css([44, 50, 36], al); c.beginPath(); c.ellipse(0, 0, 3 * z, 1.3 * z, 0, 0, 7); c.fill(); c.restore(); } } }
