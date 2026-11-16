@@ -35,11 +35,11 @@ const HL = (() => {
   const EV_X = STILL - 135;
 
   // ---------- the words: Bunyan's, shortened and made plain ----------
-  const SEEN = [      // {37}
+  const SEEN = cut([      // {37}
     [N, 'Now as Christian was walking by himself, he saw one far off, coming across the field to meet him.'],
     [N, 'The gentleman\'s name was Mr. Worldly Wiseman. He lived in the town of Carnal Policy, a very great town, close by the city Christian came from.'],
-  ];
-  const WISE = [      // {38} to {45}
+  ]);
+  const WISE = cut([      // {38} to {45}
     [WW, 'How now, good fellow! Where are you going, with such a burden?'],
     [C, 'Sir, I am going to that wicket-gate before me. There I shall be put into a way to be rid of my heavy burden.'],
     [WW, 'Will you listen to me, if I give you counsel?'],
@@ -55,18 +55,18 @@ const HL = (() => {
     [WW, 'Do you see that hill?', 'hill'],
     [C, 'Yes, very well.'],
     [WW, 'By that hill you must go, and the first house you come to is his.'],
-  ];
+  ]);
   const TURNED = [[N, 'So Christian turned out of his way, to go to Mr. Legality\'s house for help.']];      // {46}
   const HIGH = [[N, 'But when he had come close to the hill, it seemed so high, and its side hung so far over the way, that Christian was afraid to go further, lest the hill should fall on his head.']];
-  const STOOD = [
+  const STOOD = cut([
     [N, 'There he stood still, and did not know what to do.'],
     [N, 'Also his burden now seemed heavier to him than when he was in his way.'],
     [N, 'There came also flashes of fire out of the hill, and Christian was afraid that he should be burned.', 0, () => { fire(1); }],
     [N, 'Here he sweated, and shook for fear.'],
     [N, 'And now he began to be sorry that he had taken Mr. Worldly Wiseman\'s counsel.'],      // {47}
-  ];
-  const COMING = [[N, 'With that he saw Evangelist coming to meet him, and he began to blush for shame.']];
-  const EVANW = [      // {48} to {59}
+  ]);
+  const COMING = cut([[N, 'With that he saw Evangelist coming to meet him, and he began to blush for shame.']]);
+  const EVANW = cut([      // {48} to {59}
     [E, 'What are you doing here, Christian?'],
     [N, 'At these words Christian did not know what to answer. He stood speechless before him.'],
     [E, 'Are you not the man that I found crying outside the walls of the City of Destruction?'],
@@ -89,11 +89,11 @@ const HL = (() => {
     [E, 'Your sin is very great. Yet the man at the gate will receive you, for he has goodwill for men.', 0, () => { calmTo = 1; }],
     [E, 'Only take heed that you do not turn aside again.'],
     [N, 'Then Evangelist gave him one smile, and bid him God-speed.'],
-  ];
-  const HASTE = [      // {59}
+  ]);
+  const HASTE = cut([      // {59}
     [N, 'So he went on with haste, and spoke to no man by the way.'],
     [N, 'He went like one treading on forbidden ground, and could not think himself safe till he was again in the way which he had left.'],
-  ];
+  ]);
   const ATGATE = [[N, 'So, in time, Christian got up to the gate. Now over the gate there was written: Knock, and it shall be opened unto you.']];
   const KNOCK = [      // {60}
     [N, 'He knocked, therefore, more than once or twice, saying:', 'knock'],
@@ -340,7 +340,7 @@ const HL = (() => {
       walk(1, 0); stillT++;
       if (stillT === 60 || stillT > 9999) { stillT = 61; caption(STOOD); }
       // the lines' own happenings (captions carry no fn): the fire comes with its words
-      if (dlg.querySelector('.t').textContent === STOOD[2][1] && !C3.fired) { C3.fired = true; fire(1); }
+      if (dlg.querySelector('.t').textContent.startsWith('There came also flashes of fire') && !C3.fired) { C3.fired = true; fire(1); }
       if (stillT > 200 && !saying() && G.cap <= 0 && C3.sd != null) { ph = 'come'; caption(COMING); evan = EVW.ready ? { a: 1, t: 0, x: EV_X - EV_FROM, anim: 0, walk: true, st: 0 } : { a: 0, t: 0 }; turnC(-1); }
     } else if (ph === 'come') {
       walk(1, 0);

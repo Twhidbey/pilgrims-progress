@@ -83,7 +83,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">build 160 · Nov 16 2026</div>
+  <div id="build">build 161 · Nov 16 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -966,6 +966,15 @@ function capTick() {
   if (G.cap <= 0 && G.capQ.length) { const [who, txt, quick] = G.capQ.shift(); G.hint = null; words(who, txt, 'cap'); document.body.classList.add('capped'); G.cap = quick ? 80 + txt.length * 2 : 170 + txt.length * 4; G.capEnd = Infinity; }      // capEnd: when its recording ends (set in say())
 }
 
+// A TRIAL OF A SHORTER SCRIPT (build 161; owner: "we need to cut down dialogue it's too much waiting"). With ?cuts in
+// the address, the lines in DROP are left out of all three levels (slough.js and hill.js use cut() too); without it,
+// nothing changes. Only lines that describe what the picture already shows, or the middles of long talks, are in it;
+// a talk always keeps at least one line (talk() needs one). The full proposal, with rewordings, is SCRIPT-CUTS.md.
+const CUTS = new URLSearchParams(location.search).has('cuts'), CUTS2 = new URLSearchParams(location.search).get('cuts') === '2';
+const DROP = new Set([ "He walked alone in the fields, reading his book and praying.", "The neighbors also came out to see him run.", "In a little time they overtook him.", "Come with me, neighbors! I have seen the light.", "Just as they ended this talk, they drew near to a very miry bog in the middle of the plain.", "Because of the burden on his back, Christian began to sink in the mire.", "So Christian was left to struggle in the Slough of Despond alone.", "So he gave him his hand. And Help drew him out, and set him upon sound ground.", "Now as Christian was walking by himself, he saw one far off, coming across the field to meet him.", "Will you listen to me, if I give you counsel?", "If it is good, I will. For I stand in need of good counsel.", "In the way you are going, you are like to meet with weariness, painfulness, hunger, perils, lions, dragons, darkness, and what not!", "Sir, this burden upon my back is more terrible to me than all these things.", "Now Christian stood a while in doubt. But soon he thought: if what this gentleman says is true, my wisest course is to take his advice.", "Yes, very well.", "There he stood still, and did not know what to do.", "Here he sweated, and shook for fear.", "At these words Christian did not know what to answer. He stood speechless before him.", "Are you not the man that I found crying outside the walls of the City of Destruction?", "Yes, dear sir, I am the man.", "Stand still a little, that I may show you the words of God.", "The just shall live by faith. You have begun to draw back your foot from the way of peace.", "With that there came fire out of the mountain under which poor Christian stood.", "Then Christian cried out, and called himself a thousand fools for listening to his counsel.", "Only take heed that you do not turn aside again.", "So he went on with haste, and spoke to no man by the way." ]);
+// ?cuts=2: a deeper trial, these lines as well
+const DROP2 = new Set(["So he did not look behind him, but fled on.", "Many fears and doubts came over him, and settled in that place.", "With that he saw Evangelist coming to meet him, and he began to blush for shame.", "Also his burden now seemed heavier to him than when he was in his way.", "Did I not show you the way to the little wicket-gate?", "Yes, dear sir."]);
+const cut = arr => CUTS ? arr.filter(l => !DROP.has(l[1]) && !(CUTS2 && DROP2.has(l[1]))) : arr;
 // THE WORDS KEEP CLOSE TO BUNYAN'S (owner, build 56: "bring the words closer to book"): his sentences, shortened and with
 // the oldest words made plain for a child, in his order ({10} to {28} of book/pilgrims-progress-part-one.txt).
 const INTRO = [      // {10}
@@ -974,7 +983,7 @@ const INTRO = [      // {10}
   [C, 'What shall I do?'],
 ];
 // {11}, {12}: "he would also walk solitarily in the fields, sometimes reading, and sometimes praying"
-const FIELDS = [[N, 'He walked alone in the fields, reading his book and praying.']];
+const FIELDS = cut([[N, 'He walked alone in the fields, reading his book and praying.']]);
 const EVAN = [       // {13} to {17}
   [E, 'Why do you cry?'],
   [C, 'Sir, I see by the book in my hand that I am in great danger. And this burden upon my back will sink me.'],
@@ -1000,22 +1009,22 @@ const FAMILY = [
   [C, 'I cannot stay. I must find the way, for all of us.'],
   [W, 'Christian! Come back!', 'walkon', () => { P.turn = 1; G.walkFrom = P.x; G.runZone = true; }],      // build 110: his fingers go in his ears once she has been heard (coverEars when the talk ends)
 ];
-const LIFE = [[C, 'Life! Life! Eternal life!', 'quick'], [N, 'So he did not look behind him, but fled on.', 'quick']];      // said as he runs ('quick': they pass as soon as they are heard)
+const LIFE = cut([[C, 'Life! Life! Eternal life!', 'quick'], [N, 'So he did not look behind him, but fled on.', 'quick']]);      // said as he runs ('quick': they pass as soon as they are heard)
 // {19} to {24}: the neighbours come out while he is still running; two set out to fetch him back, and overtake him
-const WATCH = [[N, 'The neighbors also came out to see him run.', 'quick'], [N, 'Some mocked. Some threatened. And some cried after him to come back.', 'quick']];
+const WATCH = cut([[N, 'The neighbors also came out to see him run.', 'quick'], [N, 'Some mocked. Some threatened. And some cried after him to come back.', 'quick']]);
 const FETCH = [[N, 'Two of them resolved to fetch him back by force. The name of one was Obstinate, and the other Pliable.']];
-const NEIGH = [
+const NEIGH = cut([
   [N, 'In a little time they overtook him.'],
   [C, 'Neighbors, why have you come?'],
   [O, 'To persuade you to go back with us.'],
   [C, 'That can by no means be. Be content, good neighbors, and go along with me.'],
   [O, 'What! And leave our friends and our comforts behind us?'],      // {20}; then the child chooses (the choice is ours, not the book's)
-];
-const HOME = [
+]);
+const HOME = cut([
   [N, 'Christian turned back toward home. The rain fell harder, and the light grew dim.'],
   [C, 'No. I cannot stay here. My burden is too heavy.', null, () => { G.gloomTo = 0; }],
   [C, 'Come with me, neighbors! I have seen the light.'],
-];
+]);
 const ONWARD = [[C, 'Yes. For all that you leave is not worth a little of what I am seeking. Come away, and prove my words.']];
 const PART = [       // {21} to {24}
   [O, 'Tush! Away with your book. Come then, neighbor Pliable, let us go home without him.'],
@@ -2256,7 +2265,7 @@ document.getElementById('on2').onclick = () => SL.on ? go3() : go2();
   for (const [who, txt] of INTRO) vox(who, txt);          // the first words, ready before Begin is pressed
 })();
 </script>
-<script src="slough.js?v=158"></script>
-<script src="hill.js?v=160"></script>
+<script src="slough.js?v=161"></script>
+<script src="hill.js?v=161"></script>
 </body>
 </html>
