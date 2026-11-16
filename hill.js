@@ -183,6 +183,27 @@ const HL = (() => {
         if (Rv() < .6) lit.push([x + 4 + Rv() * (w - 10), 70 - h + 4]); }
       TOWN.lit = lit; }
   }
+  // THE PAINTED OAK (build 163; owner: "maybe adjust how trunk interacts with ground to be more realistic - more detail on
+  // trunk - can we have google image have a go at it?"). One picture from the image model (about 15 cents), given the
+  // code-drawn oak as its shape: a gnarled trunk with a hollow, roots spreading into rough grass, the long limb
+  // reaching right, feathery pads of leaves. assets/oak-leaf.webp, cut from its white paper. OAK_META: ax = the
+  // trunk's middle, ground = the row that stands on the field's edge (the grass at its foot goes a little below, behind
+  // the road), tw = sunlit leaves that twinkle. It is toned a little darker here to sit in the game's quiet tones,
+  // and has an all-dark copy for when the sky darkens. Until it has loaded, the code-drawn oak (bakeOak) stands in.
+  const OAK_META = { w: 1163, h: 835, ax: 304.0, ground: 800, k: .56, tw: [[1083,304],[1114,421],[1016,272],[677,301],[1047,398],[1058,259],[600,443],[1073,346],[837,293],[737,302],[1082,331],[1021,313],[1121,411],[1001,363],[944,397],[1144,283],[884,291],[1044,244],[968,340],[715,360],[767,135],[1139,282],[1090,338],[1092,311],[316,73],[1113,286],[1119,412],[1112,278],[888,286],[1130,286],[921,291],[925,397],[1044,368],[783,171],[1111,306],[828,277],[1115,429],[1026,406],[813,125],[1087,276],[603,445],[1073,288],[654,196],[1056,362],[1113,421],[915,320],[844,322],[916,322],[753,332],[907,300],[612,453],[969,340],[996,294],[1106,251],[925,331],[579,455],[1085,257],[979,312],[1108,288],[783,140],[1122,438],[963,400],[943,392],[1055,270],[921,399],[584,479],[934,280],[1125,266],[920,316],[1053,363],[1088,396],[1040,261],[827,279],[956,354],[865,283],[512,194],[608,466],[854,304],[1054,405],[909,307],[1068,278],[888,327],[1013,395],[1044,248],[1113,420],[1041,252],[724,158],[454,372],[1004,405],[1077,270],[933,315],[1112,297],[1050,256],[1023,334],[1090,264],[1063,341],[1032,396],[1067,336],[1024,314],[1069,273],[701,213],[584,207],[1146,373],[1047,248],[614,311],[817,134],[684,111],[1103,309],[1094,268],[542,266],[822,152],[1103,303],[969,362],[1040,248],[1026,362],[1073,357],[1111,314],[1115,290],[990,348],[1119,240],[851,331],[1058,278],[611,453],[1096,372],[982,356],[587,449],[725,309],[885,285],[1112,428],[883,282],[1064,356],[557,153],[1092,390],[529,196],[724,259],[923,332],[726,306],[976,336],[508,245],[242,231],[1109,363],[750,157],[967,388],[846,319],[909,322],[661,116],[912,317],[628,403],[881,307],[1118,239],[515,275],[1095,428],[632,401],[1082,348],[885,325],[917,306],[748,121],[468,499],[886,326],[932,276],[1020,411],[147,166],[854,290],[821,155],[894,306],[453,195],[759,107],[891,319],[1097,260],[795,147],[754,331],[1137,303],[731,351],[1042,261],[878,286],[828,334],[1131,357],[736,119],[967,341],[723,278],[886,302],[869,291],[796,146],[1049,258],[821,290],[1065,425],[1017,288],[1097,279],[1148,378],[653,290],[965,355],[463,498],[1112,257],[1050,388],[1116,289],[1026,363],[1093,404],[1156,354],[725,259],[1041,249],[1109,277],[1105,300],[762,134],[917,300],[1009,392],[1053,346],[1080,322],[1114,319],[805,293],[820,313],[494,249],[1120,414],[1088,369],[913,294],[980,353],[764,352],[1138,378],[1078,340],[1079,358],[786,129],[876,332],[786,142],[1076,394],[583,436],[1157,384],[891,297],[1020,306],[774,131],[896,285],[995,359],[1136,288],[520,236],[770,346],[1156,365],[1101,397],[1111,292],[1106,316],[607,456],[737,347],[680,90],[853,457],[883,281],[770,137],[1105,252],[1113,310],[1059,271],[1141,438],[910,318],[616,411],[976,314],[604,450],[871,294],[751,114],[902,296],[885,291],[753,120],[1026,432],[541,219],[1113,371],[802,123],[860,475],[1113,272],[607,458],[1063,270],[1122,440],[890,283],[1123,374],[885,284],[1115,320],[1082,277],[806,147],[969,350],[968,361],[1102,320],[710,124],[1120,309],[596,430],[737,128],[1082,325],[728,262],[478,281],[480,233],[608,458],[877,327],[578,451],[1131,432],[583,374],[969,388],[924,294],[723,293],[996,360],[991,399],[1064,357],[595,428],[1120,256],[1117,290],[877,331],[999,352],[621,467],[931,316],[890,286],[888,499],[586,363],[1042,335],[685,178],[1058,269],[572,251],[887,291],[1014,280],[1069,402],[663,270],[574,437],[683,95],[783,175],[1114,254],[729,122],[821,150],[1122,357],[965,350],[1016,360]] };
+  let OAKP = null, oakLoading = null;
+  function loadOak() {
+    if (!oakLoading) oakLoading = loadImg('oak-leaf.webp').then(im => { if (!im) return;
+      // (the painting ran off its paper on the left: that cut edge is melted away; the pale grass at its foot is toned to the field)
+      const mkc = fill => { const c = mk(im.width, im.height), k = c.getContext('2d'); k.drawImage(im, 0, 0);
+        k.globalCompositeOperation = 'source-atop'; { const g = k.createLinearGradient(0, im.height - 90, 0, im.height); g.addColorStop(0, 'rgba(58,62,40,0)'); g.addColorStop(.5, 'rgba(58,62,40,.7)'); g.addColorStop(1, 'rgba(50,54,36,.9)'); k.fillStyle = g; k.fillRect(0, im.height - 90, im.width, 90); }
+        k.globalCompositeOperation = 'destination-out'; { const g = k.createLinearGradient(0, 0, 90, 0); g.addColorStop(0, 'rgba(0,0,0,1)'); g.addColorStop(1, 'rgba(0,0,0,0)'); k.fillStyle = g; k.fillRect(0, 0, 90, im.height * .8); }
+        k.globalCompositeOperation = 'source-over'; fill(k); return c; };
+      OAKP = { c: mkc(k => { const keep = mk(im.width, im.height); keep.getContext('2d').drawImage(k.canvas, 0, 0); k.globalCompositeOperation = 'multiply'; k.fillStyle = 'rgb(188,180,170)'; k.fillRect(0, 0, im.width, im.height); k.globalCompositeOperation = 'destination-in'; k.drawImage(keep, 0, 0); }),
+               d: mkc(k => { k.globalCompositeOperation = 'source-in'; k.fillStyle = 'rgb(20,20,26)'; k.fillRect(0, 0, im.width, im.height); }) }; }).catch(() => {});
+    return oakLoading;
+  }
+  setTimeout(loadOak, 3500);
   // the oak in leaf, baked once: back leaves, the limbs, then the leaves toward us, lighter where the low sun reaches them
   let OAKL = null;
   function bakeOak() {
@@ -220,6 +241,7 @@ const HL = (() => {
     return { c, d, x0, y0, tw };
   }
   function preload() {
+    loadOak();
     if (!loading) loading = Promise.all([loadPack('wiseman', WIS).catch(() => {}), loadPack('evangelist-walk', EVW).catch(() => {}), loadImg('wiseman-stand.webp').then(im => { if (im) WIS_ST = im; }), OBS.ready || loadPack('obstinate', OBS).catch(() => {}), EVS.ready || loadPack('evangelist-stand', EVS).catch(() => {}), RUNP.ready || loadPack('christian-run-plain', RUNP).catch(() => {}),
       WEEP.ready || loadPack('christian-weep', WEEP).catch(() => {}), TURN.ready || loadPack('christian-turn', TURN).catch(() => {}),
       OBS_ST ? 0 : loadImg('obstinate-stand.webp').then(im => { if (im && !OBS_ST) OBS_ST = im; }),
@@ -555,8 +577,17 @@ const HL = (() => {
     // kin to the bare black oak over the mire, but alive: he is out of the slough. It stands as the great dark tree
     // of John Martin's quiet pictures (The Plains of Heaven), its long limb reaching over the place where the two
     // meet, with the light of late afternoon in the edge of its crown.
-    if (!OAKL && typeof SL !== 'undefined' && SL.grow) OAKL = bakeOak();
-    if (OAKL) { const s = .88 * z, tx = VW / 2 + (MEET - 185 - cx) * .92 * z, ty = Y(-6), w = OAKL.c.width * s, h = OAKL.c.height * s, x0 = tx + OAKL.x0 * s, y0 = ty + OAKL.y0 * s;
+    if (OAKP) { const M = OAK_META, s = M.k * z, tx = VW / 2 + (MEET - 185 - cx) * .92 * z, ty = Y(-2), x0 = tx - M.ax * s, y0 = ty - M.ground * s, w = M.w * s, h = M.h * s;
+      if (x0 < VW && x0 + w > 0) {
+        { c.save(); c.translate(tx + 70 * z, Y(-1)); c.scale(1, .09); const g = c.createRadialGradient(0, 0, 0, 0, 0, 360 * z); g.addColorStop(0, css([14, 26, 20], .46 * (1 - dark))); g.addColorStop(1, css([14, 26, 20], 0)); c.fillStyle = g; c.fillRect(-360 * z, -360 * z, 720 * z, 720 * z); c.restore(); }
+        c.drawImage(OAKP.c, x0, y0, w, h);
+        if (dark < .5) { c.save(); c.globalCompositeOperation = 'lighter'; M.tw.forEach(([px, py], i) => { const v = Math.sin(G.t / (26 + (i * 37) % 60) + i * 2.4); if (v < .55) return; const al = Math.pow((v - .55) / .45, 2) * .7 * (1 - 2 * dark);
+            c.fillStyle = css([255, 238, 180], al); c.beginPath(); c.arc(x0 + px * s, y0 + py * s, (1 + 1.1 * al) * z, 0, 7); c.fill(); }); c.restore(); }
+        if (dark > .02) { c.globalAlpha = Math.min(1, dark * .85); c.drawImage(OAKP.d, x0, y0, w, h); c.globalAlpha = 1; }
+        if (dark < .6) for (let i = 0; i < 7; i++) { const T = 620 + i * 97, u = ((G.t + i * 233) % T) / T, lx2 = tx + (-90 + i * 60 + 34 * Math.sin(u * 7 + i)) * z + 50 * u * z, ly2 = ty - (260 - 30 * (i % 3)) * z * (1 - u), al = Math.sin(Math.PI * u) * .9 * (1 - dark);
+          c.save(); c.translate(lx2, ly2); c.rotate(u * 9 + i); c.fillStyle = css([44, 50, 36], al); c.beginPath(); c.ellipse(0, 0, 3 * z, 1.3 * z, 0, 0, 7); c.fill(); c.restore(); } } }
+    if (!OAKP && !OAKL && typeof SL !== 'undefined' && SL.grow) OAKL = bakeOak();
+    if (!OAKP && OAKL) { const s = .88 * z, tx = VW / 2 + (MEET - 185 - cx) * .92 * z, ty = Y(-6), w = OAKL.c.width * s, h = OAKL.c.height * s, x0 = tx + OAKL.x0 * s, y0 = ty + OAKL.y0 * s;
       if (x0 < VW && x0 + w > 0) {
         // its shade on the field, flat
         { c.save(); c.translate(tx + 60 * z, Y(-2)); c.scale(1, .1); const g = c.createRadialGradient(0, 0, 0, 0, 0, 330 * z); g.addColorStop(0, css([14, 30, 22], .42 * (1 - dark))); g.addColorStop(1, css([14, 30, 22], 0)); c.fillStyle = g; c.fillRect(-330 * z, -330 * z, 660 * z, 660 * z); c.restore(); }
