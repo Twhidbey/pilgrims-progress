@@ -4,6 +4,8 @@ The game is `index.html` (one file, no build step). `style-lab.html` is the art-
 
 ## START HERE (written at build 41, updated at build 43, Nov 15 2026, for a new chat)
 
+**HANDOVER AT BUILD 117 (Nov 16 2026), for the next chat.** Read `CLAUDE.md` first: its top rules (stay close to the book; check every level against the book; the storyteller only tells story, instructions are quiet tips; nothing moves on its own except words; SPEND AS LITTLE AS POSSIBLE, ask with the cost before any paid call) and the build notes 106 to 116 just above "Level 2 is BUILT". State: Level 1 and Level 2 both play from start to end card with no errors in the headless play-throughs (scripts were in the old chat's scratchpad; easy to rewrite: load `story-lab.html` (or `?level=2`) from a local `python3 -m http.server`, click `#open` then `#play`, then loop `update()` in the page, tapping with `next()`, choosing with `pick(false)`, holding with `keys.r = true`). The owner's last points were all done; nothing is waiting except the owner's next look (on an iPhone: text size, voices with the ringer off, nothing moving on its own). Spent since build 106: about $0.57 (one Pliable stop video, one voice line). The Google key is in this environment as `GEMINI_API_KEY`.
+
 **Build 116: Pliable's front foot no longer hangs above the ground when he stands (both levels). Nothing spent (since build 106: about $0.57).**
 
 **Build 115: Pliable's stop video (about 56 cents, right first time), feet at the bog's edge, no dark line, the limb raised above Help, Help and the steps uncovered by moving fog (see `CLAUDE.md`). Spent since build 106: about $0.57.**
