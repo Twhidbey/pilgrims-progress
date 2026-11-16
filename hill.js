@@ -127,7 +127,9 @@ const HL = (() => {
     // haze of the plain (so it seems to float); a little warm light on the side toward the low sun; and a long level
     // band of low cloud lying across its lower slopes, with the mountain rising clear above it. The cloud band and the
     // base haze are drawn in draw() (see "LOW CLOUD ACROSS ITS FOOT").
-    HILL = [[96, 106, 136], [24, 22, 30]].map((col, hi) => {
+    // (build 171, owner: "blue doesn't look right": the far ridges keep the blue of distance, but the hill is a warm dusky
+    // brown-grey, the colour of rock in evening light: it stands in front of those ridges, nearer and heavier than they)
+    HILL = [[104, 88, 84], [24, 22, 30]].map((col, hi) => {
       const c = mk(HW, HH), k = c.getContext('2d'); k.translate(HOX, HOY);
       k.beginPath(); k.moveTo(-8, 12);
       for (let h = 0; h <= TOP; h += 6) k.lineTo(faceX(h), -h);
@@ -136,8 +138,8 @@ const HL = (() => {
       k.lineTo(backX(0) + 30, 12); k.closePath();
       // rocks that have fallen from the overhang lie at its foot
       { const Rr = rngS(23); for (const [bx, bw] of [[-236, 16], [-150, 30], [-128, 12], [-62, 44], [-20, 20]]) { const bh = bw * (.45 + Rr() * .25); k.moveTo(bx - bw / 2, 12); k.lineTo(bx - bw * .42, -bh * .6); k.lineTo(bx - bw * .1, -bh); k.lineTo(bx + bw * .3, -bh * .8); k.lineTo(bx + bw / 2, 12); k.closePath(); } }
-      const g = k.createLinearGradient(0, -TOP, 0, 0); g.addColorStop(0, css(col)); if (hi === 0) { g.addColorStop(.45, css(mix(col, [150, 158, 178], .4))); g.addColorStop(1, css([182, 184, 192])); } else g.addColorStop(1, css(mix(col, [150, 150, 150], .1))); k.fillStyle = g; k.fill();
-      if (hi === 0) { k.save(); k.clip(); const w = k.createRadialGradient(-150, -400, 0, -150, -400, 420); w.addColorStop(0, 'rgba(236,190,160,.34)'); w.addColorStop(1, 'rgba(236,190,160,0)'); k.fillStyle = w; k.fillRect(-400, -640, 900, 700); k.restore(); }
+      const g = k.createLinearGradient(0, -TOP, 0, 0); g.addColorStop(0, css(col)); if (hi === 0) { g.addColorStop(.45, css(mix(col, [168, 150, 138], .45))); g.addColorStop(1, css([196, 184, 170])); } else g.addColorStop(1, css(mix(col, [150, 150, 150], .1))); k.fillStyle = g; k.fill();
+      if (hi === 0) { k.save(); k.clip(); const w = k.createRadialGradient(-150, -400, 0, -150, -400, 420); w.addColorStop(0, 'rgba(244,196,150,.4)'); w.addColorStop(1, 'rgba(244,196,150,0)'); k.fillStyle = w; k.fillRect(-400, -640, 900, 700); k.restore(); }
       // a few faint ledges across the face, so it reads as rock
       k.save(); k.clip(); k.fillStyle = css(mix(col, [0, 0, 0], .22), hi === 0 ? .5 : 1); k.beginPath(); k.moveTo(40, 14); for (let h = 0; h <= 330; h += 6) k.lineTo(150 + 150 * Math.pow(h / 330, .7) - 60 * smooth(200, 330, h) + (nz(h * .04, 21) - .5) * 30, -h); for (let h = 330; h >= 0; h -= 6) k.lineTo(330 + 420 * Math.pow(1 - h / 330, 1.6) + (nz(h * .05, 25) - .5) * 26, -h); k.lineTo(800, 14); k.fill(); k.strokeStyle = css(mix(col, [255, 255, 255], .5), .1); k.lineWidth = 2;
       for (let i = 0; i < 9; i++) { const h = 40 + i * 52; k.beginPath(); for (let x = -200; x <= 1100; x += 20) { const y = -h - (nz(x * .01, i) - .5) * 40 - x * .06; x === -200 ? k.moveTo(x, y) : k.lineTo(x, y); } k.stroke(); }
