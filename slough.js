@@ -797,6 +797,15 @@ const SL = (() => {
     // (an arc toward us was offered and advised against: it would bring back the perspective the picture avoids)
     for (const st of steps) { const c = st.lit || 0; bank(st.x - 70 + c * 90, st.x + 70 + c * 90, 12, 10, 120, (1 - smooth(0, 1, c)) * (.55 + .3 * look.mist) * (ph === 'look' || ph === 'on' ? 1 : fogS), 6, 11 + st.i, true); }
     ctx.globalAlpha = .55 * look.mist; { const o = (G.t * .15) % VW; ctx.drawImage(threads, -o, wl - 22, VW, 40); ctx.drawImage(threads, VW - o, wl - 22, VW, 40); } ctx.globalAlpha = 1;
+    // rings in the mud. Build 126 (owner: "rings kinda stick out in weird way - either we see more of the mud or none but
+    // just rings is strange"): they are back UNDER the low mist and light again, so near the two the mist softens them
+    // away and only their outer reach shows faintly on the surface (build 125 drew them heavy, on top of the mist)
+    for (const r of rings) {
+      const u = r.t / 150, cxr = X(r.x), cyr = wl + 2 + r.y * z;
+      for (let i = 1; i <= 2; i++) { const rx = (10 + i * 16 + u * 70) * z * r.k, a = (1 - u) * (1 - i * .3);
+        ctx.lineWidth = 1.1; ctx.strokeStyle = css(LIGHT, .55 * a); ctx.beginPath(); ctx.ellipse(cxr, cyr, rx, rx * .11, 0, 0, 7); ctx.stroke();
+        ctx.strokeStyle = css(DARK, .2 * a); ctx.beginPath(); ctx.ellipse(cxr, cyr + 1.6, rx, rx * .11, 0, 0, Math.PI); ctx.stroke(); }
+    }
     // LOW MIST ROUND THE TWO IN THE BOG (build 125, owner: "more fog beneath Christian and pliable when they're in [the] bog
     // but not as much near their faces"): a flat lens of mist hugs the surface round each of them, thickest at the mud
     // line and gone by chest height, so heads and shoulders stand clear above it
@@ -807,14 +816,6 @@ const SL = (() => {
       if (['fall', 'pli', 'back', 'backtalk', 'wade', 'stuck', 'help'].includes(ph)) { const deep = smooth(C_SINK + 10, SINK + DEEP, C2.y);      // the deeper he is, the lower and thinner it lies: his head must stay clear
         low(C2.x + 6, (ph === 'fall' ? smooth(20, 120, C2.fallT) : 1) * (lift ? 1 - clamp(lift.t / 60) : 1) * (1 - .45 * deep), lerp(40, 13, deep)); }
       if (pli && pli.mode === 'climb' && !pli.out) low(pli.x + (META.climb.ax - META.climb.c0) * CHR_K * (1 - .6 * smooth(.25, .7, (pli.ct || 0) / 119)), (pli.wk ?? 1) * (1 - smooth(.6, .85, (pli.ct || 0) / 119))); }
-    // RINGS OF MUD, SEEN THROUGH THE MIST (build 125, owner: "through fog can we see rings of mud sloshing"): the rings are
-    // drawn over the mist now, three to each, heavier and slower than rings on water
-    for (const r of rings) {
-      const u = r.t / 150, cxr = X(r.x), cyr = wl + 2 + r.y * z;
-      for (let i = 1; i <= 3; i++) { const rx = (8 + i * 15 + u * 52) * z * r.k, a = (1 - u) * (1 - i * .24);
-        ctx.lineWidth = 1.7; ctx.strokeStyle = css(LIGHT, .7 * a); ctx.beginPath(); ctx.ellipse(cxr, cyr, rx, rx * .12, 0, 0, 7); ctx.stroke();
-        ctx.lineWidth = 1.5; ctx.strokeStyle = css(DARK, .42 * a); ctx.beginPath(); ctx.ellipse(cxr, cyr + 1.8, rx, rx * .12, 0, 0, Math.PI); ctx.stroke(); }
-    }
     if (look.veil > .01) { const g = ctx.createLinearGradient(VW * .42, 0, VW, 0); g.addColorStop(0, css(LIGHT, 0)); g.addColorStop(.55, css(tone(.93), look.veil * .86)); g.addColorStop(1, css(tone(.93), look.veil)); ctx.fillStyle = g; ctx.fillRect(0, 0, VW, VH); }
     // the gold coming back from the oak outward
     if (warmth > .01) { ctx.globalCompositeOperation = 'soft-light'; const g = ctx.createRadialGradient(discX, discY + 60, 20, discX, discY + 60, 760);
