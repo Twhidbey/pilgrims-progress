@@ -318,7 +318,17 @@ const SL = (() => {
     LAST.forEach((nt, i) => { const w = 20 + R() * 20, h = 4 + R() * 4, lean = (R() - .5) * 10; sx -= w + 34 + R() * 34; steps.push({ x: sx, w, h, lean, nt, lit: 0, i }); sx -= w; });
     Object.assign(cam, { cx: START + 150, z: 1, wl: 440 });
     if (audio()) { AC.resume(); for (const [who, txt] of ALL) vox(who, txt); }
-    G.state = 'wait'; setTimeout(() => { if (SL.on && G.state === 'wait') { G.state = 'play'; caption(OPEN.slice(0, 1)); } }, 1400);
+    // SKIP-AHEAD LINK (build 122, owner: "can you give me link to entrance into water"): ?level=2&at=bog starts the two on the
+    // home bank a few steps from the mire, the talk on the plain already said, the mist already in
+    const AT2 = { bog: -1090 }[new URLSearchParams(location.search).get('at')];
+    if (AT2) {
+      C2.x = AT2; C2.y = bankY(AT2) + 4; pli.x = pli.px = AT2 - 80; pli.stop = { t: 50, x0: AT2 - 80 - 72.5 * CHR_K };
+      capsSaid = new Set(OPEN_AT.map((_, i) => i)); nearSaid = true;
+      const f = smooth(-1350, FALL_X, AT2), mi = smooth(-2050, -1000, AT2);
+      Object.assign(cam, { cx: lerp(AT2 + 150, -470, f), z: lerp(1, .8, f), wl: lerp(440, 392, f) });
+      Object.assign(look, { mist: mi, veil: .84 * smooth(-1300, FALL_X, AT2), gold: 1 - smooth(-2150, -1150, AT2), disc: lerp(1, .3, mi), sky: mi });
+    }
+    G.state = 'wait'; setTimeout(() => { if (SL.on && G.state === 'wait') { G.state = 'play'; if (!AT2) caption(OPEN.slice(0, 1)); } }, 1400);
   }
   // the Pliable talk is said while they walk, a line at a time, at places along the plain
   const OPEN_AT = [-2500, -2280, -2000, -1760];
