@@ -85,7 +85,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">build 179 · Nov 16 2026</div>
+  <div id="build">build 180 · Nov 16 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -820,11 +820,11 @@ const lightPos = () => { const t = smooth(0, 1, (1 - (G.zoom || 1)) / (1 - ZOOM_
 function reset() {
   seed = 99; buildLevel(); for (const it of ROW) if (it.who) { it.on = TEST_X > it.a; it.open = it.on ? 1 : 0; }
   for (const Lr of SCN) for (const w of Lr.wins) w[5] = false;
-  Object.assign(P, { x: START_X, y: GY, vx: 0, face: TEST_X ? 1 : -1, anim: 1, stand: { t: QUIET[0] }, turn: 0, run: false, ranim: 0, blend: null, weep: null, turnTo: 0, turnV: null, wantBack: false, bk: 0 });
+  Object.assign(P, { x: START_X, y: GY, vx: 0, face: TEST_X ? 1 : -1, anim: 1, stand: { t: QUIET[0] }, turn: 0, run: false, ranim: 0, blend: null, weep: null, turnTo: 0, turnV: null, lookUp: 0, lookA: 0, wantBack: false, bk: 0 });
   Object.assign(G, { cam: Math.max(0, Math.min(LEVEL_W - VW, TEST_X ? START_X - VW * .38 + 40 : START_X - VW * .62 - 40)), t: 0, got: 0, extra: 0, motes: [], flyers: [], ripples: [], glints: [], taps: [], litw: [], capQ: [], cap: 0, hint: null,
     pli: null, obst: null, flare: 0, gloom: 0, gloomTo: 0, gateOpen: 0, act: null, actT: 0, ring: null, auto: null, finale: null, guard: 0, idle: 0, wins: 0,
     evanDone: !!TEST_X, evanGone: TEST_X ? 1 : 0, neigh: TEST_X > NEIGH_X + 300, gateSeen: false, walked: false, touched: false, leaving: false, fam: TEST_X > HOME_X ? 2 : 0, door: TEST_X ? (TEST_X > HOME_X ? 1 : 0) : 1, doorShut: false, roll: TEST_X ? { t: 999, x: 0, y: 0 } : null, runZone: !!TEST_X && TEST_X < RUN_END, outSaid: false, watched: TEST_X > WATCH_X, ears: TEST_X > HOME_X });
-  G.sunUp = 0; G.through = false; G.homeTo = null; G.calm = 0; G.doorSaid = false; G.choiceKind = null;
+  G.sunUp = 0; G.through = false; G.homeTo = null; G.autoRun = 0; G.calm = 0; G.doorSaid = false; G.choiceKind = null;
   G.zoom = 1 - (1 - ZOOM_GATE) * smooth(GATE - 1300, GATE - 380, START_X);      // starting near the gate (?at=gate): already drawn back
   G.evan.pt = TEST_X ? 239 : 0; G.evan.go = false; G.evan.st = EVS_META.frames * 100; downs.clear(); pushing = false; keys.r = keys.push = false;
   if (TEST_X) for (const l of LIGHTS) if (l.x < Math.max(TEST_X, 2000)) l.got = true;
@@ -983,9 +983,9 @@ const EVAN = [       // {13} to {17}
   // (cut in build 74 to shorten the talk, the owner asked: Evangelist's "why do you stand still?" and "Because I do not know where to go.", {16})
   [N, 'Then Evangelist gave him a roll. On it was written: Flee from the wrath to come.', 0, () => { G.roll = { t: 0, x: G.evan.x - G.cam + 30, y: GY - 92 }; note(79, .035, 2.4); }],
   [C, 'Where must I flee?'],
-  [E, 'Do you see that wicket gate, far over the wide field?', 0, () => { G.evan.go = true; }],      // "pointing with his finger over a very wide field"
+  [E, 'Do you see that wicket gate, far over the wide field?', 0, () => { G.evan.go = true; turnToLight(); }],      // "pointing with his finger over a very wide field"
   [C, 'No.'],
-  [E, 'Do you see that shining light?', 'light', () => turnToLight()],      // build 109: he turns to look first; the light can be touched once he has turned
+  [E, 'Do you see that shining light?', 'light', () => { turnToLight(); P.lookUp = 1; }],      // build 109: he turns to look first; the light can be touched once he has turned
   [C, 'I think I do.'],
   [E, 'Keep that light in your eye, and go straight up to it. Then you will see the gate. Knock, and you will be told what to do.'],
 ];
@@ -1051,7 +1051,7 @@ function pick(home) {
   if (G.choiceKind === 'door') {
     G.choiceKind = null; document.getElementById('chHome').textContent = 'Go home'; document.getElementById('chOn').textContent = 'Go on to the light';
     if (home) { P.wantBack = true; talk(FAMILY.slice(1), () => { coverEars(); caption(LIFE); }); }      // he turns to them: his back to us, his family framed in the lit door
-    else { G.state = 'play'; coverEars(); caption(LIFE); G.idle = 0; }
+    else { G.state = 'play'; coverEars(); caption(LIFE); G.idle = 0; G.autoRun = LAMPS[0].x + 30; }      // build 180 (owner): "Run on" runs him on by himself to the lamp just past his house
     return;
   }
   // build 175 (owner: say lines while walking): Obstinate's and Pliable's parting is said as they go: Obstinate already
@@ -1148,7 +1148,15 @@ function drawFrame(im, meta, x, y, face, alpha, K = CHR_K, sy = 1) {      // sy:
   { const rx = Math.max(10, w * .3), g = ctx.createRadialGradient(0, 0, 0, 0, 0, 1); g.addColorStop(0, 'rgba(6,8,14,.55)'); g.addColorStop(.6, 'rgba(6,8,14,.3)'); g.addColorStop(1, 'rgba(6,8,14,0)');
     ctx.save(); ctx.translate(x, y + FEET_SINK - 1); ctx.scale(rx, Math.max(2.5, rx * .16)); ctx.globalAlpha = alpha; ctx.fillStyle = g; ctx.fillRect(-1, -1, 2, 2); ctx.restore(); }
   ctx.save(); ctx.translate(x, y + FEET_SINK); if (TALKM) { ctx.transform(1, 0, TALKM.sh, 1, 0, 0); sy *= TALKM.sy; } ctx.scale(face, sy); ctx.globalAlpha = alpha;
-  ctx.drawImage(figC, -meta.ax * K, -meta.ground * K, w, h); ctx.restore();
+  const tilt = meta === STD_META && P.lookA > .01 && !SL.on && !HL.on ? -.1 * P.lookA : 0;
+  if (!tilt) ctx.drawImage(figC, -meta.ax * K, -meta.ground * K, w, h);
+  else {
+    // his head and hood (standing picture: above y 55, right of x 86, clear of the sack) tip back about the neck at (112, 55)
+    const X0 = -meta.ax * K, Y0 = -meta.ground * K, nx = X0 + 86 * K, ny = Y0 + 55 * K, px = X0 + 112 * K;
+    ctx.save(); ctx.beginPath(); ctx.rect(X0 - 5, ny - 9 * K, w + 10, h); ctx.rect(X0 - 5, Y0 - 5, nx - X0 + 5, ny - Y0 + 5); ctx.clip(); ctx.drawImage(figC, X0, Y0, w, h); ctx.restore();
+    ctx.translate(px, ny); ctx.rotate(tilt); ctx.translate(-px, -ny); ctx.beginPath(); ctx.rect(nx, Y0 - 5, X0 + w - nx + 5, ny - Y0 + 5); ctx.clip(); ctx.drawImage(figC, X0, Y0, w, h);
+  }
+  ctx.restore();
 }
 // Christian's legs. dir: 1 = walk on, -1 = walk back (only when he turns for home), 0 = stop.
 // He never stops mid-stride: letting go, he finishes the step he is in (to walk frame 28 or 1, where his standing video joins on),
@@ -1308,7 +1316,7 @@ function touchExtra(sx, sy, wx) {
 // picture facing left as its first frame and facing right as its last (assets/christian-turn.pack, TURN_META: every
 // frame already faces the way it should, so it is drawn unmirrored; 4 pictures a second, the video's own pace, about
 // 7 seconds). He turns away from us: halfway, his back and the burden face us. Without the pack, the old dissolve.
-let TURN = []; const TURN_META = {"ax": 90, "ground": 302, "frames": 30, "step": 4 / 60};
+let TURN = []; const TURN_META = {"ax": 90, "ground": 302, "frames": 30, "step": 6 / 60};      // build 180: half as fast again (owner: "speed up a bit ... but keep it smooth")
 // BUILD 109 (owner: "shouldn't christian turn to see where evangelist is pointing before viewer can click and he says I
 // think i do"): on "Do you see that shining light?" he turns round to look where Evangelist points (turnToLight); only
 // when he has turned (turnedToLight) can the light be touched, and then he answers "I think I do."
@@ -1345,6 +1353,7 @@ function update() {
   // walking
   let dir = 0;
   if (G.state === 'auto' && G.auto) dir = G.auto.dir;
+  else if (G.state === 'play' && G.autoRun && P.x < G.autoRun) dir = 1;
   else if (G.state === 'play' && (keys.r || held())) dir = G.homeTo ? -1 : G.evanDone ? 1 : -1;      // out to the field first (left), then on toward the light
   else if (G.act === 'walkon' && G.state === 'dialog' && P.turn !== 1 && (keys.push || held())) dir = 1;   // walking on while they call
   // STOP POINTS FOR THE WORDS (owner, build 106: "need narration to not skip or start playing when character is past what
@@ -1356,6 +1365,9 @@ function update() {
   walkTick(dir, MAXV);
   if (G.state === 'auto' && G.auto && (G.auto.dir > 0 ? P.x >= G.auto.to : P.x <= G.auto.to)) { const a = G.auto; G.auto = null; if (P.stand || !a.wait) { G.state = 'play'; a.then && a.then(); } else G.auto = { dir: 0, to: a.dir > 0 ? -1e9 : 1e9, then: a.then }; }
   if (G.state === 'auto' && G.auto && !G.auto.dir && P.stand) { const a = G.auto; G.auto = null; G.state = 'play'; a.then && a.then(); }
+  // build 180 (owner: "can he look up a little when he points at light"): on "Do you see that shining light?" he lifts his
+  // head a little toward it (a tilt of the standing picture at the neck, in drawFrame), until he walks on
+  if (dir) P.lookUp = 0; P.lookA = (P.lookA || 0) + ((P.lookUp ? 1 : 0) - (P.lookA || 0)) * .035;
   if (P.turnV && (dir || (P.turnV.t += TURN_META.step) >= TURN_META.frames - 1)) { if (dir) poseChange(6, true); P.turnV = null; P.face = 1; P.stand = { t: QUIET[0] }; }      // the turn is done (or the child walks on)
   if (P.turnTo && (P.bk || 0) >= .99) { P.face = P.turnTo; P.turnTo = 0; P.wantBack = false; }      // half way through his turn: now he faces the light
   if (P.wantBack && !P.turnTo && (dir > 0 || G.state === 'play')) P.wantBack = false;      // the child holds to run on: he turns away
