@@ -104,8 +104,13 @@ const HL = (() => {
 
   // MR. WORLDLY WISEMAN'S OWN FIGURE (build 149): a walk from one video (37 frames, walking right like Obstinate's, so it
   // is drawn mirrored to come from the right) and a standing painting; until they load, Obstinate's pictures stand in.
-  const WIS = [], WIS_META = { ax: 142, ground: 322, frames: 37, vpx: 5.4, rest: [2, 19] }, WIS_ST_META = { ax: 86, ground: 290 };
+  const WIS = [], WIS_META = { ax: 142, ground: 322, frames: 37, vpx: 5.4, rest: [2, 19] }, WIS_ST_META = { ax: 86, ground: 296 };
   let WIS_ST = null;
+  // EVANGELIST WALKS UP TO HIM (build 156; book {47}: "Evangelist drew nearer and nearer"): a walk from one video
+  // (39 frames, facing right; flat side view, both soles on one line: owner, "2d flat - NOT one leg higher than other").
+  // He comes out of the plain's haze from the left and stops at EV_X, where his standing frames take over.
+  // Without the pack he appears out of the smoke as before.
+  const EVW = [], EVW_META = { ax: 210, ground: 476, frames: 39, vpx: 5.0, rest: [0, 20] }, EVW_V = EVW_META.vpx * CHR_K * .4, EV_FROM = 640;
   const wFig = () => WIS.ready ? { W: WIS, M: WIS_META, S: WIS_ST, SM: WIS_ST_META } : { W: OBS, M: OBS_META, S: OBS_ST, SM: OBS_ST_META };
   const WIS_V = WIS_META.vpx * CHR_K * .4;      // his video's own pace: 24 pictures a second, 60 ticks a second
 
@@ -167,7 +172,7 @@ const HL = (() => {
       TOWN.lit = lit; }
   }
   function preload() {
-    if (!loading) loading = Promise.all([loadPack('wiseman', WIS).catch(() => {}), loadImg('wiseman-stand.webp').then(im => { if (im) WIS_ST = im; }), OBS.ready || loadPack('obstinate', OBS).catch(() => {}), EVS.ready || loadPack('evangelist-stand', EVS).catch(() => {}), RUNP.ready || loadPack('christian-run-plain', RUNP).catch(() => {}),
+    if (!loading) loading = Promise.all([loadPack('wiseman', WIS).catch(() => {}), loadPack('evangelist-walk', EVW).catch(() => {}), loadImg('wiseman-stand.webp').then(im => { if (im) WIS_ST = im; }), OBS.ready || loadPack('obstinate', OBS).catch(() => {}), EVS.ready || loadPack('evangelist-stand', EVS).catch(() => {}), RUNP.ready || loadPack('christian-run-plain', RUNP).catch(() => {}),
       WEEP.ready || loadPack('christian-weep', WEEP).catch(() => {}), TURN.ready || loadPack('christian-turn', TURN).catch(() => {}),
       OBS_ST ? 0 : loadImg('obstinate-stand.webp').then(im => { if (im && !OBS_ST) OBS_ST = im; }),
       loadImg('tree-a.webp').then(im => { if (!im) return; const c = mk(im.width, im.height), k = c.getContext('2d'); k.drawImage(im, 0, 0); k.globalCompositeOperation = 'source-in'; k.fillStyle = '#fff'; k.fillRect(0, 0, c.width, c.height); OAKT = c; })]).catch(() => {});
@@ -296,10 +301,15 @@ const HL = (() => {
       if (stillT === 60 || stillT > 9999) { stillT = 61; caption(STOOD); }
       // the lines' own happenings (captions carry no fn): the fire comes with its words
       if (dlg.querySelector('.t').textContent === STOOD[2][1] && !C3.fired) { C3.fired = true; fire(1); }
-      if (stillT > 200 && !saying() && G.cap <= 0 && C3.sd != null) { ph = 'come'; caption(COMING); evan = { a: 0, t: 0 }; turnC(-1); }
+      if (stillT > 200 && !saying() && G.cap <= 0 && C3.sd != null) { ph = 'come'; caption(COMING); evan = EVW.ready ? { a: 1, t: 0, x: EV_X - EV_FROM, anim: 0, walk: true, st: 0 } : { a: 0, t: 0 }; turnC(-1); }
     } else if (ph === 'come') {
-      walk(1, 0); evan.a = clamp(evan.a + .006);
-      if (evan.a >= 1 && !C3.tv && !saying() && G.cap <= 0) { ph = 'evan'; talk(EVANW, () => { ph = 'back'; hintT = 0; }); }
+      walk(1, 0);
+      if (evan.walk) {
+        if (evan.x < EV_X) { const v = Math.min(EVW_V, EV_X - evan.x); evan.x += v; evan.anim = stepAnim(evan.anim, v, EVW_META.vpx * CHR_K, EVW_META); }
+        else { evan.anim = stepAnim(evan.anim, 0, EVW_META.vpx * CHR_K, EVW_META); if (EVW_META.rest.includes(Math.floor(evan.anim) % EVW_META.frames)) evan.walk = false; }
+      } else if (evan.x != null) evan.st = clamp(evan.st + .04);
+      else evan.a = clamp(evan.a + .006);
+      if (evan.a >= 1 && (evan.x == null || (!evan.walk && evan.st >= 1)) && !C3.tv && !saying() && G.cap <= 0) { ph = 'evan'; talk(EVANW, () => { ph = 'back'; hintT = 0; }); }
     } else if (ph === 'evan') {
       walk(1, 0);
     } else if (ph === 'back') {
@@ -559,7 +569,13 @@ const HL = (() => {
     // the people (in the world's own units)
     c.save(); c.translate(VW / 2 - cx * z, wl); c.scale(z, z);
     const tint = mix([122, 118, 122], [78, 72, 82], dark), fl = Math.min(1, flash) * dark, lit = gateish * smooth(GATE_X - 330, GATE_X - 60, C3.x), tintF = mix(mix(mix(tint, [66, 62, 72], gateish), [255, 170, 110], fl * .35), [255, 188, 120], lit * (.3 + .4 * door));
-    if (evan && EVS.ready) { TALKM = talkMove(E); foot(c, EV_X, evan.a); figure(c, 'evan', EVS[Math.floor(G.t * .2) % EVS_META.frames], EVS_META, EV_X, 1, tintF, smooth(.25, 1, evan.a)); TALKM = null; }
+    if (evan && evan.x != null && EVW.ready) {
+      // walking in out of the haze, then his standing frames dissolve in over the walk frame
+      const ex = evan.x, fa = smooth(EV_X - EV_FROM, EV_X - EV_FROM + 220, ex), st = evan.st; TALKM = talkMove(E); foot(c, ex, fa);
+      if (st < 1) figure(c, 'evw', EVW[Math.floor(evan.anim) % EVW.length], EVW_META, ex, 1, tintF, fa * (1 - smooth(.4, 1, st)));
+      if (st > 0 && EVS.ready) figure(c, 'evan', EVS[Math.floor(G.t * .2) % EVS_META.frames], EVS_META, ex, 1, tintF, smooth(0, .6, st));
+      TALKM = null;
+    } else if (evan && EVS.ready) { TALKM = talkMove(E); foot(c, EV_X, evan.a); figure(c, 'evan', EVS[Math.floor(G.t * .2) % EVS_META.frames], EVS_META, EV_X, 1, tintF, smooth(.25, 1, evan.a)); TALKM = null; }
     if (wise && (WIS.ready || OBS.ready)) {
       const wt = mix([168, 150, 132], [120, 104, 100], dark); TALKM = talkMove(WW); foot(c, wise.x, wise.alpha);
       const { W, M, S, SM } = wFig(), wim = W[Math.floor(wise.anim) % W.length];
@@ -583,5 +599,5 @@ const HL = (() => {
   }
 
   // for testing: HL.peek() tells where the story is
-  return { on: false, show: false, title, start, update, draw, touch, key, preload, lines: ALL, pt: k => k === 'hill' ? hillPt() : gatePt(), peek: () => ({ ph, x: Math.round(C3.x), stand: C3.sd != null, wx: wise && Math.round(wise.x), dark: +dark.toFixed(2), wise: wise && wise.mode, evan: evan && +evan.a.toFixed(2), knocks, cam: { ...cam } }) };
+  return { on: false, show: false, title, start, update, draw, touch, key, preload, lines: ALL, pt: k => k === 'hill' ? hillPt() : gatePt(), peek: () => ({ ph, x: Math.round(C3.x), stand: C3.sd != null, wx: wise && Math.round(wise.x), ex: evan && evan.x != null ? Math.round(evan.x) : null, dark: +dark.toFixed(2), wise: wise && wise.mode, evan: evan && +evan.a.toFixed(2), knocks, cam: { ...cam } }) };
 })();

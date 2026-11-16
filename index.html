@@ -83,7 +83,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">build 155 · Nov 16 2026</div>
+  <div id="build">build 156 · Nov 16 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -1076,7 +1076,7 @@ const runNow = () => G.ears || !RUNP.ready ? [RUN, RUN_META] : [RUNP, RUNP_META]
 function coverEars() { if (G.ears) return; if (P.run) poseChange(8, true); G.ears = true; }
 const CHR = [], PLI = [], OBS = [], EVA = [], STD = [], RUN = [], CHR_K = .52, RUN_STEP = RUN_META.vpx * CHR_K, RUNV = RUN_STEP * .4,   // the run at its video's own speed (24 frames a second)
    CHR_STEP = CHR_META.vpx * CHR_K, PLI_STEP = PLI_META.vpx * CHR_K, OBS_STEP = OBS_META.vpx * CHR_K;
-const PACK_V = 21;                          // bump when the .pack files change, so phones fetch the new ones
+const PACK_V = 22;                          // bump when the .pack files change, so phones fetch the new ones
 // a .pack file: 4 bytes = how many frames, 4 bytes per frame = its length, then the WebP frames end to end
 async function loadPack(name, into) {
   const res = await fetch('assets/' + name + '.pack?v=' + PACK_V); if (!res.ok) throw new Error('no ' + name);      // a missing pack is left out
@@ -2257,6 +2257,6 @@ document.getElementById('on2').onclick = () => SL.on ? go3() : go2();
 })();
 </script>
 <script src="slough.js?v=155"></script>
-<script src="hill.js?v=154"></script>
+<script src="hill.js?v=156"></script>
 </body>
 </html>
