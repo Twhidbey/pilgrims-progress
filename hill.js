@@ -47,9 +47,10 @@ const HL = (() => {
     [WW, 'Who told you to go this way to be rid of your burden?'],
     [C, 'A man who seemed to me a very great and honourable person. His name, as I remember, is Evangelist.'],
     [WW, 'There is not a more dangerous and troublesome way in the world than the one he has sent you! I see the dirt of the Slough of Despond is upon you already.'],
+    [WW, 'In the way you are going, you are like to meet with weariness, painfulness, hunger, perils, lions, dragons, darkness, and what not!'],
     [C, 'Sir, this burden upon my back is more terrible to me than all these things.'],
     [WW, 'In that village, named Morality, there lives a gentleman whose name is Legality. He has skill to help men off with such burdens as yours.'],
-    [N, 'Now Christian stood still a while. But soon he thought: if this is true, my wisest course is to take his advice.'],
+    [N, 'Now Christian stood a while in doubt. But soon he thought: if what this gentleman says is true, my wisest course is to take his advice.'],      // {44}
     [C, 'Sir, which is my way to this honest man\'s house?'],
     [WW, 'Do you see that hill?', 'hill'],
     [C, 'Yes, very well.'],
@@ -61,6 +62,7 @@ const HL = (() => {
     [N, 'There he stood still, and did not know what to do.'],
     [N, 'Also his burden now seemed heavier to him than when he was in his way.'],
     [N, 'There came also flashes of fire out of the hill, and Christian was afraid that he should be burned.', 0, () => { fire(1); }],
+    [N, 'Here he sweated, and shook for fear.'],
     [N, 'And now he began to be sorry that he had taken Mr. Worldly Wiseman\'s counsel.'],      // {47}
   ];
   const COMING = [[N, 'With that he saw Evangelist coming to meet him, and he began to blush for shame.']];
@@ -82,7 +84,8 @@ const HL = (() => {
     [N, 'Then Christian revived a little, and stood up trembling.', 0, () => { C3.weep = false; }],
     [E, 'The man that met you is one Worldly Wiseman. And Mr. Legality is not able to set you free from your burden. No man was ever yet rid of his burden by him.'],
     [N, 'With that there came fire out of the mountain under which poor Christian stood.', 0, () => { fire(1.4); }],
-    [C, 'Sir, what do you think? Is there hope? May I now go back, and go up to the wicket-gate?'],
+    [N, 'Then Christian cried out, and called himself a thousand fools for listening to his counsel.'],      // {58}
+    [C, 'Sir, what do you think? Is there hope? May I now go back, and go up to the wicket-gate? I am sorry I listened to this man. But may my sin be forgiven?'],      // {59}
     [E, 'Your sin is very great. Yet the man at the gate will receive you, for he has goodwill for men.'],
     [E, 'Only take heed that you do not turn aside again.'],
     [N, 'Then Evangelist gave him one smile, and bid him God-speed.'],
@@ -500,5 +503,5 @@ const HL = (() => {
   }
 
   // for testing: HL.peek() tells where the story is
-  return { on: false, show: false, title, start, update, draw, touch, key, preload, lines: ALL, peek: () => ({ ph, x: Math.round(C3.x), dark: +dark.toFixed(2), wise: wise && wise.mode, evan: evan && +evan.a.toFixed(2), knocks, cam: { ...cam } }) };
+  return { on: false, show: false, title, start, update, draw, touch, key, preload, lines: ALL, pt: k => k === 'hill' ? hillPt() : gatePt(), peek: () => ({ ph, x: Math.round(C3.x), stand: C3.sd != null, dark: +dark.toFixed(2), wise: wise && wise.mode, evan: evan && +evan.a.toFixed(2), knocks, cam: { ...cam } }) };
 })();

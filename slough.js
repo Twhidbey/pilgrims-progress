@@ -572,9 +572,16 @@ const SL = (() => {
         } else if (pli.dxo > .5) {      // build 121: he is well out in the slough: he struggles back toward his own side first
           pli.dxo = Math.max(0, pli.dxo - .32); pli.wt = (pli.wt || 0) + .2; pong(); if (G.t % 16 === 0) splash(pli.x + (M.ax - M.c0) * CHR_K, 7, 1.15);
         } else { pli.ct = Math.min(last, (pli.ct || 0) + .2); if (pli.ct / last < .7 && G.t % 16 === 0) splash(pli.x + (M.ax - M.c0) * CHR_K * (1 - .6 * smooth(.25, .7, pli.ct / last)), 6, 1.1); }
-        pli.fa = (pli.fa ?? -1) + ((pli.turn ? -1 : 1) - (pli.fa ?? -1)) * .035;
+        // BUILD 140: HIS TURN IN THE MUD IS A HEAVE ROUND, not a slow dissolve between mirrored pictures (there are no
+        // frames of him turning). He ducks into the mud with a splash; the picture swaps over a few ticks at the bottom of
+        // the duck, under the splash; he comes up facing the other way. tq: 0 to 1 over about half a second.
+        { const tgt = pli.turn ? -1 : 1;
+          if (pli.tgt !== tgt) { pli.tgt = tgt; pli.from = pli.fa ?? -1; pli.tq = pli.from === tgt ? 1 : 0; }
+          if (pli.tq < 1) { const q0 = pli.tq; pli.tq = Math.min(1, q0 + .03);
+            if (q0 < .42 && pli.tq >= .42) { const sx = pli.x + (M.ax - M.c0) * CHR_K; splash(sx, 12, 1.3); rings.push({ x: sx, y: 0, t: 0, k: 1.2 }); if (audio()) sfxS.wade(); } }
+          pli.fa = lerp(pli.from, tgt, smooth(.4, .6, pli.tq)); pli.duck = 16 * Math.sin(Math.PI * pli.tq); }
         const p = pli.ct / last, fade = 1 - smooth(0, .25, (pli.ct - pli.c0) / Math.max(1, last - pli.c0));
-        pli.face = -1; pli.x = HOME0 + pli.dxo; const up = smooth(.68, .85, p); pli.y = (1 - up) * M.sink + up * (bankY(endX) + 4 + M.top * CHR_K) + pli.dy0 * fade;
+        pli.face = -1; pli.x = HOME0 + pli.dxo; const up = smooth(.68, .85, p); pli.y = (1 - up) * M.sink + up * (bankY(endX) + 4 + M.top * CHR_K) + pli.dy0 * fade + pli.duck;
         if (p < .75 && G.t % (pli.wal ? 30 : 18) === 0 && !(pli.wal && calm)) rings.push({ x: pli.x + (M.ax - M.c0) * CHR_K * (1 - .6 * smooth(.25, .7, p)) + 40 * (Math.random() - .5), y: 0, t: 0, k: .7 + .5 * Math.random() });      // round him, wherever he is
         if (pli.ct >= last) { pli.out = true; pli.x = endX; pli.y = bankY(endX) + 4; pli.anim = 0; }
       } else if (pli.mode === 'climb') {
