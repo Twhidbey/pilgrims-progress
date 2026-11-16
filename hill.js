@@ -259,6 +259,11 @@ const HL = (() => {
   }
 
   // one tinted figure, feet at world (x, 0) (each kind of figure has its own small canvas)
+  // RIM: the low sun is behind the people (owner, build 172: "Characters should be darker matching tree also maybe outline
+  // of glow from sun behind them"). RIM = { k: strength, x: where the light stands, in the world's units } while the
+  // people are drawn; each figure then gets a thin warm edge on the side toward the light (the figure's own shape,
+  // less the same shape moved a little toward the light: what is left is that edge).
+  let RIM = null;
   const tintC = {};
   function figure(c, slot, im, meta, x, face, tint, alpha = 1, sy = 1) {
     if (!im || alpha <= .004) return;
@@ -266,6 +271,10 @@ const HL = (() => {
     const f = fc.getContext('2d'); f.globalCompositeOperation = 'source-over'; f.clearRect(0, 0, fc.width, fc.height);
     f.drawImage(im, 0, 0); f.globalCompositeOperation = 'multiply'; f.fillStyle = css(tint); f.fillRect(0, 0, im.width, im.height);
     f.globalCompositeOperation = 'destination-in'; f.drawImage(im, 0, 0); f.globalCompositeOperation = 'source-over';
+    if (RIM && RIM.k > .02) { const rc = tintC._rim || (tintC._rim = mk(8, 8)); if (rc.width !== im.width || rc.height !== im.height) { rc.width = im.width; rc.height = im.height; }
+      const r = rc.getContext('2d'), dir = (RIM.x > x ? 1 : -1) * face; r.globalCompositeOperation = 'source-over'; r.clearRect(0, 0, rc.width, rc.height); r.drawImage(im, 0, 0);
+      r.globalCompositeOperation = 'destination-out'; r.drawImage(im, -3.2 * dir, 1.2); r.globalCompositeOperation = 'source-in'; r.fillStyle = 'rgb(255,224,168)'; r.fillRect(0, 0, rc.width, rc.height);
+      f.globalAlpha = RIM.k; f.drawImage(rc, 0, 0); f.globalAlpha = 1; }
     c.save(); c.globalAlpha = alpha; c.translate(x, 5); if (TALKM) c.transform(1, 0, TALKM.sh, 1, 0, 0);
     c.scale(face * CHR_K, CHR_K * sy * (TALKM ? TALKM.sy : 1)); c.drawImage(fc, -meta.ax, -meta.ground); c.restore();
   }
@@ -690,7 +699,8 @@ const HL = (() => {
           c.save(); c.translate(lx2, ly2); c.rotate(u * 9 + i); c.fillStyle = css([40, 48, 40], al); c.beginPath(); c.ellipse(0, 0, 3 * z, 1.3 * z, 0, 0, 7); c.fill(); c.restore(); } } }
     // the people (in the world's own units)
     c.save(); c.translate(VW / 2 - cx * z, wl); c.scale(z, z);
-    const tint = mix([122, 118, 122], [78, 72, 82], dark), fl = Math.min(1, flash) * dark, lit = gateish * smooth(GATE_X - 330, GATE_X - 60, C3.x), tintF = mix(mix(mix(tint, [66, 62, 72], gateish), [255, 170, 110], fl * .35), [255, 188, 120], lit * (.3 + .4 * door));
+    RIM = { k: (1 - dark) * (1 - gateish) * .9, x: (lx - VW / 2) / z + cx };
+    const tint = mix([64, 60, 58], [78, 72, 82], dark), fl = Math.min(1, flash) * dark, lit = gateish * smooth(GATE_X - 330, GATE_X - 60, C3.x), tintF = mix(mix(mix(tint, [66, 62, 72], gateish), [255, 170, 110], fl * .35), [255, 188, 120], lit * (.3 + .4 * door));
     const tintM = mix(tintF, [255, 204, 150], mercy * .42);
     if (mercy > .01) { const mx = (C3.x + EV_X) / 2; c.save(); c.globalCompositeOperation = 'lighter';
       { c.save(); c.translate(mx, 5); c.scale(1, .1); const g = c.createRadialGradient(0, 0, 0, 0, 0, 210); g.addColorStop(0, css([255, 196, 126], .5 * mercy)); g.addColorStop(1, css([255, 180, 110], 0)); c.fillStyle = g; c.fillRect(-210, -210, 420, 420); c.restore(); }
@@ -704,13 +714,13 @@ const HL = (() => {
       TALKM = null;
     } else if (evan && EVS.ready) { TALKM = talkMove(E); foot(c, EV_X, evan.a); figure(c, 'evan', EVS[Math.floor(G.t * .2) % EVS_META.frames], EVS_META, EV_X, 1, tintM, smooth(.25, 1, evan.a)); TALKM = null; }
     if (wise && (WIS.ready || OBS.ready)) {
-      const wt = mix([134, 126, 120], [92, 82, 84], dark); TALKM = talkMove(WW); foot(c, wise.x, wise.alpha);
+      const wt = mix([70, 64, 60], [92, 82, 84], dark); TALKM = talkMove(WW); foot(c, wise.x, wise.alpha);
       const { W, M, S, SM } = wFig(), wim = W[Math.floor(wise.anim) % W.length];
       if (S && wise.st > 0) { figure(c, 'wst', S, SM, wise.x, -1, wt, wise.alpha * smooth(0, .6, wise.st), breath(2)); figure(c, 'wis', wim, M, wise.x, -1, wt, wise.alpha * (1 - smooth(.4, 1, wise.st))); }
       else figure(c, 'wis', wim, M, wise.x, -1, wt, wise.alpha);
       TALKM = null;
     }
-    drawChr(c, tintM);
+    drawChr(c, tintM); RIM = null;
     c.restore();
     // the smoke Evangelist comes out of
     if (evan && evan.a < 1) { const ex = X(EV_X - 30), ey = Y(-90), a = Math.sin(Math.PI * clamp(evan.a * 1.1)) * .8 + (1 - evan.a) * .0; c.globalAlpha = a; for (let i = 0; i < 3; i++) c.drawImage(SMOKE, ex - (200 + i * 40) * z + 30 * Math.sin(G.t / 90 + i), ey - (110 - i * 30) * z, 400 * z, 200 * z); c.globalAlpha = 1; }
