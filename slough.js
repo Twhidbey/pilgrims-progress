@@ -384,7 +384,7 @@ const SL = (() => {
     e.querySelector('h1').textContent = 'Out of the Slough';
     e.querySelectorAll('p')[0].textContent = 'Help set him upon sound ground, and he went on his way.';
     e.querySelectorAll('p')[1].textContent = 'Next: Mr. Worldly Wiseman';
-    document.getElementById('on2').style.display = 'none';
+    document.getElementById('on2').style.display = '';
   }
   // a touch: on the water it makes rings; in the act, Help's hand takes his
   const handPt = () => [HX - 82 * CHR_K, HY() - 55 * CHR_K];

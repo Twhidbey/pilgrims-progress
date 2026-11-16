@@ -4,6 +4,12 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 ## START HERE (written at build 41, updated at build 43, Nov 15 2026, for a new chat)
 
+**BUILD 134 AND THE OVERNIGHT QUEUE (Nov 16 2026).** Level 3 (Mr. Worldly Wiseman and the hill) is sketched in code as `hill.js` and plays from the title page to its end card; it is a first sketch with stand-in figures and no voices, not yet seen by the owner (see `CLAUDE.md`, build 134). The play-through test is in the repo: `node tools/playtest.js 1|2|2back|3`. Nothing spent (since build 106: about $1.84). **The owner asked for scheduled work sessions while they are away, with NOTHING spent on Google. The queue, in order; tick off here as each is done:**
+1. ~~Level 3 in code~~ (build 134). Next pass on it: a close look at twice the size at every moment (feet, the hill's foot, the wall), Wiseman walking off, the run back and its stop, and a line-by-line book check.
+2. Trim `CLAUDE.md` (it is read in full by every chat): fold the old build-by-build history of Level 1 and Level 2 into short rules and a code map; keep every owner rule, every lesson, the book departures and the spending rules; move nothing out of the repo.
+3. Level 2 leftovers: Pliable's turn in the bog still flips by dissolving; one more close-up pass.
+4. Level 4 sketch in code (the Wicket-Gate, Good-will, book `{60}` to `{69}`), the same way: stand-ins, no voices, departures listed.
+
 **HANDOVER AT BUILD 133 (Nov 16 2026), for the next chat. Read this first, then `CLAUDE.md`.**
 
 - **What is live:** `index.html` IS the game now (Level 1 in the page, Level 2 in `slough.js`); `story-lab.html` only forwards old links. A title page offers the two levels and remembers the child's level. Skip-ahead links: Level 1 `?at=door|neighbours|obstinate|gate`, Level 2 `?level=2` and `?level=2&at=bog` (a few steps before the mire).

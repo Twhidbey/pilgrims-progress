@@ -66,6 +66,7 @@ body.portrait #rot{display:block}
     <div id="levels" style="display:none">
       <button class="btn lv" data-lv="1"><i>1</i>The City of Destruction</button>
       <button class="btn lv" data-lv="2"><i>2</i>The Slough of Despond</button>
+      <button class="btn lv" data-lv="3"><i>3</i>Mr. Worldly Wiseman</button>
     </div>
   </div>
   <div id="endc" class="card">
@@ -76,7 +77,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">build 133 · Nov 16 2026</div>
+  <div id="build">build 134 · Nov 16 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -1127,7 +1128,7 @@ function drawFrame(im, meta, x, y, face, alpha, K = CHR_K, sy = 1) {      // sy:
 const saying = () => !!(G.capQ.length || (G.cap > 0 && G.t <= (G.capEnd || 0) + 6));
 const WATCH_X = 4000, DOOR_OPEN = 640, DOOR_STOP = 170, DOOR_SAY = 1320;      // DOOR_STOP: where he stops before his door; DOOR_SAY: where the storyteller begins to tell of it (build 110)      // DOOR_OPEN: how far before his house the door flies open (was 330; earlier, so its words are done by the house)      // where the first neighbour's door opens
 function narrStop() {
-  if (SL.on || G.state !== 'play' || !saying()) return null;
+  if (SL.on || HL.on || G.state !== 'play' || !saying()) return null;
   if (!G.evanDone) return { lo: EVAN_X + 202 };      // walking out: Evangelist waits until the words in the field are done
   if (G.homeTo) return null;
   let hi = Infinity;
@@ -1285,6 +1286,8 @@ function update() {
   if (G.autoT > 0 && --G.autoT === 0 && G.state === 'dialog' && !G.act) next();
   // Level 2 (slough.js) runs its own world from here, with the same words, voices and holding to walk
   if (SL.on) { SL.update(); capTick(); return; }
+  // Level 3 (hill.js) likewise
+  if (HL.on || HL.show) { HL.update(); if (HL.on) capTick(); return; }
   G.flare *= .975; G.gloom += (G.gloomTo - G.gloom) * .02; if (G.fam) G.door = Math.min(1, G.door + .05); else if (G.doorShut) G.door = Math.max(0, G.door - .02);      // the door is flung open (and, at the start, shut behind him)
   // Evangelist: only the calm start of his video while he waits (a slow breath). On "Do you see that shining light?"
   // he turns all the way round toward the light and raises his arm (video 46..239 at its own pace), and stays pointing.
@@ -2116,18 +2119,19 @@ let lastT = 0, acc = 0;
 function loop(ts) {
   acc += Math.min(100, ts - lastT); lastT = ts; STEPS = 0;
   while (acc >= 16.6 && STEPS < 5) { update(); acc -= 16.667; STEPS++; }
-  if (STEPS) SL.on || SL.show ? SL.draw() : draw();
+  if (STEPS) HL.on || HL.show ? HL.draw() : SL.on || SL.show ? SL.draw() : draw();
   requestAnimationFrame(loop);
 }
 
 // ---------- input: hold to walk, touch things ----------
-function scenePt(e) { const r = cv.getBoundingClientRect(), Z = SL.on ? 1 : G.zoom || 1, x = (e.clientX - r.left) / r.width * VW, y = (e.clientY - r.top) / r.height * VH; return Z > .999 ? [x, y] : [x / Z + ZCAM, y / Z - VH * (1 - Z) / Z]; }
+function scenePt(e) { const r = cv.getBoundingClientRect(), Z = SL.on || HL.on ? 1 : G.zoom || 1, x = (e.clientX - r.left) / r.width * VW, y = (e.clientY - r.top) / r.height * VH; return Z > .999 ? [x, y] : [x / Z + ZCAM, y / Z - VH * (1 - Z) / Z]; }
 stage.addEventListener('pointerdown', e => {
   if (e.target.closest('button')) return;
   e.preventDefault();
   const [sx, sy] = scenePt(e), r0 = cv.getBoundingClientRect(), rx = (e.clientX - r0.left) / r0.width * VW, ry = (e.clientY - r0.top) / r0.height * VH;      // rx, ry: on the screen itself (the tray), not in the zoomed world
   if (G.state !== 'title' && G.state !== 'end') G.taps.push({ x: sx, y: sy, t: 0 });
   if (G.state === 'dialog') {
+    if (HL.on && G.act) { HL.touch(sx, sy); return; }
     if (G.act === 'hand') { SL.touch(sx, sy); return; }
     if (G.act === 'light') { const l = lightPos(); if (Math.hypot(sx - l.x, sy - l.y) < 95) lightTouched(); else G.actT = Math.max(G.actT, 149); return; }
     if (G.act === 'walkon') { downs.set(e.pointerId, G.t); return; }
@@ -2136,19 +2140,20 @@ stage.addEventListener('pointerdown', e => {
   }
   if (G.state !== 'play') return;
   if (G.roll && G.roll.t > 90 && rx > ITEM_X + 22 && rx < ITEM_X + 54 && ry < ITEM_Y + 30) { hint('roll', 'The roll says: Flee from the wrath to come.'); G.rollT = 260; return; }      // a touch on the roll in the tray
-  downs.set(e.pointerId, G.t); if (SL.on) SL.touch(sx, sy); else touchAt(sx, sy);
+  downs.set(e.pointerId, G.t); if (HL.on) HL.touch(sx, sy); else if (SL.on) SL.touch(sx, sy); else touchAt(sx, sy);
 });
 const lift = e => { if (e.type === 'blur') { downs.clear(); pushing = false; return; } downs.delete(e.pointerId); if (e.pointerId === pushId) pushing = false; };
 addEventListener('pointerup', lift); addEventListener('pointercancel', lift); addEventListener('blur', lift);
 addEventListener('contextmenu', e => e.preventDefault());
 addEventListener('keydown', e => {
-  const out = (e.code === 'ArrowLeft' || e.code === 'KeyA') && G.state === 'play' && !G.evanDone && !SL.on;      // at the start he walks out to the left, so the left arrow walks him too
+  const out = (e.code === 'ArrowLeft' || e.code === 'KeyA') && G.state === 'play' && !G.evanDone && !SL.on && !HL.on;      // at the start he walks out to the left, so the left arrow walks him too
   const go = e.code === 'Space' || e.code === 'Enter' || e.code === 'ArrowRight' || e.code === 'KeyD' || out;
   if (G.state === 'choice') { if (e.code === 'ArrowLeft') pick(true); if (e.code === 'ArrowRight') pick(false); return; }
   if (!go) return; e.preventDefault();
   if (G.state === 'dialog') {
     if (G.act === 'gate' || G.act === 'walkon') keys.push = true;
     else if (G.act === 'light') { if (!e.repeat) lightTouched(); }
+    else if (HL.on && G.act) { if (!e.repeat) HL.key(); }
     else if (G.act === 'hand') { if (!e.repeat) SL.grip(); }
     else if (!e.repeat) next(e.code === 'Enter');             // Enter skips a line even while it is being spoken
     return;
@@ -2165,11 +2170,12 @@ let runN = 0;
 // the child was last in (kept on the device; ?level=2 in the link overrides it): its button is the bright one, and its
 // own scene is the picture behind the title (Level 2: the oak over the bog, SL.title()). Any level can be chosen.
 const store = { get() { try { return +localStorage.getItem('pp-level') || 0; } catch (e) { return 0; } }, set(n) { try { localStorage.setItem('pp-level', n); } catch (e) {} } };
-const LV = TEST_X ? 1 : +(new URLSearchParams(location.search).get('level')) === 2 ? 2 : new URLSearchParams(location.search).get('level') ? 1 : store.get() === 2 ? 2 : 1;
-function go2() { store.set(2); document.getElementById('title').style.opacity = 0; setTimeout(() => { document.getElementById('title').style.display = 'none'; }, 900); SL.start(); }
+const LV = (q => TEST_X ? 1 : q ? (+q === 2 || +q === 3 ? +q : 1) : store.get() === 2 || store.get() === 3 ? store.get() : 1)(new URLSearchParams(location.search).get('level'));
+function go3() { store.set(3); SL.on = false; SL.show = false; document.getElementById('title').style.opacity = 0; setTimeout(() => { document.getElementById('title').style.display = 'none'; }, 900); HL.start(); }
+function go2() { store.set(2); HL.on = false; HL.show = false; document.getElementById('title').style.opacity = 0; setTimeout(() => { document.getElementById('title').style.display = 'none'; }, 900); SL.start(); }
 const END1 = [...document.querySelectorAll('#endc h1, #endc p')].map(e => e.textContent);
 function start() {
-  store.set(1); SL.on = false; SL.show = false; document.body.classList.remove('slough');
+  store.set(1); SL.on = false; SL.show = false; HL.on = false; HL.show = false; document.body.classList.remove('slough');
   document.querySelectorAll('#endc h1, #endc p').forEach((e, i) => { e.textContent = END1[i]; }); document.getElementById('on2').style.display = '';
   document.getElementById('chHome').textContent = 'Go home'; document.getElementById('chOn').textContent = 'Go on to the light';
   document.getElementById('title').style.opacity = 0; setTimeout(() => { document.getElementById('title').style.display = 'none'; }, 900);
@@ -2180,14 +2186,14 @@ function start() {
   if (TEST_X) { G.state = 'play'; return; }
   const run = ++runN; G.state = 'wait'; setTimeout(() => { if (run === runN && G.state === 'wait') talk(INTRO); }, 1700);   // the bell, then the story
 }
-for (const b of document.querySelectorAll('#levels .lv')) { b.classList.toggle('dim', +b.dataset.lv !== LV); b.onclick = () => +b.dataset.lv === 2 ? go2() : start(); }
+for (const b of document.querySelectorAll('#levels .lv')) { b.classList.toggle('dim', +b.dataset.lv !== LV); b.onclick = () => +b.dataset.lv === 3 ? go3() : +b.dataset.lv === 2 ? go2() : start(); }
 document.getElementById('open').onclick = () => {
   document.getElementById('open').style.display = 'none'; document.body.classList.add('opened');
   if (audio()) { AC.resume(); G.opening = { t: 0, next: 70, n: 0, last: 0 }; fetchVoices(); }
   setTimeout(() => { document.getElementById('levels').style.display = ''; }, 2600);
 };
-document.getElementById('again').onclick = () => SL.on ? SL.start() : start();
-document.getElementById('on2').onclick = go2;
+document.getElementById('again').onclick = () => HL.on ? HL.start() : SL.on ? SL.start() : start();
+document.getElementById('on2').onclick = () => SL.on ? go3() : go2();
 
 // ---------- boot: build the scenery, fetch Christian, then the others while the child is already playing ----------
 // THE HOME SCREEN LINK STAYS UP TO DATE (owner, build 85: "is there a way to force update link when I open it"). A
@@ -2214,7 +2220,7 @@ document.getElementById('on2').onclick = go2;
     for (const lv in LEVELS) { PROP[lv] = {}; for (const k in im) if (k !== 'lamp' && im[k]) PROP[lv][k] = bakeTint(im[k], LEVELS[lv].depth, LEVELS[lv].detail); } }
   reset();
   document.getElementById('sub').textContent = 'From this world to that which is to come';
-  if (LV === 2) SL.title();
+  if (LV === 2) SL.title(); if (LV === 3) HL.title();
   document.getElementById('open').style.visibility = 'visible';
   requestAnimationFrame(t => { lastT = t; loop(t); });
   loadPack('christian-turn', TURN).catch(() => {});
@@ -2223,6 +2229,7 @@ document.getElementById('on2').onclick = go2;
   for (const [who, txt] of INTRO) vox(who, txt);          // the first words, ready before Begin is pressed
 })();
 </script>
-<script src="slough.js?v=132"></script>
+<script src="slough.js?v=134"></script>
+<script src="hill.js?v=134"></script>
 </body>
 </html>
