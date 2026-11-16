@@ -80,6 +80,7 @@ const SL = (() => {
   const HY = () => bankY(HX) + 4;
   const STUCK_X = HX + GRASP.dx * CHR_K, STUCK_Y = () => HY() + GRASP.dy * CHR_K;
   const SINK = 100, PLI_SINK = 76, DEEP = 22, OAK_X = 110, OAK_S = 1.2;
+  const C_SINK = 64;      // build 125 (owner: "Christian is too submerged at first ... it'd be nice to see more of him at start"): he falls in to the waist, and sinks from there to SINK + DEEP as he crosses
   // build 115 (owner, of them standing at the bog's edge: "still white space between feet and ground"): on the muddy flat at
   // the water's level they stand a little sunk in it, and every picture of them there is cut at the water line
   const MUDDY = x => 6 * smooth(-6, 0, bankY(x)) + (x <= FALL_X + 5 ? 13 * smooth(HOME0 + 60, FALL_X, x) : 0);      // build 121: walking out over the mire they go in deeper at every step, before the fall                        // how deep each stands in the mire when they fall (feet below the water line)
@@ -409,7 +410,7 @@ const SL = (() => {
     }
     if ((ph === 'fall' || ph === 'pli') && C2.fallT < 340) {
       C2.fallT++; const top = smooth(0, 40, C2.fallT), topP = smooth(4, 44, C2.fallT);
-      C2.sink = SINK * sunk(C2.fallT); C2.y = lerp(C2.fy ?? bankY(FALL_X) + 4, C2.sink, top);
+      C2.sink = C_SINK * sunk(C2.fallT); C2.y = lerp(C2.fy ?? bankY(FALL_X) + 4, C2.sink, top);
       C2.x = lerp(FALL_X, WADE0, smooth(6, 210, C2.fallT));
       if (pli && (pli.mode !== 'climb' || pli.wal)) { pli.sink = PLI_SINK * sunk(C2.fallT - 4); pli.sy = lerp(pli.fy ?? bankY(pli.wx ?? pli.x) + 4, pli.sink, topP); if (pli.mode !== 'climb') pli.y = pli.sy; }
       // THEY WALLOW (build 119; the book, {29}: "they wallowed for a time"; owner: "can we [have] some flailing from both?
@@ -441,7 +442,7 @@ const SL = (() => {
       // build 114 (owner: "make christian sink even further as he moves from one end of pond to other (till just head is
       // barely above water)"): deeper and deeper as he wades (DEEP below where he fell in, by the far bank only his head
       // shows); reaching up for Help's hand he heaves back up to where the grip needs him (see drawChr, 'help')
-      C2.y = SINK + DEEP * smooth(0, .85, p);
+      C2.y = C_SINK + (SINK + DEEP - C_SINK) * smooth(0, .9, p);
       if (p > .45 && !fearsSaid) { fearsSaid = true; caption(FEARS); }
       if (--fearT <= 0) { fearT = 260 + Math.random() * 260; sfxS.fear(); }
       if (G.state === 'play' && !want && G.cap <= 0 && !G.capQ.length && G.t % 600 === 300) hint('wade', 'Hold to struggle on.');
@@ -548,11 +549,11 @@ const SL = (() => {
         if (pli.ct >= last) { pli.out = true; pli.x = endX; pli.y = bankY(endX) + 4; pli.anim = 0; }
       } else if (pli.mode === 'climb') {
         // struggling back to the bank next to his own house, then out and away into the mist
-        pli.face = -1; const v = pli.x > HOME0 + 10 ? .55 : .9; pli.x -= v; pli.anim += v / PLI_STEP * (pli.x > HOME0 ? 2.2 : 1);
+        pli.face = -1; const v = pli.x > HOME0 + 10 ? .55 : 1.55;      /* build 125: once out he hurries away (half as fast again as a walk) and the mist takes him sooner */ pli.x -= v; pli.anim += v / PLI_STEP * (pli.x > HOME0 ? 2.2 : 1);
         if (pli.x > HOME0) pli.y = PLI_SINK * clamp((pli.x - HOME0) / (PLI_FALL - HOME0)) + (1 - clamp((pli.x - HOME0) / (PLI_FALL - HOME0))) * (bankY(HOME0 - 30) + 4);
         else pli.y = bankY(pli.x) + 4;
         if (pli.x < PLI_FALL - 20 && pli.x > HOME0 + 30 && G.t % 30 === 0) rings.push({ x: pli.x, y: 0, t: 0, k: .9 });
-        pli.alpha = clamp((pli.x - (HOME0 - 260)) / 180);
+        pli.alpha = clamp((pli.x - (HOME0 - 190)) / 130);
         if (pli.alpha <= 0) pli = null;
       }
     }
@@ -733,7 +734,7 @@ const SL = (() => {
     // far bank are left clear on purpose.
     if (wx0 < VW) {
       const g = ctx.createLinearGradient(0, hor, 0, VH); g.addColorStop(0, css(tone(.9))); g.addColorStop(.3, css(tone(lerp(.78, .85, look.mist)))); g.addColorStop(1, css(tone(lerp(.46, .6, look.mist))));
-      ctx.fillStyle = g; const bw = 10;
+      ctx.fillStyle = g; const bw = 5;
       for (let sx = Math.floor(wx0 / bw) * bw; sx < VW; sx += bw) {
         const x = (sx + bw / 2 - VW / 2) / z + cx;
         let m = .8 * smooth(HOME0 + 30, HOME0 + 120, x) * (1 - smooth(-640, -300, x));
@@ -744,13 +745,6 @@ const SL = (() => {
     }
     // over the plain the near ground is land, not water: it ends in a soft edge where the bog begins
     if (wx0 > 0) { const g = ctx.createLinearGradient(wx0 - 10, 0, wx0 + 140 * z, 0); g.addColorStop(0, css(land)); g.addColorStop(1, css(land, 0)); ctx.fillStyle = g; ctx.fillRect(0, wl - 1, Math.min(VW, wx0 + 140 * z), VH - wl + 1); }
-    // rings in the water
-    for (const r of rings) {
-      const u = r.t / 150, cxr = X(r.x), cyr = wl + 2 + r.y * z;
-      for (let i = 1; i <= 2; i++) { const rx = (10 + i * 16 + u * 70) * z * r.k, a = (1 - u) * (1 - i * .3);
-        ctx.lineWidth = 1.1; ctx.strokeStyle = css(LIGHT, .6 * a); ctx.beginPath(); ctx.ellipse(cxr, cyr, rx, rx * .11, 0, 0, 7); ctx.stroke();
-        ctx.strokeStyle = css(DARK, .22 * a); ctx.beginPath(); ctx.ellipse(cxr, cyr + 1.6, rx, rx * .11, 0, 0, Math.PI); ctx.stroke(); }
-    }
     // the banks of mist (see "MIST THAT HIDES" in update)
     // bank(from, to, base, height, size of each puff, strength, how many, seed, flat): soft rounds of mist laid between
     // two places along the level, thicker low down; each drifts a little
@@ -803,6 +797,24 @@ const SL = (() => {
     // (an arc toward us was offered and advised against: it would bring back the perspective the picture avoids)
     for (const st of steps) { const c = st.lit || 0; bank(st.x - 70 + c * 90, st.x + 70 + c * 90, 12, 10, 120, (1 - smooth(0, 1, c)) * (.55 + .3 * look.mist) * (ph === 'look' || ph === 'on' ? 1 : fogS), 6, 11 + st.i, true); }
     ctx.globalAlpha = .55 * look.mist; { const o = (G.t * .15) % VW; ctx.drawImage(threads, -o, wl - 22, VW, 40); ctx.drawImage(threads, VW - o, wl - 22, VW, 40); } ctx.globalAlpha = 1;
+    // LOW MIST ROUND THE TWO IN THE BOG (build 125, owner: "more fog beneath Christian and pliable when they're in [the] bog
+    // but not as much near their faces"): a flat lens of mist hugs the surface round each of them, thickest at the mud
+    // line and gone by chest height, so heads and shoulders stand clear above it
+    { const low = (x, a, ry = 40) => { if (a <= .02) return; const mx = X(x), my = wl + 3 * z; if (mx < -200 || mx > VW + 200) return;
+        ctx.save(); ctx.translate(mx, my); ctx.scale(150 * z, ry * z); const g = ctx.createRadialGradient(0, 0, 0, 0, 0, 1);
+        g.addColorStop(0, css(tone(.93), .85 * a)); g.addColorStop(.45, css(tone(.93), .6 * a)); g.addColorStop(1, css(tone(.93), 0));
+        ctx.fillStyle = g; ctx.fillRect(-1, -1, 2, 2); ctx.restore(); };
+      if (['fall', 'pli', 'back', 'backtalk', 'wade', 'stuck', 'help'].includes(ph)) { const deep = smooth(C_SINK + 10, SINK + DEEP, C2.y);      // the deeper he is, the lower and thinner it lies: his head must stay clear
+        low(C2.x + 6, (ph === 'fall' ? smooth(20, 120, C2.fallT) : 1) * (lift ? 1 - clamp(lift.t / 60) : 1) * (1 - .45 * deep), lerp(40, 13, deep)); }
+      if (pli && pli.mode === 'climb' && !pli.out) low(pli.x + (META.climb.ax - META.climb.c0) * CHR_K * (1 - .6 * smooth(.25, .7, (pli.ct || 0) / 119)), (pli.wk ?? 1) * (1 - smooth(.6, .85, (pli.ct || 0) / 119))); }
+    // RINGS OF MUD, SEEN THROUGH THE MIST (build 125, owner: "through fog can we see rings of mud sloshing"): the rings are
+    // drawn over the mist now, three to each, heavier and slower than rings on water
+    for (const r of rings) {
+      const u = r.t / 150, cxr = X(r.x), cyr = wl + 2 + r.y * z;
+      for (let i = 1; i <= 3; i++) { const rx = (8 + i * 15 + u * 52) * z * r.k, a = (1 - u) * (1 - i * .24);
+        ctx.lineWidth = 1.7; ctx.strokeStyle = css(LIGHT, .7 * a); ctx.beginPath(); ctx.ellipse(cxr, cyr, rx, rx * .12, 0, 0, 7); ctx.stroke();
+        ctx.lineWidth = 1.5; ctx.strokeStyle = css(DARK, .42 * a); ctx.beginPath(); ctx.ellipse(cxr, cyr + 1.8, rx, rx * .12, 0, 0, Math.PI); ctx.stroke(); }
+    }
     if (look.veil > .01) { const g = ctx.createLinearGradient(VW * .42, 0, VW, 0); g.addColorStop(0, css(LIGHT, 0)); g.addColorStop(.55, css(tone(.93), look.veil * .86)); g.addColorStop(1, css(tone(.93), look.veil)); ctx.fillStyle = g; ctx.fillRect(0, 0, VW, VH); }
     // the gold coming back from the oak outward
     if (warmth > .01) { ctx.globalCompositeOperation = 'soft-light'; const g = ctx.createRadialGradient(discX, discY + 60, 20, discX, discY + 60, 760);

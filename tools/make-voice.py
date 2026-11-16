@@ -7,7 +7,7 @@ MP3 named by a hash of who says it and the words; the game works out the same na
 Only missing lines are recorded; recordings of lines that no longer exist are deleted (keep the files trim).
 
   GEMINI_API_KEY=... python3 tools/make-voice.py            record what is missing
-  GEMINI_API_KEY=... python3 tools/make-voice.py --redo C   record Christian's lines again (N, C, E, O, PL, W, H or all)
+  GEMINI_API_KEY=... python3 tools/make-voice.py --redo C   record Christian's lines again (N, C, E, O, PL, W, H, all, or styled = the lines with a direction in STYLE)
 
 The key is never stored in the repo (it is public). Each recording is checked by having a Gemini model write down what
 it hears; a recording with the wrong words is thrown away and made again.
@@ -24,6 +24,19 @@ VOICES = {'N': 'voice_zqnt5xdln1kq', 'C': 'voice_xp9kua42jfe2', 'E': 'voice_x361
           'H': 'voice_njlpqcyvcd0a'}      # Help (Level 2), designed in build 91 from the description in HANDOFF.md (build 87)
 WHO = {'N': '', 'C': 'Christian', 'E': 'Evangelist', 'O': 'Obstinate', 'PL': 'Pliable', 'W': 'His wife', 'H': 'Help'}
 KEY = os.environ.get('GEMINI_API_KEY', '')
+# HOW A LINE IS SAID (build 125, owner: "are him and Christian voices stressed as they sink ?? Seems like they would be more
+# desperate"): a line listed here is recorded with these tags in square brackets in front of it. The speech model acts
+# them and does not say them. (A direction written as a sentence, "Say this as a frightened boy: ...", was read out loud
+# by a designed voice, and this model takes no system instruction; bracketed tags are what works.) An opening "Ah" may
+# come out as a gasp: the check lets that pass. `--redo styled` records these again. Every other line is said plainly.
+STYLE = {
+    "Ah, neighbor Christian, where are you now?": "[alarmed, breathless, frightened]",
+    "Truly, I do not know.": "[shaken, breathless, weary]",
+    "Is this the happiness you have told me of? If I get out again with my life, you shall have the brave country alone for me!": "[angry, frightened, breathless, almost shouting]",
+    "No. I must struggle on, toward the gate.": "[straining, through gritted teeth, determined, out of breath]",
+    "Sir, I was told to go this way by a man called Evangelist. As I was going to the gate, I fell in here.": "[exhausted, out of breath, pleading]",
+    "Fear followed me so hard that I fled the nearest way, and fell in.": "[exhausted, ashamed, out of breath]",
+}
 
 def call(path, body):
     req = urllib.request.Request(API + path, data=json.dumps(body).encode(), headers={'x-goog-api-key': KEY, 'Content-Type': 'application/json'})
@@ -41,13 +54,13 @@ def name(who, text):                      # FNV-1a, the same sum as voiceName() 
     return f'{h:08x}'
 
 SAME = {'towards': 'toward', 'neighbour': 'neighbor', 'colour': 'color'}
-def words(s): return [SAME.get(w, w) for w in re.sub(r'[^a-z ]', '', s.lower().replace('-', ' ')).split()]
+def words(s): return [SAME.get(w, w) for w in re.sub(r'[^a-z ]', '', s.lower().replace('-', ' ')).split() if w not in ('ah', 'oh')]
 def close(a, b, attempt):           # from the second take, one misheard word (e.g. "No" heard as "Now") is let through
     return a == b or (attempt > 0 and len(a) == len(b) and sum(x != y for x, y in zip(a, b)) <= 1)
 
 def record(code, text, dest):
     for attempt in range(4):
-        g = call(f'/models/{TTS}:generateContent', {'contents': [{'parts': [{'text': text}]}], 'generationConfig': {'responseModalities': ['AUDIO'], 'speechConfig': {'voiceConfig': {'voice': VOICES[code]}}}})
+        g = call(f'/models/{TTS}:generateContent', {'contents': [{'parts': [{'text': (STYLE[text] + ' ' + text) if text in STYLE else text}]}], 'generationConfig': {'responseModalities': ['AUDIO'], 'speechConfig': {'voiceConfig': {'voice': VOICES[code]}}}})
         wav = base64.b64decode(g['candidates'][0]['content']['parts'][0]['inlineData']['data'])
         with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as f: f.write(wav)
         # cut the silence off both ends, one channel, small MP3
@@ -71,7 +84,7 @@ def main():
     keep = set()
     for code, text in lines:
         fn = name(WHO[code], text) + '.mp3'; keep.add(fn); dest = os.path.join(OUT, fn)
-        if os.path.exists(dest) and redo not in (code, 'all'): continue
+        if os.path.exists(dest) and redo not in (code, 'all') and not (redo == 'styled' and text in STYLE): continue
         if not KEY: sys.exit('Set GEMINI_API_KEY first.')
         if not VOICES[code]: print('no voice yet for', WHO[code], '(skipped):', text); continue
         n = record(code, text, dest)
