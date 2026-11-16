@@ -173,7 +173,7 @@ const HL = (() => {
   // trunk's middle, ground = the row that stands on the field's edge (the grass at its foot goes a little below, behind
   // the road), tw = sunlit leaves that twinkle. It is toned a little darker here to sit in the game's quiet tones,
   // and has an all-dark copy for when the sky darkens. Until it has loaded, the code-drawn oak (bakeOak) stands in.
-  const OAK_META = { w: 665, h: 630, ax: 306.5, ground: 602, k: .86 };
+  const OAK_META = { w: 662, h: 630, ax: 306.5, ground: 602, k: .86 };
   // OAK_SIL: how far the painting is pulled toward one dark tone (owner, build 165: "Tone it down to slightly more silhouette"): 0 = the painting, 1 = a flat silhouette
   const OAK_SIL = .8;
   let OAKP = null, oakLoading = null;
