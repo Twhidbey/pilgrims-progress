@@ -83,7 +83,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">build 143 · Nov 16 2026</div>
+  <div id="build">build 144 · Nov 16 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -113,7 +113,7 @@ function fit() {
   stage.style.width = sw + 'px'; stage.style.height = sh + 'px';
   DPR = Math.min(2, (window.devicePixelRatio || 1) * sw / VW);
   cv.width = Math.round(VW * DPR); cv.height = Math.round(VH * DPR);
-  // BUILD 143: the title and end cards are sized by the picture, not the screen, so they never spill out of it
+  // BUILD 144: the title and end cards are sized by the picture, not the screen, so they never spill out of it
   // (portrait iPhone: the picture is only about 240 tall). A phone held upright gets them a little larger.
   stage.style.setProperty('--s', Math.min(1.25, sw / VW * (portrait ? 1.4 : 1.12)).toFixed(3));
   document.getElementById('rot').style.top = (stage.getBoundingClientRect().bottom + 22) + 'px';
