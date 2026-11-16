@@ -166,20 +166,10 @@ const SL = (() => {
   function build() {
     if (built) return; built = true;
     OAK = bakeTree(oak(18), tone(.02), 1.3);
-    // THE SHORES ARE GROWN, NOT CUT (build 148, owner: "the shore on the right side looks a little flat and unnatural"):
-    // tussocks of rough grass and reed along both banks (low where people stand, so feet still read; taller beyond),
-    // the far bank's edge slumped and crumbled with clods of earth at the water, and roots flaring from the oak's foot.
-    // The ground people stand on (bankY) is unchanged: all of this is drawn over it.
-    { const R = rngS(77), tufts = [], clods = [], roots = [];
-      const span = (a, b, low0, low1) => { for (let x = a; x < b; x += 3 + R() * 9) { if (R() < .1) { x += 10; continue; }
-        const low = x > low0 && x < low1, reed = !low && R() < .16, h = low ? 3 + R() * 4 : reed ? 20 + R() * 16 : 7 + R() * 10 * (R() < .25 ? 1.6 : 1), bl = [];
-        for (let i = 0, nb = reed ? 7 + (R() * 6 | 0) : 5 + (R() * 7 | 0); i < nb; i++) bl.push([(R() - .5) * (reed ? 9 : 8), h * (.45 + .55 * R()), reed ? (R() - .5) * .35 : (R() - .5) * 1.1 + (R() - .5) * .5, reed ? .8 + R() * .5 : .7 + R() * .6]);
-        tufts.push({ x, bl }); } };
-      span(BANK0 + 4, BANK0 + 1100, BANK0, BANK0 + 240);
-      span(HOME0 - 900, HOME0 + 48, HOME0 - 140, HOME0 + 20);
-      for (let i = 0; i < 9; i++) clods.push([BANK0 - 16 + R() * 26, -R() * 4, 1.5 + R() * 3.5, 1 + R() * 2]);
-      for (const sd of [-1, 1]) for (let i = 0; i < 3; i++) roots.push({ sd, x0: 26 + i * 12 + R() * 8, x1: 70 + i * 24 + R() * 30, y0: -34 - R() * 14 + i * 9, w: 18 - i * 4 });
-      SHORE = { tufts, clods, roots }; }
+    // THE SHORES ARE CONTOURED (owner: "the shore on the right side looks a little flat and unnatural"; then, of grass and
+    // reeds: "too busy - I liked old clean lines - I meant right shore was just too flat (vs contoured slightly)"): the
+    // land stays one clean silhouette; beyond where people stand it swells and dips gently, and the oak's foot flares.
+    SHORE = true;
     GHOSTS = [[-760, .5, 3, .8], [-1500, .36, 5, .88], [560, .46, 8, .84], [-230, .3, 9, .9], [-2300, .42, 12, .86], [-3100, .4, 14, .85], [-1950, .52, 15, .83]]
       .map(g => ({ x: g[0], p: g[1], b: bakeTree(oak(g[2], false, 3), tone(g[3]), .7) }));
     // two skies baked once (misty and clear) and mixed by the mist; the far light is drawn over them live
@@ -825,28 +815,15 @@ const SL = (() => {
     if (X(OAK_X - 420 * OAK_S) < VW + 50 && X(OAK_X + 330 * OAK_S) > -50) putTree(n, OAK, OAK_X, bankY(OAK_X) + 4, OAK_S);
     if (SHORE) {
       n.fillStyle = css(land);
-      // the trunk flares into the ground on both sides (a smooth fillet, as an old oak's foot does), with a surface root or
-      // two running off along the ground
+      // the trunk flares smoothly into the ground on both sides, as an old oak's foot does
       { const g0 = bankY(OAK_X) + 4;
         for (const sd of [-1, 1]) { const xa = OAK_X + sd * 30 * OAK_S, xb = OAK_X + sd * 115 * OAK_S, yb = bankY(xb) + 2;
-          n.beginPath(); n.moveTo(OAK_X, g0 - 46); n.lineTo(xa, g0 - 40); n.bezierCurveTo(xa + sd * 10, g0 - 8, lerp(xa, xb, .5), yb - 2, xb, yb); n.lineTo(xb, yb + 3); n.lineTo(OAK_X, g0 + 3); n.closePath(); n.fill(); }
-        n.strokeStyle = css(land); n.lineCap = 'round';
-        for (const r of SHORE.roots) { const xa = OAK_X + r.sd * 60 * OAK_S, xb = OAK_X + r.sd * (r.x1 + 60) * OAK_S; n.lineWidth = r.w * .22; n.beginPath(); n.moveTo(xa, bankY(xa) - 1); n.quadraticCurveTo(lerp(xa, xb, .5), bankY(lerp(xa, xb, .5)) - 2.5, xb, bankY(xb) + 1); n.stroke(); } }
-      // beyond where people stand the land is uneven: low hummocks and hollows (drawn over the ground, which is unchanged)
-      const hum = x => (x > BANK0 ? smooth(BANK0 + 230, BANK0 + 420, x) : smooth(HOME0 - 160, HOME0 - 320, x)) * (3 + 11 * bankN(x * .02, 9)) * (.6 + .4 * bankN(x * .07, 3));
+          n.beginPath(); n.moveTo(OAK_X, g0 - 46); n.lineTo(xa, g0 - 40); n.bezierCurveTo(xa + sd * 10, g0 - 8, lerp(xa, xb, .5), yb - 2, xb, yb); n.lineTo(xb, yb + 3); n.lineTo(OAK_X, g0 + 3); n.closePath(); n.fill(); } }
+      // beyond where people stand the shore is gently contoured: a few long, low swells and dips in one clean line
+      // (drawn over the ground, which is unchanged)
+      const hum = x => x > BANK0 ? smooth(BANK0 + 230, BANK0 + 480, x) * (4 + 16 * bankN(x * .0045, 9)) : smooth(HOME0 - 160, HOME0 - 380, x) * (3 + 12 * bankN(x * .0045, 3));
       n.beginPath(); n.moveTo(x0, 2); for (let x = x0; x <= x1; x += 3 / z) n.lineTo(x, bankY(x) < -2 ? bankY(x) + 1 - hum(x) : 2); n.lineTo(x1, 2); n.closePath(); n.fill();
-      // the far bank's edge: slumped and crumbled, a broken lip, clods of earth lying at the water
-      n.beginPath(); n.moveTo(BANK0 - 15, 1.5);
-      for (let x = BANK0 - 15; x <= BANK0 + 26; x += 2) n.lineTo(x, Math.min(1.5, bankY(x) - 1.6 * smooth(BANK0 - 15, BANK0 - 4, x) - 2.4 * bankN(x * .21, 5) * (1 - smooth(BANK0 + 10, BANK0 + 26, x))));
-      n.lineTo(BANK0 + 26, 1.5); n.closePath(); n.fill();
-      for (const [x, y, rx, ry] of SHORE.clods) { n.beginPath(); n.ellipse(x, y, rx, ry, 0, 0, 7); n.fill(); }
-      // tussocks: a few curved blades each, rooted on the ground
-      n.strokeStyle = css(land); n.lineCap = 'round';
-      for (const t of SHORE.tufts) { if (t.x < x0 - 20 || t.x > x1 + 20) continue; const gy = bankY(t.x) + 1.8 - hum(t.x);
-        for (const [dx, h, lean, w] of t.bl) { const bx = t.x + dx; n.lineWidth = w; n.beginPath(); n.moveTo(bx, gy); n.quadraticCurveTo(bx + lean * h * .3, gy - h * .6, bx + lean * h * .75, gy - h); n.stroke(); } }
     }
-    // the steps, once lit
-    for (const s of steps) if (s.lit) { n.globalAlpha = s.lit; n.fillStyle = css(land); n.beginPath(); n.moveTo(s.x - s.w, 1); n.quadraticCurveTo(s.x - s.w * .8 + s.lean, -s.h * 1.5, s.x + s.lean, -s.h); n.quadraticCurveTo(s.x + s.w * .85, -s.h * .6, s.x + s.w, 1); n.fill(); n.globalAlpha = 1; }
     // Pliable. In the mire he is drawn later, straight onto the screen (pliMire): never mirrored, and after the mud
     // surface so its collar and strings lie on him (build 143)
     const pliIn = pli && PLIC.length && pli.mode === 'climb' && !pli.out;
