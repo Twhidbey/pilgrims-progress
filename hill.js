@@ -111,9 +111,9 @@ const HL = (() => {
   let HILL = null, SMOKE = null, CLOUD = null, TOWN = null; const CRACKS = [];
   // the hill's outline: h = height above its foot, 0 to TOP; its left side hangs far out over the way
   const TOP = 520, HW = 1500, HH = 640, HOX = 300, HOY = 610;      // the baked picture's size and where the foot's left end lies in it
-  const FACE = [[0, 0], [60, -22], [140, -66], [240, -138], [320, -182], [358, -176], [420, -116], [480, -44], [520, 36]];
+  const FACE = [[0, 0], [36, -30], [84, -62], [112, -44], [150, -70], [240, -138], [320, -182], [358, -176], [420, -116], [480, -44], [520, 36]];      // a second, lower overhang under the great one
   function faceX(h) { let i = 0; while (i + 2 < FACE.length && FACE[i + 1][0] <= h) i++; const [h0, x0] = FACE[i], [h1, x1] = FACE[i + 1]; return lerp(x0, x1, clamp((h - h0) / (h1 - h0))) + (nz(h * .03, 2) - .5) * 26 * smooth(0, 60, h); }
-  const backX = h => 96 + 330 * Math.pow(1 - h / TOP, 1.2) + 560 * Math.pow(1 - h / TOP, 3.2) + (nz(h * .022, 9) - .5) * 44 * smooth(0, 50, h) + 26 * smooth(250, 190, h) * smooth(120, 190, h);
+  const backX = h => 96 + 330 * Math.pow(1 - h / TOP, 1.2) + 560 * Math.pow(1 - h / TOP, 3.2) + (nz(h * .022, 9) - .5) * 64 * smooth(0, 50, h) + (nz(h * .09, 14) - .5) * 22 + 46 * smooth(330, 290, h) * smooth(210, 290, h) + 34 * smooth(170, 140, h) * smooth(90, 140, h);      // the long slope: shoulders, buttresses, a rough skyline
   function build() {
     if (built) return; built = true;
     // the hill, twice: in the fair day's far blue-grey, and nearly black under its own cloud
@@ -121,11 +121,14 @@ const HL = (() => {
       const c = mk(HW, HH), k = c.getContext('2d'); k.translate(HOX, HOY);
       k.beginPath(); k.moveTo(-8, 12);
       for (let h = 0; h <= TOP; h += 6) k.lineTo(faceX(h), -h);
-      for (let h = TOP; h >= 0; h -= 6) k.lineTo(backX(h), -h - (h > TOP - 30 ? (nz(h * .2, 4) - .5) * 14 : 0));
+      for (const [sx, sy] of [[46, -529], [60, -524], [72, -537], [86, -527]]) k.lineTo(sx, sy);      // a broken summit (lost in its cloud)
+      for (let h = TOP; h >= 0; h -= 6) k.lineTo(backX(h), -h);
       k.lineTo(backX(0) + 30, 12); k.closePath();
+      // rocks that have fallen from the overhang lie at its foot
+      { const Rr = rngS(23); for (const [bx, bw] of [[-236, 16], [-150, 30], [-128, 12], [-62, 44], [-20, 20]]) { const bh = bw * (.45 + Rr() * .25); k.moveTo(bx - bw / 2, 12); k.lineTo(bx - bw * .42, -bh * .6); k.lineTo(bx - bw * .1, -bh); k.lineTo(bx + bw * .3, -bh * .8); k.lineTo(bx + bw / 2, 12); k.closePath(); } }
       const g = k.createLinearGradient(0, -TOP, 0, 0); g.addColorStop(0, css(col)); g.addColorStop(1, css(mix(col, [150, 150, 150], .1))); k.fillStyle = g; k.fill();
       // a few faint ledges across the face, so it reads as rock
-      k.save(); k.clip(); k.strokeStyle = css(mix(col, [255, 255, 255], .5), .1); k.lineWidth = 2;
+      k.save(); k.clip(); k.fillStyle = css(mix(col, [0, 0, 0], .22)); k.beginPath(); k.moveTo(40, 14); for (let h = 0; h <= 330; h += 6) k.lineTo(150 + 150 * Math.pow(h / 330, .7) - 60 * smooth(200, 330, h) + (nz(h * .04, 21) - .5) * 30, -h); for (let h = 330; h >= 0; h -= 6) k.lineTo(330 + 420 * Math.pow(1 - h / 330, 1.6) + (nz(h * .05, 25) - .5) * 26, -h); k.lineTo(800, 14); k.fill(); k.strokeStyle = css(mix(col, [255, 255, 255], .5), .1); k.lineWidth = 2;
       for (let i = 0; i < 9; i++) { const h = 40 + i * 52; k.beginPath(); for (let x = -200; x <= 1100; x += 20) { const y = -h - (nz(x * .01, i) - .5) * 40 - x * .06; x === -200 ? k.moveTo(x, y) : k.lineTo(x, y); } k.stroke(); }
       k.restore(); return c;
     });
@@ -361,12 +364,12 @@ const HL = (() => {
     const gateish = smooth(0, 1, hope);
     c.setTransform(S, 0, 0, S, 0, 0); c.globalAlpha = 1; c.globalCompositeOperation = 'source-over'; c.imageSmoothingEnabled = true;
     // the sky: a fair day over the plain, a heavy red-brown dark by the hill, a warmer morning at the gate
-    const top = mix(mix([124, 148, 176], [118, 142, 170], gateish), [32, 32, 44], dark), low = mix(mix([238, 226, 200], [252, 228, 172], gateish), [124, 94, 88], dark);
+    const top = mix(mix([124, 148, 176], [18, 22, 38], gateish), [32, 32, 44], dark), low = mix(mix([238, 226, 200], [84, 72, 80], gateish), [124, 94, 88], dark);
     { const g = c.createLinearGradient(0, 0, 0, hor); g.addColorStop(0, css(top)); g.addColorStop(1, css(low)); c.fillStyle = g; c.fillRect(0, 0, VW, hor + 2); }
     // clouds, pale by day and heavy near the hill
     { const off = ((cx * .05 + G.t * .02) % 800 + 800) % 800;
       for (let i = -1; i < 2; i++) { const x0 = i * 800 - off + 200;
-        c.globalAlpha = .5 * (1 - dark); c.drawImage(CLOUD, x0, 30, 800, 180);
+        c.globalAlpha = .5 * (1 - dark) * (1 - .75 * gateish); c.drawImage(CLOUD, x0, 30, 800, 180);
         if (dark > .02) { c.globalAlpha = .55 * dark; c.globalCompositeOperation = 'multiply'; c.drawImage(CLOUD, x0 - 260, 0, 900, 230); c.globalCompositeOperation = 'source-over'; } }
       c.globalAlpha = 1; }
     // the far light: ahead of him on the plain; over the gate at the end. The hill, drawn after it, comes between.
@@ -378,7 +381,7 @@ const HL = (() => {
       for (let sx = 0; sx <= VW + 16; sx += 16) { const u = cx * .1 + (sx - VW / 2) / z; c.lineTo(sx, hor - (26 + 96 * nz(u * .0035, 5) + 22 * nz2(u * .02, 1)) * z * .8); }
       c.lineTo(VW, hor + 2); c.fill(); }
     // the plain, from the horizon down to the road
-    { const far = mix(mix([176, 172, 140], [190, 180, 136], gateish), [78, 68, 70], dark), near = mix(mix([104, 108, 88], [112, 110, 82], gateish), [38, 36, 44], dark);
+    { const far = mix(mix([176, 172, 140], [50, 48, 56], gateish), [78, 68, 70], dark), near = mix(mix([104, 108, 88], [24, 24, 32], gateish), [38, 36, 44], dark);
       const g = c.createLinearGradient(0, hor, 0, Y(0)); g.addColorStop(0, css(far)); g.addColorStop(1, css(near)); c.fillStyle = g; c.fillRect(0, hor, VW, Y(0) - hor + 1);
       // the village and the hill stand on the plain, further back
       const hx = VW / 2 + (HILL_A - cx) * PH * z, hy = Y(HILL_Y), k = z * HS;
@@ -413,7 +416,8 @@ const HL = (() => {
         { const tc = tintC.town || (tintC.town = mk(400, 70)), t = tc.getContext('2d'); t.globalCompositeOperation = 'source-over'; t.clearRect(0, 0, 400, 70); t.drawImage(TOWN, 0, 0); t.globalCompositeOperation = 'source-in'; t.fillStyle = css(mix(mix(far, top, .4), [46, 42, 50], dark * .7)); t.fillRect(0, 0, 400, 70); c.drawImage(tc, tx, ty - th, tw, th); }
         for (const [wx, wy] of TOWN.lit) { c.fillStyle = css([255, 214, 140], .5 + .4 * dark); c.fillRect(tx + wx * tw / 400, ty - th + wy * th / 70, Math.max(1.5, 3.6 * z), Math.max(1.5, 3.6 * z)); }
         // the cloud on the summit: a towering column that leans with the wind and spreads, dark, lit from within
-        for (let i = 0; i < 6; i++) { const w = (380 + i * 150) * k, lean = -i * i * 9 * k + 30 * k * Math.sin(G.t / 260 + i * 1.7), px = sx0 + lean - w / 2, py = sy0 - (40 + i * 74) * k - w * .16;
+        if (dark > .02) { c.globalCompositeOperation = 'multiply'; c.globalAlpha = .8 * dark; c.drawImage(CLOUD, sx0 - 1500 * k, sy0 - 520 * k, 2300 * k, 520 * k); c.globalAlpha = .55 * dark; c.drawImage(CLOUD, sx0 - 700 * k, sy0 - 400 * k, 1700 * k, 380 * k); }
+        for (let i = 0; i < 9; i++) { const w = (420 + i * 170) * k, lean = -i * i * 9 * k + 30 * k * Math.sin(G.t / 260 + i * 1.7), px = sx0 + lean - w / 2, py = sy0 - (40 + i * 74) * k - w * .16;
           c.globalAlpha = (.2 + .62 * dark) * (1 - i * .09); c.globalCompositeOperation = 'multiply'; c.drawImage(SMOKE, px, py, w, w * .36);
           if (burn > .01) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = burn * .2 * (1 - i / 6.5) + F * .16; tintSmoke(); c.drawImage(tintC.smoke, px + w * .06, py + w * .05, w * .88, w * .3); } }
         c.globalCompositeOperation = 'source-over'; c.globalAlpha = 1;
@@ -426,35 +430,52 @@ const HL = (() => {
         c.restore();
         // the field's haze at its foot, so it stands in the plain and not on it
         const fg = c.createLinearGradient(0, hy - 34 * k, 0, hy + 14 * k), fc = mix(far, near, clamp((hy - hor) / (Y(0) - hor)));
-        fg.addColorStop(0, css(fc, 0)); fg.addColorStop(.7, css(fc, .9)); fg.addColorStop(1, css(fc, 1)); c.fillStyle = fg; for (let i = 0; i < 8; i++) { c.globalAlpha = (i + 1) / 8; c.fillRect(hx - (420 - i * 30) * k, hy - 34 * k, i < 7 ? 30 * k + 1 : 1700 * k, 48 * k); } c.globalAlpha = 1;
+        fg.addColorStop(0, css(fc, 0)); fg.addColorStop(.7, css(fc, .9)); fg.addColorStop(1, css(fc, 1)); c.fillStyle = fg; c.fillRect(0, hy - 34 * k, VW, 48 * k);
       }
     }
     // the lone tree where the two ways cross
     if (OAKT) { const tx = VW / 2 + (MEET - 70 - cx) * .92 * z, h = 330 * z, w = h * OAKT.width / OAKT.height;
       if (tx > -w && tx < VW + w) { const tc = tintC.oak || (tintC.oak = mk(OAKT.width, OAKT.height)), t = tc.getContext('2d'); t.globalCompositeOperation = 'source-over'; t.clearRect(0, 0, tc.width, tc.height); t.drawImage(OAKT, 0, 0); t.globalCompositeOperation = 'source-in'; t.fillStyle = css(mix([70, 78, 74], [30, 30, 38], dark)); t.fillRect(0, 0, tc.width, tc.height);
         c.drawImage(tc, tx - w / 2, Y(-12) - h + 6 * z, w, h); } }
-    // the wall and the little wicket-gate
-    if (X(GATE_X - 420) < VW) {
-      const wallC = [104, 100, 100], x0 = GATE_X - 400;
-      c.fillStyle = css(wallC); c.beginPath(); c.moveTo(X(x0 + 6), Y(2));
-      for (let x = x0; x <= GATE_X + 900; x += 14) c.lineTo(X(x), Y(-(178 + (nz(x * .02, 3) - .5) * 14) + (x < x0 + 60 ? (nz(x * .3, 8) - .5) * 30 : 0)));
-      c.lineTo(X(GATE_X + 900), Y(2)); c.fill();
-      // courses of stone, faint
-      c.strokeStyle = css([60, 58, 62], .22); c.lineWidth = 1; for (let i = 1; i < 6; i++) { c.beginPath(); c.moveTo(X(x0 + 20), Y(-i * 29)); c.lineTo(VW, Y(-i * 29)); c.stroke(); }
-      // the gate: a narrow door under a round arch, the writing on a pale stone over it
-      const gx = X(GATE_X), r = 30 * z, gy0 = Y(-120);
-      c.fillStyle = css([34, 28, 26]); c.beginPath(); c.moveTo(gx - r, Y(1)); c.lineTo(gx - r, gy0); c.arc(gx, gy0, r, Math.PI, 0); c.lineTo(gx + r, Y(1)); c.fill();
-      c.strokeStyle = css([70, 58, 50], .6); for (const d of [-.5, 0, .5]) { c.beginPath(); c.moveTo(gx + d * r, gy0 - r * .8); c.lineTo(gx + d * r, Y(0)); c.stroke(); }
-      if (door > .01) { const w = 2 * r * .55 * door; c.save(); c.beginPath(); c.moveTo(gx - r, Y(1)); c.lineTo(gx - r, gy0); c.arc(gx, gy0, r, Math.PI, 0); c.lineTo(gx + r, Y(1)); c.clip(); c.fillStyle = css([255, 228, 160], .95); c.fillRect(gx - r, gy0 - r, w, r + 124 * z);
-        c.restore(); const g = c.createRadialGradient(gx - r, Y(-70), 0, gx - r, Y(-70), 190 * z); g.addColorStop(0, css([255, 220, 150], .4 * door)); g.addColorStop(1, css([255, 220, 150], 0)); c.fillStyle = g; c.fillRect(gx - 220 * z, Y(-260), 440 * z, 280 * z); }
-      c.fillStyle = css([190, 184, 170]); c.fillRect(gx - 34 * z, Y(-170), 68 * z, 13 * z); c.fillStyle = css([70, 66, 66], .8); for (let i = 0; i < 7; i++) c.fillRect(gx + (-29 + i * 8.6) * z, Y(-165), (4 + (i * 7) % 3) * z, 1.6 * z);
-      for (let i = 0; i < knocks; i++) { const q = clamp((knockT - i * 0) / 40); if (i === knocks - 1 && q < 1) { c.strokeStyle = css([255, 236, 190], .7 * (1 - q)); c.lineWidth = 2; c.beginPath(); c.arc(gx, Y(-70), (10 + 46 * q) * z, 0, 7); c.stroke(); } }
+    // THE WICKET-GATE, AFTER REMBRANDT (owner agreed, build 139): evening has come ("in process of time"); a dark wall,
+    // and one warm light: a small lantern by the gate that shows the writing over it, then the light from within
+    // when the door is opened. The light lies on the stones, on the man, and in a flat pool at the doorstep.
+    const gateOn = X(GATE_X - 420) < VW, gx = X(GATE_X), r = 30 * z, gy0 = Y(-120), lnx = gx - 58 * z, lny = Y(-150), flick = .86 + .1 * Math.sin(G.t / 7) + .04 * Math.sin(G.t / 2.3);
+    if (gateOn) {
+      const x0 = GATE_X - 400;
+      const wallPath = () => { c.beginPath(); c.moveTo(X(x0 + 6), Y(2)); for (let x = x0; x <= GATE_X + 900; x += 14) c.lineTo(X(x), Y(-(178 + (nz(x * .02, 3) - .5) * 14) + (x < x0 + 60 ? (nz(x * .3, 8) - .5) * 30 : 0))); c.lineTo(X(GATE_X + 900), Y(2)); };
+      const arch = () => { c.beginPath(); c.moveTo(gx - r, Y(1)); c.lineTo(gx - r, gy0); c.arc(gx, gy0, r, Math.PI, 0); c.lineTo(gx + r, Y(1)); };
+      wallPath(); c.fillStyle = css([30, 29, 34]); c.fill();
+      c.save(); wallPath(); c.clip();
+      // rough courses of stone, each stone a little different, seen only where the light falls
+      for (let i = 0; i < 7; i++) for (let j = 0; j < 40; j++) { const sx = x0 + j * 34 + (i % 2) * 17, t = nz(j * 3.1, i * 7.7); c.fillStyle = css(t > .5 ? [255, 240, 220] : [0, 0, 0], .05 * Math.abs(t - .5) * 2 + .012); c.fillRect(X(sx) + 1, Y(-(i + 1) * 27) + 1, 34 * z - 1.5, 27 * z - 1.5); }
+      // the lantern's light on the wall, and the light from within once the door opens
+      c.globalCompositeOperation = 'lighter';
+      { const g = c.createRadialGradient(lnx, lny, 0, lnx, lny, 250 * z); g.addColorStop(0, css([255, 196, 120], .5 * flick)); g.addColorStop(.3, css([230, 140, 70], .2 * flick)); g.addColorStop(1, css([200, 100, 50], 0)); c.fillStyle = g; c.fillRect(lnx - 250 * z, lny - 250 * z, 500 * z, 500 * z); }
+      if (door > .01) { const g = c.createRadialGradient(gx - r, Y(-70), 0, gx - r, Y(-70), 330 * z); g.addColorStop(0, css([255, 220, 150], .6 * door)); g.addColorStop(.4, css([240, 160, 90], .22 * door)); g.addColorStop(1, css([220, 130, 70], 0)); c.fillStyle = g; c.fillRect(gx - 360 * z, Y(-400), 720 * z, 440 * z); }
+      c.restore();
+      // the gate: a narrow door under a round arch
+      arch(); c.fillStyle = css([20, 16, 15]); c.fill();
+      c.strokeStyle = css([96, 70, 50], .5); c.lineWidth = 1; for (const d of [-.5, 0, .5]) { c.beginPath(); c.moveTo(gx + d * r, gy0 - r * .8); c.lineTo(gx + d * r, Y(0)); c.stroke(); }
+      c.strokeStyle = css([150, 110, 76], .35 * flick); c.lineWidth = 2 * z; c.beginPath(); c.arc(gx, gy0, r + 2 * z, Math.PI, 0); c.stroke();
+      if (door > .01) { const w = 2 * r * .55 * door; c.save(); arch(); c.clip(); const g = c.createLinearGradient(gx - r, 0, gx - r + w, 0); g.addColorStop(0, css([255, 240, 200], 1)); g.addColorStop(1, css([255, 196, 110], .9)); c.fillStyle = g; c.fillRect(gx - r, gy0 - r, w, r + 124 * z); c.restore(); }
+      // the writing on a pale stone over the gate, shown by the lantern
+      c.fillStyle = css(mix([96, 84, 74], [214, 190, 150], .55 * flick)); c.fillRect(gx - 34 * z, Y(-170), 68 * z, 13 * z); c.fillStyle = css([40, 30, 26], .8); for (let i = 0; i < 7; i++) c.fillRect(gx + (-29 + i * 8.6) * z, Y(-165), (4 + (i * 7) % 3) * z, 1.6 * z);
+      // the lantern on its iron bracket
+      c.strokeStyle = css([14, 12, 12]); c.lineWidth = 1.6 * z; c.beginPath(); c.moveTo(lnx - 12 * z, lny - 16 * z); c.lineTo(lnx, lny - 16 * z); c.lineTo(lnx, lny - 8 * z); c.stroke();
+      c.fillStyle = css([14, 12, 12]); c.fillRect(lnx - 5 * z, lny - 9 * z, 10 * z, 15 * z); c.fillStyle = css([255, 214, 140], .95 * flick); c.fillRect(lnx - 3.4 * z, lny - 6 * z, 6.8 * z, 10 * z);
+      c.save(); c.globalCompositeOperation = 'lighter'; { const g = c.createRadialGradient(lnx, lny, 0, lnx, lny, 70 * z); g.addColorStop(0, css([255, 220, 160], .6 * flick)); g.addColorStop(1, css([255, 190, 110], 0)); c.fillStyle = g; c.fillRect(lnx - 70 * z, lny - 70 * z, 140 * z, 140 * z); } c.restore();
+      for (let i = 0; i < knocks; i++) { const q = clamp(knockT / 40); if (i === knocks - 1 && q < 1) { c.strokeStyle = css([255, 236, 190], .7 * (1 - q)); c.lineWidth = 2; c.beginPath(); c.arc(gx, Y(-70), (10 + 46 * q) * z, 0, 7); c.stroke(); } }
     }
     // the road under everyone's feet
-    { const g = c.createLinearGradient(0, Y(0), 0, VH); const rc = mix([44, 44, 46], [22, 22, 30], dark); g.addColorStop(0, css(mix(rc, [120, 116, 100], .25))); g.addColorStop(.08, css(rc)); g.addColorStop(1, css(mix(rc, [0, 0, 0], .35))); c.fillStyle = g; c.fillRect(0, Y(0), VW, VH - Y(0)); }
+    { const g = c.createLinearGradient(0, Y(0), 0, VH); const rc = mix([44, 44, 46], [22, 22, 30], Math.max(dark, .9 * gateish)); g.addColorStop(0, css(mix(rc, [120, 116, 100], .25))); g.addColorStop(.08, css(rc)); g.addColorStop(1, css(mix(rc, [0, 0, 0], .35))); c.fillStyle = g; c.fillRect(0, Y(0), VW, VH - Y(0)); }
+    // the lantern's and the open door's light lie in flat pools on the road
+    if (gateOn) { c.save(); c.globalCompositeOperation = 'lighter';
+      for (const [px, rr, al, col] of [[lnx + 10 * z, 240 * z, .3 * flick, [255, 180, 100]], [gx - 20 * z, 360 * z, .55 * door, [255, 214, 140]]]) { if (al < .01) continue; c.save(); c.translate(px, Y(5)); c.scale(1, .09); const g = c.createRadialGradient(0, 0, 0, 0, 0, rr); g.addColorStop(0, css(col, al)); g.addColorStop(1, css(col, 0)); c.fillStyle = g; c.fillRect(-rr, -rr, 2 * rr, 2 * rr); c.restore(); }
+      c.restore(); }
     // the people (in the world's own units)
     c.save(); c.translate(VW / 2 - cx * z, wl); c.scale(z, z);
-    const tint = mix([122, 118, 122], [78, 72, 82], dark), fl = Math.min(1, flash) * dark, tintF = mix(tint, [255, 170, 110], fl * .35);
+    const tint = mix([122, 118, 122], [78, 72, 82], dark), fl = Math.min(1, flash) * dark, lit = gateish * smooth(GATE_X - 330, GATE_X - 60, C3.x), tintF = mix(mix(mix(tint, [66, 62, 72], gateish), [255, 170, 110], fl * .35), [255, 188, 120], lit * (.3 + .4 * door));
     if (evan && EVS.ready) { TALKM = talkMove(E); foot(c, EV_X, evan.a); figure(c, 'evan', EVS[Math.floor(G.t * .2) % EVS_META.frames], EVS_META, EV_X, 1, tintF, smooth(.25, 1, evan.a)); TALKM = null; }
     if (wise && OBS.ready) {
       const wt = mix([168, 150, 132], [120, 104, 100], dark); TALKM = talkMove(WW); foot(c, wise.x, wise.alpha);
@@ -470,7 +491,7 @@ const HL = (() => {
     // the flash over everything, the veil of mist between the hill and the gate, the burned edges
     if (flash > .02) { c.fillStyle = css([255, 150, 80], .16 * Math.min(1, flash)); c.fillRect(0, 0, VW, VH); }
     if (veil > .003) { c.fillStyle = css(mix([226, 222, 214], [150, 146, 150], dark), smooth(0, 1, veil)); c.fillRect(0, 0, VW, VH); }
-    { const g = c.createRadialGradient(VW * .5, VH * .5, VH * .42, VW * .5, VH * .5, VW * .78); g.addColorStop(0, 'rgba(12,12,18,0)'); g.addColorStop(1, css([12, 12, 18], .42 + .2 * dark)); c.fillStyle = g; c.fillRect(0, 0, VW, VH); }
+    { const g = c.createRadialGradient(VW * .5, VH * .5, VH * .42, VW * .5, VH * .5, VW * .78); g.addColorStop(0, 'rgba(12,12,18,0)'); g.addColorStop(1, css([12, 12, 18], .42 + .2 * dark + .22 * gateish)); c.fillStyle = g; c.fillRect(0, 0, VW, VH); }
     // touches, the ring that shows where to touch, the things he carries
     for (const tp of G.taps) { tp.t++; c.strokeStyle = css([247, 243, 233], .5 * (1 - tp.t / 40)); c.lineWidth = 1.2; c.beginPath(); c.arc(tp.x, tp.y, 6 + tp.t * .8, 0, 7); c.stroke(); }
     G.taps = G.taps.filter(tp => tp.t < 40);
