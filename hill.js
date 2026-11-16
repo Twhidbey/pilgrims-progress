@@ -269,7 +269,7 @@ const HL = (() => {
     C3.wa = clamp(C3.wa + (C3.weep ? .05 : -.04)); if (C3.weep) C3.wt = Math.min(64, C3.wt + WEEP_META.step);
     flash *= .93; door += (doorTo - door) * .02; veil = clamp(veil + Math.sign(veilTo - veil) * .012);
     hintT++;
-    if (dark > .4 && Math.random() < .08 * dark) embers.push({ x: 20 + Math.random() * 60, y: 10 - Math.random() * 20, vx: -.1 - Math.random() * .2, vy: -.16 - Math.random() * .22, r: .32 + Math.random() * .4, h: Math.random(), t: 0, life: 140 + Math.random() * 160 });
+    if (dark > .4 && Math.random() < .07 * dark) embers.push({ x: 20 + Math.random() * 70, y: 10 - Math.random() * 40, vx: -.2 - Math.random() * .4, vy: -.35 - Math.random() * .5, r: .6 + Math.random() * .8, h: Math.random(), t: 0, life: 140 + Math.random() * 160 });
     for (const e of embers) { e.t++; e.x += e.vx + .3 * Math.sin((e.t + e.life) / 23); e.y += e.vy; } for (let i = embers.length - 1; i >= 0; i--) if (embers[i].t >= embers[i].life) embers.splice(i, 1);
 
     if (ph === 'plain') {
@@ -445,23 +445,17 @@ const HL = (() => {
         // lit from within. No tongues of flame, no scattered burning cracks. A flash only makes these brighter.
         if (burn > .01) {
           // the pillar: soft lights along a slowly wavering line, widest and brightest at its foot
-          // THE FIRE IS FAR AWAY AND SMALL (owner, build 152: "Fire makes mountain look smaller - really want to not
-          // downplay grandeur of this massive rock - should the plumes be smaller because they are far away and almost
-          // like small cracks in the peak"). Anything on the hill is a measure of the hill: big flames say a small
-          // hill. So: a few small points of fire in clefts at the peak, hair-thin seams, threads of smoke that only
-          // grow as they drift away from it. The wide glow BEHIND the hill carries the greatness of the fire.
-          // MORE FIRE, IN GOLD (owner, build 147: "I do want more fire ... just not the intense video game red").
-          // A real fire stands on the summit now, but painted soft: a bright heart, and five strands of flame of
-          // different heights, each a chain of soft lights along its own wavering line (no hard-edged tongues),
-          // leaning with the wind into the smoke. White-gold at the heart, gold, then amber; nothing redder.
-          { const hb = (34 + 4 * Math.sin(G.t / 9) + 2 * Math.sin(G.t / 3.7)) * k, hxm = sx0 - 4 * k, hym = sy0 + 4 * k, g = c.createRadialGradient(hxm, hym, 0, hxm, hym, hb); g.addColorStop(0, css([255, 240, 206], .32 * burn)); g.addColorStop(.3, css([255, 204, 128], .2 * burn)); g.addColorStop(1, css([226, 150, 80], 0)); c.fillStyle = g; c.fillRect(hxm - hb, hym - hb, 2 * hb, 2 * hb); }
-          flames = () => { for (let s = 0; s < 5; s++) { const bx = sx0 + [-36, -15, 2, 17, 30][s] * k, hgt = [18, 30, 22, 34, 16][s] * (.8 + .5 * nz(G.t * .011 + s * 9.3, 30 + s)) * k, n = 15;
-            for (let i = 0; i < n; i++) { const u = i / (n - 1), wob = (nz(G.t * .016 + u * 2.1 + s * 5, 12 + s) - .5) * 16 * u * k, px = bx + wob - 12 * u * u * k, py = sy0 + [30, 8, 13, 4, 22][s] * k - hgt * u, rr = (9 - 6.5 * u) * k, al = (.42 * Math.pow(1 - u, 1.4) + .02) * (burn + .8 * F);
-              const g = c.createRadialGradient(px, py, 0, px, py, rr); g.addColorStop(0, css([255, 240, 204], al)); g.addColorStop(.45, css([255, 190, 104], al * .55)); g.addColorStop(.8, css([232, 104, 56], al * .22)); g.addColorStop(1, css([200, 70, 44], 0)); c.fillStyle = g; c.fillRect(px - rr, py - rr, 2 * rr, 2 * rr); } } };
+          // ONE SOFT LIGHT AT THE PEAK, THE SMOKE RISING STRAIGHT OUT OF IT (owner, build 154, with a picture of build 146 on
+          // the phone: "This seemed to capture it better - something about your current plum[e]s is off"). Tried since
+          // and taken out: tall golden flames (they made the mountain look small), then five small points of fire with a
+          // thread of smoke (they read as candles and a chimney). What works: ONE source; no flame shapes at all, only a
+          // small glow; the smoke begins at the glow as a full dark billow, lit from beneath, and partly hides it.
+          for (let i = 0; i < 16; i++) { const u = i / 15, wob = (nz(G.t * .006 + u * 1.7, 12) - .5) * 50 * u * k, px = sx0 - 6 * k + wob - 26 * u * u * k, py = sy0 + (10 - 190 * u) * k, rr = (20 - 14 * u) * k, al = (.44 * (1 - u) * (1 - u) + .04) * (burn + .8 * F);
+            const g = c.createRadialGradient(px, py, 0, px, py, rr); g.addColorStop(0, css([255, 232, 190], al)); g.addColorStop(.5, css([255, 170, 96], al * .45)); g.addColorStop(1, css([240, 110, 60], 0)); c.fillStyle = g; c.fillRect(px - rr, py - rr, 2 * rr, 2 * rr); }
           // the seam: fire from the same source, running down inside the overhang, thinning and dying away
-          for (const [seam, len] of SEAMS) for (let j = 1; j < seam.length; j++) { const u = j / len, fade = Math.pow(1 - u, 3), breathe = .62 + .38 * Math.sin(G.t / 61 - u * 5), al = fade * breathe * (burn * 1.4 + F);
+          for (const [seam, len] of SEAMS) for (let j = 1; j < seam.length; j++) { const u = j / len, fade = (1 - u) * (1 - u), breathe = .62 + .38 * Math.sin(G.t / 61 - u * 5), al = fade * breathe * (burn * 1.1 + F);
             if (al < .02) continue; const [x0, y0] = seam[j - 1], [x1, y1] = seam[j];
-            for (const [w, a2, col] of [[7 * fade + 2, .16, [236, 112, 58]], [1.1 + 2 * fade, .85, [255, 222, 160]]]) { c.strokeStyle = css(col, Math.min(1, a2 * al)); c.lineWidth = w * k; c.beginPath(); c.moveTo(hx + x0 * k, hy + y0 * k); c.lineTo(hx + x1 * k, hy + y1 * k); c.stroke(); } }
+            for (const [w, a2, col] of [[5, .12, [255, 96, 40]], [1.1 + 1.2 * fade, .75, [255, 206, 140]]]) { c.strokeStyle = css(col, Math.min(1, a2 * al)); c.lineWidth = w * k; c.beginPath(); c.moveTo(hx + x0 * k, hy + y0 * k); c.lineTo(hx + x1 * k, hy + y1 * k); c.stroke(); } }
         }
         if (F > .02) { const g = c.createRadialGradient(sx0, sy0, 0, sx0, sy0, 420 * k); g.addColorStop(0, css([255, 190, 120], .22 * F)); g.addColorStop(1, css([255, 150, 90], 0)); c.fillStyle = g; c.fillRect(sx0 - 420 * k, sy0 - 420 * k, 840 * k, 840 * k); }
         c.restore();
@@ -475,12 +469,12 @@ const HL = (() => {
         // rolls away across the sky over his head, growing and thinning as it goes. Soft round billows, dark, the
         // near ones lit from beneath by the fire (amber, never red). Each billow travels the whole way in about a
         // minute and melts away at the end; the far ones are drawn first.
-        { const N = 64, ps = [];
+        { const N = 46, ps = [];
           for (let i = 0; i < N; i++) { const h1 = Math.sin(i * 12.9898) * 43758.5453, h2 = Math.sin(i * 78.233) * 12543.123; ps.push([(i / N + G.t / 3400) % 1, h1 - Math.floor(h1), h2 - Math.floor(h2), i]); }
           ps.sort((a, b) => b[0] - a[0]);
-          for (const [u, r1, r2, i] of ps) { const rise = 1 - Math.pow(1 - u, 3), spread = (26 + 240 * u) * k, px = sx0 - (240 * u + 900 * u * u) * k + (r1 - .5) * spread, py = sy0 - (14 + 150 * rise - 60 * u * u) * k + (r2 - .5) * spread * .7, rr = (13 + 240 * Math.pow(u, 1.25)) * k * (.8 + .4 * r2), a = smooth(0, .05, u) * (1 - smooth(.72, 1, u)), P = PUFF[i % 3];
+          for (const [u, r1, r2, i] of ps) { const rise = 1 - Math.pow(1 - u, 3), spread = (40 + 230 * u) * k, px = sx0 - (240 * u + 900 * u * u) * k + (r1 - .5) * spread, py = sy0 - (14 + 150 * rise - 60 * u * u) * k + (r2 - .5) * spread * .7, rr = (40 + 210 * u) * k * (.8 + .4 * r2), a = smooth(0, .05, u) * (1 - smooth(.72, 1, u)), P = PUFF[i % 3];
             c.globalCompositeOperation = 'source-over'; c.globalAlpha = a * (.22 + .58 * dark); c.drawImage(P.d, px - rr, py - rr, 2 * rr, 2 * rr);
-            const la = a * (burn * (.36 + .9 * Math.pow(1 - u, 2)) + F * .3 * (1 - u)); if (la > .01) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = la; c.drawImage(P.l, px - rr, py - rr, 2 * rr, 2 * rr); } } }
+            const la = a * (burn * (.3 + .7 * Math.pow(1 - u, 2)) + F * .3 * (1 - u)); if (la > .01) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = la; c.drawImage(P.l, px - rr, py - rr, 2 * rr, 2 * rr); } } }
         c.globalCompositeOperation = 'source-over'; c.globalAlpha = 1;
         if (flames) { c.save(); c.globalCompositeOperation = 'lighter'; flames(); c.restore(); }
         // lightning in the cloud, and sparks carried up
