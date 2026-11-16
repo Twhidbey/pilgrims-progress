@@ -277,6 +277,14 @@ const SL = (() => {
   }
   // one tinted figure, feet at world (x, y); nothing below the water line when `cut` (each figure has its own small canvas)
   const tintC = {}; let FIG_DIP = 0;
+  // the last row of a picture that has body in it (some packs keep a few blank rows at the bottom); found once per picture
+  const lastRows = new WeakMap();
+  function lastRow(im, fc) { let r = lastRows.get(im); if (r !== undefined) return r; r = { r: im.height - 1, x0: 0, x1: 0 };
+    try { const d = fc.getContext('2d').getImageData(0, 0, im.width, im.height).data, on = (x, y) => d[(y * im.width + x) * 4 + 3] > 128;
+      for (; r.r > 0; r.r--) { let k = 0; for (let x = 0; x < im.width; x += 2) if (on(x, r.r)) k++; if (k > 8) break; }
+      // the body is the longest unbroken run in that row (splashes the video painted beside him are shorter runs)
+      let run = 0; for (let x = 0; x <= im.width; x++) { if (x < im.width && on(x, r.r)) run++; else { if (run > r.x1 - r.x0) { r.x0 = x - run; r.x1 = x; } run = 0; } } } catch (e) {}
+    lastRows.set(im, r); return r; }
   function figure(c, slot, im, meta, x, y, face, tint, cut, alpha = 1) {
     if (!im || alpha <= 0) return;
     const fc = tintC[slot] || (tintC[slot] = mk(8, 8)); if (fc.width !== im.width || fc.height !== im.height) { fc.width = im.width; fc.height = im.height; }
@@ -291,7 +299,14 @@ const SL = (() => {
     c.save(); c.globalAlpha = alpha;
     if (cut) { c.beginPath(); c.rect(-1e5, -1e5, 2e5, 1e5); c.clip(); }
     c.translate(x, y); if (TALKM) c.transform(1, 0, TALKM.sh, 1, 0, 0);      // build 118: whoever is speaking leans a hair with his own voice (talkMove in index.html)
-    c.scale(face * CHR_K, CHR_K * (TALKM ? TALKM.sy : 1)); c.drawImage(fc, -meta.ax, -meta.ground); c.restore();
+    c.scale(face * CHR_K, CHR_K * (TALKM ? TALKM.sy : 1)); c.drawImage(fc, -meta.ax, -meta.ground);
+    // build 141 (owner: "a flickering blank space between Christian and mud shortly after they enter"): the wading and
+    // climbing pictures end at their own video's mud line (the waist). Whenever he stands higher than that (still sinking
+    // after the fall, or heaving up), the picture ended above the surface and blank paper showed under him. The body's
+    // own width at its last row is now carried straight down to the surface as one dark shape, so there is always body where
+    // he enters the mud.
+    if (FIG_DIP && cut) { const r0 = meta.ground - y / CHR_K, lr = lastRow(im, fc); if (r0 > lr.r - 1 && lr.x1 > lr.x0) { c.fillStyle = css([tint[0] * .34, tint[1] * .34, tint[2] * .34]); c.fillRect(lr.x0 - meta.ax, lr.r - 1 - meta.ground, lr.x1 - lr.x0, r0 - lr.r + 4); } }
+    c.restore();
   }
 
   // ---------- sound: the tune in the minor, low and slow on bowed tones ----------
@@ -934,7 +949,9 @@ const SL = (() => {
     const inWater = C2.y > 2 && ph !== 'look' && ph !== 'onway' && ph !== 'on' && ph !== 'drawn';
     let walkIm = CHR[((Math.floor(C2.anim) % CHR.length) + CHR.length) % CHR.length], walkM = CHR_META;
     // in the mire he heaves and struggles (one video loop) instead of walking
-    const wk = ph === 'fall' ? smooth(20, 50, C2.fallT) : 1; let wa = 1;      // build 119: he flounders from the fall on
+    // build 141: his floundering picture ends at the waist, so it only comes in once he has sunk nearly that far (it came
+    // in by the clock, while he was still knee-deep, and blank paper showed under him)
+    const wk = Math.min(ph === 'fall' ? smooth(20, 50, C2.fallT) : 1, smooth(44, 57, C2.y)); let wa = 1;      // build 119: he flounders from the fall on
     if (WADE.length && inWater && wk > 0 && ['fall', 'pli', 'back', 'backtalk', 'wade', 'stuck', 'help'].includes(ph)) {
       if (wk < 1) figure(n, 'chr0', walkIm, CHR_META, C2.x, C2.y, C2.face, fig, true, alpha * C2.alpha * (1 - smooth(.5, 1, wk)));
       walkIm = WADE[Math.floor(C2.wa || 0) % WADE.length]; walkM = META.wade; wa = smooth(0, .5, wk); FIG_DIP = 46; }
