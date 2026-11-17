@@ -159,7 +159,7 @@ const HL = (() => {
 
   // ---------- pictures baked once ----------
   let CLOUDW = null, CLOUDG = null, DECK = null;
-  let HILL = null, SMOKE = null, CLOUD = null, TOWN = null, GDOOR = null, GSTONE = null, CAP = null, BEAMC = null, SIGNPIC = null, GWST = null, GWALL = null, SHC = null, CHRSH = null, CHRSH_N = null; const GWST_META = { ax: 61, ground: 306 }; const GWF = []; const CRACKS = [], STONES = [], SEAMS = [], PUFF = [], MASS = []; let PLUME = null;
+  let HILL = null, SMOKE = null, CLOUD = null, TOWN = null, GDOOR = null, GSTONE = null, CAP = null, BEAMC = null, SIGNPIC = null, GWST = null, GWALL = null, SHC = null, CHRSH = null, CHRSH_N = null; const GWST_META = { ax: 61, ground: 306 }; const GWF = []; const CRACKS = [], STONES = [], SEAMS = [], PUFF = [];
   // the hill's outline: h = height above its foot, 0 to TOP; its left side hangs far out over the way
   const TOP = 520, HW = 1500, HH = 640, HOX = 300, HOY = 610;      // the baked picture's size and where the foot's left end lies in it
   const FACE = [[0, 0], [36, -30], [84, -62], [112, -44], [150, -70], [240, -138], [320, -182], [358, -176], [420, -116], [480, -44], [520, 36]];      // a second, lower overhang under the great one
@@ -260,7 +260,7 @@ const HL = (() => {
     { const tintOf = col => { const t = mk(CLOUD.width, CLOUD.height), q = t.getContext('2d'); q.drawImage(CLOUD, 0, 0); q.globalCompositeOperation = 'source-in'; q.fillStyle = col; q.fillRect(0, 0, t.width, t.height); return t; }; CLOUDW = tintOf('rgb(255,226,176)'); CLOUDG = tintOf('rgb(168,160,176)'); }
     // billows of smoke: three soft round shapes, each baked dark and again as the light the fire lays on its underside
     for (const seed of [5, 17, 29]) { const base = mk(160, 160), b2 = base.getContext('2d'), Rp = rngS(seed);
-      for (let j = 0; j < 9; j++) { const an = Rp() * 6.283, d = j ? 20 + Rp() * 22 : 0, r = j ? 25 + Rp() * 15 : 44, x = 80 + Math.cos(an) * d, y = 80 + Math.sin(an) * d * .8, g = b2.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, 'rgba(255,255,255,.85)'); g.addColorStop(.62, 'rgba(255,255,255,.7)'); g.addColorStop(.86, 'rgba(255,255,255,.28)'); g.addColorStop(1, 'rgba(255,255,255,0)'); b2.fillStyle = g; b2.fillRect(x - r, y - r, 2 * r, 2 * r); }
+      for (let j = 0; j < 10; j++) { const an = Rp() * 6.283, d = j ? 21 + Rp() * 22 : 0, r = j ? 26 + Rp() * 15 : 45, x = 80 + Math.cos(an) * d, y = 80 + Math.sin(an) * d * .8, g = b2.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, 'rgba(255,255,255,.88)'); g.addColorStop(.66, 'rgba(255,255,255,.74)'); g.addColorStop(.88, 'rgba(255,255,255,.3)'); g.addColorStop(1, 'rgba(255,255,255,0)'); b2.fillStyle = g; b2.fillRect(x - r, y - r, 2 * r, 2 * r); }
       // (build 251, owner: "make em slightly wispier"; build 253, "too wispy": halfway back; build 256, "a bit more billowy": rounder lobes with fuller cores and a firmer rounded edge, fewer wisps, each billow lighter on top and darker beneath so it reads as a volume): a ragged fringe of small drawn-out wisps round the core, and a few
       // soft holes worn through it, so a billow's edge frays into the air instead of ending in a round outline
       for (let j = 0; j < 7; j++) { const an = Rp() * 6.283, d = 38 + Rp() * 22, r = 7 + Rp() * 10, x = 80 + Math.cos(an) * d, y = 80 + Math.sin(an) * d * .7, g = b2.createRadialGradient(0, 0, 0, 0, 0, r);
@@ -396,7 +396,7 @@ const HL = (() => {
   }
   function preload() {
     loadOak();
-    if (!loading) loading = Promise.all([Promise.all([loadImg('hill-rock.webp'), loadImg('hill-fire.webp')]).then(([r, f]) => { if (r) { build(); paintHill(r, f); } }), loadPack('wiseman', WIS).catch(() => {}), loadImg('gate-door.webp').then(im => { if (im) GDOOR = soften(im, 4, .7, false, .22); }), loadImg('goodwill-stand.webp').then(im => { if (im) GWST = im; }), loadImg('smoke-plume.webp').then(im => { if (!im) return; PLUME = { im }; }), loadImg('gate-wall.webp').then(im => { if (im) GWALL = soften(im, 4, .7, true, .22); }), loadImg('gate-stone.webp').then(im => { if (im) GSTONE = im; }), loadPack('evangelist-walk', EVW).catch(() => {}), loadImg('wiseman-stand.webp').then(im => { if (im) WIS_ST = im; }), OBS.ready || loadPack('obstinate', OBS).catch(() => {}), EVS.ready || loadPack('evangelist-stand', EVS).catch(() => {}), RUNP.ready || loadPack('christian-run-plain', RUNP).catch(() => {}),
+    if (!loading) loading = Promise.all([Promise.all([loadImg('hill-rock.webp'), loadImg('hill-fire.webp')]).then(([r, f]) => { if (r) { build(); paintHill(r, f); } }), loadPack('wiseman', WIS).catch(() => {}), loadImg('gate-door.webp').then(im => { if (im) GDOOR = soften(im, 4, .7, false, .22); }), loadImg('goodwill-stand.webp').then(im => { if (im) GWST = im; }), loadImg('gate-wall.webp').then(im => { if (im) GWALL = soften(im, 4, .7, true, .22); }), loadImg('gate-stone.webp').then(im => { if (im) GSTONE = im; }), loadPack('evangelist-walk', EVW).catch(() => {}), loadImg('wiseman-stand.webp').then(im => { if (im) WIS_ST = im; }), OBS.ready || loadPack('obstinate', OBS).catch(() => {}), EVS.ready || loadPack('evangelist-stand', EVS).catch(() => {}), RUNP.ready || loadPack('christian-run-plain', RUNP).catch(() => {}),
       WEEP.ready || loadPack('christian-weep', WEEP).catch(() => {}), KNEEL.ready || loadPack('christian-kneel', KNEEL).catch(() => {}), TURN.ready || loadPack('christian-turn', TURN).then(() => bookLoaded('TURN')).catch(() => {}),
       OBS_ST ? 0 : loadImg('obstinate-stand.webp').then(im => { if (im && !OBS_ST) OBS_ST = im; }),
       loadImg('tree-a.webp').then(im => { if (!im) return; const c = mk(im.width, im.height), k = c.getContext('2d'); k.drawImage(im, 0, 0); k.globalCompositeOperation = 'source-in'; k.fillStyle = '#fff'; k.fillRect(0, 0, c.width, c.height); OAKT = c; })]).catch(() => {});
@@ -552,20 +552,6 @@ const HL = (() => {
   const VENTS = [[62, -374, 50], [238, -330, 80], [378, -313, 70], [637, -159, 45]], STEAMP = [];
   let STEAMC = null;
   function steamPuff(v, burst = 0) { const [x, y, len] = VENTS[v]; STEAMP.push({ x: x + (Math.random() - .5) * 8, y: y + Math.random() * len, vx: -.06 - Math.random() * .1, vy: -.28 - Math.random() * .18 - .15 * burst, r: 6 + Math.random() * 5 + 4 * burst, g: .12 + Math.random() * .08, t: 0, life: 240 + Math.random() * 160, s: Math.random() * 6.28 }); }
-  // the billow masses (build 258): each a cauliflower of rounded lobes, drawn from the bottom lobe up so each higher lobe's
-  // lit underside lies over the dark top of the one below; `d` the dark body (darker on top), `l` only the firelight on the
-  // lobes' undersides (each lobe first hides the light of those behind it), `p` and `h` the same shape in pale smoke-greys
-  function bakeMasses() { for (const seed of [3, 11, 19, 27, 41, 53]) { const W = 256, H = 208, R = rngS(seed), cx = 128, cy = 122, R0 = 74, LB = [{ x: cx, y: cy + 6, r: 62 }];
-      for (let j = 0; j < 22; j++) { const an = -Math.PI - .4 + (Math.PI + .8) * R(), d = R0 * (.3 + .5 * R()); let r = R0 * (.3 + .2 * R()); const x = cx + Math.cos(an) * d * 1.15, y = cy + Math.sin(an) * d * .9; r = Math.min(r, x - 2, W - 2 - x, y - 2, H - 2 - y); if (r > 8) LB.push({ x, y, r }); }
-      LB.sort((p, q) => q.y - p.y);
-      const D = mk(W, H), L = mk(W, H), qd = D.getContext('2d'), ql = L.getContext('2d');
-      for (const b of LB) { const s = Math.ceil(b.r * 2) + 2, t = mk(s, s), q = t.getContext('2d'), o = s / 2;
-        const maskIt = () => { const g = q.createRadialGradient(o, o, 0, o, o, b.r); g.addColorStop(0, '#000'); g.addColorStop(.42, '#000'); g.addColorStop(.75, 'rgba(0,0,0,.55)'); g.addColorStop(1, 'rgba(0,0,0,0)'); q.globalCompositeOperation = 'destination-in'; q.fillStyle = g; q.fillRect(0, 0, s, s); q.globalCompositeOperation = 'source-over'; };
-        const g = q.createLinearGradient(0, o - b.r, 0, o + b.r); g.addColorStop(0, 'rgb(33,26,31)'); g.addColorStop(1, 'rgb(60,47,51)'); q.fillStyle = g; q.fillRect(0, 0, s, s); maskIt(); qd.drawImage(t, b.x - o, b.y - o);
-        q.clearRect(0, 0, s, s); q.fillStyle = '#000'; q.fillRect(0, 0, s, s); maskIt(); ql.globalCompositeOperation = 'destination-out'; ql.drawImage(t, b.x - o, b.y - o); ql.globalCompositeOperation = 'source-over';
-        q.clearRect(0, 0, s, s); const lg = q.createRadialGradient(o, o + .8 * b.r, 0, o, o + .8 * b.r, 1.1 * b.r); lg.addColorStop(0, 'rgba(240,160,108,.5)'); lg.addColorStop(.5, 'rgba(220,128,86,.22)'); lg.addColorStop(1, 'rgba(200,100,76,0)'); q.fillStyle = lg; q.fillRect(0, 0, s, s); maskIt(); ql.drawImage(t, b.x - o, b.y - o); }
-      const tint = col => { const c2 = mk(W, H), k2 = c2.getContext('2d'); k2.drawImage(D, 0, 0); k2.globalCompositeOperation = 'source-in'; k2.fillStyle = col; k2.fillRect(0, 0, W, H); return c2; };
-      MASS.push({ W, H, d: D, l: L, p: tint('rgb(112,96,94)'), h: tint('rgb(146,134,140)') }); } }
   function fire(k = 1, atX = null) { flash = Math.max(flash, k); for (let v = 0; v < VENTS.length; v++) steamPuff(v, k); if (dark > .6 && HL.on) for (let i = Math.floor(Math.random() * 2.4 * k); i > 0; i--) boulder(); if (dark > .5 && HL.on) shed(3 + Math.floor(4 * k), 1);
     // LIGHTNING, TRACED FROM PHOTOGRAPHS (owner, build 207: "Lightning looks too crazy and unrealistic - maybe look for
     // lightning shots on web (free pics) and trace them"). Each flash takes one of four strikes traced from public-domain
@@ -1133,47 +1119,15 @@ const HL = (() => {
         const SMK = SMKC[0], SMK3 = SMKC[1], qs = SMK.getContext('2d'); qs.clearRect(0, 0, VW, VH);
         // (build 233, owner: "Can we make another column going up from other lit up spot at peak of mt"): a second, slimmer
         // column rises from the brightest fire just right of the summit (hill x 205, on the rock's top), a little out of step
-        // BILLOW MASSES (build 258, owner: "gosh I can't get smoke right ! need some deep thinking here"; plan A agreed: "A
-        // let's go"). Each column is a few big masses, not a hundred small blobs: a mass is a cauliflower of rounded lobes
-        // (`MASS`, six shapes baked once in `bakeMasses()`), lit as the scene is lit, by the fire BELOW: dark tops, a warm
-        // glow on the underside of every lobe, each lobe hiding the light of the lobes behind it, so the lumps read one by
-        // one. A new mass leaves the vent every two and a half seconds, rises, swells, slowly turns over, and melts into the
-        // cloud; the youngest are drawn in front. Paler near the rock, hazed far off, as before; the mask `SMK` as before.
-        // THE PAINTED PLUME (build 260, owner: "Yeah not my favorite - let's try B"): one column of smoke painted by the image model
-        // in the mountain painting's own hand (`assets/smoke-plume.webp`: dark rolling billows lit amber from beneath, cut from
-        // its white paper, mirrored so it leans left with the wind, its top and left edge faded into the cloud), set on both
-        // vents (the second smaller and narrower, out of step). It moves in code: warped once a frame into its own canvas, row pair by row pair (on whole pixels, so no seams), each row swaying
-        // and swelling a little on slow waves that grow with height, so the billows seem to roll. Far off it takes the haze
-        // (a pale copy of the warped picture). The masses below stand in until it loads.
-        const PW = tintC.plume || (tintC.plume = {});
-        const warped = (ox, sp, ph) => { const key = ox + ':' + G.t + ':' + Math.round(k * 1000), cache = PW[ox] || (PW[ox] = { cv: mk(8, 8), hz: mk(8, 8) }); if (cache.key === key) return cache;
-          const im = PLUME.im, kS = Math.min(k, 1), Dh = rocky ? 195 : 90 + 105 * clamp(dark * 1.5), bx0 = sx0 + ox * k, by0 = ox ? hy + (rockTopAt(205) + 6) * k : sy0, dTop = (by0 - sy0) / kS;
-          const h = Math.max(8, Math.round((Dh + 150 + dTop) * kS * sp)), w = h * im.width / im.height * (ox ? .85 : 1), base = .652, pad = Math.ceil(w * .1), cw = Math.ceil(w * 1.08) + 2 * pad, cv = cache.cv;
-          if (cv.width !== cw || cv.height !== h) { cv.width = cw; cv.height = h; } const q = cv.getContext('2d'); q.clearRect(0, 0, cw, h);
-          for (let r = 0; r < h; r += 2) { const v = r / h, lift = 1 - v, sc = 1 + .035 * Math.sin(G.t / 260 + v * 5 + ph) * lift, dx = (.014 * Math.sin(G.t / 170 + v * 6 + ph) + .005 * Math.sin(G.t / 97 + v * 11 + ph * 2)) * w * lift;
-            q.drawImage(im, 0, v * im.height, im.width, 2 / h * im.height, pad + w * base * (1 - sc) + dx, r, w * sc, 2); }
-          Object.assign(cache, { key, x: bx0 - pad - w * base, y: by0 + 4 * kS - h, dirtyHz: true }); return cache; };
-        const plume = (q, ox, sp, ph, al, hz) => { if (al < .005) return; const W = warped(ox, sp, ph); let im = W.cv;
-          if (hz) { if (W.dirtyHz) { const t = W.hz; t.width = W.cv.width; t.height = W.cv.height; const tq = t.getContext('2d'); tq.drawImage(W.cv, 0, 0); tq.globalCompositeOperation = 'source-in'; tq.fillStyle = 'rgb(146,134,140)'; tq.fillRect(0, 0, t.width, t.height); W.dirtyHz = false; } im = W.hz; }
-          q.save(); q.globalAlpha = Math.min(1, al); q.drawImage(im, W.x, W.y); q.restore(); };
-        const cols = mask => { if (PLUME) { const hzP = rocky ? 0 : clamp(1 - dark * 1.6), aP = (.1 + .9 * Math.max(dark, farK * 1.3)) * reveal;
-            for (const [ox, sp, ph] of [[0, 1, 0], [145, .78, 2.3]]) { if (mask) { plume(qs, ox, sp, ph, aP * .7); continue; }
-              c.globalCompositeOperation = 'source-over'; if (hzP > 0) plume(c, ox, sp, ph, aP * hzP * .85, true); plume(c, ox, sp, ph, aP * (1 - hzP));
-              if (F > .02 && hzP < 1) { c.globalCompositeOperation = 'lighter'; plume(c, ox, sp, ph, .18 * F * (1 - hzP)); } }
-            c.globalCompositeOperation = 'source-over'; return; }
-          if (!MASS.length) bakeMasses();
-          for (const [ox, N, sp, ph0] of [[0, 22, 1, 0], [145, 18, .78, .37]]) { const kS = Math.min(k, 1), Dh = rocky ? 195 : 90 + 105 * clamp(dark * 1.5), bx0 = sx0 + ox * k, by0 = ox ? hy + (rockTopAt(205) + 6) * k : sy0, dTop = (by0 - sy0) / kS, LIFE = 1800, ms = [];
-            const fr = v => v - Math.floor(v);
-            for (let i = 0; i < N; i++) { const g = G.t / LIFE + i / N + ph0, gen = Math.floor(g) * N + i; ms.push([fr(g), fr(Math.sin(gen * 12.9898 + ox) * 43758.5453), fr(Math.sin(gen * 78.233 + ox) * 12543.123), fr(Math.sin(gen * 39.425 + ox) * 23421.631), gen]); }
-            ms.sort((a, b) => b[0] - a[0]);
-            for (const [u, h1, h2, h3, gen] of ms) { const rise = 1 - Math.pow(1 - u, 1.6), rr = (28 + 112 * u) * kS * sp * (.85 + .3 * h2), px = bx0 - (50 * u + 110 * u * u) * kS + (h1 - .5) * 24 * u * kS * sp, py = by0 - (2 + (Dh + 90 + dTop) * rise) * kS,
-                a = smooth(0, .025, u) * (1 - smooth(.55, .95, u)), M = MASS[gen % MASS.length], ang = (h3 - .5) * .4 + (h3 > .5 ? 1 : -1) * .45 * u, fl = h1 > .5 ? -1 : 1, w = 2.5 * rr, hh = w * M.H / M.W;
-              const hzP = rocky ? 0 : clamp(1 - dark * 1.6), aP = a * (.1 + .85 * Math.max(dark, farK * 1.3)) * reveal; if (aP < .005) continue;
-              const put = (q, im, al) => { if (al < .005) return; q.save(); q.globalAlpha = Math.min(1, al); q.translate(px, py); q.rotate(ang); q.scale(fl, 1); q.drawImage(im, -w / 2, -hh * .5, w, hh); q.restore(); };
-              if (mask) { put(qs, M.d, aP * 3); continue; }
-              const A = Math.min(1, aP * 1.3) * (1 - hzP), lo = 1 - smooth(.03, .35, u);
-              c.globalCompositeOperation = 'source-over'; if (hzP > 0) put(c, M.h, aP * hzP); put(c, M.d, A); if (lo > .01) put(c, M.p, A * lo * .55);
-              const la = .7 * a * (burn * (.2 + .8 * Math.pow(1 - u, 2)) + F * .3 * (1 - u)) * (1 - .6 * hzP); if (la > .01) { c.globalCompositeOperation = 'lighter'; put(c, M.l, la); } } } };
+        // (build 248) the billows are denser, so the glow behind them no longer shows through (`DENSE`)
+        const DENSE = 1.9;
+        const cols = mask => { for (const [ox, N, sp, ph0] of [[0, 96, 1, 0], [145, 64, .78, .37]]) { const ps = [], kS = Math.min(k, 1), Dh = rocky ? 195 : 90 + 105 * clamp(dark * 1.5), bx0 = sx0 + ox * k, by0 = ox ? hy + (rockTopAt(205) + 6) * k : sy0, dTop = (by0 - sy0) / kS;
+          for (let i = 0; i < N; i++) { const h1 = Math.sin(i * 12.9898 + ox) * 43758.5453, h2 = Math.sin(i * 78.233 + ox) * 12543.123; ps.push([(i / N + G.t / 2600 + ph0) % 1, h1 - Math.floor(h1), h2 - Math.floor(h2), i]); }
+          ps.sort((a, b) => b[0] - a[0]);
+          for (const [u, r1, r2, i] of ps) { const rise = 1 - Math.pow(1 - u, 1.6), spread = (24 + 120 * u) * kS * sp, px = bx0 - (50 * u + 110 * u * u) * kS + (r1 - .5) * spread * 1.35 + 12 * Math.sin(G.t / 300 + i) * u * kS, py = by0 - (14 + (Dh + 90 + dTop) * rise) * kS + (r2 - .5) * spread * .65, rr = (26 + 120 * u) * kS * sp * (.8 + .4 * r2), a = smooth(0, .05, u) * (1 - smooth(.5, .95, u)), P = PUFF[i % 3];
+            const hzP = rocky ? 0 : clamp(1 - dark * 1.6), aP = a * .7 * (.1 + .75 * Math.max(dark, farK * 1.3)) * reveal; if (mask) { qs.globalAlpha = Math.min(1, aP * 3); qs.drawImage(P.d, px - rr * 1.3, py - rr * .8, 2.6 * rr, 1.6 * rr); continue; }
+            c.globalCompositeOperation = 'source-over'; if (hzP > 0) { c.globalAlpha = aP * hzP; c.drawImage(P.h, px - rr * 1.3, py - rr * .8, 2.6 * rr, 1.6 * rr); } const lo = 1 - smooth(.04, .42, u), A = Math.min(1, aP * DENSE) * (1 - hzP); c.globalAlpha = A * (1 - .4 * lo); c.drawImage(P.d, px - rr * 1.3, py - rr * .8, 2.6 * rr, 1.6 * rr); if (lo > .01) { c.globalAlpha = A * lo * .75; c.drawImage(P.p, px - rr * 1.3, py - rr * .8, 2.6 * rr, 1.6 * rr); }
+            const la = a * (burn * (.3 + .7 * Math.pow(1 - u, 2)) + F * .3 * (1 - u)); if (la > .01) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = la; c.drawImage(P.l, px - rr, py - rr, 2 * rr, 2 * rr); } } } };
         // (build 248, owner: "The light still shines thru billows - don't like that"): the columns' shapes are laid in the mask
         // first, so the light on the cloud's underside behind them (fire and strike) is cut out where the smoke stands
         cols(true);
