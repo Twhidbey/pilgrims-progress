@@ -560,12 +560,16 @@ const HL = (() => {
       f.globalCompositeOperation = 'destination-in'; f.drawImage(im, 0, 0); f.globalCompositeOperation = 'source-over';
     }
     if (gateHere && CHR_SLOTS.includes(slot) && (!CHRSH_N || alpha >= CHRSH_N.a)) CHRSH_N = { fc, meta, x, face, k: CHR_K * FK, sy: sy * (TALKM ? TALKM.sy : 1), a: alpha };
-    c.save(); c.globalAlpha = alpha; c.translate(x, 5); if (TALKM) c.transform(1, 0, TALKM.sh, 1, 0, 0);
+    c.save(); c.globalAlpha = alpha; c.translate(x, FY); if (TALKM) c.transform(1, 0, TALKM.sh, 1, 0, 0);
     c.scale(face * CHR_K * FK, CHR_K * FK * sy * (TALKM ? TALKM.sy : 1)); c.drawImage(fc, -meta.ax, -meta.ground);
     if (RIM && RIM.bloom && rimK > .02) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = alpha * (RIM.gold ? .9 : .5) * rimK; c.drawImage(RIM.bloom, -meta.ax, -meta.ground, im.width, im.height); c.globalCompositeOperation = 'source-over'; RIM.bloom = null; }
     c.restore();
   }
-  function foot(c, x, a = 1, rx = 46) { const g = c.createRadialGradient(0, 0, 0, 0, 0, 1); g.addColorStop(0, 'rgba(6,8,14,.5)'); g.addColorStop(.6, 'rgba(6,8,14,.26)'); g.addColorStop(1, 'rgba(6,8,14,0)'); c.save(); c.translate(x, 4); c.scale(rx, 7); c.globalAlpha = a; c.fillStyle = g; c.fillRect(-1, -1, 2, 2); c.restore(); }
+  // build 281 (owner: "both christian and worldly can be shifted down slightly so their shadows don't extend past ground"):
+  // on the fair plain everyone stands a little lower in the road (FY 12, was 5) and the shadow is flatter, so it lies on
+  // the road, never on the field behind. Among the rocks and at the gate the old depth (5) is kept. Set each frame in draw().
+  let FY = 5;
+  function foot(c, x, a = 1, rx = 46) { const g = c.createRadialGradient(0, 0, 0, 0, 0, 1); g.addColorStop(0, 'rgba(6,8,14,.5)'); g.addColorStop(.6, 'rgba(6,8,14,.26)'); g.addColorStop(1, 'rgba(6,8,14,0)'); c.save(); c.translate(x, FY + (FY > 5 ? 2 : -1)); c.scale(rx * (FY > 5 ? .9 : 1), FY > 5 ? 4.5 : 7); c.globalAlpha = a; c.fillStyle = g; c.fillRect(-1, -1, 2, 2); c.restore(); }
 
   // ---------- sound ----------
   // fire out of the hill: a flash and thunder (no words out of the mountain: left out for young children)
@@ -939,7 +943,7 @@ const HL = (() => {
       // build 267: no book after Level 1, so instead of opening his book and weeping he bows low and trembles at Evangelist's
       // feet: his quiet standing picture leaned forward from his feet and pressed down a little, shaking
       const bw = smooth(0, 1, wa), im = STD[atTime(STD_META, breathT(QUIET[0] + G.t * .4))];
-      c.save(); c.translate(x, 5); c.rotate(C3.face * .3 * bw); c.translate(-x, -5);
+      c.save(); c.translate(x, FY); c.rotate(C3.face * .3 * bw); c.translate(-x, -FY);
       figure(c, 'weep', im, STD_META, x + Math.sin(G.t * .9) * .5 * bw, C3.face, tint, a * smooth(0, .6, wa), 1 - .07 * bw); c.restore();
     } else if (wa > 0) figure(c, 'weep', WEEP[Math.min(WEEP.length - 1, Math.floor(C3.wt))], WEEP_META, x, C3.face, tint, a * smooth(0, .6, wa));
     if (ra > 0) figure(c, 'run', RUNP[((Math.floor(C3.ranim) % RUNP.length) + RUNP.length) % RUNP.length], RUNP_META, x, -1, tint, a * smooth(0, .5, ra));
@@ -993,6 +997,7 @@ const HL = (() => {
           c.restore(); } } }
     // the far light: ahead of him on the plain; over the gate at the end. The hill, drawn after it, comes between.
     const rocky = ph === 'path' || ph === 'still' || ph === 'come' || ph === 'evan' || ph === 'back' || ph === 'mist' || ph === 'title';
+    FY = rocky || gateish > .5 ? 5 : 12;
     const lx = lerp(VW * .5, clamp(X(GATE_X), 200, VW - 120), gateish), ly = lerp(hor - 96, Y(-262), gateish), la = (1 - .35 * dark) * (1 - gateish) * (rocky ? 0 : 1);
     // AMONG THE ROCKS (build 185; owner: "we need a surrounding of rockiness, not just ground then big rock"). Every layer
     // becomes rock, each one clean shape of one tone, pale far and dark near: the far ridges of the mountain's roots,
@@ -1560,6 +1565,13 @@ const HL = (() => {
     const humpC = css(mix(mix([46, 40, 36], [120, 116, 100], .25), [22, 22, 30], dark));
     // the swell of the brow, on the road (only on the plain, where he goes out of sight over it)
     if (!rocky && !gateish && X(BROW0 - 300) < VW && X(CREST + 600) > 0) { c.beginPath(); c.moveTo(X(BROW0 - 340), Y(1)); for (let x = BROW0 - 330; x <= CREST + 570; x += 10) c.lineTo(X(x), Y(-crest(x))); c.lineTo(X(CREST + 580), Y(1)); c.fillStyle = humpC; c.fill(); }
+    // build 281 (owner: "maybe add a slight path on the bump that he follows down"): a faint worn track along the brow,
+    // a little below its top line where his feet go, paler than the turf, fading in from the road and on down the far side.
+    const humpPath = () => { if (rocky || gateish > .5) return; const g = c.createLinearGradient(X(BROW0 - 330), 0, X(CREST + 570), 0), pc = mix(mix([92, 80, 66], [150, 138, 112], .2), [40, 38, 46], dark);
+      g.addColorStop(0, css(pc, 0)); g.addColorStop(.18, css(pc, .5)); g.addColorStop(.8, css(pc, .45)); g.addColorStop(1, css(pc, 0));
+      c.beginPath(); for (let x = BROW0 - 330; x <= CREST + 570; x += 8) { const y = Y(-crest(x) + 12 + 1.5 * Math.sin(x * .021) + Math.sin(x * .007)); if (x === BROW0 - 330) c.moveTo(X(x), y); else c.lineTo(X(x), y); }
+      c.strokeStyle = g; c.lineCap = 'round'; c.globalAlpha = .45; c.lineWidth = Math.max(2, 12 * z); c.stroke(); c.globalAlpha = .55; c.lineWidth = Math.max(1.2, 6 * z); c.stroke(); c.globalAlpha = 1; };
+    if (!rocky && !gateish && X(BROW0 - 300) < VW && X(CREST + 600) > 0) humpPath();
     // the lantern's and the open door's light lie in flat pools on the road
     if (gateOn) { c.save(); c.globalCompositeOperation = 'lighter';
       for (const [px, rr, al, col] of [[lnx + 10 * z, 190 * z, .24 * flick * (1 - .4 * open), [255, 170, 90]], [gx - 110 * z, 300 * z, .5 * open, [255, 208, 134]], [gx - 10 * z, 110 * z, .55 * open, [255, 236, 190]]]) { if (al < .01) continue; c.save(); c.translate(px, Y(5)); c.scale(1, .09); const g = c.createRadialGradient(0, 0, 0, 0, 0, rr); g.addColorStop(0, css(col, al)); g.addColorStop(1, css(col, 0)); c.fillStyle = g; c.fillRect(-rr, -rr, 2 * rr, 2 * rr); c.restore(); }
@@ -1651,7 +1663,7 @@ const HL = (() => {
     // (build 202, owner: "when he goes down after talking with worldly wise, he flickers a little": the near ground used to be
     // drawn over him only once he was below the road line, so for a moment his feet sank into the slope and then were cut
     // off at once; now it covers him from the moment he passes the top)
-    if ((ph === 'aside' || ph === 'down') && C3.x > CREST - 2) { c.save(); c.beginPath(); c.moveTo(X(CREST), VH); for (let x = CREST; x <= CREST + 700; x += 10) c.lineTo(X(x), Y(-crest(x))); c.lineTo(VW, Y(0)); c.lineTo(VW, VH); c.clip(); road(); c.fillStyle = humpC; c.fillRect(0, 0, VW, Y(0) + 1); c.restore(); }
+    if ((ph === 'aside' || ph === 'down') && C3.x > CREST - 2) { c.save(); c.beginPath(); c.moveTo(X(CREST), VH); for (let x = CREST; x <= CREST + 700; x += 10) c.lineTo(X(x), Y(-crest(x))); c.lineTo(VW, Y(0)); c.lineTo(VW, VH); c.clip(); road(); c.fillStyle = humpC; c.fillRect(0, 0, VW, Y(0) + 1); humpPath(); c.restore(); }
     // the nearest crags, along the bottom of the picture, in front of everyone
     // (build 212, owner: "the layer in front of Christian as he walks toward mountain can be higher in point and fully go in
     // front of him - maybe make nice shapes like the layer behind him"): the nearest crags are the same leaning spurs as the
