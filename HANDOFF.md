@@ -6,6 +6,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 **The keepsakes have their own chat now** ("Pilgrim's Progress: the keepsakes (Bible, roll, title book)", https://claude.ai/code/session_017HrTSDUqJDSdrXPbhc33zT). Open question there: the wax seal on Evangelist's roll is ours, not the book's (`{14}` has no seal; the sealed roll is given at the Cross, `{94}`): take it off and keep `waxSeal()` for Level 5, or keep it as a departure.
 
+**Build 279 (cover chat): the cover's hills recomposed to lead the eye to the far light. Nothing spent.**
+
 **Build 278 (room 3 chat): free video from Hugging Face (Wan 2.2 on ZeroGPU, the owner's token saved as a network secret), a daily scheduled task working through the clip queue on the `clips` branch, and the Interpreter's raised hand as a real 57-frame gesture. Nothing spent. See `CLAUDE.md`, "Build 278".**
 
 **Build 276 (cover chat): the book cover painted in code in the game's own watercolour language (arched window of layered hills under the far light), replacing the leather photograph; no more flicker on opening. See `CLAUDE.md`, "Build 276". Nothing spent.**
