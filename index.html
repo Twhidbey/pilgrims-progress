@@ -152,7 +152,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">build 242 · Nov 17 2026</div>
+  <div id="build">build 243 · Nov 17 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -2415,7 +2415,55 @@ for (const b of document.querySelectorAll('#levels .lv')) { b.classList.toggle('
   // Library, on Wikimedia Commons under CC0: "Of the consecration of the bishops in the Church of England - Upper cover
   // (c67h3)"), its owner's gilt arms taken out (filled with leather from lower on the same cover), the gilt fillet,
   // the wear and the spine's raised bands kept. The drawn cover above stays only until the photograph has loaded.
-  { const im = new Image(); im.onload = () => { el.style.backgroundImage = 'url(assets/cover-calf.webp?v=228)'; }; im.src = 'assets/cover-calf.webp?v=228'; }
+  { const im = new Image(); im.onload = () => { el.style.backgroundImage = 'url(' + tooled(im) + ')'; }; im.src = 'assets/cover-calf.webp?v=228'; }
+  // build 243 (owner: "add some decor to cover ... keep it in style of books of that time"): tooled as an English calf
+  // binding of the 1670s, the "Cambridge panel": inside the photograph's own gilt fillet, a double blind fillet (lines
+  // pressed into the leather, no gold) round the board; a panel in a triple blind fillet, the leather outside it a
+  // shade darker (on real ones it was sprinkled or stained); small gilt flower tools (a pointed leaf, two curls, dots)
+  // pointing out from the panel's corners and in the frame's corners; a centrepiece of the same tools round a
+  // rosette. The gold is worn: rubbed away in places, as on a book three centuries old. Drawn once, in code.
+  function tooled(im) {
+    const W = im.width, H = im.height, c = mk(W, H), x = c.getContext('2d'), r = rng(1678); x.drawImage(im, 0, 0);
+    const P = [208, 300, W - 166, H - 300];
+    x.fillStyle = 'rgba(14,7,3,.16)'; x.beginPath(); x.rect(40, 0, W - 40, H); x.rect(P[0], P[1], P[2] - P[0], P[3] - P[1]); x.fill('evenodd');
+    const blind = (x0, y0, x1, y1, lw) => { x.lineJoin = 'miter';
+      x.lineWidth = lw * .7; x.strokeStyle = 'rgba(170,128,84,.16)'; x.strokeRect(x0 + 1.6, y0 + 1.6, x1 - x0, y1 - y0);
+      x.lineWidth = lw; x.strokeStyle = 'rgba(12,6,2,.5)'; x.strokeRect(x0, y0, x1 - x0, y1 - y0); };
+    blind(84, 92, W - 48, H - 92, 3.2); blind(96, 104, W - 60, H - 104, 1.6);
+    blind(P[0] - 14, P[1] - 14, P[2] + 14, P[3] + 14, 1.6); blind(P[0] - 7, P[1] - 7, P[2] + 7, P[3] + 7, 1.6); blind(P[0], P[1], P[2], P[3], 3.2);
+    // the gold, drawn white into a mask, then gilded, pressed and worn
+    const m = mk(W, H), g = m.getContext('2d'); g.fillStyle = g.strokeStyle = '#fff'; g.lineCap = 'round';
+    const spray = (px, py, ang, k) => { g.save(); g.translate(px, py); g.rotate(ang); g.scale(k, k);
+      g.beginPath(); g.moveTo(0, -7); g.bezierCurveTo(6, -15, 4, -27, 0, -35); g.bezierCurveTo(-4, -27, -6, -15, 0, -7); g.fill();
+      g.lineWidth = 1.7; g.beginPath(); g.moveTo(0, 0); g.lineTo(0, -8); g.stroke();
+      for (const sd of [-1, 1]) { g.beginPath(); g.moveTo(0, -3); g.quadraticCurveTo(sd * 10, -1, sd * 11, -9); g.quadraticCurveTo(sd * 11, -14, sd * 7, -13); g.quadraticCurveTo(sd * 5, -11, sd * 7, -9.5); g.stroke();
+        g.beginPath(); g.arc(sd * 13, 1, 1.5, 0, 7); g.fill(); }
+      g.beginPath(); g.arc(0, -39.5, 1.9, 0, 7); g.fill(); g.restore(); };
+    const rose = (px, py, k) => { g.beginPath(); g.arc(px, py, 5 * k, 0, 7); g.fill();
+      for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4; g.beginPath(); g.arc(px + Math.cos(a) * 10 * k, py + Math.sin(a) * 10 * k, 2 * k, 0, 7); g.fill(); } };
+    const D = Math.PI / 4;
+    [[P[0], P[1], -D], [P[2], P[1], D], [P[2], P[3], 3 * D], [P[0], P[3], -3 * D]].forEach(([px, py, a]) => { spray(px - Math.sin(a) * 6, py + Math.cos(a) * 6, a, 1.35); });
+    [[96, 104, 3 * D], [W - 60, 104, -3 * D], [W - 60, H - 104, -D], [96, H - 104, D]].forEach(([px, py, a]) => { spray(px + Math.sin(a) * 6, py - Math.cos(a) * 6, a, .9); });
+    const cx = (P[0] + P[2]) / 2, cy = (P[1] + P[3]) / 2;
+    for (let i = 0; i < 4; i++) { const a = i * Math.PI / 2; spray(cx + Math.sin(a) * 15, cy - Math.cos(a) * 15, a, i % 2 ? 1.3 : 1.5); }
+    for (let i = 0; i < 4; i++) { const a = D + i * Math.PI / 2; spray(cx + Math.sin(a) * 17, cy - Math.cos(a) * 17, a, .75); }
+    rose(cx, cy, 1);
+    // a lozenge of small dots round it, as the little tools were often set
+    for (let i = 0; i < 4; i++) { const [ax, ay] = [[0, -118], [96, 0], [0, 118], [-96, 0]][i], [bx, by] = [[96, 0], [0, 118], [-96, 0], [0, -118]][i];
+      for (let j = 0; j < 9; j++) { const t = j / 9; g.beginPath(); g.arc(cx + ax + (bx - ax) * t, cy + ay + (by - ay) * t, j ? 1.5 : 2.6, 0, 7); g.fill(); } }
+    // worn: rubbed away in specks and soft patches
+    g.globalCompositeOperation = 'destination-out';
+    for (let i = 0; i < 4200; i++) { g.fillStyle = 'rgba(0,0,0,' + (.35 + r() * .65) + ')'; g.beginPath(); g.arc(r() * W, r() * H, .6 + r() * 2.2, 0, 7); g.fill(); }
+    for (let i = 0; i < 70; i++) { const px = r() * W, py = r() * H, rad = 14 + r() * 40, gr = g.createRadialGradient(px, py, 0, px, py, rad);
+      gr.addColorStop(0, 'rgba(0,0,0,' + (.3 + r() * .5) + ')'); gr.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = gr; g.fillRect(px - rad, py - rad, rad * 2, rad * 2); }
+    // pressed in: the tool's hollow darkens round the gold, then the gold itself, a little dulled
+    const tint = (col) => { const t = mk(W, H), u = t.getContext('2d'); u.drawImage(m, 0, 0); u.globalCompositeOperation = 'source-in'; u.fillStyle = col; u.fillRect(0, 0, W, H); return t; };
+    const sh = tint('rgba(10,5,2,.6)'); x.drawImage(sh, -1.4, -1.4); x.drawImage(sh, .8, .8);
+    const gl = mk(W, H), u = gl.getContext('2d'); u.drawImage(m, 0, 0); u.globalCompositeOperation = 'source-in';
+    const gg = u.createLinearGradient(0, 0, W * .6, H); gg.addColorStop(0, '#c9a865'); gg.addColorStop(.5, '#a8874a'); gg.addColorStop(1, '#8c6d38'); u.fillStyle = gg; u.fillRect(0, 0, W, H);
+    x.globalAlpha = .74; x.drawImage(gl, 0, 0); x.globalAlpha = 1;
+    return c.toDataURL('image/jpeg', .9);
+  }
   el.onclick = () => { const o = document.getElementById('open'); if (o.style.visibility === 'visible' && o.style.display !== 'none') o.click(); };
 })();
 document.getElementById('open').onclick = () => {
