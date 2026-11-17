@@ -888,6 +888,14 @@ const HL = (() => {
   function draw() {
     const { z, cx, wl } = cam, S = DPR, c = ctx;
     const X = x => (x - cx) * z + VW / 2, Y = y => wl + y * z, hor = Y(-140);
+    // (build 245, owner: "the blue shale layer and other layers in the zoomed in view shouldn't continue across page when we
+    // zoom out but taper off quickly"): the slate path and the haze over it lie only along his stretch of the path (`inPath`,
+    // by where they are in the world); `alongPath` lays a drawing through a soft mask across the picture made from it
+    const inPath = x => smooth(PATH0 - 900, PATH0 - 300, x) * (1 - smooth(FOOT + 250, FOOT + 800, x)), wxAt = sx => cx + (sx - VW / 2) / z;
+    const alongPath = (fn, drawQ) => { const o = tintC.wb || (tintC.wb = mk(8, 8)); if (o.width !== Math.ceil(VW) || o.height !== Math.ceil(VH)) { o.width = Math.ceil(VW); o.height = Math.ceil(VH); }
+      const q = o.getContext('2d'); q.globalCompositeOperation = 'source-over'; q.globalAlpha = 1; q.clearRect(0, 0, VW, VH); drawQ(q);
+      const g = q.createLinearGradient(0, 0, VW, 0); for (let i = 0; i <= 48; i++) g.addColorStop(i / 48, 'rgba(0,0,0,' + clamp(fn(wxAt(VW * i / 48))).toFixed(3) + ')');
+      q.globalCompositeOperation = 'destination-in'; q.fillStyle = g; q.fillRect(0, 0, VW, VH); q.globalCompositeOperation = 'source-over'; c.drawImage(o, 0, 0); };
     const gateish = smooth(0, 1, hope);
     // THE GROUND TREMBLES under the hill: a low steady rumble and a stronger jolt at each flash (the picture is drawn a
     // hair larger so its edges never show)
@@ -1156,7 +1164,7 @@ const HL = (() => {
         // (build 237, owner: "When we're down with Christian we remove mist that's between mountain and next layer up"): the
         // haze in the gully between the mountain and the crags behind the path is gone
         crags(.75, 11, 190, 0, 70, 470, mix([46, 37, 33], [31, 25, 23], dark), .5 * burnR, true, .8, 560);
-        { const g = c.createLinearGradient(0, Y(-70), 0, Y(0)); g.addColorStop(0, css([90, 66, 64], 0)); g.addColorStop(1, css([90, 66, 64], .3 * dark)); c.fillStyle = g; c.fillRect(0, Y(-70), VW, 72 * z); }
+        alongPath(inPath, q => { const g = q.createLinearGradient(0, Y(-70), 0, Y(0)); g.addColorStop(0, css([90, 66, 64], 0)); g.addColorStop(1, css([90, 66, 64], .3 * dark)); q.fillStyle = g; q.fillRect(0, Y(-70), VW, 72 * z); });
         // falling stones (dark, tumbling) and the dust where they land
         if (!DUSTC) { DUSTC = mk(64, 64); const q = DUSTC.getContext('2d'), g = q.createRadialGradient(32, 32, 0, 32, 32, 32); g.addColorStop(0, 'rgba(128,104,90,.55)'); g.addColorStop(.5, 'rgba(116,94,84,.3)'); g.addColorStop(1, 'rgba(110,90,80,0)'); q.fillStyle = g; q.fillRect(0, 0, 64, 64); }
         // (build 232, owner: "Boulders too big when it's zoomed out. If zoomed in, they can be bigger"): the falling boulders and
@@ -1356,10 +1364,16 @@ const HL = (() => {
     // of stones (a few units high, behind the feet, so the walking line stays level), and the rock's grain lies over it
     const road = () => { const g = c.createLinearGradient(0, Y(0), 0, VH); const rc = rocky ? mix([28, 29, 37], [21, 22, 29], dark) : mix([46, 40, 36], [22, 22, 30], Math.max(dark, .9 * gateish));
       if (rocky) { const xl = cx - VW / 2 / z - 20, xr = cx + VW / 2 / z + 20; c.beginPath(); c.moveTo(X(xl), VH);
-        for (let x = Math.floor(xl / 5) * 5; x <= xr; x += 5) { const h = Math.max(0, 70 * (nz(x * .006, 3.1) - .44) + 22 * (nz(x * .03, 7.7) - .42) + 5 * (nz(x * .14, 1.3) - .5)); c.lineTo(X(x), Y(-h)); }
+        for (let x = Math.floor(xl / 5) * 5; x <= xr; x += 5) { const h = inPath(x) * Math.max(0, 70 * (nz(x * .006, 3.1) - .44) + 22 * (nz(x * .03, 7.7) - .42) + 5 * (nz(x * .14, 1.3) - .5)); c.lineTo(X(x), Y(-h)); }
         c.lineTo(X(xr), VH); c.closePath(); c.fillStyle = css(rc); c.fill(); } g.addColorStop(0, css(mix(rc, [120, 116, 100], rocky ? 0 : .25))); g.addColorStop(.08, css(rc)); g.addColorStop(1, css(mix(rc, [0, 0, 0], .35))); c.fillStyle = g; c.fillRect(0, Y(0), VW, VH);
       if (rocky && ROCKPAT) { c.save(); c.clip(); const ts = 1.6 * z, tw = ROCKTEX.width * ts; ROCKPAT.setTransform(new DOMMatrix([ts, 0, 0, ts, ((VW / 2 - cx * z) % tw + tw) % tw, Y(-16)]));
-        c.globalCompositeOperation = 'overlay'; c.globalAlpha = .55; c.fillStyle = ROCKPAT; c.fillRect(0, Y(-60), VW, VH); c.restore(); } };
+        c.globalCompositeOperation = 'overlay'; c.globalAlpha = .55; c.fillStyle = ROCKPAT; c.fillRect(0, Y(-60), VW, VH); c.restore(); }
+      // (build 245, owner: "merge the base of the mountain with the dark layer so they look continuous ... as is the fog and
+      // blue make it feel distinct"): beyond his stretch of the path the ground is the mountain's own foot: a soft rise in the
+      // tone of the rock's base, laid a little over the painting's lower edge, darkening down into the floor of the nearest
+      // crags (their tone at their base line), so rock, ground and the dark band are one
+      if (rocky) alongPath(x => 1 - inPath(x), q => { const t0 = Y(-34), t1 = Y(150), b = mix([40, 30, 29], [35, 26, 25], dark), g = q.createLinearGradient(0, t0, 0, t1), u = (Y(-4) - t0) / (t1 - t0);
+        g.addColorStop(0, css(b, 0)); g.addColorStop(clamp(u), css(b)); g.addColorStop(clamp(u + (1 - u) * .45), css(mix(b, [15, 12, 11], .6))); g.addColorStop(1, css([15, 12, 11])); q.fillStyle = g; q.fillRect(0, t0, VW, VH - t0 + 2); }); };
     road();
     const humpC = css(mix(mix([46, 40, 36], [120, 116, 100], .25), [22, 22, 30], dark));
     // the swell of the brow, on the road (only on the plain, where he goes out of sight over it)

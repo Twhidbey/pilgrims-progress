@@ -13,7 +13,7 @@
 const { chromium } = require('playwright'); const fs = require('fs');
 const [out, cond, N, holdS, at] = [process.argv[2], process.argv[3], +process.argv[4] || 1, process.argv[5] || '1', process.argv[6] || ''];
 (async () => {
-  const b = await chromium.launch(); const p = await b.newPage({ viewport: { width: 960, height: 540 }, deviceScaleFactor: 1 });
+  const b = await chromium.launch(); const p = await b.newPage({ viewport: { width: 960, height: 540 }, deviceScaleFactor: +(process.env.DSF || 1) });
   const errs = []; p.on('pageerror', e => errs.push(String(e)));
   await p.goto('http://localhost:8123/index.html?level=3' + (at ? '&at=' + at : '')); await p.waitForSelector('#open', { state: 'visible' }); await p.click('#open'); await p.waitForTimeout(3000);
   await p.click('.lv[data-lv="3"]'); await p.waitForTimeout(3500);
