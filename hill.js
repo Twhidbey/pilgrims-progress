@@ -1097,10 +1097,10 @@ const HL = (() => {
         // minute and melts away at the end; the far ones are drawn first.
         // (build 183: the smoke and the cloud keep the size they have from a distance, `kS`: stretched to the near hill's
         // size the soft billows became one huge blur filling the close-up)
-        { const N = 70, ps = [], kS = Math.min(k, 1);
-          for (let i = 0; i < N; i++) { const h1 = Math.sin(i * 12.9898) * 43758.5453, h2 = Math.sin(i * 78.233) * 12543.123; ps.push([(i / N + G.t / 3400) % 1, h1 - Math.floor(h1), h2 - Math.floor(h2), i]); }
+        { const N = 96, ps = [], kS = Math.min(k, 1), Dh = rocky ? 195 : 90 + 105 * clamp(dark * 1.5);
+          for (let i = 0; i < N; i++) { const h1 = Math.sin(i * 12.9898) * 43758.5453, h2 = Math.sin(i * 78.233) * 12543.123; ps.push([(i / N + G.t / 2600) % 1, h1 - Math.floor(h1), h2 - Math.floor(h2), i]); }
           ps.sort((a, b) => b[0] - a[0]);
-          for (const [u, r1, r2, i] of ps) { const rise = 1 - Math.pow(1 - u, 3), spread = (40 + 230 * u) * kS, px = sx0 - (240 * u + 900 * u * u) * kS + (r1 - .5) * spread, py = sy0 - (14 + 150 * rise - 60 * u * u) * kS + (r2 - .5) * spread * .7, rr = (40 + 210 * u) * kS * (.8 + .4 * r2), a = smooth(0, .05, u) * (1 - smooth(.2, .42, u)), P = PUFF[i % 3];
+          for (const [u, r1, r2, i] of ps) { const rise = 1 - Math.pow(1 - u, 1.6), spread = (24 + 120 * u) * kS, px = sx0 - (50 * u + 110 * u * u) * kS + (r1 - .5) * spread + 10 * Math.sin(G.t / 300 + i) * u * kS, py = sy0 - (14 + Dh * rise) * kS + (r2 - .5) * spread * .5, rr = (26 + 120 * u) * kS * (.8 + .4 * r2), a = smooth(0, .05, u) * (1 - smooth(.8, 1, u)), P = PUFF[i % 3];
             c.globalCompositeOperation = 'source-over'; const hzP = rocky ? 0 : clamp(1 - dark * 1.6), aP = a * .7 * (.1 + .75 * Math.max(dark, farK * 1.3)) * reveal; if (hzP > 0) { c.globalAlpha = aP * hzP; c.drawImage(P.h, px - rr * 1.3, py - rr * .8, 2.6 * rr, 1.6 * rr); } c.globalAlpha = aP * (1 - hzP); c.drawImage(P.d, px - rr * 1.3, py - rr * .8, 2.6 * rr, 1.6 * rr);
             const la = a * (burn * (.3 + .7 * Math.pow(1 - u, 2)) + F * .3 * (1 - u)); if (la > .01) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = la; c.drawImage(P.l, px - rr, py - rr, 2 * rr, 2 * rr); } } }
         c.globalCompositeOperation = 'source-over'; c.globalAlpha = 1;
@@ -1405,7 +1405,7 @@ const HL = (() => {
     c.save(); c.translate(VW / 2 - cx * z, wl); c.scale(z, z);
     RIM = { k: (1 - dark) * (1 - gateish) * .9, x: (lx - VW / 2) / z + cx };
     FIRE = rocky && ph !== 'title' ? { k: clamp(dark) * (1 - .4 * calm), x: HX0 + 600, f: Math.min(1, flash) } : null;
-    const tint = mix([74, 68, 60], [70, 62, 70], dark), fl = Math.min(1, flash) * dark, lit = gateish * smooth(GATE_X - 330, GATE_X - 60, C3.x), tintF = mix(mix(mix(tint, [66, 62, 72], gateish), [255, 170, 110], fl * .35), [255, 188, 120], lit * (.24 + .26 * door));
+    const tint = rocky ? mix([38, 35, 39], [30, 27, 32], dark) : mix([74, 68, 60], [52, 47, 52], dark), fl = Math.min(1, flash) * dark, lit = gateish * smooth(GATE_X - 330, GATE_X - 60, C3.x), tintF = mix(mix(mix(tint, [66, 62, 72], gateish), [255, 170, 110], fl * .35), [255, 188, 120], lit * (.24 + .26 * door));
     const tintM0 = mix(tintF, [255, 204, 150], mercy * .42);
     // (build 225, owner: "Instead of shadow can you just make Christian super dark"): at the gate he is a near-black figure
     // against the lit wall and the light from within, like Good-will in the doorway (no light and shade laid on him)
