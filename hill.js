@@ -576,7 +576,7 @@ const HL = (() => {
     // build 282 (owner: "still unsure about the look of the 'silver lining' ...would a light glow be better?"): on the fair
     // plain the low sun behind them is a soft warm glow round the head and shoulders, spreading a little past the outline
     // (drawn before the figure, so it lies behind), with only a faint trace of the old crisp line left on the edge
-    if (RIM && RIM.halo && rimK > .02) { const H0 = RIM.halo; c.save(); c.globalAlpha = alpha * .55 * rimK; c.globalCompositeOperation = 'lighter'; c.translate(x, FY); c.scale(face * CHR_K * FK, CHR_K * FK * sy);
+    if (RIM && RIM.halo && rimK > .02) { const H0 = RIM.halo; c.save(); c.globalAlpha = alpha * .34 * rimK; c.globalCompositeOperation = 'lighter'; c.translate(x, FY); c.scale(face * CHR_K * FK, CHR_K * FK * sy);
       c.drawImage(H0.c, -meta.ax - H0.P, -meta.ground - H0.P, im.width + 2 * H0.P, im.height + 2 * H0.P); c.restore(); RIM.halo = null; }
     c.save(); c.globalAlpha = alpha; c.translate(x, FY); if (TALKM) c.transform(1, 0, TALKM.sh, 1, 0, 0);
     c.scale(face * CHR_K * FK, CHR_K * FK * sy * (TALKM ? TALKM.sy : 1)); c.drawImage(fc, -meta.ax, -meta.ground);
@@ -1112,6 +1112,15 @@ const HL = (() => {
       const hx = rocky ? X(HX0) : VW / 2 + (HILL_F - cx) * PH * z, hy = rocky ? Y(6) : Y(HILL_Y), k = rocky ? z * HSN : .6 * HSF;      // (build 275: on the plain the far mountain keeps one size as the camera moves, as a far thing does)
       HL.appr = ap;
       hillBox = [hx, hy, k];
+      // THE VILLAGE BEHIND THE HILL (build 286, owner: "the little town looks too idylic ... smaller house (maintain scale
+      // from when christian is near mountain) ... maybe put town beyond mountain, peaking out from behind mountain on the
+      // left"): smaller, further off and hazier, drawn before the hill so the mountain's left foot hides its right part
+      const villageBehind = () => { if (!rocky && VILP) { const W2 = VILP.width, H2 = VILP.height, tw = 400 * k, th = tw * H2 / W2, tx = hx - 330 * k, ty = hy - 62 * k, va = Math.max(reveal, vil);
+        if (va > .01 && tx < VW && tx + tw > 0) { const tc = tintC.vil || (tintC.vil = mk(W2, H2)), t = tc.getContext('2d'), hz = mix(mix(far, low, .3), [60, 54, 62], dark * .7);
+          t.globalCompositeOperation = 'source-over'; t.globalAlpha = 1; t.clearRect(0, 0, W2, H2); t.drawImage(VILP, 0, 0);
+          t.globalCompositeOperation = 'source-atop'; t.fillStyle = css(hz, .4 + .2 * dark); t.fillRect(0, 0, W2, H2);
+          const fh = t.createLinearGradient(0, H2 * .72, 0, H2); fh.addColorStop(0, css(colAt(clamp((ty - hor) / (Y(0) - hor))), 0)); fh.addColorStop(1, css(colAt(clamp((ty - hor) / (Y(0) - hor))), .85)); t.fillStyle = fh; t.fillRect(0, H2 * .72, W2, H2);
+          t.globalCompositeOperation = 'source-over'; c.globalAlpha = va; c.drawImage(tc, tx, ty - th, tw, th); c.globalAlpha = 1; } } };
       if ((rocky || reveal > .002) && hx > -1300 * k && hx < VW + 400 * k) {
         // AWE FIRST (owner, build 135: "the burning hill can be frightening - but most importantly stunning - it should
         // awe first"). After John Martin's pictures of the sublime and the book's own Sinai (Exodus 19: fire at the top,
@@ -1136,6 +1145,7 @@ const HL = (() => {
         // in the dark rock's tone, sharp, and the painting is laid inside it, kept a few units in from the edge. Only the
         // overhanging face is done so (`facePath`): elsewhere the painting's own outline differs a little from the drawn one.
         if (rocky) { c.fillStyle = css(mix([46, 36, 36], [33, 25, 26], dark)); facePath(c, hx, hy, k, 0, 30); c.fill(); c.save(); facePath(c, hx, hy, k, 2, 3000, 400); c.clip(); }
+        villageBehind();
         c.globalAlpha = reveal; c.drawImage(!rocky && HILLV ? HILLV : HILL[0], dx, dy, HW * k, HH * k); if (dark > .01) { c.globalAlpha = dark; c.drawImage(HILL[1], dx, dy, HW * k, HH * k); }
         if (rocky) c.restore(); c.globalAlpha = 1;
         // IT IS THERE FROM THE START, VEILED (owner, build 181: "when you first see the hill it kinda appears out of
@@ -1287,12 +1297,7 @@ const HL = (() => {
       // (`assets/village.webp`, `VILP`: Legality's manor first, thatched and slate cottages, a barn, the church with its
       // spire, round trees, its own lit windows and threads of chimney smoke), toned into the evening haze at the hill's
       // foot; the drawn silhouette (`TOWN`) stands in until it loads
-      if (!rocky && VILP) { const W2 = VILP.width, H2 = VILP.height, tw = 640 * k, th = tw * H2 / W2, tx = hx - 200 * k, ty = hy + 20 * k, va = Math.max(reveal, vil);
-        if (va > .01 && tx < VW && tx + tw > 0) { const tc = tintC.vil || (tintC.vil = mk(W2, H2)), t = tc.getContext('2d'), hz = mix(mix(far, low, .3), [60, 54, 62], dark * .7);
-          t.globalCompositeOperation = 'source-over'; t.globalAlpha = 1; t.clearRect(0, 0, W2, H2); t.drawImage(VILP, 0, 0);
-          t.globalCompositeOperation = 'source-atop'; t.fillStyle = css(hz, .44 + .26 * dark); t.fillRect(0, 0, W2, H2);
-          const fh = t.createLinearGradient(0, H2 * .72, 0, H2); fh.addColorStop(0, css(colAt(clamp((ty - hor) / (Y(0) - hor))), 0)); fh.addColorStop(1, css(colAt(clamp((ty - hor) / (Y(0) - hor))), .85)); t.fillStyle = fh; t.fillRect(0, H2 * .72, W2, H2);
-          t.globalCompositeOperation = 'source-over'; c.globalAlpha = va; c.drawImage(tc, tx, ty - th, tw, th); c.globalAlpha = 1; } }
+      if (!rocky && VILP) { /* (build 286) drawn before the hill now: see villageBehind() */ }
       else if (!rocky && TOWN.W) { const tw = 700 * k, th = tw * TOWN.H / TOWN.W, tx = hx - 220 * k, ty = hy + 20 * k, va = Math.max(reveal, vil);
         if (va > .01 && tx < VW && tx + tw > 0) { const tc = tintC.town || (tintC.town = mk(TOWN.W, TOWN.H)), t = tc.getContext('2d'), tint = mix(mix(mix(far, [44, 38, 44], .8), low, .05), [36, 32, 40], dark * .7);
           t.globalCompositeOperation = 'source-over'; t.clearRect(0, 0, TOWN.W, TOWN.H); t.drawImage(TOWN, 0, 0); t.globalCompositeOperation = 'source-in';

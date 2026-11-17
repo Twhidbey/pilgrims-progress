@@ -6,6 +6,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 **The keepsakes have their own chat now** ("Pilgrim's Progress: the keepsakes (Bible, roll, title book)", https://claude.ai/code/session_017HrTSDUqJDSdrXPbhc33zT). Open question there: the wax seal on Evangelist's roll is ours, not the book's (`{14}` has no seal; the sealed roll is given at the Cross, `{94}`): take it off and keep `waxSeal()` for Level 5, or keep it as a departure.
 
+**Build 286 (Level 3 art chat): a softer glow on the figures; the village smaller and peeking out from behind the mountain's left side (a new tree-less picture still to make). A free image model found: FLUX.1 Kontext on Hugging Face (see CLAUDE.md, build 286). Nothing spent.**
+
 **Build 285 (Level 2 chat): blank paper shut in between Pliable's legs as he climbs out of the Slough showed as a pale block (owner); cleaned in `assets/pliable-climb.pack` itself (pale opaque patches below row 250 made see-through, frames 4 to 95), `PACK_V` bumped. Nothing spent.**
 
 **Build 284 (room 3 chat): the Interpreter and Christian really walk in the passage between rooms and when leaving, from the first day's free Hugging Face clips. Nothing spent. See `CLAUDE.md`, "Build 284".**
