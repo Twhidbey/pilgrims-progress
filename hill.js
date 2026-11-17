@@ -1361,6 +1361,12 @@ const HL = (() => {
         // (build 237, owner: "When we're down with Christian we remove mist that's between mountain and next layer up"): the
         // haze in the gully between the mountain and the crags behind the path is gone
         crags(.75, 11, 190, 0, 70, 470, mix([46, 37, 33], [31, 25, 23], dark), .5 * burnR, true, .8, 560);
+        // (build 314; owner: "the mist around christian should maybe be replaced by mist localized to the layer behind him (so
+        // he doesn't glow so much when he's near mountain) ... it is difficult to see him"): instead of a glow round each
+        // figure (HAZE, now off), one low bank of mist lies in front of the crags behind the path, along his stretch of it,
+        // thickest about his chest height and thinning upward, so his dark shape stands against a paler band
+        if (Zw < .98) alongPath(inPath, q => { const mc = mix([158, 128, 124], [124, 100, 108], dark), y0 = Y(-330), g = q.createLinearGradient(0, y0, 0, Y(0)), A = (1 - Zw) * (.6 - .06 * dark);
+          g.addColorStop(0, css(mc, 0)); g.addColorStop(.45, css(mc, .55 * A)); g.addColorStop(.72, css(mc, A)); g.addColorStop(1, css(mc, .8 * A)); q.fillStyle = g; q.fillRect(0, y0, VW, Y(0) - y0 + 2); });
         alongPath(inPath, q => { const g = q.createLinearGradient(0, Y(-70), 0, Y(0)); g.addColorStop(0, css([90, 66, 64], 0)); g.addColorStop(1, css([90, 66, 64], .3 * dark)); q.fillStyle = g; q.fillRect(0, Y(-70), VW, 72 * z); });
         // falling stones (dark, tumbling) and the dust where they land
         if (!DUSTC) { DUSTC = mk(64, 64); const q = DUSTC.getContext('2d'), g = q.createRadialGradient(32, 32, 0, 32, 32, 32); g.addColorStop(0, 'rgba(128,104,90,.55)'); g.addColorStop(.5, 'rgba(116,94,84,.3)'); g.addColorStop(1, 'rgba(110,90,80,0)'); q.fillStyle = g; q.fillRect(0, 0, 64, 64); }
@@ -1707,7 +1713,7 @@ const HL = (() => {
     c.save(); c.translate(VW / 2 - cx * z, wl); c.scale(z, z);
     RIM = { k: (1 - dark) * (1 - gateish) * .9, x: (lx - VW / 2) / z + cx };
     SUNSH = !rocky && gateish < .5 && ph !== 'title' ? (1 - dark) * (1 - gateish * 2) : 0;
-    HAZE = rocky && ph !== 'title' && ph !== 'mist' ? { k: 1 - Zw, c: mix([156, 124, 120], [120, 96, 104], dark) } : null;
+    HAZE = false && rocky && ph !== 'title' && ph !== 'mist' ? { k: 1 - Zw, c: mix([156, 124, 120], [120, 96, 104], dark) } : null;
     FIRE = rocky && ph !== 'title' ? { k: clamp(dark) * (1 - .4 * calm), x: HX0 + 600, f: Math.min(1, flash) } : null;
     // (build 235, one set of lights at the gate: the door's light falls on the side of him that faces it, the lantern
     // above warms his head and shoulders; Good-will in the doorway is lit from behind, so he stays dark with a lit edge)
