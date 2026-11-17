@@ -1615,7 +1615,9 @@ const HL = (() => {
         // (build 202, owner: "when the tree is shown, the light outline flickers on both side of tree"): the edge used to jump from
         // one side to the other the moment the sun passed the trunk (and back and forth while the camera settled); now the two
         // edges cross-fade as the sun passes behind the trunk, slowly
-        { const ra = (1 - dark) * (1 - gateish) * .42, sR = smooth(-w * .1, w * .1, lx - tx); if (ra > .02) { if (sR > .01) { c.globalAlpha = ra * sR; c.drawImage(OAKP.rimR, x0, y0, w, h); } if (sR < .99) { c.globalAlpha = ra * (1 - sR); c.drawImage(OAKP.rimL, x0, y0, w, h); } c.globalAlpha = 1; } }
+        // build 283 (owner: "yes remove lining from tree too please"): the oak's bright edge toward the sun is off (ra 0), as
+        // the figures' crisp line went in build 282; the code stays in case it is wanted back
+        { const ra = 0 * (1 - dark) * (1 - gateish) * .42, sR = smooth(-w * .1, w * .1, lx - tx); if (ra > .02) { if (sR > .01) { c.globalAlpha = ra * sR; c.drawImage(OAKP.rimR, x0, y0, w, h); } if (sR < .99) { c.globalAlpha = ra * (1 - sR); c.drawImage(OAKP.rimL, x0, y0, w, h); } c.globalAlpha = 1; } }
         if (dark < .5) { c.save(); c.globalCompositeOperation = 'lighter'; OAKP.tw.forEach(([px, py], i) => { const v = Math.sin(G.t / (26 + (i * 37) % 60) + i * 2.4); if (v < .55) return; const al = Math.pow((v - .55) / .45, 2) * .38 * (1 - 2 * dark);
             c.fillStyle = css([255, 238, 180], al); c.beginPath(); c.arc(x0 + px * s, y0 + py * s, (.6 + 1.2 * al) * z, 0, 7); c.fill(); }); c.restore(); }
         // THE SUN THROUGH THE LEAVES (owner, build 173): when the low sun stands behind the crown it breaks through the gaps: a
