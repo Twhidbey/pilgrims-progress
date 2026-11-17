@@ -45,6 +45,9 @@ def figure(src):
 
 def picture(spec, path):
     im = figure(spec['src'])
+    if spec.get('cell'):
+        # one frame of a sheet of frames: [cols, W, H, index]
+        cols, W, H, i = spec['cell']; im = im.crop(((i % cols) * W, (i // cols) * H, (i % cols + 1) * W, (i // cols + 1) * H))
     if spec.get('crop'):
         # a living part of a room painting: the crop (in the asset's pixels, about 16:9) fills the whole frame
         im.convert('RGB').crop(tuple(spec['crop'])).resize((1280, 720), Image.LANCZOS).save(path); return

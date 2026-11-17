@@ -68,6 +68,35 @@
    "check": "First half good (pouring, sweeping); about 2.5 s in the model cut to another view of the room: use only frames 0 to about 40."
   },
   {
+   "id": "interp-talk",
+   "status": "todo",
+   "seconds": 3.5,
+   "uses": "Level 4: the Interpreter speaking (lips and beard moving, small nods, the open hand), looped while he talks; drawn large in the frame so the face is sharp",
+   "first": {
+    "src": "assets/room-interpreter-say.webp",
+    "cell": [
+     8,
+     142,
+     336,
+     55
+    ],
+    "flip": true,
+    "h": 650
+   },
+   "last": {
+    "src": "assets/room-interpreter-say.webp",
+    "cell": [
+     8,
+     142,
+     336,
+     55
+    ],
+    "flip": true,
+    "h": 650
+   },
+   "prompt": "The old man with a grey beard and a dark skull-cap, his open hand raised, speaks gently and kindly: his lips move clearly as he talks, his beard moves with his jaw, he nods slightly and his raised hand moves a little with his words. His feet stay where they are."
+  },
+  {
    "id": "room4-living",
    "uses": "Level 4 room 4: the fire burns and flickers, the man keeps casting water on it, steam rises; behind the wall the oil is poured",
    "first": {
