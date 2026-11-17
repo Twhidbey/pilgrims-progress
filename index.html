@@ -45,8 +45,12 @@ body.opened .tbook{transform:none}
 .tpage{position:absolute;top:0;width:50%;height:100%;box-sizing:border-box;color:#2a2018;text-shadow:none;font-family:'IM Fell English',Georgia,serif;background-color:#e6d9bc;background-size:cover;box-shadow:0 calc(var(--u,1) * 10px) calc(var(--u,1) * 40px) rgba(0,0,0,.55)}
 .tleaf{position:absolute;left:50%;top:0;width:50%;height:100%;transform-origin:0 50%;transform-style:preserve-3d;-webkit-transform-style:preserve-3d;transform:translateZ(2px);transition:transform 1.7s cubic-bezier(.45,.05,.2,1);z-index:2}
 body.opened .tleaf{transform:translateZ(2px) rotateY(-180deg)}
-.tcover{position:absolute;inset:calc(var(--u,1) * -5px) calc(var(--u,1) * -6px) calc(var(--u,1) * -6px) 0;background:#5c3a22 center/100% 100%;border-radius:2px 7px 7px 2px;backface-visibility:hidden;-webkit-backface-visibility:hidden;cursor:pointer;box-shadow:calc(var(--u,1) * 2px) calc(var(--u,1) * 3px) 0 #cdb98f,calc(var(--u,1) * 4px) calc(var(--u,1) * 6px) 0 #b9a47a,0 calc(var(--u,1) * 14px) calc(var(--u,1) * 40px) rgba(0,0,0,.6)}
-.tribbon{position:absolute;left:62%;bottom:calc(var(--u,1) * -24px);width:calc(var(--u,1) * 11px);height:calc(var(--u,1) * 24px);background:linear-gradient(90deg,#6e1712,#9a2620 45%,#7a1a15);clip-path:polygon(0 0,100% 0,100% 100%,50% 82%,0 100%);backface-visibility:hidden;-webkit-backface-visibility:hidden;transition:opacity .4s}
+.tcover{position:absolute;inset:calc(var(--u,1) * -5px) calc(var(--u,1) * -6px) calc(var(--u,1) * -6px) 0;background:#5c3a22 center/100% 100%;border-radius:2px 7px 7px 2px;backface-visibility:hidden;-webkit-backface-visibility:hidden;cursor:pointer;box-shadow:0 calc(var(--u,1) * 1px) calc(var(--u,1) * 2px) rgba(0,0,0,.5)}
+/* the block of pages under the board (build 210): its own layer, so the ribbon can come out from between the pages,
+   under the cover; cream edges with the fine lines of the leaves, a little lower and to the right of the board */
+.tpages{position:absolute;inset:calc(var(--u,1) * -2px) calc(var(--u,1) * -10px) calc(var(--u,1) * -12px) calc(var(--u,1) * 2px);border-radius:2px 5px 5px 2px;background:repeating-linear-gradient(0deg,#d8c7a0 0 1px,#c4ae84 1px 2px);backface-visibility:hidden;-webkit-backface-visibility:hidden;box-shadow:0 calc(var(--u,1) * 14px) calc(var(--u,1) * 40px) rgba(0,0,0,.6),inset 0 0 0 1px rgba(90,60,25,.35);transition:opacity .4s}
+body.opened .tpages{opacity:0}
+.tribbon{position:absolute;left:62%;bottom:calc(var(--u,1) * -34px);width:calc(var(--u,1) * 11px);height:calc(var(--u,1) * 30px);box-shadow:0 0 calc(var(--u,1) * 2px) rgba(40,15,5,.5);background:linear-gradient(90deg,#6e1712,#9a2620 45%,#7a1a15);clip-path:polygon(0 0,100% 0,100% 100%,50% 82%,0 100%);backface-visibility:hidden;-webkit-backface-visibility:hidden;transition:opacity .4s}
 body.opened .tribbon{opacity:0}
 .tp{left:0;width:100%;border-radius:2px 0 0 2px;transform:rotateY(180deg);backface-visibility:hidden;-webkit-backface-visibility:hidden}
 .tc{left:50%;border-radius:0 2px 2px 0}
@@ -107,7 +111,7 @@ body.portrait #rot{display:block}
     <!-- THE BOOK (build 187): the title page as first printed in 1678, alone on a dark ground; "Open the book" swings the
          contents page open beside it. Nothing of the world shows until a level is chosen. -->
     <div class="tbook">
-      <div class="tleaf"><div class="tcover"></div><div class="tribbon"></div><div class="tpage tp"><div class="tpin">
+      <div class="tleaf"><div class="tpages"></div><div class="tribbon"></div><div class="tcover"></div><div class="tpage tp"><div class="tpin">
         <div class="t1">THE</div>
         <div class="t2">Pilgrim's Progress</div>
         <div class="t3">FROM</div>
@@ -148,7 +152,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">build 209 · Nov 17 2026</div>
+  <div id="build">build 210 · Nov 17 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -2452,7 +2456,7 @@ document.getElementById('on2').onclick = () => SL.on ? go3() : go2();
 </script>
 <script src="slough.js?v=204"></script>
 <script src="hill.js?v=209"></script>
-<script src="keepsakes.js?v=208"></script>
+<script src="keepsakes.js?v=210"></script>
 <script src="editor.js?v=196"></script>
 </body>
 </html>
