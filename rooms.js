@@ -13,7 +13,7 @@
 // notes in CLAUDE.md, "THE INTERPRETER'S HOUSE IN THE GAME"), quietened in code: assets/room-door.webp, room1..7.webp
 // (room3.webp is cut narrower). The people who belong to a room are in its picture; Christian and the Interpreter are
 // the game's watercolour figures coloured in the house's palette (room-christian.webp, Christian painted once in colour; the Interpreter's own two pictures,
-// room-interpreter.webp standing and room-interpreter-say.webp explaining), placed in each room, breathing in code. Everything that moves is code:
+// room-interpreter.webp standing and room-interpreter-say.webp explaining), placed in each room (upscaled with Real-ESRGAN in build 307, the gesture in four sheets; no code breathing since build 302). Everything that moves is code:
 // light, dust, water, gold, bubbles, fire, the brave man, the dreamer's trembling. 
 //
 // Picture units: a picture's own pixels (P, 3168 x 1344 at full size) are laid at S units each; the camera's left edge is
@@ -28,7 +28,7 @@ const RM = (() => {
   const darkOn = () => { try { return localStorage.getItem('pp-dark') === '1'; } catch (e) { return false; } };
 
   // the two visitors (sprites face LEFT as made; face 1 = turned to face right)
-  const VIS = { C: { n: 'room-christian', ax: 92, g: 631, who: 'Christian', ph: 0, ct: 1.2, mul: .62, sat: .42, warm: [1, 1, 1], walk: { n: 'room-christian-walk', ax: 117, g: 355, s: 632 / 347, ct: 1.2, mul: .62, sat: .42, cols: 8, fr: 15, W: 192, H: 359, vpx: 6 } }, I: { n: 'room-interpreter', ax: 107, g: 634, who: I, ph: 1.7, ct: 1.15, mul: .66, sat: .45, walk: { n: 'room-interpreter-walk', ax: 102, g: 374, s: 635 / 365, ct: 1.15, mul: .66, sat: .45, cols: 8, fr: 27, W: 184, H: 376, vpx: 6 }, say: { n: 'room-interpreter-say', ax: 84, g: 334, s: 635 / 331, ct: 1.15, mul: .66, sat: .45, cols: 8, fr: 56, W: 142, H: 336 } } };
+  const VIS = { C: { n: 'room-christian-hd', ax: 138, g: 946.5, s: 1 / 1.5, who: 'Christian', ph: 0, ct: 1.2, mul: .62, sat: .42, warm: [1, 1, 1], walk: { n: 'room-christian-walk', ax: 117, g: 355, s: 632 / 347, ct: 1.2, mul: .62, sat: .42, cols: 8, fr: 15, W: 192, H: 359, vpx: 6 } }, I: { n: 'room-interpreter-hd', ax: 160.5, g: 951, s: 1 / 1.5, who: I, ph: 1.7, ct: 1.15, mul: .66, sat: .45, walk: { n: 'room-interpreter-walk', ax: 102, g: 374, s: 635 / 365, ct: 1.15, mul: .66, sat: .45, cols: 8, fr: 27, W: 184, H: 376, vpx: 6 }, say: { n: 'room-interpreter-say-hd', ax: 235.2, g: 935.2, s: 635 / 331 / 2.8, ct: 1.15, mul: .66, sat: .45, cols: 7, fr: 56, W: 398, H: 941, parts: 4, per: 14 } } };
   const BRAVE = { plain: { n: 'room5-brave', ax: 94, g: 519 }, armed: { n: 'room5-brave-armed', ax: 123, g: 536 } };
 
   let R = null, t = 0, ph = '', cam = { x: 0, to: 0 }, fade = 1, fadeTo = 0, after = null, toned = {}, startId = 'door', motes = [];
@@ -98,8 +98,8 @@ const RM = (() => {
   function toneOf(n, col, ct = 1.2, mul = 1, sat0 = null) {
     const key = n + '|' + col.join(',') + '|' + ct + '|' + mul + '|' + sat0; if (toned[key]) return toned[key];
     const im = pics[n]; if (!im) return null;
-    const cv2 = document.createElement('canvas'); cv2.width = im.width; cv2.height = im.height; const x = cv2.getContext('2d');
-    x.drawImage(im, 0, 0); const d = x.getImageData(0, 0, im.width, im.height), p = d.data, sat = sat0 != null ? sat0 : R && R.sat != null ? R.sat : .6;
+    const cv2 = document.createElement('canvas'); cv2.width = im.w || im.width; cv2.height = im.h || im.height; const x = cv2.getContext('2d');
+    if (im.sheet) x.drawImage(im.sheet, im.sx, im.sy, im.w, im.h, 0, 0, im.w, im.h); else x.drawImage(im, 0, 0); const d = x.getImageData(0, 0, cv2.width, cv2.height), p = d.data, sat = sat0 != null ? sat0 : R && R.sat != null ? R.sat : .6;
     let m = 0, cnt = 0; for (let i = 0; i < p.length; i += 4) if (p[i + 3] > 128) { m += (p[i] + p[i + 1] + p[i + 2]) / 3; cnt++; } m /= cnt || 1;
     for (let i = 0; i < p.length; i += 4) { const l = (p[i] + p[i + 1] + p[i + 2]) / 3; for (let k = 0; k < 3; k++) { let c = l + (p[i + k] - l) * sat; c = (m + (c - m) * ct) * mul; p[i + k] = Math.max(0, Math.min(255, c * col[k] / 255)); } }
     x.putImageData(d, 0, 0);
@@ -128,9 +128,14 @@ const RM = (() => {
   // the Interpreter lifts his open hand while he speaks (his second picture), and folds his hands again after
   let sayK = 0;
   // cut a sheet of frames into one picture per frame, once (pics['name#i'])
+  // a sheet may come in parts (name-0 .. name-(parts-1), per frames each: the Interpreter's gesture at full size, build 307);
+  // frames are only described here and cut out when toned, so no extra copy of every frame is kept
   function sheetFrames(f) {
-    if (pics[f.n + '#0']) return true; const im = pics[f.n]; if (!im) { pic(f.n); return false; }
-    for (let i = 0; i < f.fr; i++) { const cv = document.createElement('canvas'); cv.width = f.W; cv.height = f.H; cv.getContext('2d').drawImage(im, (i % f.cols) * f.W, Math.floor(i / f.cols) * f.H, f.W, f.H, 0, 0, f.W, f.H); pics[f.n + '#' + i] = cv; }
+    if (pics[f.n + '#0']) return true;
+    const names = f.parts ? Array.from({ length: f.parts }, (_, k) => f.n + '-' + k) : [f.n];
+    if (!names.every(nm => pics[nm])) { names.forEach(pic); return false; }
+    const per = f.per || f.fr;
+    for (let i = 0; i < f.fr; i++) { const j = i % per; pics[f.n + '#' + i] = { sheet: pics[names[Math.floor(i / per)]], sx: (j % f.cols) * f.W, sy: Math.floor(j / f.cols) * f.H, w: f.W, h: f.H }; }
     return true;
   }
   const speaking = () => (SPK && SPK.who === I) || (G.state === 'dialog' && dWho.textContent === I);
@@ -496,7 +501,7 @@ const RM = (() => {
   function enterRoom(id) {
     R = ROOMS[id]; R.id = id; R.PW = R.PW || 3168; ph = 'in'; t = 0; cam.x = cam.to = id === 'pass' ? R.cam0 : 0;
     ambStart({ door: 'night', r1: 'candle', r2: 'airy', r3: 'still', r4: 'fire', r5: 'palace', r6: 'hollow', r7: 'dread', leave: 'night', pass: 'passage' }[id]);
-    G.act = null; G.ring = null; G.actT = 0; downs.clear(); keys.r = keys.push = false;
+    G.act = null; G.ring = null; G.actT = 0; downs.clear(); keys.r = keys.push = false; toned = {};
     R.enter && R.enter();
     const r = rngR(31); motes = Array.from({ length: 16 }, () => ({ x: r() * VW, y: 60 + r() * 330, s: .5 + r() * 1.1, p: r() * 7, v: .03 + r() * .06 }));
     const nx = ORDER[ORDER.indexOf(id) + 1]; if (nx) pic(ROOMS[nx].pic);
@@ -517,10 +522,10 @@ const RM = (() => {
     downs.clear(); keys.r = keys.push = false; toned = {};
     if (audio()) { AC.resume(); if (rainG) rainG.gain.setTargetAtTime(0, AC.currentTime, .8); }
     G.state = 'wait'; fade = 1; fadeTo = 0; after = null;
-    pic(VIS.I.say.n); const need = [ROOMS[id].pic, VIS.C.n, VIS.I.n].concat(id === 'r3' ? ['room3-rags'] : []).concat(id === 'r5' ? [BRAVE.plain.n, BRAVE.armed.n] : []);
+    sheetFrames(VIS.I.say); const need = [ROOMS[id].pic, VIS.C.n, VIS.I.n].concat(id === 'r3' ? ['room3-rags'] : []).concat(id === 'r5' ? [BRAVE.plain.n, BRAVE.armed.n] : []);
     Promise.all(need.map(pic)).then(() => { enterRoom(id); setTimeout(() => { if (RM.on && G.state === 'wait' && R && R.id === id) { ph = 'run'; R.run(); } }, 1200); });
   }
-  function preload() { pic(ROOMS.door.pic); pic(VIS.C.n); pic(VIS.I.n); pic(VIS.I.say.n); }
+  function preload() { pic(ROOMS.door.pic); pic(VIS.C.n); pic(VIS.I.n); sheetFrames(VIS.I.say); }
 
   function touch(sx, sy) { if (R) [sx, sy] = unview(sx, sy); if (R && G.act && R.act) { const a = G.act; R.act(sx, sy); if (G.act === a && !G.ring) G.actT = Math.max(G.actT, 95); } }
   function key() { if (R && G.act && R.act) R.act(null, null); }

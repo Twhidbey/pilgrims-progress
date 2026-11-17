@@ -16,6 +16,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 **Build 297 (Level 3 art chat): rocky ground round the village (a small spur of the mountain behind it, low rocks across its foot). Nothing spent.**
 
+**Build 307 (Level 4 chat): Christian and the Interpreter in the house upscaled (free, Real-ESRGAN on the CPU) to match the painted rooms' sharpness. Nothing spent.**
+
 **Build 302 (Level 4 chat): no code breathing or voice sway on the figures in the Interpreter's House (owner disliked it). Nothing spent.**
 
 **Build 295 (Level 3 art chat): the far mountain's outline as crisp as the village (its far copy made at full size), a soft breath of mist where they meet. Nothing spent.**
