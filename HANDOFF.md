@@ -86,6 +86,8 @@ Older handovers (builds 41 to 137, with the picture and video prompts used for H
 
 **Build 213: Level 3's lightning: no more strokes through cloud; every strike comes out of a dark storm bank over the mountain and its strands end on the rock. See `CLAUDE.md`, "Build 213". Nothing spent.**
 
+**Build 238: the two wall photographs matched into one wall; the lantern's roof shadow; Christian's large soft shadow thrown on the wall by the open door; one light rules at a time. Nothing spent.**
+
 **Build 236: the gate wall is two joined CC0 stone-and-flint photographs (Ash and Worplesdon), smaller stones, and the deep Rembrandt dark again. Nothing spent.**
 
 **Build 235: the gate wall is ONE big photograph (A: stone and flint, St Peter's Ash, CC0), under one set of lights (dusk, lantern, door) shared with the surround, the door and the figures; the height-map bake removed. Nothing spent.**

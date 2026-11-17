@@ -159,7 +159,7 @@ const HL = (() => {
 
   // ---------- pictures baked once ----------
   let CLOUDW = null, CLOUDG = null, DECK = null;
-  let HILL = null, SMOKE = null, CLOUD = null, TOWN = null, GDOOR = null, GSTONE = null, CAP = null, BEAMC = null, SIGNPIC = null, GWST = null, GWALL = null; const GWST_META = { ax: 61, ground: 306 }; const GWF = []; const CRACKS = [], STONES = [], SEAMS = [], PUFF = [];
+  let HILL = null, SMOKE = null, CLOUD = null, TOWN = null, GDOOR = null, GSTONE = null, CAP = null, BEAMC = null, SIGNPIC = null, GWST = null, GWALL = null, SHC = null, CHRSH = null, CHRSH_N = null; const GWST_META = { ax: 61, ground: 306 }; const GWF = []; const CRACKS = [], STONES = [], SEAMS = [], PUFF = [];
   // the hill's outline: h = height above its foot, 0 to TOP; its left side hangs far out over the way
   const TOP = 520, HW = 1500, HH = 640, HOX = 300, HOY = 610;      // the baked picture's size and where the foot's left end lies in it
   const FACE = [[0, 0], [36, -30], [84, -62], [112, -44], [150, -70], [240, -138], [320, -182], [358, -176], [420, -116], [480, -44], [520, 36]];      // a second, lower overhang under the great one
@@ -450,6 +450,7 @@ const HL = (() => {
     LANT = { cv, w: Wd, h: Ht, hx: cx, hy: .6, fx: cx, fy: 28.6 };
   }
 
+  const CHR_SLOTS = ['chr', 'std', 'std2', 'turn', 'turn2', 'run', 'weep', 'weep2']; let gateHere = false;
   function figure(c, slot, im, meta, x, face, tint, alpha = 1, sy = 1) {
     if (!im || alpha <= .004) return;
     im = solidOf(im);      // build 202: no clear spots inside the figure (solidOf, in index.html)
@@ -498,6 +499,7 @@ const HL = (() => {
       { const g = f.createLinearGradient(0, 0, 0, H); g.addColorStop(0, 'rgba(255,170,110,' + (.1 * FIRE.k) + ')'); g.addColorStop(.55, 'rgba(0,0,0,0)'); g.addColorStop(.92, 'rgba(150,104,80,0)'); g.addColorStop(1, 'rgba(150,104,80,' + (.12 * FIRE.k) + ')'); f.fillStyle = g; f.fillRect(0, 0, W, H); }
       f.globalCompositeOperation = 'destination-in'; f.drawImage(im, 0, 0); f.globalCompositeOperation = 'source-over';
     }
+    if (gateHere && CHR_SLOTS.includes(slot) && (!CHRSH_N || alpha >= CHRSH_N.a)) CHRSH_N = { fc, meta, x, face, k: CHR_K * FK, sy: sy * (TALKM ? TALKM.sy : 1), a: alpha };
     c.save(); c.globalAlpha = alpha; c.translate(x, 5); if (TALKM) c.transform(1, 0, TALKM.sh, 1, 0, 0);
     c.scale(face * CHR_K * FK, CHR_K * FK * sy * (TALKM ? TALKM.sy : 1)); c.drawImage(fc, -meta.ax, -meta.ground);
     if (RIM && RIM.bloom) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = alpha * .5 * RIM.k; c.drawImage(RIM.bloom, -meta.ax, -meta.ground, im.width, im.height); c.globalCompositeOperation = 'source-over'; RIM.bloom = null; }
@@ -1226,9 +1228,23 @@ const HL = (() => {
       { const g = c.createRadialGradient(lnx, lny, 0, lnx, lny, 300 * z); g.addColorStop(0, css([255, 200, 132], flick)); g.addColorStop(.12, css([250, 176, 108], .78 * flick)); g.addColorStop(.3, css([214, 132, 76], .4 * flick)); g.addColorStop(.55, css([150, 86, 48], .12 * flick)); g.addColorStop(.8, css([110, 60, 34], .03 * flick)); g.addColorStop(1, css([100, 56, 30], 0)); c.fillStyle = g; c.fillRect(lnx - 300 * z, lny - 300 * z, 600 * z, 600 * z); }
       if (open > .01) { const bx = gapL + (gx + r - gapL) * .5, by = Y(-60), rr = 260 * z, g = c.createRadialGradient(bx, by, 0, bx, by, rr); g.addColorStop(0, css([255, 226, 176], open)); g.addColorStop(.15, css([246, 184, 116], .6 * open)); g.addColorStop(.35, css([200, 124, 70], .22 * open)); g.addColorStop(.65, css([130, 74, 40], .05 * open)); g.addColorStop(1, css([120, 70, 40], 0)); c.fillStyle = g; c.fillRect(bx - rr, by - rr, 2 * rr, 2 * rr); }
       c.globalCompositeOperation = 'multiply';
-      if (GWALL) { const P = wallPat(c), k = 640 / GWALL.width * z; P.setTransform(new DOMMatrix([k, 0, 0, k, X(x0), Y(0) - GWALL.height * k])); c.fillStyle = P; c.fillRect(0, 0, VW, Y(2)); }
+      if (GWALL) { const P = wallPat(c), k = 885 / GWALL.width * z; P.setTransform(new DOMMatrix([k, 0, 0, k, X(x0), Y(0) - GWALL.height * k])); c.fillStyle = P; c.fillRect(0, 0, VW, Y(2)); }
       else if (GSTONE) { if (!GSTONE.pat) GSTONE.pat = c.createPattern(GSTONE, 'repeat'); const k = 380 / GSTONE.width * z; GSTONE.pat.setTransform(new DOMMatrix([k, 0, 0, k, X(x0), Y(0)])); c.fillStyle = GSTONE.pat; c.fillRect(0, 0, VW, Y(2)); }
       c.globalCompositeOperation = 'source-over';
+      // (build 238, the light thought through as a whole, after Rembrandt: one light rules at a time, and the light behaves
+      // as real light does.) The lantern's own roof stops its light going straight up, so a soft dark cone rises up the
+      // wall above it, its edges softening as they go
+      { const ry = lny - 16 * z, top = ry - 150 * z; for (const [w0, w1, a] of [[8, 70, .16], [6, 52, .16], [4, 36, .18]]) { c.beginPath(); c.moveTo(lnx - w0 * z, ry); c.lineTo(lnx + w0 * z, ry); c.lineTo(lnx + w1 * z, top); c.lineTo(lnx - w1 * z, top); c.closePath();
+          const g = c.createLinearGradient(0, ry, 0, top); g.addColorStop(0, css([8, 6, 5], a * flick)); g.addColorStop(1, css([8, 6, 5], 0)); c.fillStyle = g; c.fill(); } }
+      // when the door opens, its low light throws his shadow onto the wall behind him, larger than he is and soft, leaning
+      // away from the light (the shadow is his own last drawn picture, darkened, made small and stretched up so it is soft)
+      if (open > .05 && CHRSH) { const S = CHRSH, lx = GATE_X + 14, ly = 48, m = 2.1, sw = Math.ceil(S.fc.width / 4), shh = Math.ceil(S.fc.height / 4);
+        if (!SHC) SHC = mk(8, 8); if (SHC.width !== sw || SHC.height !== shh) { SHC.width = sw; SHC.height = shh; }
+        const q = SHC.getContext('2d'); q.globalCompositeOperation = 'source-over'; q.clearRect(0, 0, sw, shh); q.drawImage(S.fc, 0, 0, sw, shh); q.globalCompositeOperation = 'source-in'; q.fillStyle = '#060404'; q.fillRect(0, 0, sw, shh);
+        c.save(); c.beginPath(); c.rect(0, 0, gx - ro, Y(0)); c.clip(); c.globalAlpha = .62 * open;
+        c.translate(X(lx), Y(-ly)); c.scale(m, m); c.translate(-X(lx), -Y(-ly));
+        c.translate(VW / 2 - cx * z, wl); c.scale(z, z); c.translate(S.x, 5); c.scale(S.face * S.k, S.k * S.sy); c.drawImage(SHC, -S.meta.ax, -S.meta.ground, S.fc.width, S.fc.height);
+        c.restore(); }
       if (GSTONE) {
         // the surround's stones are dressed smooth and paler: the same lights, a little stronger, with only a fine grain
         if (!GSTONE.pat) GSTONE.pat = c.createPattern(GSTONE, 'repeat');
@@ -1316,7 +1332,8 @@ const HL = (() => {
         c.strokeStyle = css([14, 11, 10]); c.lineWidth = 1.5 * z; c.lineCap = 'round'; c.beginPath(); c.moveTo(hx, hy - 8 * z); c.bezierCurveTo(hx - 5 * z, hy - 6.5 * z, hx - 4.5 * z, hy - 1.5 * z, hx, hy + .8 * z); c.stroke(); c.lineCap = 'butt';
         c.drawImage(LANT.cv, lx0, ly0, LANT.w * k, LANT.h * k);
         c.save(); c.globalCompositeOperation = 'lighter'; c.globalAlpha = Math.max(0, (flick - .82) * 2.2); c.drawImage(LANT.cv, lx0, ly0, LANT.w * k, LANT.h * k); c.restore(); }
-      c.save(); c.globalCompositeOperation = 'lighter'; { const g = c.createRadialGradient(lnx, lny, 0, lnx, lny, 90 * z); g.addColorStop(0, css([255, 220, 160], .42 * flick)); g.addColorStop(1, css([255, 190, 110], 0)); c.fillStyle = g; c.fillRect(lnx - 90 * z, lny - 90 * z, 180 * z, 180 * z); } c.restore();
+      c.save(); c.globalCompositeOperation = 'lighter'; { const g = c.createRadialGradient(lnx, lny, 0, lnx, lny, 90 * z); g.addColorStop(0, css([255, 220, 160], .42 * flick)); g.addColorStop(1, css([255, 190, 110], 0)); c.fillStyle = g; c.fillRect(lnx - 90 * z, lny - 90 * z, 180 * z, 180 * z); }
+        { const g = c.createRadialGradient(lnx, lny, 0, lnx, lny, 170 * z); g.addColorStop(0, css([255, 200, 140], .1 * flick * (1 - .5 * open))); g.addColorStop(1, css([255, 180, 110], 0)); c.fillStyle = g; c.fillRect(lnx - 170 * z, lny - 170 * z, 340 * z, 340 * z); } c.restore();
       for (let i = 0; i < knocks; i++) { const q = clamp(knockT / 40); if (i === knocks - 1 && q < 1) { c.strokeStyle = css([255, 236, 190], .7 * (1 - q)); c.lineWidth = 2; c.beginPath(); c.arc(gx, Y(-70), (10 + 46 * q) * z, 0, 7); c.stroke(); } }
     }
     // the road under everyone's feet
@@ -1391,7 +1408,7 @@ const HL = (() => {
     FIRE = rocky && ph !== 'title' ? { k: clamp(dark) * (1 - .4 * calm), x: HX0 + 600, f: Math.min(1, flash) } : null;
     // (build 235, one set of lights at the gate: the door's light falls on the side of him that faces it, the lantern
     // above warms his head and shoulders; Good-will in the doorway is lit from behind, so he stays dark with a lit edge)
-    if (!FIRE && gateish > .5) { const op = smooth(0, 1, door); FIRE = { k: smooth(.5, 1, gateish) * (.35 + .65 * op), x: op > .05 ? GATE_X + 14 : GATE_X + 400, f: 0, warm: [255, 206, 140], cool: [30, 26, 34] }; }
+    if (!FIRE && gateish > .5) { const op = smooth(0, 1, door); FIRE = { k: smooth(.5, 1, gateish) * (.3 + .7 * op), x: op > .05 ? GATE_X + 14 : GATE_X - 72, f: 0, warm: [255, 206, 140], cool: [30, 22, 18] }; }
     const tint = rocky ? mix([38, 35, 39], [30, 27, 32], dark) : mix([74, 68, 60], [52, 47, 52], dark), fl = Math.min(1, flash) * dark, lit = gateish * smooth(GATE_X - 330, GATE_X - 60, C3.x), tintF = mix(mix(mix(tint, [66, 62, 72], gateish), [255, 170, 110], fl * .35), [255, 188, 120], lit * (.24 + .26 * door));
     const tintM0 = mix(tintF, [255, 204, 150], mercy * .42);
     // (build 225, owner: "Instead of shadow can you just make Christian super dark"): at the gate he is a near-black figure
@@ -1417,7 +1434,7 @@ const HL = (() => {
     }
     // in the wide shot he is a tiny dark figure: a faint warm light round him so the eye can find him
     if (Zw > .05) { const g = c.createRadialGradient(C3.x, -60, 0, C3.x, -60, 34 / z); g.addColorStop(0, css([255, 196, 130], .28 * Zw)); g.addColorStop(1, css([255, 170, 110], 0)); c.save(); c.globalCompositeOperation = 'lighter'; c.fillStyle = g; c.fillRect(C3.x - 34 / z, -60 - 34 / z, 68 / z, 68 / z); c.restore(); }
-    c.save(); c.translate(0, C3.dy || 0); drawChr(c, tintM); c.restore(); RIM = null; FIRE = null;
+    gateHere = gateish > .5; CHRSH_N = null; c.save(); c.translate(0, C3.dy || 0); drawChr(c, tintM); c.restore(); RIM = null; FIRE = null; CHRSH = gateHere ? CHRSH_N : null; gateHere = false;
     c.restore();
     // the light streaming out of the open gate: a soft wedge in the evening air, widening and fading to the left, a few
     // slow rays breathing in it, and dust turning where the light is (laid on, over him; never down the picture at us)
