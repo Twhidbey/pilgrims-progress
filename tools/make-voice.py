@@ -22,8 +22,10 @@ TTS, EAR = 'gemini-3.8-flash-tts', 'gemini-3.8-flash'
 VOICES = {'N': 'voice_zqnt5xdln1kq', 'C': 'voice_xp9kua42jfe2', 'E': 'voice_x361phwkq8td',      # storyteller, Christian, Evangelist
           'O': 'voice_a69c9ezmlhxf', 'PL': 'voice_42c9jyj3oc93', 'W': 'voice_ttq297s4wa5y',     # Obstinate, Pliable (boyish), Christian's wife
           'H': 'voice_njlpqcyvcd0a',      # Help (Level 2), designed in build 91 from the description in HANDOFF.md (build 87)
-          'WW': 'voice_5pb813zhf90w'}     # Mr. Worldly Wiseman (Level 3), designed in build 143 (description in HANDOFF.md)
-WHO = {'N': '', 'C': 'Christian', 'E': 'Evangelist', 'O': 'Obstinate', 'PL': 'Pliable', 'W': 'His wife', 'H': 'Help', 'WW': 'Mr. Worldly Wiseman'}
+          'WW': 'voice_5pb813zhf90w',     # Mr. Worldly Wiseman (Level 3), designed in build 143 (description in HANDOFF.md)
+          # Level 4, the Interpreter's House (rooms.js), designed overnight after build 261 (descriptions in HANDOFF.md)
+          'I': 'voice_jjn83osdk67i', 'MAN': 'voice_bxeyrj0cbj0h', 'DRM': 'voice_m1731k2m6r6k', 'BR': 'voice_3r4cxjhyemkr', 'VO': 'voice_57t9upkd6uye'}
+WHO = {'N': '', 'C': 'Christian', 'E': 'Evangelist', 'O': 'Obstinate', 'PL': 'Pliable', 'W': 'His wife', 'H': 'Help', 'WW': 'Mr. Worldly Wiseman', 'I': 'The Interpreter', 'MAN': 'The man in the cage', 'DRM': 'The trembling man', 'BR': 'The brave man', 'VO': 'Voices from the palace'}
 KEY = os.environ.get('GEMINI_API_KEY', '')
 # HOW A LINE IS SAID (build 125, owner: "are him and Christian voices stressed as they sink ?? Seems like they would be more
 # desperate"): a line listed here is recorded with these tags in square brackets in front of it. The speech model acts
@@ -41,6 +43,13 @@ STYLE = {
     "Woe is me, for I am undone!": "[crying out, broken, in tears]",
     "Sir, is there hope? May I go back to the gate? I am sorry I listened to him. May I be forgiven?": "[trembling, pleading, close to tears]",
     "May I come in? Will he open to me, sorry as I am?": "[hopeful, humble, a little out of breath]",
+    # Level 4, the Interpreter's House (after build 261)
+    "I am now a man of despair, shut up in it as in this iron cage. I cannot get out. Oh, now I cannot!": "[hopeless, sorrowful, sighing, quiet]",
+    "Oh, eternity, eternity!": "[anguished, quiet, a long sigh]",
+    "This night I dreamed. The heavens grew black, it thundered, and I heard the great sound of a trumpet.": "[trembling, hushed, breathless, in awe]",
+    "I saw many caught up into the clouds, but I was left behind. I was not ready.": "[trembling, close to tears, hushed]",
+    "Come in, come in; Eternal glory thou shalt win.": "[joyful, gentle, calling from far above]",
+    "Set down my name, Sir.": "[firm, brave, steady]",
 }
 
 def call(path, body):
@@ -80,9 +89,9 @@ def record(code, text, dest):
 
 def main():
     redo = sys.argv[sys.argv.index('--redo') + 1] if '--redo' in sys.argv else ''
-    src = ''.join(open(os.path.join(ROOT, f), encoding='utf-8').read() for f in ('index.html', 'slough.js', 'hill.js'))
+    src = ''.join(open(os.path.join(ROOT, f), encoding='utf-8').read() for f in ('index.html', 'slough.js', 'hill.js', 'rooms.js'))
     lines = []
-    for code, text in re.findall(r"\[(N|C|E|O|PL|WW|W|H), '((?:[^'\\]|\\.)*)'", src):
+    for code, text in re.findall(r"\[(N|C|E|O|PL|WW|W|H|I|MAN|DRM|BR|VO), '((?:[^'\\]|\\.)*)'", src):
         text = text.replace("\\'", "'")
         if (code, text) not in lines: lines.append((code, text))
     os.makedirs(OUT, exist_ok=True)
