@@ -426,22 +426,43 @@ const RM = (() => {
       people(c) { c.globalAlpha = this.a; if (this.w > 0 || this.fr > 0) walkFig(c, 'C', this.x, this.fr, .58); else visitor(c, 'C', this.x, 1, .58); c.globalAlpha = 1; },
     },
   };
-  // FOLLOW THE INTERPRETER (owner, build 267: "Ok to do 1"): between two rooms a dark passage; the child holds to follow
+  // FOLLOW THE INTERPRETER (owner, build 267: "Ok to do 1"): between two rooms a dark passage; the child touches once (build 312) to follow
   // the Interpreter's candle ("he took him by the hand, and led him into ..."). Christian walks (his own walk pictures,
   // dark), the Interpreter goes a step ahead with a candle, its light moving along the wall and the floor.
   ROOMS.pass = {
     pic: null, FY: 1160, cam0: 0, tone: [120, 92, 74], k: .82, PW: 2526,
-    enter() { this.p = 0; this.fr = 0; this.w = 0; this.st = 0; pic(VIS.C.walk.n); pic(VIS.I.walk.n); if (this.to && ROOMS[this.to].pic) pic(ROOMS[this.to].pic); },
-    run() { talk([[TIP, 'Hold to follow the Interpreter.', 'follow']], () => {}); },
-    act() {},
-    x() { return 380 + this.p * 900; },
+    enter() { this.p = 0; this.fr = 0; this.w = 0; this.st = 0; this.go = false; this.vt = 0; this.left = false; pic(VIS.C.walk.n); pic(VIS.I.walk.n); if (this.to && ROOMS[this.to].pic) pic(ROOMS[this.to].pic); },
+    run() { talk([[TIP, 'Touch to follow the Interpreter.', 'follow']], () => {}); },
+    // one touch and he follows to the end of the passage (owner, build 312: "make walks in dark room happen without holding down walk")
+    act() { if (G.act === 'follow') this.start(); },
+    // a verse in each passage (build 312, owner: "a verse for each transition"), King James text, checked word for word
+    // against es-kjv and bible-kjv; shown quietly, not spoken. Keyed by the room he goes to.
+    VERSES: {
+      r2: ['Thy word is a lamp unto my feet, and a light unto my path.', 'Psalm 119:105'],
+      r3: ['But where sin abounded, grace did much more abound.', 'Romans 5:20'],
+      r4: ['Lay up for yourselves treasures in heaven.', 'Matthew 6:20'],
+      r5: ['My grace is sufficient for thee.', '2 Corinthians 12:9'],
+      r6: ['We must through much tribulation enter into the kingdom of God.', 'Acts 14:22'],
+      r7: ['What I say unto you I say unto all, Watch.', 'Mark 13:37'],
+      leave: ['We have a strong city; salvation will God appoint for walls and bulwarks.', 'Isaiah 26:1'],
+    },
+    start() {
+      if (this.go) return; this.go = true; G.ring = null; next(true); G.state = 'auto';
+      const vs = this.VERSES[this.to]; this.need = 0;
+      if (vs) { words('', vs[0] + ' \u2014 ' + vs[1], 'cap hint'); document.body.classList.add('capped'); this.need = 60 + vs[0].length * 2.6; }
+    },
+    x() { return 380 + this.p * 700; },
     upd() {
       if (G.act === 'follow') {
-        if (G.actT >= 50 && !hold() && !G.ring) G.ring = () => [u(this.x() + 420), v(820)];
-        if (hold()) { G.ring = null; this.w = Math.min(1, this.w + .06); } else this.w = Math.max(0, this.w - .06);
-        if (this.p >= 1) { next(true); G.state = 'auto'; goTo(this.to); }
-      } else this.w = Math.max(0, this.w - .03);
-      this.p = Math.min(1, this.p + walkSpeed('C', this.k) / 900 * this.w); this.fr += WALK_FPT * this.w;
+        if (hold()) this.start();
+        if (G.actT >= 50 && !this.go && !G.ring) G.ring = () => [u(this.x() + 420), v(820)];
+      }
+      if (this.go) {
+        this.w = Math.min(1, this.w + .04); this.vt++;
+        // he arrives once the passage is walked and the verse has had time to be read
+        if (this.p >= 1 && this.vt >= this.need && !this.left) { this.left = true; dlg.className = ''; document.body.classList.remove('capped'); goTo(this.to); }
+      } else this.w = Math.max(0, this.w - .06);
+      this.p = Math.min(1, this.p + walkSpeed('C', this.k) / 700 * this.w); this.fr += WALK_FPT * this.w;
       const step = Math.floor(this.fr * 2 / VIS.C.walk.fr); if (step !== this.st) { this.st = step; noise(200, 1.5, .2, .06); noise(140, 1.2, .25, .04, .05); }
     },
     draw(c) {
