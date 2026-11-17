@@ -424,7 +424,7 @@ const HL = (() => {
     if (fire) { LAVA = mk(HW, HH); LAVA.getContext('2d').drawImage(fire, 0, 0, HW, HH); LAVAB = mk(HW / 10, HH / 10); LAVAB.getContext('2d').drawImage(fire, 0, 0, HW / 10, HH / 10); }
   }
   function preload() {
-    loadOak(); if (!VILP) loadImg('village.webp').then(im => { if (im) VILP = im; }).catch(() => {});
+    loadOak(); if (!VILP) loadImg('village-far.webp').then(im => { if (im) VILP = im; }).catch(() => {});
     if (!loading) loading = Promise.all([Promise.all([loadImg('hill-rock.webp'), loadImg('hill-fire.webp')]).then(([r, f]) => { if (r) { build(); paintHill(r, f); } }), loadPack('wiseman', WIS).catch(() => {}), loadImg('gate-door.webp').then(im => { if (im) GDOOR = soften(im, 4, .7, false, .22); }), loadImg('goodwill-stand.webp').then(im => { if (im) GWST = im; }), loadImg('gate-wall.webp').then(im => { if (im) GWALL = soften(im, 4, .7, true, .22); }), loadImg('gate-stone.webp').then(im => { if (im) GSTONE = im; }), loadPack('evangelist-walk', EVW).catch(() => {}), loadImg('wiseman-stand.webp').then(im => { if (im) WIS_ST = im; }), OBS.ready || loadPack('obstinate', OBS).catch(() => {}), EVS.ready || loadPack('evangelist-stand', EVS).catch(() => {}), RUNP.ready || loadPack('christian-run-plain', RUNP).catch(() => {}),
       WEEP.ready || loadPack('christian-weep', WEEP).catch(() => {}), KNEEL.ready || loadPack('christian-kneel', KNEEL).catch(() => {}), TURN.ready || loadPack('christian-turn', TURN).then(() => bookLoaded('TURN')).catch(() => {}),
       OBS_ST ? 0 : loadImg('obstinate-stand.webp').then(im => { if (im && !OBS_ST) OBS_ST = im; }),
@@ -1115,7 +1115,7 @@ const HL = (() => {
       // THE VILLAGE BEHIND THE HILL (build 286, owner: "the little town looks too idylic ... smaller house (maintain scale
       // from when christian is near mountain) ... maybe put town beyond mountain, peaking out from behind mountain on the
       // left"): smaller, further off and hazier, drawn before the hill so the mountain's left foot hides its right part
-      const villageBehind = () => { if (!rocky && VILP) { const W2 = VILP.width, H2 = VILP.height, tw = 400 * k, th = tw * H2 / W2, tx = hx - 330 * k, ty = hy - 62 * k, va = Math.max(reveal, vil);
+      const villageBehind = () => { if (!rocky && VILP) { const W2 = VILP.width, H2 = VILP.height, tw = 270 * k, th = tw * H2 / W2, tx = hx - 250 * k, ty = hy - 40 * k, va = Math.max(reveal, vil);
         if (va > .01 && tx < VW && tx + tw > 0) { const tc = tintC.vil || (tintC.vil = mk(W2, H2)), t = tc.getContext('2d'), hz = mix(mix(far, low, .3), [60, 54, 62], dark * .7);
           t.globalCompositeOperation = 'source-over'; t.globalAlpha = 1; t.clearRect(0, 0, W2, H2); t.drawImage(VILP, 0, 0);
           t.globalCompositeOperation = 'source-atop'; t.fillStyle = css(hz, .4 + .2 * dark); t.fillRect(0, 0, W2, H2);

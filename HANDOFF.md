@@ -6,6 +6,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 **The keepsakes have their own chat now** ("Pilgrim's Progress: the keepsakes (Bible, roll, title book)", https://claude.ai/code/session_017HrTSDUqJDSdrXPbhc33zT). Open question there: the wax seal on Evangelist's roll is ours, not the book's (`{14}` has no seal; the sealed roll is given at the Cross, `{94}`): take it off and keep `waxSeal()` for Level 5, or keep it as a departure.
 
+**Build 290 (Level 3 art chat): the village is now the free model's picture (seen a little from above, no trees), its hard ground edges blended into the field, peeking out small from behind the mountain. Nothing spent.**
+
 **Build 289 (room 3 chat): the Interpreter's lips and beard no longer cut away; rooms 1 and 3's children now child-sized beside the men; a talking clip queued for the free daily run. Nothing spent. See `CLAUDE.md`, "Build 289".**
 
 **Build 286 (Level 3 art chat): a softer glow on the figures; the village smaller and peeking out from behind the mountain's left side (a new tree-less picture still to make). A free image model found: FLUX.1 Kontext on Hugging Face (see CLAUDE.md, build 286). Nothing spent.**
