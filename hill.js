@@ -288,12 +288,11 @@ const HL = (() => {
         k.beginPath(); if (o.hip) { k.moveTo(x - 2, top + 1); k.lineTo(x + w * .3, top - pitch); k.lineTo(x + w * .7, top - pitch); k.lineTo(x + w + 2, top + 1); } else { k.moveTo(x - 2, top + 1); k.lineTo(x + w / 2, top - pitch); k.lineTo(x + w + 2, top + 1); } k.fill();
         for (const cp of o.chim || []) { const px = x + w * cp, ry = top - pitch * (1 - Math.abs(cp - .5) * 2 * (o.hip ? .4 : 1)), hh = 8 + Rv() * 4; k.fillRect(px - 2.5, ry - hh, 5, hh + 3); k.fillRect(px - 3.5, ry - hh - 2, 7, 2.5); if (o.smoke) ch.push([px, ry - hh - 2]); }
         if (o.win) lit.push([x + w * o.win[0], top + h * o.win[1]]); };
-      const tree = (x, r, h) => { const g0 = gy(x) + 1; k.fillRect(x - 2, g0 - h, 4, h); for (let i = 0; i < 11; i++) { const a2 = i * 2.4, rr = r * (.5 + .22 * Rv()); k.beginPath(); k.arc(x + Math.cos(a2) * r * .6, g0 - h - r * .55 + Math.sin(a2) * r * .5, rr, 0, 7); k.fill(); } };
+      const tree = (x, r, h) => { const g0 = gy(x) + 1; k.fillRect(x - 2, g0 - h, 4, H); for (let i = 0; i < 11; i++) { const a2 = i * 2.4, rr = r * (.5 + .22 * Rv()); k.beginPath(); k.arc(x + Math.cos(a2) * r * .6, g0 - h - r * .55 + Math.sin(a2) * r * .5, rr, 0, 7); k.fill(); } };
       // first, nearest him: Legality's fine house, hipped, two tall chimneys, a garden wall and a great tree
       tree(18, 22, 26); house(48, 110, 44, 26, { hip: true, chim: [.2, .8], smoke: true, win: [.3, .45] }); house(158, 46, 30, 20, { chim: [.7] });
-      { const g0 = base(0, 214); k.fillRect(0, g0 - 9, 214, 20); }
       // the cottages, each its own width, height and pitch, a few with smoke; a long barn among them
-      let x = 222; const plan = [[40, 20, 15], [30, 16, 12, 'tree'], [78, 22, 16, 'barn'], [36, 19, 17], [44, 18, 11]];
+      let x = 222; const plan = [[52, 24, 19], [26, 13, 9, 'tree'], [84, 19, 13, 'barn'], [34, 27, 22], [60, 15, 9]];
       for (const [w, h, p, kind] of plan) { if (kind === 'tree') { tree(x + 12, 15, 17); x += 24; } house(x, w, h, p, { chim: kind === 'barn' ? [] : [.22 + Rv() * .56], smoke: x < 300 || kind === undefined && Rv() < .4, hip: kind === 'barn' }); x += w + 5 + Rv() * 7; }
       // the church: nave and a square tower with a short spire, set back a little
       const c0 = x + 8, cg = base(c0, 116); k.fillRect(c0, cg - 30, 84, H); k.beginPath(); k.moveTo(c0 - 2, cg - 29); k.lineTo(c0 + 42, cg - 47); k.lineTo(c0 + 86, cg - 29); k.fill();
@@ -301,7 +300,7 @@ const HL = (() => {
       k.beginPath(); k.moveTo(c0 + 86, cg - 66); k.lineTo(c0 + 97, cg - 122); k.lineTo(c0 + 108, cg - 66); k.fill(); k.fillRect(c0 + 96.2, cg - 131, 1.6, 10); k.fillRect(c0 + 93, cg - 127, 8, 1.4);
       lit.push([c0 + 30, cg - 15]);
       x = c0 + 124; tree(x + 12, 19, 20); x += 34;
-      for (const [w, h, p] of [[42, 18, 14], [58, 21, 18], [32, 15, 12]]) { house(x, w, h, p, { chim: [.3 + Rv() * .4], smoke: w === 58, win: w === 42 ? [.6, .5] : null }); x += w + 6 + Rv() * 6; }
+      for (const [w, h, p] of [[46, 22, 20], [70, 16, 11], [28, 12, 14]]) { house(x, w, h, p, { chim: [.3 + Rv() * .4], smoke: w === 70, win: w === 46 ? [.6, .5] : null }); x += w + 6 + Rv() * 6; }
       tree(x + 14, 17, 18);
       // only a few windows lit, not in a row
       lit.push([270, base(250, 40) - 9], [345, base(330, 40) - 10]);
@@ -1065,11 +1064,11 @@ const HL = (() => {
           lg.addColorStop(0, css(c0)); lg.addColorStop(1, css(c1)); c.fillStyle = lg; c.beginPath(); c.moveTo(pts[0][0], Y(0) + 2); for (const [x, y] of pts) c.lineTo(x, y); c.lineTo(pts[pts.length - 1][0], Y(0) + 2); c.fill();
           // the low sun on the crest: a thin warm line, brighter toward the sun and where the swell rises
           if (fairP > .02) { c.save(); c.globalCompositeOperation = 'lighter'; c.lineWidth = Math.max(.6, (1.3 - .5 * t) * z); c.lineJoin = 'round';
-            const sg = c.createLinearGradient(0, 0, VW, 0); for (let i = 0; i <= 8; i++) { const sx = VW * i / 8, d2 = Math.abs(sx - lx) / VW; sg.addColorStop(i / 8, css([255, 220, 160], (.34 - .3 * t) * fairP * Math.max(0, 1 - 1.4 * d2))); }
-            c.strokeStyle = sg; for (let i = 1; i < pts.length; i++) { const uu = cx * par + (pts[i][0] - VW / 2) / z, on = smooth(.46, .62, nz2(uu * .0024, sd + 4)); if (on < .05) continue; c.globalAlpha = on; c.beginPath(); c.moveTo(pts[i - 1][0], pts[i - 1][1] + .6); c.lineTo(pts[i][0], pts[i][1] + .6); c.stroke(); } c.restore(); } }
+            const sg = c.createLinearGradient(0, 0, VW, 0); for (let i = 0; i <= 64; i++) { const sx = VW * i / 64, d2 = Math.abs(sx - lx) / VW, on = smooth(.46, .62, nz2((cx * par + (sx - VW / 2) / z) * .0024, sd + 4)); sg.addColorStop(i / 64, css([255, 220, 160], (.34 - .3 * t) * fairP * Math.max(0, 1 - 1.4 * d2) * on)); }
+            c.strokeStyle = sg; c.beginPath(); pts.forEach(([x, y], i) => i ? c.lineTo(x, y + .6) : c.moveTo(x, y + .6)); c.stroke(); c.restore(); } }
         c.restore(); };
       plainFill(hor);
-      { const fk = (1 - dark) * (1 - gateish); if (fk > .02) { const hg = c.createLinearGradient(0, hor - 34 * z, 0, hor + 26 * z); hg.addColorStop(0, css(low, 0)); hg.addColorStop(.55, css(low, .62 * fk)); hg.addColorStop(1, css(low, 0)); c.fillStyle = hg; c.fillRect(0, hor - 34 * z, VW, 60 * z); } }
+      { const fk = (1 - dark) * (1 - gateish); if (fk > .02) { const hg = c.createLinearGradient(0, hor - 64 * z, 0, hor + 30 * z); hg.addColorStop(0, css(low, 0)); hg.addColorStop(.4, css(low, .2 * fk)); hg.addColorStop(.68, css(low, .52 * fk)); hg.addColorStop(1, css(low, 0)); c.fillStyle = hg; c.fillRect(0, hor - 64 * z, VW, 94 * z); } }
       // THE HILL IS NOT SEEN UNTIL WISEMAN POINTS (owner, build 185: "let's hide it entirely till worldly wise tells him to
       // look and then screen pans right and we see it"). On the plain it stands far off to the right (HILL_F), out of the
       // picture until the camera pans to it at "Do you see that hill?", and comes out of the haze as it does (`reveal`).
@@ -1249,15 +1248,15 @@ const HL = (() => {
       }
       // the village of Morality at the hill's near foot, under the overhang, in front of the haze at its foot. It shows
       // when Wiseman names it (`vil`), before the hill comes out of the haze above it at "Do you see that hill?"
-      if (!rocky && TOWN.W) { const tw = 700 * k, th = tw * TOWN.H / TOWN.W, tx = hx - 220 * k, ty = hy + 8 * k, va = Math.max(reveal, vil);
-        if (va > .01 && tx < VW && tx + tw > 0) { const tc = tintC.town || (tintC.town = mk(TOWN.W, TOWN.H)), t = tc.getContext('2d'), tint = mix(mix(mix(far, [58, 52, 58], .72), low, .06), [40, 36, 44], dark * .7);
+      if (!rocky && TOWN.W) { const tw = 700 * k, th = tw * TOWN.H / TOWN.W, tx = hx - 220 * k, ty = hy + 20 * k, va = Math.max(reveal, vil);
+        if (va > .01 && tx < VW && tx + tw > 0) { const tc = tintC.town || (tintC.town = mk(TOWN.W, TOWN.H)), t = tc.getContext('2d'), tint = mix(mix(mix(far, [44, 38, 44], .8), low, .05), [36, 32, 40], dark * .7);
           t.globalCompositeOperation = 'source-over'; t.clearRect(0, 0, TOWN.W, TOWN.H); t.drawImage(TOWN, 0, 0); t.globalCompositeOperation = 'source-in';
           const tg = t.createLinearGradient(0, 0, 0, TOWN.H); tg.addColorStop(0, css(tint)); tg.addColorStop(1, css(mix(tint, mix(far, near, .3), .35))); t.fillStyle = tg; t.fillRect(0, 0, TOWN.W, TOWN.H);
           // its foot fades into the haze of the plain (no hard straight base)
-          t.globalCompositeOperation = 'source-atop'; const fh = t.createLinearGradient(0, TOWN.H - 30, 0, TOWN.H); fh.addColorStop(0, css(colAt(clamp((ty - hor) / (Y(0) - hor))), 0)); fh.addColorStop(1, css(colAt(clamp((ty - hor) / (Y(0) - hor))), .9)); t.fillStyle = fh; t.fillRect(0, TOWN.H - 30, TOWN.W, 30);
+          t.globalCompositeOperation = 'source-atop'; const fh = t.createLinearGradient(0, TOWN.H - 44, 0, TOWN.H); fh.addColorStop(0, css(colAt(clamp((ty - hor) / (Y(0) - hor))), 0)); fh.addColorStop(1, css(colAt(clamp((ty - hor) / (Y(0) - hor))), .9)); t.fillStyle = fh; t.fillRect(0, TOWN.H - 44, TOWN.W, 44);
           c.globalAlpha = va; c.drawImage(tc, tx, ty - th, tw, th); c.globalAlpha = 1;
           // its chimneys smoke, thin threads leaning with the evening air
-          c.save(); c.lineCap = 'round'; for (const [i, [wx, wy]] of TOWN.ch.entries()) { const px = tx + wx * tw / TOWN.W, py = ty - th + wy * th / TOWN.H, L = 60 * k;
+          c.save(); c.lineCap = 'round'; for (const [i, [wx, wy]] of TOWN.ch.entries()) { const px = tx + wx * tw / TOWN.W, py = ty - th + wy * th / TOWN.H, L = 38 * k;
             for (let j = 0; j < 12; j++) { const u0 = j / 12, u1 = (j + 1) / 12, sw = u => px - u * u * 5 * k + 1.5 * k * u * Math.sin(G.t / 80 + u * 4 + i);
               c.strokeStyle = css(mix(tint, [214, 204, 196], .5), .32 * va * (1 - u0) * (1 - dark * .5)); c.lineWidth = Math.max(.5, (1.4 + 4 * u0) * k); c.beginPath(); c.moveTo(sw(u0), py - u0 * L); c.lineTo(sw(u1), py - u1 * L); c.stroke(); } }
           c.restore();
