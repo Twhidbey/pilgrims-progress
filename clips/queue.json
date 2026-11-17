@@ -1,5 +1,5 @@
 {
- "about": "The clip queue. The daily run takes the first jobs with status \"todo\" (about 5 to 8 a day on the free allowance). To add a job, copy one and change it; see clips/README.md.",
+ "about": "The clip queue. The daily run takes the first jobs with status \"todo\" (about 5 to 8 a day on the free allowance). To add a job, copy one and change it; see clips/README.md. The free allowance is charged by the length asked for (a 5 s clip reserves about 90 s of GPU; about 4.5 min a day free), so keep clips short: 3 s for loops and small moves.",
  "jobs": [
   {
    "id": "interp-say",
@@ -29,7 +29,8 @@
    "status": "done",
    "made": "2026-11-17 18:29 UTC",
    "frames": 81,
-   "secs": 37
+   "secs": 37,
+   "check": "Good: walks on the spot, camera still, even steps, loops. Feet level."
   },
   {
    "id": "christian-oil-walk",
@@ -43,7 +44,8 @@
    "status": "done",
    "made": "2026-11-17 18:30 UTC",
    "frames": 81,
-   "secs": 41
+   "secs": 41,
+   "check": "Good: steady walk on the spot, hood and burden kept, camera still."
   },
   {
    "id": "room2-living",
@@ -62,7 +64,8 @@
    "status": "done",
    "made": "2026-11-17 18:30 UTC",
    "frames": 81,
-   "secs": 50
+   "secs": 50,
+   "check": "First half good (pouring, sweeping); about 2.5 s in the model cut to another view of the room: use only frames 0 to about 40."
   },
   {
    "id": "room4-living",
@@ -76,8 +79,8 @@
      1006
     ]
    },
-   "seconds": 5,
-   "prompt": "The fire burns and flickers higher, the man keeps casting water on it from his wooden bucket and steam rises; behind the wall the man in the long robe slowly pours oil from his jug. The camera is completely still: no zoom, no pan, no cut. Only the people and the light move; the room, the walls and every object stay exactly where they are. Keep the oil-painting style and colours exactly.",
+   "seconds": 3,
+   "prompt": "The fire burns and flickers higher, the man keeps casting water on it from his wooden bucket and steam rises; behind the wall the man in the long robe slowly pours oil from his jug. The camera is completely still: no zoom, no pan, no cut. Only the people and the light move; the room, the walls and every object stay exactly where they are. Keep the oil-painting style and colours exactly. ONE single continuous shot from beginning to end: it never cuts, never changes to another view or another room.",
    "status": "todo"
   },
   {
@@ -119,7 +122,7 @@
     "src": "assets/room-christian.webp",
     "flip": true
    },
-   "seconds": 4,
+   "seconds": 3,
    "prompt": "The pilgrim with the great bundle on his back stands still, slowly lifts his head to look up at something high in front of him, holds the look a moment in wonder, then slowly lowers his head again.",
    "status": "todo"
   },
@@ -134,7 +137,7 @@
     "src": "assets/room-interpreter.webp",
     "flip": true
    },
-   "seconds": 4,
+   "seconds": 3,
    "prompt": "The old man with folded hands stands still, breathing quietly, and slowly nods his head once or twice, kindly, as if listening and agreeing.",
    "status": "todo"
   },
@@ -150,8 +153,8 @@
      910
     ]
    },
-   "seconds": 4,
-   "prompt": "The man sitting up in the curtained bed trembles, breathing hard, staring up in awe and fear; his hand grips the bedclothes; the curtains stir very slightly. The camera is completely still: no zoom, no pan, no cut. Only the people and the light move; the room, the walls and every object stay exactly where they are. Keep the oil-painting style and colours exactly.",
+   "seconds": 3,
+   "prompt": "The man sitting up in the curtained bed trembles, breathing hard, staring up in awe and fear; his hand grips the bedclothes; the curtains stir very slightly. The camera is completely still: no zoom, no pan, no cut. Only the people and the light move; the room, the walls and every object stay exactly where they are. Keep the oil-painting style and colours exactly. ONE single continuous shot from beginning to end: it never cuts, never changes to another view or another room.",
    "status": "todo"
   },
   {
@@ -164,7 +167,7 @@
    "last": {
     "src": "assets/room-christian.webp"
    },
-   "seconds": 4,
+   "seconds": 3,
    "prompt": "The pilgrim with the great bundle on his back slowly turns round on the spot, from facing right to facing left, his feet stepping round in place.",
    "status": "todo"
   },
@@ -175,7 +178,7 @@
     "src": "assets/room5-brave-armed.webp",
     "h": 580
    },
-   "seconds": 4,
+   "seconds": 3,
    "prompt": "A man in a steel helmet and breastplate, sword drawn, strides steadily and boldly to the RIGHT. The camera moves along with him and does NOT zoom: he stays in the centre of the frame at exactly the same size, his whole body always visible; he walks on the spot in the frame with even, regular steps, so the walk can loop.",
    "status": "todo"
   },
