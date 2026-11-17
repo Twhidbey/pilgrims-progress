@@ -409,8 +409,11 @@ const HL = (() => {
       k.globalCompositeOperation = 'source-atop'; k.globalAlpha = a; k.fillStyle = css(col); k.fillRect(0, 0, HW * R, HH * R); return c; });
     // the hill far off (build 185): the dark rock seen through the evening's air, its colours taken toward the sky behind
     // it at each height, and baked small so its edges and the painting's detail go soft, as a far mountain's do
-    { const c = mk(HW / 3, HH / 3), k = c.getContext('2d'); k.drawImage(HILL[1], 0, 0, HW / 3, HH / 3); k.globalCompositeOperation = 'source-atop';
-      const g = k.createLinearGradient(0, (HOY - TOP) / 3, 0, HOY / 3); g.addColorStop(0, 'rgba(112,112,134,.6)'); g.addColorStop(.6, 'rgba(150,132,138,.62)'); g.addColorStop(1, 'rgba(196,170,150,.78)'); k.fillStyle = g; k.fillRect(0, 0, HW, HH); HILLV = c; }
+    // (build 295, owner: "it looks funny to have decent resolution town next to low resolution edge of mountain"): baked
+    // at 1.3 times the hill's units now (it was a third), so its outline is as crisp as the painted village beside it; the
+    // haze colours keep it far off
+    { const Q = 1.3, c = mk(HW * Q, HH * Q), k = c.getContext('2d'); k.drawImage(HILL[1], 0, 0, HW * Q, HH * Q); k.globalCompositeOperation = 'source-atop';
+      const g = k.createLinearGradient(0, (HOY - TOP) * Q, 0, HOY * Q); g.addColorStop(0, 'rgba(112,112,134,.6)'); g.addColorStop(.6, 'rgba(150,132,138,.62)'); g.addColorStop(1, 'rgba(196,170,150,.78)'); k.fillStyle = g; k.fillRect(0, 0, HW * Q, HH * Q); HILLV = c; }
     // the mountain's own rock, as a texture for the crags (build 190): a piece from inside the painting, made grey about
     // a middle grey (so laid over in 'overlay' it only lightens and darkens the layer's tone) and mirrored into a 2 x 2
     // tile so it repeats without seams
@@ -1148,6 +1151,9 @@ const HL = (() => {
         villageBehind();
         c.globalAlpha = reveal; c.drawImage(!rocky && HILLV ? HILLV : HILL[0], dx, dy, HW * k, HH * k); if (dark > .01) { c.globalAlpha = dark; c.drawImage(HILL[1], dx, dy, HW * k, HH * k); }
         if (rocky) c.restore(); c.globalAlpha = 1;
+        // (build 295) a soft breath of mist where the village meets the mountain's left foot, so the two edges never meet bare
+        if (!rocky && VILP) { const mx = hx + 10 * k, my = hy - 34 * k, mc = mix(mix(far, low, .3), [60, 54, 62], dark * .7); c.save(); c.translate(mx, my); c.scale(120 * k, 40 * k);
+          const mg = c.createRadialGradient(0, 0, 0, 0, 0, 1); mg.addColorStop(0, css(mc, .55 * (1 - dark * .5))); mg.addColorStop(.5, css(mc, .3 * (1 - dark * .5))); mg.addColorStop(1, css(mc, 0)); c.fillStyle = mg; c.fillRect(-1, -1, 2, 2); c.restore(); }
         // IT IS THERE FROM THE START, VEILED (owner, build 181: "when you first see the hill it kinda appears out of
         // nowhere - it should be there already and to the right"): until Wiseman points to it, its lower slopes stand
         // pale in the plain's haze and its summit is lost in a bank of cloud; at "Do you see that hill?" the cloud draws
