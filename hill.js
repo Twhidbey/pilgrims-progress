@@ -233,14 +233,14 @@ const HL = (() => {
       k.putImageData(im, 0, 0); return c; };
     // (build 203) long thin layers of smoke, like the mist at the mountain's foot: dark, and again as the fire's light on their undersides
     { const L = [cloud(640, 56, 61, .4, .0085, .06), cloud(640, 48, 73, .42, .011, .07), cloud(640, 64, 89, .38, .007, .05)], tintL = (im, col) => { const t = mk(im.width, im.height), q = t.getContext('2d'); q.drawImage(im, 0, 0); q.globalCompositeOperation = 'source-in'; q.fillStyle = col; q.fillRect(0, 0, t.width, t.height); return t; };
-      SMOKEL = L.map(im => ({ d: tintL(im, 'rgb(66,52,56)'), l: tintL(im, 'rgb(255,186,130)') })); }
+      SMOKEL = L.map(im => ({ d: tintL(im, 'rgb(66,52,56)'), l: tintL(im, 'rgb(255,186,130)'), h: tintL(im, 'rgb(150,140,146)') })); }
     SMOKE = cloud(240, 80, 5, .4, .022, .05); CLOUD = cloud(400, 90, 31, .46, .014, .045);
     { const tintOf = col => { const t = mk(CLOUD.width, CLOUD.height), q = t.getContext('2d'); q.drawImage(CLOUD, 0, 0); q.globalCompositeOperation = 'source-in'; q.fillStyle = col; q.fillRect(0, 0, t.width, t.height); return t; }; CLOUDW = tintOf('rgb(255,226,176)'); CLOUDG = tintOf('rgb(168,160,176)'); }
     // billows of smoke: three soft round shapes, each baked dark and again as the light the fire lays on its underside
     for (const seed of [5, 17, 29]) { const base = mk(160, 160), b2 = base.getContext('2d'), Rp = rngS(seed);
       for (let j = 0; j < 8; j++) { const an = Rp() * 6.283, d = j ? 22 + Rp() * 22 : 0, r = j ? 30 + Rp() * 18 : 50, x = 80 + Math.cos(an) * d, y = 80 + Math.sin(an) * d * .8, g = b2.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, 'rgba(255,255,255,.8)'); g.addColorStop(.55, 'rgba(255,255,255,.45)'); g.addColorStop(1, 'rgba(255,255,255,0)'); b2.fillStyle = g; b2.fillRect(x - r, y - r, 2 * r, 2 * r); }
       const tinted = fill => { const c2 = mk(160, 160), k2 = c2.getContext('2d'); k2.drawImage(base, 0, 0); k2.globalCompositeOperation = 'source-in'; k2.fillStyle = fill(k2); k2.fillRect(0, 0, 160, 160); return c2; };
-      PUFF.push({ d: tinted(() => 'rgb(62,46,50)'), l: tinted(k2 => { const g = k2.createLinearGradient(130, 150, 60, 60); g.addColorStop(0, 'rgba(255,200,146,1)'); g.addColorStop(.5, 'rgba(240,150,100,.35)'); g.addColorStop(1, 'rgba(220,120,90,0)'); return g; }) }); }
+      PUFF.push({ h: tinted(() => 'rgb(146,134,140)'), d: tinted(() => 'rgb(62,46,50)'), l: tinted(k2 => { const g = k2.createLinearGradient(130, 150, 60, 60); g.addColorStop(0, 'rgba(255,200,146,1)'); g.addColorStop(.5, 'rgba(240,150,100,.35)'); g.addColorStop(1, 'rgba(220,120,90,0)'); return g; }) }); }
     // the wall's stones by the wicket-gate: rough courses, no two stones alike (shown only where light falls)
     { const Rs = rngS(71); for (let y = 0; y < 330;) { const h = 30 + Rs() * 24; for (let x = GATE_X - 560 - Rs() * 60; x < GATE_X + 560;) { const w = 44 + Rs() * 80; STONES.push({ x, y, w, h, t: Rs(), j: Rs() }); x += w; } y += h; } }
     // the village of Morality beyond the hill: low houses, pleasant, a lamp in some windows (never reached)
@@ -849,9 +849,15 @@ const HL = (() => {
         // twice, half a journey apart, each copy fading in and out as it drifts, so the drift never jumps. The layers
         // nearest the summit are lit from beneath by the fire; at a flash the light is inside them.
         if (cK > .02 && SMOKEL) { const kS = Math.min(k, 1);
-          for (let i = 0; i < 5; i++) { const T = SMOKEL[i % 3], h = (105 + 62 * i + 18 * Math.sin(i * 2.3)) * kS, Lw = (1400 + 300 * i) * kS, Hh = (95 + 26 * i) * kS, tr = 520 * kS, sp = 1 / (2600 + 400 * i);
+          // (build 208, owner: "Smoke is darker than mountain - can we make it same or lighter since the distance is lightening it.
+          // Also there can be more almost like layer of clouds about"): far off, the smoke takes the haze of the distance
+          // (`hz`: drawn in a pale smoke-grey, never darker than the mountain, crossing to the dark smoke as he comes near),
+          // and more layers lie about the mountain far off, the lowest below the summit, passing behind it
+          const hz = rocky ? 0 : clamp(1 - dark * 1.6), nL = rocky ? 5 : 8;
+          for (let i = 0; i < nL; i++) { const lo = i >= 5, T = SMOKEL[i % 3], h = (lo ? -30 - 70 * (i - 5) : 105 + 62 * i + 18 * Math.sin(i * 2.3)) * kS, Lw = (1400 + 300 * i) * kS, Hh = (95 + 26 * i) * kS, tr = 520 * kS, sp = 1 / (2600 + 400 * i);
             for (const off of [0, .5]) { const ph = (G.t * sp + off + i * .13) % 1, x1 = sx0 + (200 - 60 * i) * kS - ph * tr, yy = sy0 - h + 10 * kS * Math.sin(G.t / 900 + i) - Hh / 2, fa = Math.sin(Math.PI * ph);
-              c.globalCompositeOperation = 'source-over'; c.globalAlpha = Math.min(1, cK * (.62 - .06 * i) * fa); c.drawImage(T.d, x1 - Lw, yy, Lw, Hh);
+              const la0 = Math.min(1, (lo ? 1.05 * farK * 1.4 : cK * (.62 - .06 * i) * (1 + .5 * hz)) * fa); c.globalCompositeOperation = 'source-over';
+              if (hz < 1) { c.globalAlpha = la0 * (1 - hz); c.drawImage(T.d, x1 - Lw, yy, Lw, Hh); } if (hz > 0) { c.globalAlpha = la0 * hz; c.drawImage(T.h, x1 - Lw, yy, Lw, Hh); }
               const la = (burn * (.5 - .06 * i) + F * (.45 - .05 * i)) * fa; if (la > .01) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = Math.min(1, la * .55); c.drawImage(T.l, x1 - Lw * .45, yy + Hh * .25, Lw * .45, Hh * .9); } } }
           c.globalCompositeOperation = 'source-over'; c.globalAlpha = 1; }
         // the hill: fair and far off at first, black under its own cloud when he stands by it
@@ -914,7 +920,7 @@ const HL = (() => {
           for (let i = 0; i < N; i++) { const h1 = Math.sin(i * 12.9898) * 43758.5453, h2 = Math.sin(i * 78.233) * 12543.123; ps.push([(i / N + G.t / 3400) % 1, h1 - Math.floor(h1), h2 - Math.floor(h2), i]); }
           ps.sort((a, b) => b[0] - a[0]);
           for (const [u, r1, r2, i] of ps) { const rise = 1 - Math.pow(1 - u, 3), spread = (40 + 230 * u) * kS, px = sx0 - (240 * u + 900 * u * u) * kS + (r1 - .5) * spread, py = sy0 - (14 + 150 * rise - 60 * u * u) * kS + (r2 - .5) * spread * .7, rr = (40 + 210 * u) * kS * (.8 + .4 * r2), a = smooth(0, .05, u) * (1 - smooth(.2, .42, u)), P = PUFF[i % 3];
-            c.globalCompositeOperation = 'source-over'; c.globalAlpha = a * .7 * (.1 + .75 * Math.max(dark, farK * 1.3)) * reveal; c.drawImage(P.d, px - rr * 1.3, py - rr * .8, 2.6 * rr, 1.6 * rr);
+            c.globalCompositeOperation = 'source-over'; const hzP = rocky ? 0 : clamp(1 - dark * 1.6), aP = a * .7 * (.1 + .75 * Math.max(dark, farK * 1.3)) * reveal; if (hzP > 0) { c.globalAlpha = aP * hzP; c.drawImage(P.h, px - rr * 1.3, py - rr * .8, 2.6 * rr, 1.6 * rr); } c.globalAlpha = aP * (1 - hzP); c.drawImage(P.d, px - rr * 1.3, py - rr * .8, 2.6 * rr, 1.6 * rr);
             const la = a * (burn * (.3 + .7 * Math.pow(1 - u, 2)) + F * .3 * (1 - u)); if (la > .01) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = la; c.drawImage(P.l, px - rr, py - rr, 2 * rr, 2 * rr); } } }
         c.globalCompositeOperation = 'source-over'; c.globalAlpha = 1;
         if (flames) { c.save(); c.globalCompositeOperation = 'lighter'; flames(); c.restore(); }
