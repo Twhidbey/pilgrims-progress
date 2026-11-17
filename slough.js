@@ -227,10 +227,11 @@ const SL = (() => {
       for (let k = 0; k < 14; k++) { const q = Math.pow((k + 1) / 14, 1.35); FARMUD.push({ q, ps: lay(rnd, WATER_L - 900, BANK0 + 900, 14) }); } }
     mudMap = mk(MUD_W, MUD_H); { const c = mudMap.getContext('2d'); let sd = 11; const rnd = () => (sd = (sd * 16807) % 2147483647) / 2147483647;
       c.fillStyle = '#fff';
-      // build 299 (owner: "little less stripy in the front (waves cohesively grey)"): fewer, taller rows that overlap, and
-      // shorter gaps, so the near mud is one wavy grey mass with only now and then a pool
-      for (let k = 0; k <= 12; k++) { const j = 2 + 268 * Math.pow(k / 12, 1.5), hk = 6 + .3 * j;
-        for (const m of lay(rnd, MUD_X0 - 300, MUD_X0 + MUD_W + 300, hk, .55)) { c.beginPath(); wavy(c, m.x - MUD_X0, j, m.L, m.h, m.h, m.s); c.fill(); } }
+      // build 303 (owner: "little less stripy in the front ... instead of thickening strips can you just make more to cover
+      // white strips (the up and down of new one is too much)"): the patches keep build 298's gentle height; there are just
+      // twice as many rows, with shorter gaps, so they cover the white between them
+      for (let k = 0; k <= 36; k++) { const j = 2 + 268 * Math.pow(k / 36, 1.6), hk = 3 + .14 * j;
+        for (const m of lay(rnd, MUD_X0 - 300, MUD_X0 + MUD_W + 300, hk, .6)) { c.beginPath(); wavy(c, m.x - MUD_X0, j, m.L, m.h, m.h * .8, m.s); c.fill(); } }
       // fade out under the far bank as before (mudEnd)
       c.globalCompositeOperation = 'destination-in'; const g = c.createLinearGradient(0, 0, MUD_W, 0);
       for (let i = 0; i <= 20; i++) g.addColorStop(i / 20, 'rgba(255,255,255,' + mudEnd(MUD_X0 + MUD_W * i / 20).toFixed(3) + ')');
