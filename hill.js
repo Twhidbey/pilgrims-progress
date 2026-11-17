@@ -441,7 +441,7 @@ const HL = (() => {
   let STEAMC = null;
   function steamPuff(v, burst = 0) { const [x, y, len] = VENTS[v]; STEAMP.push({ x: x + (Math.random() - .5) * 8, y: y + Math.random() * len, vx: -.06 - Math.random() * .1, vy: -.28 - Math.random() * .18 - .15 * burst, r: 6 + Math.random() * 5 + 4 * burst, g: .12 + Math.random() * .08, t: 0, life: 240 + Math.random() * 160, s: Math.random() * 6.28 }); }
   function fire(k = 1) { flash = Math.max(flash, k); for (let v = 0; v < VENTS.length; v++) steamPuff(v, k); if (dark > .6 && HL.on) for (let i = Math.floor(Math.random() * 2.4 * k); i > 0; i--) boulder(); if (dark > .5 && HL.on) shed(3 + Math.floor(4 * k), 1);
-    // LIGHTNING, TRACED FROM PHOTOGRAPHS (owner, build 206: "Lightning looks too crazy and unrealistic - maybe look for
+    // LIGHTNING, TRACED FROM PHOTOGRAPHS (owner, build 207: "Lightning looks too crazy and unrealistic - maybe look for
     // lightning shots on web (free pics) and trace them"). Each flash takes one of four strikes traced from public-domain
     // NOAA photographs (Wikimedia Commons: "Lightning NOAA.jpg", "Cloud-to-ground lightning stroke - NOAA.jpg"): the bright
     // channels were found by their contrast with the sky round them, thinned to one-pixel lines and stored as lines of
