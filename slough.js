@@ -292,6 +292,7 @@ const SL = (() => {
     lastRows.set(im, r); return r; }
   function figure(c, slot, im, meta, x, y, face, tint, cut, alpha = 1) {
     if (!im || alpha <= 0) return;
+    im = solidOf(im);      // build 199: no clear spots inside the figure (solidOf, in index.html)
     const fc = tintC[slot] || (tintC[slot] = mk(8, 8)); if (fc.width !== im.width || fc.height !== im.height) { fc.width = im.width; fc.height = im.height; }
     const f = fc.getContext('2d'); f.globalCompositeOperation = 'source-over'; f.clearRect(0, 0, fc.width, fc.height);
     f.drawImage(im, 0, 0); f.globalCompositeOperation = 'multiply'; f.fillStyle = css(tint); f.fillRect(0, 0, im.width, im.height);

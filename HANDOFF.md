@@ -38,6 +38,8 @@ Older handovers (builds 41 to 137, with the picture and video prompts used for H
 - The concept art from the picture chat is not in the repo (it was only shown in that chat); ask that chat to put any keepers in a `concept/` folder.
 - Earlier offers not answered: the sketch of Levels 3 to 6 as a first whole game; a child playing it; carrying the tune through the levels; Evangelist handing over the roll as an animation; repainting the three cottages with true door and window proportions (about 45 cents).
 
+**Build 199: the owner's eleven Level 3 points (rocks only round his path; more lightning and falling boulders; no flicker over the brow, on the oak's edge, or at first sight of the mountain; the kneel's size; no see-through spots in Levels 2 and 3; firelight colour on him; a second wide look at the mountain; more smoke far off; soft dust). See `CLAUDE.md`, "Build 199". Nothing spent.**
+
 **Build 198: steam breathes from the mountain's four glowing cracks, soft and see-through, never over its outline. See `CLAUDE.md`, "Build 198". Nothing spent.**
 
 **Build 194: Christian and Wiseman read as solid figures on Level 3's fair plain (darker tint, a lighter across-wash). See `CLAUDE.md`, "Build 194". Nothing spent.**

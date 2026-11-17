@@ -1148,6 +1148,32 @@ function coverEars() { if (G.ears) return; if (P.run) poseChange(8, true); G.ear
 const CHR = [], PLI = [], OBS = [], EVA = [], STD = [], RUN = [], CHR_K = .52, RUN_STEP = RUN_META.vpx * CHR_K, RUNV = RUN_STEP * .4,   // the run at its video's own speed (24 frames a second)
    CHR_STEP = CHR_META.vpx * CHR_K, PLI_STEP = PLI_META.vpx * CHR_K, OBS_STEP = OBS_META.vpx * CHR_K;
 const PACK_V = 27;                          // bump when the .pack files change, so phones fetch the new ones
+// SOLID FIGURES (build 199; owner: "in both level 2 and 3, pilgrims sprite is clear in spots. we need to fix this"). The
+// figures were cut from their white paper by how white each pixel is, so the white paper showing inside the watercolour
+// (highlights on the cloak, the pack, the hood) was cut away too and the scene showed through those spots (2 to 7 per cent
+// of the inside of a figure). solidOf(im) gives, once per picture, a copy whose inside is whole: everything not joined to
+// the outside through clear pixels is filled under the paint with the figure's own middle tone (it takes the scene's tint
+// like the rest of him); a 4 px band along the outline keeps its own soft edge (and any soft motion-blur there). Canvases are passed through unchanged.
+const SOLID = new WeakMap();
+function solidOf(im) {
+  if (!im || typeof HTMLCanvasElement !== 'undefined' && im instanceof HTMLCanvasElement) return im;
+  let s = SOLID.get(im); if (s) return s;
+  const W = im.width, H = im.height; if (!W || !H) return im;
+  const c = mk(W, H), k = c.getContext('2d'); k.drawImage(im, 0, 0);
+  const d = k.getImageData(0, 0, W, H), D = d.data, out = new Uint8Array(W * H), st = new Int32Array(W * H); let sp = 0;
+  const push = i => { if (!out[i] && D[i * 4 + 3] < 40) { out[i] = 1; st[sp++] = i; } };
+  for (let x = 0; x < W; x++) { push(x); push((H - 1) * W + x); }
+  for (let y = 0; y < H; y++) { push(y * W); push(y * W + W - 1); }
+  while (sp) { const i = st[--sp], x = i % W; if (x > 0) push(i - 1); if (x < W - 1) push(i + 1); if (i >= W) push(i - W); if (i < W * (H - 1)) push(i + W); }
+  let near = out;
+  for (let pass = 0; pass < 4; pass++) { const nx = near.slice(); for (let i = 0; i < W * H; i++) if (!near[i]) { const x = i % W; if ((x > 0 && near[i - 1]) || (x < W - 1 && near[i + 1]) || (i >= W && near[i - W]) || (i < W * (H - 1) && near[i + W])) nx[i] = 1; } near = nx; }
+  // the fill is the figure's own middle tone (the mean of its solid pixels), a little lightened, so a filled spot reads as
+  // more of his cloak, not as a pale patch
+  let m = 0, nm = 0; for (let i = 0; i < W * H; i++) if (D[i * 4 + 3] > 250) { m += D[i * 4]; nm++; } m = nm ? m / nm : 160; const fillV = m * .75 + 214 * .25;
+  for (let i = 0; i < W * H; i++) { if (near[i]) continue; const j = i * 4, a = D[j + 3] / 255; if (a > .99) continue;
+    for (let q = 0; q < 3; q++) D[j + q] = D[j + q] * a + fillV * (1 - a); D[j + 3] = 255; }
+  k.putImageData(d, 0, 0); SOLID.set(im, c); return c;
+}
 // a .pack file: 4 bytes = how many frames, 4 bytes per frame = its length, then the WebP frames end to end
 async function loadPack(name, into) {
   const res = await fetch('assets/' + name + '.pack?v=' + PACK_V); if (!res.ok) throw new Error('no ' + name);      // a missing pack is left out
