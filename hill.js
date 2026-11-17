@@ -1124,11 +1124,13 @@ const HL = (() => {
       // lower, darker front row across its foot and out to the left, both hidden on the right by the mountain's foot
       // (build 300, owner: "a little more variety of rock and connecting to mountain"): three rows, each with spurs of uneven
       // width and now and then a taller one, rising toward the right and running on in under the mountain's foot
-      const FR = [{ u0: -620, u1: 320, b: -40, h: 72, seg: 55, sd: 53, wk: .7, col: [108, 94, 100] }, { u0: -540, u1: 300, b: -20, h: 48, seg: 32, sd: 61, wk: .6, col: [96, 82, 88] }, { u0: -690, u1: 140, b: -2, h: 34, seg: 22, sd: 71, wk: .55, col: [82, 70, 76] }];
-      const farRocks = (li, va, hz) => { const L = FR[li], u0 = L.u0, u1 = L.u1, base = hy + L.b * k, hgt = L.h * k, seg = L.seg, sd = L.sd, front = li === 2;
+      const FR = [{ u0: -620, u1: 320, b: -40, h: 72, seg: 55, sd: 53, wk: .7, col: [108, 94, 100] }, { u0: -540, u1: 300, b: -20, h: 48, seg: 32, sd: 61, wk: .6, col: [96, 82, 88] }, { u0: -690, u1: 140, b: -2, h: 34, seg: 22, sd: 71, wk: .55, col: [82, 70, 76] },
+        // (build 301, owner: "maybe a add the big rock on the left to what you have too. and some rocks to cover the left corner of town a little and blend into rock"): build 297's one broad rock on the left, behind everything, and a few rocks drawn over the village's left corner
+        { u0: -600, u1: 20, b: -36, h: 80, seg: 70, sd: 53, wk: 1, col: [104, 90, 96], one: 1 }, { u0: -330, u1: -160, b: -50, h: 40, seg: 18, sd: 83, wk: .6, col: [100, 86, 92], one: 1, fade: 50 }];
+      const farRocks = (li, va, hz) => { const L = FR[li], u0 = L.u0, u1 = L.u1, base = hy + L.b * k, hgt = L.h * k, seg = L.seg, sd = L.sd, front = li === 2, fl = L.one ? 0 : 1, fd = L.fade || 120;
         const col = mix(mix(L.col, hz, .2), mix([58, 50, 52], [30, 27, 32], dark), dark * .6), g = c.createLinearGradient(hx + u0 * k, 0, hx + u1 * k, 0);
         g.addColorStop(0, css(col, 0)); g.addColorStop(.2, css(col, va)); g.addColorStop(1, css(col, va)); c.fillStyle = g;
-        c.beginPath(); c.moveTo(hx + u0 * k, base + 2 * k); for (let u = u0; u <= u1; u += 2) { const e = smooth(u0, u0 + 120, u) * (.45 + .85 * smooth(u0, 60, u)) + (li === 2 ? 0 : .5 * smooth(-200, 200, u)); c.lineTo(hx + u * k, base - hgt * e * Math.max(crag(u + 4000, sd, seg, true, .6, L.wk), li === 2 ? 0 : .85 * smooth(-280, -50, u))); }
+        c.beginPath(); c.moveTo(hx + u0 * k, base + 2 * k); for (let u = u0; u <= u1; u += 2) { const e = L.one ? smooth(u0, u0 + fd, u) * smooth(u1, u1 - fd, u) : smooth(u0, u0 + 120, u) * (.45 + .85 * smooth(u0, 60, u)) + (li === 2 ? 0 : .5 * smooth(-200, 200, u)); c.lineTo(hx + u * k, base - hgt * e * Math.max(crag(u + 4000, sd, seg, !L.one, .6, L.wk), li === 2 || L.one ? 0 : .85 * smooth(-280, -50, u))); }
         c.lineTo(hx + u1 * k, base + 2 * k); c.closePath(); c.fill();
         // the plain's haze over their foot, so they stand in it
         const fg = c.createLinearGradient(0, base - hgt * .3, 0, base + 2 * k), fc = colAt(clamp((base - hor) / (Y(0) - hor))); fg.addColorStop(0, css(fc, 0)); fg.addColorStop(1, css(fc, .7 * va));
@@ -1138,7 +1140,7 @@ const HL = (() => {
           t.globalCompositeOperation = 'source-over'; t.globalAlpha = 1; t.clearRect(0, 0, W2, H2); t.drawImage(VILP, 0, 0);
           t.globalCompositeOperation = 'source-atop'; t.fillStyle = css(hz, .5 + .2 * dark); t.fillRect(0, 0, W2, H2);
           const fh = t.createLinearGradient(0, H2 * .5, 0, H2); fh.addColorStop(0, css(colAt(clamp((ty - hor) / (Y(0) - hor))), 0)); fh.addColorStop(1, css(colAt(clamp((ty - hor) / (Y(0) - hor))), .85)); t.fillStyle = fh; t.fillRect(0, H2 * .5, W2, H2);
-          farRocks(0, va, hz); farRocks(1, va, hz); t.globalCompositeOperation = 'source-over'; c.globalAlpha = va; c.drawImage(tc, tx, ty - th, tw, th); c.globalAlpha = 1; farRocks(2, va, hz); } } };
+          farRocks(3, va, hz); farRocks(0, va, hz); farRocks(1, va, hz); t.globalCompositeOperation = 'source-over'; c.globalAlpha = va; c.drawImage(tc, tx, ty - th, tw, th); c.globalAlpha = 1; farRocks(4, va, hz); farRocks(2, va, hz); } } };
       if ((rocky || reveal > .002) && hx > -1300 * k && hx < VW + 400 * k) {
         // AWE FIRST (owner, build 135: "the burning hill can be frightening - but most importantly stunning - it should
         // awe first"). After John Martin's pictures of the sublime and the book's own Sinai (Exodus 19: fire at the top,
