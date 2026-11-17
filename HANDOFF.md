@@ -4,6 +4,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 ## START HERE (rewritten at build 140, Nov 16 2026)
 
+**The keepsakes have their own chat now** ("Pilgrim's Progress: the keepsakes (Bible, roll, title book)", https://claude.ai/code/session_017HrTSDUqJDSdrXPbhc33zT). Open question there: the wax seal on Evangelist's roll is ours, not the book's (`{14}` has no seal; the sealed roll is given at the Cross, `{94}`): take it off and keep `waxSeal()` for Level 5, or keep it as a departure.
+
 **Build 240 (small-polish chat): the Bible's page turns and riffles on one clock, notes on the page as it lands, the ribbon fading instead of jumping; the roll waits closed until it has faded in. See `CLAUDE.md`, "Motion checked, build 240". The title book's cover checked in stills (twice size), waiting on the owner: more or less toning, and whether a thin leather rim should show round the open pages. Nothing spent.**
 
 **Level 4 has its own chat now** ("Pilgrim's Progress: Level 4, the Interpreter's House rooms", https://claude.ai/code/session_017HrTSFLdkNMnsDJ1SXFeY8): the gate, the narrow way, the house and its seven rooms after paintings, the darker-rooms switch. Its plan is in `CLAUDE.md`, Level 4. The gate itself stays shared with Level 3 (see "THE GATE IS SHARED").
