@@ -378,6 +378,13 @@ body.playing #pause{display:block}
     <div class="sealw">${TAILS}<img class="seal" alt=""></div></div></div><div class="curl b"></div></div>
     <button class="ksx" aria-label="Close">×</button></div>`);
   for (const e of [menu, book, roll]) document.body.appendChild(e);
+  // (build 217) a thing in the world seen close up: one picture that grows out of the scene; a touch anywhere puts it back
+  const look = mkEl(`<div id="kslook" class="kscover"><div class="lookw"></div><button class="ksx" aria-label="Close">×</button></div>`);
+  document.body.appendChild(look);
+  { const st = document.createElement('style'); st.textContent = `#kslook .lookw img{display:block;max-width:92vw;max-height:76vh;box-shadow:0 1.5vh 6vh rgba(0,0,0,.75);animation:kszoom .7s cubic-bezier(.2,.7,.2,1) both}
+@keyframes kszoom{from{transform:translateY(-12vh) scale(.18);opacity:0}to{transform:none;opacity:1}}`; document.head.appendChild(st); }
+  look.addEventListener('click', () => hide());
+  function openLook(src) { const w = look.querySelector('.lookw'); w.innerHTML = ''; const im = new Image(); im.alt = ''; im.src = src; w.appendChild(im); show(look, .45); }
   // the textures and the seal are made the first time they are needed (each takes a moment)
   let made = { paper: false, parch: false, seal: false };
   function makePaper() { if (made.paper) return; made.paper = true; const b = book.querySelector('.bible');
@@ -517,5 +524,5 @@ body.playing #pause{display:block}
   // fetch the fonts early, so the book and the roll look right the first time
   setTimeout(() => { if (document.fonts && document.fonts.load) for (const f of ['16px "IM Fell English"', 'italic 16px "IM Fell English"', '16px "IM Fell English SC"', '16px "Herr Von Muellerhoff"', '700 16px "UnifrakturCook"', '16px "La Belle Aurore"']) document.fonts.load(f).catch(() => {}); }, 2500);
 
-  return { paused: false, book: openBook, roll: openRoll, menu: openMenu, close: () => hide(), turn, waxSeal, get page() { return sp; } };
+  return { paused: false, book: openBook, roll: openRoll, look: openLook, menu: openMenu, close: () => hide(), turn, waxSeal, get page() { return sp; } };
 })();

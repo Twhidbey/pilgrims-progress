@@ -159,7 +159,7 @@ const HL = (() => {
 
   // ---------- pictures baked once ----------
   let CLOUDW = null, CLOUDG = null, DECK = null;
-  let HILL = null, SMOKE = null, CLOUD = null, TOWN = null, GDOOR = null, GSTONE = null, CAP = null, BEAMC = null; const GWF = []; const CRACKS = [], STONES = [], SEAMS = [], PUFF = [];
+  let HILL = null, SMOKE = null, CLOUD = null, TOWN = null, GDOOR = null, GSTONE = null, CAP = null, BEAMC = null, GLANT = null, SIGNPIC = null; const GWF = []; const CRACKS = [], STONES = [], SEAMS = [], PUFF = [];
   // the hill's outline: h = height above its foot, 0 to TOP; its left side hangs far out over the way
   const TOP = 520, HW = 1500, HH = 640, HOX = 300, HOY = 610;      // the baked picture's size and where the foot's left end lies in it
   const FACE = [[0, 0], [36, -30], [84, -62], [112, -44], [150, -70], [240, -138], [320, -182], [358, -176], [420, -116], [480, -44], [520, 36]];      // a second, lower overhang under the great one
@@ -381,7 +381,7 @@ const HL = (() => {
   }
   function preload() {
     loadOak();
-    if (!loading) loading = Promise.all([Promise.all([loadImg('hill-rock.webp'), loadImg('hill-fire.webp')]).then(([r, f]) => { if (r) { build(); paintHill(r, f); } }), loadPack('wiseman', WIS).catch(() => {}), loadImg('gate-door.webp').then(im => { if (im) GDOOR = im; }), loadImg('gate-stone.webp').then(im => { if (im) GSTONE = im; }), loadPack('evangelist-walk', EVW).catch(() => {}), loadImg('wiseman-stand.webp').then(im => { if (im) WIS_ST = im; }), OBS.ready || loadPack('obstinate', OBS).catch(() => {}), EVS.ready || loadPack('evangelist-stand', EVS).catch(() => {}), RUNP.ready || loadPack('christian-run-plain', RUNP).catch(() => {}),
+    if (!loading) loading = Promise.all([Promise.all([loadImg('hill-rock.webp'), loadImg('hill-fire.webp')]).then(([r, f]) => { if (r) { build(); paintHill(r, f); } }), loadPack('wiseman', WIS).catch(() => {}), loadImg('gate-door.webp').then(im => { if (im) GDOOR = im; }), loadImg('lantern.webp').then(im => { if (im) GLANT = im; }), loadImg('gate-stone.webp').then(im => { if (im) GSTONE = im; }), loadPack('evangelist-walk', EVW).catch(() => {}), loadImg('wiseman-stand.webp').then(im => { if (im) WIS_ST = im; }), OBS.ready || loadPack('obstinate', OBS).catch(() => {}), EVS.ready || loadPack('evangelist-stand', EVS).catch(() => {}), RUNP.ready || loadPack('christian-run-plain', RUNP).catch(() => {}),
       WEEP.ready || loadPack('christian-weep', WEEP).catch(() => {}), KNEEL.ready || loadPack('christian-kneel', KNEEL).catch(() => {}), TURN.ready || loadPack('christian-turn', TURN).then(() => bookLoaded('TURN')).catch(() => {}),
       OBS_ST ? 0 : loadImg('obstinate-stand.webp').then(im => { if (im && !OBS_ST) OBS_ST = im; }),
       loadImg('tree-a.webp').then(im => { if (!im) return; const c = mk(im.width, im.height), k = c.getContext('2d'); k.drawImage(im, 0, 0); k.globalCompositeOperation = 'source-in'; k.fillStyle = '#fff'; k.fillRect(0, 0, c.width, c.height); OAKT = c; })]).catch(() => {});
@@ -559,9 +559,49 @@ const HL = (() => {
   // where to touch, on the screen
   const hillPt = () => [hillBox[0] + 70 * hillBox[2], hillBox[1] - 250 * hillBox[2]];
   const gatePt = () => [(GATE_X - cam.cx) * cam.z + VW / 2, cam.wl - 70 * cam.z];
+  // the stone over the gate, on the screen (for a touch)
+  const signPt = () => [(GATE_X - cam.cx) * cam.z + VW / 2, cam.wl - (126 + 40 + 23 + 13) * cam.z, 70 * cam.z, 26 * cam.z];
   function touch(sx, sy) {
+    if ((ph === 'gate' || ph === 'knock' || ph === 'open') && typeof KS !== 'undefined' && KS.look) { const [x, y, w, h] = signPt(); if (Math.abs(sx - x) < w && Math.abs(sy - y) < h) { showSign(); return; } }
     if (G.act === 'hill') { const [hx, hy] = hillPt(); if (Math.hypot(sx - hx, (sy - hy) * .7) < 230 * hillBox[2] + 40) sawHill(); else G.actT = Math.max(G.actT, 129); return; }
     if (G.act === 'knock') { const [gx, gy] = gatePt(); if (Math.hypot(sx - gx, sy - gy) < 130) knock(); else G.actT = Math.max(G.actT, 89); return; }
+  }
+  // THE WORDS OVER THE GATE, CLOSE UP (build 217): a dressed stone, weathered, lit from the left by the lantern, Bunyan's
+  // words cut into it in Roman capitals (incised: the cut's wall toward the light in shadow, the far wall catching it),
+  // and his own margin reference, Matt. 7. 8 ({59}: "Now, over the gate there was written, 'Knock, and it shall be opened
+  // unto you.' [Matt 7:8]"). Made once, the first time it is touched.
+  function signPic() {
+    const W = 1500, H = 600, cv = mk(W, H), q = cv.getContext('2d');
+    q.fillStyle = 'rgb(150,140,126)'; q.fillRect(0, 0, W, H);
+    // the stone's grain: the wall's photograph at two sizes (soft mottling and a finer pitted surface), then fine speckle
+    if (GSTONE) { q.globalCompositeOperation = 'multiply'; q.globalAlpha = .16; q.drawImage(GSTONE, 0, 0, 512, 205, 0, 0, W, H); q.globalAlpha = .2; q.drawImage(GSTONE, 0, 300, 512, 205, 0, 0, W, H); q.globalAlpha = .42;
+      for (let x = 0; x < W; x += 360) for (let y = 0; y < H; y += 360) q.drawImage(GSTONE, x, y, 360, 360); q.globalAlpha = 1; q.globalCompositeOperation = 'source-over'; }
+    { const d = q.getImageData(0, 0, W, H), D = d.data, R = rngS(17); for (let i = 0; i < D.length; i += 4) { const n = (R() - .5) * 26 + (R() < .015 ? -40 * R() : 0); D[i] += n; D[i + 1] += n; D[i + 2] += n; } q.putImageData(d, 0, 0); }
+    // chamfered edges: the stone's face, then its bevel lit on the top and left
+    const B = 34; q.fillStyle = 'rgba(255,230,190,.16)'; q.beginPath(); q.moveTo(0, 0); q.lineTo(W, 0); q.lineTo(W - B, B); q.lineTo(B, B); q.lineTo(B, H - B); q.lineTo(0, H); q.fill();
+    q.fillStyle = 'rgba(20,12,8,.32)'; q.beginPath(); q.moveTo(W, 0); q.lineTo(W, H); q.lineTo(0, H); q.lineTo(B, H - B); q.lineTo(W - B, H - B); q.lineTo(W - B, B); q.fill();
+    // weathering: a few chips and dark stains, darker toward the foot where the rain runs down
+    { const R = rngS(29); for (let i = 0; i < 26; i++) { const x = R() * W, y = R() < .5 ? R() * B * 1.4 : R() * H, r = 3 + R() * 14; q.fillStyle = `rgba(30,20,14,${.12 + R() * .2})`; q.beginPath(); for (let k = 0; k < 7; k++) { const a = k / 7 * 6.283, rr = r * (.6 + R() * .6); k ? q.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr) : q.moveTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr); } q.fill(); }
+      const g = q.createLinearGradient(0, H * .55, 0, H); g.addColorStop(0, 'rgba(40,30,22,0)'); g.addColorStop(1, 'rgba(40,30,22,.28)'); q.fillStyle = g; q.fillRect(0, 0, W, H); }
+    // the letters, cut in: a V-cut groove, its upper-left wall in shadow, its lower-right wall catching the lantern
+    const cut = (t, x, y, px, maxW) => { const f = n => `${n}px 'IM Fell English', Georgia, serif`; q.font = f(px); try { q.letterSpacing = (px * .1) + 'px'; } catch (e) {}
+      const w0 = q.measureText(t).width; if (w0 > maxW) px *= maxW / w0;
+      const L = mk(W, H), l = L.getContext('2d'); l.font = f(px); l.textAlign = 'center'; try { l.letterSpacing = (px * .1) + 'px'; } catch (e) {}
+      const d = Math.max(2, px * .045);
+      l.fillStyle = 'rgb(214,186,150)'; l.fillText(t, x, y);
+      l.globalCompositeOperation = 'source-atop'; l.fillStyle = 'rgb(38,26,18)'; l.fillText(t, x - d, y - d);
+      l.fillStyle = 'rgb(92,70,52)'; l.fillText(t, x + d * .35, y + d * .35);
+      q.drawImage(L, 0, 0); };
+    q.font = `112px 'IM Fell English', Georgia, serif`; try { q.letterSpacing = '11.2px'; } catch (e) {} const P = 112 * Math.min(1, (W - 2 * B - 150) / q.measureText('KNOCK, AND IT SHALL BE').width);
+    cut('KNOCK, AND IT SHALL BE', W / 2, 270, P, 1e4); cut('OPENED UNTO YOU.', W / 2, 270 + P * 1.45, P, 1e4); cut('MATT. VII. 8.', W - 250, H - 74, 42, 400);
+    // the lantern's light from the left, falling away to the right
+    { q.globalCompositeOperation = 'multiply'; const g = q.createLinearGradient(0, 0, W, 0); g.addColorStop(0, 'rgb(255,232,196)'); g.addColorStop(.55, 'rgb(220,188,150)'); g.addColorStop(1, 'rgb(118,96,80)'); q.fillStyle = g; q.fillRect(0, 0, W, H);
+      const v = q.createRadialGradient(W * .3, H * .4, H * .3, W * .5, H * .5, W * .7); v.addColorStop(0, 'rgb(255,255,255)'); v.addColorStop(1, 'rgb(150,120,100)'); q.fillStyle = v; q.fillRect(0, 0, W, H); q.globalCompositeOperation = 'source-over'; }
+    return cv.toDataURL('image/jpeg', .9);
+  }
+  function showSign() {
+    const go = () => { if (!SIGNPIC) SIGNPIC = signPic(); KS.look(SIGNPIC); if (audio()) hiss(500, .5, .02, .2, 'bandpass'); };
+    if (SIGNPIC || !document.fonts || !document.fonts.load) go(); else document.fonts.load(`118px 'IM Fell English'`).then(go, go);
   }
   function key() { if (G.act === 'hill') sawHill(); else if (G.act === 'knock') knock(); }
 
@@ -1048,7 +1088,7 @@ const HL = (() => {
     // left over him with dust turning in it, a long flat pool on the road and his shadow lying flat behind him.
     // (4) Good-will stands in the opening, a dark shape against the light (`GWF`: Evangelist's standing picture without
     // his staff, a stand-in until Level 4 gives Good-will his own figure).
-    const GR = 40, GH = 126;
+    const GR = 40, GH = 126, SW = 104, SH = 26, SY = GH + GR + 23;
     const gateOn = !rocky && X(GATE_X - 1300) < VW, gx = X(GATE_X), r = GR * z, gy0 = Y(-GH), lnx = gx - 72 * z, lny = Y(-162), flick = .86 + .1 * Math.sin(G.t / 7) + .04 * Math.sin(G.t / 2.3);
     // (build 216, owner: "Doorkeeper maybe should be on right side and door opens on other side (so there's some natural space
     // between two figures)": the hinge is on the LEFT now, the leaf swings in on Christian's side and the opening is on the right)
@@ -1065,7 +1105,7 @@ const HL = (() => {
       const wallPath = () => { c.beginPath(); c.moveTo(X(x0), Y(2)); for (let x = x0; x <= GATE_X + 900; x += 3) c.lineTo(X(x), Y(-wtop(x) * smooth(x0, x0 + 500, x))); c.lineTo(X(GATE_X + 900), Y(2)); };
       const arch = (rr = r, y1 = gy0) => { c.beginPath(); c.moveTo(gx - rr, Y(1)); c.lineTo(gx - rr, y1); c.arc(gx, y1, rr, Math.PI, 0); c.lineTo(gx + rr, Y(1)); };
       // the stone surround: dressed jamb stones and voussoirs between ri and ro, the door set back in a reveal
-      const frameP = () => { c.beginPath(); c.moveTo(gx - ro, Y(0)); c.lineTo(gx - ro, gy0); c.arc(gx, gy0, ro, Math.PI, 0); c.lineTo(gx + ro, Y(0)); c.closePath(); c.moveTo(gx - ri, Y(0)); c.lineTo(gx - ri, gy0); c.arc(gx, gy0, ri, Math.PI, 0); c.lineTo(gx + ri, Y(0)); c.closePath(); c.rect(gx - 38 * z, Y(-GH - GR - 36), 76 * z, 13 * z); };
+      const frameP = () => { c.beginPath(); c.moveTo(gx - ro, Y(0)); c.lineTo(gx - ro, gy0); c.arc(gx, gy0, ro, Math.PI, 0); c.lineTo(gx + ro, Y(0)); c.closePath(); c.moveTo(gx - ri, Y(0)); c.lineTo(gx - ri, gy0); c.arc(gx, gy0, ri, Math.PI, 0); c.lineTo(gx + ri, Y(0)); c.closePath(); c.rect(gx - SW / 2 * z, Y(-SY - SH), SW * z, SH * z); };
       // the far light, behind the wall: only its glow over the top
       { const gy = Y(-330), g = c.createRadialGradient(gx, gy, 0, gx, gy, 340 * z); g.addColorStop(0, css([255, 220, 160], .42 * gateish)); g.addColorStop(.35, css([230, 160, 100], .16 * gateish)); g.addColorStop(1, css([200, 120, 80], 0)); c.fillStyle = g; c.fillRect(gx - 340 * z, gy - 340 * z, 680 * z, 680 * z); }
       wallPath(); c.fillStyle = css([19, 16, 17]); c.fill();
@@ -1139,13 +1179,29 @@ const HL = (() => {
       c.restore();
       if (door > .01) { c.save(); notDoor(); c.globalCompositeOperation = 'lighter'; const bx = gapL, by = Y(-84), rr = (80 + 200 * open) * z, g = c.createRadialGradient(bx, by, 0, bx, by, rr); g.addColorStop(0, css([255, 236, 190], .32 * open)); g.addColorStop(.3, css([255, 190, 110], .14 * open)); g.addColorStop(1, css([240, 150, 80], 0)); c.fillStyle = g; c.fillRect(bx - rr, by - rr, 2 * rr, 2 * rr); c.restore(); }
       // the writing on a stone over the gate, shown by the lantern
-      // (build 216: a dressed stone in the surround, the words cut into it, no flat painted bar)
-      if (GSTONE) { c.strokeStyle = css([8, 6, 6], .4); c.lineWidth = 1 * z; c.strokeRect(gx - 38 * z, Y(-GH - GR - 36), 76 * z, 13 * z); c.fillStyle = css([24, 16, 12], .55); for (let i = 0; i < 8; i++) c.fillRect(gx + (-33 + i * 8.6) * z, Y(-GH - GR - 31), (4 + (i * 7) % 3) * z, 1.4 * z); c.fillStyle = css([255, 214, 160], .18 * flick); for (let i = 0; i < 8; i++) c.fillRect(gx + (-33 + i * 8.6) * z, Y(-GH - GR - 29.6), (4 + (i * 7) % 3) * z, .6 * z); }
-      else { c.fillStyle = css(mix([70, 54, 42], [222, 190, 142], .6 * flick)); c.fillRect(gx - 38 * z, Y(-GH - GR - 36), 76 * z, 13 * z); c.fillStyle = css([36, 26, 22], .85); for (let i = 0; i < 8; i++) c.fillRect(gx + (-33 + i * 8.6) * z, Y(-GH - GR - 31), (4 + (i * 7) % 3) * z, 1.6 * z); }
-      // the lantern on its iron bracket
-      c.strokeStyle = css([8, 7, 7]); c.lineWidth = 1.6 * z; c.beginPath(); c.moveTo(lnx - 12 * z, lny - 16 * z); c.lineTo(lnx, lny - 16 * z); c.lineTo(lnx, lny - 8 * z); c.stroke();
-      c.fillStyle = css([8, 7, 7]); c.fillRect(lnx - 5 * z, lny - 9 * z, 10 * z, 15 * z); c.fillStyle = css([255, 214, 140], .95 * flick); c.fillRect(lnx - 3.2 * z, lny - 6 * z, 6.4 * z, 10 * z);
-      c.save(); c.globalCompositeOperation = 'lighter'; { const g = c.createRadialGradient(lnx, lny, 0, lnx, lny, 90 * z); g.addColorStop(0, css([255, 220, 160], .55 * flick)); g.addColorStop(1, css([255, 190, 110], 0)); c.fillStyle = g; c.fillRect(lnx - 90 * z, lny - 90 * z, 180 * z, 180 * z); } c.restore();
+      // (build 217, owner: "The lattern and sign need redoing to make super realistic - how about we make sign clickable so one
+      // click on it and zoom in (kinda like book)"): the stone over the gate carries Bunyan's words cut in real letters (too
+      // small to read here: a touch on it opens the stone close up, `signPic()`, `KS.look()`), its edges chamfered
+      if (GSTONE) { const sx0 = gx - SW / 2 * z, sy0 = Y(-SY - SH), sw = SW * z, sh = SH * z;
+        c.strokeStyle = css([8, 6, 6], .5); c.lineWidth = 1 * z; c.strokeRect(sx0, sy0, sw, sh);
+        c.strokeStyle = css([255, 210, 150], .16 * flick); c.beginPath(); c.moveTo(sx0 + 2.5 * z, sy0 + sh - 2.5 * z); c.lineTo(sx0 + 2.5 * z, sy0 + 2.5 * z); c.lineTo(sx0 + sw - 2.5 * z, sy0 + 2.5 * z); c.stroke();
+        c.strokeStyle = css([8, 6, 6], .35); c.beginPath(); c.moveTo(sx0 + 2.5 * z, sy0 + sh - 2.5 * z); c.lineTo(sx0 + sw - 2.5 * z, sy0 + sh - 2.5 * z); c.lineTo(sx0 + sw - 2.5 * z, sy0 + 2.5 * z); c.stroke();
+        c.save(); c.textAlign = 'center'; c.textBaseline = 'middle'; c.font = `${6.2 * z}px 'IM Fell English', Georgia, serif`;
+        for (const [t, dy] of [['KNOCK, AND IT SHALL BE', -.26], ['OPENED UNTO YOU.', .2]]) { const ty = sy0 + sh * (.5 + dy);
+          c.fillStyle = css([20, 13, 9], .62); c.fillText(t, gx, ty); c.fillStyle = css([255, 214, 160], .14 * flick); c.fillText(t, gx + .5 * z, ty + .6 * z); }
+        c.restore(); }
+      else { c.fillStyle = css(mix([70, 54, 42], [222, 190, 142], .6 * flick)); c.fillRect(gx - 38 * z, Y(-GH - GR - 36), 76 * z, 13 * z); }
+      // the lantern on its iron bracket (build 217: a photograph of an old iron lantern, Rijksmuseum, CC0, its panes made
+      // glowing horn as lanterns had in Bunyan's day; it hangs from a wrought-iron arm on a plate in the wall)
+      if (GLANT) { const LH = 40 * z, LW = LH * GLANT.width / GLANT.height, fx0 = 71.5 / 180, fy0 = 229 / 358, lx0 = lnx - fx0 * LW, ly0 = lny - fy0 * LH, hx = lx0 + LW * .5;
+        c.fillStyle = css([10, 8, 8]); c.fillRect(hx - 3 * z, ly0 - 17 * z, 6 * z, 9 * z);
+        c.strokeStyle = css([12, 10, 9]); c.lineWidth = 1.7 * z; c.lineCap = 'round'; c.beginPath(); c.moveTo(hx, ly0 - 9 * z); c.bezierCurveTo(hx - 6 * z, ly0 - 7 * z, hx - 6 * z, ly0 - 2 * z, hx, ly0 + 1 * z); c.stroke();
+        c.strokeStyle = css([255, 190, 120], .2 * flick); c.lineWidth = .7 * z; c.beginPath(); c.moveTo(hx - 2.5 * z, ly0 - 16 * z); c.lineTo(hx - 2.5 * z, ly0 - 9 * z); c.stroke(); c.lineCap = 'butt';
+        c.drawImage(GLANT, lx0, ly0, LW, LH);
+        c.save(); c.globalCompositeOperation = 'lighter'; c.globalAlpha = .25 * (flick - .8) * 4; c.drawImage(GLANT, lx0, ly0, LW, LH); c.restore(); }
+      else { c.strokeStyle = css([8, 7, 7]); c.lineWidth = 1.6 * z; c.beginPath(); c.moveTo(lnx - 12 * z, lny - 16 * z); c.lineTo(lnx, lny - 16 * z); c.lineTo(lnx, lny - 8 * z); c.stroke();
+        c.fillStyle = css([8, 7, 7]); c.fillRect(lnx - 5 * z, lny - 9 * z, 10 * z, 15 * z); c.fillStyle = css([255, 214, 140], .95 * flick); c.fillRect(lnx - 3.2 * z, lny - 6 * z, 6.4 * z, 10 * z); }
+      c.save(); c.globalCompositeOperation = 'lighter'; { const g = c.createRadialGradient(lnx, lny, 0, lnx, lny, 90 * z); g.addColorStop(0, css([255, 220, 160], .42 * flick)); g.addColorStop(1, css([255, 190, 110], 0)); c.fillStyle = g; c.fillRect(lnx - 90 * z, lny - 90 * z, 180 * z, 180 * z); } c.restore();
       for (let i = 0; i < knocks; i++) { const q = clamp(knockT / 40); if (i === knocks - 1 && q < 1) { c.strokeStyle = css([255, 236, 190], .7 * (1 - q)); c.lineWidth = 2; c.beginPath(); c.arc(gx, Y(-70), (10 + 46 * q) * z, 0, 7); c.stroke(); } }
     }
     // the road under everyone's feet
