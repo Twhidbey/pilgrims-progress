@@ -401,12 +401,24 @@ const HL = (() => {
       const W = im.width, H = im.height, dir = (RIM.x > x ? 1 : -1) * face;
       { const g = f.createLinearGradient(dir > 0 ? 0 : W, 0, dir > 0 ? W : 0, 0); g.addColorStop(0, 'rgba(70,84,110,' + (.07 * RIM.k) + ')'); g.addColorStop(.55, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(255,196,140,' + (.09 * RIM.k) + ')');
         f.globalCompositeOperation = 'source-atop'; f.fillStyle = g; f.fillRect(0, 0, W, H); }
+      // build 217 (owner: "really dial in 'silver' sun lining in level 3 opening - I feel like it didn't look right"): the
+      // old rim was the figure less itself moved 1.6 pixels, under one screen pixel at this size, so it read as a faint
+      // smudge. Now, as a low sun behind someone looks: (1) a crisp line along the edges that face the sun (and a little
+      // upward), about two and a half picture pixels deep; (2) the thin parts (hood fringe, hat brim, cane, ragged hems) glow
+      // through, since light passes round them: a pixel is lit if every neighbour two pixels away in four directions is
+      // outside; (3) a silvery warm white, strongest on the head and shoulders, fading down the body to a trace at the feet;
+      // (4) a soft bloom round it
       const rc = tintC._rim || (tintC._rim = mk(8, 8)); if (rc.width !== W || rc.height !== H) { rc.width = W; rc.height = H; }
       const r = rc.getContext('2d'); r.globalCompositeOperation = 'source-over'; r.clearRect(0, 0, W, H); r.drawImage(im, 0, 0);
-      r.globalCompositeOperation = 'destination-out'; r.drawImage(im, -1.6 * dir, 1.3);
-      r.globalCompositeOperation = 'source-in'; { const g = r.createLinearGradient(0, H * .05, 0, H * .72); g.addColorStop(0, 'rgba(255,232,186,1)'); g.addColorStop(.5, 'rgba(255,214,160,.55)'); g.addColorStop(1, 'rgba(255,200,150,0)'); r.fillStyle = g; } r.fillRect(0, 0, W, H);
-      const bc = tintC._bloom || (tintC._bloom = mk(8, 8)); bc.width = Math.ceil(W / 5); bc.height = Math.ceil(H / 5); const b = bc.getContext('2d'); b.clearRect(0, 0, bc.width, bc.height); b.drawImage(rc, 0, 0, bc.width, bc.height);
-      f.globalCompositeOperation = 'source-over'; f.globalAlpha = .85 * RIM.k; f.drawImage(rc, 0, 0); f.globalAlpha = 1;
+      const ul = Math.hypot(1, .4), ux = dir / ul, uy = -.4 / ul;
+      r.globalCompositeOperation = 'destination-out'; r.drawImage(im, -2.6 * ux, -2.6 * uy);
+      const tc = tintC._thin || (tintC._thin = mk(8, 8)); if (tc.width !== W || tc.height !== H) { tc.width = W; tc.height = H; }
+      const t = tc.getContext('2d'); t.globalCompositeOperation = 'source-over'; t.clearRect(0, 0, W, H); t.drawImage(im, 0, 0);
+      t.globalCompositeOperation = 'destination-out'; for (const [ax, ay] of [[2.2, 0], [-2.2, 0], [0, 2.2], [0, -2.2]]) t.drawImage(im, ax, ay);
+      r.globalCompositeOperation = 'source-over'; r.globalAlpha = .4; r.drawImage(tc, 0, 0); r.globalAlpha = 1;
+      r.globalCompositeOperation = 'source-in'; { const g = r.createLinearGradient(0, H * .04, 0, H); g.addColorStop(0, 'rgb(255,248,232)'); g.addColorStop(.3, 'rgba(255,242,218,.85)'); g.addColorStop(.62, 'rgba(255,236,206,.42)'); g.addColorStop(1, 'rgba(250,228,196,.12)'); r.fillStyle = g; } r.fillRect(0, 0, W, H); r.globalCompositeOperation = 'source-over';
+      const bc = tintC._bloom || (tintC._bloom = mk(8, 8)); bc.width = Math.ceil(W / 4); bc.height = Math.ceil(H / 4); const b = bc.getContext('2d'); b.clearRect(0, 0, bc.width, bc.height); b.drawImage(rc, 0, 0, bc.width, bc.height);
+      f.globalCompositeOperation = 'source-over'; f.globalAlpha = Math.min(1, .95 * RIM.k); f.drawImage(rc, 0, 0); f.globalAlpha = 1;
       RIM.bloom = bc; }
     // FIRELIGHT ON THE FIGURE (owner, build 202: "in level 3 when we are close to mountain, the sprite is a bit
     // monochromatic... is there a way to introduce some color variation (and keep the same palette"). Among the rocks the
@@ -421,7 +433,7 @@ const HL = (() => {
     }
     c.save(); c.globalAlpha = alpha; c.translate(x, 5); if (TALKM) c.transform(1, 0, TALKM.sh, 1, 0, 0);
     c.scale(face * CHR_K * FK, CHR_K * FK * sy * (TALKM ? TALKM.sy : 1)); c.drawImage(fc, -meta.ax, -meta.ground);
-    if (RIM && RIM.bloom) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = alpha * .3 * RIM.k; c.drawImage(RIM.bloom, -meta.ax, -meta.ground, im.width, im.height); c.globalCompositeOperation = 'source-over'; RIM.bloom = null; }
+    if (RIM && RIM.bloom) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = alpha * .5 * RIM.k; c.drawImage(RIM.bloom, -meta.ax, -meta.ground, im.width, im.height); c.globalCompositeOperation = 'source-over'; RIM.bloom = null; }
     c.restore();
   }
   function foot(c, x, a = 1, rx = 46) { const g = c.createRadialGradient(0, 0, 0, 0, 0, 1); g.addColorStop(0, 'rgba(6,8,14,.5)'); g.addColorStop(.6, 'rgba(6,8,14,.26)'); g.addColorStop(1, 'rgba(6,8,14,0)'); c.save(); c.translate(x, 4); c.scale(rx, 7); c.globalAlpha = a; c.fillStyle = g; c.fillRect(-1, -1, 2, 2); c.restore(); }
@@ -807,6 +819,9 @@ const HL = (() => {
       c.fillStyle = css(col); path(); c.fill();
       if (tex && ROCKPAT) { c.save(); path(); c.clip(); const ts = 2.2 * z, tw = ROCKTEX.width * ts; ROCKPAT.setTransform(new DOMMatrix([ts, 0, 0, ts, ((VW / 2 - L0 * z) % tw + tw) % tw, Y(base) - 900 * z]));
         c.globalCompositeOperation = 'overlay'; c.globalAlpha = tex; c.fillStyle = ROCKPAT; c.fillRect(0, 0, VW, VH); c.restore(); }
+      // build 217 (owner: "The top of the rocks in the mountain scene have light lining - doesn't seem appropriate here"):
+      // the warm line along the crag tops is off (the fire is hidden behind them: their tops face away from it)
+      edge = 0;
       if (edge > .01) { c.save(); c.globalCompositeOperation = 'lighter'; c.lineCap = 'round'; c.lineWidth = 1.2;
         for (let j = 1; j < pts.length; j++) { const [x0, y0, r0] = pts[j - 1], [x1, y1, r1] = pts[j], k2 = smooth(.62, .85, Math.min(r0, r1)) * clamp((y1 - y0 - .3) / 1.5); if (k2 < .05) continue;
           c.strokeStyle = css([236, 156, 100], edge * k2); c.beginPath(); c.moveTo(x0, y0); c.lineTo(x1, y1); c.stroke(); } c.restore(); } };
