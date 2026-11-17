@@ -65,12 +65,13 @@ const SL = (() => {
   // (the noise runs between about .3 and .7, so the threshold crosses that range slowly from one bank to the other: a few
   // small pools at first, more and bigger ones further on, open water at last; long across and thin down the picture,
   // since pools are seen edge-on)
-  const poolT = (x, yy) => { const w = smooth(-770, -225, x); return .86 - .52 * w - .13 * (1 - w) * smooth(30, 90, yy); };      // build 257: near the home bank a few pools open in the foreground too (the mud under the men stays mud)
-  const poolN = (x, yy) => .6 * cloudN(x * .009, yy * .3 + 3) + .4 * cloudN(x * .024 + 9, yy * .55 + 1);
-  const poolAt = (x, yy) => { const T = poolT(x, yy), n = .6 * cloudN(x * .009, yy * .3 + 3) + .4 * cloudN(x * .024 + 9, yy * .55 + 1); return smooth(T - .022, T + .022, n); };
-  const MUD_X0 = -1250, MUD_W = 1090, MUD_H = 270;      // build 203: the map runs from where the water begins (WATER_L): by the home bank it is all mud, no mirror (a paler column showed under Pliable where the mirror faded in)
   const BANK0 = -160, HOME0 = -1010;                       // where each bank meets the water
-  const WATER_L = -1250;                                  // the water in front of everything begins here; to the left is the plain
+  const poolT = (x, yy) => { const w = smooth(-770, -225, x); return .86 - .52 * w - .13 * (1 - w) * smooth(30, 90, yy); };      // build 257: near the home bank a few pools open in the foreground too (the mud under the men stays mud)
+  const poolN = (x, yy) => .72 * cloudN(x * .009, yy * .3 + 3) + .28 * cloudN(x * .024 + 9, yy * .55 + 1);      // build 260: less of the fine noise (fewer small islands: the critics' "camouflage")
+  const poolAt = (x, yy) => { const T = poolT(x, yy), n = poolN(x, yy); return smooth(T - .032, T + .032, n) * mudEnd(x) + (1 - mudEnd(x)); };      // build 260: a softer edge (it stair-stepped)
+  const MUD_X0 = -1250, MUD_W = 1450, MUD_H = 270;      // build 260: the map runs on under the far bank and fades there (it ended in a straight upright seam at BANK0)
+  const mudEnd = x => 1 - smooth(BANK0 - 40, BANK0 + 170, x);      // build 203: the map runs from where the water begins (WATER_L): by the home bank it is all mud, no mirror (a paler column showed under Pliable where the mirror faded in)
+    const WATER_L = -1250;                                  // the water in front of everything begins here; to the left is the plain
   // build 121 (owner: "feet connecting with ground once Christian hits the right side is a continuous problem"): the far
   // bank rose steadily from its edge, so everyone on it stood and walked on a slope and one foot always hung in the
   // air. It now has a short face, then a LEVEL shelf where the two men stand, then only a slow rise to the oak.
@@ -89,6 +90,7 @@ const SL = (() => {
   const HX = BANK0 + 34, GRASP = { dx: -(82 - 15 + 129), dy: 283 - 55 };
   const HY = () => bankY(HX) + 4;
   const STUCK_X = HX + GRASP.dx * CHR_K, STUCK_Y = () => HY() + GRASP.dy * CHR_K;
+  const MD_IN = 16, MD_FAR = 28, REACH_F = 88, REACH_X = HX - 82;      // build 260: see DEEP IN THE MIRE in update()
   const SINK = 100, PLI_SINK = 76, DEEP = 8, OAK_X = 110, OAK_S = 1.2;
   const C_SINK = 64;      // build 125 (owner: "Christian is too submerged at first ... it'd be nice to see more of him at start"): he falls in to the waist, and sinks from there to SINK + DEEP as he crosses
   // build 115 (owner, of them standing at the bog's edge: "still white space between feet and ground"): on the muddy flat at
@@ -166,7 +168,7 @@ const SL = (() => {
     return { c, x0: x0 - 2 / k, y0: y0 - 2 / k, k };
   }
   const putTree = (c, b, x, y, s, sy = s) => c.drawImage(b.c, x + b.x0 * s, y + b.y0 * sy, b.c.width / b.k * s, b.c.height / b.k * sy);
-  let mudDk = null, mudLt = null, shC = null, mistC = null, SHN = [], SH0 = [];
+  let mudDk = null, mudLt = null, shC = null, mistC = null, fogC = null, SHN = [], SH0 = [];
   let SHORE = null, OAK = null, GHOSTS = null, skyMist = null, skyClear = null, paper = null, threads = null, puff = null, fogBank = null, mudMap = null, built = false;
   function build() {
     if (built) return; built = true;
@@ -217,7 +219,7 @@ const SL = (() => {
     mudDk = mk(MUD_W, MUD_H); mudLt = mk(MUD_W, MUD_H);
     { const dd = mudDk.getContext('2d').createImageData(MUD_W, MUD_H), dl = mudLt.getContext('2d').createImageData(MUD_W, MUD_H), cd = tone(.12), cl = tone(.9);
       for (let j = 0; j < MUD_H; j++) for (let i = 0; i < MUD_W; i++) {
-        const x = MUD_X0 + i, yy = Math.pow(j + 1, .82), T = poolT(x, yy), n = poolN(x, yy), a = 1 - smooth(T - .022, T + .022, n);
+        const x = MUD_X0 + i, yy = Math.pow(j + 1, .82), T = poolT(x, yy), n = poolN(x, yy), a = (1 - smooth(T - .032, T + .032, n)) * mudEnd(x);
         const rim = smooth(T - .11, T - .015, n), patch = smooth(.46, .66, cloudN(x * .005 + 30, yy * .06 + 7)), streak = smooth(.56, .7, cloudN(x * .0022 + 70, yy * .75 + 11));
         const dk = clamp(.42 * rim + .2 * patch) * smooth(0, 6, yy + 2), lt = .2 * streak * (1 - rim) * (1 - .6 * patch);
         const o = (j * MUD_W + i) * 4;
@@ -391,7 +393,7 @@ const SL = (() => {
     // the last words ended; a finger only walks him if it went down after that) still held Level 1's clock, thousands
     // of ticks ahead, so no finger counted until the clock caught up. Keys were never affected, so the tests passed.
     G.calm = 0;
-    C2.rt = 0; C2.tv = null; C2.fy = null; drops = []; churns = []; fReset(); strings = []; RECS = {}; for (const k in MS) delete MS[k]; C2.D = 0;
+    C2.rt = 0; C2.tv = null; C2.fy = null; C2.md = null; C2.rq0 = null; C2.q = 0; drops = []; churns = []; fReset(); strings = []; RECS = {}; for (const k in MS) delete MS[k]; C2.D = 0;
     ph = 'plain'; Object.assign(C2, { x: START, y: bankY(START) + 4, face: 1, anim: 12, alpha: 1, sink: 0, reach: 0, stand: 1, sd: QUIET[0], st: 0, faceA: 1, done: 0 });
     pli = { x: START - 80, y: 0, face: 1, anim: 0, alpha: 1, sink: 0, mode: 'follow', px: START - 80, stop: { t: 50, x0: START - 80 - 72.5 * CHR_K } };      // he starts standing (his stop video's breathing part)
     prints = []; fogH = 1; fogS = 1; help = null; mv = null; lift = null; rings = []; steps = []; gloom = gloomTo = 0; noteI = 0; strain = 0; slipT = 0; fearT = 300; fearsSaid = false; goldT = 0; onwayT = 0; capsSaid = new Set(); nearSaid = false;
@@ -610,6 +612,13 @@ const SL = (() => {
       // of them speaks. Pliable faces Christian until his angry speech, then turns toward his own side.
       if (pli && pli.mode === 'in' && PLIC.length && C2.fallT >= 24) { pli.mode = 'climb'; pli.wal = true; pli.wk = 0; pli.fa = 1; pli.wx = pli.x; pli.wf = Math.floor(pli.anim) % (PLI.length || 1); }
     }
+    // DEEP IN THE MIRE (build 260, owner: "He doesn't sink enough in the slough - when he reaches toward help, animation has
+    // to jump to put him at right level. I want Christian pretty far down"): the wading and stuck pictures are drawn MD units
+    // deeper than their own mud line (C2.md): MD_IN where they fall in, going down as he wades to MD_FAR by the far bank,
+    // which is exactly where the lift's first picture has him (shoulder-deep; measured by matching the stuck video's
+    // high-arm frame REACH_F to the lift's frame 0), so the grip and lift follow on with no jump
+    { const p = clamp((C2.x - WADE0) / (STUCK_X - WADE0)), to = ph === 'wade' ? lerp(MD_IN, MD_FAR, smooth(0, .9, p)) : ph === 'stuck' || ph === 'help' ? MD_FAR : MD_IN;
+      C2.md = C2.md == null ? to : C2.md + (to - C2.md) * .04; }
     const calm = !!(SPK && SPK.who !== N);      // one of the two is speaking: they hold nearly still
     // build 121 (owner: "struggling feels a bit repetitive"): they struggle in bursts with a breath between, each at his own
     // changing pace (burst(k): 0 resting .. 1 heaving), so no two heaves fall alike; drops fly while they heave
@@ -836,15 +845,17 @@ const SL = (() => {
     if (gloom > .01) { ctx.fillStyle = css(DARK, .3 * gloom); ctx.fillRect(0, 0, VW, hor + 1); }
     const disc = look.disc * (1 - .5 * gloom);
     glow(ctx, discX, discY, 210, lightCol, .5 * disc); glow(ctx, discX, discY, 70, lightCol, .7 * disc);
-    ctx.fillStyle = css(mix(LIGHT, GOLD, warmth * .35), .9 * disc); ctx.beginPath(); ctx.arc(discX, discY, 15 * z / .66, 0, 7); ctx.fill();
+    { const R = 15 * z / .66, g = ctx.createRadialGradient(discX, discY, 0, discX, discY, R * 1.6), c0 = mix(LIGHT, GOLD, warmth * .35); g.addColorStop(0, css(c0, .9 * disc)); g.addColorStop(.5, css(c0, .8 * disc)); g.addColorStop(.68, css(c0, .25 * disc)); g.addColorStop(1, css(c0, 0)); ctx.fillStyle = g; ctx.fillRect(discX - 2 * R, discY - 2 * R, 4 * R, 4 * R); }      // build 260: a soft-edged sun (a hard disc in a soft sky)
     // the water (or, over the plain, the far fields): pale under the mist at the horizon, deeper toward us
     { const g = ctx.createLinearGradient(0, hor, 0, VH); g.addColorStop(0, css(tone(.95))); g.addColorStop(.3, css(tone(lerp(.84, .9, look.mist))));
       g.addColorStop(1, css(tone(lerp(.5, .66, look.mist)))); ctx.fillStyle = g; ctx.fillRect(0, hor, VW, VH - hor); }
     glow(ctx, discX, 2 * hor - discY + 30, 150, lightCol, .4 * disc);
     if (warmth > .3) { ctx.globalCompositeOperation = 'soft-light'; glow(ctx, discX, hor + 40, 520, GOLD, .5 * warmth); ctx.globalCompositeOperation = 'source-over'; }
     // far shore, and the ghost trees, each with a short reflection
-    ctx.fillStyle = css(tone(.86)); ctx.beginPath(); ctx.moveTo(0, hor + 1);
-    for (let x = 0; x <= VW; x += 8) ctx.lineTo(x, hor - 3 - 9 * z * cloudN((x / z + cx * .3) * .004, 3)); ctx.lineTo(VW, hor + 1); ctx.fill();
+    // build 260 (three critics: "a hard double line across the whole sky at the horizon"): the far shore is no longer a
+    // flat band with a hard top; it is a low haze that thickens down to the water line and melts into it
+    { const g = ctx.createLinearGradient(0, hor - 16 * z, 0, hor + 8 * z), c0 = tone(.86); g.addColorStop(0, css(c0, 0)); g.addColorStop(.6, css(c0, .55)); g.addColorStop(.72, css(c0, .6)); g.addColorStop(1, css(c0, 0));
+      ctx.fillStyle = g; ctx.fillRect(0, hor - 16 * z, VW, 24 * z); }
     for (const g of GHOSTS) {
       const s = z * g.p * .9, gx = (g.x - cx * g.p) * z + VW / 2, gy = hor + (wl - hor) * g.p * .55;
       if (gx < -260 || gx > VW + 260) continue;
@@ -933,7 +944,7 @@ const SL = (() => {
     n.fillStyle = css(land); n.beginPath(); n.moveTo(x0, 0); for (let x = x0; x <= x1; x += 3 / z) n.lineTo(x, bankY(x) < -2 ? bankY(x) - 1.2 - 1.6 * bankN(x * .09, 2) : 0);      // build 115: only on real ground (it ran as a dark line along the bog) n.lineTo(x1, 0); n.fill();
     // REALISM IN THE BOG (build 129): drops are small dark streaks along their own flight (drawn with the mud surface,
     // after the mirror, since build 143); the low heave of mud round each body (mound) is now the collar of the surface
-    for (const pr of prints) { const a = .22 * (1 - smooth(900, 1600, pr.t)); if (a < .01) continue; n.fillStyle = css(LIGHT, a); n.beginPath(); n.ellipse(pr.x, bankY(pr.x) + 1.2, 6, .9, 0, 0, 7); n.fill(); }
+    if (0) for (const pr of prints) { const a = .22 * (1 - smooth(900, 1600, pr.t)); if (a < .01) continue; n.fillStyle = css(LIGHT, a); n.beginPath(); n.ellipse(pr.x, bankY(pr.x) + 1.2, 6, .9, 0, 0, 7); n.fill(); }
     // build 114 (owner: "not sure about light dots above pliable's head"): the lights he gathered are no longer shown
     // following him; they first appear behind his shoulder when he looks back, and fly to the steps
     for (const mo of motes) { if (!mo.to && ph !== 'look') continue; const a = (.55 + .3 * Math.sin(mo.tw * 1.7)) * (ph === 'look' ? smooth(0, 50, goldT) : 1); mote(n, mo.x, mo.y, mo.to ? 3 : 1.8, mo.to ? 1 : a); }
@@ -987,10 +998,12 @@ const SL = (() => {
     // --- the mirror: the near picture upside down under the water line, in thin strips that wander more the nearer they are ---
     const wx0 = Math.max(0, X(WATER_L));
     if (wx0 < VW) {
-      for (let y = 0; y < VH - wl; y += 2) {
-        const d = y / (VH - wl), dx = (wob(y * .21 + G.t * .004, 2) - .5) * (1.5 + 13 * d) + Math.sin(y * .9 + G.t * .02) * d * 1.6;
+      // build 260: strips one picture-pixel high (they were two, each upright inside, so every slanting edge of the oak's
+      // reflection came out as a staircase)
+      for (let y = 0; y < VH - wl; y += 1) {
+        const d = y / (VH - wl), dx = (wob(y * .045 + G.t * .004, 2) - .5) * (1 + 6 * d) + Math.sin(y * .12 + G.t * .02) * d * 1.2;      // build 260: a gentler, slower wander (the big per-row jitter tore the oak's reflection into sawteeth)
         ctx.globalAlpha = lerp(.9, .56, d);
-        ctx.drawImage(nearC, wx0 * S, Math.max(0, (wl - y - 2)) * S, (VW - wx0) * S, 2 * S, wx0 + dx, wl + y, VW - wx0, 2);
+        ctx.drawImage(nearC, wx0 * S, Math.max(0, (wl - y - 1)) * S, (VW - wx0) * S, S, wx0 + dx, wl + y, VW - wx0, 1.15);
       }
       ctx.globalAlpha = 1;
     }
@@ -1147,11 +1160,21 @@ const SL = (() => {
     // build 120 (owner: "there doesn't need to be nearly as much mist around tree now that help is walking in"): the bank
     // is turned round and moved off to the right: its thick end lies beyond the oak at the picture's right edge, where
     // Help comes from and goes back to, and it has thinned to nothing before the trunk. It no longer slides away: it thins.
+    // build 260 (three critics: Help "reads as a ghost ... a pale grey figure laid over the black trunk"): the bank was laid
+    // OVER him as he walked out of it, so he came in pale. Now while he walks in it lies only behind and right of him (cut
+    // away softly from his back), so he steps out of the mist whole and dark, as the rule says (mist never between a
+    // figure and us)
     if (fogH > .01) { const a = smooth(0, .45, fogH), by = Y(64);
-      ctx.imageSmoothingEnabled = true; ctx.save(); ctx.translate(X(HX + 1000), 0); ctx.scale(-1, 1);
-      ctx.globalAlpha = a; ctx.drawImage(fogBank, 0, by - 470 * z, 800 * z, 470 * z);
-      ctx.globalAlpha = a * .8; ctx.drawImage(fogBank, (-50 + Math.sin(G.t * .004) * 10) * z, by - 410 * z, 900 * z, 410 * z);
-      ctx.restore(); ctx.globalAlpha = 1; }
+      if (!fogC || fogC.width !== cv.width || fogC.height !== cv.height) fogC = mk(cv.width, cv.height);
+      const f = fogC.getContext('2d'); f.setTransform(S, 0, 0, S, 0, 0); f.globalCompositeOperation = 'source-over'; f.globalAlpha = 1; f.clearRect(0, 0, VW, VH); f.imageSmoothingEnabled = true;
+      f.save(); f.translate(X(HX + 1000), 0); f.scale(-1, 1);
+      f.globalAlpha = a; f.drawImage(fogBank, 0, by - 470 * z, 800 * z, 470 * z);
+      f.globalAlpha = a * .8; f.drawImage(fogBank, (-50 + Math.sin(G.t * .004) * 10) * z, by - 410 * z, 900 * z, 410 * z);
+      f.restore(); f.globalAlpha = 1;
+      const hx = help && !help.lv && help.w < HSEQ.length - 1 ? HX + HSEQ[Math.floor(help.w)][1] * CHR_K : help && !help.lv ? HX : null;
+      if (hx != null) { const x0 = X(hx + 30), g = f.createLinearGradient(x0, 0, x0 + 120 * z, 0); g.addColorStop(0, 'rgba(0,0,0,1)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+        f.globalCompositeOperation = 'destination-out'; f.fillStyle = g; f.fillRect(0, 0, x0 + 120 * z, VH); f.globalCompositeOperation = 'source-over'; }
+      ctx.drawImage(fogC, 0, 0, VW, VH); }
     // THE MIST HE WALKS INTO, AND THE LIGHT THROUGH IT (build 124, owner: "make fog get more and more on the right (but make
     // light shining thru in cool way)"): as he goes on his way the mist ahead thickens, more and more toward the right
     // (it stands in the world, from 380 to 840 and solid beyond, so he walks into it and it hides him), and the far
@@ -1224,18 +1247,22 @@ const SL = (() => {
       const wf = C2.wa || 0; walkIm = WADE[Math.floor(wf) % WADE.length]; walkM = META.wade;
       // build 214: heaving on the spot (the fall, Pliable's quarrel, going back, stuck at the far bank) is the stuck video;
       // only the wading forward is the wading video
-      if (STUCKP.ready && ph !== 'wade') { const q = wf < 6 ? wf : 6 + 52 * (1 - Math.cos(Math.PI * (((wf - 6) / 52) % 2))) / 2; walkIm = STUCKP[Math.min(58, Math.floor(q))]; walkM = META.stuck; } wa = smooth(0, .5, wk); FIG_DIP = 46; blendIm = WADE[(Math.floor(wf) + 1) % WADE.length]; blendK = 0; }      // build 212: no melting (see Pliable's climb)
-    if (ph === 'help' && C2.reach > 0) {
-      const gx = HX + GRASP.dx * CHR_K, gy = STUCK_Y() + (C2.y - STUCK_Y()) * (1 - smooth(20, 140, C2.rt || 0));      // he heaves up out of the deep as he reaches (build 114)
+      if (STUCKP.ready && ph !== 'wade') { const q = wf < 6 ? wf : 6 + 52 * (1 - Math.cos(Math.PI * (((wf - 6) / 52) % 2))) / 2; walkIm = STUCKP[Math.min(58, Math.floor(q))]; walkM = META.stuck; C2.q = Math.min(58, q); } wa = smooth(0, .5, wk); FIG_DIP = 46; blendIm = WADE[(Math.floor(wf) + 1) % WADE.length]; blendK = 0; }      // build 212: no melting (see Pliable's climb)
+    // build 260: THE REACH IS ONE PLAY OF THE STUCK VIDEO. It used to cross-fade from his heaving picture to the reach
+    // (two poses half see-through for a moment) and then end higher than the lift began, so he dropped at the grip. Now,
+    // once he sees Help coming (C2.rt), the stuck video simply plays on from the picture he is in (C2.rq0) to its own
+    // high-arm frame REACH_F, slower than or at its own speed, at the far bank's depth, drifting a step toward Help; then it
+    // holds there breathing. REACH_F at REACH_X is where the lift's first picture has him, hand in Help's hand.
+    if (ph === 'help' && STUCKP.ready && (C2.rt || 0) > 0) {
+      if (C2.rq0 == null) C2.rq0 = C2.q || 6;
+      const r = smooth(0, 150, C2.rt), e = r * r * (3 - 2 * r), f = r < 1 ? lerp(C2.rq0, REACH_F, e) : REACH_F + 1.6 * Math.sin(G.t / 45);
+      FIG_DIP = 46; figure(n, 'reach', STUCKP[Math.round(f)], META.stuck, lerp(C2.x, REACH_X, e), 64 + (C2.md ?? MD_FAR), 1, fig, true, alpha); FIG_DIP = 0;
+      return;
+    }
+    if (ph === 'help' && !STUCKP.ready && C2.reach > 0) {
+      const gx = HX + GRASP.dx * CHR_K, gy = STUCK_Y() + (C2.y - STUCK_Y()) * (1 - smooth(20, 140, C2.rt || 0));      // the old reaching picture, only until the stuck video loads
       if (C2.reach < 1) figure(n, 'chr', walkIm, walkM, C2.x, C2.y, 1, fig, true, alpha * (1 - C2.reach)); FIG_DIP = 0;
-      // build 214: the reach is the stuck video's own end (his head lifts, his arm rises high, mud dripping), placed so his
-      // hand meets Help's as the old reaching picture's did (its hand is 7 units higher, so it stands 7 deeper)
-      // build 214: the reach is the stuck video's own: his head lifts and his right arm comes up and forward (pictures 60 to
-      // 78), and holds there with a breath (76..80), its mud line on the surface; at picture 78 his hand is just where Help
-      // holds out his (handPt), so the two meet
-      if (STUCKP.ready) { const r = smooth(0, 150, C2.rt || 0), f = r < 1 ? 60 + 18 * r : 78 + 2 * Math.sin(G.t / 40);
-        figure(n, 'reach', STUCKP[Math.round(f)], META.stuck, lerp(C2.x, HX - 110, r), 64, 1, fig, true, alpha * C2.reach); }
-      else figure(n, 'reach', REACH[at(REACH_SRC, C2.rt || 0)], META.reach, gx, gy, 1, fig, true, alpha * C2.reach);
+      figure(n, 'reach', REACH[at(REACH_SRC, C2.rt || 0)], META.reach, gx, gy, 1, fig, true, alpha * C2.reach);
       return;
     }
     if (C2.stand > 0 && STD.length) {
@@ -1248,7 +1275,7 @@ const SL = (() => {
     }
     // build 180: the struggling picture is never shown higher than its own mud line (58: five units of filled body, hidden by the
     // collar); while he is still shallower than that it stands a little deeper than his walking picture, under the splash
-    const wy = walkM === META.wade || walkM === META.stuck ? 64 : C2.y;      // build 214: the new videos carry their own depth (waist-deep wading, chest-deep stuck): their mud line lies on the surface
+    const wy = walkM === META.wade || walkM === META.stuck ? 64 + (C2.md ?? MD_IN) : C2.y;      // build 214: the new videos carry their own depth (waist-deep wading, chest-deep stuck): their mud line lies on the surface
     figure(n, 'chr', walkIm, walkM, C2.x, wy, C2.face, fig, inWater, alpha * C2.alpha * wa);
     if (blendIm && blendK > .03) figure(n, 'chrB', blendIm, walkM, C2.x, wy, C2.face, fig, inWater, alpha * C2.alpha * wa * blendK);      // the next picture melts in over this one
     FIG_DIP = 0;
