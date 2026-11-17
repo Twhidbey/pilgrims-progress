@@ -71,7 +71,10 @@ body.playing #pause{display:block}
 #ksbook .marg{position:absolute;width:11%;font-family:'Herr Von Muellerhoff','La Belle Aurore',cursive;font-size:1.5em;line-height:.85;color:#3b2412;opacity:.88;text-align:center;transform:rotate(-6deg);pointer-events:none;text-shadow:0 0 .5px rgba(59,36,18,.6)}
 #ksbook .bar{position:absolute;width:.13em;border-radius:.1em;background:${INK};opacity:.75;pointer-events:none}
 #ksbook .spine{position:absolute;left:50%;top:0;bottom:0;width:5%;margin-left:-2.5%;background:linear-gradient(to right,rgba(60,35,10,0),rgba(60,35,10,.3) 42%,rgba(20,10,0,.5) 50%,rgba(60,35,10,.3) 58%,rgba(60,35,10,0));pointer-events:none;z-index:3}
-#ksbook .ribbon{position:absolute;left:51.2%;top:-2.6%;width:1.25%;height:105%;background:linear-gradient(to right,#4d0d09,#8f2016 35%,#a8301f 50%,#7a1a12 70%,#4d0d09);z-index:4;clip-path:polygon(0 0,100% 0,100% 100%,50% 98.6%,0 100%);opacity:.95;pointer-events:none}
+#ksbook .ribbon{position:absolute;left:51.3%;top:0;width:1%;height:108%;background:linear-gradient(to right,#4d0d09,#8f2016 35%,#a8301f 50%,#7a1a12 70%,#4d0d09);z-index:4;clip-path:polygon(0 0,100% 0,100% 100%,50% 98.2%,0 100%);transform-origin:50% 0;transform:rotate(-1.4deg);box-shadow:1px 1px 2px rgba(40,20,5,.35);opacity:.96;pointer-events:none;transition:opacity .3s}
+#ksbook .ribbon::before{content:'';position:absolute;left:0;right:0;top:0;height:3%;background:linear-gradient(rgba(30,10,5,.6),rgba(30,10,5,0))}
+#ksbook .ribbon.tailR,#ksbook .ribbon.tailL{top:99%;height:6%;transform:rotate(-3deg)}
+#ksbook .ribbon.tailR{left:78%}#ksbook .ribbon.tailL{left:21%}
 #ksbook .leaf{position:absolute;top:0;bottom:0;width:50%;transform-style:preserve-3d;z-index:5;display:none}
 #ksbook .leaf.on{display:block}
 #ksbook .leaf .face{width:100%;-webkit-backface-visibility:hidden;backface-visibility:hidden}
@@ -327,7 +330,21 @@ body.playing #pause{display:block}
         `<div class="chap" style="margin-top:.4em">CHAP. X.</div>` +
         `<p class="v" data-v="1"><span class="drop">F</span>${longS('OR the law having a shadow of good things to come, and not the very image of the things, can never with those sacrifices which they offered year by year continually make the comers thereunto perfect.')}</p>` +
         V(2, 'For then would they not have ceased to be offered? because that the worshippers once purged should have had no more conscience of sins.') +
-        V(3, 'But in those sacrifices there is a remembrance again made of sins every year.') }]];
+        V(3, 'But in those sacrifices there is a remembrance again made of sins every year.') }],
+    // build 208 (owner: "maybe a forward to choice Revelations passage"): Revelation 21:1-7, the end of the way:
+    // Bunyan's own margin gives Rev. 21:4 when Christian tells Pliable of the place they go to ({27}). Checked against
+    // the same two KJV texts: identical.
+    [{ jump: ['Of James.', 'I. Of Peter.', 'II. Of Peter.', 'I. Of John.', 'II. Of John.', 'Of Jude.'],
+       head: ['Chap.xxi.', 'The Revelation.', ''], foot: ['', '', 'And'], marks: [[4, 'no more crying', true]], body:
+        `<div class="chap">CHAP. XXI.</div>` +
+        `<p class="v" data-v="1"><span class="drop">A</span>${longS('ND I saw a new heaven and a new earth: for the first heaven and the first earth were passed away; and there was no more sea.')}</p>` +
+        V(2, 'And I John saw the holy city, new Jerusalem, coming down from God out of heaven, prepared as a bride adorned for her husband.') +
+        V(3, 'And I heard a great voice out of heaven saying, Behold, the tabernacle of God is with men, and he will dwell with them, and they shall be his people, and God himself shall be with them, and be their God.') +
+        V(4, 'And <u>God shall wipe away all tears from their eyes</u>; and there shall be no more death, neither sorrow, nor crying, neither shall there be any more pain: for the former things are passed away.') },
+     { head: ['', 'The Revelation.', 'Chap.xxi.'], foot: ['', 'Rr 2', 'But'], marks: [[6, 'freely!'], [7, 'O that I may']], body:
+        V(5, 'And he that sat upon the throne said, Behold, I make all things new. And he said unto me, Write: for these words are true and faithful.') +
+        V(6, 'And he said unto me, It is done. I am Alpha and Omega, the beginning and the end. I will give unto him that is athirst of <u>the fountain of the water of life freely</u>.') +
+        V(7, '<u>He that overcometh shall inherit all things</u>; and I will be his God, and he shall be my son.') }]];
   const pageHTML = p => `<div class="in"><div class="head"><span>${p.head[0]}</span><span class="c">${p.head[1]}</span><span class="r">${p.head[2]}</span></div><div class="txt">${p.body}</div><div class="foot"><span></span><span class="c">${p.foot[1]}</span><span class="r">${p.foot[2]}</span></div></div>`;
   // Christian's marks in the outer margin, placed beside their verse once the page is laid out (the verse may fall in
   // either column); a stroke down the margin beside the verse when asked
@@ -407,9 +424,12 @@ body.playing #pause{display:block}
   // the Bible
   const L = book.querySelector('.page.L'), R = book.querySelector('.page.R'), leaf = book.querySelector('.leaf'), front = leaf.querySelector('.front'), back = leaf.querySelector('.back');
   const bL = book.querySelector('.ksarrow.l'), bR = book.querySelector('.ksarrow.r');
-  let sp = 0, turning = false;
+  // build 208 (owner: "can we start with hebrews since that was bunyans [choice] (then viewer can flip back to Roman's and
+  // also maybe a forward to choice Revelations passage)"): the book opens where the ribbon lies, Hebrews 9
+  const MARKED = SPREADS.findIndex(s => /Hebrews/.test(s[0].head[1]));
+  let sp = MARKED, turning = false;
   const put = (el, p) => { el.innerHTML = pageHTML(p); marks(el, p); };
-  function render() { put(L, SPREADS[sp][0]); put(R, SPREADS[sp][1]); bL.disabled = sp === 0; bR.disabled = sp === SPREADS.length - 1; }
+  function render() { book.querySelector('.ribbon').className = 'ribbon' + (sp === MARKED ? '' : sp < MARKED ? ' tailR' : ' tailL'); put(L, SPREADS[sp][0]); put(R, SPREADS[sp][1]); bL.disabled = sp === 0; bR.disabled = sp === SPREADS.length - 1; }
   // one type size for every page: the largest at which every page fits in its two columns
   function fit() {
     const bib = book.querySelector('.bible'), h0 = bib.clientHeight; if (!h0) return;

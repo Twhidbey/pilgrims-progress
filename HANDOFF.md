@@ -57,6 +57,8 @@ Older handovers (builds 41 to 137, with the picture and video prompts used for H
 **Build 191: Level 3's crags made natural and one with the mountain (overlapping leaning spurs with flat brows and ledges, the mountain's own rock texture and colour, warm edges only on the highest faces, a slope of fallen rock joining them to the mountain at the foot). See `CLAUDE.md`, "Build 191". Nothing spent.**
 
 **Build 185: Level 3 into the rocks (owner's sequence): the hill hidden until Wiseman points (the camera pans right to it, far off and hazed); he goes over a brow and down out of sight; a dark cut to a rocky path among crags on every layer, the nearest passing in front; at the foot the camera pulls back to the whole mountain with lightning, then comes back to him for Evangelist. See `CLAUDE.md`, "Build 185: INTO THE ROCKS". Nothing spent. Waiting on the owner's eyes for the motion (pan, descent, pull back).**
+**Build 208 (small tweaks): his Bible opens at Hebrews 9 where the ribbon lies; back to Romans, on to Revelation 21:1-7; the ribbon hangs out of the pages, not the binding. Nothing spent.**
+
 **Build 206 (small tweaks): the book cover on the title page and the app icon are now a photograph of a real 17th-century calf binding (British Library, CC0 on Wikimedia Commons), its coat of arms removed; Wikimedia hosts added to the environment. Nothing spent.**
 
 **Build 201 (small tweaks): his Bible has more of Romans 4, a riffle of pages on to Hebrews 9 (verse 27, the judgment, Bunyan's own reference), more margin notes in a quill hand. Nothing spent.**
