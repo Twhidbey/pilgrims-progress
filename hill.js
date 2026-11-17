@@ -42,7 +42,7 @@ const HL = (() => {
   // he goes; at the foot the camera pulls back to the whole mountain (HSN times the far hill's units: its foot's
   // left end at HX0), lightning at the widest, and comes back down to him for Evangelist.
   const BROW0 = MEET + 520, BROW1 = BROW0 + 300, PATH0 = 3000, FOOT = 4400, STILL = FOOT, HX0 = FOOT + 150;
-  const PH = .3, HSF = .72, HILL_F = 4700, HILL_Y = -60, HSN = 8, VIL_W = 2400;      // the far hill: how much it slides with the camera, its place, its size; the mountain close to: its size
+  const PH = .1, HSF = .72, HILL_F = 2040, HILL_Y = -60, HSN = 8, VIL_W = 2400;      // the far hill: how much it slides with the camera, its place, its size; the mountain close to: its size
   const Z_NEAR = .8, Z_WIDE = .068;
   // the brow: the ground swells a little (crest, in road units) to CREST and falls away beyond it, out of sight
   const CREST = BROW0 + 70, crest = x => 52 * smooth(BROW0 - 330, CREST, x) * (1 - smooth(CREST + 30, CREST + 560, x));
@@ -313,7 +313,7 @@ const HL = (() => {
   // trunk's middle, ground = the row that stands on the field's edge (the grass at its foot goes a little below, behind
   // the road), tw = sunlit leaves that twinkle. It is toned a little darker here to sit in the game's quiet tones,
   // and has an all-dark copy for when the sky darkens. Until it has loaded, the code-drawn oak (bakeOak) stands in.
-  const OAK_META = { w: 920, h: 680, ax: 195, ground: 664, k: .88 };
+  const OAK_META = { w: 1839, h: 1360, ax: 390, ground: 1328, k: .44 };
   // OAK_SIL: how far the painting is pulled toward one dark tone (owner, build 165: "Tone it down to slightly more silhouette"): 0 = the painting, 1 = a flat silhouette
   const OAK_SIL = .8;
   let OAKP = null, oakLoading = null;
@@ -330,21 +330,23 @@ const HL = (() => {
       // the form: the painting's own shape in one dark tone, the bark and the roots showing through faintly
       k.drawImage(im, 0, 0); k.globalCompositeOperation = 'source-atop'; k.fillStyle = 'rgba(30,30,27,' + OAK_SIL + ')'; k.fillRect(0, 0, W, H);
       // its foot: the grass the painting put there is turned to the road's own dark earth, so the roots end in the ground
-      { const g = k.createLinearGradient(0, OAK_META.ground - 26, 0, OAK_META.ground + 6); g.addColorStop(0, 'rgba(40,37,36,0)'); g.addColorStop(1, 'rgba(40,37,36,1)'); k.fillStyle = g; k.fillRect(0, OAK_META.ground - 26, W, H); }
+      { const g = k.createLinearGradient(0, OAK_META.ground - 52, 0, OAK_META.ground + 12); g.addColorStop(0, 'rgba(40,37,36,0)'); g.addColorStop(1, 'rgba(40,37,36,1)'); k.fillStyle = g; k.fillRect(0, OAK_META.ground - 52, W, H); }
       k.globalCompositeOperation = 'source-over';
       // the leaves, drawn: one small touch wherever the painting has a leaf (a jittered grid), toned by how light that leaf was
-      for (let y = 3; y < H * .7; y += 5) for (let x = 3; x < W; x += 5) { const xx = Math.min(W - 1, Math.max(0, Math.round(x + (R() - .5) * 5))), yy = Math.round(y + (R() - .5) * 5), i = (yy * W + xx) * 4;
+      for (let y = 3; y < H * .7; y += 10) for (let x = 3; x < W; x += 10) { const xx = Math.min(W - 1, Math.max(0, Math.round(x + (R() - .5) * 10))), yy = Math.round(y + (R() - .5) * 10), i = (yy * W + xx) * 4;
         if (px[i + 3] < 190) continue; const r = px[i], g = px[i + 1], b = px[i + 2]; if (g < b * 1.22 || r > g * 1.22) continue;
         const l = clamp(((r + g) / 2 - 46) / 105); if (R() < .12) continue;
-        k.save(); k.translate(xx, yy); k.rotate(R() * 3.14); k.fillStyle = css(mix([30, 38, 29], [112, 112, 62], l * .62), .9); k.beginPath(); k.ellipse(0, 0, 2.3 + R() * 2.3, 1.3 + R() * 1.2, 0, 0, 7); k.fill(); k.restore();
+        // (build 275: the drawn touches are gone; at twice the size the painting's own leaves, toned dark, are finer than any dab)
         if (l > .6 && R() < .08 && tw.length < 70) tw.push([xx, yy]); }
       const d = mk(W, H), kd = d.getContext('2d'); kd.drawImage(c, 0, 0); kd.globalCompositeOperation = 'source-in'; kd.fillStyle = 'rgb(20,20,26)'; kd.fillRect(0, 0, W, H);
       // the trunk's bright edge toward the sun, one for each side (the sun passes from one side of it to the other as he walks)
-      const rim = sgn => { const r = mk(W, H), q = r.getContext('2d'); q.drawImage(c, 0, 0); q.globalCompositeOperation = 'destination-out'; q.drawImage(c, -3 * sgn, 1); q.globalCompositeOperation = 'source-in'; q.fillStyle = 'rgb(255,224,168)'; q.fillRect(0, 0, W, H);
+      const rim = sgn => { const r = mk(W, H), q = r.getContext('2d'); q.drawImage(c, 0, 0); q.globalCompositeOperation = 'destination-out'; q.drawImage(c, -4 * sgn, 1); q.globalCompositeOperation = 'source-in'; q.fillStyle = 'rgb(255,224,168)'; q.fillRect(0, 0, W, H);
         q.globalCompositeOperation = 'destination-in'; const g = q.createLinearGradient(0, H * .52, 0, H * .66); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,1)'); q.fillStyle = g; q.fillRect(0, 0, W, H);
-        q.globalCompositeOperation = 'destination-out'; const g2 = q.createLinearGradient(0, OAK_META.ground - 64, 0, OAK_META.ground - 34); g2.addColorStop(0, 'rgba(0,0,0,0)'); g2.addColorStop(1, 'rgba(0,0,0,1)'); q.fillStyle = g2; q.fillRect(0, OAK_META.ground - 64, W, H); // (build 202: softened a little, drawn at half size and back, so the hair-thin line does not shimmer as the camera glides)
-        const h2 = mk(Math.ceil(W / 2), Math.ceil(H / 2)); h2.getContext('2d').drawImage(r, 0, 0, h2.width, h2.height); const r2 = mk(W, H), q2 = r2.getContext('2d'); q2.drawImage(h2, 0, 0, W, H); q2.globalAlpha = .6; q2.drawImage(r, 0, 0); return r2; };
-      OAKP = { c, d, tw, rimR: rim(1), rimL: rim(-1) }; }).catch(() => {});
+        q.globalCompositeOperation = 'destination-out'; const g2 = q.createLinearGradient(0, OAK_META.ground - 128, 0, OAK_META.ground - 68); g2.addColorStop(0, 'rgba(0,0,0,0)'); g2.addColorStop(1, 'rgba(0,0,0,1)'); q.fillStyle = g2; q.fillRect(0, OAK_META.ground - 128, W, H); // (build 202: softened a little, drawn at half size and back, so the hair-thin line does not shimmer as the camera glides)
+        const h2 = mk(Math.ceil(W / 2), Math.ceil(H / 2)); h2.getContext('2d').drawImage(r, 0, 0, h2.width, h2.height); const r2 = mk(W, H), q2 = r2.getContext('2d'); q2.drawImage(h2, 0, 0, W, H); q2.globalAlpha = .6; q2.drawImage(r, 0, 0); q2.globalAlpha = 1; q2.globalCompositeOperation = 'destination-in'; q2.drawImage(c, 0, 0); return r2; };      // (build 275: kept inside the tree's own outline, so no pale halo round it)
+      // its alpha at a quarter size, so a figure standing in front of it can tell the tree is behind him (no sun behind him there)
+      const aw = Math.ceil(W / 4), ah = Math.ceil(H / 4), ac = mk(aw, ah), ak = ac.getContext('2d'); ak.drawImage(c, 0, 0, aw, ah); const ad = ak.getImageData(0, 0, aw, ah).data, am = new Uint8Array(aw * ah); for (let i = 0; i < am.length; i++) am[i] = ad[i * 4 + 3];
+      OAKP = { c, d, tw, rimR: rim(1), rimL: rim(-1), am, aw, ah }; }).catch(() => {});
     return oakLoading;
   }
   setTimeout(loadOak, 3500);
@@ -432,7 +434,7 @@ const HL = (() => {
   // of glow from sun behind them"). RIM = { k: strength, x: where the light stands, in the world's units } while the
   // people are drawn; each figure then gets a thin warm edge on the side toward the light (the figure's own shape,
   // less the same shape moved a little toward the light: what is left is that edge).
-  let RIM = null, FIRE = null;
+  let RIM = null, FIRE = null, OAKBOX = null; const RIMC = {};
   // FK: a size correction for the picture being drawn (build 202: the kneel's video zoomed in about 1.2 times as he went
   // down, so the kneeling figure looked too big; `kneelK` undoes it frame by frame, anchored at his feet)
   let FK = 1;
@@ -515,9 +517,17 @@ const HL = (() => {
     // only where the edge faces the sun or the sky above, brightest on the head and shoulders and gone by the knees,
     // with a soft bloom round it (the thin line drawn small and stretched up), so it reads as light wrapping round the
     // edge, not a second copy beside it.
-    if (RIM && RIM.k > .02) {
+    // (build 275, owner: "when christian goes in front of tree, he's shielded from sun, so the 'silver lining' should
+    // disappear"): where the oak stands behind his head and shoulders it hides the low sun, so the edge of light fades
+    // (sampled in the oak's own outline at three heights, eased so it comes and goes softly as he walks past)
+    let rimK = RIM ? RIM.k : 0;
+    if (RIM && !RIM.gold) { let cov = 0; if (OAKBOX && OAKP && OAKP.am) { const [bx, by, bw, bh] = OAKBOX, sx = (x - cam.cx) * cam.z + VW / 2;
+        for (const hy of [-70, -105, -140]) { const sy = cam.wl + hy * cam.z, u = (sx - bx) / bw, v = (sy - by) / bh; if (u < 0 || u >= 1 || v < 0 || v >= 1) continue;
+          let m = 0; for (const du of [-.012, 0, .012]) { const i = Math.floor(clamp(u + du, 0, .999) * OAKP.aw) + Math.floor(v * OAKP.ah) * OAKP.aw; m = Math.max(m, OAKP.am[i] / 255); } cov = Math.max(cov, m); } }
+      const rc0 = RIMC[slot] == null ? cov : RIMC[slot]; RIMC[slot] = rc0 + (cov - rc0) * .08; rimK *= 1 - .92 * RIMC[slot]; }
+    if (RIM && rimK > .02) {
       const W = im.width, H = im.height, dir = (RIM.x > x ? 1 : -1) * face;
-      { const g = f.createLinearGradient(dir > 0 ? 0 : W, 0, dir > 0 ? W : 0, 0); g.addColorStop(0, 'rgba(70,84,110,' + (.07 * RIM.k) + ')'); g.addColorStop(.55, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(255,196,140,' + (.09 * RIM.k) + ')');
+      { const g = f.createLinearGradient(dir > 0 ? 0 : W, 0, dir > 0 ? W : 0, 0); g.addColorStop(0, 'rgba(70,84,110,' + (.07 * rimK) + ')'); g.addColorStop(.55, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(255,196,140,' + (.09 * rimK) + ')');
         f.globalCompositeOperation = 'source-atop'; f.fillStyle = g; f.fillRect(0, 0, W, H); }
       // build 217 (owner: "really dial in 'silver' sun lining in level 3 opening - I feel like it didn't look right"): the
       // old rim was the figure less itself moved 1.6 pixels, under one screen pixel at this size, so it read as a faint
@@ -536,7 +546,7 @@ const HL = (() => {
       r.globalCompositeOperation = 'source-over'; r.globalAlpha = .4; r.drawImage(tc, 0, 0); r.globalAlpha = 1;
       r.globalCompositeOperation = 'source-in'; if (RIM.gold) { const g = r.createLinearGradient(0, 0, 0, H); g.addColorStop(0, 'rgb(255,226,160)'); g.addColorStop(.6, 'rgba(255,206,130,.9)'); g.addColorStop(1, 'rgba(255,190,110,.6)'); r.fillStyle = g; } else { const g = r.createLinearGradient(0, H * .04, 0, H); g.addColorStop(0, 'rgb(255,248,232)'); g.addColorStop(.3, 'rgba(255,242,218,.85)'); g.addColorStop(.62, 'rgba(255,236,206,.42)'); g.addColorStop(1, 'rgba(250,228,196,.12)'); r.fillStyle = g; } r.fillRect(0, 0, W, H); r.globalCompositeOperation = 'source-over';
       const bc = tintC._bloom || (tintC._bloom = mk(8, 8)); bc.width = Math.ceil(W / 4); bc.height = Math.ceil(H / 4); const b = bc.getContext('2d'); b.clearRect(0, 0, bc.width, bc.height); b.drawImage(rc, 0, 0, bc.width, bc.height);
-      f.globalCompositeOperation = 'source-over'; f.globalAlpha = Math.min(1, .95 * RIM.k); f.drawImage(rc, 0, 0); f.globalAlpha = 1;
+      f.globalCompositeOperation = 'source-over'; f.globalAlpha = Math.min(1, .95 * rimK); f.drawImage(rc, 0, 0); f.globalAlpha = 1;
       RIM.bloom = bc; }
     // FIRELIGHT ON THE FIGURE (owner, build 202: "in level 3 when we are close to mountain, the sprite is a bit
     // monochromatic... is there a way to introduce some color variation (and keep the same palette"). Among the rocks the
@@ -552,7 +562,7 @@ const HL = (() => {
     if (gateHere && CHR_SLOTS.includes(slot) && (!CHRSH_N || alpha >= CHRSH_N.a)) CHRSH_N = { fc, meta, x, face, k: CHR_K * FK, sy: sy * (TALKM ? TALKM.sy : 1), a: alpha };
     c.save(); c.globalAlpha = alpha; c.translate(x, 5); if (TALKM) c.transform(1, 0, TALKM.sh, 1, 0, 0);
     c.scale(face * CHR_K * FK, CHR_K * FK * sy * (TALKM ? TALKM.sy : 1)); c.drawImage(fc, -meta.ax, -meta.ground);
-    if (RIM && RIM.bloom) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = alpha * (RIM.gold ? .9 : .5) * RIM.k; c.drawImage(RIM.bloom, -meta.ax, -meta.ground, im.width, im.height); c.globalCompositeOperation = 'source-over'; RIM.bloom = null; }
+    if (RIM && RIM.bloom && rimK > .02) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = alpha * (RIM.gold ? .9 : .5) * rimK; c.drawImage(RIM.bloom, -meta.ax, -meta.ground, im.width, im.height); c.globalCompositeOperation = 'source-over'; RIM.bloom = null; }
     c.restore();
   }
   function foot(c, x, a = 1, rx = 46) { const g = c.createRadialGradient(0, 0, 0, 0, 0, 1); g.addColorStop(0, 'rgba(6,8,14,.5)'); g.addColorStop(.6, 'rgba(6,8,14,.26)'); g.addColorStop(1, 'rgba(6,8,14,0)'); c.save(); c.translate(x, 4); c.scale(rx, 7); c.globalAlpha = a; c.fillStyle = g; c.fillRect(-1, -1, 2, 2); c.restore(); }
@@ -759,7 +769,7 @@ const HL = (() => {
     // simply there, solid, off to the right, and the pan brings it into view
     // (build 267) the camera has already come to the village when Wiseman names it, so at "Do you see that hill?" the hill
     // comes slowly up out of the haze behind it (about two and a half seconds) instead of all at once
-    if (ph !== 'plain' && ph !== 'meet') reveal = 1; else if (G.act === 'hill' || reveal > 0) reveal = Math.min(1, reveal + 1 / 150); vil = Math.min(1, vil + (vilTo - vil) * .012 + (vilTo > vil ? .002 : 0));
+    reveal = 1;      // (build 275, owner: "hill should be there from the beginning") vil = Math.min(1, vil + (vilTo - vil) * .012 + (vilTo > vil ? .002 : 0));
     if ((ph === 'still' || ph === 'come' || ph === 'evan') && dark > .5 && Math.random() < .035) shed(1, .7);
     if (dark > .8 && (ph === 'still' || ph === 'come' || ph === 'evan' || farewell) && Math.random() < (zs === 'hold' || farewell ? .02 : .008)) boulder();
     for (const r of ROCKS) { r.t++; r.vy += .09; r.x += r.vx; r.y += r.vy; if (r.big && r.t % 5 === 0) dust(r.x, r.y, r.r * .9, 1, .5, 1);
@@ -891,7 +901,7 @@ const HL = (() => {
     // the camera
     let tx = C3.x + 150, tz = 1;
     if (ph === 'plain') tz = wise ? .84 : .9;
-    if (ph === 'meet') { const e = vil * vil * (3 - 2 * vil); tx = lerp(C3.x + 60, HILL_F + 260, e); tz = lerp(.86, .58, e); if (G.act === 'hill') { tx = HILL_F + 260; tz = .55; } }
+    if (ph === 'meet') { const e = vil * vil * (3 - 2 * vil); tx = lerp(C3.x + 60, C3.x + 420, e); tz = lerp(.86, .6, e); if (G.act === 'hill') { tx = C3.x + 420; tz = .6; } }
     if (ph === 'aside' || ph === 'down') { tx = Math.min(C3.x + 180, BROW0 + 140); tz = .86; }
     if (ph === 'path') { tx = C3.x + 150; tz = Z_NEAR; }
     if (ph === 'still' || ph === 'come' || ph === 'evan') { tx = ph === 'still' ? FOOT + 150 : FOOT - 40; tz = Z_NEAR; }
@@ -1053,7 +1063,7 @@ const HL = (() => {
       // slide with the camera like the ridges and do not wobble. `plainFill(y0)` lays the plain below y0 (again below the
       // far mountain's foot, where its painting's flat bottom edge must be covered).
       const colAt = t => t < .35 ? mix(far, mix(far, near, .5), t / .35) : mix(mix(far, near, .5), near, (t - .35) / .65);
-      const fairP = (1 - dark) * (1 - gateish), SW = [[.16, .3, 9, 11.3], [.38, .45, 15, 23.7], [.7, .66, 20, 37.1]];
+      const fairP = (1 - dark) * (1 - gateish), SW = [];
       const plainFill = y0 => { c.save(); c.beginPath(); c.rect(0, y0, VW, Y(0) - y0 + 2); c.clip();
         const g = c.createLinearGradient(0, hor, 0, Y(0)); g.addColorStop(0, css(far)); g.addColorStop(.35, css(mix(far, near, .5))); g.addColorStop(1, css(near)); c.fillStyle = g; c.fillRect(0, hor, VW, Y(0) - hor + 1);
         if (!rocky) for (const [t, par, amp, sd] of SW) { const by = lerp(hor, Y(0), t), du = 16, u0 = Math.floor((cx * par - VW / 2 / z) / du) * du - du, pts = [];
@@ -1074,7 +1084,7 @@ const HL = (() => {
       // picture until the camera pans to it at "Do you see that hill?", and comes out of the haze as it does (`reveal`).
       // Among the rocks it is the mountain itself, at its true size (HSN), its foot just beyond the end of the path.
       const ap = rocky ? 1 : 0;
-      const hx = rocky ? X(HX0) : VW / 2 + (HILL_F - cx) * PH * z, hy = rocky ? Y(6) : Y(HILL_Y), k = z * (rocky ? HSN : HSF);
+      const hx = rocky ? X(HX0) : VW / 2 + (HILL_F - cx) * PH * z, hy = rocky ? Y(6) : Y(HILL_Y), k = rocky ? z * HSN : .6 * HSF;      // (build 275: on the plain the far mountain keeps one size as the camera moves, as a far thing does)
       HL.appr = ap;
       hillBox = [hx, hy, k];
       if ((rocky || reveal > .002) && hx > -1300 * k && hx < VW + 400 * k) {
@@ -1554,8 +1564,9 @@ const HL = (() => {
     // kin to the bare black oak over the mire, but alive: he is out of the slough. It stands as the great dark tree
     // of John Martin's quiet pictures (The Plains of Heaven), its long limb reaching over the place where the two
     // meet, with the light of late afternoon in the edge of its crown.
+    OAKBOX = null;
     if (OAKP) { const M = OAK_META, s = M.k * z, tx = VW / 2 + (MEET - 250 - cx) * z, ty = Y(7), x0 = tx - M.ax * s, y0 = ty - M.ground * s, w = M.w * s, h = M.h * s;
-      if (x0 < VW && x0 + w > 0) {
+      if (x0 < VW && x0 + w > 0) { OAKBOX = [x0, y0, w, h];
         { c.save(); c.translate(tx + 70 * z, Y(-1)); c.scale(1, .09); const g = c.createRadialGradient(0, 0, 0, 0, 0, 360 * z); g.addColorStop(0, css([14, 26, 20], .46 * (1 - dark))); g.addColorStop(1, css([14, 26, 20], 0)); c.fillStyle = g; c.fillRect(-360 * z, -360 * z, 720 * z, 720 * z); c.restore(); }
         c.drawImage(OAKP.c, x0, y0, w, h);
         // (build 202, owner: "when the tree is shown, the light outline flickers on both side of tree"): the edge used to jump from
