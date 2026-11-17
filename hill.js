@@ -1115,11 +1115,11 @@ const HL = (() => {
       // THE VILLAGE BEHIND THE HILL (build 286, owner: "the little town looks too idylic ... smaller house (maintain scale
       // from when christian is near mountain) ... maybe put town beyond mountain, peaking out from behind mountain on the
       // left"): smaller, further off and hazier, drawn before the hill so the mountain's left foot hides its right part
-      const villageBehind = () => { if (!rocky && VILP) { const W2 = VILP.width, H2 = VILP.height, tw = 270 * k, th = tw * H2 / W2, tx = hx - 250 * k, ty = hy - 40 * k, va = Math.max(reveal, vil);
+      const villageBehind = () => { if (!rocky && VILP) { const W2 = VILP.width, H2 = VILP.height, tw = 388 * k, th = tw * H2 / W2, tx = hx - 309 * k, ty = hy - 6 * k, va = Math.max(reveal, vil);
         if (va > .01 && tx < VW && tx + tw > 0) { const tc = tintC.vil || (tintC.vil = mk(W2, H2)), t = tc.getContext('2d'), hz = mix(mix(far, low, .3), [60, 54, 62], dark * .7);
           t.globalCompositeOperation = 'source-over'; t.globalAlpha = 1; t.clearRect(0, 0, W2, H2); t.drawImage(VILP, 0, 0);
-          t.globalCompositeOperation = 'source-atop'; t.fillStyle = css(hz, .4 + .2 * dark); t.fillRect(0, 0, W2, H2);
-          const fh = t.createLinearGradient(0, H2 * .72, 0, H2); fh.addColorStop(0, css(colAt(clamp((ty - hor) / (Y(0) - hor))), 0)); fh.addColorStop(1, css(colAt(clamp((ty - hor) / (Y(0) - hor))), .85)); t.fillStyle = fh; t.fillRect(0, H2 * .72, W2, H2);
+          t.globalCompositeOperation = 'source-atop'; t.fillStyle = css(hz, .5 + .2 * dark); t.fillRect(0, 0, W2, H2);
+          const fh = t.createLinearGradient(0, H2 * .5, 0, H2); fh.addColorStop(0, css(colAt(clamp((ty - hor) / (Y(0) - hor))), 0)); fh.addColorStop(1, css(colAt(clamp((ty - hor) / (Y(0) - hor))), .85)); t.fillStyle = fh; t.fillRect(0, H2 * .5, W2, H2);
           t.globalCompositeOperation = 'source-over'; c.globalAlpha = va; c.drawImage(tc, tx, ty - th, tw, th); c.globalAlpha = 1; } } };
       if ((rocky || reveal > .002) && hx > -1300 * k && hx < VW + 400 * k) {
         // AWE FIRST (owner, build 135: "the burning hill can be frightening - but most importantly stunning - it should
