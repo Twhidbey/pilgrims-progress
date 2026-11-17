@@ -12,6 +12,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 Older handovers (builds 41 to 137, with the picture and video prompts used for Help, Christian reaching, the grip and lift, the gate and the wall) were folded away in build 140; they are in git (`HANDOFF.md` at build 137). The voice descriptions and the first picture prompts are kept in the build notes below.
 
+**Build 220: no cuts into Christian at the mud line while he wades or struggles (the paper between his hand and body is mud now). Nothing spent.**
+
 **Build 217: the notch by his hand in the mire filled (a low heap of mud between arm and body), no light lining on the crag tops, and a real silver lining of low sun on the figures in Level 3's opening. Nothing spent.**
 
 **Build 214: the two mire videos are in (about $1.12, both right first time): Christian wading through the mud (a loop), and stuck chest-deep, heaving, then reaching up until his hand meets Help's. See `CLAUDE.md`, "Build 214". I cannot watch motion: the owner's eyes decide.**

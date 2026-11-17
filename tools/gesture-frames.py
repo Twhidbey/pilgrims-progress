@@ -4,7 +4,7 @@
   python3 tools/gesture-frames.py video.mp4 (or a folder of frames) assets/help.pack --height 382 --to 300 --frames 0-40:4,42-132:2,136-236:4 [--match assets/christian-walk.pack] [--holes 400]
 
 --height = how tall the standing figure is in the video, --to = how tall he should be in "video pixels" (Christian is
-288, Help 300). --frames = which video frames to keep (from-to:step). --holes N = pure white patches of N pixels or more shut inside
+288, Help 300). --frames = which video frames to keep (from-to:step). --white N = how light paper is (default 232; a figure lit pale needs about 243 when the paper is 250 or more). --holes N = pure white patches of N pixels or more shut inside
 the figures (the gap between two people, or under an arm) become see-through too. Every frame is cut from the same window, so the
 figure does not jump. Same recipe as the other tools: white that touches the edge becomes see-through,
 grey = .2 + .62 * lightness, matched to the tone of --match. Prints the META line: ground, ax (the middle of what stands
@@ -15,7 +15,7 @@ import numpy as np
 from PIL import Image, ImageDraw, ImageFilter
 
 def arg(name, default): return type(default)(sys.argv[sys.argv.index(name) + 1]) if name in sys.argv else default
-video, out = sys.argv[1], sys.argv[2]; K = arg('--to', 300.0) / arg('--height', 382.0); match = arg('--match', ''); HOLES = arg('--holes', 0)
+video, out = sys.argv[1], sys.argv[2]; K = arg('--to', 300.0) / arg('--height', 382.0); match = arg('--match', ''); HOLES = arg('--holes', 0); WHITE = arg('--white', 232)
 if os.path.isdir(video): tmp = video                           # a folder of frames already pulled out (0003.png = video frame 3)
 else: tmp = tempfile.mkdtemp(); subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-i', video, '-start_number', '0', tmp + '/%04d.png'], check=True)
 fs = {int(os.path.basename(f)[:-4]): f for f in glob.glob(tmp + '/*.png')}; keep = []
@@ -28,7 +28,7 @@ for i in keep:                                                    # one window t
 x0, y0, x1, y1 = box[0] - 12, box[1] - 12, box[2] + 13, box[3] + 13; ground = box[3] + 1
 def frame(i, gain):
     im = Image.open(fs[i]).convert('RGB').crop((x0, y0, x1, y1)); L = im.convert('L'); La = np.array(L).astype(float)
-    m = L.point(lambda v: 255 if v > 232 else 0); w, h = m.size
+    m = L.point(lambda v: 255 if v > WHITE else 0); w, h = m.size
     for xy in [(0, 0), (w - 1, 0), (0, h - 1), (w - 1, h - 1), (w // 2, 0), (w // 2, h - 1), (0, h // 2), (w - 1, h // 2)]:
         if m.getpixel(xy) == 255: ImageDraw.floodfill(m, xy, 128)
     bg = np.array(m) == 128
