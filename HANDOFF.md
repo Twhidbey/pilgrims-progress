@@ -12,6 +12,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 **Build 297 (Level 3 art chat): rocky ground round the village (a small spur of the mountain behind it, low rocks across its foot). Nothing spent.**
 
+**Build 302 (Level 4 chat): no code breathing or voice sway on the figures in the Interpreter's House (owner disliked it). Nothing spent.**
+
 **Build 295 (Level 3 art chat): the far mountain's outline as crisp as the village (its far copy made at full size), a soft breath of mist where they meet. Nothing spent.**
 
 **Build 292 (Level 3 art chat): the village lower, melting into the mist at its foot, its ground edges softened, faint lanes running out of it. Nothing spent.**

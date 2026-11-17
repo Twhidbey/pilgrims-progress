@@ -107,10 +107,11 @@ const RM = (() => {
   }
   function fig(c, spec, meta, x, y, face, k = 1, a = 1, col = R.tone || [255, 255, 255], who = null, ph0 = 0, bob = 0) {
     const im = toneOf(spec, col, meta.ct, meta.mul, meta.sat); if (!im || a <= .01) return;
-    const sc0 = S / K * k, sc = sc0 * (meta.s || 1), fx = u(x), fy = v(y), mv = who && talkMove(who);
-    const sy = (1 + .006 * Math.sin(G.t / 62 + ph0)) * (mv ? mv.sy : 1);
+    const sc0 = S / K * k, sc = sc0 * (meta.s || 1), fx = u(x), fy = v(y);
+    // no breathing or sway in code (owner, build 296: "i don't like the moving pic around to simulate breathing"): figures stand still
+    const sy = 1;
     if (!meta.noSh && !R.noShadow) { c.globalAlpha = a; c.fillStyle = 'rgba(12,6,3,.18)'; c.beginPath(); c.ellipse(fx + 6 * face, fy - 1, 55 * sc0, 6 * sc0, 0, 0, 6.2832); c.fill(); }
-    c.globalAlpha = a; c.save(); c.translate(fx, fy - bob); if (mv) c.transform(1, 0, -mv.sh * -face, 1, 0, 0); c.scale(-face, sy);
+    c.globalAlpha = a; c.save(); c.translate(fx, fy - bob); c.scale(-face, sy);
     c.drawImage(im, -meta.ax * sc, -meta.g * sc, im.width * sc, im.height * sc);
     // a strong light near them (the fire, the opened door, the candle) warms the side of the figure that faces it
     const L = R.light && R.light(x);
