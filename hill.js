@@ -414,9 +414,10 @@ const HL = (() => {
     // body, the side away a cool violet shade from the dusk sky, and the feet a little of the warm dust; the colours are
     // the scene's own (the crags' warm edges, the violet sky). A flash lifts the warm side.
     if (FIRE && FIRE.k > .02) {
-      const W = im.width, H = im.height, dir = (FIRE.x > x ? 1 : -1) * face; f.globalCompositeOperation = 'source-atop';
+      const W = im.width, H = im.height, dir = (FIRE.x > x ? 1 : -1) * face; f.globalCompositeOperation = 'soft-light';      // build 212: light and shade that keep the watercolour's detail (flat washes laid source-atop made him pale and ghostly)
       { const g = f.createLinearGradient(dir > 0 ? 0 : W, 0, dir > 0 ? W : 0, 0); g.addColorStop(0, 'rgba(92,96,150,' + (.26 * FIRE.k) + ')'); g.addColorStop(.5, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(255,146,76,' + Math.min(.55, (.34 + .25 * FIRE.f) * FIRE.k) + ')'); f.fillStyle = g; f.fillRect(0, 0, W, H); }
       { const g = f.createLinearGradient(0, 0, 0, H); g.addColorStop(0, 'rgba(255,170,110,' + (.1 * FIRE.k) + ')'); g.addColorStop(.55, 'rgba(0,0,0,0)'); g.addColorStop(.92, 'rgba(150,104,80,0)'); g.addColorStop(1, 'rgba(150,104,80,' + (.12 * FIRE.k) + ')'); f.fillStyle = g; f.fillRect(0, 0, W, H); }
+      f.globalCompositeOperation = 'destination-in'; f.drawImage(im, 0, 0); f.globalCompositeOperation = 'source-over';
     }
     c.save(); c.globalAlpha = alpha; c.translate(x, 5); if (TALKM) c.transform(1, 0, TALKM.sh, 1, 0, 0);
     c.scale(face * CHR_K * FK, CHR_K * FK * sy * (TALKM ? TALKM.sy : 1)); c.drawImage(fc, -meta.ax, -meta.ground);
@@ -544,7 +545,7 @@ const HL = (() => {
     mercy += (mercyTo - mercy) * .012; calm += (calmTo - calm) * .008; if (ph === 'back' || ph === 'mist') mercyTo = 0;
     flash *= .93; boltT++; if (boltT === 8 && boltTwice) flash = Math.max(flash, .55); door += (doorTo - door) * .02; cut = clamp(cut + Math.sign(cutTo - cut) * (cutTo ? .022 : .016)); veil = clamp(veil + Math.sign(veilTo - veil) * .012);
     hintT++;
-    // (build 205, owner: "when we zoom over to mountain while worldly is talking it still flickers - can we make it solid"): the
+    // (build 212, owner: "when we zoom over to mountain while worldly is talking it still flickers - can we make it solid"): the
     // mountain no longer fades in while the camera pans (half-seen, the ridges and sky showed through it as it slid); it is
     // simply there, solid, off to the right, and the pan brings it into view
     if (G.act === 'hill' || (ph !== 'plain' && ph !== 'meet')) reveal = 1; vil += (vilTo - vil) * .02;
@@ -1079,7 +1080,7 @@ const HL = (() => {
     c.save(); c.translate(VW / 2 - cx * z, wl); c.scale(z, z);
     RIM = { k: (1 - dark) * (1 - gateish) * .9, x: (lx - VW / 2) / z + cx };
     FIRE = rocky && ph !== 'title' ? { k: clamp(dark) * (1 - .4 * calm), x: HX0 + 600, f: Math.min(1, flash) } : null;
-    const tint = mix([50, 46, 44], [78, 72, 82], dark), fl = Math.min(1, flash) * dark, lit = gateish * smooth(GATE_X - 330, GATE_X - 60, C3.x), tintF = mix(mix(mix(tint, [66, 62, 72], gateish), [255, 170, 110], fl * .35), [255, 188, 120], lit * (.3 + .4 * door));
+    const tint = mix([50, 46, 44], [70, 62, 70], dark), fl = Math.min(1, flash) * dark, lit = gateish * smooth(GATE_X - 330, GATE_X - 60, C3.x), tintF = mix(mix(mix(tint, [66, 62, 72], gateish), [255, 170, 110], fl * .35), [255, 188, 120], lit * (.3 + .4 * door));
     const tintM = mix(tintF, [255, 204, 150], mercy * .42);
     if (mercy > .01) { const mx = (C3.x + EV_X) / 2; c.save(); c.globalCompositeOperation = 'lighter';
       { c.save(); c.translate(mx, 5); c.scale(1, .1); const g = c.createRadialGradient(0, 0, 0, 0, 0, 210); g.addColorStop(0, css([255, 196, 126], .5 * mercy)); g.addColorStop(1, css([255, 180, 110], 0)); c.fillStyle = g; c.fillRect(-210, -210, 420, 420); c.restore(); }
@@ -1109,7 +1110,7 @@ const HL = (() => {
     // off at once; now it covers him from the moment he passes the top)
     if ((ph === 'aside' || ph === 'down') && C3.x > CREST - 2) { c.save(); c.beginPath(); c.moveTo(X(CREST), VH); for (let x = CREST; x <= CREST + 700; x += 10) c.lineTo(X(x), Y(-crest(x))); c.lineTo(VW, Y(0)); c.lineTo(VW, VH); c.clip(); road(); c.fillStyle = humpC; c.fillRect(0, 0, VW, Y(0) + 1); c.restore(); }
     // the nearest crags, along the bottom of the picture, in front of everyone
-    // (build 205, owner: "the layer in front of Christian as he walks toward mountain can be higher in point and fully go in
+    // (build 212, owner: "the layer in front of Christian as he walks toward mountain can be higher in point and fully go in
     // front of him - maybe make nice shapes like the layer behind him"): the nearest crags are the same leaning spurs as the
     // layer behind, wider, and now and then a tall one passes wholly in front of him; near the foot, where he and
     // Evangelist stand and talk, they stay low (`clear`)

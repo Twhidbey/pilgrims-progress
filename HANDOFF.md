@@ -12,6 +12,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 Older handovers (builds 41 to 137, with the picture and video prompts used for Help, Christian reaching, the grip and lift, the gate and the wall) were folded away in build 140; they are in git (`HANDOFF.md` at build 137). The voice descriptions and the first picture prompts are kept in the build notes below.
 
+**Build 212: Christian always solid in Levels 2 and 3 (gaps to the outside filled in every Christian pack, no frame melting, the bog's mist veil no longer over him, more contrast in every figure; firelight laid as light and shade). Nothing spent. The owner said yes to the two mire videos (A and B, about $1.12): next.**
+
 **Build 204: no grey discs under the men in the Slough (mist lens kept above the surface, churned patches fainter, rings flat). Nothing spent.**
 
 **Build 200: the Slough recomposed, free (closer camera through the fall, the quarrel, the wading and "could not get out"; darker mud; no ghost outlines). WAITING ON THE OWNER: two mire videos made in deep mud, about $1.12 (see `CLAUDE.md`, "Build 200"). Nothing spent.**

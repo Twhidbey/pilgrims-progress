@@ -857,7 +857,7 @@ const SL = (() => {
         if (wk < 1) figure(n, 'pli0', PLI[pli.wf || 0], PLI_META, pli.wx, pli.sy, 1, fig, true, pli.alpha * (1 - smooth(.5, 1, wk)));
         MREC = 'P'; FIG_WET = { D: pli.maxY || 0, a: .78 }; FIG_DIP = 60 * (1 - smooth(.6, .8, (pli.ct || 0) / 119));
         // build 183: each picture of his climbing video melts into the next (12 a second, each held five ticks, was steppy)
-        const pc = pli.ct || 0, im2 = PLIC[Math.min(PLIC.length - 1, Math.floor(pc) + 1)], bk = smooth(.65, 1, pc - Math.floor(pc));      // build 202: only a quick dissolve at the end of each picture (a half-and-half blend of two poses read as a ghost outline)
+        const pc = pli.ct || 0, im2 = PLIC[Math.min(PLIC.length - 1, Math.floor(pc) + 1)], bk = 0 * pc;      // build 212: no melting of one picture into the next (two poses laid over each other read as a pale, see-through double outline)
         if (fl < .99) { const a2 = pli.alpha * smooth(0, .5, wk) * (1 - smooth(.5, 1, fl)); figure(n, 'pli2', im, META.climb, pli.x + cw, pli.y, 1, fig, true, a2); if (bk > .03) figure(n, 'pli2b', im2, META.climb, pli.x + cw, pli.y, 1, fig, true, a2 * bk); }
         if (fl > .01) { const a1 = pli.alpha * smooth(0, .5, wk) * smooth(0, .5, fl); figure(n, 'pli', im, META.climb, pli.x, pli.y, -1, fig, true, a1); if (bk > .03) figure(n, 'plib', im2, META.climb, pli.x, pli.y, -1, fig, true, a1 * bk); }
         FIG_DIP = 0; MREC = null; FIG_WET = null;
@@ -1118,7 +1118,8 @@ const SL = (() => {
     if (ph === 'plain') threadsNow();
     // rings in the mud, under the mist. Build 126 put them back under the low mist after build 125's heavy rings on top of it
     // "stuck out"; build 127 thins that mist at the surface, so the dark churned mud and its rings are seen together
-    if (look.veil > .01) { const g = ctx.createLinearGradient(VW * .42, 0, VW, 0); g.addColorStop(0, css(LIGHT, 0)); g.addColorStop(.55, css(tone(.93), look.veil * .86)); g.addColorStop(1, css(tone(.93), look.veil)); ctx.fillStyle = g; ctx.fillRect(0, 0, VW, VH); }
+    // build 212: the veil starts to the right of Christian (with the closer camera of build 200 he stood inside it and was washed pale)
+    if (look.veil > .01) { const v0 = Math.min(VW * .8, Math.max(VW * .42, X(C2.x) + 150 * z)), g = ctx.createLinearGradient(v0, 0, Math.max(VW, v0 + 300), 0); g.addColorStop(0, css(LIGHT, 0)); g.addColorStop(.55, css(tone(.93), look.veil * .86)); g.addColorStop(1, css(tone(.93), look.veil)); ctx.fillStyle = g; ctx.fillRect(0, 0, VW, VH); }
     // the gold coming back from the oak outward
     if (warmth > .01) { ctx.globalCompositeOperation = 'soft-light'; const g = ctx.createRadialGradient(discX, discY + 60, 20, discX, discY + 60, 760);
       g.addColorStop(0, css(GOLD, .8 * warmth)); g.addColorStop(.55, css(GOLD, .4 * warmth)); g.addColorStop(1, css(GOLD, 0)); ctx.fillStyle = g; ctx.fillRect(0, 0, VW, VH); ctx.globalCompositeOperation = 'source-over'; }
@@ -1158,7 +1159,7 @@ const SL = (() => {
     const wk = ph === 'fall' ? smooth(36, 46, C2.fallT) : smooth(36, 40, C2.y); let wa = 1;      // build 119: he flounders from the fall on
     if (WADE.length && inWater && wk > 0 && ['fall', 'pli', 'back', 'backtalk', 'wade', 'stuck', 'help'].includes(ph)) {
       if (wk < 1) figure(n, 'chr0', walkIm, CHR_META, C2.x, C2.y, C2.face, fig, true, alpha * C2.alpha * (1 - smooth(.5, 1, wk)));
-      const wf = C2.wa || 0; walkIm = WADE[Math.floor(wf) % WADE.length]; walkM = META.wade; wa = smooth(0, .5, wk); FIG_DIP = 46; blendIm = WADE[(Math.floor(wf) + 1) % WADE.length]; blendK = smooth(.65, 1, wf - Math.floor(wf)); }
+      const wf = C2.wa || 0; walkIm = WADE[Math.floor(wf) % WADE.length]; walkM = META.wade; wa = smooth(0, .5, wk); FIG_DIP = 46; blendIm = WADE[(Math.floor(wf) + 1) % WADE.length]; blendK = 0; }      // build 212: no melting (see Pliable's climb)
     if (ph === 'help' && C2.reach > 0) {
       const gx = HX + GRASP.dx * CHR_K, gy = STUCK_Y() + (C2.y - STUCK_Y()) * (1 - smooth(20, 140, C2.rt || 0));      // he heaves up out of the deep as he reaches (build 114)
       if (C2.reach < 1) figure(n, 'chr', walkIm, walkM, C2.x, C2.y, 1, fig, true, alpha * (1 - C2.reach)); FIG_DIP = 0;
