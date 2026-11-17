@@ -436,20 +436,24 @@ const RM = (() => {
     // one touch and he follows to the end of the passage (owner, build 312: "make walks in dark room happen without holding down walk")
     act() { if (G.act === 'follow') this.start(); },
     // a verse in each passage (build 312, owner: "a verse for each transition"), King James text, checked word for word
-    // against es-kjv and bible-kjv; shown quietly, not spoken. Keyed by the room he goes to.
+    // against es-kjv and bible-kjv; shown quietly and read by the storyteller (build 315). Keyed by the room he goes to.
     VERSES: {
-      r2: ['Thy word is a lamp unto my feet, and a light unto my path.', 'Psalm 119:105'],
-      r3: ['But where sin abounded, grace did much more abound.', 'Romans 5:20'],
-      r4: ['Lay up for yourselves treasures in heaven.', 'Matthew 6:20'],
-      r5: ['My grace is sufficient for thee.', '2 Corinthians 12:9'],
-      r6: ['We must through much tribulation enter into the kingdom of God.', 'Acts 14:22'],
-      r7: ['What I say unto you I say unto all, Watch.', 'Mark 13:37'],
-      leave: ['We have a strong city; salvation will God appoint for walls and bulwarks.', 'Isaiah 26:1'],
+      r2: [[N, 'Thy word is a lamp unto my feet, and a light unto my path.'], 'Psalm 119:105'],
+      r3: [[N, 'But where sin abounded, grace did much more abound.'], 'Romans 5:20'],
+      r4: [[N, 'Lay up for yourselves treasures in heaven.'], 'Matthew 6:20'],
+      r5: [[N, 'My grace is sufficient for thee.'], '2 Corinthians 12:9'],
+      r6: [[N, 'We must through much tribulation enter into the kingdom of God.'], 'Acts 14:22'],
+      r7: [[N, 'What I say unto you I say unto all, Watch.'], 'Mark 13:37'],
+      leave: [[N, 'We have a strong city; salvation will God appoint for walls and bulwarks.'], 'Isaiah 26:1'],
     },
     start() {
       if (this.go) return; this.go = true; G.ring = null; next(true); G.state = 'auto';
       const vs = this.VERSES[this.to]; this.need = 0;
-      if (vs) { words('', vs[0] + ' \u2014 ' + vs[1], 'cap hint'); document.body.classList.add('capped'); this.need = 60 + vs[0].length * 2.6; }
+      if (vs) {
+        const txt = vs[0][1]; words('', txt + ' \u2014 ' + vs[1], 'cap hint'); document.body.classList.add('capped'); this.need = 60 + txt.length * 2.6;
+        // the storyteller reads it (build 315); they arrive only once it has been said
+        say(N, txt); voxBuf(vox(N, txt)).then(b => { if (b && this.go && !this.left) this.need = Math.max(this.need, Math.ceil(b.duration * 60) + 30); });
+      }
     },
     x() { return 380 + this.p * 700; },
     upd() {

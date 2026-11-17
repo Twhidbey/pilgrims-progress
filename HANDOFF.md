@@ -28,6 +28,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 **Build 297 (Level 3 art chat): rocky ground round the village (a small spur of the mountain behind it, low rocks across its foot). Nothing spent.**
 
+**Build 315 (Level 4 chat): the storyteller reads the seven passage verses. Spent about 7 cents (voices).**
+
 **Build 312 (Level 4 chat): the dark passages between rooms go with one touch, a little shorter, each with a quiet King James verse (mostly Bunyan's own margin references). Nothing spent.**
 
 **Build 307 (Level 4 chat): Christian and the Interpreter in the house upscaled (free, Real-ESRGAN on the CPU) to match the painted rooms' sharpness. Nothing spent.**
