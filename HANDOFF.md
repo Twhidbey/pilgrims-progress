@@ -34,7 +34,7 @@ Older handovers (builds 41 to 137, with the picture and video prompts used for H
 - The concept art from the picture chat is not in the repo (it was only shown in that chat); ask that chat to put any keepers in a `concept/` folder.
 - Earlier offers not answered: the sketch of Levels 3 to 6 as a first whole game; a child playing it; carrying the tune through the levels; Evangelist handing over the roll as an animation; repainting the three cottages with true door and window proportions (about 45 cents).
 
-**Build 193: Christian and Wiseman read as solid figures on Level 3's fair plain (darker tint, a lighter across-wash). See `CLAUDE.md`, "Build 193". Nothing spent.**
+**Build 194: Christian and Wiseman read as solid figures on Level 3's fair plain (darker tint, a lighter across-wash). See `CLAUDE.md`, "Build 194". Nothing spent.**
 
 **Build 192: the mountain's overhanging face has a crisp edge up close (the painting's soft, haloed edge was blown up three times). See `CLAUDE.md`, "Build 192". Nothing spent.**
 
