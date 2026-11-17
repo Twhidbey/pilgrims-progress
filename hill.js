@@ -236,7 +236,7 @@ const HL = (() => {
     // near the bottom): one solid dark body, darkest at the top, its lower edge a long slow swell, a little ragged, with
     // a few soft tongues hanging from it. Each tile is baked dark, pale (the haze far off) and as the firelight on its
     // underside (a band along the lower edge only).
-    { const W = 1200, H = 220, mkDeck = (seed, top, base, pale0, pale1) => { const n = noise2(seed), Rd = rngS(seed), m = new Float32Array(W * H), lit = new Float32Array(W * H);
+    { const W = 1200, H = 220, mkDeck = (seed, top, base, pale0, pale1) => { const n = noise2(seed), Rd = rngS(seed), m = new Float32Array(W * H), lit = new Float32Array(W * H), wm = new Float32Array(W * H);
         const per = (x, f, o) => n(o + Math.cos(2 * Math.PI * x / W) * f, o + Math.sin(2 * Math.PI * x / W) * f);
         // (build 221, owner: "slightly too wavy - what about wispier and layered but keeping color and the way the bottom
         // lights up"): the underside is nearly level, only a slow gentle swell; its edge is torn into long horizontal
@@ -248,13 +248,14 @@ const HL = (() => {
         for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const r = tn(x, y, .008, .06, 0);
           const d = edge[x] - y + 40 * (r - .5); let w = 0;
           for (const [off, th, al, o] of WISP) { const cy = edge[x] + off + 22 * (tn(x, 0, .003, 0, o) - .5) + 6 * (tn(x, 0, .02, 0, o + 1) - .5), u = (y - cy) / th; if (Math.abs(u) < 3) w = Math.max(w, Math.exp(-u * u) * al * smooth(.42, .7, tn(x, y, .008, .045, o + 3))); }
-          const body = smooth(-14, 30, d); m[y * W + x] = Math.max(body, w); lit[y * W + x] = Math.max(smooth(-14, 6, d) * (1 - smooth(8, 64, d)), w * 1.3); }
+          const body = smooth(-14, 30, d); m[y * W + x] = Math.max(body, w); wm[y * W + x] = w; lit[y * W + x] = Math.max(smooth(-14, 6, d) * (1 - smooth(8, 64, d)), w * 1.3); }
         const tile = (fn) => { const c = mk(W, H), q = c.getContext('2d'), im = q.createImageData(W, H); for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const i = y * W + x, [r, g, b, a] = fn(x, y, i); im.data[i * 4] = r; im.data[i * 4 + 1] = g; im.data[i * 4 + 2] = b; im.data[i * 4 + 3] = a; } q.putImageData(im, 0, 0); return c; };
         const mixc = (a, b, t) => a.map((v, j) => v + (b[j] - v) * t);
         return { W, H, top, pale1,
           d: tile((x, y, i) => { const t = clamp((edge[x] - y) / 150); return [...mixc(base, top, t), 255 * m[i]]; }),
           h: tile((x, y, i) => { const t = clamp((edge[x] - y) / 150); return [...mixc(pale0, pale1, t), 255 * m[i]]; }),
-          l: tile((x, y, i) => [255, 176, 120, 255 * lit[i]]) }; };
+          l: tile((x, y, i) => [255, 176, 120, 255 * lit[i]]),
+          wd: tile((x, y, i) => [...base, 255 * Math.min(1, wm[i] * 1.7)]), wh: tile((x, y, i) => [...pale0, 255 * Math.min(1, wm[i] * 1.7)]), wl: tile((x, y, i) => [255, 176, 120, 255 * Math.min(1, wm[i] * 2)]) }; };
       DECK = [mkDeck(83, [26, 22, 27], [50, 40, 44], [150, 138, 142], [140, 130, 138]), mkDeck(97, [32, 27, 32], [60, 48, 52], [160, 148, 150], [146, 136, 144])]; }
     SMOKE = cloud(240, 80, 5, .4, .022, .05); CLOUD = cloud(400, 90, 31, .46, .014, .045);
     { const tintOf = col => { const t = mk(CLOUD.width, CLOUD.height), q = t.getContext('2d'); q.drawImage(CLOUD, 0, 0); q.globalCompositeOperation = 'source-in'; q.fillStyle = col; q.fillRect(0, 0, t.width, t.height); return t; }; CLOUDW = tintOf('rgb(255,226,176)'); CLOUDG = tintOf('rgb(168,160,176)'); }
@@ -1093,6 +1094,7 @@ const HL = (() => {
         // below it stays open and glowing down to the horizon, so the black mountain reads (John Martin). Far off on the
         // fair plain it is a pale lid in the haze lying over the far mountain only; as he turns aside it darkens and
         // spreads over the whole sky. Two tiles, the nearer darker and a little lower, drift slowly left with the wind.
+        let deckWisp = null;
         { const sK = Math.min(1, Math.max(dark * (rocky ? 1.5 : 1), farK * 1.6)), hzS = rocky ? 0 : clamp(1 - dark * 1.6), spread = rocky ? 1 : clamp(dark * 1.8);
           if (sK > .03 && DECK) { c.globalCompositeOperation = 'source-over';
             // its base: above the summit by B; close among the rocks (the summit far above the picture) it hangs as a ceiling
@@ -1115,18 +1117,32 @@ const HL = (() => {
               if (spread < 1) across(q1, lid);
               c.globalCompositeOperation = 'source-over'; c.globalAlpha = Math.min(1, sK * (j ? .95 : .7)); c.drawImage(D1, 0, 0);
               if (burn + F + fl > .02) { across(q2, x => litAt(x) * lid(x)); c.globalCompositeOperation = 'lighter'; c.globalAlpha = Math.min(1, sK * (j ? 1 : .6)); c.drawImage(D2, 0, 0); } });
+            // the front tile's wisps alone, again, only over the stretch where the columns rise (drawn after them)
+            deckWisp = () => { const T = DECK[1], j = 1, tw = T.W * kD * .9, th = T.H * kD * .9, base = Math.max(sy0 - B, ceil), top = base - th + 92 * kD * .9, drift = (G.t * .045 * kD + 400 * kD) % tw;
+              if (base < -10) return; q1.clearRect(0, 0, VW, VH); q2.clearRect(0, 0, VW, VH);
+              for (let x = -drift; x < VW; x += tw) { if (hzS < 1) { q1.globalAlpha = 1 - hzS; q1.drawImage(T.wd, x, top, tw + 1, th); } if (hzS > 0) { q1.globalAlpha = hzS; q1.drawImage(T.wh, x, top, tw + 1, th); } q2.drawImage(T.wl, x, top, tw + 1, th); }
+              q1.globalAlpha = 1; const near = x => (1 - smooth(120 * k, 330 * k, Math.abs(x - (sx0 + 80 * k)))) * lid(x);
+              across(q1, near); c.globalCompositeOperation = 'source-over'; c.globalAlpha = Math.min(1, sK * .95); c.drawImage(D1, 0, 0);
+              if (burn + F + fl > .02) { across(q2, x => Math.min(1, 1.6 * litAt(x)) * near(x)); c.globalCompositeOperation = 'lighter'; c.globalAlpha = Math.min(1, sK); c.drawImage(D2, 0, 0); }
+              c.globalAlpha = 1; };
             c.globalAlpha = 1; c.globalCompositeOperation = 'lighter'; } }
         // (build 232, owner: "Smoke going up from the top of mount can go above light layer of billowing smoke from light"):
         // the column of smoke is drawn after the cloud, so it rises in front of the cloud's firelit underside and on up
         // into the dark body of the cloud, melting away there
         c.save();
-        { const N = 96, ps = [], kS = Math.min(k, 1), Dh = rocky ? 195 : 90 + 105 * clamp(dark * 1.5);
-          for (let i = 0; i < N; i++) { const h1 = Math.sin(i * 12.9898) * 43758.5453, h2 = Math.sin(i * 78.233) * 12543.123; ps.push([(i / N + G.t / 2600) % 1, h1 - Math.floor(h1), h2 - Math.floor(h2), i]); }
+        // (build 233, owner: "Can we make another column going up from other lit up spot at peak of mt"): a second, slimmer
+        // column rises from the brightest fire just right of the summit (hill x 205, on the rock's top), a little out of step
+        for (const [ox, N, sp, ph0] of [[0, 96, 1, 0], [145, 64, .78, .37]]) { const ps = [], kS = Math.min(k, 1), Dh = rocky ? 195 : 90 + 105 * clamp(dark * 1.5), bx0 = sx0 + ox * k, by0 = ox ? hy + (rockTopAt(205) + 6) * k : sy0, dTop = (by0 - sy0) / kS;
+          for (let i = 0; i < N; i++) { const h1 = Math.sin(i * 12.9898 + ox) * 43758.5453, h2 = Math.sin(i * 78.233 + ox) * 12543.123; ps.push([(i / N + G.t / 2600 + ph0) % 1, h1 - Math.floor(h1), h2 - Math.floor(h2), i]); }
           ps.sort((a, b) => b[0] - a[0]);
-          for (const [u, r1, r2, i] of ps) { const rise = 1 - Math.pow(1 - u, 1.6), spread = (24 + 120 * u) * kS, px = sx0 - (50 * u + 110 * u * u) * kS + (r1 - .5) * spread + 10 * Math.sin(G.t / 300 + i) * u * kS, py = sy0 - (14 + (Dh + 90) * rise) * kS + (r2 - .5) * spread * .5, rr = (26 + 120 * u) * kS * (.8 + .4 * r2), a = smooth(0, .05, u) * (1 - smooth(.5, .95, u)), P = PUFF[i % 3];
+          for (const [u, r1, r2, i] of ps) { const rise = 1 - Math.pow(1 - u, 1.6), spread = (24 + 120 * u) * kS * sp, px = bx0 - (50 * u + 110 * u * u) * kS + (r1 - .5) * spread + 10 * Math.sin(G.t / 300 + i) * u * kS, py = by0 - (14 + (Dh + 90 + dTop) * rise) * kS + (r2 - .5) * spread * .5, rr = (26 + 120 * u) * kS * sp * (.8 + .4 * r2), a = smooth(0, .05, u) * (1 - smooth(.5, .95, u)), P = PUFF[i % 3];
             c.globalCompositeOperation = 'source-over'; const hzP = rocky ? 0 : clamp(1 - dark * 1.6), aP = a * .7 * (.1 + .75 * Math.max(dark, farK * 1.3)) * reveal; if (hzP > 0) { c.globalAlpha = aP * hzP; c.drawImage(P.h, px - rr * 1.3, py - rr * .8, 2.6 * rr, 1.6 * rr); } c.globalAlpha = aP * (1 - hzP); c.drawImage(P.d, px - rr * 1.3, py - rr * .8, 2.6 * rr, 1.6 * rr);
             const la = a * (burn * (.3 + .7 * Math.pow(1 - u, 2)) + F * .3 * (1 - u)); if (la > .01) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = la; c.drawImage(P.l, px - rr, py - rr, 2 * rr, 2 * rr); } } }
-        c.restore(); c.globalCompositeOperation = 'lighter';
+        c.restore();
+        // (build 233, owner: "still need another layer of wispy smoke to go over billowing up smoke so it's going into cloud
+        // in front of lit up section"): the cloud's hanging wisps are drawn once more, in front of the columns, over the
+        // stretch of sky where they rise, so the smoke goes up INTO the lit wisps rather than standing before them
+        if (deckWisp) deckWisp(); c.globalCompositeOperation = 'lighter';
         for (const e of embers) { const al = Math.sin(Math.PI * e.t / e.life) * .9; c.fillStyle = css([255, 170 + 60 * e.h, 90], al); c.beginPath(); c.arc(sx0 + e.x * k, sy0 + e.y * k, Math.max(.7, e.r * k), 0, 7); c.fill(); }
         // the red sheen the fire lays on the plain
         if (burn > .01) { c.translate(hx - 120 * k, hy + 22 * z); c.scale(1, .1); const g = c.createRadialGradient(0, 0, 0, 0, 0, 640 * k); g.addColorStop(0, css([236, 130, 84], .2 * burn + .2 * F)); g.addColorStop(1, css([236, 130, 84], 0)); c.fillStyle = g; c.fillRect(-640 * k, -640 * k, 1280 * k, 1280 * k); }

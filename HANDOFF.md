@@ -64,6 +64,8 @@ Older handovers (builds 41 to 137, with the picture and video prompts used for H
 - The concept art from the picture chat is not in the repo (it was only shown in that chat); ask that chat to put any keepers in a `concept/` folder.
 - Earlier offers not answered: the sketch of Levels 3 to 6 as a first whole game; a child playing it; carrying the tune through the levels; Evangelist handing over the roll as an animation; repainting the three cottages with true door and window proportions (about 45 cents).
 
+**Build 233: Level 3: a second column of smoke from the fire right of the summit; the cloud's lit wisps drawn in front of both columns. See `CLAUDE.md`, "Build 233". Nothing spent.**
+
 **Build 232: Level 3: falling boulders smaller in the wide shots; the summit's smoke rises over the cloud's lit underside into the cloud. See `CLAUDE.md`, "Build 232". Nothing spent.**
 
 **Build 229: Level 3: figures near-black among the rocks; the summit's smoke rises as a column into the cloud ceiling. See `CLAUDE.md`, "Build 229". Nothing spent.**
