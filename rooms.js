@@ -28,7 +28,7 @@ const RM = (() => {
   const darkOn = () => { try { return localStorage.getItem('pp-dark') === '1'; } catch (e) { return false; } };
 
   // the two visitors (sprites face LEFT as made; face 1 = turned to face right)
-  const VIS = { C: { n: 'room3-christian', ax: 150, g: 624, who: 'Christian', ph: 0 }, I: { n: 'room-interpreter', ax: 86, g: 611, who: I, ph: 1.7, say: { n: 'room-interpreter-say', ax: 153, g: 611 } } };
+  const VIS = { C: { n: 'room3-christian', ax: 150, g: 624, who: 'Christian', ph: 0, ct: 1.5, mul: .9, warm: [1.05, 1, .92] }, I: { n: 'room-interpreter', ax: 86, g: 611, who: I, ph: 1.7, say: { n: 'room-interpreter-say', ax: 153, g: 611, noSh: 1 } } };
   const BRAVE = { plain: { n: 'room5-brave', ax: 65, g: 519 }, armed: { n: 'room5-brave-armed', ax: 163, g: 519 } };
 
   let R = null, t = 0, ph = '', cam = { x: 0, to: 0 }, fade = 1, fadeTo = 0, after = null, toned = {}, startId = 'door', motes = [];
@@ -57,21 +57,21 @@ const RM = (() => {
 
   // ---------- figures ----------
   // each figure picture, coloured for the room it stands in (baked once per room: no canvas is touched while playing)
-  function toneOf(n, col) {
-    const key = n + '|' + col.join(','); if (toned[key]) return toned[key];
+  function toneOf(n, col, ct = 1.2, mul = 1) {
+    const key = n + '|' + col.join(',') + '|' + ct + '|' + mul; if (toned[key]) return toned[key];
     const im = pics[n]; if (!im) return null;
     const cv2 = document.createElement('canvas'); cv2.width = im.width; cv2.height = im.height; const x = cv2.getContext('2d');
     x.drawImage(im, 0, 0); const d = x.getImageData(0, 0, im.width, im.height), p = d.data, sat = R && R.sat != null ? R.sat : .6;
     let m = 0, cnt = 0; for (let i = 0; i < p.length; i += 4) if (p[i + 3] > 128) { m += (p[i] + p[i + 1] + p[i + 2]) / 3; cnt++; } m /= cnt || 1;
-    for (let i = 0; i < p.length; i += 4) { const l = (p[i] + p[i + 1] + p[i + 2]) / 3; for (let k = 0; k < 3; k++) { let c = l + (p[i + k] - l) * sat; c = m + (c - m) * 1.2; p[i + k] = Math.max(0, Math.min(255, c * col[k] / 255)); } }
+    for (let i = 0; i < p.length; i += 4) { const l = (p[i] + p[i + 1] + p[i + 2]) / 3; for (let k = 0; k < 3; k++) { let c = l + (p[i + k] - l) * sat; c = (m + (c - m) * ct) * mul; p[i + k] = Math.max(0, Math.min(255, c * col[k] / 255)); } }
     x.putImageData(d, 0, 0);
     return toned[key] = cv2;
   }
   function fig(c, spec, meta, x, y, face, k = 1, a = 1, col = R.tone || [255, 255, 255], who = null, ph0 = 0, bob = 0) {
-    const im = toneOf(spec, col); if (!im || a <= .01) return;
+    const im = toneOf(spec, col, meta.ct, meta.mul); if (!im || a <= .01) return;
     const sc = S / K * k, fx = u(x), fy = v(y), mv = who && talkMove(who);
     const sy = (1 + .006 * Math.sin(G.t / 62 + ph0)) * (mv ? mv.sy : 1);
-    c.globalAlpha = a * .8; c.fillStyle = 'rgba(12,6,3,.32)'; c.beginPath(); c.ellipse(fx + 6 * face, fy - 1, 120 * sc, 12 * sc, 0, 0, 6.2832); c.fill();
+    if (!meta.noSh && !R.noShadow) { c.globalAlpha = a; c.fillStyle = 'rgba(12,6,3,.18)'; c.beginPath(); c.ellipse(fx + 6 * face, fy - 1, 55 * sc, 6 * sc, 0, 0, 6.2832); c.fill(); }
     c.globalAlpha = a; c.save(); c.translate(fx, fy - bob); if (mv) c.transform(1, 0, -mv.sh * -face, 1, 0, 0); c.scale(-face, sy);
     c.drawImage(im, -meta.ax * sc, -meta.g * sc, im.width * sc, im.height * sc); c.restore(); c.globalAlpha = 1;
   }
@@ -80,14 +80,15 @@ const RM = (() => {
   const speaking = () => (SPK && SPK.who === I) || (G.state === 'dialog' && dWho.textContent === I);
   const visitor = (c, key, x, face, k = R.k || 1, a = 1, up = 0) => {
     const m = VIS[key];
-    if (m.say && pics[m.say.n]) { const q = smooth(0, 1, sayK); if (q < 1) fig(c, m.n, m, x, R.FY - up, face, k, a * (1 - q), R.tone, m.who, m.ph); if (q > 0) fig(c, m.say.n, m.say, x, R.FY - up, face, k, a * q, R.tone, m.who, m.ph); return; }
-    fig(c, m.n, m, x, R.FY - up, face, k, a, R.tone, m.who, m.ph);
+    const col = key === 'C' ? (R.toneC || R.tone).map((v, i) => v * m.warm[i]) : R.tone;
+    if (m.say && pics[m.say.n]) { const q = smooth(0, 1, sayK); if (q < 1) fig(c, m.n, m, x, R.FY - up, face, k, a, col, m.who, m.ph); if (q > 0) fig(c, m.say.n, m.say, x, R.FY - up, face, k, a * q, col, m.who, m.ph); return; }
+    fig(c, m.n, m, x, R.FY - up, face, k, a, col, m.who, m.ph);
   };
   // Christian walking (leaving): the game's own walk pictures, dark against the night
   const WALKT = new Map();
   function walker(c, x, frame, k) {
     const src = CHR[frame]; if (!src) { visitor(c, 'C', x, 1, k); return; }
-    let im = WALKT.get(src); if (!im) { im = document.createElement('canvas'); im.width = src.width; im.height = src.height; const q = im.getContext('2d'); q.drawImage(src, 0, 0); const d = q.getImageData(0, 0, im.width, im.height), p = d.data, col = [62, 54, 56]; for (let i = 0; i < p.length; i += 4) for (let j = 0; j < 3; j++) p[i + j] = p[i + j] * col[j] / 255; q.putImageData(d, 0, 0); WALKT.set(src, im); }
+    let im = WALKT.get(src); if (!im) { im = document.createElement('canvas'); im.width = src.width; im.height = src.height; const q = im.getContext('2d'); q.drawImage(src, 0, 0); const d = q.getImageData(0, 0, im.width, im.height), p = d.data, col = [40, 36, 44]; for (let i = 0; i < p.length; i += 4) for (let j = 0; j < 3; j++) p[i + j] = p[i + j] * col[j] / 255; q.putImageData(d, 0, 0); WALKT.set(src, im); }
     const sc = (790 * k * S) / 300, walkC = im;
     const fx = u(x), fy = v(R.FY);
     c.fillStyle = 'rgba(8,6,6,.35)'; c.beginPath(); c.ellipse(fx, fy - 1, 34, 4, 0, 0, 6.2832); c.fill();
@@ -153,7 +154,7 @@ const RM = (() => {
     },
     // 2 THE DUSTY PARLOUR (after Vermeer's Milkmaid): the broom raises the dust; the water lays it
     r2: {
-      pic: 'room2', FY: 1262, cam0: 140, tone: [300, 288, 268],
+      pic: 'room2', FY: 1262, cam0: 140, tone: [300, 288, 268], toneC: [345, 315, 275], noShadow: 1,
       enter() { this.dust = []; this.haze = .22; this.wet = []; const r = rngR(5); for (let i = 0; i < 70; i++) this.dust.push({ x: 300 + r() * 2800, y: 300 + r() * 900, vx: 0, vy: 0, s: 2 + r() * 5, a: .5 + r() * .5, p: r() * 7 }); },
       run() { talk([[N, 'He led him into a very large parlour, full of dust, because it was never swept.'], [TIP, 'Touch the broom.', 'broom']], () => { ph = 'sweep'; t = 0; G.state = 'auto'; }); },
       act(sx, sy) {
@@ -184,7 +185,7 @@ const RM = (() => {
       },
       people(c) { visitor(c, 'I', 560, 1); visitor(c, 'C', 1290, 1); },
       over(c) {
-        c.fillStyle = css([170, 150, 120], this.haze * .75); c.fillRect(0, 0, VW, VH);
+        c.fillStyle = css([170, 150, 120], Math.min(.2, this.haze * .75)); c.fillRect(0, 0, VW, VH);
         for (const d of this.dust) { const a = Math.min(1, d.a * (.45 + this.haze)); const r = d.s * S * 3; const g = c.createRadialGradient(u(d.x), v(d.y), 0, u(d.x), v(d.y), r); g.addColorStop(0, css([206, 188, 160], a * .7)); g.addColorStop(1, css([196, 178, 150], 0)); c.fillStyle = g; c.fillRect(u(d.x) - r, v(d.y) - r, 2 * r, 2 * r); }
         c.fillStyle = 'rgba(200,215,225,.5)'; for (const w of this.wet) c.fillRect(u(w.x), v(w.y), 1.2, 2.4);
       },
@@ -206,7 +207,7 @@ const RM = (() => {
         if (G.act === 'bag' && G.actT >= 70 && !G.ring) G.ring = ring(B.x, B.y - 30);
         if (ph === 'pour') {
           bag.tip = Math.min(1, bag.tip + .035);
-          if (bag.tip > .6 && t < 120 && t % 2 === 0) for (let k = 0; k < 2; k++) this.coins.push({ x: B.x - 37, y: B.y - 21, vx: -1.6 - rnd() * 6.3, vy: -1.6 - rnd() * 3.7, rest: HP.y - 16 + rnd() * 26, on: false, rot: rnd() * 6, sp: (rnd() - .5) * .5, gl: rnd() * 300, gone: 0, a: 1 });
+          if (bag.tip > .6 && t < 120 && t % 2 === 0) for (let k = 0; k < 2; k++) this.coins.push({ x: B.x - 55, y: B.y - 30, vx: -1.6 - rnd() * 6.3, vy: -1.6 - rnd() * 3.7, rest: HP.y - 16 + rnd() * 26, on: false, rot: rnd() * 6, sp: (rnd() - .5) * .5, gl: rnd() * 300, gone: 0, a: 1 });
           for (const o of this.coins) if (!o.on) { o.vy += .58; o.x += o.vx; o.y += o.vy; o.rot += o.sp; if (o.y >= o.rest) { if (o.vy > 3.7) { o.vy *= -.28; o.vx *= .5; o.y = o.rest; if (rnd() < .35) note(94 + Math.floor(rnd() * 9), .012, .35, 0, false); } else { o.on = true; o.y = o.rest; } } }
           bag.empty = smooth(20, 130, t);
           if (t > 260) { ph = 'glad'; t = 0; }
@@ -225,7 +226,7 @@ const RM = (() => {
         const g = this.great; if (g) { g.life++; g.r = Math.min(g.R, g.r + .47); if (!g.pop) { g.y -= 1.45 * smooth(0, 60, g.life); g.x += Math.sin(g.life / 70) * .8; if (g.life > g.L) { g.pop = 1; note(91, .02, 1.4); } } else g.pop++; }
       },
       under(c) { if (this.rags > 0 && pics['room3-rags']) { c.globalAlpha = smooth(0, 1, this.rags); c.drawImage(pics['room3-rags'], u(720), v(580), 790 * S, 754 * S); c.globalAlpha = 1; } },
-      people(c) { visitor(c, 'I', 2385, -1, .8, 1, 35); visitor(c, 'C', 2240, -1, .8, 1, 35); },
+      people(c) { visitor(c, 'I', 2420, -1, .8, 1, 35); visitor(c, 'C', 2235, -1, .8, 1, 28); },
       over(c) { drawBag(c, this.bag); drawCoins(c, this.coins); for (const b of this.bubbles) bubble(c, u(b.x), v(b.y), b.r * S, b.pop); if (this.great) bubble(c, u(this.great.x), v(this.great.y), this.great.r * S, this.great.pop); },
     },
     // 4 THE FIRE FED WITH OIL (after La Tour's St Joseph the Carpenter): round the back of the wall
@@ -245,7 +246,7 @@ const RM = (() => {
         for (const o of this.oil) { o.vy += .3; o.y += o.vy; o.x -= .4; }
         this.oil = this.oil.filter(o => o.y < 1080);
       },
-      people(c) { const q = smooth(0, .5, this.rv), r = smooth(.6, 1, this.rv); visitor(c, 'I', 260, 1, 1, 1 - q); visitor(c, 'C', 560, 1, 1, 1 - q); if (r > 0) { visitor(c, 'I', 2780, -1, 1, r); visitor(c, 'C', 3000, -1, 1, r); } },
+      people(c) { const q = smooth(0, .5, this.rv), r = smooth(.6, 1, this.rv); visitor(c, 'I', 260, 1, 1, 1 - q); visitor(c, 'C', 560, 1, 1, 1 - q); if (r > 0) { visitor(c, 'I', 2700, -1, 1, r); visitor(c, 'C', 2930, -1, 1, r); } },
       over(c) {
         const f = .75 + .15 * Math.sin(G.t / 4.3) * Math.sin(G.t / 9.1) + .1 * Math.sin(G.t / 2.1);
         glow(c, u(1810), v(1000), 260 * f, [255, 140, 60], .32 * f); glow(c, u(1810), v(1080), 90, [255, 220, 140], .25 * f);
@@ -265,8 +266,8 @@ const RM = (() => {
       upd() {
         const b = this.bv;
         if (b.show) b.a = Math.min(1, b.a + .03);
-        if (G.act === 'book' && G.actT >= 70 && !G.ring) G.ring = ring(1508, 1030); if (G.act === 'gold' && G.actT >= 70 && !G.ring) G.ring = ring(2300, 330);
-        cam.to = smooth(1500, 2500, b.x) * (R.PW * S - VW) * .45;
+        if (G.act === 'book' && G.actT >= 70 && !G.ring) G.ring = ring(1508, 1030); if (G.act === 'gold' && G.actT >= 70 && !G.ring) G.ring = ring(2050, 360);
+        cam.to = smooth(1500, 2500, b.x) * (R.PW * S - VW) * (ph === 'won' ? .25 : .45);
         if (ph === 'write' && t === 70) { ph = 'arm'; t = 0; noise(2000, 3, .4, .08); }
         if (ph === 'arm') { b.arm = Math.min(1, b.arm + .03); if (b.arm > .5) b.face = 1; if (t === 50) { ph = 'fight'; t = 0; talk([[N, 'He drew his sword, put a helmet on his head, cut his way through them all, and pressed on into the palace.']], () => { this.said = 1; }); } }
         if (ph === 'fight') {
@@ -318,7 +319,7 @@ const RM = (() => {
       upd() {
         if (G.act === 'man' && G.actT >= 70 && !G.ring) G.ring = ring(905, 820);
         const self = this;
-        if (ph === 'tell' && t === 30) talk([[DRM, 'This night I dreamed. The heavens grew black, it thundered, and I heard the great sound of a trumpet.', null, () => { self.blk = 1; setTimeout(() => { self.fl = 1; thunder(); }, 900); setTimeout(trumpet, 2600); }], [DRM, 'I saw a man sit upon a cloud, and heard a voice: ‘Arise, ye dead, and come to judgement.’', null, () => { self.lt = 1.6; }], [DRM, 'I saw many caught up into the clouds, but I was left behind. I was not ready.', null, () => { self.lt = .15; self.blk = .4; }]], () => goTo('leave'));
+        if (ph === 'tell' && t === 30) talk([[DRM, 'This night I dreamed. The heavens grew black, it thundered, and I heard the great sound of a trumpet.', null, () => { self.blk = 1; self.lt = 0; setTimeout(() => { self.fl = 1; thunder(); }, 900); setTimeout(trumpet, 2600); }], [DRM, 'I saw a man sit upon a cloud, and heard a voice: ‘Arise, ye dead, and come to judgement.’', null, () => { self.lt = 1.6; }], [DRM, 'I saw many caught up into the clouds, but I was left behind. I was not ready.', null, () => { self.lt = .15; self.blk = .4; }]], () => goTo('leave'));
         this.cur = (this.cur || 0) + ((this.blk || 0) - (this.cur || 0)) * .02; this.fl *= .9; this.lv = (this.lv || .3) + (this.lt - (this.lv || .3)) * .015;
       },
       people(c) { visitor(c, 'I', 2330, -1); visitor(c, 'C', 2600, -1); },
@@ -328,8 +329,8 @@ const RM = (() => {
           c.save(); c.beginPath(); c.ellipse(u(x0 + w / 2), v(y0 + h / 2), w * S / 2, h * S / 2, 0, 0, 6.2832); c.clip(); c.drawImage(im, x0 * k, y0 * k, w * k, h * k, u(x0) + dx, v(y0) + dy, w * S, h * S); c.restore(); }
         glow(c, u(2202), v(422), 160 * this.lv, [255, 236, 170], .35 * this.lv);
       },
-      over(c) { if (this.cur > .01) darkWith(c, [[u(905), v(820), 150, .55], [u(2202), v(422), 120 * this.lv, Math.min(1, this.lv)]], .85 * this.cur);
-        if (this.lv > .5) { c.save(); c.translate(u(2202), v(560)); c.scale(1, 1.8); glow(c, 0, 0, 150 * (this.lv - .3), [255, 240, 190], .3 * (this.lv - .5)); c.restore(); }
+      over(c) { if (this.cur > .01) darkWith(c, [[u(905), v(820), 150, .55], [u(1650), v(330), 120 * this.lv, Math.min(1, this.lv)]], .85 * this.cur);
+        if (this.lv > .5) { c.save(); c.translate(u(1650), v(460)); c.scale(1, 1.8); glow(c, 0, 0, Math.min(120, 150 * (this.lv - .3)), [255, 240, 190], .3 * (this.lv - .5)); c.restore(); }
         if (this.fl > .02) { const g = c.createLinearGradient(0, 0, 0, VH * .6); g.addColorStop(0, css([230, 230, 255], .25 * this.fl)); g.addColorStop(1, css([230, 230, 255], 0)); c.fillStyle = g; c.fillRect(0, 0, VW, VH * .6); } },
     },
     // LEAVING by the door (book {91}, {92}): he goes on his way
@@ -340,9 +341,9 @@ const RM = (() => {
       act() {},
       upd() {
         if (G.act === 'walkout') { if (G.actT >= 60 && !hold() && !G.ring) G.ring = () => [u(this.x + 160), v(1000)]; if (hold()) { G.ring = null; this.w = Math.min(1, this.w + .05); } else this.w = Math.max(0, this.w - .05); }
-        if (this.w > 0) { this.fr += .3 * this.w; this.x += CHR_META.vpx * .3 * this.w * (790 * .58 * S / 300) / S; }
+        if (this.w > 0) { this.fr += .45 * this.w; this.x += CHR_META.vpx * .45 * this.w * (790 * .58 * S / 300) / S; }
         cam.to = Math.min(R.PW * S - VW, Math.max(R.cam0, u(this.x) + cam.x - 500));
-        if (this.x > 2780) { this.a = Math.max(0, this.a - .02); if (G.act === 'walkout') { next(true); G.state = 'auto'; } }
+        if (this.x > R.PW - 80) { this.a = Math.max(0, this.a - .03); if (G.act === 'walkout') { next(true); G.state = 'auto'; } }
         if (this.a <= 0 && ph !== 'end') { ph = 'end'; t = 0; }
         if (ph === 'end' && t === 40) finish();
       },
@@ -357,7 +358,7 @@ const RM = (() => {
   function drawBag(c, bag) {
     if (bag.a <= .01) return;
     const k = smooth(0, 1, bag.tip), e = bag.empty;
-    c.save(); c.globalAlpha = bag.a; c.translate(u(1325) + 12, v(1240)); c.rotate(-1.35 * k); c.translate(-12, 0); c.scale(1 - .38 * e, 1 - .12 * e);
+    c.save(); c.globalAlpha = bag.a; c.translate(u(1325) + 12, v(1240)); c.rotate(-1.35 * k); c.translate(-12, 0); c.scale(1.6 * (1 - .38 * e), 1.6 * (1 - .12 * e));
     c.fillStyle = 'rgba(12,6,3,.3)'; c.beginPath(); c.ellipse(2, 0, 16, 3, 0, 0, 6.2832); c.fill();
     const g = c.createLinearGradient(-15, 0, 15, 0); g.addColorStop(0, '#6e4b2e'); g.addColorStop(.5, '#4a301c'); g.addColorStop(1, '#24170c');
     c.fillStyle = g; c.beginPath(); c.moveTo(-5, -24); c.bezierCurveTo(-13, -21, -18, -12, -15, -4); c.quadraticCurveTo(-12, .5, 0, .5); c.quadraticCurveTo(12, .5, 15, -4); c.bezierCurveTo(18, -12, 13, -21, 5, -24); c.closePath(); c.fill();
@@ -374,7 +375,7 @@ const RM = (() => {
       c.globalAlpha = o.a; c.fillStyle = 'rgb(126,96,50)'; c.beginPath(); c.ellipse(x, y, w, h, o.on ? 0 : o.rot * .3, 0, 6.2832); c.fill();
       c.fillStyle = 'rgb(176,146,92)'; c.beginPath(); c.ellipse(x - .6, y - .3, w * .7, h * .6, o.on ? 0 : o.rot * .3, 0, 6.2832); c.fill();
       const tw = Math.sin(G.t / 9 + o.gl) * Math.sin(G.t / 23 + o.gl * 1.7), gl = Math.max(0, tw - .55) * (ph === 'glad' ? 2.2 : 1.2) + (o.gone ? (1 - o.a) * .8 : 0);
-      if (gl > .02) { const r = 2 + 5 * gl, gg = c.createRadialGradient(x - 1, y - 1, 0, x - 1, y - 1, r); gg.addColorStop(0, 'rgba(255,246,214,' + (.9 * Math.min(1, gl)).toFixed(3) + ')'); gg.addColorStop(1, 'rgba(255,230,160,0)'); c.fillStyle = gg; c.fillRect(x - 1 - r, y - 1 - r, 2 * r, 2 * r); }
+      if (gl > .02) { const r = 1.5 + 3 * gl, gg = c.createRadialGradient(x - 1, y - 1, 0, x - 1, y - 1, r); gg.addColorStop(0, 'rgba(255,246,214,' + (.9 * Math.min(1, gl)).toFixed(3) + ')'); gg.addColorStop(1, 'rgba(255,230,160,0)'); c.fillStyle = gg; c.fillRect(x - 1 - r, y - 1 - r, 2 * r, 2 * r); }
     }
     c.globalAlpha = 1;
   }
@@ -431,7 +432,7 @@ const RM = (() => {
     if (!R) return;
     cam.x += (cam.to - cam.x) * .03;
     for (const m of motes) { m.x += m.v; m.y += Math.sin(G.t / 90 + m.p) * .05; if (m.x > VW) m.x = 0; }
-    sayK = Math.max(0, Math.min(1, sayK + (speaking() ? .12 : -.08)));
+    sayK = Math.max(0, Math.min(1, sayK + (speaking() ? .25 : -.2)));
     R.upd && R.upd();
   }
   function finish() {
