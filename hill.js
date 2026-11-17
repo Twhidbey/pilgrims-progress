@@ -1366,18 +1366,34 @@ const HL = (() => {
         { const g = c.createRadialGradient(lnx, lny, 0, lnx, lny, 170 * z); g.addColorStop(0, css([255, 200, 140], .1 * flick * (1 - .5 * open))); g.addColorStop(1, css([255, 180, 110], 0)); c.fillStyle = g; c.fillRect(lnx - 170 * z, lny - 170 * z, 340 * z, 340 * z); } c.restore();
       if (!LANT) bakeLantern();
       { const k = z, lx0 = lnx - LANT.fx * k, ly0 = lny - LANT.fy * k, hx = lnx, hy = ly0 + LANT.hy * k;
-        // (build 246, owner: "should we add a little piece of wood to hold lattern?"): a wrought-iron arm, as lanterns by a door
-        // hung in Bunyan's day: a plate on the wall to the left, the arm out over the lantern ending in a curl, a scrolled brace
-        // under it, the lantern hung by its ring from a short hook at the arm's end; lit from below by the flame
-        { const pxp = hx - 24 * z, ay = hy - 9 * z, iron = css([13, 11, 10]);
-          c.fillStyle = iron; c.fillRect(pxp - 2.4 * z, ay - 7 * z, 4.8 * z, 26 * z);
-          c.fillStyle = css([255, 190, 120], .1 * flick); c.fillRect(pxp + 1.6 * z, ay - 6 * z, .8 * z, 24 * z);
-          c.fillStyle = css([4, 3, 3]); for (const yy of [ay - 3.5 * z, ay + 15 * z]) { c.beginPath(); c.arc(pxp, yy, 1 * z, 0, 7); c.fill(); }
-          c.strokeStyle = iron; c.lineCap = 'round'; c.lineWidth = 2.2 * z; c.beginPath(); c.moveTo(pxp, ay); c.lineTo(hx + 4 * z, ay); c.bezierCurveTo(hx + 9 * z, ay, hx + 9 * z, ay - 6 * z, hx + 5 * z, ay - 6 * z); c.bezierCurveTo(hx + 2.5 * z, ay - 6 * z, hx + 2.5 * z, ay - 3 * z, hx + 4.5 * z, ay - 3 * z); c.stroke();
-          c.lineWidth = 1.5 * z; c.beginPath(); c.moveTo(pxp, ay + 15 * z); c.bezierCurveTo(pxp + 8 * z, ay + 13 * z, hx - 8 * z, ay + 6 * z, hx - 3 * z, ay); c.stroke();
-          c.beginPath(); c.moveTo(pxp + 7 * z, ay + 12.5 * z); c.bezierCurveTo(pxp + 6 * z, ay + 7 * z, pxp + 12 * z, ay + 6 * z, pxp + 12 * z, ay + 9.5 * z); c.bezierCurveTo(pxp + 12 * z, ay + 11.5 * z, pxp + 9.5 * z, ay + 11.5 * z, pxp + 9.5 * z, ay + 10 * z); c.stroke();
-          c.strokeStyle = css([255, 186, 110], .22 * flick); c.lineWidth = .6 * z; c.beginPath(); c.moveTo(pxp + 3 * z, ay + 1 * z); c.lineTo(hx + 4 * z, ay + 1 * z); c.stroke();
-          c.strokeStyle = iron; c.lineWidth = 1.3 * z; c.beginPath(); c.moveTo(hx, ay); c.lineTo(hx, hy - 3 * z); c.bezierCurveTo(hx - 3 * z, hy - 2 * z, hx - 2.5 * z, hy + 1 * z, hx, hy + .8 * z); c.stroke(); c.lineCap = 'butt'; }
+        // (build 249, owner: "should we add a little piece of wood to hold lattern?": a wrought-iron arm; build 250, owner: "Can we
+        // make wrought patterned holder come out at us instead of going right"): the arm stands straight out from the wall
+        // toward us, seen a little from below and from the side, so it is short and grows thicker toward its near end: a
+        // pierced rosette plate on the wall, the arm, a scrolled brace from lower on the wall, a curl at its near end, the
+        // lantern hung from a hook there; the open door throws the lantern's shadow up and left onto the wall behind it
+        { const iron = css([13, 11, 10]), P = [hx - 7 * z, hy - 25 * z], N = [hx + 1.5 * z, hy - 5 * z], B = [hx - 7 * z, hy - 9 * z];
+          if (open > .02) { const ox = -10 * z, oy = -7 * z; c.save(); c.globalAlpha = .34 * open;
+            // made small and stretched up, so its edges are soft
+            const sc = tintC._lsh || (tintC._lsh = mk(8, 8)); if (!sc.done) { sc.width = 30; sc.height = 52; const q = sc.getContext('2d'); q.drawImage(LANT.cv, 2, 2, 26, 47); q.globalCompositeOperation = 'source-in'; q.fillStyle = '#060404'; q.fillRect(0, 0, 30, 52); sc.done = true; }
+            c.drawImage(sc, lx0 + ox - 2 / 26 * LANT.w * k, ly0 + oy - 2 / 47 * LANT.h * k, 30 / 26 * LANT.w * k, 52 / 47 * LANT.h * k);
+            c.strokeStyle = '#060404'; c.lineCap = 'round'; c.lineWidth = 2.6 * z; c.beginPath(); c.moveTo(P[0], P[1]); c.lineTo(N[0] + ox, N[1] + oy); c.lineTo(hx + ox, hy + oy); c.stroke(); c.restore(); }
+          // the plate: a quatrefoil of iron with four rivets, its lower edges lit by the flame below
+          c.fillStyle = iron; for (const [ox, oy] of [[0, -3.4], [0, 3.4], [-3.4, 0], [3.4, 0]]) { c.beginPath(); c.arc(P[0] + ox * z, P[1] + oy * z, 3 * z, 0, 7); c.fill(); }
+          c.beginPath(); c.arc(P[0], P[1], 3.6 * z, 0, 7); c.fill();
+          c.strokeStyle = css([255, 186, 110], .2 * flick); c.lineWidth = .6 * z; for (const [ox, oy] of [[0, 3.4], [-3.4, 0], [3.4, 0]]) { c.beginPath(); c.arc(P[0] + ox * z, P[1] + oy * z, 2.7 * z, .15 * Math.PI, .85 * Math.PI); c.stroke(); }
+          c.fillStyle = css([40, 30, 24]); for (const [ox, oy] of [[0, -4.4], [0, 4.4], [-4.4, 0], [4.4, 0]]) { c.beginPath(); c.arc(P[0] + ox * z, P[1] + oy * z, .7 * z, 0, 7); c.fill(); }
+          // the brace: from lower on the wall up and out to the arm, a scroll at its foot
+          c.strokeStyle = iron; c.lineCap = 'round'; c.lineWidth = 1.3 * z; c.beginPath(); c.moveTo(B[0], B[1]); c.bezierCurveTo(B[0] + 1 * z, B[1] - 4 * z, N[0] - 4 * z, N[1] - 5 * z, (P[0] + N[0]) / 2 + 1 * z, (P[1] + N[1]) / 2 + 1 * z); c.stroke();
+          c.beginPath(); c.moveTo(B[0], B[1]); c.bezierCurveTo(B[0] - 2.6 * z, B[1] + .4 * z, B[0] - 2.4 * z, B[1] - 2.8 * z, B[0] - .6 * z, B[1] - 2.4 * z); c.stroke();
+          c.fillStyle = iron; c.beginPath(); c.arc(B[0], B[1] + .6 * z, 1.4 * z, 0, 7); c.fill();
+          // the arm, thicker toward us, lit along its underside
+          { const dx = N[0] - P[0], dy = N[1] - P[1], L = Math.hypot(dx, dy), nx = -dy / L, ny = dx / L, w0 = 1.1 * z, w1 = 1.9 * z;
+            c.fillStyle = iron; c.beginPath(); c.moveTo(P[0] + nx * w0, P[1] + ny * w0); c.lineTo(N[0] + nx * w1, N[1] + ny * w1); c.lineTo(N[0] - nx * w1, N[1] - ny * w1); c.lineTo(P[0] - nx * w0, P[1] - ny * w0); c.closePath(); c.fill();
+            c.strokeStyle = css([255, 186, 110], .26 * flick); c.lineWidth = .6 * z; c.beginPath(); c.moveTo(P[0] - nx * w0 * .6 + dx * .3, P[1] - ny * w0 * .6 + dy * .3); c.lineTo(N[0] - nx * w1 * .7, N[1] - ny * w1 * .7); c.stroke(); }
+          // the curl at its near end, seen almost edge-on, so a narrow upright loop
+          c.strokeStyle = iron; c.lineWidth = 1.8 * z; c.beginPath(); c.ellipse(N[0] + .4 * z, N[1] - 3.4 * z, 1.6 * z, 3.4 * z, 0, Math.PI * .5, Math.PI * 2.2); c.stroke();
+          // the hook
+          c.lineWidth = 1.3 * z; c.beginPath(); c.moveTo(N[0], N[1]); c.lineTo(hx, hy - 3 * z); c.bezierCurveTo(hx - 3 * z, hy - 2 * z, hx - 2.5 * z, hy + 1 * z, hx, hy + .8 * z); c.stroke(); c.lineCap = 'butt'; }
         c.drawImage(LANT.cv, lx0, ly0, LANT.w * k, LANT.h * k);
         c.save(); c.globalCompositeOperation = 'lighter'; c.globalAlpha = Math.max(0, (flick - .82) * 2.2); c.drawImage(LANT.cv, lx0, ly0, LANT.w * k, LANT.h * k); c.restore();
         { const g = c.createRadialGradient(lnx, lny - 1 * z, 0, lnx, lny - 1 * z, 13 * z); g.addColorStop(0, css([255, 214, 150], .5 * flick)); g.addColorStop(.5, css([255, 170, 90], .16 * flick)); g.addColorStop(1, css([255, 150, 80], 0)); c.save(); c.globalCompositeOperation = 'lighter'; c.fillStyle = g; c.fillRect(lnx - 13 * z, lny - 14 * z, 26 * z, 26 * z); c.restore(); } }
