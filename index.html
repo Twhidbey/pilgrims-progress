@@ -16,7 +16,7 @@
 // added from it opens the editor; it updates itself like the game (freshCopy keeps ?edit when it reloads).
 if (/[?&]edit(=|&|$)/.test(location.search)) {
   document.querySelector('link[rel=manifest]').href = 'edit.webmanifest';
-  document.querySelector('link[rel=apple-touch-icon]').href = 'assets/icon-edit-180.png?v=193';
+  document.querySelector('link[rel=apple-touch-icon]').href = 'assets/icon-edit-180.png?v=195';
   document.querySelector('meta[name=apple-mobile-web-app-title]').content = 'PP Editor';
   document.title = "Pilgrim's Progress (editor)";
 }
@@ -148,7 +148,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">build 194 · Nov 17 2026</div>
+  <div id="build">build 195 · Nov 17 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -2417,6 +2417,6 @@ document.getElementById('on2').onclick = () => SL.on ? go3() : go2();
 <script src="slough.js?v=189"></script>
 <script src="hill.js?v=194"></script>
 <script src="keepsakes.js?v=179"></script>
-<script src="editor.js?v=190"></script>
+<script src="editor.js?v=195"></script>
 </body>
 </html>
