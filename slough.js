@@ -1091,19 +1091,21 @@ const SL = (() => {
     // and blurred (drawn small and stretched), dark at the surface and gone a short way down. Not a mirror (no detail, no
     // light), not a disc (it has the body's own lumpy shape). Then a thin low mist lies along both shores at the water line,
     // so the black banks melt into the slough instead of sitting on it as hard slivers.
-    { const K = 6, W = Math.ceil(VW / K) + 2, H = Math.ceil((VH - wl) / K) + 2;
+    // build 317 (owner: "the shadow now looks kinda pixelized"): at a sixth of the size the squashed figure was only a few rows
+    // tall and its edge stepped when stretched back up; now soft across (KX) but four times the rows down (KY)
+    { const KX = 6, KY = 1.5, W = Math.ceil(VW / KX) + 2, H = Math.ceil((VH - wl) / KY) + 2;
       if (!shC || shC.width !== W || shC.height !== H) shC = mk(W, H);
       const s = shC.getContext('2d'); s.setTransform(1, 0, 0, 1, 0, 0); s.globalCompositeOperation = 'source-over'; s.globalAlpha = 1; s.clearRect(0, 0, W, H);
-      s.setTransform(z / K, 0, 0, z / K, (VW / 2 - cx * z) / K, 0);
+      s.setTransform(z / KX, 0, 0, z / KY, (VW / 2 - cx * z) / KX, 0);
       const hx1 = Math.min(x1, HOME0 + 60);
       if (hx1 > x0) { s.save(); s.scale(1, -1.5); s.fillStyle = '#000'; s.beginPath(); s.moveTo(x0, 0); for (let x = x0; x <= hx1; x += 4 / z) s.lineTo(x, bankY(x) < -2 ? bankY(x) - hum(x) : 0); s.lineTo(hx1, 0); s.fill(); s.restore(); }
       for (const r of SH0) { if (r.x < WATER_L - 40) continue; const r0 = r.meta.ground - r.y / CHR_K;
         s.save(); s.globalAlpha = r.a; s.translate(r.x, 0); s.scale(r.face * CHR_K, -CHR_K * .42); s.drawImage(r.im, -r.meta.ax, -r0); s.restore(); }
       s.setTransform(1, 0, 0, 1, 0, 0); s.globalAlpha = 1;
       s.globalCompositeOperation = 'source-in'; s.fillStyle = css(tone(.1)); s.fillRect(0, 0, W, H);
-      s.globalCompositeOperation = 'destination-in'; { const g = s.createLinearGradient(0, 0, 0, 58 * z / K); g.addColorStop(0, 'rgba(0,0,0,1)'); g.addColorStop(.35, 'rgba(0,0,0,.55)'); g.addColorStop(1, 'rgba(0,0,0,0)'); s.fillStyle = g; s.fillRect(0, 0, W, H); }
+      s.globalCompositeOperation = 'destination-in'; { const g = s.createLinearGradient(0, 0, 0, 58 * z / KY); g.addColorStop(0, 'rgba(0,0,0,1)'); g.addColorStop(.35, 'rgba(0,0,0,.55)'); g.addColorStop(1, 'rgba(0,0,0,0)'); s.fillStyle = g; s.fillRect(0, 0, W, H); }
       s.globalCompositeOperation = 'source-over';
-      ctx.imageSmoothingEnabled = true; ctx.globalAlpha = .62; ctx.drawImage(shC, 0, 0, W, H, 0, wl, W * K, H * K); ctx.globalAlpha = 1;
+      ctx.imageSmoothingEnabled = true; ctx.globalAlpha = .62; ctx.drawImage(shC, 0, 0, W, H, 0, wl, W * KX, H * KY); ctx.globalAlpha = 1;
       // the mist along the shores: one long flat layer lying on the water line, thickest over the bank's foot, thinning
       // upward over the land and quickly downward over the mud; it fades in and out along the shore (no round puffs: they
       // read as pale discs)
