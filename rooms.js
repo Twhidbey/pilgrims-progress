@@ -53,6 +53,44 @@ const RM = (() => {
   const creak = () => { tone(70, 'sawtooth', .05, 1.6, 0, 300); noise(900, 8, 1.2, .05); };
   const thunder = () => { noise(80, .7, 3.2, .5); noise(160, .8, 1.6, .25, .1); };
   const trumpet = () => { [[60, 0], [67, .55], [72, 1.1], [72, 1.7]].forEach(([m, w]) => tone(hz(m), 'sawtooth', .045, w < 1.6 ? .7 : 2.2, w, 1400)); };
+  // MOOD SOUND (owner, build 269: "you have mood music?" ... "Yes please"; no hymn): each room a very quiet bed of sound,
+  // made here, that fades in with the room, out with it, and sinks while anyone speaks. Held notes and filtered noise,
+  // each breathing slowly; a few small things now and then (an owl at the door, the fire's crackle, a drip by the cage).
+  let AMB = null;
+  function ambStop() { if (!AMB || !AC) return; const a = AMB; AMB = null; a.g.gain.cancelScheduledValues(AC.currentTime); a.g.gain.setTargetAtTime(0, AC.currentTime, .5); setTimeout(() => a.n.forEach(n => { try { n.stop(); } catch (e) {} }), 4000); }
+  function lfo(rate, depth, into) { const o = AC.createOscillator(), g = AC.createGain(); o.frequency.value = rate; g.gain.value = depth; o.connect(g); g.connect(into); o.start(); AMB.n.push(o); }
+  function held(f, type, vol, lp = 1200, wob = .3) {
+    const o = AC.createOscillator(), b = AC.createBiquadFilter(), g = AC.createGain(); o.type = type; o.frequency.value = f; b.type = 'lowpass'; b.frequency.value = lp; g.gain.value = vol;
+    o.connect(b); b.connect(g); g.connect(AMB.g); o.start(); AMB.n.push(o); lfo(.05 + rnd() * .08, vol * wob, g.gain); lfo(.1 + rnd() * .1, f * .002, o.frequency);
+  }
+  function bed(type, f, q, vol, rate = .07) {
+    const sN = AC.createBufferSource(), b = AC.createBiquadFilter(), g = AC.createGain(); sN.buffer = NOISE; sN.loop = true; b.type = type; b.frequency.value = f; b.Q.value = q; g.gain.value = vol;
+    sN.connect(b); b.connect(g); g.connect(AMB.g); sN.start(0, rnd() * 2); AMB.n.push(sN); lfo(rate, f * .35, b.frequency); lfo(rate * 1.3, vol * .4, g.gain);
+  }
+  const MOODS = {
+    night: () => { bed('bandpass', 420, .7, .05, .05); bed('highpass', 2600, .5, .008, .03); },
+    candle: () => { [110, 164.8, 220].forEach((f, i) => held(f, 'triangle', [.018, .012, .008][i], 700)); },
+    airy: () => { held(880, 'sine', .004, 3000, .6); held(1318.5, 'sine', .003, 3000, .6); bed('highpass', 3500, .5, .006, .02); },
+    still: () => { held(196, 'sine', .012, 900, .9); held(246.9, 'sine', .01, 900, .9); },
+    fire: () => { held(55, 'sine', .035, 200, .2); bed('lowpass', 320, .7, .03, .2); },
+    palace: () => { [523.3, 659.3, 784].forEach(f => held(f, 'sine', .005, 2400, .5)); held(130.8, 'triangle', .008, 500); },
+    hollow: () => { held(73.4, 'sine', .022, 300, .3); held(110.6, 'sine', .012, 300, .4); bed('bandpass', 180, 1.2, .012, .03); },
+    dread: () => { held(49, 'sine', .04, 160, .1); const o = AC.createOscillator(), g = AC.createGain(); o.frequency.value = 98; g.gain.value = 0; o.connect(g); g.connect(AMB.g); o.start(); AMB.n.push(o); lfo(.75, .012, g.gain); },
+    passage: () => { bed('bandpass', 900, 1, .006, .5); held(82.4, 'sine', .01, 300, .3); },
+  };
+  function ambStart(kind) {
+    ambStop(); if (!kind || !audio() || !NOISE) return;
+    const g = AC.createGain(); g.gain.value = 0; g.connect(CLEAR); AMB = { g, n: [], kind, lvl: 1, to: 1 };
+    MOODS[kind](); g.gain.setTargetAtTime(1, AC.currentTime + .2, 1.5);
+  }
+  function ambTick() {
+    if (!AMB || !AC) return;
+    const to = (SPK ? .5 : 1) * (AMB.swell || 1); if (Math.abs(to - AMB.to) > .01) { AMB.to = to; AMB.g.gain.cancelScheduledValues(AC.currentTime); AMB.g.gain.setTargetAtTime(to, AC.currentTime, .4); }
+    // small things now and then
+    if (AMB.kind === 'night' && rnd() < .0011) { tone(410, 'sine', .012, .5); tone(392, 'sine', .012, .9, .55); }
+    if (AMB.kind === 'fire' && rnd() < .06) noise(2400 + rnd() * 3000, 3, .05, .02 + rnd() * .03);
+    if (AMB.kind === 'hollow' && rnd() < .0045) tone(1700 + rnd() * 300, 'sine', .01, .3, 0, 6000);
+  }
   const scratch = () => { for (let i = 0; i < 6; i++) noise(5200 + rnd() * 1500, 4, .08, .06, i * .11 + rnd() * .04); };
 
   // ---------- figures ----------
@@ -73,7 +111,18 @@ const RM = (() => {
     const sy = (1 + .006 * Math.sin(G.t / 62 + ph0)) * (mv ? mv.sy : 1);
     if (!meta.noSh && !R.noShadow) { c.globalAlpha = a; c.fillStyle = 'rgba(12,6,3,.18)'; c.beginPath(); c.ellipse(fx + 6 * face, fy - 1, 55 * sc, 6 * sc, 0, 0, 6.2832); c.fill(); }
     c.globalAlpha = a; c.save(); c.translate(fx, fy - bob); if (mv) c.transform(1, 0, -mv.sh * -face, 1, 0, 0); c.scale(-face, sy);
-    c.drawImage(im, -meta.ax * sc, -meta.g * sc, im.width * sc, im.height * sc); c.restore(); c.globalAlpha = 1;
+    c.drawImage(im, -meta.ax * sc, -meta.g * sc, im.width * sc, im.height * sc);
+    // a strong light near them (the fire, the opened door, the candle) warms the side of the figure that faces it
+    const L = R.light && R.light(x);
+    if (L && L.a > .01) { const right = (L.x > x) === (face === -1), lit = litOf(im, right, L.col); c.globalAlpha = a * Math.min(1, L.a); c.drawImage(lit, -meta.ax * sc, -meta.g * sc, im.width * sc, im.height * sc); }
+    c.restore(); c.globalAlpha = 1;
+  }
+  function litOf(im, right, col) {
+    const key = 'lit' + right + col; if (im[key]) return im[key];
+    const cv2 = document.createElement('canvas'); cv2.width = im.width; cv2.height = im.height; const x = cv2.getContext('2d'); x.drawImage(im, 0, 0);
+    const g = x.createLinearGradient(right ? im.width : 0, 0, right ? im.width * .4 : im.width * .6, 0); g.addColorStop(0, css(col, .6)); g.addColorStop(.45, css(col, .18)); g.addColorStop(1, css(col, 0));
+    x.globalCompositeOperation = 'source-atop'; x.fillStyle = g; x.fillRect(0, 0, im.width, im.height);
+    return im[key] = cv2;
   }
   // the Interpreter lifts his open hand while he speaks (his second picture), and folds his hands again after
   let sayK = 0;
@@ -122,7 +171,8 @@ const RM = (() => {
   }
   const ROOMS = {
     door: {
-      pic: 'room-door', FY: 1200, cam0: 210, tone: [100, 94, 112], k: .58,
+      pic: 'room-door', FY: 1200, cam0: 210, tone: [80, 74, 90], k: .58,
+      light(x) { return x < DOOR.x - 100 ? { x: DOOR.x, a: .6 * this.d, col: [230, 140, 70] } : null; },
       enter() { this.d = 0; this.kn = 0; this.ia = 0; },
       run() { talk([[N, 'Then he went on till he came to the house of the Interpreter, and knocked over and over.'], [TIP, 'Knock on the door.', 'knock']], () => { ph = 'open'; t = 0; G.state = 'auto'; }); },
       act(sx, sy) { if (G.act === 'knock' && (sx == null || near(sx, sy, DOOR.x, 950, 150))) { knockS(); if (++this.kn >= 3) next(true); } },
@@ -137,6 +187,7 @@ const RM = (() => {
     // 1 THE PICTURE (after Rembrandt's Apostle Paul): the room dark but for the servant's taper; he lights the candle
     r1: {
       pic: 'room1', FY: 1262, cam0: 244, tone: [205, 185, 165], k: 1.06,
+      light() { return { x: 1478, a: .32 * smooth(.3, 1, this.lit) * (1 + .05 * Math.sin(G.t / 5)), col: [255, 196, 130] }; },
       enter() { this.lit = 0; },
       run() { talk([[TIP, 'Touch the candle.', 'candle']], () => { ph = 'light'; t = 0; G.state = 'auto'; }); },
       act(sx, sy) { if (G.act === 'candle' && (sx == null || near(sx, sy, 1478, 760, 150))) { next(true); if (audio()) { noise(2500, 2, .4, .06); note(72, .03, 2); } } },
@@ -231,7 +282,8 @@ const RM = (() => {
     },
     // 4 THE FIRE FED WITH OIL (after La Tour's St Joseph the Carpenter): round the back of the wall
     r4: {
-      pic: 'room4', FY: 1240, cam0: 0, tone: [185, 130, 105],
+      pic: 'room4', FY: 1240, cam0: 0, tone: [150, 100, 80],
+      light(x) { const f = .8 + .13 * Math.sin(G.t / 4.3) * Math.sin(G.t / 9.1) + .07 * Math.sin(G.t / 2.1); return x < 1900 ? { x: 1810, a: .75 * f, col: [240, 120, 50] } : { x: 2187, a: .3 * f * smooth(.4, 1, this.rv), col: [255, 160, 80] }; },
       enter() { this.rv = 0; this.steam = []; this.oil = []; },
       run() { talk([[N, 'A fire burned against a wall, and one stood by it, always casting water upon it. Yet the fire burned higher and hotter.'], [I, 'This fire is the work of grace in the heart. He who casts water on it is the Devil. Come, and see why it burns on.'], [TIP, 'Hold to go round the back of the wall.', 'round']], () => {}); },
       act() {},
@@ -275,7 +327,7 @@ const RM = (() => {
           for (const gx of [1900, 2110, 2280, 2470]) if (x0 < gx && b.x >= gx) { clash(); for (let i = 0; i < 5; i++) this.spark.push({ x: gx + 60, y: 880 + rnd() * 120, vx: 2 + rnd() * 6, vy: -rnd() * 5, l: 18 }); }
           if (b.x >= 2490) { b.show = 0; b.a = Math.max(0, b.a - .02); if (b.a <= 0 && this.said) { ph = 'won'; t = 0; } }
         }
-        if (ph === 'won' && t === 20) talk([[TIP, 'Touch the people on the top of the palace.', 'gold'], [VO, 'Come in, come in; Eternal glory thou shalt win.', null, () => { this.gold = 1; tone(hz(76), 'sine', .03, 3); tone(hz(79), 'sine', .025, 3, .2); tone(hz(84), 'sine', .02, 3, .4); }], [C, 'I think I know the meaning of this.']], () => goTo(darkOn() ? 'r6' : 'leave'));
+        if (ph === 'won' && t === 20) talk([[TIP, 'Touch the people on the top of the palace.', 'gold'], [VO, 'Come in, come in; Eternal glory thou shalt win.', null, () => { this.gold = 1; if (AMB) AMB.swell = 2.4; tone(hz(76), 'sine', .03, 3); tone(hz(79), 'sine', .025, 3, .2); tone(hz(84), 'sine', .02, 3, .4); }], [C, 'I think I know the meaning of this.']], () => goTo(darkOn() ? 'r6' : 'leave'));
         for (const s of this.spark) { s.x += s.vx; s.y += s.vy; s.vy += .3; s.l--; }
         this.spark = this.spark.filter(s => s.l > 0);
       },
@@ -336,6 +388,7 @@ const RM = (() => {
     // LEAVING by the door (book {91}, {92}): he goes on his way
     leave: {
       pic: 'room-door', FY: 1200, cam0: 210, tone: [100, 94, 112], k: .58,
+      light(x) { return x < DOOR.x - 100 ? { x: DOOR.x, a: .55, col: [230, 140, 70] } : null; },
       enter() { this.x = 1880; this.w = 0; this.fr = 0; this.a = 1; },
       run() { talk([[I, 'Have you thought on all these things?'], [C, 'Yes, and they put me in hope and fear.'], [I, 'The Comforter be always with you, good Christian, to guide you in the way that leads to the City.'], [N, 'The highway was fenced on either side with a wall, and that wall was called Salvation.'], [TIP, 'Hold to go on your way.', 'walkout']], () => {}); },
       act() {},
@@ -425,6 +478,7 @@ const RM = (() => {
   // ---------- moving between rooms ----------
   function enterRoom(id) {
     R = ROOMS[id]; R.id = id; R.PW = R.PW || 3168; ph = 'in'; t = 0; cam.x = cam.to = R.cam0;
+    ambStart({ door: 'night', r1: 'candle', r2: 'airy', r3: 'still', r4: 'fire', r5: 'palace', r6: 'hollow', r7: 'dread', leave: 'night', pass: 'passage' }[id]);
     G.act = null; G.ring = null; G.actT = 0; downs.clear(); keys.r = keys.push = false;
     R.enter && R.enter();
     const r = rngR(31); motes = Array.from({ length: 16 }, () => ({ x: r() * VW, y: 60 + r() * 330, s: .5 + r() * 1.1, p: r() * 7, v: .03 + r() * .06 }));
@@ -463,9 +517,11 @@ const RM = (() => {
     cam.x += (cam.to - cam.x) * .03;
     for (const m of motes) { m.x += m.v; m.y += Math.sin(G.t / 90 + m.p) * .05; if (m.x > VW) m.x = 0; }
     sayK = Math.max(0, Math.min(1, sayK + (speaking() ? .25 : -.2)));
+    ambTick();
     R.upd && R.upd();
   }
   function finish() {
+    ambStop();
     G.state = 'end'; G.ended = false;
     const e = document.getElementById('endc');
     e.querySelector('h1').textContent = 'The Interpreter’s House';
@@ -499,6 +555,6 @@ const RM = (() => {
 
   const HOLDS = ['round', 'walkout', 'follow'];
   const lines = []; // for the voice tool: every room's lines are written out in full above
-  return { on: false, start, update, draw, touch, key, preload, HOLDS, darkOn, setDark: on => { try { localStorage.setItem('pp-dark', on ? '1' : '0'); } catch (e) {} }, lines,
+  return { on: false, start, update, draw, touch, key, preload, HOLDS, stop: () => ambStop(), darkOn, setDark: on => { try { localStorage.setItem('pp-dark', on ? '1' : '0'); } catch (e) {} }, lines,
     peek: () => ({ room: R && R.id, ph, t, cam: Math.round(cam.x), fade: +fade.toFixed(2), r3: R && R.id === 'r3' ? { coins: R.coins.length, rags: +R.rags.toFixed(2) } : null }) };
 })();

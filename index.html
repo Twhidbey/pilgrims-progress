@@ -156,7 +156,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">build 269 · Nov 17 2026</div>
+  <div id="build">build 270 · Nov 17 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -2366,14 +2366,14 @@ function bookSync() { const T = { CHR, STD, TURN };
   for (const k in T) { const src = wantNB && NOBOOK[k].ready ? NOBOOK[k] : BK[k]; if (!src || !src.length) continue; for (let i = 0; i < src.length; i++) T[k][i] = src[i]; T[k].length = src.length; } }
 function nbLoad() { if (NOBOOK.loading) return; NOBOOK.loading = true; Promise.all([loadPack('christian-walk-nb', NOBOOK.CHR), loadPack('christian-stand-nb', NOBOOK.STD), loadPack('christian-turn-nb', NOBOOK.TURN)]).catch(() => {}).then(bookSync); }
 function bookless(on) { wantNB = on; if (on) nbLoad(); bookSync(); }
-function go3() { RM.on = false; bookless(true); store.set(3); SL.on = false; SL.show = false; document.getElementById('title').style.opacity = 0; setTimeout(() => { document.getElementById('title').style.display = 'none'; }, 900); HL.start(); }
-function go2() { RM.on = false; bookless(true); store.set(2); HL.on = false; HL.show = false; document.getElementById('title').style.opacity = 0; setTimeout(() => { document.getElementById('title').style.display = 'none'; }, 900); SL.start(); }
+function go3() { RM.on = false; RM.stop(); bookless(true); store.set(3); SL.on = false; SL.show = false; document.getElementById('title').style.opacity = 0; setTimeout(() => { document.getElementById('title').style.display = 'none'; }, 900); HL.start(); }
+function go2() { RM.on = false; RM.stop(); bookless(true); store.set(2); HL.on = false; HL.show = false; document.getElementById('title').style.opacity = 0; setTimeout(() => { document.getElementById('title').style.display = 'none'; }, 900); SL.start(); }
 // a room of Level 4 on its own (build 257, a preview: ?room=3)
 function goRoom(id) { if (!id || typeof id !== 'string') { id = new URLSearchParams(location.search).get('room') || 'door'; if (/^[1-7]$/.test(id)) id = 'r' + id; } if (id === 'door') store.set(4); bookless(true); document.getElementById('title').style.opacity = 0; setTimeout(() => { document.getElementById('title').style.display = 'none'; }, 900); RM.start(id); }
 const END1 = [...document.querySelectorAll('#endc h1, #endc p')].map(e => e.textContent);
 function start() {
   bookless(false);
-  store.set(1); RM.on = false; SL.on = false; SL.show = false; HL.on = false; HL.show = false; document.body.classList.remove('slough');
+  store.set(1); RM.on = false; RM.stop(); SL.on = false; SL.show = false; HL.on = false; HL.show = false; document.body.classList.remove('slough');
   document.querySelectorAll('#endc h1, #endc p').forEach((e, i) => { e.textContent = END1[i]; }); document.getElementById('on2').style.display = '';
   document.getElementById('chHome').textContent = 'Go home'; document.getElementById('chOn').textContent = 'Go on to the light';
   document.getElementById('title').style.opacity = 0; setTimeout(() => { document.getElementById('title').style.display = 'none'; }, 900);
@@ -2549,7 +2549,7 @@ document.getElementById('on2').onclick = () => SL.on ? go3() : HL.on ? goRoom('d
 </script>
 <script src="slough.js?v=259"></script>
 <script src="hill.js?v=269"></script>
-<script src="rooms.js?v=268"></script>
+<script src="rooms.js?v=270"></script>
 <script src="keepsakes.js?v=261"></script>
 <script src="editor.js?v=261"></script>
 </body>
