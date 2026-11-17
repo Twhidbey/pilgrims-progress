@@ -68,7 +68,12 @@ const SL = (() => {
   const BANK0 = -160, HOME0 = -1010;                       // where each bank meets the water
   const poolT = (x, yy) => { const w = smooth(-770, -225, x); return .86 - .52 * w - .13 * (1 - w) * smooth(30, 90, yy); };      // build 257: near the home bank a few pools open in the foreground too (the mud under the men stays mud)
   const poolN = (x, yy) => .72 * cloudN(x * .009, yy * .3 + 3) + .28 * cloudN(x * .024 + 9, yy * .55 + 1);      // build 260: less of the fine noise (fewer small islands: the critics' "camouflage")
-  const poolAt = (x, yy) => { const T = poolT(x, yy), n = poolN(x, yy); return smooth(T - .032, T + .032, n) * mudEnd(x) + (1 - mudEnd(x)); };      // build 260: a softer edge (it stair-stepped)
+  // build 291 (owner: "grey wavy mud forming the muddy part of pool to extend to the far side (away from viewer) ... with edges
+  // back and forth like what you have for close side"): a band of mud lies along the far side of the pond all the way to the
+  // far bank; how far it reaches toward us wanders (farD, in the map's yy), so its edge goes back and forth like the near pools'
+  const farD = x => 9 + 26 * smooth(.3, .7, cloudN(x * .0075 + 50, 3.3)) + 7 * cloudN(x * .03 + 20, 5.1);
+  const poolRaw = (x, yy) => { const T = poolT(x, yy), n = poolN(x, yy), f = farD(x); return smooth(T - .032, T + .032, n) * smooth(f - 2.5, f + 2.5, yy); };
+  const poolAt = (x, yy) => poolRaw(x, yy) * mudEnd(x) + (1 - mudEnd(x));      // build 260: a softer edge (it stair-stepped)
   const MUD_X0 = -1250, MUD_W = 1450, MUD_H = 270;      // build 260: the map runs on under the far bank and fades there (it ended in a straight upright seam at BANK0)
   const mudEnd = x => 1 - smooth(BANK0 - 40, BANK0 + 170, x);      // build 203: the map runs from where the water begins (WATER_L): by the home bank it is all mud, no mirror (a paler column showed under Pliable where the mirror faded in)
     const WATER_L = -1250;                                  // the water in front of everything begins here; to the left is the plain
@@ -219,8 +224,8 @@ const SL = (() => {
     mudDk = mk(MUD_W, MUD_H); mudLt = mk(MUD_W, MUD_H);
     { const dd = mudDk.getContext('2d').createImageData(MUD_W, MUD_H), dl = mudLt.getContext('2d').createImageData(MUD_W, MUD_H), cd = tone(.12), cl = tone(.9);
       for (let j = 0; j < MUD_H; j++) for (let i = 0; i < MUD_W; i++) {
-        const x = MUD_X0 + i, yy = Math.pow(j + 1, .82), T = poolT(x, yy), n = poolN(x, yy), a = (1 - smooth(T - .032, T + .032, n)) * mudEnd(x);
-        const rim = smooth(T - .11, T - .015, n), patch = smooth(.46, .66, cloudN(x * .005 + 30, yy * .06 + 7)), streak = smooth(.56, .7, cloudN(x * .0022 + 70, yy * .75 + 11));
+        const x = MUD_X0 + i, yy = Math.pow(j + 1, .82), T = poolT(x, yy), n = poolN(x, yy), f = farD(x), a = (1 - poolRaw(x, yy)) * mudEnd(x);
+        const rim = Math.max(smooth(T - .11, T - .015, n), smooth(f - 9, f - 1.5, yy) * smooth(T - .032, T + .032, n)), patch = smooth(.46, .66, cloudN(x * .005 + 30, yy * .06 + 7)), streak = smooth(.56, .7, cloudN(x * .0022 + 70, yy * .75 + 11));
         const dk = clamp(.42 * rim + .2 * patch) * smooth(0, 6, yy + 2), lt = .2 * streak * (1 - rim) * (1 - .6 * patch);
         const o = (j * MUD_W + i) * 4;
         dd.data[o] = cd[0]; dd.data[o + 1] = cd[1]; dd.data[o + 2] = cd[2]; dd.data[o + 3] = 255 * dk * a;
@@ -1089,19 +1094,6 @@ const SL = (() => {
     if (mudGd) { ctx.fillStyle = mudGd; for (const [sx, a] of mudCh) { ctx.globalAlpha = a * .35; ctx.fillRect(sx, wl, 5, 16 * z); } ctx.globalAlpha = 1; }
     ripples(true);
     ctx.setTransform(S * z, 0, 0, S * z, S * (VW / 2 - cx * z), S * wl);
-    // build 287 (owner: "put some of the grey mud with wavy boundary behind Christian and pliable's profiles in the mud"):
-    // a low heap of grey mud on the surface behind each one sunk in it, its top a slow wavy line, soft at the ends
-    const mound = (mx, k, seed) => {
-      const W = 80 * k, Hm = 20 * k, t = G.t / 70;
-      const g = ctx.createLinearGradient(mx - W, 0, mx + W, 0), col = mix(fig, tone(.55), .55);
-      g.addColorStop(0, css(col, 0)); g.addColorStop(.22, css(col, .85)); g.addColorStop(.78, css(col, .85)); g.addColorStop(1, css(col, 0));
-      ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(mx - W, 2);
-      for (let x = -W; x <= W; x += 3) { const u = x / W, b = Math.cos(u * Math.PI / 2) ** 1.5;
-        ctx.lineTo(mx + x, 2 - Hm * b * (.75 + .25 * Math.sin(x * .19 + t + seed) + .12 * Math.sin(x * .47 - t * 1.6 + seed * 2))); }
-      ctx.lineTo(mx + W, 2); ctx.closePath(); ctx.fill();
-    };
-    if (pliIn && pli) mound(pli.x, .9, 1.7);
-    if (chrLate > 0) { ctx.globalAlpha = chrLate; mound(C2.x, 1, 0); ctx.globalAlpha = 1; }
     if (pliIn) { TALKM = talkMove(PL); pliMire(ctx); TALKM = null; }
     if (chrLate > 0) { MREC = 'C'; FIG_WET = { D: C2.D || 0, a: .8 }; TALKM = C2.reach > 0 ? null : talkMove(C); drawChr(ctx, fig, chrLate); TALKM = null; MREC = null; FIG_WET = null; }
     sense();
