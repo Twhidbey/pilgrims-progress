@@ -29,12 +29,16 @@ button{font-family:Georgia,'Times New Roman',serif;-webkit-appearance:none;appea
 .btn:active{transform:scale(.96)}
 /* the title page (build 187): the book alone, one warm light on it, nothing of the world behind (--u = picture width / 960) */
 #title{background:radial-gradient(ellipse 55% 60% at 50% 46%,#2e2820,#17161a 70%,#0f0f13);justify-content:flex-start;perspective:calc(var(--u,1) * 1800px)}
-.tbook{position:relative;width:calc(var(--u,1) * 640px);height:calc(var(--u,1) * 448px);margin-top:calc(var(--u,1) * 16px);transform:translateX(calc(var(--u,1) * 160px));transition:transform 1.5s cubic-bezier(.4,.1,.2,1);transform-style:preserve-3d}
+.tbook{position:relative;width:calc(var(--u,1) * 640px);height:calc(var(--u,1) * 448px);margin-top:calc(var(--u,1) * 16px);transform:translateX(calc(var(--u,1) * -160px));transition:transform 1.5s cubic-bezier(.4,.1,.2,1);transform-style:preserve-3d}
 body.opened .tbook{transform:none}
 .tpage{position:absolute;top:0;width:50%;height:100%;box-sizing:border-box;color:#2a2018;text-shadow:none;font-family:'IM Fell English',Georgia,serif;background-color:#e6d9bc;background-size:cover;box-shadow:0 calc(var(--u,1) * 10px) calc(var(--u,1) * 40px) rgba(0,0,0,.55)}
-.tp{left:0;border-radius:2px 0 0 2px}
-.tc{left:50%;transform-origin:0 50%;transform:rotateY(-100deg);opacity:0;transition:transform 1.5s cubic-bezier(.4,.1,.2,1),opacity .5s;border-radius:0 2px 2px 0}
-body.opened .tc{transform:none;opacity:1}
+.tleaf{position:absolute;left:50%;top:0;width:50%;height:100%;transform-origin:0 50%;transform-style:preserve-3d;-webkit-transform-style:preserve-3d;transform:translateZ(2px);transition:transform 1.7s cubic-bezier(.45,.05,.2,1);z-index:2}
+body.opened .tleaf{transform:translateZ(2px) rotateY(-180deg)}
+.tcover{position:absolute;inset:calc(var(--u,1) * -5px) calc(var(--u,1) * -6px) calc(var(--u,1) * -6px) 0;background:#5c3a22 center/100% 100%;border-radius:2px 7px 7px 2px;backface-visibility:hidden;-webkit-backface-visibility:hidden;cursor:pointer;box-shadow:calc(var(--u,1) * 2px) calc(var(--u,1) * 3px) 0 #cdb98f,calc(var(--u,1) * 4px) calc(var(--u,1) * 6px) 0 #b9a47a,0 calc(var(--u,1) * 14px) calc(var(--u,1) * 40px) rgba(0,0,0,.6)}
+.tribbon{position:absolute;left:62%;bottom:calc(var(--u,1) * -24px);width:calc(var(--u,1) * 11px);height:calc(var(--u,1) * 24px);background:linear-gradient(90deg,#6e1712,#9a2620 45%,#7a1a15);clip-path:polygon(0 0,100% 0,100% 100%,50% 82%,0 100%);backface-visibility:hidden;-webkit-backface-visibility:hidden;transition:opacity .4s}
+body.opened .tribbon{opacity:0}
+.tp{left:0;width:100%;border-radius:2px 0 0 2px;transform:rotateY(180deg);backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.tc{left:50%;border-radius:0 2px 2px 0}
 .tc::before{content:'';position:absolute;inset:0 auto 0 0;width:12%;background:linear-gradient(90deg,rgba(60,40,20,.28),rgba(60,40,20,0));pointer-events:none}
 .tp::after{content:'';position:absolute;inset:0 0 0 auto;width:10%;background:linear-gradient(270deg,rgba(60,40,20,.24),rgba(60,40,20,0));pointer-events:none}
 .tpin{position:absolute;inset:calc(var(--u,1) * 26px) calc(var(--u,1) * 30px);border:calc(var(--u,1) * 1.4px) solid rgba(150,40,30,.55);outline:calc(var(--u,1) * .7px) solid rgba(150,40,30,.45);outline-offset:calc(var(--u,1) * 3px);display:flex;flex-direction:column;align-items:center;justify-content:space-evenly;padding:calc(var(--u,1) * 10px) calc(var(--u,1) * 14px);text-align:center;line-height:1.15}
@@ -49,7 +53,7 @@ body.opened .tc{transform:none;opacity:1}
 #levels .lv i{flex:0 0 2.3em;font-style:normal;color:#8a2a1e}
 #levels .lv:not(.dim){color:#2a2018}#levels .lv:not(.dim)::after{content:'\261C';color:#8a2a1e;margin-left:auto;padding-left:.4em}
 #levels .lv:active{color:#8a2a1e}
-.tfoot{display:flex;align-items:center;justify-content:center;height:calc(var(--u,1) * 70px)}
+.tfoot{display:flex;align-items:center;justify-content:center;height:calc(var(--u,1) * 70px);margin-top:calc(var(--u,1) * 12px)}
 .tfoot h2{margin:0;font-family:'IM Fell English',Georgia,serif;font-style:italic;text-transform:none;letter-spacing:.05em}
 body.opened .tfoot{visibility:hidden}
 body.portrait .tc .tpin{left:calc(var(--u,1) * 18px);right:calc(var(--u,1) * 14px);padding-left:calc(var(--u,1) * 6px);padding-right:calc(var(--u,1) * 4px)}body.portrait #levels .lv i{flex-basis:2em}
@@ -92,7 +96,7 @@ body.portrait #rot{display:block}
     <!-- THE BOOK (build 187): the title page as first printed in 1678, alone on a dark ground; "Open the book" swings the
          contents page open beside it. Nothing of the world shows until a level is chosen. -->
     <div class="tbook">
-      <div class="tpage tp"><div class="tpin">
+      <div class="tleaf"><div class="tcover"></div><div class="tribbon"></div><div class="tpage tp"><div class="tpin">
         <div class="t1">THE</div>
         <div class="t2">Pilgrim's Progress</div>
         <div class="t3">FROM</div>
@@ -110,6 +114,7 @@ body.portrait #rot{display:block}
         <div class="trule d"></div>
         <div class="t6"><i>LONDON,</i> Printed for <i>Nath. Ponder</i> at the <i>Peacock</i> in the <i>Poultrey</i> near <i>Cornhil</i>, 1678.</div>
       </div></div>
+      </div>
       <div class="tpage tc"><div class="tpin">
         <div class="t3 sp">THE CONTENTS.</div>
         <div class="trule"></div>
@@ -132,7 +137,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">build 187 · Nov 17 2026</div>
+  <div id="build">build 188 · Nov 17 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -2318,6 +2323,29 @@ for (const b of document.querySelectorAll('#levels .lv')) { b.classList.toggle('
   const id = x.getImageData(0, 0, W, H), d = id.data; for (let i = 0; i < d.length; i += 4) { const n = (r() - .5) * 10; d[i] += n; d[i + 1] += n; d[i + 2] += n; } x.putImageData(id, 0, 0);
   const e = x.createRadialGradient(W / 2, H / 2, H * .3, W / 2, H / 2, H * .75); e.addColorStop(0, 'rgba(110,80,40,0)'); e.addColorStop(1, 'rgba(110,80,40,.22)'); x.fillStyle = e; x.fillRect(0, 0, W, H);
   const url = 'url(' + c.toDataURL('image/jpeg', .86) + ')'; for (const pg of document.querySelectorAll('.tpage')) pg.style.backgroundImage = url;
+})();
+// the cover (build 188; owner: "shouldn't menu be cover of book? Before we open it"): brown calf as on the app icon,
+// blind-tooled frames, a tooled lozenge with a small gold cross; the hinge darker. Made once in code. A touch opens it.
+(function coverArt() {
+  const W = 660, H = 896, c = mk(W, H), x = c.getContext('2d'), r = rng(1679);
+  x.fillStyle = '#5c3a22'; x.fillRect(0, 0, W, H);
+  for (let i = 0; i < 420; i++) { const px = r() * W, py = r() * H, rad = 10 + r() * 60, g = x.createRadialGradient(px, py, 0, px, py, rad), d = r() < .55;
+    g.addColorStop(0, d ? 'rgba(30,16,8,.16)' : 'rgba(150,104,64,.12)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.fillRect(px - rad, py - rad, rad * 2, rad * 2); }
+  const id = x.getImageData(0, 0, W, H), d = id.data; for (let i = 0; i < d.length; i += 4) { const n = (r() - .5) * 14; d[i] += n; d[i + 1] += n * .8; d[i + 2] += n * .6; } x.putImageData(id, 0, 0);
+  let g = x.createLinearGradient(0, 0, W, H); g.addColorStop(0, 'rgba(255,220,170,.10)'); g.addColorStop(1, 'rgba(0,0,0,.22)'); x.fillStyle = g; x.fillRect(0, 0, W, H);
+  g = x.createLinearGradient(0, 0, 60, 0); g.addColorStop(0, 'rgba(20,10,4,.55)'); g.addColorStop(1, 'rgba(20,10,4,0)'); x.fillStyle = g; x.fillRect(0, 0, 60, H);
+  const tool = (x0, y0, w, h, lw) => { x.lineWidth = 2; x.strokeStyle = 'rgba(170,124,84,.5)'; x.strokeRect(x0 + 3, y0 + 3, w, h); x.lineWidth = lw; x.strokeStyle = 'rgba(40,22,10,.85)'; x.strokeRect(x0, y0, w, h); };
+  tool(52, 46, W - 96, H - 92, 6); tool(72, 66, W - 136, H - 132, 3);
+  x.lineWidth = 5; x.strokeStyle = 'rgba(40,22,10,.8)'; x.beginPath(); x.moveTo(30, 10); x.lineTo(30, H - 10); x.stroke(); x.lineWidth = 2; x.strokeStyle = 'rgba(170,124,84,.4)'; x.beginPath(); x.moveTo(36, 10); x.lineTo(36, H - 10); x.stroke();
+  const cx = W / 2 + 10, cy = H / 2;
+  for (const [R, lw] of [[150, 6], [122, 3]]) { const pts = [[cx, cy - R * 1.35], [cx + R, cy], [cx, cy + R * 1.35], [cx - R, cy]];
+    x.lineJoin = 'round'; x.lineWidth = 2; x.strokeStyle = 'rgba(170,124,84,.5)'; x.beginPath(); pts.forEach(([a, b], i) => i ? x.lineTo(a + 3, b + 3) : x.moveTo(a + 3, b + 3)); x.closePath(); x.stroke();
+    x.lineWidth = lw; x.strokeStyle = 'rgba(40,22,10,.85)'; x.beginPath(); pts.forEach(([a, b], i) => i ? x.lineTo(a, b) : x.moveTo(a, b)); x.closePath(); x.stroke(); }
+  for (const [px, py] of [[72, 66], [W - 64, 66], [72, H - 66], [W - 64, H - 66]]) { x.lineWidth = 4; x.strokeStyle = 'rgba(40,22,10,.85)'; x.beginPath(); x.arc(px, py, 13, 0, 7); x.stroke(); }
+  g = x.createLinearGradient(0, cy - 60, 0, cy + 60); g.addColorStop(0, '#e2c27e'); g.addColorStop(.5, '#b58c48'); g.addColorStop(1, '#d8b56e'); x.fillStyle = g;
+  x.fillRect(cx - 6, cy - 58, 12, 116); x.fillRect(cx - 38, cy - 24, 76, 12);
+  const el = document.querySelector('.tcover'); el.style.backgroundImage = 'url(' + c.toDataURL('image/jpeg', .88) + ')';
+  el.onclick = () => { const o = document.getElementById('open'); if (o.style.visibility === 'visible' && o.style.display !== 'none') o.click(); };
 })();
 document.getElementById('open').onclick = () => {
   document.getElementById('open').style.display = 'none'; document.body.classList.add('opened');
