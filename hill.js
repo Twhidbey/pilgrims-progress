@@ -414,55 +414,39 @@ const HL = (() => {
   // first seen (`stepBake`), into two pictures laid on in 'lighter': `RELIT.L` (the lantern, flickering) and `RELIT.D`
   // (the door's light, as it opens). Until they are ready the old wash and 'multiply' stand in.
   let RELIT = null;
-  // (build 227; the owner, through the other small-tweaks chat: "Yes please do", on three points about the wall: (1) with the door
-  // open the whole right half glowed like a floodlight: the door's light now falls off quickly from the low narrow
-  // opening; (2) the stones read as crumpled paper or bark (an emboss filter): the stones are larger (640 units a tile),
-  // the heights are softened a little and pushed apart (rounded stones, deep dark joints between), the relief deeper,
-  // and the shadows longer, so each stone throws a shadow below it from the lantern above; (3) the left third went flat
-  // where the baked part ended: the bake now covers the wall from 1000 units left of the gate to 500 right, and a dim
-  // cool light from the dusk sky above lets the stone go on into the dark instead of stopping)
   const WALL_LIGHTS = () => [
-    { key: 'L', pts: [[GATE_X - 72, 160, 26]], R: 115, col: [255, 176, 104], gain: 2.2 },
-    { key: 'L', dir: [0, .55, .83], k: .2, col: [120, 112, 136] },
-    { key: 'D', pts: [[GATE_X + 14, 32, 22], [GATE_X + 14, 80, 22]], R: 78, col: [255, 206, 150], gain: 1.8 }];
+    { key: 'L', pts: [[GATE_X - 72, 160, 26]], R: 110, col: [255, 176, 104], gain: 2.1 },
+    { key: 'D', pts: [[GATE_X + 14, 40, 34], [GATE_X + 14, 110, 34]], R: 170, col: [255, 206, 150], gain: 1.4 }];
   function stepBake() {
     if (!GSTONE || (RELIT && RELIT.done)) return;
-    const PX = 2, Hs = 6.5, M = 18;
+    const PX = 2, Hs = 4.5, M = 14;
     if (!RELIT) {
       const T = 512, t = mk(T, T), q = t.getContext('2d'); q.drawImage(GSTONE, 0, 0, T, T); const D = q.getImageData(0, 0, T, T).data;
-      let tex = new Float32Array(T * T); for (let i = 0; i < T * T; i++) tex[i] = (D[i * 4] + D[i * 4 + 1] + D[i * 4 + 2]) / 765;
-      // the photograph's own heights, softened a little (its fine crumple read as paper or bark) and pushed apart a
-      // little (stones higher, joints deeper), without flattening the tops
-      { const b = new Float32Array(T * T), r = 2; for (let y = 0; y < T; y++) for (let x = 0; x < T; x++) { let sum = 0, wsum = 0; for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) { const wgt = 1 / (1 + dx * dx + dy * dy); sum += wgt * tex[((y + dy + T) % T) * T + (x + dx + T) % T]; wsum += wgt; } b[y * T + x] = sum / wsum; }
-        for (let i = 0; i < T * T; i++) { const v = Math.max(0, Math.min(1, .5 + (b[i] - .8) * 2.6)); b[i] = v * v * (3 - 2 * v); } tex = b; }
-      const w = 1500, h = 400, W = w * PX, H = h * PX, GW = W + 2 * M * PX, GHh = H + 2 * M * PX, x0 = GATE_X - 1000, tx0 = GATE_X - 1300;
-      RELIT = { x0, w, h, W, H, GW, GHh, row: 0, done: false, hb: null, L: mk(W, H), D: mk(W, H) };
+      const tex = new Float32Array(T * T); for (let i = 0; i < T * T; i++) tex[i] = (D[i * 4] + D[i * 4 + 1] + D[i * 4 + 2]) / 765;
+      const w = 1120, h = 400, W = w * PX, H = h * PX, GW = W + 2 * M * PX, GHh = H + 2 * M * PX, x0 = GATE_X - 560, tx0 = GATE_X - 1300;
+      RELIT = { x0, w, h, W, H, GW, GHh, row: 0, done: false, hb: null, tex, T, tx0, L: mk(W, H), D: mk(W, H) };
       RELIT.Li = RELIT.L.getContext('2d').createImageData(W, H); RELIT.Di = RELIT.D.getContext('2d').createImageData(W, H);
       // the height of the wall at bake resolution (with a margin for the shadows), sampled from the tile
-      const hb = new Float32Array(GW * GHh), k = T / 640;
+      const hb = new Float32Array(GW * GHh), k = T / 380;
       for (let j = 0; j < GHh; j++) { const wy = h + M - (j + .5) / PX, v = (((-wy * k) % T) + T) % T, v0 = Math.floor(v), fv = v - v0, r0 = v0 * T, r1 = ((v0 + 1) % T) * T;
         for (let i = 0; i < GW; i++) { const wx = x0 - M + (i + .5) / PX, u = ((((wx - tx0) * k) % T) + T) % T, u0 = Math.floor(u), fu = u - u0, u1 = (u0 + 1) % T;
           hb[j * GW + i] = (tex[r0 + u0] * (1 - fu) + tex[r0 + u1] * fu) * (1 - fv) + (tex[r1 + u0] * (1 - fu) + tex[r1 + u1] * fu) * fv; } }
       RELIT.hb = hb; return;
     }
-    const Rl = RELIT, { W, H, GW, hb, x0, h } = Rl, m = M * PX, end = Math.min(H, Rl.row + 24), lights = WALL_LIGHTS();
-    const shadow = (i, h0, ux, uy, slope) => { let sh = 1; const jit = ((i * 2654435761) >>> 0) / 4294967296; for (let st = 1; st <= 18 && sh > 0; st++) { const dd = (st - jit) * 1.0, j = Math.round(i + ux * dd * PX - uy * dd * PX * GW), hz = hb[j] * Hs, ray = h0 * Hs + slope * dd; if (hz > ray) sh -= Math.min(.5, (hz - ray) * .22); } return Math.max(0, sh); };
+    const Rl = RELIT, { W, H, GW, hb, x0, h } = Rl, m = M * PX, end = Math.min(H, Rl.row + 36), lights = WALL_LIGHTS();
     for (let py = Rl.row; py < end; py++) for (let px = 0; px < W; px++) {
       const i = (py + m) * GW + px + m, h0 = hb[i], wx = x0 + (px + .5) / PX, wy = h - (py + .5) / PX;
       let nx = -(hb[i + 1] - hb[i - 1]) * PX / 2 * Hs, ny = -(hb[i - GW] - hb[i + GW]) * PX / 2 * Hs; const nl = Math.hypot(nx, ny, 1); nx /= nl; ny /= nl; const nz = 1 / nl;
-      const alb = .1 + .9 * h0, fe = Math.max(0, Math.min(1, (wx - x0) / 160, (x0 + Rl.w - wx) / 160)), fs = fe * fe * (3 - 2 * fe);
-      const acc = { L: [0, 0, 0], D: [0, 0, 0] };
-      for (const Lt of lights) { let v;
-        if (Lt.dir) { const [dx, dy, dz] = Lt.dir, diff = Math.max(0, nx * dx + ny * dy + nz * dz), sh = shadow(i, h0, 0, 1, dz / dy); v = Lt.k * alb * diff * (.4 + .6 * sh); }
-        else { let I = 0;
-          for (const [lx, ly, lz] of Lt.pts) { const vx = lx - wx, vy = ly - wy, vz = lz - h0 * Hs, d = Math.hypot(vx, vy, vz), dxy = Math.hypot(vx, vy) || 1;
-            const f = 1 / Math.pow(1 + (d / Lt.R) * (d / Lt.R), 1.6); if (f < .004) continue;
-            const diff = Math.max(0, (nx * vx + ny * vy + nz * vz) / d), sh = shadow(i, h0, vx / dxy, vy / dxy, vz / dxy);
-            I += alb * (.22 + .78 * diff) * f * (.25 + .75 * sh) / Lt.pts.length; }
-          v = 1 - Math.exp(-I * Lt.gain); }
-        const A = acc[Lt.key]; A[0] += Lt.col[0] * v; A[1] += Lt.col[1] * v; A[2] += Lt.col[2] * v; }
-      const o = (py * W + px) * 4;
-      for (const [key, img] of [['L', Rl.Li.data], ['D', Rl.Di.data]]) { const A = acc[key]; img[o] = A[0] * fs; img[o + 1] = A[1] * fs; img[o + 2] = A[2] * fs; img[o + 3] = 255; } }
+      const alb = Math.max(.12, Math.min(1.1, .2 + (h0 - .5) * 1.6)); const fe = Math.min(1, (wx - x0) / 220, (x0 + Rl.w - wx) / 220);
+      for (const Lt of lights) { let I = 0;
+        for (const [lx, ly, lz] of Lt.pts) { const vx = lx - wx, vy = ly - wy, vz = lz - h0 * Hs, d = Math.hypot(vx, vy, vz), dxy = Math.hypot(vx, vy) || 1;
+          const diff = Math.max(0, (nx * vx + ny * vy + nz * vz) / d), f = 1 / Math.pow(1 + (d / Lt.R) * (d / Lt.R), 1.5); if (f < .004) continue;
+          // shadow: walk toward the light over the stones; a stone that rises above the ray hides it
+          let sh = 1; const ux = vx / dxy, uy = vy / dxy, slope = vz / dxy;
+          for (let st = 1; st <= 9 && sh > 0; st++) { const dd = st * .9, j = Math.round(i + ux * dd * PX - uy * dd * PX * GW), hz = hb[j] * Hs, ray = h0 * Hs + slope * dd; if (hz > ray) sh -= Math.min(1, (hz - ray) * .45); }
+          I += alb * (.32 + .68 * diff) * f * (.35 + .65 * Math.max(0, sh)) / Lt.pts.length; }
+        const v = (1 - Math.exp(-I * Lt.gain)) * fe * fe * (3 - 2 * fe), o = (py * W + px) * 4, A = Lt.key === 'L' ? Rl.Li.data : Rl.Di.data;
+        A[o] = Lt.col[0] * v; A[o + 1] = Lt.col[1] * v; A[o + 2] = Lt.col[2] * v; A[o + 3] = 255; } }
     Rl.row = end;
     if (end >= H) { Rl.L.getContext('2d').putImageData(Rl.Li, 0, 0); Rl.D.getContext('2d').putImageData(Rl.Di, 0, 0); Rl.Li = Rl.Di = Rl.hb = null; Rl.done = true; }
   }
@@ -1409,7 +1393,7 @@ const HL = (() => {
     const tintM0 = mix(tintF, [255, 204, 150], mercy * .42);
     // (build 225, owner: "Instead of shadow can you just make Christian super dark"): at the gate he is a near-black figure
     // against the lit wall and the light from within, like Good-will in the doorway (no light and shade laid on him)
-    const tintM = mix(tintM0, [16, 13, 13], smooth(.5, 1, gateish));
+    const tintM = mix(tintM0, [30, 24, 22], .7 * smooth(.5, 1, gateish));      // build 231, owner: "I think christian looks too dark": dark against the light, not black
     if (mercy > .01) { const mx = (C3.x + EV_X) / 2; c.save(); c.globalCompositeOperation = 'lighter';
       { c.save(); c.translate(mx, 5); c.scale(1, .1); const g = c.createRadialGradient(0, 0, 0, 0, 0, 210); g.addColorStop(0, css([255, 196, 126], .5 * mercy)); g.addColorStop(1, css([255, 180, 110], 0)); c.fillStyle = g; c.fillRect(-210, -210, 420, 420); c.restore(); }
       { const g = c.createRadialGradient(mx, -84, 0, mx, -84, 170); g.addColorStop(0, css([255, 206, 150], .2 * mercy)); g.addColorStop(1, css([255, 190, 130], 0)); c.fillStyle = g; c.fillRect(mx - 170, -254, 340, 340); }
