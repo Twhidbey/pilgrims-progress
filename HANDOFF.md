@@ -14,6 +14,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 **Build 286 (Level 3 art chat): a softer glow on the figures; the village smaller and peeking out from behind the mountain's left side (a new tree-less picture still to make). A free image model found: FLUX.1 Kontext on Hugging Face (see CLAUDE.md, build 286). Nothing spent.**
 
+**Build 293 (Level 2 chat): the bog runs back BEHIND the figures.** Owner, twice: not heaps by the figures (287) and not a band at the back of the near water (291, undone here): "into picture on the other side of christian from the view into the screen ... if we have perspective right the mud should be over there". Between the horizon and the surface line, behind Christian and Pliable, 14 rows of long flat mud patches with wavy tops and bottoms (`FARMUD`, laid once in `build()`, drawn before the far mist): nearer rows taller, darker and sliding more with the camera, further ones thin and pale into the mist; more mud by the home bank, more open water toward the far bank (`wetAt`). Nothing spent.
+
 **Build 291 (Level 2 chat):** the owner did not like build 287's mud heaps behind the sunk figures ("not what i meant"); taken out. What was meant: the grey mud should run along the FAR side of the pond too, its edge going back and forth like the near pools' edges. A band of mud now lies along the back of the pond up to the far bank (`farD(x)`, `poolRaw` in `slough.js`; the mud map, its dark rims and the mirror all follow it). Nothing spent.
 
 **Build 288 (Level 2 chat):** a thin pale sliver left between Help's legs in `help-turn.pack` cleared (second, finer pass). Nothing spent.

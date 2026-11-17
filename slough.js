@@ -68,12 +68,7 @@ const SL = (() => {
   const BANK0 = -160, HOME0 = -1010;                       // where each bank meets the water
   const poolT = (x, yy) => { const w = smooth(-770, -225, x); return .86 - .52 * w - .13 * (1 - w) * smooth(30, 90, yy); };      // build 257: near the home bank a few pools open in the foreground too (the mud under the men stays mud)
   const poolN = (x, yy) => .72 * cloudN(x * .009, yy * .3 + 3) + .28 * cloudN(x * .024 + 9, yy * .55 + 1);      // build 260: less of the fine noise (fewer small islands: the critics' "camouflage")
-  // build 291 (owner: "grey wavy mud forming the muddy part of pool to extend to the far side (away from viewer) ... with edges
-  // back and forth like what you have for close side"): a band of mud lies along the far side of the pond all the way to the
-  // far bank; how far it reaches toward us wanders (farD, in the map's yy), so its edge goes back and forth like the near pools'
-  const farD = x => 9 + 26 * smooth(.3, .7, cloudN(x * .0075 + 50, 3.3)) + 7 * cloudN(x * .03 + 20, 5.1);
-  const poolRaw = (x, yy) => { const T = poolT(x, yy), n = poolN(x, yy), f = farD(x); return smooth(T - .032, T + .032, n) * smooth(f - 2.5, f + 2.5, yy); };
-  const poolAt = (x, yy) => poolRaw(x, yy) * mudEnd(x) + (1 - mudEnd(x));      // build 260: a softer edge (it stair-stepped)
+  const poolAt = (x, yy) => { const T = poolT(x, yy), n = poolN(x, yy); return smooth(T - .032, T + .032, n) * mudEnd(x) + (1 - mudEnd(x)); };      // build 260: a softer edge (it stair-stepped)
   const MUD_X0 = -1250, MUD_W = 1450, MUD_H = 270;      // build 260: the map runs on under the far bank and fades there (it ended in a straight upright seam at BANK0)
   const mudEnd = x => 1 - smooth(BANK0 - 40, BANK0 + 170, x);      // build 203: the map runs from where the water begins (WATER_L): by the home bank it is all mud, no mirror (a paler column showed under Pliable where the mirror faded in)
     const WATER_L = -1250;                                  // the water in front of everything begins here; to the left is the plain
@@ -173,7 +168,7 @@ const SL = (() => {
     return { c, x0: x0 - 2 / k, y0: y0 - 2 / k, k };
   }
   const putTree = (c, b, x, y, s, sy = s) => c.drawImage(b.c, x + b.x0 * s, y + b.y0 * sy, b.c.width / b.k * s, b.c.height / b.k * sy);
-  let mudDk = null, mudLt = null, shC = null, mistC = null, fogC = null, SHN = [], SH0 = [];
+  let FARMUD = [], mudDk = null, mudLt = null, shC = null, mistC = null, fogC = null, SHN = [], SH0 = [];
   let SHORE = null, OAK = null, GHOSTS = null, skyMist = null, skyClear = null, paper = null, threads = null, puff = null, fogBank = null, mudMap = null, built = false;
   function build() {
     if (built) return; built = true;
@@ -210,6 +205,15 @@ const SL = (() => {
     // with only a few tongues of mud. The mirror is never faded: a place either mirrors or it does not, and "more
     // reflection to the right" comes from more water. Pools are long and flat (we see them edge-on) and bigger toward
     // us. mudMap: 1 px to the unit across, MUD_H rows down from the surface line; white, its alpha = mud.
+    // THE MIRE BEHIND THEM (build 293, owner: "grey wavy mud ... into picture on the other side of christian from the view
+    // into the screen"): the bog runs back from the figures toward the horizon. FARMUD = rows of long flat patches of mud,
+    // each with a wavy top and bottom, q = how near the row is (1 at the surface line, 0 at the horizon); more mud by the
+    // home bank, more open water toward the far bank (wetAt)
+    FARMUD = []; { let sd = 7; const rnd = () => (sd = (sd * 16807) % 2147483647) / 2147483647;
+      for (let k = 0; k < 14; k++) { const q = Math.pow((k + 1) / 14, 1.35), row = { q, ps: [] };
+        for (let x = WATER_L - 900; x < BANK0 + 900;) { const c = 1 - .75 * wetAt(x), L = 120 + 640 * c * rnd() + 80 * rnd();
+          if (rnd() < .35 + .6 * c) row.ps.push({ x, L, h: 9 + 11 * rnd(), s: rnd() * 9 }); x += L + 20 + 220 * (1 - c) * rnd(); }
+        FARMUD.push(row); } }
     mudMap = mk(MUD_W, MUD_H); { const c = mudMap.getContext('2d'), d = c.createImageData(MUD_W, MUD_H);
       for (let j = 0; j < MUD_H; j++) for (let i = 0; i < MUD_W; i++) {
         const x = MUD_X0 + i, yy = Math.pow(j + 1, .82), a = 1 - poolAt(x, yy);
@@ -224,8 +228,8 @@ const SL = (() => {
     mudDk = mk(MUD_W, MUD_H); mudLt = mk(MUD_W, MUD_H);
     { const dd = mudDk.getContext('2d').createImageData(MUD_W, MUD_H), dl = mudLt.getContext('2d').createImageData(MUD_W, MUD_H), cd = tone(.12), cl = tone(.9);
       for (let j = 0; j < MUD_H; j++) for (let i = 0; i < MUD_W; i++) {
-        const x = MUD_X0 + i, yy = Math.pow(j + 1, .82), T = poolT(x, yy), n = poolN(x, yy), f = farD(x), a = (1 - poolRaw(x, yy)) * mudEnd(x);
-        const rim = Math.max(smooth(T - .11, T - .015, n), smooth(f - 9, f - 1.5, yy) * smooth(T - .032, T + .032, n)), patch = smooth(.46, .66, cloudN(x * .005 + 30, yy * .06 + 7)), streak = smooth(.56, .7, cloudN(x * .0022 + 70, yy * .75 + 11));
+        const x = MUD_X0 + i, yy = Math.pow(j + 1, .82), T = poolT(x, yy), n = poolN(x, yy), a = (1 - smooth(T - .032, T + .032, n)) * mudEnd(x);
+        const rim = smooth(T - .11, T - .015, n), patch = smooth(.46, .66, cloudN(x * .005 + 30, yy * .06 + 7)), streak = smooth(.56, .7, cloudN(x * .0022 + 70, yy * .75 + 11));
         const dk = clamp(.42 * rim + .2 * patch) * smooth(0, 6, yy + 2), lt = .2 * streak * (1 - rim) * (1 - .6 * patch);
         const o = (j * MUD_W + i) * 4;
         dd.data[o] = cd[0]; dd.data[o + 1] = cd[1]; dd.data[o + 2] = cd[2]; dd.data[o + 3] = 255 * dk * a;
@@ -867,6 +871,19 @@ const SL = (() => {
       const s = z * g.p * .9, gx = (g.x - cx * g.p) * z + VW / 2, gy = hor + (wl - hor) * g.p * .55;
       if (gx < -260 || gx > VW + 260) continue;
       putTree(ctx, g.b, gx, gy, s); ctx.globalAlpha = .3; putTree(ctx, g.b, gx, gy, s, -s * .7); ctx.globalAlpha = 1;
+    }
+    // the mire running back behind them (FARMUD, laid in build): nearer rows slide more with the camera, are taller and darker
+    for (const row of FARMUD) {
+      const q = row.q, p = .3 + .7 * q, gy = hor + (wl - hor) * q, col = mix(tone(.4), tone(.84), Math.pow(1 - q, 1.1)), hz = (.2 + .8 * q) * z;
+      ctx.fillStyle = css(col, .6 + .4 * q);
+      for (const m of row.ps) {
+        const sx = (m.x - cx * p) * z + VW / 2, w = m.L * z; if (sx > VW + 20 || sx + w < -20) continue;
+        ctx.beginPath(); const N = Math.max(6, Math.round(w / 6));
+        for (let i = 0; i <= N; i++) { const u = i / N, e = Math.pow(Math.sin(Math.PI * u), .45), x = sx + w * u;
+          ctx[i ? 'lineTo' : 'moveTo'](x, gy - m.h * hz * e * (.65 + .35 * Math.sin(u * 9 + m.s))); }
+        for (let i = N; i >= 0; i--) { const u = i / N, e = Math.pow(Math.sin(Math.PI * u), .6), x = sx + w * u;
+          ctx.lineTo(x, gy + m.h * .35 * hz * e * (.6 + .4 * Math.sin(u * 13 + m.s * 2))); }
+        ctx.fill(); }
     }
     // mist lying on the far water, hiding the horizon
     { const g = ctx.createLinearGradient(0, hor - 90, 0, wl + 20); g.addColorStop(0, css(LIGHT, 0)); g.addColorStop(.5, css(LIGHT, .35 + .6 * look.mist)); g.addColorStop(.75, css(LIGHT, .25 + .5 * look.mist)); g.addColorStop(1, css(LIGHT, 0));
