@@ -34,6 +34,8 @@ Older handovers (builds 41 to 137, with the picture and video prompts used for H
 - The concept art from the picture chat is not in the repo (it was only shown in that chat); ask that chat to put any keepers in a `concept/` folder.
 - Earlier offers not answered: the sketch of Levels 3 to 6 as a first whole game; a child playing it; carrying the tune through the levels; Evangelist handing over the roll as an animation; repainting the three cottages with true door and window proportions (about 45 cents).
 
+**Build 191: Level 3's crags made natural and one with the mountain (overlapping leaning spurs with flat brows and ledges, the mountain's own rock texture and colour, warm edges only on the highest faces, a slope of fallen rock joining them to the mountain at the foot). See `CLAUDE.md`, "Build 191". Nothing spent.**
+
 **Build 185: Level 3 into the rocks (owner's sequence): the hill hidden until Wiseman points (the camera pans right to it, far off and hazed); he goes over a brow and down out of sight; a dark cut to a rocky path among crags on every layer, the nearest passing in front; at the foot the camera pulls back to the whole mountain with lightning, then comes back to him for Evangelist. See `CLAUDE.md`, "Build 185: INTO THE ROCKS". Nothing spent. Waiting on the owner's eyes for the motion (pan, descent, pull back).**
 **Build 190 (small tweaks): the editor arrows are round dark buttons, visible on any background. Nothing spent.**
 

@@ -302,7 +302,7 @@ const HL = (() => {
   // pictures the code-drawn hill used (HILL, HW x HH, its foot's left end at HOX, HOY); the fire is laid on with
   // 'lighter', breathing, as strong as the hill burns (`LAVA`, `LAVAB` its soft bloom). The code-drawn seams and the
   // burning edge are no longer drawn once it has loaded. Until then the code-drawn hill stands in.
-  let LAVA = null, LAVAB = null, HILLV = null;
+  let LAVA = null, LAVAB = null, HILLV = null, ROCKTEX = null, ROCKPAT = null;
   function paintHill(rock, fire) {
     // (build 183, owner: "Gotta increase resolution, no?": the painting was made again at the image model's highest
     // size, 6336 px wide, and kept at 3000 x 1280, twice the hill's own units, so the close-up and the summit stay
@@ -314,6 +314,14 @@ const HL = (() => {
     // it at each height, and baked small so its edges and the painting's detail go soft, as a far mountain's do
     { const c = mk(HW / 3, HH / 3), k = c.getContext('2d'); k.drawImage(HILL[1], 0, 0, HW / 3, HH / 3); k.globalCompositeOperation = 'source-atop';
       const g = k.createLinearGradient(0, (HOY - TOP) / 3, 0, HOY / 3); g.addColorStop(0, 'rgba(112,112,134,.6)'); g.addColorStop(.6, 'rgba(150,132,138,.62)'); g.addColorStop(1, 'rgba(196,170,150,.78)'); k.fillStyle = g; k.fillRect(0, 0, HW, HH); HILLV = c; }
+    // the mountain's own rock, as a texture for the crags (build 190): a piece from inside the painting, made grey about
+    // a middle grey (so laid over in 'overlay' it only lightens and darkens the layer's tone) and mirrored into a 2 x 2
+    // tile so it repeats without seams
+    { const sx = 720, sy = 540, w = 780, h = 600, t = mk(w, h), q = t.getContext('2d'); q.drawImage(rock, sx, sy, w, h, 0, 0, w, h); const d = q.getImageData(0, 0, w, h), D = d.data; let m = 0;
+      for (let i = 0; i < D.length; i += 4) m += D[i] * .3 + D[i + 1] * .59 + D[i + 2] * .11; m /= D.length / 4;
+      for (let i = 0; i < D.length; i += 4) { const v = clamp(128 + (D[i] * .3 + D[i + 1] * .59 + D[i + 2] * .11 - m) * 1.15, 0, 255); D[i] = D[i + 1] = D[i + 2] = v; D[i + 3] = 255; } q.putImageData(d, 0, 0);
+      ROCKTEX = mk(2 * w, 2 * h); const r = ROCKTEX.getContext('2d'); r.drawImage(t, 0, 0); r.save(); r.translate(2 * w, 0); r.scale(-1, 1); r.drawImage(t, 0, 0); r.restore(); r.save(); r.translate(0, 2 * h); r.scale(1, -1); r.drawImage(ROCKTEX, 0, 0, 2 * w, h, 0, 0, 2 * w, h); r.restore();
+      ROCKPAT = ctx.createPattern(ROCKTEX, 'repeat'); }
     if (fire) { LAVA = mk(HW, HH); LAVA.getContext('2d').drawImage(fire, 0, 0, HW, HH); LAVAB = mk(HW / 10, HH / 10); LAVAB.getContext('2d').drawImage(fire, 0, 0, HW / 10, HH / 10); }
   }
   function preload() {
@@ -632,24 +640,43 @@ const HL = (() => {
     // the crags behind the path, the stony path, and the nearest crags along the bottom of the picture, sliding past
     // faster than he does and now and then hiding his feet (owner: yes). The crags rise as he goes (low boulders and
     // open sky at first; rock up to the top of the picture at the foot); the edges that face the hidden fire ahead
-    // catch a thin warm light. A crag's outline is straight runs with sharp breaks (`crag`), so it reads as rock.
-    const crag = (L, seed, seg, pin) => { const i = Math.floor(L / seg), f = L / seg - i, hs = (j, q) => { const v = Math.sin(j * 127.1 + seed * 311.7 + q * 74.7) * 43758.5453; return v - Math.floor(v); };
-      const hh = j => (.3 + .7 * Math.pow(hs(j, 0), .8)) * (pin && hs(j, 1) < .16 ? 1.35 : 1), a = hh(i), b = hh(i + 1), m = .25 + .5 * hs(i, 2), r = hs(i, 3), mid = r < .5 ? Math.min(a, b) * (.55 + .5 * r) : Math.max(a, b) * (.9 + .25 * (r - .5));
-      return (f < m ? lerp(a, mid, f / m) : lerp(mid, b, (f - m) / (1 - m))) + (nz(L * .03, seed) - .5) * .07; };
+    // catch a thin warm light.
+    // THE CRAGS ARE THE MOUNTAIN'S OWN ROOTS (owner, build 190: "The crags might be a little sharp and too geometric - need a
+    // little more natural flow to them - also more cohesion with mountain"). Each outline is a row of SPURS at uneven
+    // places (`crag`), each one a small copy of the mountain's breaking wave: a steep face on the left, a rounded shoulder,
+    // a long slope down to the right; they overlap, and a broad slow swell runs under them, so the line flows, with only
+    // now and then a taller spur. They are filled with the painted mountain's own rock (`ROCKTEX`, laid over in
+    // 'overlay', so faint cracks and blocks show in the layer's one tone) and coloured its warm brown-black. Only the
+    // highest faces turned toward the fire catch a thin warm edge. At the foot the crags behind him run up into the
+    // mountain as one long slope of fallen rock (`scree`).
+    const crag = (L, seed, seg, pin) => { const i = Math.floor(L / seg), hs = (j, q) => { const v = Math.sin(j * 127.1 + seed * 311.7 + q * 74.7) * 43758.5453; return v - Math.floor(v); };
+      let H = .34 + .3 * nz(L * .0011, seed + 5);
+      for (let j = i - 4; j <= i + 1; j++) { const xc = (j + .15 + .7 * hs(j, 0)) * seg, h = (.42 + .5 * hs(j, 2)) * (pin && hs(j, 3) < .14 ? 1.25 : 1), w = seg * (1.8 + 2.2 * hs(j, 1)) * (.55 + .9 * h), u = (L - xc) / w;
+        if (u < -.12 || u > 1) continue;
+        // a steep face on the left, a short rounded brow, then a long fall to the right broken by one or two ledges
+        const ld = .4 + .3 * hs(j, 4), br = .14 + .14 * hs(j, 5), f = u < 0 ? Math.pow(smooth(-.12, 0, u), .6) : u < br ? 1 - .1 * (u / br) * (u / br) : .9 * Math.pow(1 - (u - br) / (1 - br), 1.2) - .07 * smooth(ld - .03, ld + .03, u) * (1 - u) * 2;
+        H = Math.max(H, h * f); }
+      return H + (nz(L * .022, seed) - .5) * .05 + (nz(L * .06, seed + 2) - .5) * .035 + (nz(L * .2, seed + 4) - .5) * .012; };
     const burnR = clamp(dark) * (1 - .6 * calm);
-    const crags = (p, seed, seg, base, hLo, hHi, col, edge, pin) => {
-      const Ls = FOOT + p * (PATH0 - 700 - FOOT), pts = [];
-      for (let sx = -12; sx <= VW + 12; sx += 5) { const L = FOOT + p * (cx - FOOT) + (sx - VW / 2) / z, e = Math.pow(smooth(Ls, FOOT, L), 1.2); pts.push([sx, Y(base) - lerp(hLo, hHi, e) * crag(L, seed, seg, pin) * z]); }
-      c.fillStyle = css(col); c.beginPath(); c.moveTo(-12, VH + 10); for (const [x, y] of pts) c.lineTo(x, y); c.lineTo(VW + 12, VH + 10); c.fill();
-      if (edge > .01) { c.save(); c.globalCompositeOperation = 'lighter'; c.strokeStyle = css([236, 150, 96], edge); c.lineWidth = 1.3; c.lineCap = 'round'; c.beginPath();
-        for (let j = 1; j < pts.length; j++) { const [x0, y0] = pts[j - 1], [x1, y1] = pts[j]; if (y1 - y0 > 1.2) { c.moveTo(x0, y0); c.lineTo(x1, y1); } } c.stroke(); c.restore(); } };
+    const crags = (p, seed, seg, base, hLo, hHi, col, edge, pin, tex, scree) => {
+      const Ls = FOOT + p * (PATH0 - 700 - FOOT), L0 = FOOT + p * (cx - FOOT), pts = [];
+      for (let sx = -12; sx <= VW + 12; sx += 4) { const L = L0 + (sx - VW / 2) / z, env = lerp(hLo, hHi, Math.pow(smooth(Ls, FOOT, L), 1.2));
+        let h = env * crag(L, seed, seg, pin); if (scree) h = Math.max(h, scree * Math.pow(smooth(FOOT - 300, FOOT + 950, L), 1.6) * (.94 + .1 * nz(L * .01, seed)));
+        pts.push([sx, Y(base) - h * z, h / Math.max(env, 1)]); }
+      const path = () => { c.beginPath(); c.moveTo(-12, VH + 10); for (const [x, y] of pts) c.lineTo(x, y); c.lineTo(VW + 12, VH + 10); };
+      c.fillStyle = css(col); path(); c.fill();
+      if (tex && ROCKPAT) { c.save(); path(); c.clip(); const ts = 2.2 * z, tw = ROCKTEX.width * ts; ROCKPAT.setTransform(new DOMMatrix([ts, 0, 0, ts, ((VW / 2 - L0 * z) % tw + tw) % tw, Y(base) - 900 * z]));
+        c.globalCompositeOperation = 'overlay'; c.globalAlpha = tex; c.fillStyle = ROCKPAT; c.fillRect(0, 0, VW, VH); c.restore(); }
+      if (edge > .01) { c.save(); c.globalCompositeOperation = 'lighter'; c.lineCap = 'round'; c.lineWidth = 1.2;
+        for (let j = 1; j < pts.length; j++) { const [x0, y0, r0] = pts[j - 1], [x1, y1, r1] = pts[j], k2 = smooth(.62, .85, Math.min(r0, r1)) * clamp((y1 - y0 - .3) / 1.5); if (k2 < .05) continue;
+          c.strokeStyle = css([236, 156, 100], edge * k2); c.beginPath(); c.moveTo(x0, y0); c.lineTo(x1, y1); c.stroke(); } c.restore(); } };
     { const g = c.createRadialGradient(lx, ly, 0, lx, ly, 330); g.addColorStop(0, css([255, 236, 190], .85 * la)); g.addColorStop(.12, css([255, 222, 160], .5 * la)); g.addColorStop(.45, css([255, 214, 150], .16 * la)); g.addColorStop(1, css([255, 214, 150], 0));
       c.fillStyle = g; c.fillRect(lx - 330, ly - 330, 660, 660); c.fillStyle = css([255, 248, 226], la); c.beginPath(); c.arc(lx, ly, 7 + 1.2 * Math.sin(G.t / 40), 0, 7); c.fill(); }
     // the far ridge (among the rocks: the far crags instead, and the fire's light in the sky ahead)
     if (rocky) {
       { c.save(); c.globalCompositeOperation = 'screen'; const gx = VW * .8, gy = -40, rr = VW * .8, g = c.createRadialGradient(gx, gy, 0, gx, gy, rr), a = .34 * burnR * (1 - Zw);
         g.addColorStop(0, css([240, 150, 96], a)); g.addColorStop(.4, css([170, 80, 64], a * .45)); g.addColorStop(1, css([120, 50, 50], 0)); c.fillStyle = g; c.fillRect(0, 0, VW, VH); c.restore(); }
-      crags(.35, 3, 260, -140, 40, 300, mix(mix(low, top, .35), [84, 64, 68], .45), .1 * burnR, false);
+      crags(.35, 3, 300, -140, 50, 300, mix(mix(low, top, .35), [92, 72, 66], .45), .14 * burnR, false, .18);
     } else { const col = mix(mix(mix(low, top, .45), [150, 138, 160], .5 * (1 - dark) * (1 - gateish)), [60, 52, 60], dark * .6); c.fillStyle = css(col); c.beginPath(); c.moveTo(0, hor + 2);
       for (let sx = 0; sx <= VW + 16; sx += 16) { const u = cx * .1 + (sx - VW / 2) / z; c.lineTo(sx, hor - (26 + 96 * nz(u * .0035, 5) + 22 * nz2(u * .02, 1)) * z * .8); }
       c.lineTo(VW, hor + 2); c.fill();
@@ -772,7 +799,7 @@ const HL = (() => {
       // among the rocks: a haze in the gully, then the crags behind the path, then the stones falling from the overhang
       if (rocky) {
         { const hz = mix(mix(low, top, .3), [120, 84, 80], .3), g = c.createLinearGradient(0, Y(-220), 0, Y(0)); g.addColorStop(0, css(hz, 0)); g.addColorStop(1, css(hz, .42)); c.fillStyle = g; c.fillRect(0, Y(-220), VW, 222 * z); }
-        crags(.75, 11, 150, 0, 70, 470, mix([40, 32, 36], [28, 23, 27], dark), .22 * burnR, true);
+        crags(.75, 11, 190, 0, 70, 470, mix([46, 37, 33], [31, 25, 23], dark), .5 * burnR, true, .8, 560);
         { const g = c.createLinearGradient(0, Y(-70), 0, Y(0)); g.addColorStop(0, css([90, 66, 64], 0)); g.addColorStop(1, css([90, 66, 64], .3 * dark)); c.fillStyle = g; c.fillRect(0, Y(-70), VW, 72 * z); }
         // falling stones (dark, tumbling) and the dust where they land
         for (const r of ROCKS) { const px = hx + r.x * k, py = hy + r.y * k;
@@ -918,7 +945,7 @@ const HL = (() => {
     // over the brow: the near ground is drawn again over him as he goes down behind it
     if (C3.dy > .5 && C3.x > CREST) { c.save(); c.beginPath(); c.moveTo(X(CREST), VH); for (let x = CREST; x <= CREST + 700; x += 10) c.lineTo(X(x), Y(-crest(x))); c.lineTo(VW, Y(0)); c.lineTo(VW, VH); c.clip(); road(); c.fillStyle = humpC; c.fillRect(0, 0, VW, Y(0) + 1); c.restore(); }
     // the nearest crags, along the bottom of the picture, in front of everyone
-    if (rocky) crags(1.3, 29, 95, 150, 60, 175, [12, 10, 12], .1 * burnR, false);
+    if (rocky) crags(1.3, 29, 120, 150, 60, 175, [15, 12, 11], .25 * burnR, false, .4);
     // the smoke Evangelist comes out of
     if (evan && evan.a < 1) { const ex = X(EV_X - 30), ey = Y(-90), a = Math.sin(Math.PI * clamp(evan.a * 1.1)) * .8 + (1 - evan.a) * .0; c.globalAlpha = a; for (let i = 0; i < 3; i++) c.drawImage(SMOKE, ex - (200 + i * 40) * z + 30 * Math.sin(G.t / 90 + i), ey - (110 - i * 30) * z, 400 * z, 200 * z); c.globalAlpha = 1; }
     // the flash over everything, the veil of mist between the hill and the gate, the burned edges
