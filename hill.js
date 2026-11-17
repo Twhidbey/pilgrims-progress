@@ -1231,7 +1231,7 @@ const HL = (() => {
       if (GWALL) { const P = wallPat(c), k = 885 / GWALL.width * z; P.setTransform(new DOMMatrix([k, 0, 0, k, X(x0), Y(0) - GWALL.height * k])); c.fillStyle = P; c.fillRect(0, 0, VW, Y(2)); }
       else if (GSTONE) { if (!GSTONE.pat) GSTONE.pat = c.createPattern(GSTONE, 'repeat'); const k = 380 / GSTONE.width * z; GSTONE.pat.setTransform(new DOMMatrix([k, 0, 0, k, X(x0), Y(0)])); c.fillStyle = GSTONE.pat; c.fillRect(0, 0, VW, Y(2)); }
       c.globalCompositeOperation = 'source-over';
-      // (build 238, the light thought through as a whole, after Rembrandt: one light rules at a time, and the light behaves
+      // (build 239, the light thought through as a whole, after Rembrandt: one light rules at a time, and the light behaves
       // as real light does.) The lantern's own roof stops its light going straight up, so a soft dark cone rises up the
       // wall above it, its edges softening as they go
       { const ry = lny - 16 * z, top = ry - 150 * z; for (const [w0, w1, a] of [[8, 70, .16], [6, 52, .16], [4, 36, .18]]) { c.beginPath(); c.moveTo(lnx - w0 * z, ry); c.lineTo(lnx + w0 * z, ry); c.lineTo(lnx + w1 * z, top); c.lineTo(lnx - w1 * z, top); c.closePath();
