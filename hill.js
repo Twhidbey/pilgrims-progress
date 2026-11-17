@@ -336,6 +336,9 @@ const HL = (() => {
       k.drawImage(im, 0, 0); k.globalCompositeOperation = 'source-atop'; k.fillStyle = 'rgba(30,30,27,' + OAK_SIL + ')'; k.fillRect(0, 0, W, H);
       // its foot: the grass the painting put there is turned to the road's own dark earth, so the roots end in the ground
       { const g = k.createLinearGradient(0, OAK_META.ground - 52, 0, OAK_META.ground + 12); g.addColorStop(0, 'rgba(40,37,36,0)'); g.addColorStop(1, 'rgba(40,37,36,1)'); k.fillStyle = g; k.fillRect(0, OAK_META.ground - 52, W, H); }
+      // build 309 (owner: "can you integrate roots of tree into ground a bit more"): the ragged strip of roots at its foot fades
+      // out downward, so the roots go down into the road's earth instead of lying on it as a flat dark band
+      { k.globalCompositeOperation = 'destination-out'; const g = k.createLinearGradient(0, OAK_META.ground - 34, 0, OAK_META.ground + 14); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(.55, 'rgba(0,0,0,.6)'); g.addColorStop(1, 'rgba(0,0,0,1)'); k.fillStyle = g; k.fillRect(0, OAK_META.ground - 34, W, H); }
       k.globalCompositeOperation = 'source-over';
       // the leaves, drawn: one small touch wherever the painting has a leaf (a jittered grid), toned by how light that leaf was
       for (let y = 3; y < H * .7; y += 10) for (let x = 3; x < W; x += 10) { const xx = Math.min(W - 1, Math.max(0, Math.round(x + (R() - .5) * 10))), yy = Math.round(y + (R() - .5) * 10), i = (yy * W + xx) * 4;
@@ -1625,9 +1628,17 @@ const HL = (() => {
       if (rocky) alongPath(x => 1 - inPath(x), q => { const t0 = Y(-34), t1 = Y(150), b = mix([40, 30, 29], [35, 26, 25], dark), g = q.createLinearGradient(0, t0, 0, t1), u = (Y(-4) - t0) / (t1 - t0);
         g.addColorStop(0, css(b, 0)); g.addColorStop(clamp(u), css(b)); g.addColorStop(clamp(u + (1 - u) * .45), css(mix(b, [15, 12, 11], .6))); g.addColorStop(1, css([15, 12, 11])); q.fillStyle = g; q.fillRect(0, t0, VW, VH - t0 + 2); }); };
     road();
-    const humpC = css(mix(mix([46, 40, 36], [120, 116, 100], .25), [22, 22, 30], dark));
+    const humpG = () => { const rc = mix([46, 40, 36], [22, 22, 30], dark), tc = mix([60, 57, 43], [24, 24, 30], dark), g = c.createLinearGradient(0, Y(-crest(CREST)), 0, Y(1));
+      g.addColorStop(0, css(tc)); g.addColorStop(.6, css(mix(tc, rc, .6))); g.addColorStop(1, css(rc)); return g; };
     // the swell of the brow, on the road (only on the plain, where he goes out of sight over it)
-    if (!rocky && !gateish && X(BROW0 - 300) < VW && X(CREST + 600) > 0) { c.beginPath(); c.moveTo(X(BROW0 - 340), Y(1)); for (let x = BROW0 - 330; x <= CREST + 570; x += 10) c.lineTo(X(x), Y(-crest(x))); c.lineTo(X(CREST + 580), Y(1)); c.fillStyle = humpC; c.fill(); }
+    // build 309 (owner: "and bump too"): no longer one flat grey shape with a hard edge: its top a soft edge (laid three
+    // times, a hair higher and fainter each time), its turf a little of the field's olive near the top, darkening down into
+    // the road's own earth at its foot, so it rises out of the road and sits in the field
+    if (!rocky && !gateish && X(BROW0 - 300) < VW && X(CREST + 600) > 0) { c.fillStyle = humpG();
+      for (const [up, al] of [[6, .14], [3.5, .3], [1.6, .55], [0, 1]]) { c.globalAlpha = al; c.beginPath(); c.moveTo(X(BROW0 - 340), Y(1)); for (let x = BROW0 - 330; x <= CREST + 570; x += 10) c.lineTo(X(x), Y(-crest(x) - up * (crest(x) / 52))); c.lineTo(X(CREST + 580), Y(1)); c.fill(); } c.globalAlpha = 1;
+      // its foot runs on a little into the road and fades there, so there is no seam where the swell meets the road
+      { const a = X(BROW0 - 300), b = X(CREST + 540), gx = c.createLinearGradient(a, 0, b, 0), rc = mix([46, 40, 36], [22, 22, 30], dark); gx.addColorStop(0, css(rc, 0)); gx.addColorStop(.25, css(rc, .85)); gx.addColorStop(.7, css(rc, .85)); gx.addColorStop(1, css(rc, 0));
+        c.fillStyle = gx; c.fillRect(a, Y(1) - 1, b - a, 4 * z); c.globalAlpha = .5; c.fillRect(a, Y(1) + 3 * z, b - a, 5 * z); c.globalAlpha = 1; } }
     // build 281 (owner: "maybe add a slight path on the bump that he follows down"): a faint worn track along the brow,
     // a little below its top line where his feet go, paler than the turf, fading in from the road and on down the far side.
     const humpPath = () => { if (rocky || gateish > .5) return; const g = c.createLinearGradient(X(BROW0 - 330), 0, X(CREST), 0), pc = mix(mix([92, 80, 66], [150, 138, 112], .2), [40, 38, 46], dark);
@@ -1654,6 +1665,9 @@ const HL = (() => {
     OAKBOX = null;
     if (OAKP) { const M = OAK_META, s = M.k * z, tx = VW / 2 + (MEET - 250 - cx) * z, ty = Y(7), x0 = tx - M.ax * s, y0 = ty - M.ground * s, w = M.w * s, h = M.h * s;
       if (x0 < VW && x0 + w > 0) { OAKBOX = [x0, y0, w, h];
+        // build 309: a low swell of earth round its foot, the road's own colour rising softly into the field, so the ground
+        // gathers up round the roots (and the road's pale edge is covered there)
+        { const ec = mix([46, 40, 36], [22, 22, 30], dark); c.save(); c.translate(tx + 40 * z, Y(2)); c.scale(1, .075); const g = c.createRadialGradient(0, 0, 0, 0, 0, 380 * z); g.addColorStop(0, css(ec, .95)); g.addColorStop(.55, css(ec, .7)); g.addColorStop(1, css(ec, 0)); c.fillStyle = g; c.fillRect(-380 * z, -380 * z, 760 * z, 760 * z); c.restore(); }
         { c.save(); c.translate(tx + 70 * z, Y(-1)); c.scale(1, .09); const g = c.createRadialGradient(0, 0, 0, 0, 0, 360 * z); g.addColorStop(0, css([14, 26, 20], .46 * (1 - dark))); g.addColorStop(1, css([14, 26, 20], 0)); c.fillStyle = g; c.fillRect(-360 * z, -360 * z, 720 * z, 720 * z); c.restore(); }
         c.drawImage(OAKP.c, x0, y0, w, h);
         // (build 202, owner: "when the tree is shown, the light outline flickers on both side of tree"): the edge used to jump from
@@ -1731,7 +1745,7 @@ const HL = (() => {
     // (build 202, owner: "when he goes down after talking with worldly wise, he flickers a little": the near ground used to be
     // drawn over him only once he was below the road line, so for a moment his feet sank into the slope and then were cut
     // off at once; now it covers him from the moment he passes the top)
-    if ((ph === 'aside' || ph === 'down') && C3.x > CREST - 2) { c.save(); c.beginPath(); c.moveTo(X(CREST), VH); for (let x = CREST; x <= CREST + 700; x += 10) c.lineTo(X(x), Y(-crest(x))); c.lineTo(VW, Y(0)); c.lineTo(VW, VH); c.clip(); road(); c.fillStyle = humpC; c.fillRect(0, 0, VW, Y(0) + 1); humpPath(); c.restore(); }
+    if ((ph === 'aside' || ph === 'down') && C3.x > CREST - 2) { c.save(); c.beginPath(); c.moveTo(X(CREST), VH); for (let x = CREST; x <= CREST + 700; x += 10) c.lineTo(X(x), Y(-crest(x))); c.lineTo(VW, Y(0)); c.lineTo(VW, VH); c.clip(); road(); c.fillStyle = humpG(); c.fillRect(0, 0, VW, Y(0) + 1); humpPath(); c.restore(); }
     // the nearest crags, along the bottom of the picture, in front of everyone
     // (build 212, owner: "the layer in front of Christian as he walks toward mountain can be higher in point and fully go in
     // front of him - maybe make nice shapes like the layer behind him"): the nearest crags are the same leaning spurs as the
