@@ -338,7 +338,7 @@ const HL = (() => {
       { const g = k.createLinearGradient(0, OAK_META.ground - 52, 0, OAK_META.ground + 12); g.addColorStop(0, 'rgba(40,37,36,0)'); g.addColorStop(1, 'rgba(40,37,36,1)'); k.fillStyle = g; k.fillRect(0, OAK_META.ground - 52, W, H); }
       // build 309 (owner: "can you integrate roots of tree into ground a bit more"): the ragged strip of roots at its foot fades
       // out downward, so the roots go down into the road's earth instead of lying on it as a flat dark band
-      { k.globalCompositeOperation = 'destination-out'; const g = k.createLinearGradient(0, OAK_META.ground - 34, 0, OAK_META.ground + 14); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(.55, 'rgba(0,0,0,.6)'); g.addColorStop(1, 'rgba(0,0,0,1)'); k.fillStyle = g; k.fillRect(0, OAK_META.ground - 34, W, H); }
+      { k.globalCompositeOperation = 'destination-out'; const g = k.createLinearGradient(0, OAK_META.ground - 12, 0, OAK_META.ground + 16); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(.6, 'rgba(0,0,0,.35)'); g.addColorStop(1, 'rgba(0,0,0,.85)'); k.fillStyle = g; k.fillRect(0, OAK_META.ground - 12, W, H); }
       k.globalCompositeOperation = 'source-over';
       // the leaves, drawn: one small touch wherever the painting has a leaf (a jittered grid), toned by how light that leaf was
       for (let y = 3; y < H * .7; y += 10) for (let x = 3; x < W; x += 10) { const xx = Math.min(W - 1, Math.max(0, Math.round(x + (R() - .5) * 10))), yy = Math.round(y + (R() - .5) * 10), i = (yy * W + xx) * 4;
@@ -1667,7 +1667,7 @@ const HL = (() => {
       if (x0 < VW && x0 + w > 0) { OAKBOX = [x0, y0, w, h];
         // build 309: a low swell of earth round its foot, the road's own colour rising softly into the field, so the ground
         // gathers up round the roots (and the road's pale edge is covered there)
-        { const ec = mix([46, 40, 36], [22, 22, 30], dark); c.save(); c.translate(tx + 40 * z, Y(2)); c.scale(1, .075); const g = c.createRadialGradient(0, 0, 0, 0, 0, 380 * z); g.addColorStop(0, css(ec, .95)); g.addColorStop(.55, css(ec, .7)); g.addColorStop(1, css(ec, 0)); c.fillStyle = g; c.fillRect(-380 * z, -380 * z, 760 * z, 760 * z); c.restore(); }
+        { const ec = mix([46, 40, 36], [22, 22, 30], dark); c.save(); c.translate(tx + 40 * z, Y(3)); c.scale(1, .035); const g = c.createRadialGradient(0, 0, 0, 0, 0, 300 * z); g.addColorStop(0, css(ec, .5)); g.addColorStop(.6, css(ec, .25)); g.addColorStop(1, css(ec, 0)); c.fillStyle = g; c.fillRect(-300 * z, -300 * z, 600 * z, 600 * z); c.restore(); }
         { c.save(); c.translate(tx + 70 * z, Y(-1)); c.scale(1, .09); const g = c.createRadialGradient(0, 0, 0, 0, 0, 360 * z); g.addColorStop(0, css([14, 26, 20], .46 * (1 - dark))); g.addColorStop(1, css([14, 26, 20], 0)); c.fillStyle = g; c.fillRect(-360 * z, -360 * z, 720 * z, 720 * z); c.restore(); }
         c.drawImage(OAKP.c, x0, y0, w, h);
         // (build 202, owner: "when the tree is shown, the light outline flickers on both side of tree"): the edge used to jump from
