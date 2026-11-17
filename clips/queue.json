@@ -1,0 +1,185 @@
+{
+ "about": "The clip queue. The daily run takes the first jobs with status \"todo\" (about 5 to 8 a day on the free allowance). To add a job, copy one and change it; see clips/README.md.",
+ "jobs": [
+  {
+   "id": "interp-say",
+   "status": "done",
+   "made": "2026-11-17 (by hand, the first test)",
+   "uses": "Level 4: the Interpreter lifts his open hand as he explains (in the game since build 278, assets/room-interpreter-say.webp)",
+   "first": {
+    "src": "assets/room-interpreter.webp",
+    "flip": true
+   },
+   "last": {
+    "src": "assets/room-interpreter-say.webp",
+    "flip": true
+   },
+   "seconds": 3.5,
+   "prompt": "(see the session record)"
+  },
+  {
+   "id": "interp-walk",
+   "uses": "Level 4: the candle-lit passage between rooms, the door, leaving; any later level where he walks",
+   "first": {
+    "src": "assets/room-interpreter.webp",
+    "flip": true
+   },
+   "seconds": 5,
+   "prompt": "An old grave kind man in a long red-brown gown and a dark skull-cap walks slowly and steadily to the RIGHT, his hands folded in front of him, an unhurried dignified walk. The camera moves along with him and does NOT zoom: he stays in the centre of the frame at exactly the same size, his whole body always visible; he walks on the spot in the frame with even, regular steps, so the walk can loop.",
+   "status": "todo"
+  },
+  {
+   "id": "christian-oil-walk",
+   "uses": "Level 4: the passage and leaving in the painted manner; later painted rooms (Palace Beautiful, Level 7)",
+   "first": {
+    "src": "assets/room-christian.webp",
+    "flip": true
+   },
+   "seconds": 5,
+   "prompt": "A pilgrim in a worn hooded cloak with a great bundle tied with rope on his back walks slowly and steadily to the RIGHT, bent a little under the weight, his hands empty. The camera moves along with him and does NOT zoom: he stays in the centre of the frame at exactly the same size, his whole body always visible; he walks on the spot in the frame with even, regular steps, so the walk can loop.",
+   "status": "todo"
+  },
+  {
+   "id": "room2-living",
+   "uses": "Level 4 room 2: the damsel pours and the sweeper sweeps, laid back into the still painting",
+   "first": {
+    "src": "assets/room2.webp",
+    "crop": [
+     1104,
+     416,
+     2224,
+     1046
+    ]
+   },
+   "seconds": 5,
+   "prompt": "The young woman slowly pours a thin stream of water from her red-brown jug onto the floor, and the man beside her slowly sweeps the floor with his broom; fine dust drifts in the window light. The camera is completely still: no zoom, no pan, no cut. Only the people and the light move; the room, the walls and every object stay exactly where they are. Keep the oil-painting style and colours exactly.",
+   "status": "todo"
+  },
+  {
+   "id": "room4-living",
+   "uses": "Level 4 room 4: the fire burns and flickers, the man keeps casting water on it, steam rises; behind the wall the oil is poured",
+   "first": {
+    "src": "assets/room4.webp",
+    "crop": [
+     880,
+     376,
+     2000,
+     1006
+    ]
+   },
+   "seconds": 5,
+   "prompt": "The fire burns and flickers higher, the man keeps casting water on it from his wooden bucket and steam rises; behind the wall the man in the long robe slowly pours oil from his jug. The camera is completely still: no zoom, no pan, no cut. Only the people and the light move; the room, the walls and every object stay exactly where they are. Keep the oil-painting style and colours exactly.",
+   "status": "todo"
+  },
+  {
+   "id": "brave-arm",
+   "uses": "Level 4 room 5: the brave man puts on his helmet and draws his sword; Apollyon (Level 8) if Christian arms the same way",
+   "first": {
+    "src": "assets/room5-brave.webp"
+   },
+   "last": {
+    "src": "assets/room5-brave-armed.webp",
+    "h": 580
+   },
+   "seconds": 4,
+   "prompt": "A strong plain man in a long brown coat puts a steel helmet on his head and draws his sword, then strides forward to the RIGHT, determined.",
+   "status": "todo"
+  },
+  {
+   "id": "goodwill-pull",
+   "uses": "Level 4 gate: Good-will reaches out with both hands to pull Christian in (the father's hands in Rembrandt's Prodigal Son); played back, he folds his hands again",
+   "first": {
+    "src": "assets/goodwill-stand.webp"
+   },
+   "last": {
+    "src": "assets/goodwill-reach.webp",
+    "h": 545
+   },
+   "seconds": 3.5,
+   "prompt": "An old bare-headed man with a short white beard and a long gown and cloak, his hands folded, leans forward and reaches out low with both hands, warmly, as if to take hold of someone and draw them in.",
+   "status": "todo"
+  },
+  {
+   "id": "christian-oil-look",
+   "uses": "Level 4: looking up at the picture (room 1), at the light (room 7), at the palace (room 5); Level 5 looking up at the Cross",
+   "first": {
+    "src": "assets/room-christian.webp",
+    "flip": true
+   },
+   "last": {
+    "src": "assets/room-christian.webp",
+    "flip": true
+   },
+   "seconds": 4,
+   "prompt": "The pilgrim with the great bundle on his back stands still, slowly lifts his head to look up at something high in front of him, holds the look a moment in wonder, then slowly lowers his head again.",
+   "status": "todo"
+  },
+  {
+   "id": "interp-nod",
+   "uses": "Level 4: the Interpreter listening while Christian speaks, in every room",
+   "first": {
+    "src": "assets/room-interpreter.webp",
+    "flip": true
+   },
+   "last": {
+    "src": "assets/room-interpreter.webp",
+    "flip": true
+   },
+   "seconds": 4,
+   "prompt": "The old man with folded hands stands still, breathing quietly, and slowly nods his head once or twice, kindly, as if listening and agreeing.",
+   "status": "todo"
+  },
+  {
+   "id": "room7-living",
+   "uses": "Level 4 room 7: the man risen from his bed trembles and stares up in awe",
+   "first": {
+    "src": "assets/room7.webp",
+    "crop": [
+     280,
+     280,
+     1400,
+     910
+    ]
+   },
+   "seconds": 4,
+   "prompt": "The man sitting up in the curtained bed trembles, breathing hard, staring up in awe and fear; his hand grips the bedclothes; the curtains stir very slightly. The camera is completely still: no zoom, no pan, no cut. Only the people and the light move; the room, the walls and every object stay exactly where they are. Keep the oil-painting style and colours exactly.",
+   "status": "todo"
+  },
+  {
+   "id": "christian-oil-turn",
+   "uses": "Level 4: turning round in the rooms and at the door; any painted room later",
+   "first": {
+    "src": "assets/room-christian.webp",
+    "flip": true
+   },
+   "last": {
+    "src": "assets/room-christian.webp"
+   },
+   "seconds": 4,
+   "prompt": "The pilgrim with the great bundle on his back slowly turns round on the spot, from facing right to facing left, his feet stepping round in place.",
+   "status": "todo"
+  },
+  {
+   "id": "brave-stride",
+   "uses": "Level 4 room 5: the brave man striding through the guards (a loop)",
+   "first": {
+    "src": "assets/room5-brave-armed.webp",
+    "h": 580
+   },
+   "seconds": 4,
+   "prompt": "A man in a steel helmet and breastplate, sword drawn, strides steadily and boldly to the RIGHT. The camera moves along with him and does NOT zoom: he stays in the centre of the frame at exactly the same size, his whole body always visible; he walks on the spot in the frame with even, regular steps, so the walk can loop.",
+   "status": "todo"
+  },
+  {
+   "id": "christian-burden-falls",
+   "uses": "Level 5, the Cross: the burden loosens, falls from his back and tumbles away (an experiment: no last picture yet)",
+   "first": {
+    "src": "pack:christian-stand-nb:30",
+    "h": 560
+   },
+   "seconds": 5,
+   "prompt": "The pilgrim stands still; the ropes holding the great bundle on his back loosen by themselves, the bundle slips from his shoulders, falls behind him and tumbles away out of the picture; he straightens up, lighter, and stands tall.",
+   "status": "todo"
+  }
+ ]
+}
