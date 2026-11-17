@@ -42,6 +42,7 @@ body.playing #pause{display:block}
 #ksmenu .btn i{font-style:normal;opacity:.6;margin-right:.5em}
 #ksmenu .btn.here{border-color:#e8c27c}
 #ksmenu .btn.here::after{content:' (here)';opacity:.6}
+#ksmenu .btn.auto{min-width:0;font-size:clamp(12px,2.6vh,16px);font-style:italic;background:none;border-color:rgba(244,236,220,.3);margin-top:.9em}
 /* the Bible: brown calf, blind-tooled, red-sprinkled edges, laid paper */
 #ksbook .bible{position:relative;--W:min(93vw,calc(86vh * 1.5));width:var(--W);height:calc(var(--W) / 1.5);padding:calc(var(--W) * .026);box-sizing:border-box;border-radius:calc(var(--W) * .014);
   background-color:#4a2c1c;background-image:var(--calf);background-size:cover;box-shadow:0 22px 60px rgba(0,0,0,.65),inset 0 0 calc(var(--W) * .02) rgba(0,0,0,.55);perspective:calc(var(--W) * 2.4)}
@@ -373,7 +374,7 @@ body.playing #pause{display:block}
   const pauseBtn = mkEl(`<button id="pause" aria-label="Pause"><i></i><i></i></button>`);
   document.getElementById('stage').appendChild(pauseBtn);
   const NAMES = ['The City of Destruction', 'The Slough of Despond', 'Mr. Worldly Wiseman', 'The Interpreter’s House'];
-  const menu = mkEl(`<div id="ksmenu" class="kscover"><div class="kscard"><h1>Resting a while</h1><button class="btn" data-go="on">Go on</button>
+  const menu = mkEl(`<div id="ksmenu" class="kscover"><div class="kscard"><h1>Resting a while</h1><button class="btn" data-go="on">Go on</button><button class="btn auto" data-auto="1"></button>
     <p>or begin again at</p>${NAMES.map((n, i) => `<button class="btn" data-go="${i + 1}"><i>${i + 1}</i>${n}</button>`).join('')}</div></div>`);
   const book = mkEl(`<div id="ksbook" class="kscover"><div class="bible"><div class="spread"><div class="edges"></div><div class="page L"></div><div class="page R"></div>
     <div class="leaf"><div class="face front"></div><div class="face back"></div></div><div class="spine"></div><div class="ribbon"></div><div class="page scratch"></div></div></div>
@@ -428,15 +429,18 @@ body.playing #pause{display:block}
   const rustle = (k = 1) => { if (typeof audio === 'function' && audio()) { hiss(2600, .7, .03 * k, .35); hiss(900, .9, .02 * k, .3, 'bandpass', .06); } };
 
   // the menu
+  // (build 309) the auto-walk switch, shared with the contents page's line (setAuto in index.html)
+  const autoLabel = () => { const b = menu.querySelector('[data-auto]'); if (b) b.textContent = (AUTOW ? '\u25C6' : '\u25C7') + ' He walks on by himself: ' + (AUTOW ? 'on' : 'off'); };
   const curLv = () => RM.on ? 4 : HL.on ? 3 : SL.on ? 2 : 1;
   function openMenu() {
     if (G.state === 'title') return;
     for (const b of menu.querySelectorAll('[data-go]')) b.classList.toggle('here', b.dataset.go === String(curLv()));
-    show(menu, .15);
+    autoLabel(); show(menu, .15);
   }
   pauseBtn.onclick = e => { e.stopPropagation(); openMenu(); };
   pauseBtn.addEventListener('pointerdown', e => e.stopPropagation());
   menu.addEventListener('click', e => {
+    if (e.target.closest('[data-auto]')) { setAuto(!AUTOW); return; }
     const b = e.target.closest('[data-go]'); if (!b && e.target !== menu) return;
     const go = b ? b.dataset.go : 'on'; hide();
     if (go === 'on') return;
@@ -566,5 +570,5 @@ body.playing #pause{display:block}
   // fetch the fonts early, so the book and the roll look right the first time
   setTimeout(() => { if (document.fonts && document.fonts.load) for (const f of ['16px "IM Fell English"', 'italic 16px "IM Fell English"', '16px "IM Fell English SC"', '16px "Herr Von Muellerhoff"', '700 16px "UnifrakturCook"', '16px "La Belle Aurore"']) document.fonts.load(f).catch(() => {}); }, 2500);
 
-  return { paused: false, book: openBook, roll: openRoll, look: openLook, menu: openMenu, close: () => hide(), turn, waxSeal, get page() { return sp; } };
+  return { paused: false, autoLabel, book: openBook, roll: openRoll, look: openLook, menu: openMenu, close: () => hide(), turn, waxSeal, get page() { return sp; } };
 })();

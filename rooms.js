@@ -33,7 +33,7 @@ const RM = (() => {
 
   let R = null, t = 0, ph = '', cam = { x: 0, to: 0 }, fade = 1, fadeTo = 0, after = null, toned = {}, startId = 'door', motes = [];
   const u = x => x * S - cam.x, v = y => y * S - (R.FY * S - FLOOR);
-  const hold = () => keys.push || keys.r || downs.size > 0;
+  const hold = () => keys.push || keys.r || downs.size > 0 || autoHeld();
   const rnd = Math.random;
 
   // ---------- sound (made in the browser) ----------

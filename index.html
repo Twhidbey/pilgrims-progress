@@ -141,6 +141,7 @@ body.portrait #rot{display:block}
           <button class="lv" data-lv="3"><i>III.</i>Mr. Worldly Wiseman</button>
           <button class="lv" data-lv="4"><i>IV.</i>The Interpreter&#8217;s House</button>
           <button class="lvx" id="darkRooms"><i></i>Shew the darker rooms</button>
+          <button class="lvx" id="autoWalk"><i></i>Let him walk on by himself</button>
         </div>
         <div class="trule d"></div>
         <div class="t6 tdream">As I walked through the wilderness of this world, I lighted on a certain place where was a Den, and I laid me down in that place to sleep: and, as I slept, I dreamed a dream.</div>
@@ -156,7 +157,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">build 308 · Nov 17 2026</div>
+  <div id="build">build 309 · Nov 17 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -875,14 +876,22 @@ const keys = { r: false, push: false };
 const downs = new Map();                   // fingers held on the picture, and when each came down
 let pushing = false, pushId = null;
 const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-const pushHeld = () => pushing || keys.push;
+const pushHeld = () => pushing || keys.push || autoHeld();
 // a quick tap only touches; a finger held a moment (9 ticks) walks
 // NOTHING MOVES ON ITS OWN (owner, build 106: "after talking to evangelist, christian starts to run automatically (this
 // happens on iphone) - i'd like for run to always be user initiated. in fact no action should happen on its own. except
 // dialogue"). A finger walks him only if it went down after the last words ended (G.calm: a tap meant for the words,
 // still on the glass as they end, does not count) and has been held a moment (HOLD ticks: a quick tap only touches).
 const HOLD = 16;
-const held = () => { for (const t of downs.values()) if (t >= (G.calm || 0) && G.t - t >= HOLD) return true; return false; };
+// AUTO-WALK (build 309; owner: "can you add an automatically walk toggle (to all levels)"): with "Let him walk on by
+// himself" marked (on the contents page or in the pause menu; pp-auto in localStorage) every hold that walks him counts
+// as held a moment after the words end (G.calm), in every level: walking, Level 1's walk-on and its gate, and the
+// Interpreter's House's holds. Touches that are acts (the light, the hill, a hand, a knock) are still the child's.
+const autoOn = () => { try { return localStorage.getItem('pp-auto') === '1'; } catch (e) { return false; } };
+let AUTOW = autoOn();
+const setAuto = on => { AUTOW = !!on; try { localStorage.setItem('pp-auto', on ? '1' : '0'); } catch (e) {} for (const b of document.querySelectorAll('#autoWalk')) b.classList.toggle('on', AUTOW); if (typeof KS !== 'undefined' && KS.autoLabel) KS.autoLabel(); };
+const autoHeld = () => AUTOW && G.t >= (G.calm || 0) + 40;
+const held = () => { if (autoHeld()) return true; for (const t of downs.values()) if (t >= (G.calm || 0) && G.t - t >= HOLD) return true; return false; };
 // Build 99 (owner: the gate "kinda dominates the ending ... make surrounding more prominent (and sun visible)"): as the
 // camera draws back at the gate, the far light rises to stand above the gateway, in the sky over the gatehouse
 // (Evangelist: "Keep that light in your eye, and go straight up to it. Then you will see the gate."). Since build 100
@@ -2480,6 +2489,7 @@ document.getElementById('open').onclick = () => {
 document.getElementById('again').onclick = () => RM.on ? RM.start() : HL.on ? HL.start() : SL.on ? SL.start() : start();
 document.getElementById('on2').onclick = () => SL.on ? go3() : HL.on ? goRoom('door') : go2();
 // the darker rooms of the Interpreter's House (6 and 7) are shewn only when this line is marked (kept on the device)
+{ const a = document.getElementById('autoWalk'); a.classList.toggle('on', AUTOW); a.onclick = () => setAuto(!AUTOW); }
 { const d = document.getElementById('darkRooms'), on = () => { try { return localStorage.getItem('pp-dark') === '1'; } catch (e) { return false; } }, set = () => d.classList.toggle('on', on()); set(); d.onclick = () => { try { localStorage.setItem('pp-dark', on() ? '0' : '1'); } catch (e) {} set(); }; }
 
 // ---------- boot: build the scenery, fetch Christian, then the others while the child is already playing ----------
@@ -2519,8 +2529,8 @@ document.getElementById('on2').onclick = () => SL.on ? go3() : HL.on ? goRoom('d
 </script>
 <script src="slough.js?v=271"></script>
 <script src="hill.js?v=308"></script>
-<script src="rooms.js?v=307"></script>
-<script src="keepsakes.js?v=261"></script>
+<script src="rooms.js?v=309"></script>
+<script src="keepsakes.js?v=309"></script>
 <script src="editor.js?v=261"></script>
 </body>
 </html>
