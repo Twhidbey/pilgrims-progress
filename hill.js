@@ -541,11 +541,16 @@ const HL = (() => {
     // the mountain (`stormCloud` in draw()), its lowest point is set exactly on the rock's top (`rockTopAt`), and any branch
     // that would run on into the rock stops at its surface
     { const pick = Math.random(), name = pick < .5 ? 'big' : pick < .75 ? 'a' : 'b', src = BOLTS[name], fl = Math.random() < .5 ? -1 : 1;
-      const hxT = atX != null ? Math.max(40, Math.min(560, atX)) : 40 + Math.random() * 520, ox = hxT - 60, drop = Math.max(200, rockTopAt(hxT) + TOP + STORM_Y + 70), H = name === 'big' ? drop / .62 : drop * 1.15;
+      const hxT = atX != null ? Math.max(40, Math.min(640, atX)) : 40 + Math.random() * 520, ox = hxT - 60, drop = Math.max(200, rockTopAt(hxT) + TOP + STORM_Y + 70), H = name === 'big' ? drop / .62 : drop * 1.15;
       let lines = src.map(l => { const pts = [], w = []; for (let i = 0; i < l.length; i += 3) { pts.push([ox + fl * l[i] * H, -STORM_Y - 70 + l[i + 1] * H]); w.push(l[i + 2]); } pts.w = w.reduce((a, b) => a + b, 0) / w.length; return pts; });
       // the lowest point of the strike lands on the rock (bolt points are from the summit: hill x = bx + 60, hill y = by - TOP)
       // (the big branching strike is made taller than the drop, so the rock's top cuts through its lower part, where its
       // branches fan out: they end on the rock; single strokes are set with their lowest point on the rock)
+      // (build 250, owner: "can we make it that lighting exits from cloud where viewer clicks"): a touched strike leaves the
+      // cloud straight above the touch: its top is moved there and the rest leans to meet its landing on the rock, which
+      // stays where it was (over the touch where there is rock below, else at the rock's nearest edge)
+      if (atX != null) { let tp = null, lo = null; for (const l of lines) for (const p of l) { if (!tp || p[1] < tp[1]) tp = p; if (!lo || p[1] > lo[1]) lo = p; }
+        const dx = atX - 60 - tp[0], ty = tp[1], ly = lo[1]; for (const l of lines) for (const p of l) p[0] += dx * clamp((ly - p[1]) / Math.max(1, ly - ty)); }
       if (name !== 'big') { let lo = null; for (const l of lines) for (const p of l) if (!lo || p[1] > lo[1]) lo = p;
         const dy = rockTopAt(lo[0] + 60) + TOP - lo[1]; for (const l of lines) for (const p of l) p[1] += dy; }
       // cut every line at the rock's surface
@@ -1127,7 +1132,7 @@ const HL = (() => {
               if (j && fl > .02) { const q3 = SMK3.getContext('2d'); q3.globalCompositeOperation = 'copy'; q3.globalAlpha = 1; q3.drawImage(D2, 0, 0); q3.globalCompositeOperation = 'source-over';
                 across(q3, x => strikeAt(x) * lid(x)); q3.globalCompositeOperation = 'destination-out'; q3.drawImage(SMK, 0, 0); q3.drawImage(SMK, 0, 0); q3.globalCompositeOperation = 'source-over';
                 c.globalCompositeOperation = 'lighter'; c.globalAlpha = Math.min(1, sK * .8); c.drawImage(SMK3, 0, 0); }
-              if (burn + F + fl > .02) { across(q2, x => (j ? fireAt(x) : litAt(x)) * lid(x)); if (!j) { q2.globalCompositeOperation = 'destination-out'; q2.globalAlpha = 1; q2.drawImage(SMK, 0, 0); q2.drawImage(SMK, 0, 0); q2.globalCompositeOperation = 'source-over'; } c.globalCompositeOperation = 'lighter'; c.globalAlpha = Math.min(1, sK * (j ? .8 : 1)); c.drawImage(D2, 0, 0); } };
+              if (burn + F + fl > .02) { across(q2, x => (j ? fireAt(x) : litAt(x)) * lid(x)); { q2.globalCompositeOperation = 'destination-out'; q2.globalAlpha = 1; q2.drawImage(SMK, 0, 0); q2.drawImage(SMK, 0, 0); q2.globalCompositeOperation = 'source-over'; } c.globalCompositeOperation = 'lighter'; c.globalAlpha = Math.min(1, sK * (j ? .8 : 1)); c.drawImage(D2, 0, 0); } };
             layer(DECK[0], 0);
             // (build 237, owner: "layers from bottom to top: (1) dark cloud backdrop across sky (2) 'light up' layer for lightning
             // flashes (3) billowing up smoke in front of light up layer (4) another cloud layer across sky providing foreground
@@ -1537,5 +1542,5 @@ const HL = (() => {
   }
 
   // for testing: HL.peek() tells where the story is
-  return { on: false, show: false, hillPics: () => HILL, title, start, update, draw, touch, key, preload, lines: ALL, pt: k => k === 'hill' ? hillPt() : gatePt(), peek: () => ({ ph, x: Math.round(C3.x), stillT, zs, zT, Zw: +Zw.toFixed(2), farewell, kf: +(C3.kf || 0).toFixed(1), stand: C3.sd != null, wx: wise && Math.round(wise.x), ex: evan && evan.x != null ? Math.round(evan.x) : null, dark: +dark.toFixed(2), wise: wise && wise.mode, evan: evan && +evan.a.toFixed(2), knocks, cam: { ...cam }, hb: hillBox.map(v => Math.round(v * 100) / 100) }) };
+  return { on: false, show: false, hillPics: () => HILL, title, start, update, draw, touch, key, preload, lines: ALL, pt: k => k === 'hill' ? hillPt() : gatePt(), peek: () => ({ ph, x: Math.round(C3.x), stillT, zs, zT, Zw: +Zw.toFixed(2), farewell, kf: +(C3.kf || 0).toFixed(1), stand: C3.sd != null, wx: wise && Math.round(wise.x), ex: evan && evan.x != null ? Math.round(evan.x) : null, dark: +dark.toFixed(2), wise: wise && wise.mode, evan: evan && +evan.a.toFixed(2), knocks, cam: { ...cam }, hb: hillBox.map(v => Math.round(v * 100) / 100), bolt: bolt && bolt.map(l => [l[0], l[l.length - 1]].map(p => p.map(Math.round))) }) };
 })();
