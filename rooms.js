@@ -192,7 +192,7 @@ const RM = (() => {
     },
     // 3 PASSION AND PATIENCE (after Chardin's Soap Bubbles): the bag, the gold, the bubbles, the rags
     r3: {
-      pic: 'room3', FY: 1250, PW: 2566, cam0: 8, tone: [255, 255, 255],
+      pic: 'room3', FY: 1250, PW: 2566, cam0: 15, tone: [255, 255, 255],
       enter() {
         this.bag = { show: false, a: 0, tip: 0, empty: 0 }; this.coins = []; this.bubbles = []; this.great = null; this.rags = 0; pic('room3-rags');
       },
@@ -226,7 +226,7 @@ const RM = (() => {
         const g = this.great; if (g) { g.life++; g.r = Math.min(g.R, g.r + .47); if (!g.pop) { g.y -= 1.45 * smooth(0, 60, g.life); g.x += Math.sin(g.life / 70) * .8; if (g.life > g.L) { g.pop = 1; note(91, .02, 1.4); } } else g.pop++; }
       },
       under(c) { if (this.rags > 0 && pics['room3-rags']) { c.globalAlpha = smooth(0, 1, this.rags); c.drawImage(pics['room3-rags'], u(720), v(580), 790 * S, 754 * S); c.globalAlpha = 1; } },
-      people(c) { visitor(c, 'I', 2420, -1, .8, 1, 35); visitor(c, 'C', 2235, -1, .8, 1, 28); },
+      people(c) { visitor(c, 'I', 2440, -1, 1.22, 1, 6); visitor(c, 'C', 360, 1, 1.22); },
       over(c) { drawBag(c, this.bag); drawCoins(c, this.coins); for (const b of this.bubbles) bubble(c, u(b.x), v(b.y), b.r * S, b.pop); if (this.great) bubble(c, u(this.great.x), v(this.great.y), this.great.r * S, this.great.pop); },
     },
     // 4 THE FIRE FED WITH OIL (after La Tour's St Joseph the Carpenter): round the back of the wall
@@ -312,7 +312,7 @@ const RM = (() => {
     },
     // 7 THE DREAM OF JUDGMENT (after Rembrandt's Belshazzar's Feast): a darker room
     r7: {
-      pic: 'room7', FY: 1240, cam0: 120, tone: [235, 215, 200],
+      pic: 'room7', FY: 1240, cam0: 185, tone: [235, 215, 200],
       enter() { this.blk = 0; this.fl = 0; this.lt = .3; this.sh = .35; },
       run() { talk([[C, 'Why does this man tremble so?'], [TIP, 'Touch the man.', 'man']], () => { ph = 'tell'; t = 0; G.state = 'auto'; this.sh = 1; }); },
       act(sx, sy) { if (G.act === 'man' && (sx == null || near(sx, sy, 905, 860, 220))) next(true); },
@@ -322,7 +322,7 @@ const RM = (() => {
         if (ph === 'tell' && t === 30) talk([[DRM, 'This night I dreamed. The heavens grew black, it thundered, and I heard the great sound of a trumpet.', null, () => { self.blk = 1; self.lt = 0; setTimeout(() => { self.fl = 1; thunder(); }, 900); setTimeout(trumpet, 2600); }], [DRM, 'I saw a man sit upon a cloud, and heard a voice: ‘Arise, ye dead, and come to judgement.’', null, () => { self.lt = 1.6; }], [DRM, 'I saw many caught up into the clouds, but I was left behind. I was not ready.', null, () => { self.lt = .15; self.blk = .4; }]], () => goTo('leave'));
         this.cur = (this.cur || 0) + ((this.blk || 0) - (this.cur || 0)) * .02; this.fl *= .9; this.lv = (this.lv || .3) + (this.lt - (this.lv || .3)) * .015;
       },
-      people(c) { visitor(c, 'I', 2330, -1); visitor(c, 'C', 2600, -1); },
+      people(c) { visitor(c, 'I', 2470, -1, 1.22); visitor(c, 'C', 2720, -1, 1.22); },
       under(c) {
         // the man trembles: the part of the picture round him is laid again a hair off, back and forth
         const im = pics.room7; if (im) { const a = this.sh * (.6 + .4 * Math.sin(G.t / 9)), dx = Math.sin(G.t * 1.9) * .9 * a, dy = Math.sin(G.t * 2.7) * .5 * a, k = im.width / R.PW, x0 = 560, y0 = 440, w = 640, h = 820;

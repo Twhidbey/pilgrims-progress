@@ -10,6 +10,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 **Build 255 (small-tweaks chat): the gate's wall and door softer still, with less contrast. See `CLAUDE.md`, "Build 255". Nothing spent.**
 
+**Build 266 (room 3 chat): the visitors sized to each room's painted people (rooms 3 and 7 larger). Nothing spent.**
+
 **Build 265 (room 3 chat, overnight): a second critique round on the house and its fixes (figures' tone and shadows, the Interpreter's pose swap, room 7's light, the leaving walk). Nothing spent.**
 
 **Build 264 (room 3 chat, overnight): the Interpreter's own figure (two poses) and room 2 without painted visitors, about 26 cents.**
