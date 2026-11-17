@@ -382,6 +382,20 @@ body.playing #pause{display:block}
     ${FLOUR}<div class="words"><span style="color:#86190f;font-size:1.75em;line-height:.8;vertical-align:-.13em">F</span>lee from the wrath to come.</div><div class="ref">Matt. iii. 7.</div></div></div><div class="curl b"></div></div>
     <button class="ksx" aria-label="Close">×</button></div>`);
   for (const e of [menu, book, roll]) document.body.appendChild(e);
+  // his Bible's ribbon in woven silk, like the closed book's on the title (build 247; owner: "Ok let's match ribbon"):
+  // a strip painted once, repeating down the ribbon: fine lengthwise threads, a faint weft, darker edges, and a soft
+  // sheen that drifts from side to side along its length as a lying ribbon catches the light where it twists.
+  (function silk() {
+    const W = 32, H = 1024, c = mk(W, H), x = c.getContext('2d'), id = x.createImageData(W, H), d = id.data, P = 2 * Math.PI;
+    let s = 7; const r = () => (s = (s * 16807) % 2147483647) / 2147483647, weft = new Float32Array(H).map(() => (r() - .5) * .07);
+    for (let y = 0; y < H; y++) { const t = y / H, sh = .5 + .28 * Math.sin(P * t) + .12 * Math.sin(2 * P * t + 1.3), tw = .5 + .5 * Math.sin(3 * P * t + .4);
+      for (let px = 0; px < W; px++) { const u = (px + .5) / W, au = Math.abs(u * 2 - 1);
+        let b = .6 + (.38 + .14 * tw) * Math.exp(-(((u - sh) / .2) ** 2));
+        b *= 1 + (px % 2 ? .07 : -.07) + weft[y]; if (au > .8) b *= .82 - 1.5 * (au - .8);
+        const i = (y * W + px) * 4, o = Math.max(0, b - 1); d[i] = Math.min(255, 132 * b + 40 * o); d[i + 1] = Math.min(255, 30 * b + 22 * o); d[i + 2] = Math.min(255, 24 * b + 18 * o); d[i + 3] = 255; } }
+    x.putImageData(id, 0, 0);
+    const rb = book.querySelector('.ribbon'); rb.style.backgroundImage = 'url(' + c.toDataURL() + ')'; rb.style.backgroundSize = '100% auto'; rb.style.backgroundRepeat = 'repeat-y';
+  })();
   // (build 217) a thing in the world seen close up: one picture that grows out of the scene; a touch anywhere puts it back
   const look = mkEl(`<div id="kslook" class="kscover"><div class="lookw"></div><button class="ksx" aria-label="Close">×</button></div>`);
   document.body.appendChild(look);
