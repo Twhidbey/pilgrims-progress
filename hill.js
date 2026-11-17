@@ -46,6 +46,9 @@ const HL = (() => {
   const Z_NEAR = .8, Z_WIDE = .068;
   // the brow: the ground swells a little (crest, in road units) to CREST and falls away beyond it, out of sight
   const CREST = BROW0 + 70, crest = x => 52 * smooth(BROW0 - 330, CREST, x) * (1 - smooth(CREST + 30, CREST + 560, x));
+  // build 282 (owner: "path should curve over crest of bump and disappear (same as christian's walk)"): how far below the
+  // brow's top line the worn track (and his feet) run: 12 on the road, rising to 2 at the top, where both go over and out of sight
+  const pathOff = x => 12 - 10 * smooth(CREST - 260, CREST, x);
   const EV_X = FOOT - 135;
 
   // ---------- the words: Bunyan's, shortened and made plain ----------
@@ -434,7 +437,7 @@ const HL = (() => {
   // of glow from sun behind them"). RIM = { k: strength, x: where the light stands, in the world's units } while the
   // people are drawn; each figure then gets a thin warm edge on the side toward the light (the figure's own shape,
   // less the same shape moved a little toward the light: what is left is that edge).
-  let RIM = null, FIRE = null, OAKBOX = null, VILP = null; const RIMC = {};
+  let RIM = null, HAZE = null, FIRE = null, OAKBOX = null, VILP = null; const RIMC = {};
   // FK: a size correction for the picture being drawn (build 202: the kneel's video zoomed in about 1.2 times as he went
   // down, so the kneeling figure looked too big; `kneelK` undoes it frame by frame, anchored at his feet)
   let FK = 1;
@@ -546,8 +549,13 @@ const HL = (() => {
       r.globalCompositeOperation = 'source-over'; r.globalAlpha = .4; r.drawImage(tc, 0, 0); r.globalAlpha = 1;
       r.globalCompositeOperation = 'source-in'; if (RIM.gold) { const g = r.createLinearGradient(0, 0, 0, H); g.addColorStop(0, 'rgb(255,226,160)'); g.addColorStop(.6, 'rgba(255,206,130,.9)'); g.addColorStop(1, 'rgba(255,190,110,.6)'); r.fillStyle = g; } else { const g = r.createLinearGradient(0, H * .04, 0, H); g.addColorStop(0, 'rgb(255,248,232)'); g.addColorStop(.3, 'rgba(255,242,218,.85)'); g.addColorStop(.62, 'rgba(255,236,206,.42)'); g.addColorStop(1, 'rgba(250,228,196,.12)'); r.fillStyle = g; } r.fillRect(0, 0, W, H); r.globalCompositeOperation = 'source-over';
       const bc = tintC._bloom || (tintC._bloom = mk(8, 8)); bc.width = Math.ceil(W / 4); bc.height = Math.ceil(H / 4); const b = bc.getContext('2d'); b.clearRect(0, 0, bc.width, bc.height); b.drawImage(rc, 0, 0, bc.width, bc.height);
-      f.globalCompositeOperation = 'source-over'; f.globalAlpha = Math.min(1, .95 * rimK); f.drawImage(rc, 0, 0); f.globalAlpha = 1;
-      RIM.bloom = bc; }
+      f.globalCompositeOperation = 'source-over'; f.globalAlpha = Math.min(1, (RIM.gold ? .95 : .3) * rimK); f.drawImage(rc, 0, 0); f.globalAlpha = 1;
+      if (RIM.gold) RIM.bloom = bc;
+      else { const P = 36, S = 6, hc = tintC._halo || (tintC._halo = mk(8, 8)), hw = Math.ceil((W + 2 * P) / S), hh = Math.ceil((H + 2 * P) / S); if (hc.width !== hw || hc.height !== hh) { hc.width = hw; hc.height = hh; }
+        const h = hc.getContext('2d'); h.globalCompositeOperation = 'source-over'; h.clearRect(0, 0, hw, hh); h.globalAlpha = .16;
+        for (const [ox, oy] of [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1], [1.4, 1.4], [-1.4, 1.4], [1.4, -1.4], [-1.4, -1.4], [2.4, 0], [-2.4, 0], [0, 2.4], [0, -2.4]]) h.drawImage(im, (P + 11 * ux) / S + ox, (P + 11 * uy) / S + oy, W / S, H / S);
+        h.globalAlpha = 1; h.globalCompositeOperation = 'source-in'; const g = h.createLinearGradient(0, 0, 0, hh); g.addColorStop(0, 'rgba(255,236,200,.95)'); g.addColorStop(.28, 'rgba(255,226,186,.5)'); g.addColorStop(.5, 'rgba(255,214,170,.12)'); g.addColorStop(1, 'rgba(255,210,170,0)'); h.fillStyle = g; h.fillRect(0, 0, hw, hh); h.globalCompositeOperation = 'source-over';
+        RIM.halo = { c: hc, P, S }; } }
     // FIRELIGHT ON THE FIGURE (owner, build 202: "in level 3 when we are close to mountain, the sprite is a bit
     // monochromatic... is there a way to introduce some color variation (and keep the same palette"). Among the rocks the
     // one light is the fire ahead and above (`FIRE.x`): the side toward it takes a warm ember glow, strongest high on the
@@ -560,6 +568,16 @@ const HL = (() => {
       f.globalCompositeOperation = 'destination-in'; f.drawImage(im, 0, 0); f.globalCompositeOperation = 'source-over';
     }
     if (gateHere && CHR_SLOTS.includes(slot) && (!CHRSH_N || alpha >= CHRSH_N.a)) CHRSH_N = { fc, meta, x, face, k: CHR_K * FK, sy: sy * (TALKM ? TALKM.sy : 1), a: alpha };
+    // build 282 (owner: "can we put some mist behind christian when he's in mountain scene so he stand out a little with
+    // dark rocks"): among the rocks a soft pale haze stands behind each figure, tallest at the body, in the low sky's own
+    // rose-grey, so the dark figure reads against the dark crags. Behind only, never over him (drawn before the figure).
+    if (HAZE && HAZE.k > .02) { const hh = meta.ground * CHR_K * FK * sy; c.save(); c.globalAlpha = alpha; c.translate(x, FY - hh * .48); c.scale(hh * .62, hh * .72);
+      const g = c.createRadialGradient(0, 0, 0, 0, 0, 1); g.addColorStop(0, css(HAZE.c, .5 * HAZE.k)); g.addColorStop(.45, css(HAZE.c, .3 * HAZE.k)); g.addColorStop(1, css(HAZE.c, 0)); c.fillStyle = g; c.fillRect(-1, -1, 2, 2); c.restore(); }
+    // build 282 (owner: "still unsure about the look of the 'silver lining' ...would a light glow be better?"): on the fair
+    // plain the low sun behind them is a soft warm glow round the head and shoulders, spreading a little past the outline
+    // (drawn before the figure, so it lies behind), with only a faint trace of the old crisp line left on the edge
+    if (RIM && RIM.halo && rimK > .02) { const H0 = RIM.halo; c.save(); c.globalAlpha = alpha * .55 * rimK; c.globalCompositeOperation = 'lighter'; c.translate(x, FY); c.scale(face * CHR_K * FK, CHR_K * FK * sy);
+      c.drawImage(H0.c, -meta.ax - H0.P, -meta.ground - H0.P, im.width + 2 * H0.P, im.height + 2 * H0.P); c.restore(); RIM.halo = null; }
     c.save(); c.globalAlpha = alpha; c.translate(x, FY); if (TALKM) c.transform(1, 0, TALKM.sh, 1, 0, 0);
     c.scale(face * CHR_K * FK, CHR_K * FK * sy * (TALKM ? TALKM.sy : 1)); c.drawImage(fc, -meta.ax, -meta.ground);
     if (RIM && RIM.bloom && rimK > .02) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = alpha * (RIM.gold ? .9 : .5) * rimK; c.drawImage(RIM.bloom, -meta.ax, -meta.ground, im.width, im.height); c.globalCompositeOperation = 'source-over'; RIM.bloom = null; }
@@ -804,7 +822,7 @@ const HL = (() => {
       // down it, feet first, then his body, then his head (drawn lower by C3.dy, and the near ground drawn over him)
       let v = want ? MAXV * lerp(1, .8, smooth(BROW0, BROW1, C3.x)) : 0;
       v = walk(1, v);
-      C3.dy = C3.x < CREST ? -crest(C3.x) : -crest(CREST) + 227 * Math.pow(smooth(CREST, BROW1, C3.x), 1.3);      // (build 202: one smooth descent from the top; see the near ground below)
+      C3.dy = C3.x < CREST ? -crest(C3.x) - (12 - pathOff(C3.x)) : -crest(CREST) - 10 + 227 * Math.pow(smooth(CREST, BROW1, C3.x), 1.3);      // (build 202: one smooth descent from the top; see the near ground below)
       if (v && C3.x > noteX) { noteX = C3.x + 58 * 1.5; note(WRONG[noteI++ % WRONG.length], .04, 3.2); }
       if (!want && hintT === 500) hint('walk', 'Hold to walk.'); if (want) clearHint('walk');
       if (C3.x >= BROW1) { ph = 'down'; G.state = 'auto'; clearHint('walk'); cutTo = 1; }
@@ -927,7 +945,8 @@ const HL = (() => {
     TALKM = talkMove(C);
     // he trembles beneath the hill (a small quick shiver while he stands under it, before Evangelist raises him)
     const trem = (ph === 'still' || ph === 'come') ? dark : 0, a = C3.alpha, x = C3.x + trem * (.55 * Math.sin(G.t * .9) + .3 * Math.sin(G.t * 2.1));
-    foot(c, C3.x, a);
+    // (build 282: the shadow thins away as he reaches the top of the brow, where the near ground starts to cover him)
+    foot(c, C3.x, a * (ph === 'aside' || ph === 'down' ? 1 - smooth(CREST - 160, CREST - 10, C3.x) : 1));
     if (C3.tv && TURN.length) {
       const tf = clamp(C3.tv.t, 0, TURN.length - 1), f0 = Math.floor(tf);
       figure(c, 'turn', TURN[f0], TURN_META, x, 1, tint, a);
@@ -1567,10 +1586,11 @@ const HL = (() => {
     if (!rocky && !gateish && X(BROW0 - 300) < VW && X(CREST + 600) > 0) { c.beginPath(); c.moveTo(X(BROW0 - 340), Y(1)); for (let x = BROW0 - 330; x <= CREST + 570; x += 10) c.lineTo(X(x), Y(-crest(x))); c.lineTo(X(CREST + 580), Y(1)); c.fillStyle = humpC; c.fill(); }
     // build 281 (owner: "maybe add a slight path on the bump that he follows down"): a faint worn track along the brow,
     // a little below its top line where his feet go, paler than the turf, fading in from the road and on down the far side.
-    const humpPath = () => { if (rocky || gateish > .5) return; const g = c.createLinearGradient(X(BROW0 - 330), 0, X(CREST + 570), 0), pc = mix(mix([92, 80, 66], [150, 138, 112], .2), [40, 38, 46], dark);
-      g.addColorStop(0, css(pc, 0)); g.addColorStop(.18, css(pc, .5)); g.addColorStop(.8, css(pc, .45)); g.addColorStop(1, css(pc, 0));
-      c.beginPath(); for (let x = BROW0 - 330; x <= CREST + 570; x += 8) { const y = Y(-crest(x) + 12 + 1.5 * Math.sin(x * .021) + Math.sin(x * .007)); if (x === BROW0 - 330) c.moveTo(X(x), y); else c.lineTo(X(x), y); }
-      c.strokeStyle = g; c.lineCap = 'round'; c.globalAlpha = .45; c.lineWidth = Math.max(2, 12 * z); c.stroke(); c.globalAlpha = .55; c.lineWidth = Math.max(1.2, 6 * z); c.stroke(); c.globalAlpha = 1; };
+    const humpPath = () => { if (rocky || gateish > .5) return; const g = c.createLinearGradient(X(BROW0 - 330), 0, X(CREST), 0), pc = mix(mix([92, 80, 66], [150, 138, 112], .2), [40, 38, 46], dark);
+      g.addColorStop(0, css(pc, 0)); g.addColorStop(.18, css(pc, .5)); g.addColorStop(.88, css(pc, .45)); g.addColorStop(1, css(pc, .1));
+      c.save(); c.beginPath(); c.moveTo(X(BROW0 - 340), Y(40)); for (let x = BROW0 - 330; x <= CREST + 570; x += 10) c.lineTo(X(x), Y(-crest(x) + .5)); c.lineTo(X(CREST + 580), Y(40)); c.clip();
+      c.beginPath(); for (let x = BROW0 - 330; x <= CREST; x += 8) { const y = Y(-crest(x) + pathOff(x) + (1.5 * Math.sin(x * .021) + Math.sin(x * .007)) * (pathOff(x) / 12)); if (x === BROW0 - 330) c.moveTo(X(x), y); else c.lineTo(X(x), y); }
+      c.strokeStyle = g; c.lineCap = 'round'; c.globalAlpha = .45; c.lineWidth = Math.max(2, 12 * z); c.stroke(); c.globalAlpha = .55; c.lineWidth = Math.max(1.2, 6 * z); c.stroke(); c.globalAlpha = 1; c.restore(); };
     if (!rocky && !gateish && X(BROW0 - 300) < VW && X(CREST + 600) > 0) humpPath();
     // the lantern's and the open door's light lie in flat pools on the road
     if (gateOn) { c.save(); c.globalCompositeOperation = 'lighter';
@@ -1626,6 +1646,7 @@ const HL = (() => {
     // the people (in the world's own units)
     c.save(); c.translate(VW / 2 - cx * z, wl); c.scale(z, z);
     RIM = { k: (1 - dark) * (1 - gateish) * .9, x: (lx - VW / 2) / z + cx };
+    HAZE = rocky && ph !== 'title' && ph !== 'mist' ? { k: 1 - Zw, c: mix([156, 124, 120], [120, 96, 104], dark) } : null;
     FIRE = rocky && ph !== 'title' ? { k: clamp(dark) * (1 - .4 * calm), x: HX0 + 600, f: Math.min(1, flash) } : null;
     // (build 235, one set of lights at the gate: the door's light falls on the side of him that faces it, the lantern
     // above warms his head and shoulders; Good-will in the doorway is lit from behind, so he stays dark with a lit edge)
@@ -1657,7 +1678,7 @@ const HL = (() => {
     }
     // in the wide shot he is a tiny dark figure: a faint warm light round him so the eye can find him
     if (Zw > .05) { const g = c.createRadialGradient(C3.x, -60, 0, C3.x, -60, 34 / z); g.addColorStop(0, css([255, 196, 130], .28 * Zw)); g.addColorStop(1, css([255, 170, 110], 0)); c.save(); c.globalCompositeOperation = 'lighter'; c.fillStyle = g; c.fillRect(C3.x - 34 / z, -60 - 34 / z, 68 / z, 68 / z); c.restore(); }
-    gateHere = gateish > .5; CHRSH_N = null; c.save(); c.translate(0, C3.dy || 0); drawChr(c, tintM); c.restore(); RIM = null; FIRE = null; CHRSH = gateHere ? CHRSH_N : null; gateHere = false;
+    gateHere = gateish > .5; CHRSH_N = null; c.save(); c.translate(0, C3.dy || 0); drawChr(c, tintM); c.restore(); RIM = null; HAZE = null; FIRE = null; CHRSH = gateHere ? CHRSH_N : null; gateHere = false;
     c.restore();
     // over the brow: the near ground is drawn again over him as he goes down behind it
     // (build 202, owner: "when he goes down after talking with worldly wise, he flickers a little": the near ground used to be
