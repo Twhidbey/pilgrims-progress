@@ -219,16 +219,18 @@ const SL = (() => {
     // close, so they run together into one mass of mud with only slits of water; going right they shorten and part, and open
     // water lies between them. FARMUD: the rows running back from the surface line to the horizon (q = how near, drawn each
     // frame in draw()); the near mud is the same patches baked into mudMap, which hides the mirror wherever there is mud.
-    const lay = (rnd, x0, x1, hk) => { const ps = [];
+    const lay = (rnd, x0, x1, hk, gk = 1) => { const ps = [];
       for (let x = x0; x < x1;) { const c = 1 - .9 * wetAt(x), L = 110 + 640 * c * rnd() + 60 * rnd();
-        if (rnd() < .3 + .7 * c) ps.push({ x, L, h: hk * (.8 + .5 * rnd()), s: rnd() * 9 }); x += L + 4 + 260 * Math.pow(1 - c, 1.3) * rnd(); }
+        if (rnd() < .3 + .7 * c) ps.push({ x, L, h: hk * (.8 + .5 * rnd()), s: rnd() * 9 }); x += L + 4 + 260 * gk * Math.pow(1 - c, 1.3) * rnd(); }
       return ps; };
     FARMUD = []; { let sd = 7; const rnd = () => (sd = (sd * 16807) % 2147483647) / 2147483647;
       for (let k = 0; k < 14; k++) { const q = Math.pow((k + 1) / 14, 1.35); FARMUD.push({ q, ps: lay(rnd, WATER_L - 900, BANK0 + 900, 14) }); } }
     mudMap = mk(MUD_W, MUD_H); { const c = mudMap.getContext('2d'); let sd = 11; const rnd = () => (sd = (sd * 16807) % 2147483647) / 2147483647;
       c.fillStyle = '#fff';
-      for (let k = 0; k <= 18; k++) { const j = 2 + 268 * Math.pow(k / 18, 1.6), hk = 3 + .14 * j;
-        for (const m of lay(rnd, MUD_X0 - 300, MUD_X0 + MUD_W + 300, hk)) { c.beginPath(); wavy(c, m.x - MUD_X0, j, m.L, m.h, m.h * .8, m.s); c.fill(); } }
+      // build 299 (owner: "little less stripy in the front (waves cohesively grey)"): fewer, taller rows that overlap, and
+      // shorter gaps, so the near mud is one wavy grey mass with only now and then a pool
+      for (let k = 0; k <= 12; k++) { const j = 2 + 268 * Math.pow(k / 12, 1.5), hk = 6 + .3 * j;
+        for (const m of lay(rnd, MUD_X0 - 300, MUD_X0 + MUD_W + 300, hk, .55)) { c.beginPath(); wavy(c, m.x - MUD_X0, j, m.L, m.h, m.h, m.s); c.fill(); } }
       // fade out under the far bank as before (mudEnd)
       c.globalCompositeOperation = 'destination-in'; const g = c.createLinearGradient(0, 0, MUD_W, 0);
       for (let i = 0; i <= 20; i++) g.addColorStop(i / 20, 'rgba(255,255,255,' + mudEnd(MUD_X0 + MUD_W * i / 20).toFixed(3) + ')');
