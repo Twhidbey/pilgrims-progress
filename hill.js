@@ -1081,12 +1081,6 @@ const HL = (() => {
         // minute and melts away at the end; the far ones are drawn first.
         // (build 183: the smoke and the cloud keep the size they have from a distance, `kS`: stretched to the near hill's
         // size the soft billows became one huge blur filling the close-up)
-        { const N = 96, ps = [], kS = Math.min(k, 1), Dh = rocky ? 195 : 90 + 105 * clamp(dark * 1.5);
-          for (let i = 0; i < N; i++) { const h1 = Math.sin(i * 12.9898) * 43758.5453, h2 = Math.sin(i * 78.233) * 12543.123; ps.push([(i / N + G.t / 2600) % 1, h1 - Math.floor(h1), h2 - Math.floor(h2), i]); }
-          ps.sort((a, b) => b[0] - a[0]);
-          for (const [u, r1, r2, i] of ps) { const rise = 1 - Math.pow(1 - u, 1.6), spread = (24 + 120 * u) * kS, px = sx0 - (50 * u + 110 * u * u) * kS + (r1 - .5) * spread + 10 * Math.sin(G.t / 300 + i) * u * kS, py = sy0 - (14 + Dh * rise) * kS + (r2 - .5) * spread * .5, rr = (26 + 120 * u) * kS * (.8 + .4 * r2), a = smooth(0, .05, u) * (1 - smooth(.8, 1, u)), P = PUFF[i % 3];
-            c.globalCompositeOperation = 'source-over'; const hzP = rocky ? 0 : clamp(1 - dark * 1.6), aP = a * .7 * (.1 + .75 * Math.max(dark, farK * 1.3)) * reveal; if (hzP > 0) { c.globalAlpha = aP * hzP; c.drawImage(P.h, px - rr * 1.3, py - rr * .8, 2.6 * rr, 1.6 * rr); } c.globalAlpha = aP * (1 - hzP); c.drawImage(P.d, px - rr * 1.3, py - rr * .8, 2.6 * rr, 1.6 * rr);
-            const la = a * (burn * (.3 + .7 * Math.pow(1 - u, 2)) + F * .3 * (1 - u)); if (la > .01) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = la; c.drawImage(P.l, px - rr, py - rr, 2 * rr, 2 * rr); } } }
         c.globalCompositeOperation = 'source-over'; c.globalAlpha = 1;
         if (flames) { c.save(); c.globalCompositeOperation = 'lighter'; flames(); c.restore(); }
         // lightning in the cloud, and sparks carried up
@@ -1122,6 +1116,17 @@ const HL = (() => {
               c.globalCompositeOperation = 'source-over'; c.globalAlpha = Math.min(1, sK * (j ? .95 : .7)); c.drawImage(D1, 0, 0);
               if (burn + F + fl > .02) { across(q2, x => litAt(x) * lid(x)); c.globalCompositeOperation = 'lighter'; c.globalAlpha = Math.min(1, sK * (j ? 1 : .6)); c.drawImage(D2, 0, 0); } });
             c.globalAlpha = 1; c.globalCompositeOperation = 'lighter'; } }
+        // (build 232, owner: "Smoke going up from the top of mount can go above light layer of billowing smoke from light"):
+        // the column of smoke is drawn after the cloud, so it rises in front of the cloud's firelit underside and on up
+        // into the dark body of the cloud, melting away there
+        c.save();
+        { const N = 96, ps = [], kS = Math.min(k, 1), Dh = rocky ? 195 : 90 + 105 * clamp(dark * 1.5);
+          for (let i = 0; i < N; i++) { const h1 = Math.sin(i * 12.9898) * 43758.5453, h2 = Math.sin(i * 78.233) * 12543.123; ps.push([(i / N + G.t / 2600) % 1, h1 - Math.floor(h1), h2 - Math.floor(h2), i]); }
+          ps.sort((a, b) => b[0] - a[0]);
+          for (const [u, r1, r2, i] of ps) { const rise = 1 - Math.pow(1 - u, 1.6), spread = (24 + 120 * u) * kS, px = sx0 - (50 * u + 110 * u * u) * kS + (r1 - .5) * spread + 10 * Math.sin(G.t / 300 + i) * u * kS, py = sy0 - (14 + (Dh + 90) * rise) * kS + (r2 - .5) * spread * .5, rr = (26 + 120 * u) * kS * (.8 + .4 * r2), a = smooth(0, .05, u) * (1 - smooth(.5, .95, u)), P = PUFF[i % 3];
+            c.globalCompositeOperation = 'source-over'; const hzP = rocky ? 0 : clamp(1 - dark * 1.6), aP = a * .7 * (.1 + .75 * Math.max(dark, farK * 1.3)) * reveal; if (hzP > 0) { c.globalAlpha = aP * hzP; c.drawImage(P.h, px - rr * 1.3, py - rr * .8, 2.6 * rr, 1.6 * rr); } c.globalAlpha = aP * (1 - hzP); c.drawImage(P.d, px - rr * 1.3, py - rr * .8, 2.6 * rr, 1.6 * rr);
+            const la = a * (burn * (.3 + .7 * Math.pow(1 - u, 2)) + F * .3 * (1 - u)); if (la > .01) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = la; c.drawImage(P.l, px - rr, py - rr, 2 * rr, 2 * rr); } } }
+        c.restore(); c.globalCompositeOperation = 'lighter';
         for (const e of embers) { const al = Math.sin(Math.PI * e.t / e.life) * .9; c.fillStyle = css([255, 170 + 60 * e.h, 90], al); c.beginPath(); c.arc(sx0 + e.x * k, sy0 + e.y * k, Math.max(.7, e.r * k), 0, 7); c.fill(); }
         // the red sheen the fire lays on the plain
         if (burn > .01) { c.translate(hx - 120 * k, hy + 22 * z); c.scale(1, .1); const g = c.createRadialGradient(0, 0, 0, 0, 0, 640 * k); g.addColorStop(0, css([236, 130, 84], .2 * burn + .2 * F)); g.addColorStop(1, css([236, 130, 84], 0)); c.fillStyle = g; c.fillRect(-640 * k, -640 * k, 1280 * k, 1280 * k); }
@@ -1150,9 +1155,13 @@ const HL = (() => {
         { const g = c.createLinearGradient(0, Y(-70), 0, Y(0)); g.addColorStop(0, css([90, 66, 64], 0)); g.addColorStop(1, css([90, 66, 64], .3 * dark)); c.fillStyle = g; c.fillRect(0, Y(-70), VW, 72 * z); }
         // falling stones (dark, tumbling) and the dust where they land
         if (!DUSTC) { DUSTC = mk(64, 64); const q = DUSTC.getContext('2d'), g = q.createRadialGradient(32, 32, 0, 32, 32, 32); g.addColorStop(0, 'rgba(128,104,90,.55)'); g.addColorStop(.5, 'rgba(116,94,84,.3)'); g.addColorStop(1, 'rgba(110,90,80,0)'); q.fillStyle = g; q.fillRect(0, 0, 64, 64); }
-        for (const d of DUST) { const u = d.t / d.life, al = d.a * smooth(0, .08, u) * Math.pow(1 - u, 1.4) * (.6 + .4 * dark); if (al < .01) continue; const rr = d.r * (d.big ? k : Math.min(k, 1.8)), rx = rr * (d.big ? 1.4 : 2.4);
+        // (build 232, owner: "Boulders too big when it's zoomed out. If zoomed in, they can be bigger"): the falling boulders and
+        // their dust are drawn smaller the further the camera stands back (`bS`: a third of their size in the wide shot,
+        // their full size once the mountain is seen close)
+        const bS = clamp(k / 1.8, .3, 1);
+        for (const d of DUST) { const u = d.t / d.life, al = d.a * smooth(0, .08, u) * Math.pow(1 - u, 1.4) * (.6 + .4 * dark); if (al < .01) continue; const rr = d.r * (d.big ? k * bS : Math.min(k, 1.8)), rx = rr * (d.big ? 1.4 : 2.4);
           c.globalAlpha = Math.min(1, al); c.drawImage(DUSTC, hx + d.x * k - rx, hy + d.y * k - rr, 2 * rx, 2 * rr); } c.globalAlpha = 1;
-        for (const r of ROCKS) { const px = hx + r.x * k, py = hy + r.y * k, kk = r.big ? k : Math.min(k, 1.8), rr = r.r * kk;
+        for (const r of ROCKS) { const px = hx + r.x * k, py = hy + r.y * k, kk = r.big ? k * bS : Math.min(k, 1.8), rr = r.r * kk;
           c.save(); c.translate(px, py); c.rotate(r.t * (r.big ? .06 : .2) + r.s); c.fillStyle = css([22, 18, 19], .95); c.beginPath(); r.sh.forEach((q, i) => { const an = i / 7 * 6.283; i ? c.lineTo(Math.cos(an) * q * rr, Math.sin(an) * q * rr * .8) : c.moveTo(Math.cos(an) * q * rr, Math.sin(an) * q * rr * .8); }); c.closePath(); c.fill();
           if (r.big) { c.strokeStyle = css([236, 150, 96], .35 * burnR); c.lineWidth = Math.max(.6, rr * .12); c.beginPath(); for (let i = 5; i <= 7; i++) { const an = i / 7 * 6.283, q = r.sh[i % 7]; i === 5 ? c.moveTo(Math.cos(an) * q * rr, Math.sin(an) * q * rr * .8) : c.lineTo(Math.cos(an) * q * rr, Math.sin(an) * q * rr * .8); } c.stroke(); }
           c.restore(); }
