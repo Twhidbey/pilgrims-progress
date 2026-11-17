@@ -68,7 +68,7 @@ body.playing #pause{display:block}
 #ksbook .v b{font-weight:400;font-size:.78em;margin-right:.25em}
 #ksbook .drop{float:left;font-size:2.75em;line-height:.8;margin:.05em .07em 0 0;color:#7c1b12;font-family:'IM Fell English',Georgia,serif}
 #ksbook u{text-decoration:none;background:url("data:image/svg+xml,${pen}") repeat-x 0 100%;background-size:auto .5em;padding-bottom:.1em;-webkit-box-decoration-break:clone;box-decoration-break:clone}
-#ksbook .marg{position:absolute;width:10%;font-family:'La Belle Aurore','Bradley Hand',cursive;font-size:.92em;line-height:1.05;color:${INK};opacity:.9;text-align:center;transform:rotate(-7deg);pointer-events:none}
+#ksbook .marg{position:absolute;width:11%;font-family:'Herr Von Muellerhoff','La Belle Aurore',cursive;font-size:1.5em;line-height:.85;color:#3b2412;opacity:.88;text-align:center;transform:rotate(-6deg);pointer-events:none;text-shadow:0 0 .5px rgba(59,36,18,.6)}
 #ksbook .bar{position:absolute;width:.13em;border-radius:.1em;background:${INK};opacity:.75;pointer-events:none}
 #ksbook .spine{position:absolute;left:50%;top:0;bottom:0;width:5%;margin-left:-2.5%;background:linear-gradient(to right,rgba(60,35,10,0),rgba(60,35,10,.3) 42%,rgba(20,10,0,.5) 50%,rgba(60,35,10,.3) 58%,rgba(60,35,10,0));pointer-events:none;z-index:3}
 #ksbook .ribbon{position:absolute;left:51.2%;top:-2.6%;width:1.25%;height:105%;background:linear-gradient(to right,#4d0d09,#8f2016 35%,#a8301f 50%,#7a1a12 70%,#4d0d09);z-index:4;clip-path:polygon(0 0,100% 0,100% 100%,50% 98.6%,0 100%);opacity:.95;pointer-events:none}
@@ -238,7 +238,7 @@ body.playing #pause{display:block}
   // set as the printers of Bunyan's day set it: the long s inside words, the round s at the end
   const longS = t => t.replace(/s(?=[a-z])/g, (m, i) => t[i + 1] === 'f' || t[i + 1] === 'b' || t[i + 1] === 'k' ? 's' : 'ſ');
   // a verse: [number, text]; <u>..</u> = underlined by Christian
-  const V = (n, t) => `<p class="v"${n === 10 || n === 23 ? ` data-v="${n}"` : ''}><b>${n}</b>${longS(t)}</p>`;
+  const V = (n, t) => `<p class="v" data-v="${n}"><b>${n}</b>${longS(t)}</p>`;
   const SPREADS = [
     [{ head: ['Chap.iij.', 'To the Romans.', ''], foot: ['', '', 'What'], body: `<div class="chap">CHAP. III.</div>` +
         `<p class="v"><span class="drop">W</span>${longS('HAT advantage then hath the Jew? or what profit is there of circumcision?')}</p>` +
@@ -278,7 +278,56 @@ body.playing #pause{display:block}
         `<div class="chap" style="margin-top:.4em">CHAP. IIII.</div>` +
         `<p class="v"><span class="drop">W</span>${longS('HAT shall we say then that Abraham our father, as pertaining to the flesh, hath found?')}</p>` +
         V(2, 'For if Abraham were justified by works, he hath whereof to glory; but not before God.') +
-        V(3, 'For what saith the scripture? Abraham believed God, and it was counted unto him for righteousness.') }]];
+        V(3, 'For what saith the scripture? Abraham believed God, and it was counted unto him for righteousness.') }],
+    // build 201 (owner: "book (bible) can have more pages (more in romans) or another judgment passage (flipping several
+    // pages animation to next passage). also more foot/margin notes"): the rest of Romans 4, then a riffle of pages on to
+    // Hebrews 9, where verse 27 is the passage Bunyan's margin gives for "after that to come to judgement" ({14}).
+    // The words were checked against two published KJV texts (the 1769 text in the es-kjv package and the bible-kjv
+    // package): the same, but for Romans 4:18 "nations," (1769) / "nations;" and 4:19 "Sara's" (1769) / "Sarah's".
+    [{ head: ['Chap.iiij.', 'To the Romans.', ''], foot: ['', '', 'Cometh'], marks: [[5, 'even me?'], [7, '', true]], body:
+        V(4, 'Now to him that worketh is the reward not reckoned of grace, but of debt.') +
+        V(5, 'But to him that worketh not, but <u>believeth on him that justifieth the ungodly</u>, his faith is counted for righteousness.') +
+        V(6, 'Even as David also describeth the blessedness of the man, unto whom God imputeth righteousness without works,') +
+        V(7, 'Saying, <u>Blessed are they whose iniquities are forgiven, and whose sins are covered</u>.') +
+        V(8, 'Blessed is the man to whom the Lord will not impute sin.') },
+     { head: ['', 'To the Romans.', 'Chap.iiij.'], foot: ['', 'Ee 5', 'For'], body:
+        V(9, 'Cometh this blessedness then upon the circumcision only, or upon the uncircumcision also? for we say that faith was reckoned to Abraham for righteousness.') +
+        V(10, 'How was it then reckoned? when he was in circumcision, or in uncircumcision? Not in circumcision, but in uncircumcision.') +
+        V(11, 'And he received the sign of circumcision, a seal of the righteousness of the faith which he had yet being uncircumcised: that he might be the father of all them that believe, though they be not circumcised; that righteousness might be imputed unto them also:') +
+        V(12, 'And the father of circumcision to them who are not of the circumcision only, but who also walk in the steps of that faith of our father Abraham, which he had being yet uncircumcised.') +
+        V(13, 'For the promise, that he should be the heir of the world, was not to Abraham, or to his seed, through the law, but through the righteousness of faith.') }],
+    [{ head: ['Chap.iiij.', 'To the Romans.', ''], foot: ['', '', 'He'], body:
+        V(14, 'For if they which are of the law be heirs, faith is made void, and the promise made of none effect:') +
+        V(15, 'Because the law worketh wrath: for where no law is, there is no transgression.') +
+        V(16, 'Therefore it is of faith, that it might be by grace; to the end the promise might be sure to all the seed; not to that only which is of the law, but to that also which is of the faith of Abraham; who is the father of us all,') +
+        V(17, '(As it is written, I have made thee a father of many nations,) before him whom he believed, even God, who quickeneth the dead, and calleth those things which be not as though they were.') +
+        V(18, 'Who against hope believed in hope, that he might become the father of many nations, according to that which was spoken, So shall thy seed be.') +
+        V(19, 'And being not weak in faith, he considered not his own body now dead, when he was about an hundred years old, neither yet the deadness of Sara\'s womb:') },
+     { head: ['', 'To the Romans.', 'Chap.iiij.'], foot: ['', 'Ee 6', 'CHAP.'], marks: [[24, 'if I believe']], body:
+        V(20, 'He staggered not at the promise of God through unbelief; but was strong in faith, giving glory to God;') +
+        V(21, 'And being fully persuaded that, what he had promised, he was able also to perform.') +
+        V(22, 'And therefore it was imputed to him for righteousness.') +
+        V(23, 'Now it was not written for his sake alone, that it was imputed to him;') +
+        V(24, 'But for us also, to whom it shall be imputed, <u>if we believe on him that raised up Jesus our Lord from the dead</u>;') +
+        V(25, 'Who was delivered for our offences, and was raised again for our justification.') }],
+    [{ jump: ['To the Corinthians.', 'To the Corinthians.', 'To the Galatians.', 'To the Ephesians.', 'To the Philippians.', 'To the Coloſſians.', 'To Timothy.', 'To Philemon.'],
+       head: ['Chap.ix.', 'To the Hebrews.', ''], foot: ['', '', 'Nor'], marks: [[22, 'no remission']], body:
+        V(18, 'Whereupon neither the first testament was dedicated without blood.') +
+        V(19, 'For when Moses had spoken every precept to all the people according to the law, he took the blood of calves and of goats, with water, and scarlet wool, and hyssop, and sprinkled both the book, and all the people,') +
+        V(20, 'Saying, This is the blood of the testament which God hath enjoined unto you.') +
+        V(21, 'Moreover he sprinkled with blood both the tabernacle, and all the vessels of the ministry.') +
+        V(22, 'And almost all things are by the law purged with blood; and <u>without shedding of blood is no remission</u>.') +
+        V(23, 'It was therefore necessary that the patterns of things in the heavens should be purified with these; but the heavenly things themselves with better sacrifices than these.') +
+        V(24, 'For Christ is not entered into the holy places made with hands, which are the figures of the true; but into heaven itself, now to appear in the presence of God for us:') },
+     { head: ['', 'To the Hebrews.', 'Chap.ix.x.'], foot: ['', 'Kk 4', 'For'], marks: [[27, 'I fear it.', true], [28, 'O that it were so']], body:
+        V(25, 'Nor yet that he should offer himself often, as the high priest entereth into the holy place every year with blood of others;') +
+        V(26, 'For then must he often have suffered since the foundation of the world: but now once in the end of the world hath he appeared to put away sin by the sacrifice of himself.') +
+        V(27, '<u>And as it is appointed unto men once to die, but after this the judgment</u>:') +
+        V(28, 'So Christ was once offered to bear the sins of many; and unto them that look for him shall he appear the second time without sin <u>unto salvation</u>.') +
+        `<div class="chap" style="margin-top:.4em">CHAP. X.</div>` +
+        `<p class="v" data-v="1"><span class="drop">F</span>${longS('OR the law having a shadow of good things to come, and not the very image of the things, can never with those sacrifices which they offered year by year continually make the comers thereunto perfect.')}</p>` +
+        V(2, 'For then would they not have ceased to be offered? because that the worshippers once purged should have had no more conscience of sins.') +
+        V(3, 'But in those sacrifices there is a remembrance again made of sins every year.') }]];
   const pageHTML = p => `<div class="in"><div class="head"><span>${p.head[0]}</span><span class="c">${p.head[1]}</span><span class="r">${p.head[2]}</span></div><div class="txt">${p.body}</div><div class="foot"><span></span><span class="c">${p.foot[1]}</span><span class="r">${p.foot[2]}</span></div></div>`;
   // Christian's marks in the outer margin, placed beside their verse once the page is laid out (the verse may fall in
   // either column); a stroke down the margin beside the verse when asked
@@ -375,6 +424,7 @@ body.playing #pause{display:block}
     const to = sp + d; if (turning || to < 0 || to >= SPREADS.length) return;
     turning = true; rustle();
     const cur = SPREADS[sp], nx = SPREADS[to], fwd = d > 0;
+    const jump = (fwd ? nx[0] : cur[0]).jump; if (jump) { riffle(fwd, cur, nx, to, fwd ? jump : jump.slice().reverse()); return; }
     // the leaf lies over the page that turns; beneath it, the page that will be uncovered
     leaf.style.left = fwd ? '50%' : '0'; leaf.style.transformOrigin = fwd ? '0 50%' : '100% 50%';
     front.className = 'face front ' + (fwd ? 'R' : 'L'); back.className = 'face back ' + (fwd ? 'L' : 'R');
@@ -383,6 +433,27 @@ body.playing #pause{display:block}
     put(fwd ? R : L, fwd ? nx[1] : nx[0]); void leaf.offsetWidth;
     leaf.style.transition = 'transform .85s cubic-bezier(.45,.05,.3,1)'; leaf.style.transform = `rotateY(${fwd ? -180 : 180}deg)`;
     setTimeout(() => { sp = to; render(); leaf.classList.remove('on'); turning = false; }, 880);
+  }
+  // RIFFLING ON TO ANOTHER BOOK (build 201): from Romans to Hebrews (or back) several leaves turn one after another, quick,
+  // each a little behind the last; their running heads show the books passing (Corinthians, Galatians ...); the last
+  // leaf brings the new page. Each leaf is a copy of the turning leaf, laid on top of those already turned.
+  function riffle(fwd, cur, nx, to, heads) {
+    const spread = book.querySelector('.spread'), n = heads.length, stag = 130, dur = 620, leaves = [];
+    // the pages flicking past: other text, unmarked and a little soft (they pass too quickly to be read)
+    const filler = h => pageHTML({ head: ['', h, ''], foot: ['', '', ''], body: SPREADS[0][1].body.replace(/<\/?u>/g, '') }).replace('<div class="in">', '<div class="in" style="filter:blur(.7px);opacity:.85">');
+    put(fwd ? R : L, fwd ? nx[1] : nx[0]);
+    for (let i = 0; i < n; i++) {
+      const lf = leaf.cloneNode(true), fr = lf.querySelector('.front'), bk = lf.querySelector('.back');
+      lf.style.left = fwd ? '50%' : '0'; lf.style.transformOrigin = fwd ? '0 50%' : '100% 50%'; lf.style.transition = 'none'; lf.style.transform = 'rotateY(0deg)';
+      lf.classList.add('on'); lf.style.zIndex = 60 - i;
+      fr.className = 'face front ' + (fwd ? 'R' : 'L'); bk.className = 'face back ' + (fwd ? 'L' : 'R');
+      if (i === 0) put(fr, fwd ? cur[1] : cur[0]); else fr.innerHTML = filler(heads[i - 1]);
+      bk.innerHTML = i === n - 1 ? pageHTML(fwd ? nx[0] : nx[1]) : filler(heads[i]);
+      spread.appendChild(lf); leaves.push(lf);
+    }
+    void spread.offsetWidth;
+    leaves.forEach((lf, i) => setTimeout(() => { lf.style.zIndex = 100 + i; lf.style.transition = `transform ${dur}ms cubic-bezier(.4,.05,.3,1)`; lf.style.transform = `rotateY(${fwd ? -180 : 180}deg)`; if (i % 2 === 0) rustle(.6); }, i * stag));
+    setTimeout(() => { sp = to; render(); for (const lf of leaves) lf.remove(); turning = false; }, (n - 1) * stag + dur + 40);
   }
   bL.onclick = () => turn(-1); bR.onclick = () => turn(1);
   let sx0 = null;
@@ -423,7 +494,7 @@ body.playing #pause{display:block}
   addEventListener('resize', () => { if (open === book) fit(); });
   if (document.fonts && document.fonts.addEventListener) document.fonts.addEventListener('loadingdone', () => { if (open === book) fit(); });
   // fetch the fonts early, so the book and the roll look right the first time
-  setTimeout(() => { if (document.fonts && document.fonts.load) for (const f of ['16px "IM Fell English"', 'italic 16px "IM Fell English"', '16px "IM Fell English SC"', '700 16px "UnifrakturCook"', '16px "La Belle Aurore"']) document.fonts.load(f).catch(() => {}); }, 2500);
+  setTimeout(() => { if (document.fonts && document.fonts.load) for (const f of ['16px "IM Fell English"', 'italic 16px "IM Fell English"', '16px "IM Fell English SC"', '16px "Herr Von Muellerhoff"', '700 16px "UnifrakturCook"', '16px "La Belle Aurore"']) document.fonts.load(f).catch(() => {}); }, 2500);
 
   return { paused: false, book: openBook, roll: openRoll, menu: openMenu, close: () => hide(), turn, waxSeal, get page() { return sp; } };
 })();
