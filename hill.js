@@ -159,7 +159,7 @@ const HL = (() => {
 
   // ---------- pictures baked once ----------
   let CLOUDW = null, CLOUDG = null, DECK = null;
-  let HILL = null, SMOKE = null, CLOUD = null, TOWN = null, GDOOR = null, GSTONE = null, CAP = null, BEAMC = null, SIGNPIC = null, GWST = null, GWALL = null, SHC = null, CHRSH = null, CHRSH_N = null; const GWST_META = { ax: 61, ground: 306 }; const GWF = []; const CRACKS = [], STONES = [], SEAMS = [], PUFF = [], MASS = [];
+  let HILL = null, SMOKE = null, CLOUD = null, TOWN = null, GDOOR = null, GSTONE = null, CAP = null, BEAMC = null, SIGNPIC = null, GWST = null, GWALL = null, SHC = null, CHRSH = null, CHRSH_N = null; const GWST_META = { ax: 61, ground: 306 }; const GWF = []; const CRACKS = [], STONES = [], SEAMS = [], PUFF = [], MASS = []; let PLUME = null;
   // the hill's outline: h = height above its foot, 0 to TOP; its left side hangs far out over the way
   const TOP = 520, HW = 1500, HH = 640, HOX = 300, HOY = 610;      // the baked picture's size and where the foot's left end lies in it
   const FACE = [[0, 0], [36, -30], [84, -62], [112, -44], [150, -70], [240, -138], [320, -182], [358, -176], [420, -116], [480, -44], [520, 36]];      // a second, lower overhang under the great one
@@ -396,7 +396,7 @@ const HL = (() => {
   }
   function preload() {
     loadOak();
-    if (!loading) loading = Promise.all([Promise.all([loadImg('hill-rock.webp'), loadImg('hill-fire.webp')]).then(([r, f]) => { if (r) { build(); paintHill(r, f); } }), loadPack('wiseman', WIS).catch(() => {}), loadImg('gate-door.webp').then(im => { if (im) GDOOR = soften(im, 4, .7, false, .22); }), loadImg('goodwill-stand.webp').then(im => { if (im) GWST = im; }), loadImg('gate-wall.webp').then(im => { if (im) GWALL = soften(im, 4, .7, true, .22); }), loadImg('gate-stone.webp').then(im => { if (im) GSTONE = im; }), loadPack('evangelist-walk', EVW).catch(() => {}), loadImg('wiseman-stand.webp').then(im => { if (im) WIS_ST = im; }), OBS.ready || loadPack('obstinate', OBS).catch(() => {}), EVS.ready || loadPack('evangelist-stand', EVS).catch(() => {}), RUNP.ready || loadPack('christian-run-plain', RUNP).catch(() => {}),
+    if (!loading) loading = Promise.all([Promise.all([loadImg('hill-rock.webp'), loadImg('hill-fire.webp')]).then(([r, f]) => { if (r) { build(); paintHill(r, f); } }), loadPack('wiseman', WIS).catch(() => {}), loadImg('gate-door.webp').then(im => { if (im) GDOOR = soften(im, 4, .7, false, .22); }), loadImg('goodwill-stand.webp').then(im => { if (im) GWST = im; }), loadImg('smoke-plume.webp').then(im => { if (!im) return; PLUME = { im }; }), loadImg('gate-wall.webp').then(im => { if (im) GWALL = soften(im, 4, .7, true, .22); }), loadImg('gate-stone.webp').then(im => { if (im) GSTONE = im; }), loadPack('evangelist-walk', EVW).catch(() => {}), loadImg('wiseman-stand.webp').then(im => { if (im) WIS_ST = im; }), OBS.ready || loadPack('obstinate', OBS).catch(() => {}), EVS.ready || loadPack('evangelist-stand', EVS).catch(() => {}), RUNP.ready || loadPack('christian-run-plain', RUNP).catch(() => {}),
       WEEP.ready || loadPack('christian-weep', WEEP).catch(() => {}), KNEEL.ready || loadPack('christian-kneel', KNEEL).catch(() => {}), TURN.ready || loadPack('christian-turn', TURN).then(() => bookLoaded('TURN')).catch(() => {}),
       OBS_ST ? 0 : loadImg('obstinate-stand.webp').then(im => { if (im && !OBS_ST) OBS_ST = im; }),
       loadImg('tree-a.webp').then(im => { if (!im) return; const c = mk(im.width, im.height), k = c.getContext('2d'); k.drawImage(im, 0, 0); k.globalCompositeOperation = 'source-in'; k.fillStyle = '#fff'; k.fillRect(0, 0, c.width, c.height); OAKT = c; })]).catch(() => {});
@@ -1139,7 +1139,29 @@ const HL = (() => {
         // glow on the underside of every lobe, each lobe hiding the light of the lobes behind it, so the lumps read one by
         // one. A new mass leaves the vent every two and a half seconds, rises, swells, slowly turns over, and melts into the
         // cloud; the youngest are drawn in front. Paler near the rock, hazed far off, as before; the mask `SMK` as before.
-        const cols = mask => { if (!MASS.length) bakeMasses();
+        // THE PAINTED PLUME (build 260, owner: "Yeah not my favorite - let's try B"): one column of smoke painted by the image model
+        // in the mountain painting's own hand (`assets/smoke-plume.webp`: dark rolling billows lit amber from beneath, cut from
+        // its white paper, mirrored so it leans left with the wind, its top and left edge faded into the cloud), set on both
+        // vents (the second smaller and narrower, out of step). It moves in code: warped once a frame into its own canvas, row pair by row pair (on whole pixels, so no seams), each row swaying
+        // and swelling a little on slow waves that grow with height, so the billows seem to roll. Far off it takes the haze
+        // (a pale copy of the warped picture). The masses below stand in until it loads.
+        const PW = tintC.plume || (tintC.plume = {});
+        const warped = (ox, sp, ph) => { const key = ox + ':' + G.t + ':' + Math.round(k * 1000), cache = PW[ox] || (PW[ox] = { cv: mk(8, 8), hz: mk(8, 8) }); if (cache.key === key) return cache;
+          const im = PLUME.im, kS = Math.min(k, 1), Dh = rocky ? 195 : 90 + 105 * clamp(dark * 1.5), bx0 = sx0 + ox * k, by0 = ox ? hy + (rockTopAt(205) + 6) * k : sy0, dTop = (by0 - sy0) / kS;
+          const h = Math.max(8, Math.round((Dh + 150 + dTop) * kS * sp)), w = h * im.width / im.height * (ox ? .85 : 1), base = .652, pad = Math.ceil(w * .1), cw = Math.ceil(w * 1.08) + 2 * pad, cv = cache.cv;
+          if (cv.width !== cw || cv.height !== h) { cv.width = cw; cv.height = h; } const q = cv.getContext('2d'); q.clearRect(0, 0, cw, h);
+          for (let r = 0; r < h; r += 2) { const v = r / h, lift = 1 - v, sc = 1 + .035 * Math.sin(G.t / 260 + v * 5 + ph) * lift, dx = (.014 * Math.sin(G.t / 170 + v * 6 + ph) + .005 * Math.sin(G.t / 97 + v * 11 + ph * 2)) * w * lift;
+            q.drawImage(im, 0, v * im.height, im.width, 2 / h * im.height, pad + w * base * (1 - sc) + dx, r, w * sc, 2); }
+          Object.assign(cache, { key, x: bx0 - pad - w * base, y: by0 + 4 * kS - h, dirtyHz: true }); return cache; };
+        const plume = (q, ox, sp, ph, al, hz) => { if (al < .005) return; const W = warped(ox, sp, ph); let im = W.cv;
+          if (hz) { if (W.dirtyHz) { const t = W.hz; t.width = W.cv.width; t.height = W.cv.height; const tq = t.getContext('2d'); tq.drawImage(W.cv, 0, 0); tq.globalCompositeOperation = 'source-in'; tq.fillStyle = 'rgb(146,134,140)'; tq.fillRect(0, 0, t.width, t.height); W.dirtyHz = false; } im = W.hz; }
+          q.save(); q.globalAlpha = Math.min(1, al); q.drawImage(im, W.x, W.y); q.restore(); };
+        const cols = mask => { if (PLUME) { const hzP = rocky ? 0 : clamp(1 - dark * 1.6), aP = (.1 + .9 * Math.max(dark, farK * 1.3)) * reveal;
+            for (const [ox, sp, ph] of [[0, 1, 0], [145, .78, 2.3]]) { if (mask) { plume(qs, ox, sp, ph, aP * .7); continue; }
+              c.globalCompositeOperation = 'source-over'; if (hzP > 0) plume(c, ox, sp, ph, aP * hzP * .85, true); plume(c, ox, sp, ph, aP * (1 - hzP));
+              if (F > .02 && hzP < 1) { c.globalCompositeOperation = 'lighter'; plume(c, ox, sp, ph, .18 * F * (1 - hzP)); } }
+            c.globalCompositeOperation = 'source-over'; return; }
+          if (!MASS.length) bakeMasses();
           for (const [ox, N, sp, ph0] of [[0, 22, 1, 0], [145, 18, .78, .37]]) { const kS = Math.min(k, 1), Dh = rocky ? 195 : 90 + 105 * clamp(dark * 1.5), bx0 = sx0 + ox * k, by0 = ox ? hy + (rockTopAt(205) + 6) * k : sy0, dTop = (by0 - sy0) / kS, LIFE = 1800, ms = [];
             const fr = v => v - Math.floor(v);
             for (let i = 0; i < N; i++) { const g = G.t / LIFE + i / N + ph0, gen = Math.floor(g) * N + i; ms.push([fr(g), fr(Math.sin(gen * 12.9898 + ox) * 43758.5453), fr(Math.sin(gen * 78.233 + ox) * 12543.123), fr(Math.sin(gen * 39.425 + ox) * 23421.631), gen]); }

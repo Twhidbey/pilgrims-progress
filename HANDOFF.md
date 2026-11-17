@@ -24,6 +24,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 **Build 245 (keepsakes chat): the closed book's ribbon painted as woven silk (threads, a drifting sheen with a slight twist, a cut end with loose threads). Nothing spent.**
 
+**Build 260 (Level 3 edits chat): the smoke is a PAINTED plume now (plan B; one picture, about 15 cents), swaying in code; see `CLAUDE.md`, "Build 260". Spent in this chat: about 15 cents.**
+
 **Build 258 (Level 3 edits chat): the smoke rebuilt as rolling billow masses lit from the fire below (see `CLAUDE.md`, "Build 258"). If it still does not sing: plan B, a painted plume (about 15 to 25 cents, ask first). Nothing spent.**
 
 **Build 256 (Level 3 edits chat): the smoke columns more billowy (rounder, fuller lobes, lighter on top, darker beneath). Nothing spent.**
