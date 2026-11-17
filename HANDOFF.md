@@ -12,6 +12,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 **Build 255 (small-tweaks chat): the gate's wall and door softer still, with less contrast. See `CLAUDE.md`, "Build 255". Nothing spent.**
 
+**Build 273 (room 3 chat): each room of the house shown whole, smaller, framed in the dark. Nothing spent.**
+
 **Build 270 (room 3 chat): mood sound for every room of the house (made in the browser, no hymn) and warm light on the two visitors by the fire, the open door and the candle. Nothing spent.**
 
 **Build 268 (room 3 chat): room 3 repainted with child-sized boys, Christian painted once in colour for the house, a candle-lit passage between rooms (hold to follow the Interpreter). About 26 cents (the owner allowed up to 50).**

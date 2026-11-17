@@ -149,10 +149,10 @@ const RM = (() => {
   function glow(c, x, y, r, col, a) { if (a <= .003) return; const g = c.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, css(col, a)); g.addColorStop(.4, css(col, a * .35)); g.addColorStop(1, css(col, 0)); c.globalCompositeOperation = 'lighter'; c.fillStyle = g; c.fillRect(x - r, y - r, 2 * r, 2 * r); c.globalCompositeOperation = 'source-over'; }
   function darkWith(c, holes, a) {
     // the whole picture darkened except soft holes of light ([x, y, r] in screen units)
-    if (a <= .003) return; const o = tintBuf(); const q = o.getContext('2d'); q.setTransform(DPR, 0, 0, DPR, 0, 0); q.globalCompositeOperation = 'source-over';
-    q.clearRect(0, 0, VW, VH); q.fillStyle = css([10, 6, 4], a); q.fillRect(0, 0, VW, VH); q.globalCompositeOperation = 'destination-out';
+    if (a <= .003) return; const o = tintBuf(); const q = o.getContext('2d'), T = c.getTransform(); q.setTransform(1, 0, 0, 1, 0, 0); q.clearRect(0, 0, o.width, o.height); q.setTransform(T); q.globalCompositeOperation = 'source-over';
+    q.fillStyle = css([10, 6, 4], a); q.fillRect(-VW, -VH, 3 * VW, 3 * VH); q.globalCompositeOperation = 'destination-out';
     for (const [x, y, r, s = 1] of holes) { const g = q.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, 'rgba(0,0,0,' + s + ')'); g.addColorStop(.55, 'rgba(0,0,0,' + (s * .6) + ')'); g.addColorStop(1, 'rgba(0,0,0,0)'); q.fillStyle = g; q.fillRect(x - r, y - r, 2 * r, 2 * r); }
-    c.setTransform(1, 0, 0, 1, 0, 0); c.drawImage(o, 0, 0); c.setTransform(DPR, 0, 0, DPR, 0, 0);
+    c.setTransform(1, 0, 0, 1, 0, 0); c.drawImage(o, 0, 0); c.setTransform(T);
   }
   let TB = null; const tintBuf = () => { if (!TB) TB = document.createElement('canvas'); if (TB.width !== ctx.canvas.width || TB.height !== ctx.canvas.height) { TB.width = ctx.canvas.width; TB.height = ctx.canvas.height; } return TB; };
   const ring = (x, y) => () => [u(x), v(y)];
@@ -477,7 +477,7 @@ const RM = (() => {
 
   // ---------- moving between rooms ----------
   function enterRoom(id) {
-    R = ROOMS[id]; R.id = id; R.PW = R.PW || 3168; ph = 'in'; t = 0; cam.x = cam.to = R.cam0;
+    R = ROOMS[id]; R.id = id; R.PW = R.PW || 3168; ph = 'in'; t = 0; cam.x = cam.to = id === 'pass' ? R.cam0 : 0;
     ambStart({ door: 'night', r1: 'candle', r2: 'airy', r3: 'still', r4: 'fire', r5: 'palace', r6: 'hollow', r7: 'dread', leave: 'night', pass: 'passage' }[id]);
     G.act = null; G.ring = null; G.actT = 0; downs.clear(); keys.r = keys.push = false;
     R.enter && R.enter();
@@ -505,7 +505,7 @@ const RM = (() => {
   }
   function preload() { pic(ROOMS.door.pic); pic(VIS.C.n); pic(VIS.I.n); pic(VIS.I.say.n); }
 
-  function touch(sx, sy) { if (R && G.act && R.act) { const a = G.act; R.act(sx, sy); if (G.act === a && !G.ring) G.actT = Math.max(G.actT, 95); } }
+  function touch(sx, sy) { if (R) [sx, sy] = unview(sx, sy); if (R && G.act && R.act) { const a = G.act; R.act(sx, sy); if (G.act === a && !G.ring) G.actT = Math.max(G.actT, 95); } }
   function key() { if (R && G.act && R.act) R.act(null, null); }
 
   function update() {
@@ -519,6 +519,7 @@ const RM = (() => {
     sayK = Math.max(0, Math.min(1, sayK + (speaking() ? .25 : -.2)));
     ambTick();
     R.upd && R.upd();
+    if (R.id !== 'pass') cam.x = cam.to = 0;
   }
   function finish() {
     ambStop();
@@ -530,25 +531,39 @@ const RM = (() => {
     document.getElementById('on2').style.display = 'none';
   }
 
+  // THE ROOM SEEN WHOLE (owner, build 271: "rooms feel too claustrophobic ... i'd like to be zoomed out a little - if you
+  // want to you can frame the rooms in black"): each room's whole painting at once, a little smaller (VIEW.Z), hung on the
+  // dark like a picture on a wall, its edges softened into the dark; nothing pans (cam.x stays 0). Everything in the room is
+  // drawn in the same units as before through this one transform; touches are turned back through it (`unview`).
+  const VZ = .8, VIEW = { Z: 1, ox: 0, oy: 0 };
+  function setView() {
+    const Z = R && R.id === 'pass' ? 1 : VZ * Math.min(1, 1204 / (R.PW * S)), top = 440 - R.FY * S;
+    VIEW.Z = Z; VIEW.ox = R && R.id === 'pass' ? 0 : (VW - R.PW * S * Z) / 2; VIEW.oy = R && R.id === 'pass' ? 0 : 14 - top * Z;
+  }
+  const unview = (sx, sy) => [(sx - VIEW.ox) / VIEW.Z, (sy - VIEW.oy) / VIEW.Z];
   function draw() {
     const c = ctx; c.setTransform(DPR, 0, 0, DPR, 0, 0);
-    c.fillStyle = '#140c08'; c.fillRect(0, 0, VW, VH);
+    c.fillStyle = '#0d0806'; c.fillRect(0, 0, VW, VH);
     const im = R && pics[R.pic];
+    if (R) setView();
+    c.setTransform(DPR * VIEW.Z, 0, 0, DPR * VIEW.Z, DPR * VIEW.ox, DPR * VIEW.oy);
     if (R && R.id === 'pass') R.draw(c);
     else if (im) {
-      const w = R.PW * S, h = PH * S, x0 = u(0), y0 = v(0), bot = y0 + h;
+      const w = R.PW * S, h = PH * S, x0 = u(0), y0 = v(0);
+      c.save(); c.beginPath(); c.rect(x0, y0, w, h); c.clip();
       c.drawImage(im, x0, y0, w, h);
-      if (bot < VH) { const hh = 60 * im.height / PH; c.save(); c.translate(0, 2 * bot); c.scale(1, -1); c.drawImage(im, 0, im.height - hh, im.width, hh, x0, bot - 60 * S, w, 60 * S); c.restore(); const g = c.createLinearGradient(0, bot - 10, 0, VH); g.addColorStop(0, 'rgba(14,8,5,.15)'); g.addColorStop(1, 'rgba(14,8,5,.9)'); c.fillStyle = g; c.fillRect(0, bot - 10, VW, VH - bot + 10); }
-      if (y0 > 0) { c.fillStyle = '#140c08'; c.fillRect(0, 0, VW, y0 + .5); }
       R.under && R.under(c);
       R.people && R.people(c);
       R.over && R.over(c);
       if (R.id !== 'door' && R.id !== 'leave' && R.id !== 'r2') for (const m of motes) { const a = .08 * (.5 + .5 * Math.sin(G.t / 50 + m.p)); c.fillStyle = 'rgba(255,236,200,' + a.toFixed(3) + ')'; c.beginPath(); c.arc(m.x, m.y, m.s, 0, 6.2832); c.fill(); }
+      // the painting's edges sink softly into the dark round it
+      for (const [ax, ay, bx, by, xx, yy, ww, hh] of [[x0, 0, x0 + 40, 0, x0, y0, 40, h], [x0 + w, 0, x0 + w - 40, 0, x0 + w - 40, y0, 40, h], [0, y0, 0, y0 + 30, x0, y0, w, 30], [0, y0 + h, 0, y0 + h - 30, x0, y0 + h - 30, w, 30]]) { const g = c.createLinearGradient(ax, ay, bx, by); g.addColorStop(0, 'rgba(13,8,6,.85)'); g.addColorStop(1, 'rgba(13,8,6,0)'); c.fillStyle = g; c.fillRect(xx, yy, ww, hh); }
+      c.restore();
     }
-    { const g = c.createRadialGradient(VW * .5, VH * .5, VH * .45, VW * .5, VH * .5, VW * .75); g.addColorStop(0, 'rgba(14,8,5,0)'); g.addColorStop(1, 'rgba(14,8,5,.4)'); c.fillStyle = g; c.fillRect(0, 0, VW, VH); }
+    if (G.ring) { const [x, y] = G.ring(); c.strokeStyle = '#ffe6ae'; c.lineWidth = 2 / VIEW.Z; for (const q0 of [0, .5]) { const q = (G.t / 80 + q0) % 1; c.globalAlpha = .65 * (1 - q); c.beginPath(); c.arc(x, y, (14 + q * 40) / VIEW.Z, 0, 6.2832); c.stroke(); } c.globalAlpha = 1; }
+    c.setTransform(DPR, 0, 0, DPR, 0, 0);
     for (const tp of G.taps) { tp.t++; c.strokeStyle = css([247, 243, 233], .5 * (1 - tp.t / 40)); c.lineWidth = 1.2; c.beginPath(); c.arc(tp.x, tp.y, 6 + tp.t * .8, 0, 7); c.stroke(); }
     G.taps = G.taps.filter(tp => tp.t < 40);
-    if (G.ring) { const [x, y] = G.ring(); c.strokeStyle = '#ffe6ae'; c.lineWidth = 2; for (const q0 of [0, .5]) { const q = (G.t / 80 + q0) % 1; c.globalAlpha = .65 * (1 - q); c.beginPath(); c.arc(x, y, 14 + q * 40, 0, 6.2832); c.stroke(); } c.globalAlpha = 1; }
     if (fade > .003) { c.fillStyle = css([10, 6, 4], smooth(0, 1, fade)); c.fillRect(0, 0, VW, VH); }
     drawItems();
   }
