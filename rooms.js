@@ -12,10 +12,9 @@
 // Every room is ONE still picture, painted by the image model in the game's watercolour after its master (concept
 // notes in CLAUDE.md, "THE INTERPRETER'S HOUSE IN THE GAME"), quietened in code: assets/room-door.webp, room1..7.webp
 // (room3.webp is cut narrower). The people who belong to a room are in its picture; Christian and the Interpreter are
-// the game's watercolour figures coloured in the house's palette (room3-christian.webp, room3-interpreter.webp, Good-will's
-// picture standing in for the Interpreter), placed in each room, breathing in code. Everything that moves is code:
-// light, dust, water, gold, bubbles, fire, the brave man, the dreamer's trembling. In room 2 the two visitors are in the
-// picture itself.
+// the game's watercolour figures coloured in the house's palette (room3-christian.webp; the Interpreter's own two pictures,
+// room-interpreter.webp standing and room-interpreter-say.webp explaining), placed in each room, breathing in code. Everything that moves is code:
+// light, dust, water, gold, bubbles, fire, the brave man, the dreamer's trembling. 
 //
 // Picture units: a picture's own pixels (P, 3168 x 1344 at full size) are laid at S units each; the camera's left edge is
 // cam.x units into the picture; each room's floor line (FY, in P) is laid at 440 so feet stand above the words; below
@@ -29,7 +28,7 @@ const RM = (() => {
   const darkOn = () => { try { return localStorage.getItem('pp-dark') === '1'; } catch (e) { return false; } };
 
   // the two visitors (sprites face LEFT as made; face 1 = turned to face right)
-  const VIS = { C: { n: 'room3-christian', ax: 150, g: 624, who: 'Christian', ph: 0 }, I: { n: 'room3-interpreter', ax: 90, g: 612, who: I, ph: 1.7 } };
+  const VIS = { C: { n: 'room3-christian', ax: 150, g: 624, who: 'Christian', ph: 0 }, I: { n: 'room-interpreter', ax: 86, g: 611, who: I, ph: 1.7, say: { n: 'room-interpreter-say', ax: 153, g: 611 } } };
   const BRAVE = { plain: { n: 'room5-brave', ax: 65, g: 519 }, armed: { n: 'room5-brave-armed', ax: 163, g: 519 } };
 
   let R = null, t = 0, ph = '', cam = { x: 0, to: 0 }, fade = 1, fadeTo = 0, after = null, toned = {}, startId = 'door', motes = [];
@@ -64,7 +63,7 @@ const RM = (() => {
     const cv2 = document.createElement('canvas'); cv2.width = im.width; cv2.height = im.height; const x = cv2.getContext('2d');
     x.drawImage(im, 0, 0); const d = x.getImageData(0, 0, im.width, im.height), p = d.data, sat = R && R.sat != null ? R.sat : .6;
     let m = 0, cnt = 0; for (let i = 0; i < p.length; i += 4) if (p[i + 3] > 128) { m += (p[i] + p[i + 1] + p[i + 2]) / 3; cnt++; } m /= cnt || 1;
-    for (let i = 0; i < p.length; i += 4) { const l = (p[i] + p[i + 1] + p[i + 2]) / 3; for (let k = 0; k < 3; k++) { let c = l + (p[i + k] - l) * sat; c = m + (c - m) * 1.4; p[i + k] = Math.max(0, Math.min(255, c * col[k] / 255)); } }
+    for (let i = 0; i < p.length; i += 4) { const l = (p[i] + p[i + 1] + p[i + 2]) / 3; for (let k = 0; k < 3; k++) { let c = l + (p[i + k] - l) * sat; c = m + (c - m) * 1.2; p[i + k] = Math.max(0, Math.min(255, c * col[k] / 255)); } }
     x.putImageData(d, 0, 0);
     return toned[key] = cv2;
   }
@@ -76,7 +75,14 @@ const RM = (() => {
     c.globalAlpha = a; c.save(); c.translate(fx, fy - bob); if (mv) c.transform(1, 0, -mv.sh * -face, 1, 0, 0); c.scale(-face, sy);
     c.drawImage(im, -meta.ax * sc, -meta.g * sc, im.width * sc, im.height * sc); c.restore(); c.globalAlpha = 1;
   }
-  const visitor = (c, key, x, face, k = R.k || 1, a = 1, up = 0) => { const m = VIS[key]; fig(c, m.n, m, x, R.FY - up, face, k, a, R.tone, m.who, m.ph); };
+  // the Interpreter lifts his open hand while he speaks (his second picture), and folds his hands again after
+  let sayK = 0;
+  const speaking = () => (SPK && SPK.who === I) || (G.state === 'dialog' && dWho.textContent === I);
+  const visitor = (c, key, x, face, k = R.k || 1, a = 1, up = 0) => {
+    const m = VIS[key];
+    if (m.say && pics[m.say.n]) { const q = smooth(0, 1, sayK); if (q < 1) fig(c, m.n, m, x, R.FY - up, face, k, a * (1 - q), R.tone, m.who, m.ph); if (q > 0) fig(c, m.say.n, m.say, x, R.FY - up, face, k, a * q, R.tone, m.who, m.ph); return; }
+    fig(c, m.n, m, x, R.FY - up, face, k, a, R.tone, m.who, m.ph);
+  };
   // Christian walking (leaving): the game's own walk pictures, dark against the night
   const WALKT = new Map();
   function walker(c, x, frame, k) {
@@ -147,7 +153,7 @@ const RM = (() => {
     },
     // 2 THE DUSTY PARLOUR (after Vermeer's Milkmaid): the broom raises the dust; the water lays it
     r2: {
-      pic: 'room2', FY: 1262, cam0: 140, tone: [255, 255, 255],
+      pic: 'room2', FY: 1262, cam0: 140, tone: [300, 288, 268],
       enter() { this.dust = []; this.haze = .22; this.wet = []; const r = rngR(5); for (let i = 0; i < 70; i++) this.dust.push({ x: 300 + r() * 2800, y: 300 + r() * 900, vx: 0, vy: 0, s: 2 + r() * 5, a: .5 + r() * .5, p: r() * 7 }); },
       run() { talk([[N, 'He led him into a very large parlour, full of dust, because it was never swept.'], [TIP, 'Touch the broom.', 'broom']], () => { ph = 'sweep'; t = 0; G.state = 'auto'; }); },
       act(sx, sy) {
@@ -176,6 +182,7 @@ const RM = (() => {
         for (const w of this.wet) { w.vy += .35; w.x += w.vx; w.y += w.vy; w.l++; }
         this.wet = this.wet.filter(w => w.y < 1260);
       },
+      people(c) { visitor(c, 'I', 560, 1); visitor(c, 'C', 1290, 1); },
       over(c) {
         c.fillStyle = css([170, 150, 120], this.haze * .75); c.fillRect(0, 0, VW, VH);
         for (const d of this.dust) { const a = Math.min(1, d.a * (.45 + this.haze)); const r = d.s * S * 3; const g = c.createRadialGradient(u(d.x), v(d.y), 0, u(d.x), v(d.y), r); g.addColorStop(0, css([206, 188, 160], a * .7)); g.addColorStop(1, css([196, 178, 150], 0)); c.fillStyle = g; c.fillRect(u(d.x) - r, v(d.y) - r, 2 * r, 2 * r); }
@@ -408,10 +415,10 @@ const RM = (() => {
     downs.clear(); keys.r = keys.push = false; toned = {};
     if (audio()) { AC.resume(); if (rainG) rainG.gain.setTargetAtTime(0, AC.currentTime, .8); }
     G.state = 'wait'; fade = 1; fadeTo = 0; after = null;
-    const need = [ROOMS[id].pic, VIS.C.n, VIS.I.n].concat(id === 'r3' ? ['room3-rags'] : []).concat(id === 'r5' ? [BRAVE.plain.n, BRAVE.armed.n] : []);
+    pic(VIS.I.say.n); const need = [ROOMS[id].pic, VIS.C.n, VIS.I.n].concat(id === 'r3' ? ['room3-rags'] : []).concat(id === 'r5' ? [BRAVE.plain.n, BRAVE.armed.n] : []);
     Promise.all(need.map(pic)).then(() => { enterRoom(id); setTimeout(() => { if (RM.on && G.state === 'wait' && R && R.id === id) { ph = 'run'; R.run(); } }, 1200); });
   }
-  function preload() { pic(ROOMS.door.pic); pic(VIS.C.n); pic(VIS.I.n); }
+  function preload() { pic(ROOMS.door.pic); pic(VIS.C.n); pic(VIS.I.n); pic(VIS.I.say.n); }
 
   function touch(sx, sy) { if (R && G.act && R.act) { const a = G.act; R.act(sx, sy); if (G.act === a && !G.ring) G.actT = Math.max(G.actT, 95); } }
   function key() { if (R && G.act && R.act) R.act(null, null); }
@@ -424,6 +431,7 @@ const RM = (() => {
     if (!R) return;
     cam.x += (cam.to - cam.x) * .03;
     for (const m of motes) { m.x += m.v; m.y += Math.sin(G.t / 90 + m.p) * .05; if (m.x > VW) m.x = 0; }
+    sayK = Math.max(0, Math.min(1, sayK + (speaking() ? .12 : -.08)));
     R.upd && R.upd();
   }
   function finish() {
