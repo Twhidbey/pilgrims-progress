@@ -6,6 +6,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 Older handovers (builds 41 to 137, with the picture and video prompts used for Help, Christian reaching, the grip and lift, the gate and the wall) were folded away in build 140; they are in git (`HANDOFF.md` at build 137). The voice descriptions and the first picture prompts are kept in the build notes below.
 
+**Build 204: no grey discs under the men in the Slough (mist lens kept above the surface, churned patches fainter, rings flat). Nothing spent.**
+
 **Build 200: the Slough recomposed, free (closer camera through the fall, the quarrel, the wading and "could not get out"; darker mud; no ghost outlines). WAITING ON THE OWNER: two mire videos made in deep mud, about $1.12 (see `CLAUDE.md`, "Build 200"). Nothing spent.**
 
 **Build 197: a real kneel at Evangelist's feet (one video, about 56 cents, the owner said yes), made to serve many levels (the Cross, prayer; backwards = rising); see `CLAUDE.md`, "Build 197". The new rule: every video must earn its keep across the whole game (`CLAUDE.md`, "Making pictures, videos and voices"). Level 3's voices: the tool found NONE missing (all were recorded in build 164; the old "16 lines still to record" note was stale). Spent: about 56 cents.**

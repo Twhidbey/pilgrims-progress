@@ -66,7 +66,7 @@ const SL = (() => {
   // small pools at first, more and bigger ones further on, open water at last; long across and thin down the picture,
   // since pools are seen edge-on)
   const poolAt = (x, yy) => { const w = smooth(-770, -225, x), T = .86 - .52 * w, n = .6 * cloudN(x * .009, yy * .3 + 3) + .4 * cloudN(x * .024 + 9, yy * .55 + 1); return smooth(T - .022, T + .022, n); };
-  const MUD_X0 = -1040, MUD_W = 880, MUD_H = 270;
+  const MUD_X0 = -1250, MUD_W = 1090, MUD_H = 270;      // build 203: the map runs from where the water begins (WATER_L): by the home bank it is all mud, no mirror (a paler column showed under Pliable where the mirror faded in)
   const BANK0 = -160, HOME0 = -1010;                       // where each bank meets the water
   const WATER_L = -1250;                                  // the water in front of everything begins here; to the left is the plain
   // build 121 (owner: "feet connecting with ground once Christian hits the right side is a continuous problem"): the far
@@ -202,7 +202,7 @@ const SL = (() => {
     mudMap = mk(MUD_W, MUD_H); { const c = mudMap.getContext('2d'), d = c.createImageData(MUD_W, MUD_H);
       for (let j = 0; j < MUD_H; j++) for (let i = 0; i < MUD_W; i++) {
         const x = MUD_X0 + i, yy = Math.pow(j + 1, .82), a = 1 - poolAt(x, yy);
-        const o = (j * MUD_W + i) * 4; d.data[o] = d.data[o + 1] = d.data[o + 2] = 255; d.data[o + 3] = 255 * clamp(a * smooth(HOME0 - 20, HOME0 + 240, x));
+        const o = (j * MUD_W + i) * 4; d.data[o] = d.data[o + 1] = d.data[o + 2] = 255; d.data[o + 3] = 255 * clamp(a);
       }
       c.putImageData(d, 0, 0); }
     fogBank = mk(360, 96); { const c = fogBank.getContext('2d'), d = c.createImageData(360, 96), col = tone(.93);
@@ -943,7 +943,7 @@ const SL = (() => {
       for (const r of rings) {
         const u = r.t / 150, cxr = X(r.x), cyr = wl + 1 + r.y * z, a0 = far ? Math.PI : 0, a1 = far ? 2 * Math.PI : Math.PI;
         const wet = wetAt(r.x);      // build 132: in mud a slow dark swell; the more water there is, the quicker, wider and brighter the ring
-        for (let i = 1; i <= 2; i++) { const rx = (14 + i * 18 + u * lerp(46, 78, wet)) * z * r.k, ry = rx * .17, a = (1 - u) * (1 - i * .28) * (far ? .82 : 1);
+        for (let i = 1; i <= 2; i++) { const rx = (14 + i * 18 + u * lerp(46, 78, wet)) * z * r.k, ry = rx * .08, a = (1 - u) * (1 - i * .28) * (far ? .82 : 1);
           ctx.lineWidth = 2.4 * (1 - .45 * wet); ctx.strokeStyle = css(DARK, .36 * a * (1 - .5 * wet)); ctx.beginPath(); ctx.ellipse(cxr, cyr, rx, ry, 0, a0, a1); ctx.stroke();
           ctx.lineWidth = 1; ctx.strokeStyle = css(LIGHT, (.24 + .4 * wet) * a); ctx.beginPath(); ctx.ellipse(cxr, cyr + 1.9, rx, ry, 0, a0, a1); ctx.stroke(); }
       }
@@ -953,7 +953,7 @@ const SL = (() => {
     // but not as much near their faces"): a flat lens of mist hugs the surface round each of them, thickest at the mud
     // line and gone by chest height, so heads and shoulders stand clear above it
     { const low = (x, a, ry = 40) => { if (a <= .02) return; const mx = X(x), my = wl - 9 * z; if (mx < -200 || mx > VW + 200) return;
-        ctx.save(); ctx.translate(mx, my); ctx.scale(150 * z, ry * z); const g = ctx.createRadialGradient(0, 0, 0, 0, 0, 1);
+        ctx.save(); ctx.beginPath(); ctx.rect(0, 0, VW, wl); ctx.clip(); ctx.translate(mx, my); ctx.scale(150 * z, ry * z); const g = ctx.createRadialGradient(0, 0, 0, 0, 0, 1);      // build 203: only above the surface (below it, on the darker mud, it showed as a pale grey disc under each man)
         g.addColorStop(0, css(tone(.93), .5 * a)); g.addColorStop(.5, css(tone(.93), .3 * a)); g.addColorStop(1, css(tone(.93), 0));
         ctx.fillStyle = g; ctx.fillRect(-1, -1, 2, 2); ctx.restore(); };
       if (['fall', 'pli', 'back', 'backtalk', 'wade', 'stuck', 'help'].includes(ph)) { const deep = smooth(C_SINK + 10, SINK + DEEP, C2.y);      // the deeper he is, the lower and thinner it lies: his head must stay clear
@@ -1008,7 +1008,8 @@ const SL = (() => {
     // --- THE MIRE, IN FRONT OF THE MIRROR (build 143): the churned mud, the far half of every ring, the figures in the mire,
     // then the mud surface that answers them (see "THE MUD ANSWERS THE FIGURES"), the strings, the drops, and the near
     // half of every ring ---
-    if (mudGd) { ctx.fillStyle = mudGd; for (const [sx, a] of mudCh) { ctx.globalAlpha = a; ctx.fillRect(sx, wl, 5, 44 * z); } ctx.globalAlpha = 1; }
+    // build 203 (owner: "the grey circles (shadows) below Christian and pliable don't look right"): the churned patch only a faint, shallow darkening at the surface
+    if (mudGd) { ctx.fillStyle = mudGd; for (const [sx, a] of mudCh) { ctx.globalAlpha = a * .35; ctx.fillRect(sx, wl, 5, 16 * z); } ctx.globalAlpha = 1; }
     ripples(true);
     ctx.setTransform(S * z, 0, 0, S * z, S * (VW / 2 - cx * z), S * wl);
     if (pliIn) { TALKM = talkMove(PL); pliMire(ctx); TALKM = null; }
