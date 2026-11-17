@@ -9,14 +9,14 @@
 <meta name="apple-mobile-web-app-title" content="Pilgrim">
 <meta name="theme-color" content="#1b1c22">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="assets/icon-180.png?v=187">
+<link rel="apple-touch-icon" href="assets/icon-180.png?v=206">
 <script>
 // THE EDITOR AS ITS OWN HOME SCREEN APP (build 193; owner: "I want an editor link that I can put on my phone Home Screen and it
 // updates with changes"). On the editor's link the page offers its own manifest (start "./?edit"), name and icon, so an icon
 // added from it opens the editor; it updates itself like the game (freshCopy keeps ?edit when it reloads).
 if (/[?&]edit(=|&|$)/.test(location.search)) {
   document.querySelector('link[rel=manifest]').href = 'edit.webmanifest';
-  document.querySelector('link[rel=apple-touch-icon]').href = 'assets/icon-edit-180.png?v=195';
+  document.querySelector('link[rel=apple-touch-icon]').href = 'assets/icon-edit-180.png?v=206';
   document.querySelector('meta[name=apple-mobile-web-app-title]').content = 'PP Editor';
   document.title = "Pilgrim's Progress (editor)";
 }
@@ -148,7 +148,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">build 205 · Nov 17 2026</div>
+  <div id="build">build 206 · Nov 17 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -2399,6 +2399,12 @@ for (const b of document.querySelectorAll('#levels .lv')) { b.classList.toggle('
   g = x.createLinearGradient(0, cy - 60, 0, cy + 60); g.addColorStop(0, '#e2c27e'); g.addColorStop(.5, '#b58c48'); g.addColorStop(1, '#d8b56e'); x.fillStyle = g;
   x.fillRect(cx - 6, cy - 58, 12, 116); x.fillRect(cx - 38, cy - 24, 76, 12);
   const el = document.querySelector('.tcover'); el.style.backgroundImage = 'url(' + c.toDataURL('image/jpeg', .88) + ')';
+  // build 206 (owner: "make cover of pilgrim book have a super realistic leather look like an old book (no need for cross,
+  // per se) ... find some images online (cheaper!!)"): a photograph of a real 17th-century English calf binding (British
+  // Library, on Wikimedia Commons under CC0: "Of the consecration of the bishops in the Church of England - Upper cover
+  // (c67h3)"), its owner's gilt arms taken out (filled with leather from lower on the same cover), the gilt fillet,
+  // the wear and the spine's raised bands kept. The drawn cover above stays only until the photograph has loaded.
+  { const im = new Image(); im.onload = () => { el.style.backgroundImage = 'url(assets/cover-calf.webp?v=206)'; }; im.src = 'assets/cover-calf.webp?v=206'; }
   el.onclick = () => { const o = document.getElementById('open'); if (o.style.visibility === 'visible' && o.style.display !== 'none') o.click(); };
 })();
 document.getElementById('open').onclick = () => {
