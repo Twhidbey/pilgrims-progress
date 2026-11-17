@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="Pilgrim">
 <meta name="theme-color" content="#1b1c22">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="assets/icon-180.png">
+<link rel="apple-touch-icon" href="assets/icon-180.png?v=187">
 <title>Pilgrim's Progress</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=La+Belle+Aurore&family=UnifrakturMaguntia&display=swap" rel="stylesheet">
@@ -27,7 +27,32 @@ button{font-family:Georgia,'Times New Roman',serif;-webkit-appearance:none;appea
 .card p{font-size:calc(var(--s,1) * 19px);margin:.25em 1em;color:rgba(244,236,220,.9)}
 .btn{font-size:calc(var(--s,1) * 22px);font-style:italic;padding:.4em 1.7em;border-radius:40px;border:1px solid rgba(244,236,220,.7);background:rgba(20,22,30,.28);color:#f4ecdc;cursor:pointer;margin:.7em .3em 0}
 .btn:active{transform:scale(.96)}
-#title{background:radial-gradient(ellipse at 50% 45%,rgba(18,20,28,.2),rgba(18,20,28,.62))}
+/* the title page (build 187): the book alone, one warm light on it, nothing of the world behind (--u = picture width / 960) */
+#title{background:radial-gradient(ellipse 55% 60% at 50% 46%,#2e2820,#17161a 70%,#0f0f13);justify-content:flex-start;perspective:calc(var(--u,1) * 1800px)}
+.tbook{position:relative;width:calc(var(--u,1) * 640px);height:calc(var(--u,1) * 448px);margin-top:calc(var(--u,1) * 16px);transform:translateX(calc(var(--u,1) * 160px));transition:transform 1.5s cubic-bezier(.4,.1,.2,1);transform-style:preserve-3d}
+body.opened .tbook{transform:none}
+.tpage{position:absolute;top:0;width:50%;height:100%;box-sizing:border-box;color:#2a2018;text-shadow:none;font-family:'IM Fell English',Georgia,serif;background-color:#e6d9bc;background-size:cover;box-shadow:0 calc(var(--u,1) * 10px) calc(var(--u,1) * 40px) rgba(0,0,0,.55)}
+.tp{left:0;border-radius:2px 0 0 2px}
+.tc{left:50%;transform-origin:0 50%;transform:rotateY(-100deg);opacity:0;transition:transform 1.5s cubic-bezier(.4,.1,.2,1),opacity .5s;border-radius:0 2px 2px 0}
+body.opened .tc{transform:none;opacity:1}
+.tc::before{content:'';position:absolute;inset:0 auto 0 0;width:12%;background:linear-gradient(90deg,rgba(60,40,20,.28),rgba(60,40,20,0));pointer-events:none}
+.tp::after{content:'';position:absolute;inset:0 0 0 auto;width:10%;background:linear-gradient(270deg,rgba(60,40,20,.24),rgba(60,40,20,0));pointer-events:none}
+.tpin{position:absolute;inset:calc(var(--u,1) * 26px) calc(var(--u,1) * 30px);border:calc(var(--u,1) * 1.4px) solid rgba(150,40,30,.55);outline:calc(var(--u,1) * .7px) solid rgba(150,40,30,.45);outline-offset:calc(var(--u,1) * 3px);display:flex;flex-direction:column;align-items:center;justify-content:space-evenly;padding:calc(var(--u,1) * 10px) calc(var(--u,1) * 14px);text-align:center;line-height:1.15}
+.t1{font-size:calc(var(--u,1) * 13px);letter-spacing:.2em}.t2{font-size:calc(var(--u,1) * 33px);font-style:italic;line-height:1}
+.t3{font-family:'IM Fell English SC','IM Fell English',Georgia,serif;font-size:calc(var(--u,1) * 17px);letter-spacing:.08em}.t4{font-size:calc(var(--u,1) * 19px)}
+.t5{font-size:calc(var(--u,1) * 12.5px);font-style:italic}.t6{font-size:calc(var(--u,1) * 10.5px)}.sp{letter-spacing:.18em}
+.t2,.t4.sp{color:#8a2a1e}
+.trule{width:70%;height:0;border-top:calc(var(--u,1) * .8px) solid rgba(42,32,24,.6)}.trule.d{border-top-style:double;border-top-width:calc(var(--u,1) * 3px)}
+.tdream{font-style:italic;color:rgba(42,32,24,.8);padding:0 6%}
+#levels{display:flex;flex-direction:column;align-items:stretch;width:100%}
+#levels .lv{display:flex;align-items:baseline;white-space:nowrap;font-family:'IM Fell English',Georgia,serif;font-size:max(8px,calc(var(--u,1) * 15.5px));text-align:left;background:none;border:none;color:rgba(42,32,24,.7);padding:.45em .2em;cursor:pointer;border-bottom:1px dotted rgba(42,32,24,.3)}
+#levels .lv i{flex:0 0 2.3em;font-style:normal;color:#8a2a1e}
+#levels .lv:not(.dim){color:#2a2018}#levels .lv:not(.dim)::after{content:'\261C';color:#8a2a1e;margin-left:auto;padding-left:.4em}
+#levels .lv:active{color:#8a2a1e}
+.tfoot{display:flex;align-items:center;justify-content:center;height:calc(var(--u,1) * 70px)}
+.tfoot h2{margin:0;font-family:'IM Fell English',Georgia,serif;font-style:italic;text-transform:none;letter-spacing:.05em}
+body.opened .tfoot{visibility:hidden}
+body.portrait .tc .tpin{left:calc(var(--u,1) * 18px);right:calc(var(--u,1) * 14px);padding-left:calc(var(--u,1) * 6px);padding-right:calc(var(--u,1) * 4px)}body.portrait #levels .lv i{flex-basis:2em}
 #endc{background:radial-gradient(ellipse at 50% 45%,rgba(60,40,10,.05),rgba(40,26,8,.42));opacity:0;pointer-events:none}
 #endc.on{opacity:1;pointer-events:auto}
 /* the words: a thin strip of light text on the dark road, under everyone's feet */
@@ -51,10 +76,6 @@ body.slough #dlg{background:linear-gradient(rgba(14,14,20,0),rgba(14,14,20,.78) 
 #choice button:active{transform:scale(.96)}
 #snd{position:absolute;right:1%;top:1.5%;width:2.2em;height:2.2em;border-radius:50%;border:none;background:rgba(20,22,30,.22);color:rgba(244,236,220,.8);font-size:clamp(14px,2vw,19px);cursor:pointer;display:none}
 body.playing #snd,body.opened #snd{display:block}
-#levels{animation:rise 1.4s ease both;display:flex;flex-direction:column;align-items:center}
-#levels .btn{margin-top:.55em;min-width:13.5em}
-#levels .btn i{font-style:normal;opacity:.6;margin-right:.5em}
-#levels .btn.dim{border-color:rgba(244,236,220,.3);color:rgba(244,236,220,.72)}
 #snd.off{color:rgba(244,236,220,.35);text-decoration:line-through}
 #build{position:absolute;right:1.2%;bottom:1%;font:max(8px,calc(var(--s,1) * 12px)) Georgia,serif;color:rgba(255,250,235,.7);text-shadow:0 0 3px rgba(0,0,0,.7);pointer-events:none}
 body.talking #build,body.capped #build{visibility:hidden}
@@ -68,14 +89,40 @@ body.portrait #rot{display:block}
   <div id="dlg"><div class="txt"><span class="who"></span><span class="t"></span></div><div class="more">tap ▸</div></div>
   <div id="choice"><button id="chHome">Go home</button><button id="chOn">Go on to the light</button></div>
   <div id="title" class="card">
-    <h1>Pilgrim's Progress</h1>
-    <h2 id="sub">Getting ready…</h2>
-    <button class="btn" id="open" style="visibility:hidden">Open the book</button>
-    <div id="levels" style="display:none">
-      <button class="btn lv" data-lv="1"><i>1</i>The City of Destruction</button>
-      <button class="btn lv" data-lv="2"><i>2</i>The Slough of Despond</button>
-      <button class="btn lv" data-lv="3"><i>3</i>Mr. Worldly Wiseman</button>
+    <!-- THE BOOK (build 187): the title page as first printed in 1678, alone on a dark ground; "Open the book" swings the
+         contents page open beside it. Nothing of the world shows until a level is chosen. -->
+    <div class="tbook">
+      <div class="tpage tp"><div class="tpin">
+        <div class="t1">THE</div>
+        <div class="t2">Pilgrim's Progress</div>
+        <div class="t3">FROM</div>
+        <div class="t4">THIS WORLD,</div>
+        <div class="t1">TO</div>
+        <div class="t4">That which is to come:</div>
+        <div class="trule"></div>
+        <div class="t5">Delivered under the Similitude of a</div>
+        <div class="t4 sp">DREAM</div>
+        <div class="t5">Wherein is Discovered, The manner of his setting out, His Dangerous Journey; And safe Arrival at the Desired Countrey.</div>
+        <div class="trule"></div>
+        <div class="t5">I have used Similitudes, <i>Hos.</i> 12. 10.</div>
+        <div class="trule"></div>
+        <div class="t3">By JOHN BUNYAN.</div>
+        <div class="trule d"></div>
+        <div class="t6"><i>LONDON,</i> Printed for <i>Nath. Ponder</i> at the <i>Peacock</i> in the <i>Poultrey</i> near <i>Cornhil</i>, 1678.</div>
+      </div></div>
+      <div class="tpage tc"><div class="tpin">
+        <div class="t3 sp">THE CONTENTS.</div>
+        <div class="trule"></div>
+        <div id="levels" style="display:none">
+          <button class="lv" data-lv="1"><i>I.</i>The City of Destruction</button>
+          <button class="lv" data-lv="2"><i>II.</i>The Slough of Despond</button>
+          <button class="lv" data-lv="3"><i>III.</i>Mr. Worldly Wiseman</button>
+        </div>
+        <div class="trule d"></div>
+        <div class="t6 tdream">As I walked through the wilderness of this world, I lighted on a certain place where was a Den, and I laid me down in that place to sleep: and, as I slept, I dreamed a dream.</div>
+      </div></div>
     </div>
+    <div class="tfoot"><h2 id="sub">Getting ready…</h2><button class="btn" id="open" style="visibility:hidden">Open the book</button></div>
   </div>
   <div id="endc" class="card">
     <h1 style="font-size:calc(var(--s,1) * 44px)">Out of the city</h1>
@@ -85,7 +132,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">build 186 · Nov 17 2026</div>
+  <div id="build">build 187 · Nov 17 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -117,6 +164,7 @@ function fit() {
   cv.width = Math.round(VW * DPR); cv.height = Math.round(VH * DPR);
   // BUILD 144: the title and end cards are sized by the picture, not the screen, so they never spill out of it
   // (portrait iPhone: the picture is only about 240 tall). A phone held upright gets them a little larger.
+  stage.style.setProperty('--u', (sw / VW).toFixed(4));
   stage.style.setProperty('--s', Math.min(1.25, sw / VW * (portrait ? 1.4 : 1.12)).toFixed(3));
   document.getElementById('rot').style.top = (stage.getBoundingClientRect().bottom + 22) + 'px';
 }
@@ -2257,10 +2305,24 @@ function start() {
   const run = ++runN; G.state = 'wait'; setTimeout(() => { if (run === runN && G.state === 'wait') talk(INTRO); }, 1700);   // the bell, then the story
 }
 for (const b of document.querySelectorAll('#levels .lv')) { b.classList.toggle('dim', +b.dataset.lv !== LV); b.onclick = () => +b.dataset.lv === 3 ? go3() : +b.dataset.lv === 2 ? go2() : start(); }
+// the title page's paper (build 187): laid paper as in a book of the 1670s: warm cream, cloudy pulp, faint chain lines,
+// a few spots of foxing, darker toward the edges. Made once, small, and stretched over both pages.
+(function paperPages() {
+  const W = 330, H = 448, c = mk(W, H), x = c.getContext('2d'), r = rng(1678);
+  x.fillStyle = '#e8dbbd'; x.fillRect(0, 0, W, H);
+  for (let i = 0; i < 260; i++) { const px = r() * W, py = r() * H, rad = 6 + r() * 30, g = x.createRadialGradient(px, py, 0, px, py, rad), d = r() < .5;
+    g.addColorStop(0, d ? 'rgba(150,120,80,.06)' : 'rgba(255,250,235,.08)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.fillRect(px - rad, py - rad, rad * 2, rad * 2); }
+  x.strokeStyle = 'rgba(120,95,60,.07)'; x.lineWidth = 1; for (let px = 14; px < W; px += 26) { x.beginPath(); x.moveTo(px, 0); x.lineTo(px + (r() - .5) * 2, H); x.stroke(); }
+  x.strokeStyle = 'rgba(120,95,60,.03)'; for (let py = 0; py < H; py += 2) { x.beginPath(); x.moveTo(0, py); x.lineTo(W, py); x.stroke(); }
+  for (let i = 0; i < 14; i++) { const px = r() * W, py = r() * H, rad = 1 + r() * 4, g = x.createRadialGradient(px, py, 0, px, py, rad); g.addColorStop(0, 'rgba(140,90,40,.22)'); g.addColorStop(1, 'rgba(140,90,40,0)'); x.fillStyle = g; x.fillRect(px - rad, py - rad, rad * 2, rad * 2); }
+  const id = x.getImageData(0, 0, W, H), d = id.data; for (let i = 0; i < d.length; i += 4) { const n = (r() - .5) * 10; d[i] += n; d[i + 1] += n; d[i + 2] += n; } x.putImageData(id, 0, 0);
+  const e = x.createRadialGradient(W / 2, H / 2, H * .3, W / 2, H / 2, H * .75); e.addColorStop(0, 'rgba(110,80,40,0)'); e.addColorStop(1, 'rgba(110,80,40,.22)'); x.fillStyle = e; x.fillRect(0, 0, W, H);
+  const url = 'url(' + c.toDataURL('image/jpeg', .86) + ')'; for (const pg of document.querySelectorAll('.tpage')) pg.style.backgroundImage = url;
+})();
 document.getElementById('open').onclick = () => {
   document.getElementById('open').style.display = 'none'; document.body.classList.add('opened');
   if (audio()) { AC.resume(); G.opening = { t: 0, next: 70, n: 0, last: 0 }; fetchVoices(); }
-  setTimeout(() => { document.getElementById('levels').style.display = ''; }, 2600);
+  document.getElementById('levels').style.display = '';
 };
 document.getElementById('again').onclick = () => HL.on ? HL.start() : SL.on ? SL.start() : start();
 document.getElementById('on2').onclick = () => SL.on ? go3() : go2();
@@ -2289,8 +2351,7 @@ document.getElementById('on2').onclick = () => SL.on ? go3() : go2();
     PROP.road = { lamp: im.lamp && bakeTint(im.lamp, .5, PROP_DETAIL) };
     for (const lv in LEVELS) { PROP[lv] = {}; for (const k in im) if (k !== 'lamp' && im[k]) PROP[lv][k] = bakeTint(im[k], LEVELS[lv].depth, LEVELS[lv].detail); } }
   reset();
-  document.getElementById('sub').textContent = 'From this world to that which is to come';
-  if (LV === 2) SL.title(); if (LV === 3) HL.title();
+  document.getElementById('sub').textContent = '';      // build 187: the title is the book itself; no level's scene is shown behind it
   document.getElementById('open').style.visibility = 'visible';
   requestAnimationFrame(t => { lastT = t; loop(t); });
   // the weeping (second opening line) is no longer waited for before "Open the book": a third less to fetch first.
