@@ -339,10 +339,11 @@ const HL = (() => {
       // build 309 (owner: "can you integrate roots of tree into ground a bit more"): the ragged strip of roots at its foot fades
       // out downward, so the roots go down into the road's earth instead of lying on it as a flat dark band
       // build 316 (owner: "now looks like a clean cut - a variable transition would be better"): the fade's line wanders along
-      // the foot (slow waves and a little jitter, in 4-pixel strips): some roots reach deeper into the earth, some fade higher
+      // the foot (slow waves and a little jitter, in 4-pixel strips): some roots reach deeper into the earth, some fade higher; below each strip's end NOTHING is left
+      // (owner: "you can see roots of tree popping out below transition": a fade that stops at .9 leaves ghosts)
       { k.globalCompositeOperation = 'destination-out'; const G0 = OAK_META.ground, RJ = rngS(17);
         for (let x = 0; x < W; x += 4) { const n = .5 + .28 * Math.sin(x * .011 + 1.3) + .16 * Math.sin(x * .037 + 4) + .1 * (RJ() - .5), y0 = G0 - 34 + 40 * n, len = 14 + 22 * (1 - n), mx = .6 + .3 * n;
-          const g = k.createLinearGradient(0, y0, 0, y0 + len); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(.5, 'rgba(0,0,0,' + (mx * .4).toFixed(3) + ')'); g.addColorStop(1, 'rgba(0,0,0,' + mx.toFixed(3) + ')'); k.fillStyle = g; k.fillRect(x, y0, 4, H - y0); } }
+          const g = k.createLinearGradient(0, y0, 0, y0 + len); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(.45, 'rgba(0,0,0,' + (mx * .4).toFixed(3) + ')'); g.addColorStop(.8, 'rgba(0,0,0,' + mx.toFixed(3) + ')'); g.addColorStop(1, 'rgba(0,0,0,1)'); k.fillStyle = g; k.fillRect(x, y0, 4, H - y0); } }
       k.globalCompositeOperation = 'source-over';
       // the leaves, drawn: one small touch wherever the painting has a leaf (a jittered grid), toned by how light that leaf was
       for (let y = 3; y < H * .7; y += 10) for (let x = 3; x < W; x += 10) { const xx = Math.min(W - 1, Math.max(0, Math.round(x + (R() - .5) * 10))), yy = Math.round(y + (R() - .5) * 10), i = (yy * W + xx) * 4;
