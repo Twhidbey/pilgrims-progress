@@ -274,13 +274,38 @@ const HL = (() => {
       PUFF.push({ h: tinted(() => 'rgb(146,134,140)'), d: tinted(k2 => { const g = k2.createLinearGradient(0, 30, 0, 140); g.addColorStop(0, 'rgb(68,56,60)'); g.addColorStop(1, 'rgb(42,34,39)'); return g; }), p: tinted(k2 => { const g = k2.createLinearGradient(0, 30, 0, 140); g.addColorStop(0, 'rgb(124,106,104)'); g.addColorStop(1, 'rgb(90,76,78)'); return g; }), l: tinted(k2 => { const g = k2.createLinearGradient(130, 150, 60, 60); g.addColorStop(0, 'rgba(255,200,146,1)'); g.addColorStop(.5, 'rgba(240,150,100,.35)'); g.addColorStop(1, 'rgba(220,120,90,0)'); return g; }) }); }
     // the wall's stones by the wicket-gate: rough courses, no two stones alike (shown only where light falls)
     { const Rs = rngS(71); for (let y = 0; y < 330;) { const h = 30 + Rs() * 24; for (let x = GATE_X - 560 - Rs() * 60; x < GATE_X + 560;) { const w = 44 + Rs() * 80; STONES.push({ x, y, w, h, t: Rs(), j: Rs() }); x += w; } y += h; } }
-    // the village of Morality beyond the hill: low houses, pleasant, a lamp in some windows (never reached)
-    { const c = mk(400, 70), k = c.getContext('2d'), Rv = rngS(8); TOWN = c; k.fillStyle = '#fff';
-      const lit = [];
-      for (let i = 0; i < 11; i++) { const x = 14 + i * 34 + Rv() * 10, w = 22 + Rv() * 16, h = 13 + Rv() * 9; k.fillRect(x, 70 - h, w, h); k.beginPath(); k.moveTo(x - 2, 70 - h); k.lineTo(x + w / 2, 70 - h - 9 - Rv() * 5); k.lineTo(x + w + 2, 70 - h); k.fill();
-        if (i === 5) { k.fillRect(x + w / 2 - 4, 70 - h - 30, 8, 30); k.beginPath(); k.moveTo(x + w / 2 - 5, 70 - h - 30); k.lineTo(x + w / 2, 70 - h - 52); k.lineTo(x + w / 2 + 5, 70 - h - 30); k.fill(); }
-        if (Rv() < .6) lit.push([x + 4 + Rv() * (w - 10), 70 - h + 4]); }
-      TOWN.lit = lit; }
+    // THE VILLAGE OF MORALITY (build 267; owner: "Town needs to look more polished and maybe closer to mt via story"):
+    // a neat, comfortable little town at the near foot of the hill, right under its overhang ("Go by that hill. The
+    // first house you come to is his"): first, nearest him, Legality's fine house (two gables, tall chimneys, a walled
+    // garden and two round trees), then tidy cottages, the church with its tower and spire, a barn, more trees. One
+    // silhouette (tinted where it is drawn), baked at twice the size it is seen; lit windows (`lit`) and the chimneys that
+    // smoke (`ch`) in the same units (900 x 160, the ground at 160).
+    { const W = 900, H = 170, c = mk(W, H), k = c.getContext('2d'), Rv = rngS(12); TOWN = c; k.fillStyle = '#fff';
+      const lit = [], ch = [], gy = x => H - 6 - 16 * Math.sin(Math.PI * Math.min(1, Math.max(0, x / W))) ** 1.5;      // a gentle rise under the town
+      const base = (x, w) => Math.max(gy(x), gy(x + w)) + 1;
+      // a house: walls, a roof of its own pitch (gable to us or hipped), chimneys off the ridge's middle
+      const house = (x, w, h, pitch, o = {}) => { const g0 = base(x, w), top = g0 - h; k.fillRect(x, top, w, H - top);
+        k.beginPath(); if (o.hip) { k.moveTo(x - 2, top + 1); k.lineTo(x + w * .3, top - pitch); k.lineTo(x + w * .7, top - pitch); k.lineTo(x + w + 2, top + 1); } else { k.moveTo(x - 2, top + 1); k.lineTo(x + w / 2, top - pitch); k.lineTo(x + w + 2, top + 1); } k.fill();
+        for (const cp of o.chim || []) { const px = x + w * cp, ry = top - pitch * (1 - Math.abs(cp - .5) * 2 * (o.hip ? .4 : 1)), hh = 8 + Rv() * 4; k.fillRect(px - 2.5, ry - hh, 5, hh + 3); k.fillRect(px - 3.5, ry - hh - 2, 7, 2.5); if (o.smoke) ch.push([px, ry - hh - 2]); }
+        if (o.win) lit.push([x + w * o.win[0], top + h * o.win[1]]); };
+      const tree = (x, r, h) => { const g0 = gy(x) + 1; k.fillRect(x - 2, g0 - h, 4, h); for (let i = 0; i < 11; i++) { const a2 = i * 2.4, rr = r * (.5 + .22 * Rv()); k.beginPath(); k.arc(x + Math.cos(a2) * r * .6, g0 - h - r * .55 + Math.sin(a2) * r * .5, rr, 0, 7); k.fill(); } };
+      // first, nearest him: Legality's fine house, hipped, two tall chimneys, a garden wall and a great tree
+      tree(18, 22, 26); house(48, 110, 44, 26, { hip: true, chim: [.2, .8], smoke: true, win: [.3, .45] }); house(158, 46, 30, 20, { chim: [.7] });
+      { const g0 = base(0, 214); k.fillRect(0, g0 - 9, 214, 20); }
+      // the cottages, each its own width, height and pitch, a few with smoke; a long barn among them
+      let x = 222; const plan = [[40, 20, 15], [30, 16, 12, 'tree'], [78, 22, 16, 'barn'], [36, 19, 17], [44, 18, 11]];
+      for (const [w, h, p, kind] of plan) { if (kind === 'tree') { tree(x + 12, 15, 17); x += 24; } house(x, w, h, p, { chim: kind === 'barn' ? [] : [.22 + Rv() * .56], smoke: x < 300 || kind === undefined && Rv() < .4, hip: kind === 'barn' }); x += w + 5 + Rv() * 7; }
+      // the church: nave and a square tower with a short spire, set back a little
+      const c0 = x + 8, cg = base(c0, 116); k.fillRect(c0, cg - 30, 84, H); k.beginPath(); k.moveTo(c0 - 2, cg - 29); k.lineTo(c0 + 42, cg - 47); k.lineTo(c0 + 86, cg - 29); k.fill();
+      k.fillRect(c0 + 84, cg - 64, 26, H); for (let i = 0; i < 4; i++) k.fillRect(c0 + 84 + i * 7.3, cg - 68, 4, 5);
+      k.beginPath(); k.moveTo(c0 + 86, cg - 66); k.lineTo(c0 + 97, cg - 122); k.lineTo(c0 + 108, cg - 66); k.fill(); k.fillRect(c0 + 96.2, cg - 131, 1.6, 10); k.fillRect(c0 + 93, cg - 127, 8, 1.4);
+      lit.push([c0 + 30, cg - 15]);
+      x = c0 + 124; tree(x + 12, 19, 20); x += 34;
+      for (const [w, h, p] of [[42, 18, 14], [58, 21, 18], [32, 15, 12]]) { house(x, w, h, p, { chim: [.3 + Rv() * .4], smoke: w === 58, win: w === 42 ? [.6, .5] : null }); x += w + 6 + Rv() * 6; }
+      tree(x + 14, 17, 18);
+      // only a few windows lit, not in a row
+      lit.push([270, base(250, 40) - 9], [345, base(330, 40) - 10]);
+      TOWN.lit = lit; TOWN.ch = ch; TOWN.W = W; TOWN.H = H; }
   }
   // THE PAINTED OAK (build 163; owner: "maybe adjust how trunk interacts with ground to be more realistic - more detail on
   // trunk - can we have google image have a go at it?"). One picture from the image model (about 15 cents), given the
@@ -289,7 +314,7 @@ const HL = (() => {
   // trunk's middle, ground = the row that stands on the field's edge (the grass at its foot goes a little below, behind
   // the road), tw = sunlit leaves that twinkle. It is toned a little darker here to sit in the game's quiet tones,
   // and has an all-dark copy for when the sky darkens. Until it has loaded, the code-drawn oak (bakeOak) stands in.
-  const OAK_META = { w: 662, h: 630, ax: 306.5, ground: 602, k: .86 };
+  const OAK_META = { w: 936, h: 640, ax: 432, ground: 606, k: .76 };
   // OAK_SIL: how far the painting is pulled toward one dark tone (owner, build 165: "Tone it down to slightly more silhouette"): 0 = the painting, 1 = a flat silhouette
   const OAK_SIL = .8;
   let OAKP = null, oakLoading = null;
@@ -313,7 +338,7 @@ const HL = (() => {
         if (px[i + 3] < 190) continue; const r = px[i], g = px[i + 1], b = px[i + 2]; if (g < b * 1.22 || r > g * 1.22) continue;
         const l = clamp(((r + g) / 2 - 46) / 105); if (R() < .12) continue;
         k.save(); k.translate(xx, yy); k.rotate(R() * 3.14); k.fillStyle = css(mix([30, 38, 29], [112, 112, 62], l * .62), .9); k.beginPath(); k.ellipse(0, 0, 2.3 + R() * 2.3, 1.3 + R() * 1.2, 0, 0, 7); k.fill(); k.restore();
-        if (l > .55 && R() < .2 && tw.length < 320) tw.push([xx, yy]); }
+        if (l > .6 && R() < .08 && tw.length < 70) tw.push([xx, yy]); }
       const d = mk(W, H), kd = d.getContext('2d'); kd.drawImage(c, 0, 0); kd.globalCompositeOperation = 'source-in'; kd.fillStyle = 'rgb(20,20,26)'; kd.fillRect(0, 0, W, H);
       // the trunk's bright edge toward the sun, one for each side (the sun passes from one side of it to the other as he walks)
       const rim = sgn => { const r = mk(W, H), q = r.getContext('2d'); q.drawImage(c, 0, 0); q.globalCompositeOperation = 'destination-out'; q.drawImage(c, -3 * sgn, 1); q.globalCompositeOperation = 'source-in'; q.fillStyle = 'rgb(255,224,168)'; q.fillRect(0, 0, W, H);
@@ -733,7 +758,9 @@ const HL = (() => {
     // (build 212, owner: "when we zoom over to mountain while worldly is talking it still flickers - can we make it solid"): the
     // mountain no longer fades in while the camera pans (half-seen, the ridges and sky showed through it as it slid); it is
     // simply there, solid, off to the right, and the pan brings it into view
-    if (G.act === 'hill' || (ph !== 'plain' && ph !== 'meet')) reveal = 1; vil += (vilTo - vil) * .02;
+    // (build 267) the camera has already come to the village when Wiseman names it, so at "Do you see that hill?" the hill
+    // comes slowly up out of the haze behind it (about two and a half seconds) instead of all at once
+    if (ph !== 'plain' && ph !== 'meet') reveal = 1; else if (G.act === 'hill' || reveal > 0) reveal = Math.min(1, reveal + 1 / 150); vil = Math.min(1, vil + (vilTo - vil) * .012 + (vilTo > vil ? .002 : 0));
     if ((ph === 'still' || ph === 'come' || ph === 'evan') && dark > .5 && Math.random() < .035) shed(1, .7);
     if (dark > .8 && (ph === 'still' || ph === 'come' || ph === 'evan' || farewell) && Math.random() < (zs === 'hold' || farewell ? .02 : .008)) boulder();
     for (const r of ROCKS) { r.t++; r.vy += .09; r.x += r.vx; r.y += r.vy; if (r.big && r.t % 5 === 0) dust(r.x, r.y, r.r * .9, 1, .5, 1);
@@ -865,13 +892,13 @@ const HL = (() => {
     // the camera
     let tx = C3.x + 150, tz = 1;
     if (ph === 'plain') tz = wise ? .84 : .9;
-    if (ph === 'meet') { tx = C3.x + 60 + 330 * vil; tz = .86 - .14 * vil; if (G.act === 'hill') { tx = HILL_F + 260; tz = .55; } }
+    if (ph === 'meet') { const e = vil * vil * (3 - 2 * vil); tx = lerp(C3.x + 60, HILL_F + 260, e); tz = lerp(.86, .58, e); if (G.act === 'hill') { tx = HILL_F + 260; tz = .55; } }
     if (ph === 'aside' || ph === 'down') { tx = Math.min(C3.x + 180, BROW0 + 140); tz = .86; }
     if (ph === 'path') { tx = C3.x + 150; tz = Z_NEAR; }
     if (ph === 'still' || ph === 'come' || ph === 'evan') { tx = ph === 'still' ? FOOT + 150 : FOOT - 40; tz = Z_NEAR; }
     if (ph === 'back' || ph === 'mist') { tx = C3.x - 150; tz = Z_NEAR; }
     if (ph === 'gate' || ph === 'knock' || ph === 'open') { tx = Math.min(C3.x + 150, GATE_X - 215); tz = lerp(1, .96, smooth(GATE_X - 500, GATE_STOP, C3.x)); }
-    cam.cx += (tx - cam.cx) * .035; cam.z += (tz - cam.z) * .03; cam.wl = 440 - (1 - cam.z) * 70;
+    cam.cx += (tx - cam.cx) * .035; cam.z += (tz - cam.z) * .03; cam.wl = 440 - (1 - cam.z) * 70 + (ph === 'meet' ? 64 * smooth(.84, .58, cam.z) : 0);      // (build 267: looking far off to the village and the hill, the road sinks so it no longer fills a quarter of the picture)
     // the pull back (see 'still'): the scale goes from close to the whole mountain in its logarithm; he slides a little
     // left of the middle; the road comes down so the summit and its cloud fit above
     if (farewell && (ph === 'back' || ph === 'mist')) { const Zf = ease5(clamp((farewell - 20) / 230)), zz = Math.exp(lerp(Math.log(Z_NEAR), Math.log(Z_WIDE), Zf)), sx = lerp(VW / 2 + 150 * Z_NEAR, VW * .2, Zf);
@@ -899,7 +926,7 @@ const HL = (() => {
       FK = kneelK(kf); figure(c, 'weep', KNEEL[f0], KNEEL_META, x, C3.face, tint, ka);
       if (f0 + 1 < KNEEL.length && kf - f0 > .02) figure(c, 'weep2', KNEEL[f0 + 1], KNEEL_META, x, C3.face, tint, ka * (kf - f0)); FK = 1;
     } else if (wa > 0 && wantNB && STD.length) {
-      // build BNEXT: no book after Level 1, so instead of opening his book and weeping he bows low and trembles at Evangelist's
+      // build 267: no book after Level 1, so instead of opening his book and weeping he bows low and trembles at Evangelist's
       // feet: his quiet standing picture leaned forward from his feet and pressed down a little, shaking
       const bw = smooth(0, 1, wa), im = STD[atTime(STD_META, breathT(QUIET[0] + G.t * .4))];
       c.save(); c.translate(x, 5); c.rotate(C3.face * .3 * bw); c.translate(-x, -5);
@@ -945,6 +972,15 @@ const HL = (() => {
         { const fa = (1 - dark) * (1 - .9 * gateish); c.globalAlpha = Math.min(1, .8 * fa); c.drawImage(CLOUDW, x0, 39, 800, 180); c.globalAlpha = .62 * fa; c.drawImage(CLOUDG, x0, 30, 800, 180); }
         if (dark > .02) { c.globalAlpha = .55 * dark; c.globalCompositeOperation = 'multiply'; c.drawImage(CLOUD, x0 - 260, 0, 900, 230); c.globalCompositeOperation = 'source-over'; } }
       c.globalAlpha = 1; }
+    // BIRDS (build 267): now and then a small loose flock crosses the evening sky, slowly, low over the far ridges; dark
+    // little strokes, their wings beating and gliding. The one living touch in the sky, only on the fair plain.
+    { const bk = (1 - dark) * (1 - gateish) * (ph === 'plain' ? 1 : 0); if (bk > .02) { const P = 1500, T = (G.t + 1150) % P, u = T / 1100;
+        if (u < 1) { c.save(); c.lineCap = 'round'; c.lineJoin = 'round'; const n = Math.floor((G.t + 1150) / P), bx = lerp(-80, VW + 80, u) - (cx * .03) % 40, by = hor - 150 * z - 40 * Math.sin(n * 2.3) * z - 18 * u * z;
+          for (let i = 0; i < 3; i++) { const fx = bx - (i * 34 + 8 * Math.sin(i * 3.1 + n)) * z, fy = by + (i * 9 + 4 * Math.sin(i * 1.7 + n)) * z + 2 * Math.sin(G.t / 60 + i) * z, w = (3.4 + i * .5) * z * .8;
+            const beat = .45 + .55 * Math.sin(G.t / 8 + i * 1.9), glide = Math.sin(G.t / 90 + i) > .2, f = glide ? .35 : beat;
+            c.strokeStyle = css([52, 46, 50], .8 * bk * Math.min(1, 6 * u, 6 * (1 - u))); c.lineWidth = Math.max(.7, .95 * z);
+            c.beginPath(); c.moveTo(fx - w, fy - f * w * .7); c.quadraticCurveTo(fx - w * .4, fy - w * .25, fx, fy); c.quadraticCurveTo(fx + w * .4, fy - w * .25, fx + w, fy - f * w * .7); c.stroke(); }
+          c.restore(); } } }
     // the far light: ahead of him on the plain; over the gate at the end. The hill, drawn after it, comes between.
     const rocky = ph === 'path' || ph === 'still' || ph === 'come' || ph === 'evan' || ph === 'back' || ph === 'mist' || ph === 'title';
     const lx = lerp(VW * .5, clamp(X(GATE_X), 200, VW - 120), gateish), ly = lerp(hor - 96, Y(-262), gateish), la = (1 - .35 * dark) * (1 - gateish) * (rocky ? 0 : 1);
@@ -1011,7 +1047,28 @@ const HL = (() => {
       c.lineTo(VW, hor + 2); c.fill(); }
     // the plain, from the horizon down to the road
     { const far = mix(mix([214, 196, 138], [50, 48, 56], gateish), [78, 68, 70], dark), near = mix(mix([52, 54, 40], [24, 24, 32], gateish), [38, 36, 44], dark);
-      const g = c.createLinearGradient(0, hor, 0, Y(0)); g.addColorStop(0, css(far)); g.addColorStop(.35, css(mix(far, near, .5))); g.addColorStop(1, css(near)); c.fillStyle = g; c.fillRect(0, hor, VW, Y(0) - hor + 1);
+      // THE PLAIN IN LAYERS (build 267; owner: "opening is a little plain - what could we do to make this beautiful while
+      // maintaining simplicity"). Not one smooth wash any more but the game's own layered look: three long low swells of
+      // field one behind another, each a shade darker than the one behind, the low sun catching their crests in a thin
+      // line of light, and a breath of haze lying in the hollow behind each. Sampled at fixed places on the land, so they
+      // slide with the camera like the ridges and do not wobble. `plainFill(y0)` lays the plain below y0 (again below the
+      // far mountain's foot, where its painting's flat bottom edge must be covered).
+      const colAt = t => t < .35 ? mix(far, mix(far, near, .5), t / .35) : mix(mix(far, near, .5), near, (t - .35) / .65);
+      const fairP = (1 - dark) * (1 - gateish), SW = [[.16, .3, 9, 11.3], [.38, .45, 15, 23.7], [.7, .66, 20, 37.1]];
+      const plainFill = y0 => { c.save(); c.beginPath(); c.rect(0, y0, VW, Y(0) - y0 + 2); c.clip();
+        const g = c.createLinearGradient(0, hor, 0, Y(0)); g.addColorStop(0, css(far)); g.addColorStop(.35, css(mix(far, near, .5))); g.addColorStop(1, css(near)); c.fillStyle = g; c.fillRect(0, hor, VW, Y(0) - hor + 1);
+        if (!rocky) for (const [t, par, amp, sd] of SW) { const by = lerp(hor, Y(0), t), du = 16, u0 = Math.floor((cx * par - VW / 2 / z) / du) * du - du, pts = [];
+          for (let u = u0; u <= cx * par + VW / 2 / z + 2 * du; u += du) pts.push([VW / 2 + (u - cx * par) * z, by - amp * z * Math.max(-.4, 2.2 * (nz(u * .0011, sd) - .5) + .9 * (nz2(u * .0043, sd) - .5) + .3)]);
+          // the haze lying in the hollow behind this swell
+          if (fairP > .02) { const hh = 16 * z, mg = c.createLinearGradient(0, by - amp * z - hh, 0, by + 2 * z); mg.addColorStop(0, css(low, 0)); mg.addColorStop(.7, css(mix(low, far, .4), .34 * fairP)); mg.addColorStop(1, css(mix(low, far, .4), .38 * fairP)); c.fillStyle = mg; c.fillRect(0, by - amp * z - hh, VW, hh + amp * z + 2 * z); }
+          const c0 = mix(colAt(t - .04), [20, 22, 16], .03 + .03 * t), c1 = mix(colAt(Math.min(1, t + .14)), [20, 22, 16], .03 + .03 * t), lg = c.createLinearGradient(0, by - amp * z, 0, by + (Y(0) - hor) * .2);
+          lg.addColorStop(0, css(c0)); lg.addColorStop(1, css(c1)); c.fillStyle = lg; c.beginPath(); c.moveTo(pts[0][0], Y(0) + 2); for (const [x, y] of pts) c.lineTo(x, y); c.lineTo(pts[pts.length - 1][0], Y(0) + 2); c.fill();
+          // the low sun on the crest: a thin warm line, brighter toward the sun and where the swell rises
+          if (fairP > .02) { c.save(); c.globalCompositeOperation = 'lighter'; c.lineWidth = Math.max(.6, (1.3 - .5 * t) * z); c.lineJoin = 'round';
+            const sg = c.createLinearGradient(0, 0, VW, 0); for (let i = 0; i <= 8; i++) { const sx = VW * i / 8, d2 = Math.abs(sx - lx) / VW; sg.addColorStop(i / 8, css([255, 220, 160], (.34 - .3 * t) * fairP * Math.max(0, 1 - 1.4 * d2))); }
+            c.strokeStyle = sg; for (let i = 1; i < pts.length; i++) { const uu = cx * par + (pts[i][0] - VW / 2) / z, on = smooth(.46, .62, nz2(uu * .0024, sd + 4)); if (on < .05) continue; c.globalAlpha = on; c.beginPath(); c.moveTo(pts[i - 1][0], pts[i - 1][1] + .6); c.lineTo(pts[i][0], pts[i][1] + .6); c.stroke(); } c.restore(); } }
+        c.restore(); };
+      plainFill(hor);
       { const fk = (1 - dark) * (1 - gateish); if (fk > .02) { const hg = c.createLinearGradient(0, hor - 34 * z, 0, hor + 26 * z); hg.addColorStop(0, css(low, 0)); hg.addColorStop(.55, css(low, .62 * fk)); hg.addColorStop(1, css(low, 0)); c.fillStyle = hg; c.fillRect(0, hor - 34 * z, VW, 60 * z); } }
       // THE HILL IS NOT SEEN UNTIL WISEMAN POINTS (owner, build 185: "let's hide it entirely till worldly wise tells him to
       // look and then screen pans right and we see it"). On the plain it stands far off to the right (HILL_F), out of the
@@ -1021,11 +1078,6 @@ const HL = (() => {
       const hx = rocky ? X(HX0) : VW / 2 + (HILL_F - cx) * PH * z, hy = rocky ? Y(6) : Y(HILL_Y), k = z * (rocky ? HSN : HSF);
       HL.appr = ap;
       hillBox = [hx, hy, k];
-      // the village of Morality, small and far on the plain, nearer than the hill ("the first house you come to is his")
-      if (!rocky) { const tw = 310 * z, th = 54 * z, tx = VW / 2 + (VIL_W - cx) * PH * z - tw / 2, ty = hy + 2 * z, va = Math.max(reveal, .9 * vil);
-        if (va > .01 && tx < VW && tx + tw > 0) { const tc = tintC.town || (tintC.town = mk(200, 35)), t = tc.getContext('2d'); t.globalCompositeOperation = 'source-over'; t.clearRect(0, 0, 200, 35); t.drawImage(TOWN, 0, 0, 200, 35); t.globalCompositeOperation = 'source-in'; t.fillStyle = css(mix(mix(mix(far, top, .4), [96, 84, 90], .6), [46, 42, 50], dark * .7)); t.fillRect(0, 0, 200, 35); c.globalAlpha = va; c.drawImage(tc, tx, ty - th, tw, th); c.globalAlpha = 1;
-          // (build 202: the village is baked at about the size it is shown, and its windows are soft lights, so neither shimmers as the camera pans)
-          for (const [wx, wy] of TOWN.lit) { const wa = Math.min(1, (.5 + .4 * dark) * va + .35 * vil * (1 - dark)), px = tx + wx * tw / 400 + 1.8 * z, py = ty - th + wy * th / 70 + 1.8 * z, rr = Math.max(1.6, 3.4 * z), g = c.createRadialGradient(px, py, 0, px, py, rr); g.addColorStop(0, css([255, 220, 150], wa)); g.addColorStop(.5, css([255, 210, 140], wa * .6)); g.addColorStop(1, css([255, 200, 130], 0)); c.fillStyle = g; c.fillRect(px - rr, py - rr, 2 * rr, 2 * rr); } } }
       if ((rocky || reveal > .002) && hx > -1300 * k && hx < VW + 400 * k) {
         // AWE FIRST (owner, build 135: "the burning hill can be frightening - but most importantly stunning - it should
         // awe first"). After John Martin's pictures of the sublime and the book's own Sinai (Exodus 19: fire at the top,
@@ -1184,10 +1236,8 @@ const HL = (() => {
         // level band of low cloud lies across its lower slopes, drifting very slowly; the mountain rises clear above
         // it. That band is what tells the eye how big it is. It thins away as the sky darkens and he comes near.
         { const fair = (1 - dark) * reveal; if (fair > .02) { const hz = mix(low, [226, 222, 214], .5);
-            const bg = c.createLinearGradient(0, hy - 210 * k, 0, hy + 50 * k); bg.addColorStop(0, css(hz, 0)); bg.addColorStop(.55, css(hz, .26 * fair)); bg.addColorStop(.82, css(hz, .36 * fair)); bg.addColorStop(1, css(hz, 0)); c.fillStyle = bg; c.fillRect(0, hy - 210 * k, VW, 260 * k);
-            for (let i = 0; i < 4; i++) { const w = (900 + i * 260) * k, h2 = (64 + i * 16) * k, xx = hx + (-420 + i * 190 + 60 * Math.sin(G.t / 1100 + i * 1.9)) * k, yy = hy - (70 + i * 36 + (i % 2) * 22) * k - h2 / 2;
-              c.globalAlpha = (.3 - i * .05) * fair; c.drawImage(CLOUD, xx, yy, w, h2); }
-            c.globalAlpha = 1;
+            const bg = c.createLinearGradient(0, hy - 210 * k, 0, hy + 50 * k); bg.addColorStop(0, css(hz, 0)); bg.addColorStop(.45, css(hz, .16 * fair)); bg.addColorStop(.7, css(hz, .5 * fair)); bg.addColorStop(.86, css(hz, .78 * fair)); bg.addColorStop(1, css(hz, .78 * fair)); c.fillStyle = bg; c.fillRect(0, hy - 210 * k, VW, 260 * k);
+            // (build 267: the four drifting cloud pictures here read as blotches on the rock; one level band of mist instead)
             // its shadow lies on the plain on our side of it: a flat band of shade, widest under the mass
             { c.save(); c.translate(hx + 260 * k, hy + 26 * z); c.scale(1, .1); const sg = c.createRadialGradient(0, 0, 0, 0, 0, 760 * k); sg.addColorStop(0, css([22, 26, 22], .46 * fair)); sg.addColorStop(.6, css([22, 26, 22], .26 * fair)); sg.addColorStop(1, css([22, 26, 22], 0)); c.fillStyle = sg; c.fillRect(-760 * k, -760 * k, 1520 * k, 1520 * k); c.restore(); } } }
         // the field's haze at its foot, so it stands in the plain and not on it
@@ -1195,7 +1245,25 @@ const HL = (() => {
         fg.addColorStop(0, css(fc, 0)); fg.addColorStop(.6, css(fc, .85 * reveal)); fg.addColorStop(1, css(fc, .85 * reveal)); c.fillStyle = fg; c.fillRect(0, hy - 34 * k, VW, 48 * k);
           // (build 202: the painting's flat bottom edge showed as a hard line under the far mountain): below its foot the plain
           // itself is laid again over it, so the mountain's foot is lost in the plain's own haze
-          const pg = c.createLinearGradient(0, hor, 0, Y(0)); pg.addColorStop(0, css(far)); pg.addColorStop(.35, css(mix(far, near, .5))); pg.addColorStop(1, css(near)); c.fillStyle = pg; c.fillRect(0, hy + 14 * k - 1, VW, Math.max(0, Y(0) - (hy + 14 * k)) + 2); }
+          plainFill(hy + 14 * k - 1); }
+      }
+      // the village of Morality at the hill's near foot, under the overhang, in front of the haze at its foot. It shows
+      // when Wiseman names it (`vil`), before the hill comes out of the haze above it at "Do you see that hill?"
+      if (!rocky && TOWN.W) { const tw = 700 * k, th = tw * TOWN.H / TOWN.W, tx = hx - 220 * k, ty = hy + 8 * k, va = Math.max(reveal, vil);
+        if (va > .01 && tx < VW && tx + tw > 0) { const tc = tintC.town || (tintC.town = mk(TOWN.W, TOWN.H)), t = tc.getContext('2d'), tint = mix(mix(mix(far, [58, 52, 58], .72), low, .06), [40, 36, 44], dark * .7);
+          t.globalCompositeOperation = 'source-over'; t.clearRect(0, 0, TOWN.W, TOWN.H); t.drawImage(TOWN, 0, 0); t.globalCompositeOperation = 'source-in';
+          const tg = t.createLinearGradient(0, 0, 0, TOWN.H); tg.addColorStop(0, css(tint)); tg.addColorStop(1, css(mix(tint, mix(far, near, .3), .35))); t.fillStyle = tg; t.fillRect(0, 0, TOWN.W, TOWN.H);
+          // its foot fades into the haze of the plain (no hard straight base)
+          t.globalCompositeOperation = 'source-atop'; const fh = t.createLinearGradient(0, TOWN.H - 30, 0, TOWN.H); fh.addColorStop(0, css(colAt(clamp((ty - hor) / (Y(0) - hor))), 0)); fh.addColorStop(1, css(colAt(clamp((ty - hor) / (Y(0) - hor))), .9)); t.fillStyle = fh; t.fillRect(0, TOWN.H - 30, TOWN.W, 30);
+          c.globalAlpha = va; c.drawImage(tc, tx, ty - th, tw, th); c.globalAlpha = 1;
+          // its chimneys smoke, thin threads leaning with the evening air
+          c.save(); c.lineCap = 'round'; for (const [i, [wx, wy]] of TOWN.ch.entries()) { const px = tx + wx * tw / TOWN.W, py = ty - th + wy * th / TOWN.H, L = 60 * k;
+            for (let j = 0; j < 12; j++) { const u0 = j / 12, u1 = (j + 1) / 12, sw = u => px - u * u * 5 * k + 1.5 * k * u * Math.sin(G.t / 80 + u * 4 + i);
+              c.strokeStyle = css(mix(tint, [214, 204, 196], .5), .32 * va * (1 - u0) * (1 - dark * .5)); c.lineWidth = Math.max(.5, (1.4 + 4 * u0) * k); c.beginPath(); c.moveTo(sw(u0), py - u0 * L); c.lineTo(sw(u1), py - u1 * L); c.stroke(); } }
+          c.restore();
+          // its windows: soft lights, warmer when he hears of it
+          for (const [wx, wy] of TOWN.lit) { const wa = Math.min(1, (.45 + .45 * dark) * va + .4 * vil * (1 - dark)), px = tx + wx * tw / TOWN.W, py = ty - th + wy * th / TOWN.H, rr = Math.max(1.2, 4.5 * k), g = c.createRadialGradient(px, py, 0, px, py, rr); g.addColorStop(0, css([255, 222, 150], wa)); g.addColorStop(.4, css([255, 206, 136], wa * .5)); g.addColorStop(1, css([255, 200, 130], 0)); c.fillStyle = g; c.fillRect(px - rr, py - rr, 2 * rr, 2 * rr); } } }
+      {
       }
       // among the rocks: the crags behind the path, then the stones falling from the overhang
       if (rocky) {
@@ -1455,6 +1523,11 @@ const HL = (() => {
       if (rocky) { const xl = cx - VW / 2 / z - 20, xr = cx + VW / 2 / z + 20; c.beginPath(); c.moveTo(X(xl), VH);
         for (let x = Math.floor(xl / 5) * 5; x <= xr; x += 5) { const h = inPath(x) * Math.max(0, 70 * (nz(x * .006, 3.1) - .44) + 22 * (nz(x * .03, 7.7) - .42) + 5 * (nz(x * .14, 1.3) - .5)); c.lineTo(X(x), Y(-h)); }
         c.lineTo(X(xr), VH); c.closePath(); c.fillStyle = css(rc); c.fill(); } g.addColorStop(0, css(mix(rc, [120, 116, 100], rocky ? 0 : .25 * (1 - .8 * gateish)))); g.addColorStop(.08, css(rc)); g.addColorStop(1, css(mix(rc, [0, 0, 0], .35))); c.fillStyle = g; c.fillRect(0, Y(0), VW, VH);
+      // (build 267) on the fair plain the road is warm earth: the low sun lies on it in one long flat sheen below the sun
+      // (a worn track of two faint lines was tried and read as lane markings: taken out)
+      if (!rocky) { const fk = (1 - dark) * (1 - gateish); if (fk > .02) { c.save(); c.globalCompositeOperation = 'lighter';
+          c.save(); c.translate(lx, Y(10)); c.scale(1, .06); const pg = c.createRadialGradient(0, 0, 0, 0, 0, VW * .6); pg.addColorStop(0, css([150, 110, 70], .3 * fk)); pg.addColorStop(.5, css([120, 86, 56], .12 * fk)); pg.addColorStop(1, css([100, 70, 50], 0)); c.fillStyle = pg; c.fillRect(-VW * .6, -VW * .6, VW * 1.2, VW * 1.2); c.restore();
+          c.restore(); } }
       if (rocky && ROCKPAT) { c.save(); c.clip(); const ts = 1.6 * z, tw = ROCKTEX.width * ts; ROCKPAT.setTransform(new DOMMatrix([ts, 0, 0, ts, ((VW / 2 - cx * z) % tw + tw) % tw, Y(-16)]));
         c.globalCompositeOperation = 'overlay'; c.globalAlpha = .55; c.fillStyle = ROCKPAT; c.fillRect(0, Y(-60), VW, VH); c.restore(); }
       // (build 245, owner: "merge the base of the mountain with the dark layer so they look continuous ... as is the fog and
@@ -1489,16 +1562,15 @@ const HL = (() => {
         // (build 202, owner: "when the tree is shown, the light outline flickers on both side of tree"): the edge used to jump from
         // one side to the other the moment the sun passed the trunk (and back and forth while the camera settled); now the two
         // edges cross-fade as the sun passes behind the trunk, slowly
-        { const ra = (1 - dark) * (1 - gateish) * .75, sR = smooth(-w * .1, w * .1, lx - tx); if (ra > .02) { if (sR > .01) { c.globalAlpha = ra * sR; c.drawImage(OAKP.rimR, x0, y0, w, h); } if (sR < .99) { c.globalAlpha = ra * (1 - sR); c.drawImage(OAKP.rimL, x0, y0, w, h); } c.globalAlpha = 1; } }
-        if (dark < .5) { c.save(); c.globalCompositeOperation = 'lighter'; OAKP.tw.forEach(([px, py], i) => { const v = Math.sin(G.t / (26 + (i * 37) % 60) + i * 2.4); if (v < .55) return; const al = Math.pow((v - .55) / .45, 2) * .7 * (1 - 2 * dark);
-            c.fillStyle = css([255, 238, 180], al); c.beginPath(); c.arc(x0 + px * s, y0 + py * s, (1 + 1.1 * al) * z, 0, 7); c.fill(); }); c.restore(); }
+        { const ra = (1 - dark) * (1 - gateish) * .42, sR = smooth(-w * .1, w * .1, lx - tx); if (ra > .02) { if (sR > .01) { c.globalAlpha = ra * sR; c.drawImage(OAKP.rimR, x0, y0, w, h); } if (sR < .99) { c.globalAlpha = ra * (1 - sR); c.drawImage(OAKP.rimL, x0, y0, w, h); } c.globalAlpha = 1; } }
+        if (dark < .5) { c.save(); c.globalCompositeOperation = 'lighter'; OAKP.tw.forEach(([px, py], i) => { const v = Math.sin(G.t / (26 + (i * 37) % 60) + i * 2.4); if (v < .55) return; const al = Math.pow((v - .55) / .45, 2) * .38 * (1 - 2 * dark);
+            c.fillStyle = css([255, 238, 180], al); c.beginPath(); c.arc(x0 + px * s, y0 + py * s, (.6 + 1.2 * al) * z, 0, 7); c.fill(); }); c.restore(); }
         // THE SUN THROUGH THE LEAVES (owner, build 173): when the low sun stands behind the crown it breaks through the gaps: a
         // small flare, a few soft spokes of light that turn as he walks, and dapples of light in the oak's shade
         { const inX = smooth(x0 + w * .04, x0 + w * .22, lx) * (1 - smooth(x0 + w * .8, x0 + w * .98, lx)), inY = smooth(y0, y0 + h * .1, ly) * (1 - smooth(y0 + h * .62, y0 + h * .74, ly)), sun = inX * inY * (1 - dark) * (1 - gateish);
           if (sun > .02) { c.save(); c.globalCompositeOperation = 'lighter';
-            const fl2 = .75 + .25 * Math.sin(cx * .05) * Math.sin(cx * .017 + 1), g = c.createRadialGradient(lx, ly, 0, lx, ly, 70 * z); g.addColorStop(0, css([255, 244, 210], .75 * sun * fl2)); g.addColorStop(.3, css([255, 224, 160], .3 * sun * fl2)); g.addColorStop(1, css([255, 210, 140], 0)); c.fillStyle = g; c.fillRect(lx - 70 * z, ly - 70 * z, 140 * z, 140 * z);
-            c.lineCap = 'round'; for (let i = 0; i < 9; i++) { const an = i * .698 + cx * .004 + .3 * Math.sin(i * 2.7), len = (70 + 80 * ((i * 37) % 10) / 10) * z * (.6 + .4 * Math.sin(cx * .03 + i * 1.3)), gr = c.createLinearGradient(lx, ly, lx + Math.cos(an) * len, ly + Math.sin(an) * len); gr.addColorStop(0, css([255, 236, 190], .34 * sun)); gr.addColorStop(1, css([255, 226, 170], 0));
-              c.strokeStyle = gr; c.lineWidth = (2 + (i % 3)) * z; c.beginPath(); c.moveTo(lx, ly); c.lineTo(lx + Math.cos(an) * len, ly + Math.sin(an) * len); c.stroke(); }
+            const fl2 = .75 + .25 * Math.sin(cx * .05) * Math.sin(cx * .017 + 1), g = c.createRadialGradient(lx, ly, 0, lx, ly, 90 * z); g.addColorStop(0, css([255, 250, 228], .95 * sun * fl2)); g.addColorStop(.05, css([255, 236, 180], .7 * sun * fl2)); g.addColorStop(.22, css([255, 210, 140], .26 * sun * fl2)); g.addColorStop(1, css([255, 210, 140], 0)); c.fillStyle = g; c.fillRect(lx - 90 * z, ly - 90 * z, 180 * z, 180 * z);
+            // (build 267: the turning spokes of a camera's star flare are gone; only the soft glow through the leaves, a little wider)
             c.restore(); }
           // (dapples of light in the shade were tried here and read as stepping stones: taken out)
         }
@@ -1584,5 +1656,5 @@ const HL = (() => {
   }
 
   // for testing: HL.peek() tells where the story is
-  return { on: false, show: false, hillPics: () => HILL, title, start, update, draw, touch, key, preload, lines: ALL, pt: k => k === 'hill' ? hillPt() : gatePt(), peek: () => ({ ph, x: Math.round(C3.x), stillT, zs, zT, Zw: +Zw.toFixed(2), farewell, kf: +(C3.kf || 0).toFixed(1), stand: C3.sd != null, wx: wise && Math.round(wise.x), ex: evan && evan.x != null ? Math.round(evan.x) : null, dark: +dark.toFixed(2), wise: wise && wise.mode, evan: evan && +evan.a.toFixed(2), knocks, cam: { ...cam }, hb: hillBox.map(v => Math.round(v * 100) / 100), bolt: bolt && bolt.map(l => [l[0], l[l.length - 1]].map(p => p.map(Math.round))) }) };
+  return { on: false, show: false, hillPics: () => HILL, title, start, update, draw, touch, key, preload, lines: ALL, pt: k => k === 'hill' ? hillPt() : gatePt(), peek: () => ({ ph, x: Math.round(C3.x), vil: +vil.toFixed(2), reveal: +reveal.toFixed(2), stillT, zs, zT, Zw: +Zw.toFixed(2), farewell, kf: +(C3.kf || 0).toFixed(1), stand: C3.sd != null, wx: wise && Math.round(wise.x), ex: evan && evan.x != null ? Math.round(evan.x) : null, dark: +dark.toFixed(2), wise: wise && wise.mode, evan: evan && +evan.a.toFixed(2), knocks, cam: { ...cam }, hb: hillBox.map(v => Math.round(v * 100) / 100), bolt: bolt && bolt.map(l => [l[0], l[l.length - 1]].map(p => p.map(Math.round))) }) };
 })();
