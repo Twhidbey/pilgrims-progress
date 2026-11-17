@@ -6,7 +6,7 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 **Level 4 has its own chat now** ("Pilgrim's Progress: Level 4, the Interpreter's House rooms", https://claude.ai/code/session_017HrTSFLdkNMnsDJ1SXFeY8): the gate, the narrow way, the house and its seven rooms after paintings, the darker-rooms switch. Its plan is in `CLAUDE.md`, Level 4. The gate itself stays shared with Level 3 (see "THE GATE IS SHARED").
 
-**Level 4 chat (Nov 17):** the rooms' words agreed with the owner (in `CLAUDE.md`, "THE ROOMS' WORDS, AGREED"); room 2 sketched as a still in code, waiting on the owner's look. Nothing built, nothing spent.
+**Level 4 chat (Nov 17):** the rooms' words agreed with the owner (in `CLAUDE.md`, "THE ROOMS' WORDS, AGREED"); room 2 sketched as a still in code; the owner asked for painting style, people too, with elements and colours from the painting. A free code collage of real Milkmaid pieces did not work (stickers on a wall). With the owner's yes, ONE draft on `gemini-2.5-flash-image` (about 4 cents), our layout + the Milkmaid as style: `concept/level4-room2-draft.jpg`. **Spent in this chat: about 4 cents.** Offered next: the final room without people (pro, about 15 cents) and a sheet of the room's people (about 15 cents).
 
 **Good-will has his own figure (older small-tweaks chat, about 15 cents):** `assets/goodwill-stand.webp` and `assets/goodwill-reach.webp`, facing right, faces plain, feet level; see "GOOD-WILL'S OWN FIGURE" in `CLAUDE.md`. Not yet in the game; the gate's chat was asked to put the standing one in Level 3's doorway.
 
