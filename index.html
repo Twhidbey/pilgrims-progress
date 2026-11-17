@@ -10,6 +10,17 @@
 <meta name="theme-color" content="#1b1c22">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="assets/icon-180.png?v=187">
+<script>
+// THE EDITOR AS ITS OWN HOME SCREEN APP (build 193; owner: "I want an editor link that I can put on my phone Home Screen and it
+// updates with changes"). On the editor's link the page offers its own manifest (start "./?edit"), name and icon, so an icon
+// added from it opens the editor; it updates itself like the game (freshCopy keeps ?edit when it reloads).
+if (/[?&]edit(=|&|$)/.test(location.search)) {
+  document.querySelector('link[rel=manifest]').href = 'edit.webmanifest';
+  document.querySelector('link[rel=apple-touch-icon]').href = 'assets/icon-edit-180.png?v=193';
+  document.querySelector('meta[name=apple-mobile-web-app-title]').content = 'PP Editor';
+  document.title = "Pilgrim's Progress (editor)";
+}
+</script>
 <title>Pilgrim's Progress</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=La+Belle+Aurore&family=UnifrakturMaguntia&display=swap" rel="stylesheet">
@@ -137,7 +148,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">build 192 · Nov 17 2026</div>
+  <div id="build">build 193 · Nov 17 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>

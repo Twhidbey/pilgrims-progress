@@ -1,5 +1,6 @@
 {
  "name": "Pilgrim's Progress",
+ "id": "./",
  "short_name": "Pilgrim",
  "start_url": "./",
  "scope": "./",

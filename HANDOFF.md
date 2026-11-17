@@ -39,6 +39,8 @@ Older handovers (builds 41 to 137, with the picture and video prompts used for H
 **Build 191: Level 3's crags made natural and one with the mountain (overlapping leaning spurs with flat brows and ledges, the mountain's own rock texture and colour, warm edges only on the highest faces, a slope of fallen rock joining them to the mountain at the foot). See `CLAUDE.md`, "Build 191". Nothing spent.**
 
 **Build 185: Level 3 into the rocks (owner's sequence): the hill hidden until Wiseman points (the camera pans right to it, far off and hazed); he goes over a brow and down out of sight; a dark cut to a rocky path among crags on every layer, the nearest passing in front; at the foot the camera pulls back to the whole mountain with lightning, then comes back to him for Evangelist. See `CLAUDE.md`, "Build 185: INTO THE ROCKS". Nothing spent. Waiting on the owner's eyes for the motion (pan, descent, pull back).**
+**Build 193 (small tweaks): the editor link can be its own Home Screen app ("PP Editor", own icon), opening straight into the editor and updating itself. Nothing spent.**
+
 **Build 190 (small tweaks): the editor arrows are round dark buttons, visible on any background. Nothing spent.**
 
 **Build 188 (small tweaks): the title opens on the closed book's cover (brown calf, like the app icon); opening it swings the cover over to show the title page and the contents. Nothing spent.**
