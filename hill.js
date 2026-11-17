@@ -409,7 +409,7 @@ const HL = (() => {
 
   // the wall's photograph repeats along the wall: its right edge was blended into its left (offline), so there is no seam
   let WALLP = null;
-  function wallPat(c) { if (!WALLP) WALLP = c.createPattern(GWALL, 'repeat-x'); return WALLP; }
+  function wallPat(c) { if (!WALLP) WALLP = c.createPattern(GWALL, 'repeat'); return WALLP; }
 
   // ---------- THE LANTERN, DRAWN (build 222; owner: "lamp looks like wrong perspective can we redo with computer design using
   // this as design reference"). The photograph showed two sides and the roof from above; the game is a flat side view. So
@@ -1188,6 +1188,12 @@ const HL = (() => {
       c.save(); wallPath(); c.clip();
       // one soft pool of lantern light, and the open door's light
       const dx0 = GATE_X - 30, lxw = GATE_X - 72, tex = GSTONE ? 1.3 : 1;
+      // (build 236, owner: "Too big of rocks need to find a much bigger swatch of rocks . Also need to go back to Rembrandt style
+      // lighting that we had before !": the picture is now TWO photographs by the same photographer of the same kind of
+      // Surrey stone-and-flint wall, Ash and Worplesdon (both CC0), joined and blended, its ends and its top and foot blended
+      // so it repeats without a seam both ways (2052 x 750), laid 640 units wide, so the stones are smaller; the dusk fill
+      // nearly gone and the lantern's and the door's pools falling off as steeply as the old lit stones did: most of the
+      // wall is dark again)
       // THE WALL FROM ONE BIG PHOTOGRAPH (build 235; owner: "A ... Let's go for A for on wall for now !"): a stone-and-flint
       // churchyard wall (St Peter's, Ash, Surrey; Wikimedia Commons, CC0), its daylight shading evened out and its colour
       // quietened (`assets/gate-wall.webp`, 1400 x 1011), laid 560 units wide from the road up, its right edge blended
@@ -1197,11 +1203,11 @@ const HL = (() => {
       // within (low, from the opening, as it opens), and a faint cool dusk over everything, so the stone is just there in
       // the dark and never a flat plane. The wall picture is laid over these lights by 'multiply'.
       c.globalCompositeOperation = 'lighter';
-      { c.fillStyle = css([44, 42, 56], .42); c.fillRect(0, 0, VW, Y(2)); }
-      { const g = c.createRadialGradient(lnx, lny, 0, lnx, lny, 300 * z); g.addColorStop(0, css([255, 196, 128], .95 * flick)); g.addColorStop(.18, css([236, 160, 96], .62 * flick)); g.addColorStop(.5, css([170, 104, 60], .22 * flick)); g.addColorStop(1, css([120, 70, 40], 0)); c.fillStyle = g; c.fillRect(lnx - 300 * z, lny - 300 * z, 600 * z, 600 * z); }
-      if (open > .01) { const bx = gapL + (gx + r - gapL) * .5, by = Y(-60), rr = 280 * z, g = c.createRadialGradient(bx, by, 0, bx, by, rr); g.addColorStop(0, css([255, 226, 176], .95 * open)); g.addColorStop(.25, css([240, 172, 104], .48 * open)); g.addColorStop(.6, css([170, 104, 60], .12 * open)); g.addColorStop(1, css([120, 70, 40], 0)); c.fillStyle = g; c.fillRect(bx - rr, by - rr, 2 * rr, 2 * rr); }
+      { c.fillStyle = css([44, 42, 56], .12); c.fillRect(0, 0, VW, Y(2)); }
+      { const g = c.createRadialGradient(lnx, lny, 0, lnx, lny, 300 * z); g.addColorStop(0, css([255, 200, 132], flick)); g.addColorStop(.12, css([250, 176, 108], .78 * flick)); g.addColorStop(.3, css([214, 132, 76], .4 * flick)); g.addColorStop(.55, css([150, 86, 48], .12 * flick)); g.addColorStop(.8, css([110, 60, 34], .03 * flick)); g.addColorStop(1, css([100, 56, 30], 0)); c.fillStyle = g; c.fillRect(lnx - 300 * z, lny - 300 * z, 600 * z, 600 * z); }
+      if (open > .01) { const bx = gapL + (gx + r - gapL) * .5, by = Y(-60), rr = 260 * z, g = c.createRadialGradient(bx, by, 0, bx, by, rr); g.addColorStop(0, css([255, 226, 176], open)); g.addColorStop(.15, css([246, 184, 116], .6 * open)); g.addColorStop(.35, css([200, 124, 70], .22 * open)); g.addColorStop(.65, css([130, 74, 40], .05 * open)); g.addColorStop(1, css([120, 70, 40], 0)); c.fillStyle = g; c.fillRect(bx - rr, by - rr, 2 * rr, 2 * rr); }
       c.globalCompositeOperation = 'multiply';
-      if (GWALL) { const P = wallPat(c), k = 560 / GWALL.width * z; P.setTransform(new DOMMatrix([k, 0, 0, k, X(x0), Y(0) - GWALL.height * k])); c.fillStyle = P; c.fillRect(0, 0, VW, Y(2)); }
+      if (GWALL) { const P = wallPat(c), k = 640 / GWALL.width * z; P.setTransform(new DOMMatrix([k, 0, 0, k, X(x0), Y(0) - GWALL.height * k])); c.fillStyle = P; c.fillRect(0, 0, VW, Y(2)); }
       else if (GSTONE) { if (!GSTONE.pat) GSTONE.pat = c.createPattern(GSTONE, 'repeat'); const k = 380 / GSTONE.width * z; GSTONE.pat.setTransform(new DOMMatrix([k, 0, 0, k, X(x0), Y(0)])); c.fillStyle = GSTONE.pat; c.fillRect(0, 0, VW, Y(2)); }
       c.globalCompositeOperation = 'source-over';
       if (GSTONE) {
