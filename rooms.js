@@ -28,7 +28,7 @@ const RM = (() => {
   const darkOn = () => { try { return localStorage.getItem('pp-dark') === '1'; } catch (e) { return false; } };
 
   // the two visitors (sprites face LEFT as made; face 1 = turned to face right)
-  const VIS = { C: { n: 'room-christian-hd', ax: 138, g: 946.5, s: 1 / 1.5, who: 'Christian', ph: 0, ct: 1.2, mul: .62, sat: .42, warm: [1, 1, 1], walk: { n: 'room-christian-walk', ax: 117, g: 355, s: 632 / 347, ct: 1.2, mul: .62, sat: .42, cols: 8, fr: 15, W: 192, H: 359, vpx: 6 } }, I: { n: 'room-interpreter-hd', ax: 160.5, g: 951, s: 1 / 1.5, who: I, ph: 1.7, ct: 1.15, mul: .66, sat: .45, walk: { n: 'room-interpreter-walk', ax: 102, g: 374, s: 635 / 365, ct: 1.15, mul: .66, sat: .45, cols: 8, fr: 27, W: 184, H: 376, vpx: 6 }, say: { n: 'room-interpreter-say-hd', ax: 235.2, g: 935.2, s: 635 / 331 / 2.8, ct: 1.15, mul: .66, sat: .45, cols: 7, fr: 56, W: 398, H: 941, parts: 4, per: 14 } } };
+  const VIS = { C: { n: 'room-christian-hd', ax: 138, g: 946.5, s: 1 / 1.5, who: 'Christian', ph: 0, ct: 1.2, mul: .62, sat: .42, warm: [1, 1, 1], walk: { n: 'room-christian-walk', ax: 117, g: 355, s: 632 / 347, ct: 1.2, mul: .62, sat: .42, cols: 8, fr: 15, W: 192, H: 359, vpx: 6 } }, I: { n: 'room-interpreter-hd', ax: 160.5, g: 951, s: 1 / 1.5, who: I, ph: 1.7, ct: 1.15, mul: .66, sat: .45, walk: { n: 'room-interpreter-walk2', ax: 98.6, g: 381, s: 635 / 375, ct: 1.15, mul: .66, sat: .45, cols: 8, fr: 28, W: 192, H: 384, vpx: 6 }, say: { n: 'room-interpreter-say-hd', ax: 235.2, g: 935.2, s: 635 / 331 / 2.8, ct: 1.15, mul: .66, sat: .45, cols: 7, fr: 56, W: 398, H: 941, parts: 4, per: 14 } } };
   const BRAVE = { plain: { n: 'room5-brave', ax: 94, g: 519 }, armed: { n: 'room5-brave-armed', ax: 123, g: 536 } };
 
   let R = null, t = 0, ph = '', cam = { x: 0, to: 0 }, fade = 1, fadeTo = 0, after = null, toned = {}, startId = 'door', motes = [];
@@ -471,11 +471,11 @@ const RM = (() => {
     },
     draw(c) {
       const g = c.createLinearGradient(0, 0, 0, VH); g.addColorStop(0, '#0c0705'); g.addColorStop(.8, '#140c08'); g.addColorStop(1, '#0a0604'); c.fillStyle = g; c.fillRect(0, 0, VW, VH);
-      const ix = this.x() + 430, fl = 1 + .06 * Math.sin(G.t / 4.7) * Math.sin(G.t / 11), lx = u(ix) + 34, ly = v(this.FY) - 128;
+      const ix = 810 + this.p * 700 * walkSpeed('I', this.k) / walkSpeed('C', this.k), fl = 1 + .06 * Math.sin(G.t / 4.7) * Math.sin(G.t / 11), lx = u(ix) + 34, ly = v(this.FY) - 128;
       // the candle's light on the passage wall and, flat, on the floor
       glow(c, lx, ly, 330 * fl, [255, 170, 90], .2); c.save(); c.translate(lx, v(this.FY) + 2); c.scale(1, .12); glow(c, 0, 0, 380 * fl, [255, 170, 90], .32); c.restore();
-      // the two walk at their videos' own pace (the Interpreter's longer stride turns over a little slower)
-      walkFig(c, 'I', ix, this.fr * walkSpeed('C', this.k) / walkSpeed('I', this.k), this.k);
+      // both walk at their videos' own full pace, each moving at the floor speed that keeps his planted foot still (build 320)
+      walkFig(c, 'I', ix, this.fr, this.k);
       walkFig(c, 'C', this.x(), this.fr, this.k);
       glow(c, lx, ly, 26 * fl, [255, 226, 160], .7); c.fillStyle = 'rgba(255,240,200,.95)'; c.beginPath(); c.ellipse(lx, ly - 2, 1.6, 3.4, 0, 0, 6.2832); c.fill();
     },
