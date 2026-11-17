@@ -1354,9 +1354,10 @@ const HL = (() => {
     }
     // the road under everyone's feet
     // (build 221, owner: "The blue path layer can have some contour (or ruggedness) to it to make it match surroundings"):
-    // among the rocks the path is the crags' own warm brown-black, not the night's blue; its far edge is a low broken line
+    // among the rocks the path is a blue-black slate (build 224, the owner's choice from four: the cool of the night
+    // under the warm rock and rose sky; build 221's warm brown-black made the whole picture one colour); its far edge is a low broken line
     // of stones (a few units high, behind the feet, so the walking line stays level), and the rock's grain lies over it
-    const road = () => { const g = c.createLinearGradient(0, Y(0), 0, VH); const rc = rocky ? mix([36, 30, 28], [26, 21, 19], dark) : mix([46, 40, 36], [22, 22, 30], Math.max(dark, .9 * gateish));
+    const road = () => { const g = c.createLinearGradient(0, Y(0), 0, VH); const rc = rocky ? mix([28, 29, 37], [21, 22, 29], dark) : mix([46, 40, 36], [22, 22, 30], Math.max(dark, .9 * gateish));
       if (rocky) { const xl = cx - VW / 2 / z - 20, xr = cx + VW / 2 / z + 20; c.beginPath(); c.moveTo(X(xl), VH);
         for (let x = Math.floor(xl / 5) * 5; x <= xr; x += 5) { const h = Math.max(0, 70 * (nz(x * .006, 3.1) - .44) + 22 * (nz(x * .03, 7.7) - .42) + 5 * (nz(x * .14, 1.3) - .5)); c.lineTo(X(x), Y(-h)); }
         c.lineTo(X(xr), VH); c.closePath(); c.fillStyle = css(rc); c.fill(); } g.addColorStop(0, css(mix(rc, [120, 116, 100], rocky ? 0 : .25))); g.addColorStop(.08, css(rc)); g.addColorStop(1, css(mix(rc, [0, 0, 0], .35))); c.fillStyle = g; c.fillRect(0, Y(0), VW, VH);

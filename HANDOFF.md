@@ -56,6 +56,8 @@ Older handovers (builds 41 to 137, with the picture and video prompts used for H
 - The concept art from the picture chat is not in the repo (it was only shown in that chat); ask that chat to put any keepers in a `concept/` folder.
 - Earlier offers not answered: the sketch of Levels 3 to 6 as a first whole game; a child playing it; carrying the tune through the levels; Evangelist handing over the roll as an animation; repainting the three cottages with true door and window proportions (about 45 cents).
 
+**Build 224: Level 3's rocky path in blue-black slate (the owner's pick from four colour stills). See `CLAUDE.md`, "Build 224". Nothing spent.**
+
 **Build 221: Level 3: the cloud ceiling flatter and wispier (thin lit layers under it), the rocky path a stony brown with an uneven edge (no more blue band), Christian and Wiseman lighter on the green plain. See `CLAUDE.md`, "Build 221". Nothing spent.**
 
 **Build 218: Level 3's sky: one continuous dark cloud ceiling instead of billows, smoke layers and storm bank; pale lid far off, dark ceiling near, firelit underside, strikes out of it. See `CLAUDE.md`, "Build 217". Nothing spent.**
