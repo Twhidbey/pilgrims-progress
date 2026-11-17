@@ -396,7 +396,7 @@ const HL = (() => {
   }
   function preload() {
     loadOak();
-    if (!loading) loading = Promise.all([Promise.all([loadImg('hill-rock.webp'), loadImg('hill-fire.webp')]).then(([r, f]) => { if (r) { build(); paintHill(r, f); } }), loadPack('wiseman', WIS).catch(() => {}), loadImg('gate-door.webp').then(im => { if (im) GDOOR = soften(im, 3, .5); }), loadImg('goodwill-stand.webp').then(im => { if (im) GWST = im; }), loadImg('gate-wall.webp').then(im => { if (im) GWALL = soften(im, 3, .5, true); }), loadImg('gate-stone.webp').then(im => { if (im) GSTONE = im; }), loadPack('evangelist-walk', EVW).catch(() => {}), loadImg('wiseman-stand.webp').then(im => { if (im) WIS_ST = im; }), OBS.ready || loadPack('obstinate', OBS).catch(() => {}), EVS.ready || loadPack('evangelist-stand', EVS).catch(() => {}), RUNP.ready || loadPack('christian-run-plain', RUNP).catch(() => {}),
+    if (!loading) loading = Promise.all([Promise.all([loadImg('hill-rock.webp'), loadImg('hill-fire.webp')]).then(([r, f]) => { if (r) { build(); paintHill(r, f); } }), loadPack('wiseman', WIS).catch(() => {}), loadImg('gate-door.webp').then(im => { if (im) GDOOR = soften(im, 4, .7, false, .22); }), loadImg('goodwill-stand.webp').then(im => { if (im) GWST = im; }), loadImg('gate-wall.webp').then(im => { if (im) GWALL = soften(im, 4, .7, true, .22); }), loadImg('gate-stone.webp').then(im => { if (im) GSTONE = im; }), loadPack('evangelist-walk', EVW).catch(() => {}), loadImg('wiseman-stand.webp').then(im => { if (im) WIS_ST = im; }), OBS.ready || loadPack('obstinate', OBS).catch(() => {}), EVS.ready || loadPack('evangelist-stand', EVS).catch(() => {}), RUNP.ready || loadPack('christian-run-plain', RUNP).catch(() => {}),
       WEEP.ready || loadPack('christian-weep', WEEP).catch(() => {}), KNEEL.ready || loadPack('christian-kneel', KNEEL).catch(() => {}), TURN.ready || loadPack('christian-turn', TURN).then(() => bookLoaded('TURN')).catch(() => {}),
       OBS_ST ? 0 : loadImg('obstinate-stand.webp').then(im => { if (im && !OBS_ST) OBS_ST = im; }),
       loadImg('tree-a.webp').then(im => { if (!im) return; const c = mk(im.width, im.height), k = c.getContext('2d'); k.drawImage(im, 0, 0); k.globalCompositeOperation = 'source-in'; k.fillStyle = '#fff'; k.fillRect(0, 0, c.width, c.height); OAKT = c; })]).catch(() => {});
@@ -419,13 +419,17 @@ const HL = (() => {
   // realistic"): a photograph is softened once as it loads: a copy made `f` times smaller (halving step by step, so no
   // pixels are skipped) and stretched back up is laid over it at `a`, so the stones and the planks keep their shapes but
   // lose the photograph's crisp grit; a repeating picture (`wrap`) is softened from a 3 x 3 tiling, so its edges still meet
-  function soften(im, f, a, wrap) {
+  // (build 255, owner: "turn it up slightly more - still a bit too high contrast for me"): softer (a copy four times smaller,
+  // at .7), and `flat` of the picture's own mean colour laid over it, so its darks and lights come closer together
+  function soften(im, f, a, wrap, flat = 0) {
     const w = im.width, h = im.height, n = wrap ? 3 : 1, T = mk(w * n, h * n), t = T.getContext('2d');
     for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) t.drawImage(im, i * w, j * h);
     let src = T, sw = T.width, sh = T.height; const tw = Math.max(2, Math.round(T.width / f)), th = Math.max(2, Math.round(T.height / f));
     while (sw > tw) { const nw = Math.max(tw, Math.round(sw / 2)), nh = Math.max(th, Math.round(sh / 2)), q = mk(nw, nh); q.getContext('2d').drawImage(src, 0, 0, sw, sh, 0, 0, nw, nh); src = q; sw = nw; sh = nh; }
     const out = mk(w, h), o = out.getContext('2d'); o.drawImage(im, 0, 0); o.globalAlpha = a; o.imageSmoothingEnabled = true;
     o.drawImage(src, wrap ? sw / 3 : 0, wrap ? sh / 3 : 0, wrap ? sw / 3 : sw, wrap ? sh / 3 : sh, 0, 0, w, h); o.globalAlpha = 1;
+    if (flat > 0) { const m = mk(1, 1), mq = m.getContext('2d'); mq.drawImage(src, 0, 0, 1, 1); const d = mq.getImageData(0, 0, 1, 1).data;
+      o.globalCompositeOperation = 'source-atop'; o.fillStyle = `rgba(${d[0]},${d[1]},${d[2]},${flat})`; o.fillRect(0, 0, w, h); o.globalCompositeOperation = 'source-over'; }
     return out;
   }
   // the wall's photograph repeats along the wall: its right edge was blended into its left (offline), so there is no seam

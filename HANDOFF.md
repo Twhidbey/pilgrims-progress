@@ -6,6 +6,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 **The keepsakes have their own chat now** ("Pilgrim's Progress: the keepsakes (Bible, roll, title book)", https://claude.ai/code/session_017HrTSDUqJDSdrXPbhc33zT). Open question there: the wax seal on Evangelist's roll is ours, not the book's (`{14}` has no seal; the sealed roll is given at the Cross, `{94}`): take it off and keep `waxSeal()` for Level 5, or keep it as a departure.
 
+**Build 255 (small-tweaks chat): the gate's wall and door softer still, with less contrast. See `CLAUDE.md`, "Build 255". Nothing spent.**
+
 **Build 254 (small-tweaks chat): the gate's wall and door softened a little, toward watercolour. See `CLAUDE.md`, "Build 254". Nothing spent.**
 
 **Build 252 (small-tweaks chat): the gate's darks warmed to Rembrandt's red-browns (sky, wall, road, edges, the light's falloff, Christian). See `CLAUDE.md`, "Build 252". Nothing spent.**
