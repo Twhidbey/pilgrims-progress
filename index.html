@@ -152,7 +152,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">build 236 · Nov 17 2026</div>
+  <div id="build">build 237 · Nov 17 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -2312,6 +2312,8 @@ stage.addEventListener('pointerdown', e => {
     if (G.act === 'gate') { if (Math.abs(sx - (DOORM - G.cam)) < 120 && sy > GY - 340 && sy < GY + 40) { pushing = true; pushId = e.pointerId; } else G.actT = Math.max(G.actT, 39); return; }
     next(); return;
   }
+  // (build 237) Level 3's wide picture of the mountain answers touches while the story runs by itself
+  if (HL.on && G.state === 'auto') { HL.touch(sx, sy); return; }
   if (G.state !== 'play') return;
   downs.set(e.pointerId, G.t); if (HL.on) HL.touch(sx, sy); else if (SL.on) SL.touch(sx, sy); else touchAt(sx, sy);
 });
@@ -2460,7 +2462,7 @@ document.getElementById('on2').onclick = () => SL.on ? go3() : go2();
 })();
 </script>
 <script src="slough.js?v=217"></script>
-<script src="hill.js?v=236"></script>
+<script src="hill.js?v=237"></script>
 <script src="keepsakes.js?v=219"></script>
 <script src="editor.js?v=196"></script>
 </body>
