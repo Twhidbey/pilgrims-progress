@@ -6,7 +6,21 @@
 //   ◂ begins the level again and fast-forwards to the moment before.
 // The game itself is not changed: without ?edit this file does nothing.
 const ED = (() => {
-  if (!new URLSearchParams(location.search).has('edit')) return { on: false };
+  // EDITOR MODE REMEMBERED ON THE DEVICE (build 196; owner, on the iPhone: the Home Screen icon "somehow arrow keys
+  // disappear" because the icon opened the game without ?edit). Five quick taps on the bottom-right corner of the book
+  // cover (where the build number is) turn editor mode on or off; it is kept on the device (each Home Screen icon has its
+  // own store), so the icon then always opens with the arrows. ?edit turns it on as before; ?edit=0 turns it off.
+  const Q = new URLSearchParams(location.search), mem = { get() { try { return localStorage.getItem('pp-edit') === '1'; } catch (e) { return false; } }, set(v) { try { v ? localStorage.setItem('pp-edit', '1') : localStorage.removeItem('pp-edit'); } catch (e) {} } };
+  if (Q.has('edit')) mem.set(Q.get('edit') !== '0');
+  { let taps = [];
+    document.getElementById('stage').addEventListener('pointerdown', e => {
+      if (typeof G === 'undefined' || G.state !== 'title') return;
+      const r = document.getElementById('stage').getBoundingClientRect();
+      if (e.clientX < r.right - r.width * .3 || e.clientY < r.bottom - r.height * .2) { taps = []; return; }
+      const now = Date.now(); taps = taps.filter(t => now - t < 3000); taps.push(now);
+      if (taps.length >= 5) { taps = []; const on = !mem.get(); mem.set(on); const u = new URL(location.href); u.searchParams.delete('edit'); if (on) u.searchParams.set('edit', ''); location.replace(u.pathname + (u.search ? u.search.replace('edit=&', 'edit&').replace(/edit=$/, 'edit') : '')); }
+    }, true); }
+  if (!(Q.has('edit') ? Q.get('edit') !== '0' : mem.get())) return { on: false };
   const st = document.createElement('style');
   st.textContent = `.edarrow{position:absolute;top:50%;width:clamp(36px,5.2vw,52px);height:clamp(36px,5.2vw,52px);margin-top:calc(clamp(36px,5.2vw,52px) / -2);border-radius:50%;border:1.5px solid rgba(232,194,124,.85);background:rgba(14,15,22,.62);color:#f0d9a8;font-size:clamp(16px,2.6vw,24px);line-height:1;cursor:pointer;z-index:30;display:none;box-shadow:0 0 10px rgba(0,0,0,.45);-webkit-tap-highlight-color:transparent}
 .edarrow.r{right:1.2%}.edarrow.l{left:1.2%}
@@ -19,7 +33,7 @@ const ED = (() => {
   const lvl = () => HL.on ? 3 : SL.on ? 2 : 1;
   const text = () => { const d = document.getElementById('dlg'); return d.classList.contains('on') && !d.classList.contains('hint') ? d.querySelector('.t').textContent : ''; };
   const quiet = on => { try { if (typeof AC !== 'undefined' && AC && MASTER) { MASTER.gain.cancelScheduledValues(AC.currentTime); MASTER.gain.setTargetAtTime(on ? 0 : 1, AC.currentTime, on ? .005 : .25); } } catch (e) {} };
-  const label = () => { tag.textContent = G.state === 'title' ? 'editor on · the arrows show once a level begins' : 'editor · level ' + lvl() + ' · moment ' + n; };
+  const label = () => { tag.textContent = G.state === 'title' ? 'editor on · tap build no. 5× to turn off' : 'editor · level ' + lvl() + ' · moment ' + n; };
   // one moment on: step the world until something new is said, a choice comes, or the level ends
   function step() {
     if (G.state === 'choice') pick(false);
