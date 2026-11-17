@@ -48,9 +48,9 @@ body.opened .tleaf{transform:translateZ(2px) rotateY(-180deg)}
 .tcover{position:absolute;inset:calc(var(--u,1) * -5px) calc(var(--u,1) * -6px) calc(var(--u,1) * -6px) 0;background:#5c3a22 center/100% 100%;border-radius:2px 7px 7px 2px;backface-visibility:hidden;-webkit-backface-visibility:hidden;cursor:pointer;box-shadow:0 calc(var(--u,1) * 1px) calc(var(--u,1) * 2px) rgba(0,0,0,.5)}
 /* the block of pages under the board (build 210): its own layer, so the ribbon can come out from between the pages,
    under the cover; cream edges with the fine lines of the leaves, a little lower and to the right of the board */
-.tpages{position:absolute;inset:calc(var(--u,1) * -2px) calc(var(--u,1) * -10px) calc(var(--u,1) * -12px) calc(var(--u,1) * 2px);border-radius:2px 5px 5px 2px;background:repeating-linear-gradient(0deg,#d8c7a0 0 1px,#c4ae84 1px 2px);backface-visibility:hidden;-webkit-backface-visibility:hidden;box-shadow:0 calc(var(--u,1) * 14px) calc(var(--u,1) * 40px) rgba(0,0,0,.6),inset 0 0 0 1px rgba(90,60,25,.35);transition:opacity .4s}
+.tpages{position:absolute;inset:calc(var(--u,1) * -2px) calc(var(--u,1) * -10px) calc(var(--u,1) * -12px) calc(var(--u,1) * 2px);border-radius:2px 5px 5px 2px;background:repeating-linear-gradient(0deg,#ab9b7c 0 1px,#9a8a6c 1px 2px);backface-visibility:hidden;-webkit-backface-visibility:hidden;box-shadow:0 calc(var(--u,1) * 14px) calc(var(--u,1) * 40px) rgba(0,0,0,.6),inset 0 0 0 1px rgba(90,60,25,.35);transition:opacity .4s}
 body.opened .tpages{opacity:0}
-.tribbon{position:absolute;left:62%;bottom:calc(var(--u,1) * -34px);width:calc(var(--u,1) * 11px);height:calc(var(--u,1) * 30px);box-shadow:0 0 calc(var(--u,1) * 2px) rgba(40,15,5,.5);background:linear-gradient(90deg,#6e1712,#9a2620 45%,#7a1a15);clip-path:polygon(0 0,100% 0,100% 100%,50% 82%,0 100%);backface-visibility:hidden;-webkit-backface-visibility:hidden;transition:opacity .4s}
+.tribbon{position:absolute;left:62%;bottom:calc(var(--u,1) * -34px);width:calc(var(--u,1) * 11px);height:calc(var(--u,1) * 30px);box-shadow:0 0 calc(var(--u,1) * 2px) rgba(40,15,5,.5);background:linear-gradient(90deg,#5c1a15,#80281f 45%,#661c16);clip-path:polygon(0 0,100% 0,100% 100%,50% 82%,0 100%);backface-visibility:hidden;-webkit-backface-visibility:hidden;transition:opacity .4s}
 body.opened .tribbon{opacity:0}
 .tp{left:0;width:100%;border-radius:2px 0 0 2px;transform:rotateY(180deg);backface-visibility:hidden;-webkit-backface-visibility:hidden}
 .tc{left:50%;border-radius:0 2px 2px 0}
@@ -152,7 +152,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">build 227 · Nov 17 2026</div>
+  <div id="build">build 228 · Nov 17 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -2413,7 +2413,7 @@ for (const b of document.querySelectorAll('#levels .lv')) { b.classList.toggle('
   // Library, on Wikimedia Commons under CC0: "Of the consecration of the bishops in the Church of England - Upper cover
   // (c67h3)"), its owner's gilt arms taken out (filled with leather from lower on the same cover), the gilt fillet,
   // the wear and the spine's raised bands kept. The drawn cover above stays only until the photograph has loaded.
-  { const im = new Image(); im.onload = () => { el.style.backgroundImage = 'url(assets/cover-calf.webp?v=206)'; }; im.src = 'assets/cover-calf.webp?v=206'; }
+  { const im = new Image(); im.onload = () => { el.style.backgroundImage = 'url(assets/cover-calf.webp?v=228)'; }; im.src = 'assets/cover-calf.webp?v=228'; }
   el.onclick = () => { const o = document.getElementById('open'); if (o.style.visibility === 'visible' && o.style.display !== 'none') o.click(); };
 })();
 document.getElementById('open').onclick = () => {
