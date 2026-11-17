@@ -86,7 +86,7 @@ const SL = (() => {
   const HX = BANK0 + 34, GRASP = { dx: -(82 - 15 + 129), dy: 283 - 55 };
   const HY = () => bankY(HX) + 4;
   const STUCK_X = HX + GRASP.dx * CHR_K, STUCK_Y = () => HY() + GRASP.dy * CHR_K;
-  const SINK = 100, PLI_SINK = 76, DEEP = 22, OAK_X = 110, OAK_S = 1.2;
+  const SINK = 100, PLI_SINK = 76, DEEP = 8, OAK_X = 110, OAK_S = 1.2;
   const C_SINK = 64;      // build 125 (owner: "Christian is too submerged at first ... it'd be nice to see more of him at start"): he falls in to the waist, and sinks from there to SINK + DEEP as he crosses
   // build 115 (owner, of them standing at the bog's edge: "still white space between feet and ground"): on the muddy flat at
   // the water's level they stand a little sunk in it, and every picture of them there is cut at the water line
@@ -503,6 +503,10 @@ const SL = (() => {
   const LIFT_SPLIT = [[0, 215], [18, 235], [36, 255], [48, 270], [60, 300], [72, 315], [86, 320]];
   const tab = (T, f) => { for (let i = 1; i < T.length; i++) if (f <= T[i][0]) return lerp(T[i - 1][1], T[i][1], (f - T[i - 1][0]) / (T[i][0] - T[i - 1][0])); return T[T.length - 1][1]; };
   const liftWet = (f, a = .78) => ({ r: tab(LIFT_HEAD, f) + 75, x1: tab(LIFT_SPLIT, f), a });
+  // BUILD 183 (owner: "still feels a little jerky"): his struggling video was played at up to 1.3 times its own speed in
+  // bursts and dropped to a fifth in an instant. Now it never runs faster than its own 12 pictures a second (.2 a tick),
+  // and its speed eases from one pace to the next (waStep); each picture melts into the next (see drawChr).
+  function waStep(to) { C2.waV = lerp(C2.waV ?? .1, to, .05); C2.wa = (C2.wa || 0) + C2.waV; }
   function wadeOn() { ph = 'wade'; G.state = 'play'; caption(ALONE); }
   // CHRISTIAN REALLY TURNS (build 120, owner: "christian turns and looks a couple times and i don't like the flip back and
   // forth without body moving, could we use turns from other levels"): Level 1's turning video (TURN, left to right),
@@ -584,20 +588,20 @@ const SL = (() => {
     // build 121 (owner: "struggling feels a bit repetitive"): they struggle in bursts with a breath between, each at his own
     // changing pace (burst(k): 0 resting .. 1 heaving), so no two heaves fall alike; drops fly while they heave
     const burst = k => smooth(.3, .7, .5 + .5 * Math.sin(G.t / (52 + 9 * k) + 2.2 * Math.sin(G.t / (131 + 17 * k) + k)));
-    if (['fall', 'pli', 'backtalk'].includes(ph)) { const b = burst(1); C2.wa = (C2.wa || 0) + (calm ? .04 : .05 + .19 * b); }      // (build 143: the mud's answer comes from his pictures: see sense())
+    if (['fall', 'pli', 'backtalk'].includes(ph)) { const b = burst(1); waStep(calm ? .06 : .07 + .13 * b); }      // (build 143: the mud's answer comes from his pictures: see sense())
     if (ph === 'fall') {
       if (C2.fallT === 8 || C2.fallT === 14) { rings.push({ x: C2.x, y: 0, t: 0, k: 1.3 }); rings.push({ x: pli.x, y: 0, t: 0, k: 1.1 }); }
       if (C2.fallT === 120) { ph = 'pli'; talk(FALL, choose2); }
     } else if (ph === 'back') {
-      C2.wa = (C2.wa || 0) + .2;
+      waStep(.2);
       if (!C2.tv) { C2.x -= .3; C2.anim += .3 / CHR_STEP * 2.6; C2.face = -1; footfall(); }
       if (C2.x <= WADE0 - 60) { ph = 'backtalk'; talk(BACK, () => { turnC(1, 2); wadeOn(); }); }
     } else if (ph === 'wade') {
       // build 120 (owner: "can we make christian move across possibly happen quicker? it's a bit of a slog"): he makes more
       // ground with each heave (.55 a tick, was .32: about 14 s of holding, was 24); the tune still has a note for each footfall
-      const v = want && !C2.tv ? .55 : 0, p = clamp((C2.x - WADE0) / (STUCK_X - WADE0));
+      const v = want && !C2.tv ? .55 : 0, p = clamp((C2.x - WADE0) / (STUCK_X - WADE0));      // (build 183: DEEP 8, was 22: more of him shows at the far bank, head, shoulders and chest; owner: "show a bit more of Christian at the far bank")
       C2.x = Math.min(STUCK_X, C2.x + v); if (!C2.tv) C2.face = 1;
-      C2.wa = (C2.wa || 0) + (v ? .2 : .07);
+      waStep(v ? .2 : .08);
       if (v) { C2.anim += v / CHR_STEP * 3; footfall(); } else C2.anim = stepAnim(C2.anim, 0, CHR_STEP, CHR_META);
       // build 114 (owner: "make christian sink even further as he moves from one end of pond to other (till just head is
       // barely above water)"): deeper and deeper as he wades (DEEP below where he fell in, by the far bank only his head
@@ -612,7 +616,7 @@ const SL = (() => {
       // (build 119: Help walks in while the storyteller says he came; he speaks when he has come)
       // THE HEART OF THE LEVEL: he cannot get out alone. Holding does nothing but strain; he slips back; then Help comes.
       slipT++;
-      C2.wa = (C2.wa || 0) + (want ? .26 : .06);
+      waStep(want ? .2 : .07);
       if (want) { strain++; C2.anim += .5; if (strain % 40 === 1) sfxS.strain(); }
       C2.x = STUCK_X - 4 * Math.max(0, Math.sin(slipT / 50)) * smooth(60, 160, slipT);
       if (strain > 230 || slipT > 420) { ph = 'help'; C2.x = STUCK_X; talk(STUCK, () => { help = { a: 0, t: 0, w: HWALK.length >= 96 ? 0 : 1e9 }; talk(HELP.slice(0, 1), () => {}); }); }
@@ -696,10 +700,10 @@ const SL = (() => {
         if (pli.dxo == null) pli.dxo = pli.dx0;
         const pong = () => { const L = 34; pli.ct = 2 + L * (1 - Math.cos(Math.PI * pli.wt / L)) / 2; pli.c0 = pli.ct; };      // build 180: eased at each turn (it reversed at full speed, a jerk)
         if (pli.wal) {      // wallowing: the video's first three seconds back and forth, in bursts, sinking with Christian
-          const b = burst(4); pli.wt = (pli.wt || 0) + (calm ? .03 : .04 + .2 * b); pong();
+          const b = burst(4); pli.wtV = lerp(pli.wtV ?? .1, calm ? .05 : .06 + .14 * b, .05); pli.wt = (pli.wt || 0) + pli.wtV; pong();
           pli.dy0 = ((pli.sy ?? pli.y) - (PLI_META.ground - 5) * CHR_K) - (M.sink - (M.ground - M.top0) * CHR_K); pli.wk = Math.min(1, pli.wk + .11);
         } else if (pli.dxo > .5) {      // build 121: he is well out in the slough: he struggles back toward his own side first
-          pli.dxo = Math.max(0, pli.dxo - .32); pli.wt = (pli.wt || 0) + .2; pong();
+          pli.dxo = Math.max(0, pli.dxo - .32); pli.wtV = lerp(pli.wtV ?? .2, .2, .05); pli.wt = (pli.wt || 0) + pli.wtV; pong();
         } else { pli.ct = Math.min(last, (pli.ct || 0) + .2); }
         // BUILD 140: HIS TURN IN THE MUD IS A HEAVE ROUND, not a slow dissolve between mirrored pictures (there are no
         // frames of him turning). He ducks into the mud with a splash; the picture swaps over a few ticks at the bottom of
@@ -742,7 +746,7 @@ const SL = (() => {
     else if (['fall', 'pli', 'back', 'backtalk'].includes(ph)) t = { cx: -470, z: .8, wl: 392 };
     // build 114: the oak is bigger, so at the far bank the camera draws back a little more and the water line sits lower,
     // so the whole crown is in the picture (the top of the screen must be above about 640 units over the water: wl / z)
-    else if (ph === 'wade' || ph === 'stuck') t = { cx: lerp(-470, -240, p), z: lerp(.8, .6, p), wl: lerp(392, 392, p) };
+    else if (ph === 'wade' || ph === 'stuck') t = { cx: lerp(-470, -250, p), z: lerp(.8, .66, p), wl: lerp(392, 392, p) };      // build 183: a little closer at the far bank (was .6); Help's coming draws it back to .6 for the oak
     else if (ph === 'help' || ph === 'drawn') t = { cx: -240, z: .6, wl: 392 };
     else t = { cx: Math.max(-330, C2.x + 120), z: .66, wl: 425 };
     const e = ph === 'plain' ? .06 : .02;
@@ -841,8 +845,11 @@ const SL = (() => {
         const im = PLIC[Math.floor(pli.ct || 0)], wk = pli.wal ? pli.wk : 1, fl = (1 - (pli.fa ?? -1)) / 2, cw = 2 * (META.climb.ax - plCen(Math.floor(pli.ct || 0))) * CHR_K;
         if (wk < 1) figure(n, 'pli0', PLI[pli.wf || 0], PLI_META, pli.wx, pli.sy, 1, fig, true, pli.alpha * (1 - smooth(.5, 1, wk)));
         MREC = 'P'; FIG_WET = { D: pli.maxY || 0, a: .78 }; FIG_DIP = 60 * (1 - smooth(.6, .8, (pli.ct || 0) / 119));
-        if (fl < .99) figure(n, 'pli2', im, META.climb, pli.x + cw, pli.y, 1, fig, true, pli.alpha * smooth(0, .5, wk) * (1 - smooth(.5, 1, fl)));
-        if (fl > .01) figure(n, 'pli', im, META.climb, pli.x, pli.y, -1, fig, true, pli.alpha * smooth(0, .5, wk) * smooth(0, .5, fl)); FIG_DIP = 0; MREC = null; FIG_WET = null;
+        // build 183: each picture of his climbing video melts into the next (12 a second, each held five ticks, was steppy)
+        const pc = pli.ct || 0, im2 = PLIC[Math.min(PLIC.length - 1, Math.floor(pc) + 1)], bk = pc - Math.floor(pc);
+        if (fl < .99) { const a2 = pli.alpha * smooth(0, .5, wk) * (1 - smooth(.5, 1, fl)); figure(n, 'pli2', im, META.climb, pli.x + cw, pli.y, 1, fig, true, a2); if (bk > .03) figure(n, 'pli2b', im2, META.climb, pli.x + cw, pli.y, 1, fig, true, a2 * bk); }
+        if (fl > .01) { const a1 = pli.alpha * smooth(0, .5, wk) * smooth(0, .5, fl); figure(n, 'pli', im, META.climb, pli.x, pli.y, -1, fig, true, a1); if (bk > .03) figure(n, 'plib', im2, META.climb, pli.x, pli.y, -1, fig, true, a1 * bk); }
+        FIG_DIP = 0; MREC = null; FIG_WET = null;
     };
     TALKM = talkMove(PL);
     if (pli && !pliIn) {
@@ -1128,6 +1135,7 @@ const SL = (() => {
       if (f0 + 1 < TURN.length && tf - f0 > .02) figure(n, 'turn2', TURN[f0 + 1], TURN_META, C2.x, C2.y, 1, fig, C2.y > 2, ka * (tf - f0));
       if (ta >= 1) return; alpha *= 1 - smooth(.5, 1, ta);
     }
+    let blendIm = null, blendK = 0;
     const inWater = C2.y > 2 && ph !== 'look' && ph !== 'onway' && ph !== 'on' && ph !== 'drawn';
     let walkIm = CHR[((Math.floor(C2.anim) % CHR.length) + CHR.length) % CHR.length], walkM = CHR_META;
     // in the mire he heaves and struggles (one video loop) instead of walking
@@ -1138,7 +1146,7 @@ const SL = (() => {
     const wk = ph === 'fall' ? smooth(36, 46, C2.fallT) : smooth(36, 40, C2.y); let wa = 1;      // build 119: he flounders from the fall on
     if (WADE.length && inWater && wk > 0 && ['fall', 'pli', 'back', 'backtalk', 'wade', 'stuck', 'help'].includes(ph)) {
       if (wk < 1) figure(n, 'chr0', walkIm, CHR_META, C2.x, C2.y, C2.face, fig, true, alpha * C2.alpha * (1 - smooth(.5, 1, wk)));
-      walkIm = WADE[Math.floor(C2.wa || 0) % WADE.length]; walkM = META.wade; wa = smooth(0, .5, wk); FIG_DIP = 46; }
+      const wf = C2.wa || 0; walkIm = WADE[Math.floor(wf) % WADE.length]; walkM = META.wade; wa = smooth(0, .5, wk); FIG_DIP = 46; blendIm = WADE[(Math.floor(wf) + 1) % WADE.length]; blendK = wf - Math.floor(wf); }
     if (ph === 'help' && C2.reach > 0) {
       const gx = HX + GRASP.dx * CHR_K, gy = STUCK_Y() + (C2.y - STUCK_Y()) * (1 - smooth(20, 140, C2.rt || 0));      // he heaves up out of the deep as he reaches (build 114)
       if (C2.reach < 1) figure(n, 'chr', walkIm, walkM, C2.x, C2.y, 1, fig, true, alpha * (1 - C2.reach)); FIG_DIP = 0;
@@ -1155,7 +1163,10 @@ const SL = (() => {
     }
     // build 180: the struggling picture is never shown higher than its own mud line (58: five units of filled body, hidden by the
     // collar); while he is still shallower than that it stands a little deeper than his walking picture, under the splash
-    figure(n, 'chr', walkIm, walkM, C2.x, walkM === META.wade ? Math.max(C2.y, 58) : C2.y, C2.face, fig, inWater, alpha * C2.alpha * wa); FIG_DIP = 0;
+    const wy = walkM === META.wade ? Math.max(C2.y, 58) : C2.y;
+    figure(n, 'chr', walkIm, walkM, C2.x, wy, C2.face, fig, inWater, alpha * C2.alpha * wa);
+    if (blendIm && blendK > .03) figure(n, 'chrB', blendIm, walkM, C2.x, wy, C2.face, fig, inWater, alpha * C2.alpha * wa * blendK);      // the next picture melts in over this one
+    FIG_DIP = 0;
   }
 
   // for testing: SL.peek() tells where the story is

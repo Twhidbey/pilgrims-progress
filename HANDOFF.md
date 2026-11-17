@@ -6,6 +6,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 Older handovers (builds 41 to 137, with the picture and video prompts used for Help, Christian reaching, the grip and lift, the gate and the wall) were folded away in build 140; they are in git (`HANDOFF.md` at build 137). The voice descriptions and the first picture prompts are kept in the build notes below.
 
+**Build 186: more of Christian at the far bank; his struggling videos never played faster than their own speed, eased, each picture melting into the next. WAITING ON THE OWNER: the book in his hand flips about in the mire's videos (it cannot be fixed in code); proposed two new videos made from book-less pictures, about $1.12: (A) a struggle loop in the mud, hands free; (B) at the far bank, struggling, lifting his head, reaching up into the grip pose, so wading runs into reaching with no dissolve. Also asked: keep the book in Level 1 (Bunyan's opening: 'a book in his hand')? Nothing spent.**
+
 **Build 182: the mire's motion reviewed tick by tick: no more long double pictures as they fall in (a plunge to the hips under the splash), heavier drops, Pliable's struggle eased at its turns, a collar that no longer jumps. See `CLAUDE.md`, "MOTION REVIEW OF THE MIRE". Nothing spent.**
 
 **Build 179: the keepsakes made period-true (owner: realistic wax, a Bible as in Bunyan's day, period lettering, paper textures): two red-ruled columns, long s, catchwords, laid paper, calf; rough parchment; a wax seal lit from a height map. Nothing spent.**
