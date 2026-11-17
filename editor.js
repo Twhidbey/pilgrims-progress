@@ -8,10 +8,10 @@
 const ED = (() => {
   if (!new URLSearchParams(location.search).has('edit')) return { on: false };
   const st = document.createElement('style');
-  st.textContent = `.edarrow{position:absolute;top:30%;height:40%;width:9%;border:none;background:linear-gradient(90deg,rgba(10,12,18,.32),rgba(10,12,18,0));color:rgba(244,236,220,.75);font-size:clamp(18px,3.4vw,34px);cursor:pointer;z-index:30;display:none;-webkit-tap-highlight-color:transparent}
-.edarrow.r{right:0;background:linear-gradient(270deg,rgba(10,12,18,.32),rgba(10,12,18,0))}.edarrow.l{left:0}
-.edarrow:active{color:#e8c27c}body.edit-on .edarrow{display:block}
-#edtag{position:absolute;left:50%;top:1%;transform:translateX(-50%);font:12px Georgia,serif;color:rgba(232,194,124,.85);text-shadow:0 0 3px #000;z-index:30;pointer-events:none;display:none}body.edit-on #edtag{display:block}`;
+  st.textContent = `.edarrow{position:absolute;top:50%;width:clamp(36px,5.2vw,52px);height:clamp(36px,5.2vw,52px);margin-top:calc(clamp(36px,5.2vw,52px) / -2);border-radius:50%;border:1.5px solid rgba(232,194,124,.85);background:rgba(14,15,22,.62);color:#f0d9a8;font-size:clamp(16px,2.6vw,24px);line-height:1;cursor:pointer;z-index:30;display:none;box-shadow:0 0 10px rgba(0,0,0,.45);-webkit-tap-highlight-color:transparent}
+.edarrow.r{right:1.2%}.edarrow.l{left:1.2%}
+.edarrow:active{background:rgba(232,194,124,.35)}body.edit-on .edarrow{display:block}
+#edtag{position:absolute;left:50%;top:1%;transform:translateX(-50%);font:12px Georgia,serif;color:#f0d9a8;background:rgba(14,15,22,.55);padding:1px 8px;border-radius:8px;z-index:30;pointer-events:none;display:none}body.edit-on #edtag{display:block}`;
   document.head.appendChild(st);
   const stage = document.getElementById('stage'), mkB = (cls, txt) => { const b = document.createElement('button'); b.className = 'edarrow ' + cls; b.textContent = txt; stage.appendChild(b); return b; };
   const bl = mkB('l', '◂'), br = mkB('r', '▸'), tag = document.createElement('div'); tag.id = 'edtag'; stage.appendChild(tag);

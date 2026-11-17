@@ -35,6 +35,8 @@ Older handovers (builds 41 to 137, with the picture and video prompts used for H
 - Earlier offers not answered: the sketch of Levels 3 to 6 as a first whole game; a child playing it; carrying the tune through the levels; Evangelist handing over the roll as an animation; repainting the three cottages with true door and window proportions (about 45 cents).
 
 **Build 185: Level 3 into the rocks (owner's sequence): the hill hidden until Wiseman points (the camera pans right to it, far off and hazed); he goes over a brow and down out of sight; a dark cut to a rocky path among crags on every layer, the nearest passing in front; at the foot the camera pulls back to the whole mountain with lightning, then comes back to him for Evangelist. See `CLAUDE.md`, "Build 185: INTO THE ROCKS". Nothing spent. Waiting on the owner's eyes for the motion (pan, descent, pull back).**
+**Build 190 (small tweaks): the editor arrows are round dark buttons, visible on any background. Nothing spent.**
+
 **Build 188 (small tweaks): the title opens on the closed book's cover (brown calf, like the app icon); opening it swings the cover over to show the title page and the contents. Nothing spent.**
 
 **Build 187 (small tweaks): the title page is the 1678 title page of the book, which opens to a contents page listing the levels (no world shown before a level is chosen, so no flash of the old mountain); a new app icon, a closed calf-bound book. Nothing spent. The owner must delete the old Home Screen icon and add it again.**
