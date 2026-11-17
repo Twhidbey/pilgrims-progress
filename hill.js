@@ -42,7 +42,7 @@ const HL = (() => {
   // he goes; at the foot the camera pulls back to the whole mountain (HSN times the far hill's units: its foot's
   // left end at HX0), lightning at the widest, and comes back down to him for Evangelist.
   const BROW0 = MEET + 520, BROW1 = BROW0 + 300, PATH0 = 3000, FOOT = 4400, STILL = FOOT, HX0 = FOOT + 150;
-  const PH = .1, HSF = .72, HILL_F = 2040, HILL_Y = -60, HSN = 8, VIL_W = 2400;      // the far hill: how much it slides with the camera, its place, its size; the mountain close to: its size
+  const PH = .3, HSF = .72, HILL_F = 4700, HILL_Y = -60, HSN = 8, VIL_W = 2400;      // the far hill: how much it slides with the camera, its place, its size; the mountain close to: its size
   const Z_NEAR = .8, Z_WIDE = .068;
   // the brow: the ground swells a little (crest, in road units) to CREST and falls away beyond it, out of sight
   const CREST = BROW0 + 70, crest = x => 52 * smooth(BROW0 - 330, CREST, x) * (1 - smooth(CREST + 30, CREST + 560, x));
@@ -421,7 +421,7 @@ const HL = (() => {
     if (fire) { LAVA = mk(HW, HH); LAVA.getContext('2d').drawImage(fire, 0, 0, HW, HH); LAVAB = mk(HW / 10, HH / 10); LAVAB.getContext('2d').drawImage(fire, 0, 0, HW / 10, HH / 10); }
   }
   function preload() {
-    loadOak();
+    loadOak(); if (!VILP) loadImg('village.webp').then(im => { if (im) VILP = im; }).catch(() => {});
     if (!loading) loading = Promise.all([Promise.all([loadImg('hill-rock.webp'), loadImg('hill-fire.webp')]).then(([r, f]) => { if (r) { build(); paintHill(r, f); } }), loadPack('wiseman', WIS).catch(() => {}), loadImg('gate-door.webp').then(im => { if (im) GDOOR = soften(im, 4, .7, false, .22); }), loadImg('goodwill-stand.webp').then(im => { if (im) GWST = im; }), loadImg('gate-wall.webp').then(im => { if (im) GWALL = soften(im, 4, .7, true, .22); }), loadImg('gate-stone.webp').then(im => { if (im) GSTONE = im; }), loadPack('evangelist-walk', EVW).catch(() => {}), loadImg('wiseman-stand.webp').then(im => { if (im) WIS_ST = im; }), OBS.ready || loadPack('obstinate', OBS).catch(() => {}), EVS.ready || loadPack('evangelist-stand', EVS).catch(() => {}), RUNP.ready || loadPack('christian-run-plain', RUNP).catch(() => {}),
       WEEP.ready || loadPack('christian-weep', WEEP).catch(() => {}), KNEEL.ready || loadPack('christian-kneel', KNEEL).catch(() => {}), TURN.ready || loadPack('christian-turn', TURN).then(() => bookLoaded('TURN')).catch(() => {}),
       OBS_ST ? 0 : loadImg('obstinate-stand.webp').then(im => { if (im && !OBS_ST) OBS_ST = im; }),
@@ -434,7 +434,7 @@ const HL = (() => {
   // of glow from sun behind them"). RIM = { k: strength, x: where the light stands, in the world's units } while the
   // people are drawn; each figure then gets a thin warm edge on the side toward the light (the figure's own shape,
   // less the same shape moved a little toward the light: what is left is that edge).
-  let RIM = null, FIRE = null, OAKBOX = null; const RIMC = {};
+  let RIM = null, FIRE = null, OAKBOX = null, VILP = null; const RIMC = {};
   // FK: a size correction for the picture being drawn (build 202: the kneel's video zoomed in about 1.2 times as he went
   // down, so the kneeling figure looked too big; `kneelK` undoes it frame by frame, anchored at his feet)
   let FK = 1;
@@ -769,7 +769,8 @@ const HL = (() => {
     // simply there, solid, off to the right, and the pan brings it into view
     // (build 267) the camera has already come to the village when Wiseman names it, so at "Do you see that hill?" the hill
     // comes slowly up out of the haze behind it (about two and a half seconds) instead of all at once
-    reveal = 1;      // (build 275, owner: "hill should be there from the beginning") vil = Math.min(1, vil + (vilTo - vil) * .012 + (vilTo > vil ? .002 : 0));
+    // (build 275, owner: "hill should be there from the beginning": the hill is always shown, out to the right)
+    reveal = 1; vil = Math.min(1, vil + (vilTo - vil) * .012 + (vilTo > vil ? .002 : 0));
     if ((ph === 'still' || ph === 'come' || ph === 'evan') && dark > .5 && Math.random() < .035) shed(1, .7);
     if (dark > .8 && (ph === 'still' || ph === 'come' || ph === 'evan' || farewell) && Math.random() < (zs === 'hold' || farewell ? .02 : .008)) boulder();
     for (const r of ROCKS) { r.t++; r.vy += .09; r.x += r.vx; r.y += r.vy; if (r.big && r.t % 5 === 0) dust(r.x, r.y, r.r * .9, 1, .5, 1);
@@ -901,7 +902,7 @@ const HL = (() => {
     // the camera
     let tx = C3.x + 150, tz = 1;
     if (ph === 'plain') tz = wise ? .84 : .9;
-    if (ph === 'meet') { const e = vil * vil * (3 - 2 * vil); tx = lerp(C3.x + 60, C3.x + 420, e); tz = lerp(.86, .6, e); if (G.act === 'hill') { tx = C3.x + 420; tz = .6; } }
+    if (ph === 'meet') { const e = vil * vil * (3 - 2 * vil); tx = lerp(C3.x + 60, HILL_F + 160, e); tz = lerp(.86, .6, e); if (G.act === 'hill') { tx = HILL_F + 160; tz = .6; } }
     if (ph === 'aside' || ph === 'down') { tx = Math.min(C3.x + 180, BROW0 + 140); tz = .86; }
     if (ph === 'path') { tx = C3.x + 150; tz = Z_NEAR; }
     if (ph === 'still' || ph === 'come' || ph === 'evan') { tx = ph === 'still' ? FOOT + 150 : FOOT - 40; tz = Z_NEAR; }
@@ -1258,7 +1259,17 @@ const HL = (() => {
       }
       // the village of Morality at the hill's near foot, under the overhang, in front of the haze at its foot. It shows
       // when Wiseman names it (`vil`), before the hill comes out of the haze above it at "Do you see that hill?"
-      if (!rocky && TOWN.W) { const tw = 700 * k, th = tw * TOWN.H / TOWN.W, tx = hx - 220 * k, ty = hy + 20 * k, va = Math.max(reveal, vil);
+      // (build 277, owner: "Village could look more polished too, maybe use image model"): one painted picture
+      // (`assets/village.webp`, `VILP`: Legality's manor first, thatched and slate cottages, a barn, the church with its
+      // spire, round trees, its own lit windows and threads of chimney smoke), toned into the evening haze at the hill's
+      // foot; the drawn silhouette (`TOWN`) stands in until it loads
+      if (!rocky && VILP) { const W2 = VILP.width, H2 = VILP.height, tw = 640 * k, th = tw * H2 / W2, tx = hx - 200 * k, ty = hy + 20 * k, va = Math.max(reveal, vil);
+        if (va > .01 && tx < VW && tx + tw > 0) { const tc = tintC.vil || (tintC.vil = mk(W2, H2)), t = tc.getContext('2d'), hz = mix(mix(far, low, .3), [60, 54, 62], dark * .7);
+          t.globalCompositeOperation = 'source-over'; t.globalAlpha = 1; t.clearRect(0, 0, W2, H2); t.drawImage(VILP, 0, 0);
+          t.globalCompositeOperation = 'source-atop'; t.fillStyle = css(hz, .44 + .26 * dark); t.fillRect(0, 0, W2, H2);
+          const fh = t.createLinearGradient(0, H2 * .72, 0, H2); fh.addColorStop(0, css(colAt(clamp((ty - hor) / (Y(0) - hor))), 0)); fh.addColorStop(1, css(colAt(clamp((ty - hor) / (Y(0) - hor))), .85)); t.fillStyle = fh; t.fillRect(0, H2 * .72, W2, H2);
+          t.globalCompositeOperation = 'source-over'; c.globalAlpha = va; c.drawImage(tc, tx, ty - th, tw, th); c.globalAlpha = 1; } }
+      else if (!rocky && TOWN.W) { const tw = 700 * k, th = tw * TOWN.H / TOWN.W, tx = hx - 220 * k, ty = hy + 20 * k, va = Math.max(reveal, vil);
         if (va > .01 && tx < VW && tx + tw > 0) { const tc = tintC.town || (tintC.town = mk(TOWN.W, TOWN.H)), t = tc.getContext('2d'), tint = mix(mix(mix(far, [44, 38, 44], .8), low, .05), [36, 32, 40], dark * .7);
           t.globalCompositeOperation = 'source-over'; t.clearRect(0, 0, TOWN.W, TOWN.H); t.drawImage(TOWN, 0, 0); t.globalCompositeOperation = 'source-in';
           const tg = t.createLinearGradient(0, 0, 0, TOWN.H); tg.addColorStop(0, css(tint)); tg.addColorStop(1, css(mix(tint, mix(far, near, .3), .35))); t.fillStyle = tg; t.fillRect(0, 0, TOWN.W, TOWN.H);
