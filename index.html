@@ -50,7 +50,7 @@ body.opened .tleaf{transform:translateZ(2px) rotateY(-180deg)}
    under the cover; cream edges with the fine lines of the leaves, a little lower and to the right of the board */
 .tpages{position:absolute;inset:calc(var(--u,1) * -2px) calc(var(--u,1) * -10px) calc(var(--u,1) * -12px) calc(var(--u,1) * 2px);border-radius:2px 5px 5px 2px;background:repeating-linear-gradient(0deg,#ab9b7c 0 1px,#9a8a6c 1px 2px);backface-visibility:hidden;-webkit-backface-visibility:hidden;box-shadow:0 calc(var(--u,1) * 14px) calc(var(--u,1) * 40px) rgba(0,0,0,.6),inset 0 0 0 1px rgba(90,60,25,.35);transition:opacity .4s}
 body.opened .tpages{opacity:0}
-.tribbon{position:absolute;left:62%;bottom:calc(var(--u,1) * -34px);width:calc(var(--u,1) * 11px);height:calc(var(--u,1) * 30px);box-shadow:0 0 calc(var(--u,1) * 2px) rgba(40,15,5,.5);background:linear-gradient(90deg,#5c1a15,#80281f 45%,#661c16);clip-path:polygon(0 0,100% 0,100% 100%,50% 82%,0 100%);backface-visibility:hidden;-webkit-backface-visibility:hidden;transition:opacity .4s}
+.tribbon{position:absolute;left:61%;bottom:calc(var(--u,1) * -31px);width:calc(var(--u,1) * 16px);height:calc(var(--u,1) * 27px);background:linear-gradient(90deg,transparent 18%,#6b1f18 18% 82%,transparent 82%);background-size:100% 100%;filter:drop-shadow(0 calc(var(--u,1) * 1px) calc(var(--u,1) * 1.2px) rgba(0,0,0,.55));backface-visibility:hidden;-webkit-backface-visibility:hidden;transition:opacity .4s}
 body.opened .tribbon{opacity:0}
 .tp{left:0;width:100%;border-radius:2px 0 0 2px;transform:rotateY(180deg);backface-visibility:hidden;-webkit-backface-visibility:hidden}
 .tc{left:50%;border-radius:0 2px 2px 0}
@@ -152,7 +152,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">build 244 · Nov 17 2026</div>
+  <div id="build">build 245 · Nov 17 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -2391,6 +2391,31 @@ for (const b of document.querySelectorAll('#levels .lv')) { b.classList.toggle('
 })();
 // the cover (build 188; owner: "shouldn't menu be cover of book? Before we open it"): brown calf as on the app icon,
 // blind-tooled frames, a tooled lozenge with a small gold cross; the hinge darker. Made once in code. A touch opens it.
+// the ribbon under the closed cover, woven silk (build 245; owner: "can we make bookmark more realistic"): painted once,
+// pixel by pixel: fine warp threads and a faint weft, a soft sheen that drifts across as the ribbon hangs with a slight
+// twist (narrower and brighter there), darker selvedges, a shadow where it comes out from between the leaves, a
+// swallow-tail cut with a few loose threads. Canvas 8 px a unit (16 x 27 units), shown at --u.
+(function ribbonArt() {
+  const K = 8, W = 16 * K, H = 27 * K, c = mk(W, H), x = c.getContext('2d'), id = x.createImageData(W, H), d = id.data, r = rng(1611);
+  const hw0 = 5 * K, yEnd = H - 3 * K, notch = 3.2 * K;
+  const cxAt = y => W / 2 + 1.2 * K * Math.sin(y / H * 2.2) - .4 * K, tw = y => Math.exp(-((((y / H) - .58) / .16) ** 2));
+  const hwAt = y => hw0 * (1 - .16 * tw(y)), shAt = y => -.45 + 1.1 * (y / H) + .25 * tw(y);
+  const weft = new Float32Array(H).map(() => (r() - .5) * .06);
+  for (let y = 0; y < H; y++) { const cx = cxAt(y), hw = hwAt(y), sh = shAt(y), t = tw(y);
+    for (let px = 0; px < W; px++) { const u = (px + .5 - cx) / hw, au = Math.abs(u); if (au > 1.06) continue;
+      let a = Math.min(1, (1.06 - au) * hw / 1.2); const cut = yEnd - notch * (1 - au); if (y > cut + 1) continue; if (y > cut) a *= cut + 1 - y;
+      let b = .64 + .4 * Math.exp(-(((u - sh) / .38) ** 2)) + .18 * t;
+      b *= 1 + ((Math.floor((px - cx + 64) / 1.6) % 2) ? .07 : -.07) + weft[y];
+      if (au > .86) b *= .78;
+      b *= .45 + .55 * Math.min(1, y / (2.6 * K));
+      const i = (y * W + px) * 4; d[i] = Math.min(255, 116 * b + 40 * Math.max(0, b - 1)); d[i + 1] = Math.min(255, 30 * b + 22 * Math.max(0, b - 1)); d[i + 2] = Math.min(255, 26 * b + 18 * Math.max(0, b - 1)); d[i + 3] = 255 * a; } }
+  x.putImageData(id, 0, 0);
+  x.lineCap = 'round';
+  for (let k = 0; k < 7; k++) { const u = (r() * 2 - 1) * .9, y0 = yEnd - notch * (1 - Math.abs(u)), cx = cxAt(y0), px = cx + u * hwAt(y0), len = 2 + r() * 7;
+    x.strokeStyle = 'rgba(' + (110 + r() * 40 | 0) + ',30,26,.85)'; x.lineWidth = .7 + r() * .6;
+    x.beginPath(); x.moveTo(px, y0 - 1); x.quadraticCurveTo(px + (r() - .5) * 3, y0 + len * .6, px + (r() - .5) * 5, y0 + len); x.stroke(); }
+  document.querySelector('.tribbon').style.background = 'url(' + c.toDataURL() + ') center/100% 100% no-repeat';
+})();
 (function coverArt() {
   const W = 660, H = 896, c = mk(W, H), x = c.getContext('2d'), r = rng(1679);
   x.fillStyle = '#5c3a22'; x.fillRect(0, 0, W, H);
