@@ -73,7 +73,8 @@ body.playing #pause{display:block}
 #ksbook .spine{position:absolute;left:50%;top:calc(var(--W) * -.011);bottom:calc(var(--W) * -.011);width:5%;margin-left:-2.5%;background:linear-gradient(to right,rgba(60,35,10,0),rgba(60,35,10,.3) 42%,rgba(20,10,0,.5) 50%,rgba(60,35,10,.3) 58%,rgba(60,35,10,0));pointer-events:none;z-index:3}
 #ksbook .ribbon{position:absolute;left:51.3%;top:calc(var(--W) * -.011);width:1%;height:calc(108% + var(--W) * .011);background:linear-gradient(to right,#4d0d09,#8f2016 35%,#a8301f 50%,#7a1a12 70%,#4d0d09);z-index:4;clip-path:polygon(0 0,100% 0,100% 100%,50% 98.2%,0 100%);transform-origin:50% 0;transform:rotate(-1.4deg);box-shadow:1px 1px 2px rgba(40,20,5,.35);opacity:.96;pointer-events:none;transition:opacity .3s}
 #ksbook .ribbon::before{content:'';position:absolute;left:0;right:0;top:0;height:3%;background:linear-gradient(rgba(30,10,5,.6),rgba(30,10,5,0))}
-#ksbook .ribbon.tailR,#ksbook .ribbon.tailL{top:99%;height:6%;transform:rotate(-3deg)}
+#ksbook .ribbon.tailR,#ksbook .ribbon.tailL{top:calc(100% + var(--W) * .005);height:calc(var(--W) * .045);transform:rotate(-3deg);box-shadow:0 -1px 1px rgba(40,20,5,.3);clip-path:polygon(0 0,100% 0,100% 100%,50% 84%,0 100%)}
+#ksbook .ribbon.tailR::before,#ksbook .ribbon.tailL::before{height:22%;background:linear-gradient(rgba(30,10,5,.55),rgba(30,10,5,0))}
 #ksbook .ribbon.tailR{left:78%}#ksbook .ribbon.tailL{left:21%}
 #ksbook .leaf{position:absolute;top:0;bottom:0;width:50%;transform-style:preserve-3d;z-index:5;display:none}
 #ksbook .leaf.on{display:block}
