@@ -454,7 +454,7 @@ const HL = (() => {
     // branching strike, `a` and `b` single strokes, `side` a stroke running through the cloud. A strike is placed out of
     // the cloud over the summit, its foot on the rock, sometimes mirrored; it flickers as real strikes do (a stroke, a dim
     // moment, often a second stroke), `boltT` its age.
-    // (build 210, owner: "The vertical lightnings look great - the horizontal ones do not look too good ... just remove those
+    // (build 213, owner: "The vertical lightnings look great - the horizontal ones do not look too good ... just remove those
     // horiz ones - do we need dark clouds that they are emerging from and should we make sure strands always end on top of
     // mountain?"): the stroke through the cloud is gone; every strike now comes down out of a dark storm cloud gathered over
     // the mountain (`stormCloud` in draw()), its lowest point is set exactly on the rock's top (`rockTopAt`), and any branch
@@ -952,7 +952,7 @@ const HL = (() => {
         c.save(); c.globalCompositeOperation = 'lighter'; c.lineCap = c.lineJoin = 'round';
         if (bolt && boltT < 40) { const t = boltT, vis = t < 4 ? 1 : t < 8 ? .18 : boltTwice && t < 13 ? .85 : boltTwice && t < 18 ? .35 : Math.max(0, .25 - (t - 18) * .02);
           if (vis > .02) for (const [w, al, col] of [[11, .06, [200, 170, 255]], [4, .16, [230, 210, 255]], [1.3, .95, [255, 252, 245]]]) for (const ln of bolt) { const lw = .35 + .65 * ln.w; c.strokeStyle = css(col, Math.min(1, al * vis * (.45 + .55 * ln.w))); c.lineWidth = Math.max(.6, w * lw * Math.min(k, 1.1)); c.beginPath(); ln.forEach(([bx, by], j) => j ? c.lineTo(sx0 + bx * k, sy0 + by * k) : c.moveTo(sx0 + bx * k, sy0 + by * k)); c.stroke(); } }
-        // THE STORM CLOUD the strikes come out of (build 210): a low dark bank over the mountain, its base a little below where
+        // THE STORM CLOUD the strikes come out of (build 213): a low dark bank over the mountain, its base a little below where
         // each strike begins, so the bolts come down out of it; lit from within at each flash. Far off it takes the haze.
         { const sK = Math.max(dark, farK * .9), hzS = rocky ? 0 : clamp(1 - dark * 1.6); if (sK > .03) { c.globalCompositeOperation = 'source-over';
           for (let i = 0; i < 16; i++) { const h1 = Math.sin(i * 51.7) * 9131.3, h2 = Math.sin(i * 17.3) * 4421.7, r1 = h1 - Math.floor(h1), r2 = h2 - Math.floor(h2), P = PUFF[i % 3];
