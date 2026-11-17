@@ -12,6 +12,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 **Build 309: auto-walk switch for every level** ("Let him walk on by himself" on the contents page, and in the pause menu; `pp-auto`; `autoHeld()` in `index.html`). Nothing spent.
 
+**Build 316 (Level 3 art chat): the oak roots' fade wanders along the foot instead of a straight line. Nothing spent.**
+
 **Build 313 (Level 3 art chat): build 311's root fade and earth swell made much subtler (they read as a dark smudge in the opening). Nothing spent.**
 
 **Build 311 (Level 3 art chat): the oak's roots fade into the road's earth with a soft swell of ground round its foot; the brow shaded from olive into the road with a soft edge. Nothing spent.**
