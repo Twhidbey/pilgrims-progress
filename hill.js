@@ -579,7 +579,7 @@ const HL = (() => {
     // build 282 (owner: "still unsure about the look of the 'silver lining' ...would a light glow be better?"): on the fair
     // plain the low sun behind them is a soft warm glow round the head and shoulders, spreading a little past the outline
     // (drawn before the figure, so it lies behind), with only a faint trace of the old crisp line left on the edge
-    if (RIM && RIM.halo && rimK > .02) { const H0 = RIM.halo; c.save(); c.globalAlpha = alpha * .34 * rimK; c.globalCompositeOperation = 'lighter'; c.translate(x, FY); c.scale(face * CHR_K * FK, CHR_K * FK * sy);
+    if (RIM && RIM.halo && rimK > .02) { const H0 = RIM.halo; c.save(); c.globalAlpha = alpha * .22 * rimK; c.globalCompositeOperation = 'lighter'; c.translate(x, FY); c.scale(face * CHR_K * FK, CHR_K * FK * sy);
       c.drawImage(H0.c, -meta.ax - H0.P, -meta.ground - H0.P, im.width + 2 * H0.P, im.height + 2 * H0.P); c.restore(); RIM.halo = null; }
     c.save(); c.globalAlpha = alpha; c.translate(x, FY); if (TALKM) c.transform(1, 0, TALKM.sh, 1, 0, 0);
     c.scale(face * CHR_K * FK, CHR_K * FK * sy * (TALKM ? TALKM.sy : 1)); c.drawImage(fc, -meta.ax, -meta.ground);
