@@ -28,8 +28,8 @@ const RM = (() => {
   const darkOn = () => { try { return localStorage.getItem('pp-dark') === '1'; } catch (e) { return false; } };
 
   // the two visitors (sprites face LEFT as made; face 1 = turned to face right)
-  const VIS = { C: { n: 'room-christian', ax: 92, g: 631, who: 'Christian', ph: 0, ct: 1.15, mul: .88, sat: .85, warm: [1, 1, 1] }, I: { n: 'room-interpreter', ax: 86, g: 611, who: I, ph: 1.7, say: { n: 'room-interpreter-say', ax: 153, g: 611, noSh: 1 } } };
-  const BRAVE = { plain: { n: 'room5-brave', ax: 65, g: 519 }, armed: { n: 'room5-brave-armed', ax: 163, g: 519 } };
+  const VIS = { C: { n: 'room-christian', ax: 92, g: 631, who: 'Christian', ph: 0, ct: 1.2, mul: .62, sat: .42, warm: [1, 1, 1] }, I: { n: 'room-interpreter', ax: 107, g: 634, who: I, ph: 1.7, ct: 1.15, mul: .66, sat: .45, say: { n: 'room-interpreter-say', ax: 171, g: 631, noSh: 1, ct: 1.15, mul: .66, sat: .45 } } };
+  const BRAVE = { plain: { n: 'room5-brave', ax: 94, g: 519 }, armed: { n: 'room5-brave-armed', ax: 123, g: 536 } };
 
   let R = null, t = 0, ph = '', cam = { x: 0, to: 0 }, fade = 1, fadeTo = 0, after = null, toned = {}, startId = 'door', motes = [];
   const u = x => x * S - cam.x, v = y => y * S - (R.FY * S - FLOOR);
@@ -236,7 +236,7 @@ const RM = (() => {
       },
       people(c) { visitor(c, 'I', 560, 1); visitor(c, 'C', 1290, 1); },
       over(c) {
-        c.fillStyle = css([170, 150, 120], Math.min(.2, this.haze * .75)); c.fillRect(0, 0, VW, VH);
+        c.fillStyle = css([170, 150, 120], Math.min(.2, this.haze * .75)); c.fillRect(u(0), v(0), (R.PW || 3168) * S, PH * S);
         for (const d of this.dust) { const a = Math.min(1, d.a * (.45 + this.haze)); const r = d.s * S * 3; const g = c.createRadialGradient(u(d.x), v(d.y), 0, u(d.x), v(d.y), r); g.addColorStop(0, css([206, 188, 160], a * .7)); g.addColorStop(1, css([196, 178, 150], 0)); c.fillStyle = g; c.fillRect(u(d.x) - r, v(d.y) - r, 2 * r, 2 * r); }
         c.fillStyle = 'rgba(200,215,225,.5)'; for (const w of this.wet) c.fillRect(u(w.x), v(w.y), 1.2, 2.4);
       },
@@ -277,7 +277,7 @@ const RM = (() => {
         const g = this.great; if (g) { g.life++; g.r = Math.min(g.R, g.r + .47); if (!g.pop) { g.y -= 1.45 * smooth(0, 60, g.life); g.x += Math.sin(g.life / 70) * .8; if (g.life > g.L) { g.pop = 1; note(91, .02, 1.4); } } else g.pop++; }
       },
       under(c) { if (this.rags > 0 && pics['room3-rags']) { c.globalAlpha = smooth(0, 1, this.rags); c.drawImage(pics['room3-rags'], u(700), v(600), 570 * S, 720 * S); c.globalAlpha = 1; } },
-      people(c) { visitor(c, 'I', 2410, -1, 1, 1, 10); visitor(c, 'C', 2140, -1); },
+      people(c) { visitor(c, 'I', 2450, -1, 1, 1, 10); visitor(c, 'C', 2170, -1); },
       over(c) { drawBag(c, this.bag); drawCoins(c, this.coins); for (const b of this.bubbles) bubble(c, u(b.x), v(b.y), b.r * S, b.pop); if (this.great) bubble(c, u(this.great.x), v(this.great.y), this.great.r * S, this.great.pop); },
     },
     // 4 THE FIRE FED WITH OIL (after La Tour's St Joseph the Carpenter): round the back of the wall
@@ -305,7 +305,7 @@ const RM = (() => {
         for (const s of this.steam) { const g = c.createRadialGradient(u(s.x), v(s.y), 0, u(s.x), v(s.y), s.s * S); g.addColorStop(0, css([220, 210, 205], s.a * .35)); g.addColorStop(1, css([220, 210, 205], 0)); c.fillStyle = g; c.fillRect(u(s.x) - s.s * S, v(s.y) - s.s * S, 2 * s.s * S, 2 * s.s * S); }
         // the dark behind the wall, lifting as they go round
         const hx = u(2168), hide = 1 - smooth(0, .8, this.rv);
-        if (hide > .01) { const g = c.createLinearGradient(hx - 20, 0, hx + 60, 0); g.addColorStop(0, 'rgba(8,4,3,0)'); g.addColorStop(1, css([8, 4, 3], hide)); c.fillStyle = g; c.fillRect(hx - 20, 0, VW - hx + 40, VH); }
+        if (hide > .01) { const g = c.createLinearGradient(hx - 20, 0, hx + 60, 0); g.addColorStop(0, 'rgba(8,4,3,0)'); g.addColorStop(1, css([8, 4, 3], hide)); c.fillStyle = g; c.fillRect(hx - 20, v(0), u(3168) - hx + 20, PH * S); }
         if (this.rv > .3) { c.fillStyle = css([255, 200, 90], .9); for (const o of this.oil) { c.beginPath(); c.arc(u(o.x), v(o.y), 1.3, 0, 6.2832); c.fill(); } glow(c, u(2190), v(1090), 60 * f, [255, 170, 80], .3 * smooth(.3, 1, this.rv)); }
       },
     },
@@ -374,16 +374,16 @@ const RM = (() => {
         if (ph === 'tell' && t === 30) talk([[DRM, 'This night I dreamed. The heavens grew black, it thundered, and I heard the great sound of a trumpet.', null, () => { self.blk = 1; self.lt = 0; setTimeout(() => { self.fl = 1; thunder(); }, 900); setTimeout(trumpet, 2600); }], [DRM, 'I saw a man sit upon a cloud, and heard a voice: ‘Arise, ye dead, and come to judgement.’', null, () => { self.lt = 1.6; }], [DRM, 'I saw many caught up into the clouds, but I was left behind. I was not ready.', null, () => { self.lt = .15; self.blk = .4; }]], () => goTo('leave'));
         this.cur = (this.cur || 0) + ((this.blk || 0) - (this.cur || 0)) * .02; this.fl *= .9; this.lv = (this.lv || .3) + (this.lt - (this.lv || .3)) * .015;
       },
-      people(c) { visitor(c, 'I', 2470, -1, 1.22); visitor(c, 'C', 2720, -1, 1.22); },
+      people(c) { visitor(c, 'I', 2640, -1, 1.22); visitor(c, 'C', 2900, -1, 1.22); },
       under(c) {
         // the man trembles: the part of the picture round him is laid again a hair off, back and forth
         const im = pics.room7; if (im) { const a = this.sh * (.6 + .4 * Math.sin(G.t / 9)), dx = Math.sin(G.t * 1.9) * .9 * a, dy = Math.sin(G.t * 2.7) * .5 * a, k = im.width / R.PW, x0 = 560, y0 = 440, w = 640, h = 820;
           c.save(); c.beginPath(); c.ellipse(u(x0 + w / 2), v(y0 + h / 2), w * S / 2, h * S / 2, 0, 0, 6.2832); c.clip(); c.drawImage(im, x0 * k, y0 * k, w * k, h * k, u(x0) + dx, v(y0) + dy, w * S, h * S); c.restore(); }
         glow(c, u(2202), v(422), 160 * this.lv, [255, 236, 170], .35 * this.lv);
       },
-      over(c) { if (this.cur > .01) darkWith(c, [[u(905), v(820), 150, .55], [u(1650), v(330), 120 * this.lv, Math.min(1, this.lv)]], .85 * this.cur);
-        if (this.lv > .5) { c.save(); c.translate(u(1650), v(460)); c.scale(1, 1.8); glow(c, 0, 0, Math.min(120, 150 * (this.lv - .3)), [255, 240, 190], .3 * (this.lv - .5)); c.restore(); }
-        if (this.fl > .02) { const g = c.createLinearGradient(0, 0, 0, VH * .6); g.addColorStop(0, css([230, 230, 255], .25 * this.fl)); g.addColorStop(1, css([230, 230, 255], 0)); c.fillStyle = g; c.fillRect(0, 0, VW, VH * .6); } },
+      over(c) { if (this.cur > .01) darkWith(c, [[u(905), v(820), 150, .55], [u(2200), v(395), 120 * this.lv, Math.min(1, this.lv)]], .85 * this.cur);
+        if (this.lv > .5) { c.save(); c.translate(u(2200), v(520)); c.scale(1, 1.8); glow(c, 0, 0, Math.min(120, 150 * (this.lv - .3)), [255, 240, 190], .3 * (this.lv - .5)); c.restore(); }
+        if (this.fl > .02) { const g = c.createLinearGradient(0, v(0), 0, v(800)); g.addColorStop(0, css([230, 230, 255], .25 * this.fl)); g.addColorStop(1, css([230, 230, 255], 0)); c.fillStyle = g; c.fillRect(u(0), v(0), 3168 * S, 800 * S); } },
     },
     // LEAVING by the door (book {91}, {92}): he goes on his way
     leave: {

@@ -12,6 +12,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 **Build 255 (small-tweaks chat): the gate's wall and door softer still, with less contrast. See `CLAUDE.md`, "Build 255". Nothing spent.**
 
+**Build 274 (room 3 chat): the house repainted in oil after its masters, real slender people, Christian and the Interpreter painted again in Rembrandt's manner and set in shadow, the brave man again; boxes left by build 273's view fixed. Eleven pictures, about $1.43 (the owner allowed about $1.40). See `CLAUDE.md`, "Build 274".**
+
 **Build 273 (room 3 chat): each room of the house shown whole, smaller, framed in the dark. Nothing spent.**
 
 **Build 270 (room 3 chat): mood sound for every room of the house (made in the browser, no hymn) and warm light on the two visitors by the fire, the open door and the candle. Nothing spent.**
