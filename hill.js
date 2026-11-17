@@ -440,7 +440,7 @@ const HL = (() => {
   // of glow from sun behind them"). RIM = { k: strength, x: where the light stands, in the world's units } while the
   // people are drawn; each figure then gets a thin warm edge on the side toward the light (the figure's own shape,
   // less the same shape moved a little toward the light: what is left is that edge).
-  let RIM = null, HAZE = null, FIRE = null, OAKBOX = null, VILP = null; const RIMC = {};
+  let RIM = null, HAZE = null, SUNSH = 0, FIRE = null, OAKBOX = null, VILP = null; const RIMC = {};
   // FK: a size correction for the picture being drawn (build 202: the kneel's video zoomed in about 1.2 times as he went
   // down, so the kneeling figure looked too big; `kneelK` undoes it frame by frame, anchored at his feet)
   let FK = 1;
@@ -574,6 +574,14 @@ const HL = (() => {
     // build 282 (owner: "can we put some mist behind christian when he's in mountain scene so he stand out a little with
     // dark rocks"): among the rocks a soft pale haze stands behind each figure, tallest at the body, in the low sky's own
     // rose-grey, so the dark figure reads against the dark crags. Behind only, never over him (drawn before the figure).
+    // SHADOW TOWARD US (build 306, owner: "can you make his shadow go our way since sun is behind him (relative to us)"):
+    // on the fair plain the low sun stands behind everyone, so each shadow falls toward us: the figure's own outline turned
+    // over at the feet and squashed flat (seen nearly edge-on), soft (made small and stretched), darkest at the feet and
+    // fading as it comes forward
+    if (SUNSH > .02) { const W = im.width, H = im.height, sc = tintC['sh' + slot] || (tintC['sh' + slot] = mk(8, 8)), w2 = Math.ceil(W / 5), h2 = Math.ceil(H / 5);
+      if (sc.width !== w2 || sc.height !== h2) { sc.width = w2; sc.height = h2; } const q = sc.getContext('2d'); q.globalCompositeOperation = 'source-over'; q.clearRect(0, 0, w2, h2); q.drawImage(fc, 0, 0, w2, h2);
+      q.globalCompositeOperation = 'source-in'; const gq = q.createLinearGradient(0, 0, 0, h2); gq.addColorStop(0, 'rgba(14,12,10,0)'); gq.addColorStop(.55, 'rgba(14,12,10,.35)'); gq.addColorStop(1, 'rgba(14,12,10,1)'); q.fillStyle = gq; q.fillRect(0, 0, w2, h2);
+      c.save(); c.globalAlpha = alpha * .55 * SUNSH; c.translate(x, FY - 1); c.scale(face * CHR_K * FK, -CHR_K * FK * .24); c.drawImage(sc, -meta.ax, -meta.ground, W, H); c.restore(); }
     if (HAZE && HAZE.k > .02) { const hh = meta.ground * CHR_K * FK * sy; c.save(); c.globalAlpha = alpha; c.translate(x, FY - hh * .48); c.scale(hh * .62, hh * .72);
       const g = c.createRadialGradient(0, 0, 0, 0, 0, 1); g.addColorStop(0, css(HAZE.c, .5 * HAZE.k)); g.addColorStop(.45, css(HAZE.c, .3 * HAZE.k)); g.addColorStop(1, css(HAZE.c, 0)); c.fillStyle = g; c.fillRect(-1, -1, 2, 2); c.restore(); }
     // build 282 (owner: "still unsure about the look of the 'silver lining' ...would a light glow be better?"): on the fair
@@ -590,7 +598,7 @@ const HL = (() => {
   // on the fair plain everyone stands a little lower in the road (FY 12, was 5) and the shadow is flatter, so it lies on
   // the road, never on the field behind. Among the rocks and at the gate the old depth (5) is kept. Set each frame in draw().
   let FY = 5;
-  function foot(c, x, a = 1, rx = 46) { const g = c.createRadialGradient(0, 0, 0, 0, 0, 1); g.addColorStop(0, 'rgba(6,8,14,.5)'); g.addColorStop(.6, 'rgba(6,8,14,.26)'); g.addColorStop(1, 'rgba(6,8,14,0)'); c.save(); c.translate(x, FY + (FY > 5 ? 2 : -1)); c.scale(rx * (FY > 5 ? .9 : 1), FY > 5 ? 4.5 : 7); c.globalAlpha = a; c.fillStyle = g; c.fillRect(-1, -1, 2, 2); c.restore(); }
+  function foot(c, x, a = 1, rx = 46) { const g = c.createRadialGradient(0, 0, 0, 0, 0, 1); g.addColorStop(0, 'rgba(6,8,14,.5)'); g.addColorStop(.6, 'rgba(6,8,14,.26)'); g.addColorStop(1, 'rgba(6,8,14,0)'); c.save(); c.translate(x, FY + (FY > 5 ? 2 : -1)); c.scale(rx * (FY > 5 ? .62 : 1), FY > 5 ? 3.5 : 7); c.globalAlpha = a * (FY > 5 ? .7 : 1); c.fillStyle = g; c.fillRect(-1, -1, 2, 2); c.restore(); }
 
   // ---------- sound ----------
   // fire out of the hill: a flash and thunder (no words out of the mountain: left out for young children)
@@ -648,8 +656,12 @@ const HL = (() => {
         cuts.forEach((m, j) => { if (j === i || m.length < 2) return; m.forEach((p, q) => { const d = Math.abs(p[0] - fx) + Math.abs(p[1] - fy); if (d < bd) { bd = d; best = [j, q]; } }); }); return best; });
       const keepTo = cuts.map(l => l.length >= 2 && onRock(l) ? l.length - 1 : -1);
       for (let pass = 0; pass < 6; pass++) cuts.forEach((l, i) => { if (keepTo[i] >= 0 && par[i]) { const [j, q] = par[i]; if (keepTo[j] < q) keepTo[j] = q; } });
-      bolt = []; cuts.forEach((l, i) => { if (l.length < 2) return; const len = Math.abs(l[0][1] - l[l.length - 1][1]) + Math.abs(l[0][0] - l[l.length - 1][0]);
-        const k2 = keepTo[i] >= 0 ? keepTo[i] : len < H * .05 && par[i] && keepTo[par[i][0]] >= par[i][1] ? l.length - 1 : -1;
+      // (build 306, owner: "flashes of lightning that are super small should be removed. only the ones that go from clouds to
+      // mt should be preserved"): the tiny forks are no longer kept, and a line is kept only if, following the forks back up,
+      // it comes from a line that starts up in the cloud (a fragment whose root starts low was a small floating flash)
+      const topY = Math.min(...cuts.filter(l => l.length).map(l => l[0][1])), rootOK = i => { let r = i, n = 0; while (par[r] && n++ < 20) r = par[r][0]; return cuts[r].length > 1 && cuts[r][0][1] < topY + H * .12; };
+      bolt = []; cuts.forEach((l, i) => { if (l.length < 2) return;
+        const k2 = keepTo[i] >= 0 && rootOK(i) ? keepTo[i] : -1;
         if (k2 >= 1) { const t = l.slice(0, k2 + 1); t.w = l.w; bolt.push(t); } });
       boltT = 0; boltTwice = Math.random() < .6; } if (audio()) { sweep(64, 30, 1.8, .09 * k); hiss(190, .7, .11 * k, 1.6, 'lowpass'); hiss(900, 1, .03 * k, .5, 'bandpass', .05); } }
   // the tune on the wrong path: Amazing Grace's first phrase with its bright notes bent flat, low and slow
@@ -1240,13 +1252,15 @@ const HL = (() => {
         // column rises from the brightest fire just right of the summit (hill x 205, on the rock's top), a little out of step
         // (build 248) the billows are denser, so the glow behind them no longer shows through (`DENSE`)
         const DENSE = 1.9;
+        // (build 306, owner: "tweak the billows a little and make a little elongated horizontally"): each billow drawn wider and
+        // flatter (3.2 by 1.4 of its radius, was 2.6 by 1.6) and strayed a little further to the sides
         const cols = mask => { for (const [ox, N, sp, ph0] of [[0, 96, 1, 0], [145, 64, .78, .37]]) { const ps = [], kS = Math.min(k, 1), Dh = rocky ? 195 : 90 + 105 * clamp(dark * 1.5), bx0 = sx0 + ox * k, by0 = ox ? hy + (rockTopAt(205) + 6) * k : sy0, dTop = (by0 - sy0) / kS;
           for (let i = 0; i < N; i++) { const h1 = Math.sin(i * 12.9898 + ox) * 43758.5453, h2 = Math.sin(i * 78.233 + ox) * 12543.123; ps.push([(i / N + G.t / 2600 + ph0) % 1, h1 - Math.floor(h1), h2 - Math.floor(h2), i]); }
           ps.sort((a, b) => b[0] - a[0]);
-          for (const [u, r1, r2, i] of ps) { const rise = 1 - Math.pow(1 - u, 1.6), spread = (24 + 120 * u) * kS * sp, px = bx0 - (50 * u + 110 * u * u) * kS + (r1 - .5) * spread * 1.35 + 12 * Math.sin(G.t / 300 + i) * u * kS, py = by0 - (14 + (Dh + 90 + dTop) * rise) * kS + (r2 - .5) * spread * .65, rr = (26 + 120 * u) * kS * sp * (.8 + .4 * r2), a = smooth(0, .05, u) * (1 - smooth(.5, .95, u)), P = PUFF[i % 3];
-            const hzP = rocky ? 0 : clamp(1 - dark * 1.6), aP = a * .7 * (.1 + .75 * Math.max(dark, farK * 1.3)) * reveal; if (mask) { qs.globalAlpha = Math.min(1, aP * 3); qs.drawImage(P.d, px - rr * 1.3, py - rr * .8, 2.6 * rr, 1.6 * rr); continue; }
-            c.globalCompositeOperation = 'source-over'; if (hzP > 0) { c.globalAlpha = aP * hzP; c.drawImage(P.h, px - rr * 1.3, py - rr * .8, 2.6 * rr, 1.6 * rr); } const lo = 1 - smooth(.04, .42, u), A = Math.min(1, aP * DENSE) * (1 - hzP); c.globalAlpha = A * (1 - .4 * lo); c.drawImage(P.d, px - rr * 1.3, py - rr * .8, 2.6 * rr, 1.6 * rr); if (lo > .01) { c.globalAlpha = A * lo * .75; c.drawImage(P.p, px - rr * 1.3, py - rr * .8, 2.6 * rr, 1.6 * rr); }
-            const la = a * (burn * (.3 + .7 * Math.pow(1 - u, 2)) + F * .3 * (1 - u)); if (la > .01) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = la; c.drawImage(P.l, px - rr, py - rr, 2 * rr, 2 * rr); } } } };
+          for (const [u, r1, r2, i] of ps) { const rise = 1 - Math.pow(1 - u, 1.6), spread = (24 + 120 * u) * kS * sp, px = bx0 - (50 * u + 110 * u * u) * kS + (r1 - .5) * spread * 1.6 + 12 * Math.sin(G.t / 300 + i) * u * kS, py = by0 - (14 + (Dh + 90 + dTop) * rise) * kS + (r2 - .5) * spread * .65, rr = (26 + 120 * u) * kS * sp * (.8 + .4 * r2), a = smooth(0, .05, u) * (1 - smooth(.5, .95, u)), P = PUFF[i % 3];
+            const hzP = rocky ? 0 : clamp(1 - dark * 1.6), aP = a * .7 * (.1 + .75 * Math.max(dark, farK * 1.3)) * reveal; if (mask) { qs.globalAlpha = Math.min(1, aP * 3); qs.drawImage(P.d, px - rr * 1.6, py - rr * .7, 3.2 * rr, 1.4 * rr); continue; }
+            c.globalCompositeOperation = 'source-over'; if (hzP > 0) { c.globalAlpha = aP * hzP; c.drawImage(P.h, px - rr * 1.6, py - rr * .7, 3.2 * rr, 1.4 * rr); } const lo = 1 - smooth(.04, .42, u), A = Math.min(1, aP * DENSE) * (1 - hzP); c.globalAlpha = A * (1 - .4 * lo); c.drawImage(P.d, px - rr * 1.6, py - rr * .7, 3.2 * rr, 1.4 * rr); if (lo > .01) { c.globalAlpha = A * lo * .75; c.drawImage(P.p, px - rr * 1.6, py - rr * .7, 3.2 * rr, 1.4 * rr); }
+            const la = a * (burn * (.3 + .7 * Math.pow(1 - u, 2)) + F * .3 * (1 - u)); if (la > .01) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = la; c.drawImage(P.l, px - rr * 1.25, py - rr * .8, 2.5 * rr, 1.6 * rr); } } } };
         // (build 248, owner: "The light still shines thru billows - don't like that"): the columns' shapes are laid in the mask
         // first, so the light on the cloud's underside behind them (fire and strike) is cut out where the smoke stands
         cols(true);
@@ -1676,6 +1690,7 @@ const HL = (() => {
     // the people (in the world's own units)
     c.save(); c.translate(VW / 2 - cx * z, wl); c.scale(z, z);
     RIM = { k: (1 - dark) * (1 - gateish) * .9, x: (lx - VW / 2) / z + cx };
+    SUNSH = !rocky && gateish < .5 && ph !== 'title' ? (1 - dark) * (1 - gateish * 2) : 0;
     HAZE = rocky && ph !== 'title' && ph !== 'mist' ? { k: 1 - Zw, c: mix([156, 124, 120], [120, 96, 104], dark) } : null;
     FIRE = rocky && ph !== 'title' ? { k: clamp(dark) * (1 - .4 * calm), x: HX0 + 600, f: Math.min(1, flash) } : null;
     // (build 235, one set of lights at the gate: the door's light falls on the side of him that faces it, the lantern
@@ -1708,7 +1723,7 @@ const HL = (() => {
     }
     // in the wide shot he is a tiny dark figure: a faint warm light round him so the eye can find him
     if (Zw > .05) { const g = c.createRadialGradient(C3.x, -60, 0, C3.x, -60, 34 / z); g.addColorStop(0, css([255, 196, 130], .28 * Zw)); g.addColorStop(1, css([255, 170, 110], 0)); c.save(); c.globalCompositeOperation = 'lighter'; c.fillStyle = g; c.fillRect(C3.x - 34 / z, -60 - 34 / z, 68 / z, 68 / z); c.restore(); }
-    gateHere = gateish > .5; CHRSH_N = null; c.save(); c.translate(0, C3.dy || 0); drawChr(c, tintM); c.restore(); RIM = null; HAZE = null; FIRE = null; CHRSH = gateHere ? CHRSH_N : null; gateHere = false;
+    gateHere = gateish > .5; CHRSH_N = null; c.save(); c.translate(0, C3.dy || 0); drawChr(c, tintM); c.restore(); RIM = null; HAZE = null; SUNSH = 0; FIRE = null; CHRSH = gateHere ? CHRSH_N : null; gateHere = false;
     c.restore();
     // over the brow: the near ground is drawn again over him as he goes down behind it
     // (build 202, owner: "when he goes down after talking with worldly wise, he flickers a little": the near ground used to be
