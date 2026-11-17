@@ -159,7 +159,7 @@ const HL = (() => {
 
   // ---------- pictures baked once ----------
   let CLOUDW = null, CLOUDG = null, DECK = null;
-  let HILL = null, SMOKE = null, CLOUD = null, TOWN = null, GDOOR = null, GSTONE = null, CAP = null, BEAMC = null, GLANT = null, SIGNPIC = null; const GWF = []; const CRACKS = [], STONES = [], SEAMS = [], PUFF = [];
+  let HILL = null, SMOKE = null, CLOUD = null, TOWN = null, GDOOR = null, GSTONE = null, CAP = null, BEAMC = null, SIGNPIC = null; const GWF = []; const CRACKS = [], STONES = [], SEAMS = [], PUFF = [];
   // the hill's outline: h = height above its foot, 0 to TOP; its left side hangs far out over the way
   const TOP = 520, HW = 1500, HH = 640, HOX = 300, HOY = 610;      // the baked picture's size and where the foot's left end lies in it
   const FACE = [[0, 0], [36, -30], [84, -62], [112, -44], [150, -70], [240, -138], [320, -182], [358, -176], [420, -116], [480, -44], [520, 36]];      // a second, lower overhang under the great one
@@ -387,7 +387,7 @@ const HL = (() => {
   }
   function preload() {
     loadOak();
-    if (!loading) loading = Promise.all([Promise.all([loadImg('hill-rock.webp'), loadImg('hill-fire.webp')]).then(([r, f]) => { if (r) { build(); paintHill(r, f); } }), loadPack('wiseman', WIS).catch(() => {}), loadImg('gate-door.webp').then(im => { if (im) GDOOR = im; }), loadImg('lantern.webp').then(im => { if (im) GLANT = im; }), loadImg('gate-stone.webp').then(im => { if (im) GSTONE = im; }), loadPack('evangelist-walk', EVW).catch(() => {}), loadImg('wiseman-stand.webp').then(im => { if (im) WIS_ST = im; }), OBS.ready || loadPack('obstinate', OBS).catch(() => {}), EVS.ready || loadPack('evangelist-stand', EVS).catch(() => {}), RUNP.ready || loadPack('christian-run-plain', RUNP).catch(() => {}),
+    if (!loading) loading = Promise.all([Promise.all([loadImg('hill-rock.webp'), loadImg('hill-fire.webp')]).then(([r, f]) => { if (r) { build(); paintHill(r, f); } }), loadPack('wiseman', WIS).catch(() => {}), loadImg('gate-door.webp').then(im => { if (im) GDOOR = im; }), loadImg('gate-stone.webp').then(im => { if (im) GSTONE = im; }), loadPack('evangelist-walk', EVW).catch(() => {}), loadImg('wiseman-stand.webp').then(im => { if (im) WIS_ST = im; }), OBS.ready || loadPack('obstinate', OBS).catch(() => {}), EVS.ready || loadPack('evangelist-stand', EVS).catch(() => {}), RUNP.ready || loadPack('christian-run-plain', RUNP).catch(() => {}),
       WEEP.ready || loadPack('christian-weep', WEEP).catch(() => {}), KNEEL.ready || loadPack('christian-kneel', KNEEL).catch(() => {}), TURN.ready || loadPack('christian-turn', TURN).then(() => bookLoaded('TURN')).catch(() => {}),
       OBS_ST ? 0 : loadImg('obstinate-stand.webp').then(im => { if (im && !OBS_ST) OBS_ST = im; }),
       loadImg('tree-a.webp').then(im => { if (!im) return; const c = mk(im.width, im.height), k = c.getContext('2d'); k.drawImage(im, 0, 0); k.globalCompositeOperation = 'source-in'; k.fillStyle = '#fff'; k.fillRect(0, 0, c.width, c.height); OAKT = c; })]).catch(() => {});
@@ -405,6 +405,127 @@ const HL = (() => {
   let FK = 1;
   const kneelK = f => 1 / (1 + .12 * smooth(0, 30, f));
   const tintC = {};
+
+  // ---------- THE WALL LIT STONE BY STONE (build 222; owner: "the rock pattern look like those 90s computer games - kinda
+  // fake"; my plan A, agreed: "Yes do A"). The stone photograph (`GSTONE`) is read as a height map (light = proud stone,
+  // dark = the joints) and lit pixel by pixel, once, by the lantern and by the open door: each point takes the light by
+  // the slope of its stone toward the light, falls off quickly with distance (Rembrandt: most of the wall stays dark),
+  // and is shadowed where a nearer stone stands between it and the light. Baked a few rows a frame while the gate is
+  // first seen (`stepBake`), into two pictures laid on in 'lighter': `RELIT.L` (the lantern, flickering) and `RELIT.D`
+  // (the door's light, as it opens). Until they are ready the old wash and 'multiply' stand in.
+  let RELIT = null;
+  const WALL_LIGHTS = () => [
+    { key: 'L', pts: [[GATE_X - 72, 160, 26]], R: 110, col: [255, 176, 104], gain: 2.1 },
+    { key: 'D', pts: [[GATE_X + 14, 40, 34], [GATE_X + 14, 110, 34]], R: 170, col: [255, 206, 150], gain: 1.4 }];
+  function stepBake() {
+    if (!GSTONE || (RELIT && RELIT.done)) return;
+    const PX = 2, Hs = 4.5, M = 14;
+    if (!RELIT) {
+      const T = 512, t = mk(T, T), q = t.getContext('2d'); q.drawImage(GSTONE, 0, 0, T, T); const D = q.getImageData(0, 0, T, T).data;
+      const tex = new Float32Array(T * T); for (let i = 0; i < T * T; i++) tex[i] = (D[i * 4] + D[i * 4 + 1] + D[i * 4 + 2]) / 765;
+      const w = 1120, h = 400, W = w * PX, H = h * PX, GW = W + 2 * M * PX, GHh = H + 2 * M * PX, x0 = GATE_X - 560, tx0 = GATE_X - 1300;
+      RELIT = { x0, w, h, W, H, GW, GHh, row: 0, done: false, hb: null, tex, T, tx0, L: mk(W, H), D: mk(W, H) };
+      RELIT.Li = RELIT.L.getContext('2d').createImageData(W, H); RELIT.Di = RELIT.D.getContext('2d').createImageData(W, H);
+      // the height of the wall at bake resolution (with a margin for the shadows), sampled from the tile
+      const hb = new Float32Array(GW * GHh), k = T / 380;
+      for (let j = 0; j < GHh; j++) { const wy = h + M - (j + .5) / PX, v = (((-wy * k) % T) + T) % T, v0 = Math.floor(v), fv = v - v0, r0 = v0 * T, r1 = ((v0 + 1) % T) * T;
+        for (let i = 0; i < GW; i++) { const wx = x0 - M + (i + .5) / PX, u = ((((wx - tx0) * k) % T) + T) % T, u0 = Math.floor(u), fu = u - u0, u1 = (u0 + 1) % T;
+          hb[j * GW + i] = (tex[r0 + u0] * (1 - fu) + tex[r0 + u1] * fu) * (1 - fv) + (tex[r1 + u0] * (1 - fu) + tex[r1 + u1] * fu) * fv; } }
+      RELIT.hb = hb; return;
+    }
+    const Rl = RELIT, { W, H, GW, hb, x0, h } = Rl, m = M * PX, end = Math.min(H, Rl.row + 36), lights = WALL_LIGHTS();
+    for (let py = Rl.row; py < end; py++) for (let px = 0; px < W; px++) {
+      const i = (py + m) * GW + px + m, h0 = hb[i], wx = x0 + (px + .5) / PX, wy = h - (py + .5) / PX;
+      let nx = -(hb[i + 1] - hb[i - 1]) * PX / 2 * Hs, ny = -(hb[i - GW] - hb[i + GW]) * PX / 2 * Hs; const nl = Math.hypot(nx, ny, 1); nx /= nl; ny /= nl; const nz = 1 / nl;
+      const alb = Math.max(.12, Math.min(1.1, .2 + (h0 - .5) * 1.6)); const fe = Math.min(1, (wx - x0) / 220, (x0 + Rl.w - wx) / 220);
+      for (const Lt of lights) { let I = 0;
+        for (const [lx, ly, lz] of Lt.pts) { const vx = lx - wx, vy = ly - wy, vz = lz - h0 * Hs, d = Math.hypot(vx, vy, vz), dxy = Math.hypot(vx, vy) || 1;
+          const diff = Math.max(0, (nx * vx + ny * vy + nz * vz) / d), f = 1 / Math.pow(1 + (d / Lt.R) * (d / Lt.R), 1.5); if (f < .004) continue;
+          // shadow: walk toward the light over the stones; a stone that rises above the ray hides it
+          let sh = 1; const ux = vx / dxy, uy = vy / dxy, slope = vz / dxy;
+          for (let st = 1; st <= 9 && sh > 0; st++) { const dd = st * .9, j = Math.round(i + ux * dd * PX - uy * dd * PX * GW), hz = hb[j] * Hs, ray = h0 * Hs + slope * dd; if (hz > ray) sh -= Math.min(1, (hz - ray) * .45); }
+          I += alb * (.32 + .68 * diff) * f * (.35 + .65 * Math.max(0, sh)) / Lt.pts.length; }
+        const v = (1 - Math.exp(-I * Lt.gain)) * fe * fe * (3 - 2 * fe), o = (py * W + px) * 4, A = Lt.key === 'L' ? Rl.Li.data : Rl.Di.data;
+        A[o] = Lt.col[0] * v; A[o + 1] = Lt.col[1] * v; A[o + 2] = Lt.col[2] * v; A[o + 3] = 255; } }
+    Rl.row = end;
+    if (end >= H) { Rl.L.getContext('2d').putImageData(Rl.Li, 0, 0); Rl.D.getContext('2d').putImageData(Rl.Di, 0, 0); Rl.Li = Rl.Di = Rl.hb = null; Rl.done = true; }
+  }
+
+  // ---------- THE LANTERN, DRAWN (build 222; owner: "lamp looks like wrong perspective can we redo with computer design using
+  // this as design reference"). The photograph showed two sides and the roof from above; the game is a flat side view. So
+  // it is drawn here straight on, after that 18th-century iron lantern: a ring to hang it by, a turned finial, a flared
+  // stepped roof with a pierced band, one horn pane between two corner posts (horn, as in Bunyan's day: mottled amber with
+  // the flame a soft brightness behind it), corner brackets, a pierced base and two small feet. Baked once at 5 pixels a
+  // unit; 22 x 40 units; hung by the ring's top (`LANT.hx`, `LANT.hy`), the flame at `LANT.fy`.
+  let LANT = null;
+  function bakeLantern() {
+    const S = 5, Wd = 22, Ht = 40, cv = mk(Wd * S, Ht * S), q = cv.getContext('2d'); q.scale(S, S); const cx = Wd / 2;
+    const iron = (y0, y1) => { const g = q.createLinearGradient(0, y0, 0, y1); g.addColorStop(0, 'rgb(58,48,40)'); g.addColorStop(1, 'rgb(22,18,16)'); return g; };
+    const trap = (y0, y1, w0, w1) => { q.beginPath(); q.moveTo(cx - w0 / 2, y0); q.lineTo(cx + w0 / 2, y0); q.lineTo(cx + w1 / 2, y1); q.lineTo(cx - w1 / 2, y1); q.closePath(); };
+    // the ring
+    q.strokeStyle = 'rgb(30,24,20)'; q.lineWidth = 1.1; q.beginPath(); q.ellipse(cx, 3.6, 3, 3, 0, 0, 7); q.stroke();
+    q.strokeStyle = 'rgba(150,110,70,.35)'; q.lineWidth = .35; q.beginPath(); q.arc(cx, 3.6, 3, Math.PI * 1.1, Math.PI * 1.6); q.stroke();
+    // the finial: a small turned dome on a neck
+    q.fillStyle = iron(6, 11); q.beginPath(); q.ellipse(cx, 8.4, 2.4, 1.9, 0, 0, 7); q.fill(); q.fillRect(cx - 1.1, 9.6, 2.2, 1.6); q.fillRect(cx - .5, 6, 1, 1);
+    // the stepped roof: a cap, a flared hood, a pierced band (its holes glow)
+    q.fillStyle = iron(11, 12.5); trap(11, 12.4, 6, 8); q.fill();
+    q.fillStyle = iron(12.4, 17); trap(12.4, 16.8, 8, 19.5); q.fill();
+    q.fillStyle = 'rgba(160,120,80,.28)'; trap(12.4, 13, 8, 9.4); q.fill();
+    q.fillStyle = iron(16.8, 19); q.fillRect(cx - 9.8, 16.8, 19.6, 2.2);
+    q.fillStyle = 'rgb(16,13,11)'; q.fillRect(cx - 9.8, 18.8, 19.6, .45);
+    for (let k = -4; k <= 4; k++) { q.fillStyle = 'rgba(255,190,110,.85)'; q.fillRect(cx + k * 2 - .35, 17.4, .7, .9); }
+    // the horn pane, glowing: mottled amber, the flame a soft brightness behind it
+    const px0 = cx - 6, px1 = cx + 6, py0 = 19.2, py1 = 33;
+    { const g = q.createRadialGradient(cx, 28.5, .5, cx, 27, 9.5); g.addColorStop(0, 'rgb(255,246,214)'); g.addColorStop(.25, 'rgb(255,214,150)'); g.addColorStop(.7, 'rgb(232,150,72)'); g.addColorStop(1, 'rgb(170,92,40)'); q.fillStyle = g; q.fillRect(px0, py0, px1 - px0, py1 - py0); }
+    { const Rr = rngS(41); for (let k = 0; k < 70; k++) { const x = px0 + Rr() * 12, y = py0 + Rr() * 13.8, r = .6 + Rr() * 2.2; q.fillStyle = `rgba(${Rr() < .5 ? '120,60,20' : '255,236,190'},${.05 + Rr() * .09})`; q.beginPath(); q.ellipse(x, y, r, r * (.5 + Rr()), Rr() * 3, 0, 7); q.fill(); } }
+    { const g = q.createRadialGradient(cx, 28.6, 0, cx, 28.6, 2.6); g.addColorStop(0, 'rgba(255,255,240,.95)'); g.addColorStop(1, 'rgba(255,240,200,0)'); q.fillStyle = g; q.beginPath(); q.ellipse(cx, 28.6, 1.4, 2.8, 0, 0, 7); q.fill(); }
+    // the corner posts, lit on their inner edge by the flame; corner brackets
+    for (const sx of [-1, 1]) { const x = cx + sx * 6.8; q.fillStyle = iron(19, 33); q.fillRect(x - .9, 19, 1.8, 14.2);
+      q.fillStyle = 'rgba(255,170,90,.45)'; q.fillRect(sx < 0 ? x + .55 : x - .9, 19.4, .35, 13.4);
+      q.fillStyle = 'rgb(26,21,18)'; q.beginPath(); q.moveTo(x - sx * .9, 19.4); q.lineTo(x - sx * 3.2, 19.4); q.lineTo(x - sx * .9, 21.6); q.fill(); q.beginPath(); q.moveTo(x - sx * .9, 32.8); q.lineTo(x - sx * 3.2, 32.8); q.lineTo(x - sx * .9, 30.6); q.fill(); }
+    q.fillStyle = 'rgb(26,21,18)'; q.fillRect(px0, py0 - .2, 12, .6); q.fillRect(px0, py1 - .4, 12, .6);
+    // the pierced base and two small feet
+    q.fillStyle = iron(33, 35.5); trap(33, 34.6, 15.4, 16.6); q.fill(); q.fillRect(cx - 8.6, 34.6, 17.2, 1.6);
+    for (let k = -3; k <= 3; k++) { q.fillStyle = 'rgba(255,190,110,.6)'; q.beginPath(); q.arc(cx + k * 2.1, 35.4, .3, 0, 7); q.fill(); }
+    q.fillStyle = 'rgb(20,16,14)'; q.fillRect(cx - 8.2, 36.2, 2, 1.8); q.fillRect(cx + 6.2, 36.2, 2, 1.8);
+    LANT = { cv, w: Wd, h: Ht, hx: cx, hy: .6, fx: cx, fy: 28.6 };
+  }
+
+  // ---------- LIGHT AND SHADE ON THE FIGURES (build 222; owner: "Christian looks kinda flat is there a way to introduce
+  // shadows to spice up his sprite?"). Each picture's outline is turned once into a rough shape (its see-through mask
+  // blurred at two sizes: a soft roundness at the edges and a broad roundness of the whole body), from which a slope
+  // (normal) is read at each point. For a light in the scene (`KEYS`: the lantern and the door at the gate, the fire
+  // among the rocks, the sky above on the plain), a grey map of that shape lit from that side is made once per picture
+  // and direction (16 directions, half size) and laid on the figure with 'soft-light': the side toward the light comes
+  // forward, the side away falls into shade, and the watercolour's own detail is kept.
+  let KEYS = null; const NRM = new WeakMap();
+  function blurA(a, W, H, r) { const o = new Float32Array(W * H), t = new Float32Array(W * H);
+    for (let y = 0; y < H; y++) { let s = 0; for (let x = -r; x <= r; x++) s += a[y * W + Math.min(W - 1, Math.max(0, x))]; for (let x = 0; x < W; x++) { t[y * W + x] = s / (2 * r + 1); s += a[y * W + Math.min(W - 1, x + r + 1)] - a[y * W + Math.max(0, x - r)]; } }
+    for (let x = 0; x < W; x++) { let s = 0; for (let y = -r; y <= r; y++) s += t[Math.min(H - 1, Math.max(0, y)) * W + x]; for (let y = 0; y < H; y++) { o[y * W + x] = s / (2 * r + 1); s += t[Math.min(H - 1, y + r + 1) * W + x] - t[Math.max(0, y - r) * W + x]; } }
+    return o; }
+  function shapeOf(im) {
+    let n = NRM.get(im); if (n) return n;
+    const W = Math.ceil(im.width / 2), H = Math.ceil(im.height / 2), t = mk(W, H), q = t.getContext('2d'); q.drawImage(im, 0, 0, W, H); const D = q.getImageData(0, 0, W, H).data;
+    const A = new Float32Array(W * H); for (let i = 0; i < W * H; i++) A[i] = D[i * 4 + 3] / 255;
+    const b1 = blurA(blurA(A, W, H, 2), W, H, 2), b2 = blurA(blurA(A, W, H, 7), W, H, 7);
+    const nx = new Float32Array(W * H), ny = new Float32Array(W * H), nz = new Float32Array(W * H);
+    for (let y = 1; y < H - 1; y++) for (let x = 1; x < W - 1; x++) { const i = y * W + x, gx = (b1[i + 1] - b1[i - 1]) * 2.2 + (b2[i + 1] - b2[i - 1]) * 6, gy = (b1[i + W] - b1[i - W]) * 2.2 + (b2[i + W] - b2[i - W]) * 6, l = Math.hypot(gx, gy, 1);
+      nx[i] = -gx / l; ny[i] = -gy / l; nz[i] = 1 / l; }
+    n = { W, H, A, nx, ny, nz, maps: new Map() }; NRM.set(im, n); return n;
+  }
+  function shadeMap(n, k16) {
+    let m = n.maps.get(k16); if (m) return m;
+    const a = k16 / 16 * 6.2832, lx = Math.cos(a) * .8, ly = Math.sin(a) * .8, lz = .6, { W, H, A, nx, ny, nz } = n;
+    m = mk(W, H); const q = m.getContext('2d'), id = q.createImageData(W, H), d = id.data;
+    for (let i = 0; i < W * H; i++) { const s = nx[i] * lx + ny[i] * ly + nz[i] * lz - lz, v = Math.max(0, Math.min(255, 128 + 230 * s)); d[i * 4] = d[i * 4 + 1] = d[i * 4 + 2] = v; d[i * 4 + 3] = A[i] * 255; }
+    q.putImageData(id, 0, 0); n.maps.set(k16, m); return m;
+  }
+  function shade(f, im, x, face) {
+    if (!KEYS) return; const n = shapeOf(im); let any = false;
+    for (const L of KEYS) { if (L.k < .02) continue; const dx = (L.x - x) * face, dy = -(L.y - 80), k16 = ((Math.round(Math.atan2(dy, dx) / 6.2832 * 16) % 16) + 16) % 16;
+      f.globalCompositeOperation = 'soft-light'; f.globalAlpha = Math.min(1, L.k); f.drawImage(shadeMap(n, k16), 0, 0, im.width, im.height); any = true; }
+    f.globalAlpha = 1; if (any) { f.globalCompositeOperation = 'destination-in'; f.drawImage(im, 0, 0); } f.globalCompositeOperation = 'source-over';
+  }
   function figure(c, slot, im, meta, x, face, tint, alpha = 1, sy = 1) {
     if (!im || alpha <= .004) return;
     im = solidOf(im);      // build 202: no clear spots inside the figure (solidOf, in index.html)
@@ -412,6 +533,7 @@ const HL = (() => {
     const f = fc.getContext('2d'); f.globalCompositeOperation = 'source-over'; f.clearRect(0, 0, fc.width, fc.height);
     f.drawImage(im, 0, 0); f.globalCompositeOperation = 'multiply'; f.fillStyle = css(tint); f.fillRect(0, 0, im.width, im.height);
     f.globalCompositeOperation = 'destination-in'; f.drawImage(im, 0, 0); f.globalCompositeOperation = 'source-over';
+    shade(f, im, x, face);
     // LIGHT ON THE FIGURE (owner, build 177: the old warm edge "looks like a copy ... like i'm wearing 3d glasses or
     // things are out of focus. a more careful outline would be better"; and "the color of characters feels flat ...
     // less lifelike"). (1) The body is lit across: the side toward the low sun a little lighter and warmer, the far
@@ -728,6 +850,7 @@ const HL = (() => {
       if (!farewell && C3.x <= PATH0 + 120 && C3.run <= 0 && !saying() && G.cap <= 0) { farewell = 1; G.state = 'auto'; clearHint('haste'); flashT = 60; }
       if (farewell && ++farewell > 470) { ph = 'mist'; veilTo = 1; }
     } else if (ph === 'mist') {
+      if (veil > .9) stepBake();      // build 222: the wall is lit stone by stone while the mist hides the change
       if (farewell) farewell++;
       if (veil >= 1) { Zw = 0; ph = 'gate'; C3.x = GATE_FROM; C3.face = C3.faceA = 1; C3.sd = QUIET[0]; cam.cx = C3.x + 150; cam.z = 1; cam.wl = 440; dark = 0; hope = 1; evan = null; wise = null; veilTo = 0; G.state = 'play'; hintT = 0; }
     } else if (ph === 'gate') {
@@ -1118,10 +1241,30 @@ const HL = (() => {
       c.save(); wallPath(); c.clip();
       // one soft pool of lantern light, and the open door's light
       const dx0 = GATE_X - 30, lxw = GATE_X - 72, tex = GSTONE ? 1.3 : 1;
+      stepBake();
+      const relit = RELIT && RELIT.done;
+      if (relit) {
+        // the wall lit stone by stone (build 222): the lantern's picture flickering, the door's as it opens
+        const bx = X(RELIT.x0), by = Y(-RELIT.h), bw = RELIT.w * z, bh = RELIT.h * z;
+        c.globalCompositeOperation = 'lighter'; c.globalAlpha = Math.min(1, .3 + .75 * flick); c.drawImage(RELIT.L, bx, by, bw, bh);
+        if (open > .01) { c.globalAlpha = open; c.drawImage(RELIT.D, bx, by, bw, bh); }
+        // the surround's dressed stones are paler: the same light again on them
+        c.globalAlpha = 1; c.globalCompositeOperation = 'source-over';
+        // the surround's stones are dressed smooth and paler: a smooth wash of the same lights with only the stone's fine grain
+        if (!GSTONE.pat) GSTONE.pat = c.createPattern(GSTONE, 'repeat');
+        { c.save(); frameP(); c.clip('evenodd'); c.fillStyle = css([24, 20, 19]); c.fillRect(gx - SW * z, Y(-SY - SH - 10), 2 * SW * z, (SY + SH + 12) * z);
+          c.globalCompositeOperation = 'lighter';
+          { const g = c.createRadialGradient(lnx, lny, 0, lnx, lny, 210 * z); g.addColorStop(0, css([236, 180, 118], .85 * flick)); g.addColorStop(.4, css([180, 120, 70], .35 * flick)); g.addColorStop(1, css([150, 90, 50], 0)); c.fillStyle = g; c.fillRect(gx - ro - 300 * z, gy0 - ro - 200 * z, 600 * z, 600 * z); }
+          if (open > .01) { const g = c.createRadialGradient(gx + r * .4, Y(-70), 0, gx + r * .4, Y(-70), 190 * z); g.addColorStop(0, css([255, 214, 150], .7 * open)); g.addColorStop(1, css([170, 100, 56], 0)); c.fillStyle = g; c.fillRect(gx - 200 * z, Y(-270), 400 * z, 400 * z); }
+          const k = 190 / GSTONE.width * z; GSTONE.pat.setTransform(new DOMMatrix([k, 0, 0, k, X(x0), Y(0)])); c.globalCompositeOperation = 'multiply'; c.globalAlpha = .8; c.fillStyle = GSTONE.pat; c.fillRect(gx - SW * z, Y(-SY - SH - 10), 2 * SW * z, (SY + SH + 12) * z);
+          c.restore(); }
+      } else {
       c.globalCompositeOperation = 'lighter';
       { const g = c.createRadialGradient(lnx, lny, 0, lnx, lny, 280 * z); g.addColorStop(0, css([236, 170, 100], .5 * flick * tex)); g.addColorStop(.35, css([190, 120, 66], .22 * flick * tex)); g.addColorStop(1, css([150, 90, 50], 0)); c.fillStyle = g; c.fillRect(lnx - 280 * z, lny - 280 * z, 560 * z, 560 * z); }
       if (door > .01) { const bx = gx + r * .3, by = Y(-70), rr = 380 * z, g = c.createRadialGradient(bx, by, 0, bx, by, rr); g.addColorStop(0, css([255, 214, 150], .62 * open)); g.addColorStop(.3, css([226, 150, 86], .22 * open)); g.addColorStop(1, css([170, 100, 56], 0)); c.fillStyle = g; c.fillRect(bx - rr, by - rr, 2 * rr, 2 * rr); }
+      }
       if (GSTONE) {
+        if (!relit) {
         // the stones: the photograph laid over the light, so it shows only where the light reaches
         if (!GSTONE.pat) GSTONE.pat = c.createPattern(GSTONE, 'repeat');
         const k = 380 / GSTONE.width * z; GSTONE.pat.setTransform(new DOMMatrix([k, 0, 0, k, X(x0), Y(0)]));
@@ -1132,6 +1275,7 @@ const HL = (() => {
         c.restore();
         c.globalCompositeOperation = 'multiply'; c.fillStyle = GSTONE.pat; c.fillRect(0, 0, VW, Y(2));
         c.globalCompositeOperation = 'source-over';
+        }
         // the joints of the surround: thin and soft, darker only where the light shows them
         c.save(); frameP(); c.clip('evenodd'); c.strokeStyle = css([12, 9, 8], .42); c.lineWidth = 1 * z; c.beginPath();
         for (let y = 0, i = 0; y < GH - 4; y += 21 + (i % 3) * 3, i++) { if (y) { c.moveTo(gx - ro, Y(-y)); c.lineTo(gx - ri, Y(-y)); c.moveTo(gx + ri, Y(-y - 6)); c.lineTo(gx + ro, Y(-y - 6)); } }
@@ -1197,16 +1341,14 @@ const HL = (() => {
           c.fillStyle = css([20, 13, 9], .62); c.fillText(t, gx, ty); c.fillStyle = css([255, 214, 160], .14 * flick); c.fillText(t, gx + .5 * z, ty + .6 * z); }
         c.restore(); }
       else { c.fillStyle = css(mix([70, 54, 42], [222, 190, 142], .6 * flick)); c.fillRect(gx - 38 * z, Y(-GH - GR - 36), 76 * z, 13 * z); }
-      // the lantern on its iron bracket (build 217: a photograph of an old iron lantern, Rijksmuseum, CC0, its panes made
-      // glowing horn as lanterns had in Bunyan's day; it hangs from a wrought-iron arm on a plate in the wall)
-      if (GLANT) { const LH = 40 * z, LW = LH * GLANT.width / GLANT.height, fx0 = 71.5 / 180, fy0 = 229 / 358, lx0 = lnx - fx0 * LW, ly0 = lny - fy0 * LH, hx = lx0 + LW * .5;
-        c.fillStyle = css([10, 8, 8]); c.fillRect(hx - 3 * z, ly0 - 17 * z, 6 * z, 9 * z);
-        c.strokeStyle = css([12, 10, 9]); c.lineWidth = 1.7 * z; c.lineCap = 'round'; c.beginPath(); c.moveTo(hx, ly0 - 9 * z); c.bezierCurveTo(hx - 6 * z, ly0 - 7 * z, hx - 6 * z, ly0 - 2 * z, hx, ly0 + 1 * z); c.stroke();
-        c.strokeStyle = css([255, 190, 120], .2 * flick); c.lineWidth = .7 * z; c.beginPath(); c.moveTo(hx - 2.5 * z, ly0 - 16 * z); c.lineTo(hx - 2.5 * z, ly0 - 9 * z); c.stroke(); c.lineCap = 'butt';
-        c.drawImage(GLANT, lx0, ly0, LW, LH);
-        c.save(); c.globalCompositeOperation = 'lighter'; c.globalAlpha = .25 * (flick - .8) * 4; c.drawImage(GLANT, lx0, ly0, LW, LH); c.restore(); }
-      else { c.strokeStyle = css([8, 7, 7]); c.lineWidth = 1.6 * z; c.beginPath(); c.moveTo(lnx - 12 * z, lny - 16 * z); c.lineTo(lnx, lny - 16 * z); c.lineTo(lnx, lny - 8 * z); c.stroke();
-        c.fillStyle = css([8, 7, 7]); c.fillRect(lnx - 5 * z, lny - 9 * z, 10 * z, 15 * z); c.fillStyle = css([255, 214, 140], .95 * flick); c.fillRect(lnx - 3.2 * z, lny - 6 * z, 6.4 * z, 10 * z); }
+      // the lantern on its iron bracket (build 222: drawn straight on, `bakeLantern()`; hung by its ring from a wrought-iron
+      // hook on a plate in the wall)
+      if (!LANT) bakeLantern();
+      { const k = z, lx0 = lnx - LANT.fx * k, ly0 = lny - LANT.fy * k, hx = lnx, hy = ly0 + LANT.hy * k;
+        c.fillStyle = css([12, 10, 9]); c.fillRect(hx - 3 * z, hy - 15 * z, 6 * z, 8 * z); c.fillStyle = css([255, 190, 120], .18 * flick); c.fillRect(hx - 3 * z, hy - 15 * z, 6 * z, .7 * z);
+        c.strokeStyle = css([14, 11, 10]); c.lineWidth = 1.5 * z; c.lineCap = 'round'; c.beginPath(); c.moveTo(hx, hy - 8 * z); c.bezierCurveTo(hx - 5 * z, hy - 6.5 * z, hx - 4.5 * z, hy - 1.5 * z, hx, hy + .8 * z); c.stroke(); c.lineCap = 'butt';
+        c.drawImage(LANT.cv, lx0, ly0, LANT.w * k, LANT.h * k);
+        c.save(); c.globalCompositeOperation = 'lighter'; c.globalAlpha = Math.max(0, (flick - .82) * 2.2); c.drawImage(LANT.cv, lx0, ly0, LANT.w * k, LANT.h * k); c.restore(); }
       c.save(); c.globalCompositeOperation = 'lighter'; { const g = c.createRadialGradient(lnx, lny, 0, lnx, lny, 90 * z); g.addColorStop(0, css([255, 220, 160], .42 * flick)); g.addColorStop(1, css([255, 190, 110], 0)); c.fillStyle = g; c.fillRect(lnx - 90 * z, lny - 90 * z, 180 * z, 180 * z); } c.restore();
       for (let i = 0; i < knocks; i++) { const q = clamp(knockT / 40); if (i === knocks - 1 && q < 1) { c.strokeStyle = css([255, 236, 190], .7 * (1 - q)); c.lineWidth = 2; c.beginPath(); c.arc(gx, Y(-70), (10 + 46 * q) * z, 0, 7); c.stroke(); } }
     }
@@ -1279,7 +1421,10 @@ const HL = (() => {
     c.save(); c.translate(VW / 2 - cx * z, wl); c.scale(z, z);
     RIM = { k: (1 - dark) * (1 - gateish) * .9, x: (lx - VW / 2) / z + cx };
     FIRE = rocky && ph !== 'title' ? { k: clamp(dark) * (1 - .4 * calm), x: HX0 + 600, f: Math.min(1, flash) } : null;
-    const tint = mix([74, 68, 60], [70, 62, 70], dark), fl = Math.min(1, flash) * dark, lit = gateish * smooth(GATE_X - 330, GATE_X - 60, C3.x), tintF = mix(mix(mix(tint, [66, 62, 72], gateish), [255, 170, 110], fl * .35), [255, 188, 120], lit * (.3 + .4 * door));
+    // the lights that model the figures (build 222): the lantern and the open door at the gate, the fire among the rocks, the sky
+    { const gk = smooth(.5, 1, gateish), op = smooth(0, 1, door); KEYS = gk > .02 ? [{ x: GATE_X - 72, y: 162, k: .9 * gk }, { x: GATE_X + 14, y: 80, k: .95 * op * gk }]
+      : FIRE ? [{ x: FIRE.x, y: 520, k: .7 * FIRE.k }, { x: C3.x, y: 2000, k: .3 * (1 - FIRE.k) }] : [{ x: C3.x, y: 2000, k: .45 }]; }
+    const tint = mix([74, 68, 60], [70, 62, 70], dark), fl = Math.min(1, flash) * dark, lit = gateish * smooth(GATE_X - 330, GATE_X - 60, C3.x), tintF = mix(mix(mix(tint, [66, 62, 72], gateish), [255, 170, 110], fl * .35), [255, 188, 120], lit * (.24 + .26 * door));
     const tintM = mix(tintF, [255, 204, 150], mercy * .42);
     if (mercy > .01) { const mx = (C3.x + EV_X) / 2; c.save(); c.globalCompositeOperation = 'lighter';
       { c.save(); c.translate(mx, 5); c.scale(1, .1); const g = c.createRadialGradient(0, 0, 0, 0, 0, 210); g.addColorStop(0, css([255, 196, 126], .5 * mercy)); g.addColorStop(1, css([255, 180, 110], 0)); c.fillStyle = g; c.fillRect(-210, -210, 420, 420); c.restore(); }
@@ -1301,7 +1446,7 @@ const HL = (() => {
     }
     // in the wide shot he is a tiny dark figure: a faint warm light round him so the eye can find him
     if (Zw > .05) { const g = c.createRadialGradient(C3.x, -60, 0, C3.x, -60, 34 / z); g.addColorStop(0, css([255, 196, 130], .28 * Zw)); g.addColorStop(1, css([255, 170, 110], 0)); c.save(); c.globalCompositeOperation = 'lighter'; c.fillStyle = g; c.fillRect(C3.x - 34 / z, -60 - 34 / z, 68 / z, 68 / z); c.restore(); }
-    c.save(); c.translate(0, C3.dy || 0); drawChr(c, tintM); c.restore(); RIM = null; FIRE = null;
+    c.save(); c.translate(0, C3.dy || 0); drawChr(c, tintM); c.restore(); RIM = null; FIRE = null; KEYS = null;
     c.restore();
     // the light streaming out of the open gate: a soft wedge in the evening air, widening and fading to the left, a few
     // slow rays breathing in it, and dust turning where the light is (laid on, over him; never down the picture at us)
