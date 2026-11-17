@@ -65,7 +65,9 @@ const SL = (() => {
   // (the noise runs between about .3 and .7, so the threshold crosses that range slowly from one bank to the other: a few
   // small pools at first, more and bigger ones further on, open water at last; long across and thin down the picture,
   // since pools are seen edge-on)
-  const poolAt = (x, yy) => { const w = smooth(-770, -225, x), T = .86 - .52 * w, n = .6 * cloudN(x * .009, yy * .3 + 3) + .4 * cloudN(x * .024 + 9, yy * .55 + 1); return smooth(T - .022, T + .022, n); };
+  const poolT = (x, yy) => { const w = smooth(-770, -225, x); return .86 - .52 * w - .13 * (1 - w) * smooth(30, 90, yy); };      // build 257: near the home bank a few pools open in the foreground too (the mud under the men stays mud)
+  const poolN = (x, yy) => .6 * cloudN(x * .009, yy * .3 + 3) + .4 * cloudN(x * .024 + 9, yy * .55 + 1);
+  const poolAt = (x, yy) => { const T = poolT(x, yy), n = .6 * cloudN(x * .009, yy * .3 + 3) + .4 * cloudN(x * .024 + 9, yy * .55 + 1); return smooth(T - .022, T + .022, n); };
   const MUD_X0 = -1250, MUD_W = 1090, MUD_H = 270;      // build 203: the map runs from where the water begins (WATER_L): by the home bank it is all mud, no mirror (a paler column showed under Pliable where the mirror faded in)
   const BANK0 = -160, HOME0 = -1010;                       // where each bank meets the water
   const WATER_L = -1250;                                  // the water in front of everything begins here; to the left is the plain
@@ -80,6 +82,7 @@ const SL = (() => {
   // to rise slowly over 90 units, but Pliable's climbing video hauls him up a bank with a short steep face, so for a few
   // steps after he stood up his feet were in the air beyond the land's end. The bank now has that short face, standing
   // where the video's bank stood, at its full height by HOME0 + 15
+  const hum = x => x > BANK0 ? smooth(BANK0 + 230, BANK0 + 480, x) * (4 + 16 * bankN(x * .0045, 9)) : smooth(HOME0 - 160, HOME0 - 380, x) * (3 + 12 * bankN(x * .0045, 3));
   const START = -2750, FALL_X = -760, PLI_FALL = -840, END_X = 660;
   const WADE0 = FALL_X + 70;      // build 119: falling, Christian pitches on this much further, so the two are not on top of each other in the mire
   // Help kneels at the edge of the far bank; Christian must come to where his hand meets Help's (measured in slough-lab.html)
@@ -163,6 +166,7 @@ const SL = (() => {
     return { c, x0: x0 - 2 / k, y0: y0 - 2 / k, k };
   }
   const putTree = (c, b, x, y, s, sy = s) => c.drawImage(b.c, x + b.x0 * s, y + b.y0 * sy, b.c.width / b.k * s, b.c.height / b.k * sy);
+  let mudDk = null, mudLt = null, shC = null, mistC = null, SHN = [], SH0 = [];
   let SHORE = null, OAK = null, GHOSTS = null, skyMist = null, skyClear = null, paper = null, threads = null, puff = null, fogBank = null, mudMap = null, built = false;
   function build() {
     if (built) return; built = true;
@@ -205,6 +209,22 @@ const SL = (() => {
         const o = (j * MUD_W + i) * 4; d.data[o] = d.data[o + 1] = d.data[o + 2] = 255; d.data[o + 3] = 255 * clamp(a);
       }
       c.putImageData(d, 0, 0); }
+    // MUD THAT LOOKS LIKE MUD (build 257, owner: "I don't like that it's all grey underneath them ... more bog look like the
+    // wavy edges closer to tree - it's too plain"). Two overlays baked once, the same size as mudMap, laid over the mud only:
+    // mudDk darkens it (a dark wet rim round every pool, so the pools' wavy edges are drawn into the mud near and far; broad
+    // flat patches of wetter mud), mudLt lightens it (a few long thin bands of dull sheen where the sky catches wet mud,
+    // flat because we see them edge-on). One tone throughout, only darker and lighter.
+    mudDk = mk(MUD_W, MUD_H); mudLt = mk(MUD_W, MUD_H);
+    { const dd = mudDk.getContext('2d').createImageData(MUD_W, MUD_H), dl = mudLt.getContext('2d').createImageData(MUD_W, MUD_H), cd = tone(.12), cl = tone(.9);
+      for (let j = 0; j < MUD_H; j++) for (let i = 0; i < MUD_W; i++) {
+        const x = MUD_X0 + i, yy = Math.pow(j + 1, .82), T = poolT(x, yy), n = poolN(x, yy), a = 1 - smooth(T - .022, T + .022, n);
+        const rim = smooth(T - .11, T - .015, n), patch = smooth(.46, .66, cloudN(x * .005 + 30, yy * .06 + 7)), streak = smooth(.56, .7, cloudN(x * .0022 + 70, yy * .75 + 11));
+        const dk = clamp(.42 * rim + .2 * patch) * smooth(0, 6, yy + 2), lt = .2 * streak * (1 - rim) * (1 - .6 * patch);
+        const o = (j * MUD_W + i) * 4;
+        dd.data[o] = cd[0]; dd.data[o + 1] = cd[1]; dd.data[o + 2] = cd[2]; dd.data[o + 3] = 255 * dk * a;
+        dl.data[o] = cl[0]; dl.data[o + 1] = cl[1]; dl.data[o + 2] = cl[2]; dl.data[o + 3] = 255 * lt * a;
+      }
+      mudDk.getContext('2d').putImageData(dd, 0, 0); mudLt.getContext('2d').putImageData(dl, 0, 0); }
     fogBank = mk(360, 96); { const c = fogBank.getContext('2d'), d = c.createImageData(360, 96), col = tone(.93);
       for (let j = 0; j < 96; j++) for (let i = 0; i < 360; i++) {
         const u = i / 359, up = 1 - j / 95;
@@ -310,6 +330,7 @@ const SL = (() => {
     if (FIG_WET) { const W = FIG_WET, r = W.r ?? meta.ground - W.D / CHR_K, d = [tint[0] * .4, tint[1] * .38, tint[2] * .36];
       if (r < im.height) { const g = f.createLinearGradient(0, r - 9, 0, r + 5); g.addColorStop(0, css(d, 0)); g.addColorStop(1, css(d, W.a));
         f.globalCompositeOperation = 'source-atop'; f.fillStyle = g; f.fillRect(0, r - 9, W.x1 ?? im.width, im.height - r + 9); } }
+    if (cut && alpha > .2 && y > -2) SHN.push({ im, meta, x, y, face, a: alpha });      // build 257: for the wet shadow under everyone standing in the mud (drawn the next frame)
     if (MREC && cut && alpha > .25 && (!RECS[MREC] || alpha >= RECS[MREC].a)) RECS[MREC] = { im, meta, x, y, face, a: alpha };
     f.globalCompositeOperation = 'destination-in'; f.drawImage(im, 0, 0); f.globalCompositeOperation = 'source-over';
     c.save(); c.globalAlpha = alpha;
@@ -797,7 +818,7 @@ const SL = (() => {
   let nearC = null, mudC = null, mudGd = null, bandC = null, profC = null, chrLate = 0; const mudCh = [];
   function draw() {
     if (!nearC || nearC.width !== cv.width || nearC.height !== cv.height) nearC = mk(cv.width, cv.height);
-    RECS = {}; chrLate = 0;
+    RECS = {}; chrLate = 0; SH0 = SHN; SHN = [];
     const { z, cx, wl } = cam, hor = wl - 140 * z, S = DPR;
     const X = x => (x - cx) * z + VW / 2, Y = y => wl + y * z;
     const warmth = look.gold, lightCol = mix(LIGHT, GOLD, warmth * .8);
@@ -849,7 +870,6 @@ const SL = (() => {
           n.beginPath(); n.moveTo(OAK_X, g0 - 46); n.lineTo(xa, g0 - 40); n.bezierCurveTo(xa + sd * 10, g0 - 8, lerp(xa, xb, .5), yb - 2, xb, yb); n.lineTo(xb, yb + 3); n.lineTo(OAK_X, g0 + 3); n.closePath(); n.fill(); } }
       // beyond where people stand the shore is gently contoured: a few long, low swells and dips in one clean line
       // (drawn over the ground, which is unchanged)
-      const hum = x => x > BANK0 ? smooth(BANK0 + 230, BANK0 + 480, x) * (4 + 16 * bankN(x * .0045, 9)) : smooth(HOME0 - 160, HOME0 - 380, x) * (3 + 12 * bankN(x * .0045, 3));
       n.beginPath(); n.moveTo(x0, 2); for (let x = x0; x <= x1; x += 3 / z) n.lineTo(x, bankY(x) < -2 ? bankY(x) + 1 - hum(x) : 2); n.lineTo(x1, 2); n.closePath(); n.fill();
     }
     // Pliable. In the mire he is drawn later, straight onto the screen (pliMire): never mirrored, and after the mud
@@ -997,7 +1017,9 @@ const SL = (() => {
           mc.save(); mc.translate(mx, wl); mc.scale(105 * z, 95 * z); const q = mc.createRadialGradient(0, 0, 0, 0, 0, 1); q.addColorStop(0, 'rgba(255,255,255,' + a + ')'); q.addColorStop(.6, 'rgba(255,255,255,' + a * .85 + ')'); q.addColorStop(1, 'rgba(255,255,255,0)');
           mc.fillStyle = q; mc.fillRect(-1, 0, 2, 1); mc.restore(); }
         mc.globalCompositeOperation = 'source-in'; const q = mc.createLinearGradient(0, hor, 0, VH); q.addColorStop(0, css(tone(.64))); q.addColorStop(.3, css(tone(lerp(.5, .56, look.mist)))); q.addColorStop(1, css(tone(lerp(.3, .38, look.mist))));      // build 202: the mire a clear step darker than the sky (it was nearly the sky's own pale, and read as mist or water): heavy earth under a bright horizon, the pools bright in it
-        mc.fillStyle = q; mc.fillRect(0, wl, VW, VH - wl); mc.globalCompositeOperation = 'source-over'; }
+        mc.fillStyle = q; mc.fillRect(0, wl, VW, VH - wl);
+        mc.globalCompositeOperation = 'source-atop'; mc.drawImage(mudDk, X(MUD_X0), wl + 1, MUD_W * z, MUD_H * z); mc.drawImage(mudLt, X(MUD_X0), wl + 1, MUD_W * z, MUD_H * z);      // build 257
+        mc.globalCompositeOperation = 'source-over'; }
       ctx.drawImage(mudC, 0, 0, VW, VH);
       for (let sx = Math.floor(wx0 / bw) * bw; sx < VW; sx += bw) {
         const x = (sx + bw / 2 - VW / 2) / z + cx;
@@ -1009,6 +1031,42 @@ const SL = (() => {
     }
     // over the plain the near ground is land, not water: it ends in a soft edge where the bog begins
     if (wx0 > 0) { const g = ctx.createLinearGradient(wx0 - 10, 0, wx0 + 140 * z, 0); g.addColorStop(0, css(land)); g.addColorStop(1, css(land, 0)); ctx.fillStyle = g; ctx.fillRect(0, wl - 1, Math.min(VW, wx0 + 140 * z), VH - wl + 1); }
+    // WET SHADOWS AND SHORE MIST (build 257, owner: "all grey underneath them - maybe we should put in some shadows ... the
+    // dark shore on two sides is too thin and high contrast - maybe make it reflect or shadow down and maybe some mist to
+    // blend in"). Under everyone standing in the mud, and under the home bank (which stands on mud, so has no mirror), wet
+    // mud gives back a dull dark smear of what stands on it: the figure's (or the bank's) own outline turned down, squashed
+    // and blurred (drawn small and stretched), dark at the surface and gone a short way down. Not a mirror (no detail, no
+    // light), not a disc (it has the body's own lumpy shape). Then a thin low mist lies along both shores at the water line,
+    // so the black banks melt into the slough instead of sitting on it as hard slivers.
+    { const K = 6, W = Math.ceil(VW / K) + 2, H = Math.ceil((VH - wl) / K) + 2;
+      if (!shC || shC.width !== W || shC.height !== H) shC = mk(W, H);
+      const s = shC.getContext('2d'); s.setTransform(1, 0, 0, 1, 0, 0); s.globalCompositeOperation = 'source-over'; s.globalAlpha = 1; s.clearRect(0, 0, W, H);
+      s.setTransform(z / K, 0, 0, z / K, (VW / 2 - cx * z) / K, 0);
+      const hx1 = Math.min(x1, HOME0 + 60);
+      if (hx1 > x0) { s.save(); s.scale(1, -1.5); s.fillStyle = '#000'; s.beginPath(); s.moveTo(x0, 0); for (let x = x0; x <= hx1; x += 4 / z) s.lineTo(x, bankY(x) < -2 ? bankY(x) - hum(x) : 0); s.lineTo(hx1, 0); s.fill(); s.restore(); }
+      for (const r of SH0) { if (r.x < WATER_L - 40) continue; const r0 = r.meta.ground - r.y / CHR_K;
+        s.save(); s.globalAlpha = r.a; s.translate(r.x, 0); s.scale(r.face * CHR_K, -CHR_K * .42); s.drawImage(r.im, -r.meta.ax, -r0); s.restore(); }
+      s.setTransform(1, 0, 0, 1, 0, 0); s.globalAlpha = 1;
+      s.globalCompositeOperation = 'source-in'; s.fillStyle = css(tone(.1)); s.fillRect(0, 0, W, H);
+      s.globalCompositeOperation = 'destination-in'; { const g = s.createLinearGradient(0, 0, 0, 58 * z / K); g.addColorStop(0, 'rgba(0,0,0,1)'); g.addColorStop(.35, 'rgba(0,0,0,.55)'); g.addColorStop(1, 'rgba(0,0,0,0)'); s.fillStyle = g; s.fillRect(0, 0, W, H); }
+      s.globalCompositeOperation = 'source-over';
+      ctx.imageSmoothingEnabled = true; ctx.globalAlpha = .62; ctx.drawImage(shC, 0, 0, W, H, 0, wl, W * K, H * K); ctx.globalAlpha = 1;
+      // the mist along the shores: one long flat layer lying on the water line, thickest over the bank's foot, thinning
+      // upward over the land and quickly downward over the mud; it fades in and out along the shore (no round puffs: they
+      // read as pale discs)
+      const MH = Math.ceil(44 * z), M = ctx.createLinearGradient(0, wl - 30 * z, 0, wl + 14 * z), ma = .34 + .22 * look.mist, mc0 = tone(.9);
+      M.addColorStop(0, css(mc0, 0)); M.addColorStop(.45, css(mc0, ma * .55)); M.addColorStop(.7, css(mc0, ma)); M.addColorStop(.82, css(mc0, ma * .5)); M.addColorStop(1, css(mc0, 0));
+      if (!mistC || mistC.width !== Math.ceil(VW) || mistC.height !== MH) mistC = mk(Math.ceil(VW), MH);
+      const m = mistC.getContext('2d'); m.setTransform(1, 0, 0, 1, 0, -(wl - 30 * z)); m.globalCompositeOperation = 'source-over'; m.clearRect(0, wl - 30 * z, VW, MH);
+      m.fillStyle = M; m.fillRect(0, wl - 30 * z, VW, MH);
+      m.setTransform(1, 0, 0, 1, 0, 0); m.globalCompositeOperation = 'destination-in';
+      { const hx = X(HOME0 + 50), bx = X(BANK0 - 4), g = m.createLinearGradient(0, 0, VW, 0), st = (sx, a) => { const u = sx / VW; if (u > 0 && u < 1) g.addColorStop(u, 'rgba(0,0,0,' + a + ')'); };
+        const f = sx => Math.max(1 - smooth(hx - 90 * z, hx + 30 * z, sx), smooth(bx - 30 * z, bx + 120 * z, sx));
+        g.addColorStop(0, 'rgba(0,0,0,' + f(0) + ')'); for (let k = 1; k < 24; k++) st(k * VW / 24, f(k * VW / 24)); g.addColorStop(1, 'rgba(0,0,0,' + f(VW) + ')');
+        m.fillStyle = g; m.fillRect(0, 0, VW, MH); }
+      m.globalCompositeOperation = 'source-over';
+      ctx.drawImage(mistC, 0, wl - 30 * z, VW, MH);
+    }
     // --- THE MIRE, IN FRONT OF THE MIRROR (build 143): the churned mud, the far half of every ring, the figures in the mire,
     // then the mud surface that answers them (see "THE MUD ANSWERS THE FIGURES"), the strings, the drops, and the near
     // half of every ring ---

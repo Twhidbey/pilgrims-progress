@@ -6,6 +6,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 **The keepsakes have their own chat now** ("Pilgrim's Progress: the keepsakes (Bible, roll, title book)", https://claude.ai/code/session_017HrTSDUqJDSdrXPbhc33zT). Open question there: the wax seal on Evangelist's roll is ours, not the book's (`{14}` has no seal; the sealed roll is given at the Cross, `{94}`): take it off and keep `waxSeal()` for Level 5, or keep it as a departure.
 
+**Build 259 (Level 2 edits chat): the Slough's mud has its own tones (dark wet rims round the pools, wetter patches, dull sheen bands, a few foreground pools), a soft wet shadow under each man and under the home bank, and a flat mist along both shores. See `CLAUDE.md`, "Build 259". New: `tools/stills2.js`, and the owner's rule of before-and-after stills for every change. Nothing spent.**
+
 **Build 255 (small-tweaks chat): the gate's wall and door softer still, with less contrast. See `CLAUDE.md`, "Build 255". Nothing spent.**
 
 **Build 257 (room 3 chat): room 3, Passion and Patience, playable by `?room=3` (`rooms.js`, object `RM`): the bag, the gold, the bubbles, Passion left in rags. See `CLAUDE.md`, "ROOM 3 IN THE GAME". Nothing spent.**
