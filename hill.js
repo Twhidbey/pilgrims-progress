@@ -238,11 +238,17 @@ const HL = (() => {
     // underside (a band along the lower edge only).
     { const W = 1200, H = 220, mkDeck = (seed, top, base, pale0, pale1) => { const n = noise2(seed), Rd = rngS(seed), m = new Float32Array(W * H), lit = new Float32Array(W * H);
         const per = (x, f, o) => n(o + Math.cos(2 * Math.PI * x / W) * f, o + Math.sin(2 * Math.PI * x / W) * f);
-        const tongues = []; for (let i = 0; i < 4; i++) tongues.push([Rd() * W, 10 + Rd() * 16, 30 + Rd() * 40]);
-        const edge = new Float32Array(W); for (let x = 0; x < W; x++) { let e = H - 75 - 30 * (per(x, 1.3, 11) - .5) * 2 - 6 * (per(x, 5, 41) - .5) * 2;
-          for (const [tx, d, w] of tongues) { let dx = Math.abs(x - tx); dx = Math.min(dx, W - dx); e += d * Math.exp(-dx * dx / (2 * w * w)); } edge[x] = e; }
-        for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const t = x / W, r = (1 - t) * n(x * .018, y * .03) + t * n((x - W) * .018, y * .03);
-          const d = edge[x] - y + 34 * (r - .5); m[y * W + x] = smooth(-16, 36, d); lit[y * W + x] = smooth(-16, 6, d) * (1 - smooth(8, 70, d)); }
+        // (build 221, owner: "slightly too wavy - what about wispier and layered but keeping color and the way the bottom
+        // lights up"): the underside is nearly level, only a slow gentle swell; its edge is torn into long horizontal
+        // streaks rather than lumps; and under it hang three thin layers of wisp, each fainter and lower, each broken into
+        // long strands, lit from beneath like the deck itself
+        const edge = new Float32Array(W); for (let x = 0; x < W; x++) edge[x] = H - 92 - 17 * (per(x, 1.3, 11) - .5) * 2 - 3 * (per(x, 4, 41) - .5) * 2;
+        const tn = (x, y, fx, fy, o) => { const t = x / W; return (1 - t) * n(o + x * fx, o + y * fy) + t * n(o + (x - W) * fx, o + y * fy); };
+        const WISP = [[14, 9, .55, 5], [32, 8, .36, 9], [54, 7, .22, 13]];
+        for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const r = tn(x, y, .008, .06, 0);
+          const d = edge[x] - y + 40 * (r - .5); let w = 0;
+          for (const [off, th, al, o] of WISP) { const cy = edge[x] + off + 22 * (tn(x, 0, .003, 0, o) - .5) + 6 * (tn(x, 0, .02, 0, o + 1) - .5), u = (y - cy) / th; if (Math.abs(u) < 3) w = Math.max(w, Math.exp(-u * u) * al * smooth(.42, .7, tn(x, y, .008, .045, o + 3))); }
+          const body = smooth(-14, 30, d); m[y * W + x] = Math.max(body, w); lit[y * W + x] = Math.max(smooth(-14, 6, d) * (1 - smooth(8, 64, d)), w * 1.3); }
         const tile = (fn) => { const c = mk(W, H), q = c.getContext('2d'), im = q.createImageData(W, H); for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const i = y * W + x, [r, g, b, a] = fn(x, y, i); im.data[i * 4] = r; im.data[i * 4 + 1] = g; im.data[i * 4 + 2] = b; im.data[i * 4 + 3] = a; } q.putImageData(im, 0, 0); return c; };
         const mixc = (a, b, t) => a.map((v, j) => v + (b[j] - v) * t);
         return { W, H, top, pale1,
@@ -1018,7 +1024,7 @@ const HL = (() => {
             const across = (q, fn) => { const g = q.createLinearGradient(0, 0, VW, 0); for (let i = 0; i <= 32; i++) g.addColorStop(i / 32, 'rgba(0,0,0,' + clamp(fn(VW * i / 32)).toFixed(3) + ')'); q.globalCompositeOperation = 'destination-in'; q.fillStyle = g; q.fillRect(0, 0, VW, VH); q.globalCompositeOperation = 'source-over'; };
             const lid = x => spread + (1 - spread) * (1 - smooth(520 * k, 1250 * k, Math.abs(x - sx0)));
             const litAt = x => (burn * .45 * Math.max(0, 1 - Math.abs(x - sx0) / (330 * k)) + .1 * F + fl * .75 * Math.max(0, 1 - Math.abs(x - bx) / (420 * k))) * (1 - .5 * hzS);
-            DECK.forEach((T, j) => { const tw = T.W * kD * .9, th = T.H * kD * .9, base = Math.max(sy0 - B, ceil) - (1 - j) * 26 * kD, top = base - th + 75 * kD * .9, drift = (G.t * (j ? .045 : .03) * kD + j * 400 * kD) % tw;
+            DECK.forEach((T, j) => { const tw = T.W * kD * .9, th = T.H * kD * .9, base = Math.max(sy0 - B, ceil) - (1 - j) * 26 * kD, top = base - th + 92 * kD * .9, drift = (G.t * (j ? .045 : .03) * kD + j * 400 * kD) % tw;
               if (base < -10) return;
               q1.clearRect(0, 0, VW, VH); q2.clearRect(0, 0, VW, VH);
               for (let x = -drift; x < VW; x += tw) { if (hzS < 1) { q1.globalAlpha = 1 - hzS; q1.drawImage(T.d, x, top, tw + 1, th); } if (hzS > 0) { q1.globalAlpha = hzS; q1.drawImage(T.h, x, top, tw + 1, th); } q2.drawImage(T.l, x, top, tw + 1, th); }
@@ -1205,7 +1211,15 @@ const HL = (() => {
       for (let i = 0; i < knocks; i++) { const q = clamp(knockT / 40); if (i === knocks - 1 && q < 1) { c.strokeStyle = css([255, 236, 190], .7 * (1 - q)); c.lineWidth = 2; c.beginPath(); c.arc(gx, Y(-70), (10 + 46 * q) * z, 0, 7); c.stroke(); } }
     }
     // the road under everyone's feet
-    const road = () => { const g = c.createLinearGradient(0, Y(0), 0, VH); const rc = mix(rocky ? [40, 35, 36] : [46, 40, 36], [22, 22, 30], Math.max(dark, .9 * gateish)); g.addColorStop(0, css(mix(rc, [120, 116, 100], .25))); g.addColorStop(.08, css(rc)); g.addColorStop(1, css(mix(rc, [0, 0, 0], .35))); c.fillStyle = g; c.fillRect(0, Y(0), VW, VH); };
+    // (build 221, owner: "The blue path layer can have some contour (or ruggedness) to it to make it match surroundings"):
+    // among the rocks the path is the crags' own warm brown-black, not the night's blue; its far edge is a low broken line
+    // of stones (a few units high, behind the feet, so the walking line stays level), and the rock's grain lies over it
+    const road = () => { const g = c.createLinearGradient(0, Y(0), 0, VH); const rc = rocky ? mix([36, 30, 28], [26, 21, 19], dark) : mix([46, 40, 36], [22, 22, 30], Math.max(dark, .9 * gateish));
+      if (rocky) { const xl = cx - VW / 2 / z - 20, xr = cx + VW / 2 / z + 20; c.beginPath(); c.moveTo(X(xl), VH);
+        for (let x = Math.floor(xl / 5) * 5; x <= xr; x += 5) { const h = Math.max(0, 70 * (nz(x * .006, 3.1) - .44) + 22 * (nz(x * .03, 7.7) - .42) + 5 * (nz(x * .14, 1.3) - .5)); c.lineTo(X(x), Y(-h)); }
+        c.lineTo(X(xr), VH); c.closePath(); c.fillStyle = css(rc); c.fill(); } g.addColorStop(0, css(mix(rc, [120, 116, 100], rocky ? 0 : .25))); g.addColorStop(.08, css(rc)); g.addColorStop(1, css(mix(rc, [0, 0, 0], .35))); c.fillStyle = g; c.fillRect(0, Y(0), VW, VH);
+      if (rocky && ROCKPAT) { c.save(); c.clip(); const ts = 1.6 * z, tw = ROCKTEX.width * ts; ROCKPAT.setTransform(new DOMMatrix([ts, 0, 0, ts, ((VW / 2 - cx * z) % tw + tw) % tw, Y(-16)]));
+        c.globalCompositeOperation = 'overlay'; c.globalAlpha = .55; c.fillStyle = ROCKPAT; c.fillRect(0, Y(-60), VW, VH); c.restore(); } };
     road();
     const humpC = css(mix(mix([46, 40, 36], [120, 116, 100], .25), [22, 22, 30], dark));
     // the swell of the brow, on the road (only on the plain, where he goes out of sight over it)
@@ -1265,7 +1279,7 @@ const HL = (() => {
     c.save(); c.translate(VW / 2 - cx * z, wl); c.scale(z, z);
     RIM = { k: (1 - dark) * (1 - gateish) * .9, x: (lx - VW / 2) / z + cx };
     FIRE = rocky && ph !== 'title' ? { k: clamp(dark) * (1 - .4 * calm), x: HX0 + 600, f: Math.min(1, flash) } : null;
-    const tint = mix([50, 46, 44], [70, 62, 70], dark), fl = Math.min(1, flash) * dark, lit = gateish * smooth(GATE_X - 330, GATE_X - 60, C3.x), tintF = mix(mix(mix(tint, [66, 62, 72], gateish), [255, 170, 110], fl * .35), [255, 188, 120], lit * (.3 + .4 * door));
+    const tint = mix([74, 68, 60], [70, 62, 70], dark), fl = Math.min(1, flash) * dark, lit = gateish * smooth(GATE_X - 330, GATE_X - 60, C3.x), tintF = mix(mix(mix(tint, [66, 62, 72], gateish), [255, 170, 110], fl * .35), [255, 188, 120], lit * (.3 + .4 * door));
     const tintM = mix(tintF, [255, 204, 150], mercy * .42);
     if (mercy > .01) { const mx = (C3.x + EV_X) / 2; c.save(); c.globalCompositeOperation = 'lighter';
       { c.save(); c.translate(mx, 5); c.scale(1, .1); const g = c.createRadialGradient(0, 0, 0, 0, 0, 210); g.addColorStop(0, css([255, 196, 126], .5 * mercy)); g.addColorStop(1, css([255, 180, 110], 0)); c.fillStyle = g; c.fillRect(-210, -210, 420, 420); c.restore(); }
@@ -1279,7 +1293,7 @@ const HL = (() => {
       TALKM = null;
     } else if (evan && EVS.ready) { TALKM = talkMove(E); foot(c, EV_X, evan.a); figure(c, 'evan', EVS[Math.floor(G.t * .2) % EVS_META.frames], EVS_META, EV_X, 1, tintM, smooth(.25, 1, evan.a)); TALKM = null; }
     if (wise && (WIS.ready || OBS.ready)) {
-      const wt = mix([54, 48, 44], [92, 82, 84], dark); TALKM = talkMove(WW); foot(c, wise.x, wise.alpha);
+      const wt = mix([80, 72, 62], [92, 82, 84], dark); TALKM = talkMove(WW); foot(c, wise.x, wise.alpha);
       const { W, M, S, SM } = wFig(), wim = W[Math.floor(wise.anim) % W.length];
       if (S && wise.st > 0) { figure(c, 'wst', S, SM, wise.x, -1, wt, wise.alpha * smooth(0, .6, wise.st), breath(2)); figure(c, 'wis', wim, M, wise.x, -1, wt, wise.alpha * (1 - smooth(.4, 1, wise.st))); }
       else figure(c, 'wis', wim, M, wise.x, -1, wt, wise.alpha);
