@@ -52,6 +52,8 @@ Older handovers (builds 41 to 137, with the picture and video prompts used for H
 - The concept art from the picture chat is not in the repo (it was only shown in that chat); ask that chat to put any keepers in a `concept/` folder.
 - Earlier offers not answered: the sketch of Levels 3 to 6 as a first whole game; a child playing it; carrying the tune through the levels; Evangelist handing over the roll as an animation; repainting the three cottages with true door and window proportions (about 45 cents).
 
+**Build 218: Level 3's sky: one continuous dark cloud ceiling instead of billows, smoke layers and storm bank; pale lid far off, dark ceiling near, firelit underside, strikes out of it. See `CLAUDE.md`, "Build 217". Nothing spent.**
+
 **Build 213: Level 3's lightning: no more strokes through cloud; every strike comes out of a dark storm bank over the mountain and its strands end on the rock. See `CLAUDE.md`, "Build 213". Nothing spent.**
 
 **Build 216: the gate's second pass: a dressed stone surround with a reveal, the hinge on the left so Good-will stands on the right with the door between the two men, Good-will smaller and less dark, a rugged top to the wall, softer light. Nothing spent.**
