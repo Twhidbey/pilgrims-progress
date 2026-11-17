@@ -131,7 +131,7 @@ const HL = (() => {
   // stones and dust falling from the overhang when he stands beneath it (in the hill's own units, from its foot's
   // left end; y up is negative): each { x, y, vx, vy, r, t, dust }
   const ROCKS = [], DUST = [];
-  // BOULDERS FALL IN THE BACKGROUND (owner, build 199: "more lightning please and boulders falling in background"): from high
+  // BOULDERS FALL IN THE BACKGROUND (owner, build 202: "more lightning please and boulders falling in background"): from high
   // on the mountain's body, right of the path (so they never land on him), a rough stone tumbles down its face with a thin
   // trail of dust and lands in a cloud of it; more at each flash. The dust is soft drifting clouds (`DUST`, a baked blob,
   // `DUSTC`), not flat ovals (owner, same build: "the dust puffs when christian is near mt look too geometric and not
@@ -152,7 +152,7 @@ const HL = (() => {
   // the scene shift (`cut`: the picture goes dark, 0 .. 1) and the great pull back at the foot (`Zw`: 0 close .. 1 the
   // whole mountain; `zs` its stage: 'out', 'hold', 'in', 'done')
   let cut = 0, cutTo = 0, Zw = 0, zs = '', zT = 0;
-  // ONE MORE LOOK (owner, build 199: "is there a way to view mountain in all its glory for longer or again"): the wide shot at
+  // ONE MORE LOOK (owner, build 202: "is there a way to view mountain in all its glory for longer or again"): the wide shot at
   // the foot holds about four seconds longer, and when he is back at the start of the path the camera pulls back once more
   // to the whole mountain behind him (`farewell`, ticks since it began) before the mist takes him to the gate
   let farewell = 0;
@@ -284,7 +284,7 @@ const HL = (() => {
       // the trunk's bright edge toward the sun, one for each side (the sun passes from one side of it to the other as he walks)
       const rim = sgn => { const r = mk(W, H), q = r.getContext('2d'); q.drawImage(c, 0, 0); q.globalCompositeOperation = 'destination-out'; q.drawImage(c, -3 * sgn, 1); q.globalCompositeOperation = 'source-in'; q.fillStyle = 'rgb(255,224,168)'; q.fillRect(0, 0, W, H);
         q.globalCompositeOperation = 'destination-in'; const g = q.createLinearGradient(0, H * .52, 0, H * .66); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,1)'); q.fillStyle = g; q.fillRect(0, 0, W, H);
-        q.globalCompositeOperation = 'destination-out'; const g2 = q.createLinearGradient(0, OAK_META.ground - 64, 0, OAK_META.ground - 34); g2.addColorStop(0, 'rgba(0,0,0,0)'); g2.addColorStop(1, 'rgba(0,0,0,1)'); q.fillStyle = g2; q.fillRect(0, OAK_META.ground - 64, W, H); // (build 199: softened a little, drawn at half size and back, so the hair-thin line does not shimmer as the camera glides)
+        q.globalCompositeOperation = 'destination-out'; const g2 = q.createLinearGradient(0, OAK_META.ground - 64, 0, OAK_META.ground - 34); g2.addColorStop(0, 'rgba(0,0,0,0)'); g2.addColorStop(1, 'rgba(0,0,0,1)'); q.fillStyle = g2; q.fillRect(0, OAK_META.ground - 64, W, H); // (build 202: softened a little, drawn at half size and back, so the hair-thin line does not shimmer as the camera glides)
         const h2 = mk(Math.ceil(W / 2), Math.ceil(H / 2)); h2.getContext('2d').drawImage(r, 0, 0, h2.width, h2.height); const r2 = mk(W, H), q2 = r2.getContext('2d'); q2.drawImage(h2, 0, 0, W, H); q2.globalAlpha = .6; q2.drawImage(r, 0, 0); return r2; };
       OAKP = { c, d, tw, rimR: rim(1), rimL: rim(-1) }; }).catch(() => {});
     return oakLoading;
@@ -375,14 +375,14 @@ const HL = (() => {
   // people are drawn; each figure then gets a thin warm edge on the side toward the light (the figure's own shape,
   // less the same shape moved a little toward the light: what is left is that edge).
   let RIM = null, FIRE = null;
-  // FK: a size correction for the picture being drawn (build 199: the kneel's video zoomed in about 1.2 times as he went
+  // FK: a size correction for the picture being drawn (build 202: the kneel's video zoomed in about 1.2 times as he went
   // down, so the kneeling figure looked too big; `kneelK` undoes it frame by frame, anchored at his feet)
   let FK = 1;
   const kneelK = f => 1 / (1 + .12 * smooth(0, 30, f));
   const tintC = {};
   function figure(c, slot, im, meta, x, face, tint, alpha = 1, sy = 1) {
     if (!im || alpha <= .004) return;
-    im = solidOf(im);      // build 199: no clear spots inside the figure (solidOf, in index.html)
+    im = solidOf(im);      // build 202: no clear spots inside the figure (solidOf, in index.html)
     const fc = tintC[slot] || (tintC[slot] = mk(8, 8)); if (fc.width !== im.width || fc.height !== im.height) { fc.width = im.width; fc.height = im.height; }
     const f = fc.getContext('2d'); f.globalCompositeOperation = 'source-over'; f.clearRect(0, 0, fc.width, fc.height);
     f.drawImage(im, 0, 0); f.globalCompositeOperation = 'multiply'; f.fillStyle = css(tint); f.fillRect(0, 0, im.width, im.height);
@@ -405,7 +405,7 @@ const HL = (() => {
       const bc = tintC._bloom || (tintC._bloom = mk(8, 8)); bc.width = Math.ceil(W / 5); bc.height = Math.ceil(H / 5); const b = bc.getContext('2d'); b.clearRect(0, 0, bc.width, bc.height); b.drawImage(rc, 0, 0, bc.width, bc.height);
       f.globalCompositeOperation = 'source-over'; f.globalAlpha = .85 * RIM.k; f.drawImage(rc, 0, 0); f.globalAlpha = 1;
       RIM.bloom = bc; }
-    // FIRELIGHT ON THE FIGURE (owner, build 199: "in level 3 when we are close to mountain, the sprite is a bit
+    // FIRELIGHT ON THE FIGURE (owner, build 202: "in level 3 when we are close to mountain, the sprite is a bit
     // monochromatic... is there a way to introduce some color variation (and keep the same palette"). Among the rocks the
     // one light is the fire ahead and above (`FIRE.x`): the side toward it takes a warm ember glow, strongest high on the
     // body, the side away a cool violet shade from the dusk sky, and the feet a little of the warm dust; the colours are
@@ -554,7 +554,7 @@ const HL = (() => {
       // down it, feet first, then his body, then his head (drawn lower by C3.dy, and the near ground drawn over him)
       let v = want ? MAXV * lerp(1, .8, smooth(BROW0, BROW1, C3.x)) : 0;
       v = walk(1, v);
-      C3.dy = C3.x < CREST ? -crest(C3.x) : -crest(CREST) + 227 * Math.pow(smooth(CREST, BROW1, C3.x), 1.3);      // (build 199: one smooth descent from the top; see the near ground below)
+      C3.dy = C3.x < CREST ? -crest(C3.x) : -crest(CREST) + 227 * Math.pow(smooth(CREST, BROW1, C3.x), 1.3);      // (build 202: one smooth descent from the top; see the near ground below)
       if (v && C3.x > noteX) { noteX = C3.x + 58 * 1.5; note(WRONG[noteI++ % WRONG.length], .04, 3.2); }
       if (!want && hintT === 500) hint('walk', 'Hold to walk.'); if (want) clearHint('walk');
       if (C3.x >= BROW1) { ph = 'down'; G.state = 'auto'; clearHint('walk'); cutTo = 1; }
@@ -639,7 +639,7 @@ const HL = (() => {
     // the sky darkens as he goes out of the way, and clears as he comes back; fire out of the hill while he stands under it
     const dTo = farewell && ph !== 'gate' && ph !== 'knock' && ph !== 'open' ? .9 : ph === 'aside' || ph === 'down' ? .35 * smooth(MEET + 150, BROW1, C3.x) : ph === 'path' ? lerp(.55, 1, smooth(PATH0, FOOT - 200, C3.x)) : ph === 'back' || ph === 'mist' ? lerp(.45, 1, smooth(PATH0, FOOT, C3.x)) : ph === 'still' || ph === 'come' || ph === 'evan' ? 1 : 0;
     dark += (dTo - dark) * .03;
-    // (build 199, owner: "more lightning please"): flashes come every one to two and a half seconds while the whole mountain is
+    // (build 202, owner: "more lightning please"): flashes come every one to two and a half seconds while the whole mountain is
     // seen, every three to six at the foot
     if (ph === 'still' || ph === 'come' || ph === 'evan') { if (--flashT < 0 && (zs === 'done' || zs === 'hold') && calmTo < .5) { fire(ph === 'evan' ? .45 : .7 + Math.random() * .3); flashT = zs === 'hold' && ph === 'still' ? 60 + Math.random() * 90 : (ph === 'evan' ? 600 : 200) + Math.random() * 300; } }
     if (farewell && (ph === 'back' || ph === 'mist') && --flashT < 0) { fire(.55 + Math.random() * .3); flashT = 70 + Math.random() * 110; }
@@ -748,7 +748,7 @@ const HL = (() => {
     const crags = (p, seed, seg, base, hLo, hHi, col, edge, pin, tex, scree) => {
       const Ls = FOOT + p * (PATH0 - 700 - FOOT), L0 = FOOT + p * (cx - FOOT), pts = [];
       for (let sx = -12; sx <= VW + 12; sx += 4) { const L = L0 + (sx - VW / 2) / z, env = lerp(hLo, hHi, Math.pow(smooth(Ls, FOOT, L), 1.2));
-        // (build 199, owner: "the rock around him only need to be around that little area not extend to the whole base of the
+        // (build 202, owner: "the rock around him only need to be around that little area not extend to the whole base of the
         // mountain. looks strange as a line"): the rocks stand only along the stretch of his path, by where they are in the
         // world (`wx`), dying away a little before the path's start and soon past the mountain's foot
         const wx = cx + (sx - VW / 2) / z, tl = smooth(PATH0 - 1700, PATH0 - 500, wx) * (1 - smooth(FOOT + 350, FOOT + 1300, wx));
@@ -770,7 +770,7 @@ const HL = (() => {
         g.addColorStop(0, css([240, 150, 96], a)); g.addColorStop(.4, css([170, 80, 64], a * .45)); g.addColorStop(1, css([120, 50, 50], 0)); c.fillStyle = g; c.fillRect(0, 0, VW, VH); c.restore(); }
       crags(.35, 3, 300, -140, 50, 300, mix(mix(low, top, .35), [92, 72, 66], .45), .14 * burnR, false, .18);
     } else { const col = mix(mix(mix(low, top, .45), [150, 138, 160], .5 * (1 - dark) * (1 - gateish)), [60, 52, 60], dark * .6); c.fillStyle = css(col); c.beginPath(); c.moveTo(0, hor + 2);
-      // (build 199, owner: "when you first see mountain it flickers"): the ridges' outline is sampled at fixed places on the
+      // (build 202, owner: "when you first see mountain it flickers"): the ridges' outline is sampled at fixed places on the
       // land (`ridge`), not at fixed places on the screen, so it no longer wobbles as the camera pans
       const ridge = (par, f) => { const du = 14, u0 = Math.floor((cx * par - VW / 2 / z) / du) * du; for (let u = u0; u <= cx * par + VW / 2 / z + du; u += du) c.lineTo(VW / 2 + (u - cx * par) * z, hor - f(u) * z * .8); };
       ridge(.1, u => 26 + 96 * nz(u * .0035, 5) + 22 * nz2(u * .02, 1));
@@ -795,7 +795,7 @@ const HL = (() => {
       // the village of Morality, small and far on the plain, nearer than the hill ("the first house you come to is his")
       if (!rocky) { const tw = 310 * z, th = 54 * z, tx = VW / 2 + (VIL_W - cx) * PH * z - tw / 2, ty = hy + 2 * z, va = Math.max(reveal, .9 * vil);
         if (va > .01 && tx < VW && tx + tw > 0) { const tc = tintC.town || (tintC.town = mk(200, 35)), t = tc.getContext('2d'); t.globalCompositeOperation = 'source-over'; t.clearRect(0, 0, 200, 35); t.drawImage(TOWN, 0, 0, 200, 35); t.globalCompositeOperation = 'source-in'; t.fillStyle = css(mix(mix(mix(far, top, .4), [96, 84, 90], .6), [46, 42, 50], dark * .7)); t.fillRect(0, 0, 200, 35); c.globalAlpha = va; c.drawImage(tc, tx, ty - th, tw, th); c.globalAlpha = 1;
-          // (build 199: the village is baked at about the size it is shown, and its windows are soft lights, so neither shimmers as the camera pans)
+          // (build 202: the village is baked at about the size it is shown, and its windows are soft lights, so neither shimmers as the camera pans)
           for (const [wx, wy] of TOWN.lit) { const wa = Math.min(1, (.5 + .4 * dark) * va + .35 * vil * (1 - dark)), px = tx + wx * tw / 400 + 1.8 * z, py = ty - th + wy * th / 70 + 1.8 * z, rr = Math.max(1.6, 3.4 * z), g = c.createRadialGradient(px, py, 0, px, py, rr); g.addColorStop(0, css([255, 220, 150], wa)); g.addColorStop(.5, css([255, 210, 140], wa * .6)); g.addColorStop(1, css([255, 200, 130], 0)); c.fillStyle = g; c.fillRect(px - rr, py - rr, 2 * rr, 2 * rr); } } }
       if ((rocky || reveal > .002) && hx > -1300 * k && hx < VW + 400 * k) {
         // AWE FIRST (owner, build 135: "the burning hill can be frightening - but most importantly stunning - it should
@@ -804,7 +804,7 @@ const HL = (() => {
         // summit inside a towering cloud; the fire lights the cloud from within, runs down the overhanging face as a
         // thin burning edge, and lies as a red sheen on the plain. A flash adds lightning in the cloud and fire in
         // the cracks. Everything grows with `dark` (0 far off on a fair day .. 1 beneath it).
-        // (build 199, owner: "can we put more smoke from mountain when we first see and maybe some clouds in the sky above"): far off
+        // (build 202, owner: "can we put more smoke from mountain when we first see and maybe some clouds in the sky above"): far off
         // on the fair plain the mountain already burns a little (`farK`): a faint glow, a fuller plume and cloud gathering over it
         const farK = rocky ? 0 : .4 * reveal, sx0 = hx + 60 * k, sy0 = hy - TOP * k, burn = Math.max(dark, farK) * (.72 + .18 * Math.sin(G.t / 53) + .1 * Math.sin(G.t / 17)) * (1 - .6 * calm), F = Math.min(1, flash);
         let flames = null;
@@ -907,7 +907,7 @@ const HL = (() => {
         // the field's haze at its foot, so it stands in the plain and not on it
         if (!rocky) { const fg = c.createLinearGradient(0, hy - 34 * k, 0, hy + 14 * k), ft = clamp((hy - hor) / (Y(0) - hor)), fc = ft < .35 ? mix(far, mix(far, near, .5), ft / .35) : mix(mix(far, near, .5), near, (ft - .35) / .65);
         fg.addColorStop(0, css(fc, 0)); fg.addColorStop(.6, css(fc, .85 * reveal)); fg.addColorStop(1, css(fc, .85 * reveal)); c.fillStyle = fg; c.fillRect(0, hy - 34 * k, VW, 48 * k);
-          // (build 199: the painting's flat bottom edge showed as a hard line under the far mountain): below its foot the plain
+          // (build 202: the painting's flat bottom edge showed as a hard line under the far mountain): below its foot the plain
           // itself is laid again over it, so the mountain's foot is lost in the plain's own haze
           const pg = c.createLinearGradient(0, hor, 0, Y(0)); pg.addColorStop(0, css(far)); pg.addColorStop(.35, css(mix(far, near, .5))); pg.addColorStop(1, css(near)); c.fillStyle = pg; c.fillRect(0, hy + 14 * k - 1, VW, Math.max(0, Y(0) - (hy + 14 * k)) + 2); }
       }
@@ -1005,7 +1005,7 @@ const HL = (() => {
       if (x0 < VW && x0 + w > 0) {
         { c.save(); c.translate(tx + 70 * z, Y(-1)); c.scale(1, .09); const g = c.createRadialGradient(0, 0, 0, 0, 0, 360 * z); g.addColorStop(0, css([14, 26, 20], .46 * (1 - dark))); g.addColorStop(1, css([14, 26, 20], 0)); c.fillStyle = g; c.fillRect(-360 * z, -360 * z, 720 * z, 720 * z); c.restore(); }
         c.drawImage(OAKP.c, x0, y0, w, h);
-        // (build 199, owner: "when the tree is shown, the light outline flickers on both side of tree"): the edge used to jump from
+        // (build 202, owner: "when the tree is shown, the light outline flickers on both side of tree"): the edge used to jump from
         // one side to the other the moment the sun passed the trunk (and back and forth while the camera settled); now the two
         // edges cross-fade as the sun passes behind the trunk, slowly
         { const ra = (1 - dark) * (1 - gateish) * .75, sR = smooth(-w * .1, w * .1, lx - tx); if (ra > .02) { if (sR > .01) { c.globalAlpha = ra * sR; c.drawImage(OAKP.rimR, x0, y0, w, h); } if (sR < .99) { c.globalAlpha = ra * (1 - sR); c.drawImage(OAKP.rimL, x0, y0, w, h); } c.globalAlpha = 1; } }
@@ -1066,7 +1066,7 @@ const HL = (() => {
     c.save(); c.translate(0, C3.dy || 0); drawChr(c, tintM); c.restore(); RIM = null; FIRE = null;
     c.restore();
     // over the brow: the near ground is drawn again over him as he goes down behind it
-    // (build 199, owner: "when he goes down after talking with worldly wise, he flickers a little": the near ground used to be
+    // (build 202, owner: "when he goes down after talking with worldly wise, he flickers a little": the near ground used to be
     // drawn over him only once he was below the road line, so for a moment his feet sank into the slope and then were cut
     // off at once; now it covers him from the moment he passes the top)
     if ((ph === 'aside' || ph === 'down') && C3.x > CREST - 2) { c.save(); c.beginPath(); c.moveTo(X(CREST), VH); for (let x = CREST; x <= CREST + 700; x += 10) c.lineTo(X(x), Y(-crest(x))); c.lineTo(VW, Y(0)); c.lineTo(VW, VH); c.clip(); road(); c.fillStyle = humpC; c.fillRect(0, 0, VW, Y(0) + 1); c.restore(); }

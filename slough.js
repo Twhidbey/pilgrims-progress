@@ -292,7 +292,7 @@ const SL = (() => {
     lastRows.set(im, r); return r; }
   function figure(c, slot, im, meta, x, y, face, tint, cut, alpha = 1) {
     if (!im || alpha <= 0) return;
-    im = solidOf(im);      // build 199: no clear spots inside the figure (solidOf, in index.html)
+    im = solidOf(im);      // build 202: no clear spots inside the figure (solidOf, in index.html)
     const fc = tintC[slot] || (tintC[slot] = mk(8, 8)); if (fc.width !== im.width || fc.height !== im.height) { fc.width = im.width; fc.height = im.height; }
     const f = fc.getContext('2d'); f.globalCompositeOperation = 'source-over'; f.clearRect(0, 0, fc.width, fc.height);
     f.drawImage(im, 0, 0); f.globalCompositeOperation = 'multiply'; f.fillStyle = css(tint); f.fillRect(0, 0, im.width, im.height);
@@ -744,7 +744,7 @@ const SL = (() => {
     // --- the camera draws back in the mire, and the look follows the story: gold on the plain, mist and grey in the bog ---
     let t, p = clamp((C2.x - FALL_X) / (STUCK_X - FALL_X));
     if (ph === 'plain') { const f = smooth(-1350, FALL_X, C2.x); t = { cx: lerp(C2.x + 150, -470, f), z: lerp(1, .8, f), wl: lerp(440, 392, f) }; }
-    // build 199 (owner: the mire "just doesn't look right ... think very carefully about composition"): the struggle was a
+    // build 202 (owner: the mire "just doesn't look right ... think very carefully about composition"): the struggle was a
     // twentieth of the picture's height, jammed in the bottom-left corner on the words, the right two-thirds empty sky. Now
     // the camera pushes in slowly as they fall (the plain's .8 eases to 1.05), the two men about a fifth of the picture's
     // height, their home bank at the left edge, the oak's long limb reaching in over them; the water line is higher so
@@ -752,10 +752,10 @@ const SL = (() => {
     else if (['fall', 'pli', 'back', 'backtalk'].includes(ph)) t = { cx: -740, z: 1.05, wl: 330 };
     // build 114: the oak is bigger, so at the far bank the camera draws back a little more and the water line sits lower,
     // so the whole crown is in the picture (the top of the screen must be above about 640 units over the water: wl / z)
-    // build 199: wading he starts on the left third, close, with open mud ahead; the camera draws back as he nears the far
+    // build 202: wading he starts on the left third, close, with open mud ahead; the camera draws back as he nears the far
     // bank, so the oak comes into the picture as his goal
     else if (ph === 'wade' || ph === 'stuck') { const q = smooth(.45, 1, p); t = { cx: lerp(C2.x + 150, -290, q), z: lerp(1.05, .9, q), wl: lerp(335, 365, q) }; }      // build 183: a little closer at the far bank (was .6); Help's coming draws it back to .6 for the oak
-    // build 199: "he could not get out" is seen close, as he struggles at the far bank; only when Help comes does the camera
+    // build 202: "he could not get out" is seen close, as he struggles at the far bank; only when Help comes does the camera
     // draw back to the whole oak
     else if (ph === 'help' && !help) t = { cx: -290, z: .9, wl: 365 };
     else if (ph === 'help' || ph === 'drawn') t = { cx: -240, z: .6, wl: 392 };
@@ -857,7 +857,7 @@ const SL = (() => {
         if (wk < 1) figure(n, 'pli0', PLI[pli.wf || 0], PLI_META, pli.wx, pli.sy, 1, fig, true, pli.alpha * (1 - smooth(.5, 1, wk)));
         MREC = 'P'; FIG_WET = { D: pli.maxY || 0, a: .78 }; FIG_DIP = 60 * (1 - smooth(.6, .8, (pli.ct || 0) / 119));
         // build 183: each picture of his climbing video melts into the next (12 a second, each held five ticks, was steppy)
-        const pc = pli.ct || 0, im2 = PLIC[Math.min(PLIC.length - 1, Math.floor(pc) + 1)], bk = smooth(.65, 1, pc - Math.floor(pc));      // build 199: only a quick dissolve at the end of each picture (a half-and-half blend of two poses read as a ghost outline)
+        const pc = pli.ct || 0, im2 = PLIC[Math.min(PLIC.length - 1, Math.floor(pc) + 1)], bk = smooth(.65, 1, pc - Math.floor(pc));      // build 202: only a quick dissolve at the end of each picture (a half-and-half blend of two poses read as a ghost outline)
         if (fl < .99) { const a2 = pli.alpha * smooth(0, .5, wk) * (1 - smooth(.5, 1, fl)); figure(n, 'pli2', im, META.climb, pli.x + cw, pli.y, 1, fig, true, a2); if (bk > .03) figure(n, 'pli2b', im2, META.climb, pli.x + cw, pli.y, 1, fig, true, a2 * bk); }
         if (fl > .01) { const a1 = pli.alpha * smooth(0, .5, wk) * smooth(0, .5, fl); figure(n, 'pli', im, META.climb, pli.x, pli.y, -1, fig, true, a1); if (bk > .03) figure(n, 'plib', im2, META.climb, pli.x, pli.y, -1, fig, true, a1 * bk); }
         FIG_DIP = 0; MREC = null; FIG_WET = null;
@@ -992,7 +992,7 @@ const SL = (() => {
         for (const c of churns) { const a = Math.min(1, c.a * 2.2), mx = X(c.x); if (mx < -200 || mx > VW + 200) continue;
           mc.save(); mc.translate(mx, wl); mc.scale(105 * z, 95 * z); const q = mc.createRadialGradient(0, 0, 0, 0, 0, 1); q.addColorStop(0, 'rgba(255,255,255,' + a + ')'); q.addColorStop(.6, 'rgba(255,255,255,' + a * .85 + ')'); q.addColorStop(1, 'rgba(255,255,255,0)');
           mc.fillStyle = q; mc.fillRect(-1, 0, 2, 1); mc.restore(); }
-        mc.globalCompositeOperation = 'source-in'; const q = mc.createLinearGradient(0, hor, 0, VH); q.addColorStop(0, css(tone(.64))); q.addColorStop(.3, css(tone(lerp(.5, .56, look.mist)))); q.addColorStop(1, css(tone(lerp(.3, .38, look.mist))));      // build 199: the mire a clear step darker than the sky (it was nearly the sky's own pale, and read as mist or water): heavy earth under a bright horizon, the pools bright in it
+        mc.globalCompositeOperation = 'source-in'; const q = mc.createLinearGradient(0, hor, 0, VH); q.addColorStop(0, css(tone(.64))); q.addColorStop(.3, css(tone(lerp(.5, .56, look.mist)))); q.addColorStop(1, css(tone(lerp(.3, .38, look.mist))));      // build 202: the mire a clear step darker than the sky (it was nearly the sky's own pale, and read as mist or water): heavy earth under a bright horizon, the pools bright in it
         mc.fillStyle = q; mc.fillRect(0, wl, VW, VH - wl); mc.globalCompositeOperation = 'source-over'; }
       ctx.drawImage(mudC, 0, 0, VW, VH);
       for (let sx = Math.floor(wx0 / bw) * bw; sx < VW; sx += bw) {
