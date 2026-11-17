@@ -491,41 +491,6 @@ const HL = (() => {
     LANT = { cv, w: Wd, h: Ht, hx: cx, hy: .6, fx: cx, fy: 28.6 };
   }
 
-  // ---------- LIGHT AND SHADE ON THE FIGURES (build 222; owner: "Christian looks kinda flat is there a way to introduce
-  // shadows to spice up his sprite?"). Each picture's outline is turned once into a rough shape (its see-through mask
-  // blurred at two sizes: a soft roundness at the edges and a broad roundness of the whole body), from which a slope
-  // (normal) is read at each point. For a light in the scene (`KEYS`: the lantern and the door at the gate, the fire
-  // among the rocks, the sky above on the plain), a grey map of that shape lit from that side is made once per picture
-  // and direction (16 directions, half size) and laid on the figure with 'soft-light': the side toward the light comes
-  // forward, the side away falls into shade, and the watercolour's own detail is kept.
-  let KEYS = null; const NRM = new WeakMap();
-  function blurA(a, W, H, r) { const o = new Float32Array(W * H), t = new Float32Array(W * H);
-    for (let y = 0; y < H; y++) { let s = 0; for (let x = -r; x <= r; x++) s += a[y * W + Math.min(W - 1, Math.max(0, x))]; for (let x = 0; x < W; x++) { t[y * W + x] = s / (2 * r + 1); s += a[y * W + Math.min(W - 1, x + r + 1)] - a[y * W + Math.max(0, x - r)]; } }
-    for (let x = 0; x < W; x++) { let s = 0; for (let y = -r; y <= r; y++) s += t[Math.min(H - 1, Math.max(0, y)) * W + x]; for (let y = 0; y < H; y++) { o[y * W + x] = s / (2 * r + 1); s += t[Math.min(H - 1, y + r + 1) * W + x] - t[Math.max(0, y - r) * W + x]; } }
-    return o; }
-  function shapeOf(im) {
-    let n = NRM.get(im); if (n) return n;
-    const W = Math.ceil(im.width / 2), H = Math.ceil(im.height / 2), t = mk(W, H), q = t.getContext('2d'); q.drawImage(im, 0, 0, W, H); const D = q.getImageData(0, 0, W, H).data;
-    const A = new Float32Array(W * H); for (let i = 0; i < W * H; i++) A[i] = D[i * 4 + 3] / 255;
-    const b1 = blurA(blurA(A, W, H, 2), W, H, 2), b2 = blurA(blurA(A, W, H, 7), W, H, 7);
-    const nx = new Float32Array(W * H), ny = new Float32Array(W * H), nz = new Float32Array(W * H);
-    for (let y = 1; y < H - 1; y++) for (let x = 1; x < W - 1; x++) { const i = y * W + x, gx = (b1[i + 1] - b1[i - 1]) * 2.2 + (b2[i + 1] - b2[i - 1]) * 6, gy = (b1[i + W] - b1[i - W]) * 2.2 + (b2[i + W] - b2[i - W]) * 6, l = Math.hypot(gx, gy, 1);
-      nx[i] = -gx / l; ny[i] = -gy / l; nz[i] = 1 / l; }
-    n = { W, H, A, nx, ny, nz, maps: new Map() }; NRM.set(im, n); return n;
-  }
-  function shadeMap(n, k16) {
-    let m = n.maps.get(k16); if (m) return m;
-    const a = k16 / 16 * 6.2832, lx = Math.cos(a) * .8, ly = Math.sin(a) * .8, lz = .6, { W, H, A, nx, ny, nz } = n;
-    m = mk(W, H); const q = m.getContext('2d'), id = q.createImageData(W, H), d = id.data;
-    for (let i = 0; i < W * H; i++) { const s = nx[i] * lx + ny[i] * ly + nz[i] * lz - lz, v = Math.max(0, Math.min(255, 128 + 230 * s)); d[i * 4] = d[i * 4 + 1] = d[i * 4 + 2] = v; d[i * 4 + 3] = A[i] * 255; }
-    q.putImageData(id, 0, 0); n.maps.set(k16, m); return m;
-  }
-  function shade(f, im, x, face) {
-    if (!KEYS) return; const n = shapeOf(im); let any = false;
-    for (const L of KEYS) { if (L.k < .02) continue; const dx = (L.x - x) * face, dy = -(L.y - 80), k16 = ((Math.round(Math.atan2(dy, dx) / 6.2832 * 16) % 16) + 16) % 16;
-      f.globalCompositeOperation = 'soft-light'; f.globalAlpha = Math.min(1, L.k); f.drawImage(shadeMap(n, k16), 0, 0, im.width, im.height); any = true; }
-    f.globalAlpha = 1; if (any) { f.globalCompositeOperation = 'destination-in'; f.drawImage(im, 0, 0); } f.globalCompositeOperation = 'source-over';
-  }
   function figure(c, slot, im, meta, x, face, tint, alpha = 1, sy = 1) {
     if (!im || alpha <= .004) return;
     im = solidOf(im);      // build 202: no clear spots inside the figure (solidOf, in index.html)
@@ -533,7 +498,6 @@ const HL = (() => {
     const f = fc.getContext('2d'); f.globalCompositeOperation = 'source-over'; f.clearRect(0, 0, fc.width, fc.height);
     f.drawImage(im, 0, 0); f.globalCompositeOperation = 'multiply'; f.fillStyle = css(tint); f.fillRect(0, 0, im.width, im.height);
     f.globalCompositeOperation = 'destination-in'; f.drawImage(im, 0, 0); f.globalCompositeOperation = 'source-over';
-    shade(f, im, x, face);
     // LIGHT ON THE FIGURE (owner, build 177: the old warm edge "looks like a copy ... like i'm wearing 3d glasses or
     // things are out of focus. a more careful outline would be better"; and "the color of characters feels flat ...
     // less lifelike"). (1) The body is lit across: the side toward the low sun a little lighter and warmer, the far
@@ -1317,9 +1281,12 @@ const HL = (() => {
       const dl = gx - r;
       if (GDOOR) {
         c.drawImage(GDOOR, dl, gy0 - r, lw, GH * z + r + 1 * z);
-        const g = c.createLinearGradient(dl, 0, gx + r, 0); g.addColorStop(0, css([10, 7, 5], .3 + .5 * open)); g.addColorStop(1, css([10, 7, 5], .62 + .1 * open));
+        const g = c.createLinearGradient(dl, 0, gx + r, 0); g.addColorStop(0, css([10, 7, 5], .3 - .12 * open)); g.addColorStop(1, css([10, 7, 5], .62 - .3 * open));
         c.globalAlpha = 1 - .18 * flick; c.fillStyle = g; c.fillRect(dl, gy0 - r, lw, GH * z + r + 1); c.globalAlpha = 1;
         { const g3 = c.createRadialGradient(lnx, lny, 0, lnx, lny, 150 * z); g3.addColorStop(0, css([255, 170, 90], .22 * flick * (1 - .6 * open))); g3.addColorStop(1, css([255, 170, 90], 0)); c.globalCompositeOperation = 'lighter'; c.fillStyle = g3; c.fillRect(dl, gy0 - r, lw, GH * z + r); c.globalCompositeOperation = 'source-over'; }
+        // (build 225, owner: "Please lighten door as it opens as light hits it too"): the light from within falls on the
+        // leaf as it swings in, strongest at its free edge, beside the opening
+        if (open > .01) { const g4 = c.createLinearGradient(gapL, 0, dl, 0); g4.addColorStop(0, css([255, 214, 150], .55 * open)); g4.addColorStop(.6, css([235, 170, 100], .3 * open)); g4.addColorStop(1, css([200, 130, 70], .14 * open)); c.globalCompositeOperation = 'lighter'; c.fillStyle = g4; c.fillRect(dl, gy0 - r, lw, GH * z + r); c.globalCompositeOperation = 'source-over'; }
       } else {
         c.fillStyle = css(mix([30, 21, 15], [70, 46, 28], .5 * flick)); c.fillRect(dl, gy0 - r, lw, GH * z + r + 1);
         c.strokeStyle = css([10, 7, 6], .8); c.lineWidth = 1.2 * z; for (const d of [.2, .4, .6, .8]) { c.beginPath(); c.moveTo(dl + d * lw, gy0 - r); c.lineTo(dl + d * lw, Y(0)); c.stroke(); }
@@ -1372,7 +1339,7 @@ const HL = (() => {
       for (const [px, rr, al, col] of [[lnx + 10 * z, 230 * z, .26 * flick, [255, 170, 90]], [gx - 150 * z, 470 * z, .6 * open, [255, 208, 134]], [gx - 20 * z, 120 * z, .5 * open, [255, 236, 190]]]) { if (al < .01) continue; c.save(); c.translate(px, Y(5)); c.scale(1, .09); const g = c.createRadialGradient(0, 0, 0, 0, 0, rr); g.addColorStop(0, css(col, al)); g.addColorStop(1, css(col, 0)); c.fillStyle = g; c.fillRect(-rr, -rr, 2 * rr, 2 * rr); c.restore(); }
       c.restore();
       // his shadow lies flat on the road, away from the open door
-      if (open > .02 && C3.x > GATE_X - 400) { const sx = X(C3.x), len = 190 * z; c.save(); c.translate(sx - len * .55, Y(4)); c.scale(len, 6 * z); const g = c.createRadialGradient(0, 0, 0, 0, 0, 1); g.addColorStop(0, css([6, 5, 8], .55 * open)); g.addColorStop(1, css([6, 5, 8], 0)); c.fillStyle = g; c.fillRect(-1, -1, 2, 2); c.restore(); }
+      if (open > .02 && C3.x > GATE_X - 400) { const sx = X(C3.x), len = 200 * z; c.save(); c.translate(sx - len * .5, Y(4)); c.scale(len, 7 * z); const g = c.createRadialGradient(0, 0, 0, 0, 0, 1); g.addColorStop(0, css([2, 2, 4], .95 * open)); g.addColorStop(.55, css([2, 2, 4], .7 * open)); g.addColorStop(1, css([2, 2, 4], 0)); c.fillStyle = g; c.fillRect(-1, -1, 2, 2); c.restore(); }
     }
     // (build 170, owner: "The tree roots need to reach brown ground or they didn't look right": the oak is drawn AFTER the road now,
     // standing at the road's own edge and sliding with it, so its roots go down into the dark earth of the road)
@@ -1422,11 +1389,11 @@ const HL = (() => {
     c.save(); c.translate(VW / 2 - cx * z, wl); c.scale(z, z);
     RIM = { k: (1 - dark) * (1 - gateish) * .9, x: (lx - VW / 2) / z + cx };
     FIRE = rocky && ph !== 'title' ? { k: clamp(dark) * (1 - .4 * calm), x: HX0 + 600, f: Math.min(1, flash) } : null;
-    // the lights that model the figures (build 222): the lantern and the open door at the gate, the fire among the rocks, the sky
-    { const gk = smooth(.5, 1, gateish), op = smooth(0, 1, door); KEYS = gk > .02 ? [{ x: GATE_X - 72, y: 162, k: .9 * gk }, { x: GATE_X + 14, y: 80, k: .95 * op * gk }]
-      : FIRE ? [{ x: FIRE.x, y: 520, k: .7 * FIRE.k }, { x: C3.x, y: 2000, k: .3 * (1 - FIRE.k) }] : [{ x: C3.x, y: 2000, k: .45 }]; }
     const tint = mix([74, 68, 60], [70, 62, 70], dark), fl = Math.min(1, flash) * dark, lit = gateish * smooth(GATE_X - 330, GATE_X - 60, C3.x), tintF = mix(mix(mix(tint, [66, 62, 72], gateish), [255, 170, 110], fl * .35), [255, 188, 120], lit * (.24 + .26 * door));
-    const tintM = mix(tintF, [255, 204, 150], mercy * .42);
+    const tintM0 = mix(tintF, [255, 204, 150], mercy * .42);
+    // (build 225, owner: "Instead of shadow can you just make Christian super dark"): at the gate he is a near-black figure
+    // against the lit wall and the light from within, like Good-will in the doorway (no light and shade laid on him)
+    const tintM = mix(tintM0, [16, 13, 13], smooth(.5, 1, gateish));
     if (mercy > .01) { const mx = (C3.x + EV_X) / 2; c.save(); c.globalCompositeOperation = 'lighter';
       { c.save(); c.translate(mx, 5); c.scale(1, .1); const g = c.createRadialGradient(0, 0, 0, 0, 0, 210); g.addColorStop(0, css([255, 196, 126], .5 * mercy)); g.addColorStop(1, css([255, 180, 110], 0)); c.fillStyle = g; c.fillRect(-210, -210, 420, 420); c.restore(); }
       { const g = c.createRadialGradient(mx, -84, 0, mx, -84, 170); g.addColorStop(0, css([255, 206, 150], .2 * mercy)); g.addColorStop(1, css([255, 190, 130], 0)); c.fillStyle = g; c.fillRect(mx - 170, -254, 340, 340); }
@@ -1447,7 +1414,7 @@ const HL = (() => {
     }
     // in the wide shot he is a tiny dark figure: a faint warm light round him so the eye can find him
     if (Zw > .05) { const g = c.createRadialGradient(C3.x, -60, 0, C3.x, -60, 34 / z); g.addColorStop(0, css([255, 196, 130], .28 * Zw)); g.addColorStop(1, css([255, 170, 110], 0)); c.save(); c.globalCompositeOperation = 'lighter'; c.fillStyle = g; c.fillRect(C3.x - 34 / z, -60 - 34 / z, 68 / z, 68 / z); c.restore(); }
-    c.save(); c.translate(0, C3.dy || 0); drawChr(c, tintM); c.restore(); RIM = null; FIRE = null; KEYS = null;
+    c.save(); c.translate(0, C3.dy || 0); drawChr(c, tintM); c.restore(); RIM = null; FIRE = null;
     c.restore();
     // the light streaming out of the open gate: a soft wedge in the evening air, widening and fading to the left, a few
     // slow rays breathing in it, and dust turning where the light is (laid on, over him; never down the picture at us)
