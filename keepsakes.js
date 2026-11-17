@@ -82,12 +82,12 @@ body.playing #pause{display:block}
 .ksarrow.r{right:max(2px,env(safe-area-inset-right))}
 /* the roll: rough parchment between its own curled ends, an engrossing hand, a wax seal */
 #ksroll .sheetw{position:relative;--H:min(86vh,calc(88vw * 1.3));height:var(--H);width:calc(var(--H) * .64);display:flex;flex-direction:column;align-items:stretch;filter:drop-shadow(0 14px 22px rgba(0,0,0,.5))}
-#ksroll .curl{height:calc(var(--H) * .058);margin:0 -2.5%;border-radius:calc(var(--H) * .03);position:relative;z-index:2;background-color:#cdb381;background-image:linear-gradient(rgba(70,45,15,.55),rgba(255,245,215,.25) 30%,rgba(255,245,215,.05) 55%,rgba(70,45,15,.6)),var(--parch);background-size:100% 100%,cover;clip-path:var(--curlclip)}
+#ksroll .curl{height:calc(var(--H) * .058);margin:0 -2.5%;border-radius:calc(var(--H) * .03);position:relative;z-index:2;flex:none;background-color:#cdb381;background-image:linear-gradient(rgba(70,45,15,.55),rgba(255,245,215,.25) 30%,rgba(255,245,215,.05) 55%,rgba(70,45,15,.6)),var(--parch);background-size:100% 100%,cover;box-shadow:0 calc(var(--H) * .006) calc(var(--H) * .01) rgba(60,38,14,.35)}
+#ksroll .curl.b{position:absolute;left:-2.5%;right:-2.5%;margin:0;top:94.2%}
 #ksroll .curl::after{content:'';position:absolute;top:8%;bottom:8%;width:calc(var(--H) * .04);border-radius:50%;right:-.3%;background:radial-gradient(ellipse at 45% 50%,#5b3f1e 0 22%,#b39363 30%,#8a6a3e 46%,#d4bb8d 58%,#7a5a30 80%)}
-#ksroll .clip{flex:1;position:relative;margin:-1.2% 0;animation:ksunroll 1.4s cubic-bezier(.3,.7,.3,1) both}
-@keyframes ksunroll{from{clip-path:inset(0 0 100% 0)}to{clip-path:inset(0 0 0 0)}}
+#ksroll .clip{flex:1;position:relative;margin:calc(var(--H) * -.02) 0 calc(var(--H) * .038)}
 #ksroll .body{position:absolute;inset:0;background-color:#e2cc9c;background-image:radial-gradient(ellipse at 50% 42%,rgba(255,248,226,.35),rgba(120,80,30,.0) 60%,rgba(110,70,25,.28)),var(--parch);background-size:100% 100%,cover;clip-path:var(--deckle)}
-#ksroll .words{position:absolute;left:11%;right:11%;top:13%;text-align:center;font-family:'UnifrakturMaguntia','Old English Text MT',Georgia,serif;color:#23150b;font-size:calc(var(--H) * .074);line-height:1.34;text-shadow:0 0 1px rgba(35,21,11,.35)}
+#ksroll .words{position:absolute;left:11%;right:11%;top:13%;text-align:center;font-family:'UnifrakturCook','Old English Text MT',Georgia,serif;font-weight:700;color:#24160b;font-size:calc(var(--H) * .068);line-height:1.32;letter-spacing:.01em;text-shadow:0 0 .6px rgba(35,21,11,.55),0 0 2.5px rgba(60,35,12,.22)}
 #ksroll .flour{position:absolute;left:4%;width:92%;top:5%;height:46%;pointer-events:none;overflow:visible}
 #ksroll .ref{position:absolute;left:0;right:0;top:50%;text-align:center;font-family:'IM Fell English',Georgia,serif;font-style:italic;color:#46301c;font-size:calc(var(--H) * .031)}
 #ksroll .sealw{position:absolute;left:50%;bottom:4%;width:40%;aspect-ratio:1/1.25;transform:translateX(-50%) rotate(-7deg)}
@@ -105,21 +105,39 @@ body.playing #pause{display:block}
   const R01 = (s => () => (s = (s * 16807) % 2147483647) / 2147483647)(7);
   function texture(kind, W, H, seed = 1) {
     const c = mk(W, H), k = c.getContext('2d'), d = k.createImageData(W, H), n1 = noiseFn(seed), n2 = noiseFn(seed + 5), n3 = noiseFn(seed + 9);
-    const base = kind === 'calf' ? [84, 50, 30] : kind === 'parch' ? [222, 199, 152] : [234, 220, 186];
+    const base = kind === 'calf' ? [84, 50, 30] : kind === 'parch' ? [226, 203, 156] : [234, 220, 186];
     for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
       const m = .5 * n1(x / 110, y / 110) + .3 * n1(x / 34 + 7, y / 34) + .2 * n2(x / 9, y / 9);
       let v;
       if (kind === 'paper') {      // laid paper: fine laid lines across, chain lines down, a little cloudiness in the pulp
         const laid = .5 + .5 * Math.sin(y * 2.2 + n3(x / 40, y / 3) * 2), cx = (x + 18) % 58, chain = Math.exp(-(((cx - 29) / 1.4) ** 2));
         v = 1 + (m - .5) * .1 + (laid - .5) * .018 - chain * .03 + (n3(x / 1.3, y / 9) - .5) * .035;
-      } else if (kind === 'parch') {      // parchment: mottled, with darker veins and blotches
-        v = 1 + (m - .5) * .24 + (n3(x / 18, y / 18) - .5) * .05 + (n2(x / 2, y / 2) - .5) * .05;
+      } else if (kind === 'parch') {
+        // parchment (build 199; owner: "paper texture should look really realistic"): large soft cloudiness of a skin,
+        // in several sizes at once, thin darker veins where it was stretched, a fine grain, and the edges toned darker
+        // by hands and years, unevenly
+        const f = .42 * n1(x / 190, y / 190) + .26 * n2(x / 80 + 3, y / 80) + .17 * n1(x / 31 + 9, y / 31) + .1 * n3(x / 12, y / 12) + .05 * n2(x / 4, y / 4);
+        const vein = Math.exp(-(((n3(x / 70 + 4, y / 26) - .5) / .012) ** 2)) * .06 + Math.exp(-(((n2(x / 45, y / 90 + 7) - .5) / .01) ** 2)) * .04;
+        const ed = Math.min(x, W - x, y, H - y) / (W * (.07 + .07 * n1(x / 60 + y / 60, 3))), edge = Math.max(0, 1 - ed) ** 1.6;
+        v = 1.03 + (f - .5) * .34 - vein * .15 + (n2(x / 1.4, y / 1.4) - .5) * .045 - edge * .2;
       } else {      // calf: grained and worn
         const grain = n3(x / 2.2, y / 2.2), scuff = n2(x / 70, y / 20); v = .82 + (m - .5) * .5 + (grain - .5) * .18 + Math.max(0, scuff - .72) * .9;
       }
       const o = (y * W + x) * 4; d.data[o] = base[0] * v; d.data[o + 1] = base[1] * v; d.data[o + 2] = base[2] * (kind === 'calf' ? v : v * .985); d.data[o + 3] = 255;
     }
     k.putImageData(d, 0, 0);
+    if (kind === 'parch') {
+      // fibres: many short fine hairs, a little lighter or darker than the skin, lying every way
+      for (let i = 0; i < 2600; i++) { const x = R01() * W, y = R01() * H, a = R01() * Math.PI, l = 3 + R01() * 11, dk = R01() < .55;
+        k.strokeStyle = dk ? `rgba(110,75,35,${.05 + .07 * R01()})` : `rgba(255,246,222,${.05 + .08 * R01()})`; k.lineWidth = .5 + R01() * .6;
+        k.beginPath(); k.moveTo(x, y); k.quadraticCurveTo(x + Math.cos(a) * l * .5 + (R01() - .5) * 3, y + Math.sin(a) * l * .5 + (R01() - .5) * 3, x + Math.cos(a) * l, y + Math.sin(a) * l); k.stroke(); }
+      // old water stains: pale inside, with the darker tide-line where the water dried
+      for (let i = 0; i < 3; i++) { const x = R01() * W, y = R01() * H, r = 40 + R01() * 90, g = k.createRadialGradient(x, y, 0, x, y, r);
+        g.addColorStop(0, 'rgba(120,80,30,.025)'); g.addColorStop(.75, 'rgba(120,80,30,.05)'); g.addColorStop(.92, 'rgba(105,66,24,.09)'); g.addColorStop(1, 'rgba(105,66,24,0)');
+        k.save(); k.translate(x, y); k.scale(1, .65 + R01() * .6); k.translate(-x, -y); k.fillStyle = g; k.fillRect(x - r, y - r, 2 * r, 2 * r); k.restore(); }
+      // a few dark specks (ink and dirt), each tiny
+      for (let i = 0; i < 70; i++) { k.fillStyle = `rgba(60,38,15,${.15 + .3 * R01()})`; k.beginPath(); k.arc(R01() * W, R01() * H, .4 + R01() * 1.1, 0, 7); k.fill(); }
+    }
     // foxing and stains: a few soft brown spots, and the edges darkened by hands and years
     const spots = kind === 'paper' ? 14 : kind === 'parch' ? 10 : 0;
     for (let i = 0; i < spots; i++) { const x = R01() * W, y = R01() * H, r = (kind === 'parch' ? 18 : 3) + R01() * (kind === 'parch' ? 60 : 9), g = k.createRadialGradient(x, y, 0, x, y, r);
@@ -129,9 +147,9 @@ body.playing #pause{display:block}
     return c.toDataURL('image/jpeg', .86);
   }
   // a rough edge for the parchment: a polygon a little torn all round (as clip-path)
-  function deckle(n, amp, seed) {
+  function deckle(n, amp, seed, sidesOnly) {
     const r = noiseFn(seed), pts = [], side = (fn) => { for (let i = 0; i <= n; i++) pts.push(fn(i / n)); };
-    const j = (t, s) => (amp * (.35 + .65 * r(t * 9 + s, s))).toFixed(2);
+    const j = (t, s) => sidesOnly && (s === 1 || s === 3) ? '0' : (amp * (.35 + .65 * r(t * 9 + s, s))).toFixed(2);
     side(t => `${(t * 100).toFixed(2)}% ${j(t, 1)}%`); side(t => `${(100 - j(t, 2) * .7).toFixed(2)}% ${(t * 100).toFixed(2)}%`);
     side(t => `${((1 - t) * 100).toFixed(2)}% ${(100 - j(t, 3)).toFixed(2)}%`); side(t => `${(j(t, 4) * .7).toFixed(2)}% ${((1 - t) * 100).toFixed(2)}%`);
     return `polygon(${pts.join(',')})`;
@@ -290,7 +308,7 @@ body.playing #pause{display:block}
     <button class="ksarrow l" aria-label="Turn back">‹</button><button class="ksarrow r" aria-label="Turn on">›</button><button class="ksx" aria-label="Close">×</button></div>`);
   const roll = mkEl(`<div id="ksroll" class="kscover"><div class="sheetw"><div class="curl"></div><div class="clip"><div class="body">
     ${FLOUR}<div class="words"><span style="color:#86190f;font-size:1.75em;line-height:.8;vertical-align:-.13em">F</span>lee from the wrath to come.</div><div class="ref">Matt. iii. 7.</div>
-    <div class="sealw">${TAILS}<img class="seal" alt=""></div></div></div><div class="curl"></div></div>
+    <div class="sealw">${TAILS}<img class="seal" alt=""></div></div></div><div class="curl b"></div></div>
     <button class="ksx" aria-label="Close">×</button></div>`);
   for (const e of [menu, book, roll]) document.body.appendChild(e);
   // the textures and the seal are made the first time they are needed (each takes a moment)
@@ -298,7 +316,7 @@ body.playing #pause{display:block}
   function makePaper() { if (made.paper) return; made.paper = true; const b = book.querySelector('.bible');
     b.style.setProperty('--paper', `url(${texture('paper', 640, 860, 1)})`); b.style.setProperty('--paperR', `url(${texture('paper', 640, 860, 2)})`); b.style.setProperty('--calf', `url(${texture('calf', 512, 360, 3)})`); }
   function makeParch() { if (made.parch) return; made.parch = true; const w = roll.querySelector('.sheetw');
-    w.style.setProperty('--parch', `url(${texture('parch', 560, 860, 4)})`); w.style.setProperty('--deckle', deckle(40, 1.6, 5)); w.style.setProperty('--curlclip', deckle(30, 5, 6)); }
+    w.style.setProperty('--parch', `url(${texture('parch', 700, 1080, 4)})`); w.style.setProperty('--deckle', deckle(40, 1.6, 5, true)); }
   function makeSeal() { if (made.seal) return Promise.resolve(); made.seal = true;
     const go = () => { roll.querySelector('.seal').src = waxSeal(); };
     return (document.fonts && document.fonts.load ? document.fonts.load(`30px 'IM Fell English SC'`).catch(() => {}) : Promise.resolve()).then(go, go); }
@@ -377,7 +395,20 @@ body.playing #pause{display:block}
   book.querySelector('.ksx').onclick = () => hide();
 
   // the roll: unrolls each time it is opened
-  function openRoll() { makeParch(); makeSeal(); const b = roll.querySelector('.clip'); b.style.animation = 'none'; void b.offsetWidth; b.style.animation = ''; show(roll, .45); rustle(1.4); }
+  // the unrolling (build 199; owner: "when scroll unrolls we need the roll to start at top and get smaller as it goes
+  // down"): the lower roller starts up beside the top one, fat with the rolled sheet, and travels down as the sheet comes
+  // off it, thinning; the sheet is shown only down to the middle of that roller, so its edge is always inside the roll.
+  // One clock drives both, measured in pixels, so they cannot drift apart.
+  let unrollT = 0;
+  function unroll() {
+    const w = roll.querySelector('.sheetw'), cl = roll.querySelector('.clip'), rb = roll.querySelector('.curl.b'), t0 = performance.now(), run = ++unrollT;
+    const step = now => { if (run !== unrollT) return;
+      const H = w.clientHeight, u = Math.min(1, (now - t0) / 2100), p = 1 - Math.pow(1 - u, 2.6), h = H * (.12 - .062 * p), top = H * .04 + (H * .942 - H * .04) * p;
+      rb.style.top = top + 'px'; rb.style.height = h + 'px'; rb.style.borderRadius = h / 2 + 'px';
+      const edge = top + h * .5 - cl.offsetTop; cl.style.clipPath = `inset(0 0 ${Math.max(0, cl.clientHeight - edge)}px 0)`;
+      if (u < 1) requestAnimationFrame(step); else cl.style.clipPath = ''; };
+    requestAnimationFrame(step); }
+  function openRoll() { makeParch(); makeSeal(); unroll(); show(roll, .45); rustle(1.4); }
   roll.addEventListener('click', e => { if (e.target === roll || e.target.closest('.ksx')) hide(); });
 
   // keys: Escape pauses or closes; the arrows turn the pages; nothing reaches the game while something is open
@@ -392,7 +423,7 @@ body.playing #pause{display:block}
   addEventListener('resize', () => { if (open === book) fit(); });
   if (document.fonts && document.fonts.addEventListener) document.fonts.addEventListener('loadingdone', () => { if (open === book) fit(); });
   // fetch the fonts early, so the book and the roll look right the first time
-  setTimeout(() => { if (document.fonts && document.fonts.load) for (const f of ['16px "IM Fell English"', 'italic 16px "IM Fell English"', '16px "IM Fell English SC"', '16px "UnifrakturMaguntia"', '16px "La Belle Aurore"']) document.fonts.load(f).catch(() => {}); }, 2500);
+  setTimeout(() => { if (document.fonts && document.fonts.load) for (const f of ['16px "IM Fell English"', 'italic 16px "IM Fell English"', '16px "IM Fell English SC"', '700 16px "UnifrakturCook"', '16px "La Belle Aurore"']) document.fonts.load(f).catch(() => {}); }, 2500);
 
   return { paused: false, book: openBook, roll: openRoll, menu: openMenu, close: () => hide(), turn, waxSeal, get page() { return sp; } };
 })();
