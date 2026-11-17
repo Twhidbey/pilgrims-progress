@@ -14,6 +14,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 **Build 245 (keepsakes chat): the closed book's ribbon painted as woven silk (threads, a drifting sheen with a slight twist, a cut end with loose threads). Nothing spent.**
 
+**Build 251 (Level 3 edits chat): the smoke columns in the cloud's colour, paler near the rock, with frayed wispy edges. See `CLAUDE.md`, "Build 251". Nothing spent.**
+
 **Build 250 (Level 3 edits chat): a touched strike leaves the cloud straight above the touch; no glow on the smoke where it meets the cloud. See `CLAUDE.md`, "Build 250". Nothing spent.**
 
 **Build 248 (Level 3 edits chat): the columns of smoke are dense and dark; no light from the cloud behind shows through them. See `CLAUDE.md`, "Build 248". Nothing spent.**
