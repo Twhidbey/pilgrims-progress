@@ -66,6 +66,8 @@ Older handovers (builds 41 to 137, with the picture and video prompts used for H
 
 **Build 213: Level 3's lightning: no more strokes through cloud; every strike comes out of a dark storm bank over the mountain and its strands end on the rock. See `CLAUDE.md`, "Build 213". Nothing spent.**
 
+**Build 227: the gate wall's three points from the other small-tweaks chat (owner-approved there): the door's light falls off quickly, larger rounder stones with deeper joints and longer shadows, the stone carries on across the whole wall. Nothing spent.**
+
 **Build 225: at the gate Christian is near-black (build 222's light and shade on the figures taken out), the door leaf lightens as it opens, his road shadow darker. Nothing spent.**
 
 **Build 222: Level 3's gate: the wall lit stone by stone from a height map of the stone photograph (plan A; plan B, one large wall photograph, is held), the lantern drawn in code straight on (the photograph removed), and light and shade laid on every Level 3 figure from the scene's lights. Nothing spent.**
