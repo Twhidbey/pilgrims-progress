@@ -849,7 +849,7 @@ const HL = (() => {
         // twice, half a journey apart, each copy fading in and out as it drifts, so the drift never jumps. The layers
         // nearest the summit are lit from beneath by the fire; at a flash the light is inside them.
         if (cK > .02 && SMOKEL) { const kS = Math.min(k, 1);
-          // (build 208, owner: "Smoke is darker than mountain - can we make it same or lighter since the distance is lightening it.
+          // (build 209, owner: "Smoke is darker than mountain - can we make it same or lighter since the distance is lightening it.
           // Also there can be more almost like layer of clouds about"): far off, the smoke takes the haze of the distance
           // (`hz`: drawn in a pale smoke-grey, never darker than the mountain, crossing to the dark smoke as he comes near),
           // and more layers lie about the mountain far off, the lowest below the summit, passing behind it
