@@ -151,6 +151,23 @@ const HL = (() => {
   const FACE = [[0, 0], [36, -30], [84, -62], [112, -44], [150, -70], [240, -138], [320, -182], [358, -176], [420, -116], [480, -44], [520, 36]];      // a second, lower overhang under the great one
   function faceX(h) { let i = 0; while (i + 2 < FACE.length && FACE[i + 1][0] <= h) i++; const [h0, x0] = FACE[i], [h1, x1] = FACE[i + 1]; return lerp(x0, x1, clamp((h - h0) / (h1 - h0))) + (nz(h * .03, 2) - .5) * 26 * smooth(0, 60, h); }
   const backX = h => 96 + 330 * Math.pow(1 - h / TOP, 1.2) + 560 * Math.pow(1 - h / TOP, 3.2) + (nz(h * .022, 9) - .5) * 64 * smooth(0, 50, h) + (nz(h * .09, 14) - .5) * 22 + 46 * smooth(330, 290, h) * smooth(210, 290, h) + 34 * smooth(170, 140, h) * smooth(90, 140, h);      // the long slope: shoulders, buttresses, a rough skyline
+  // the overhanging face only: a band from `inset` to `w` hill units inside the face (w large: everything right of it)
+  function facePath(c, hx, hy, k, inset, w, up = 0) {
+    c.beginPath(); c.moveTo(hx + (-8 + inset) * k, hy + 12 * k);
+    for (let h = 0; h <= TOP; h += 4) c.lineTo(hx + (faceX(h) + inset) * k, hy - h * k);
+    c.lineTo(hx + (faceX(TOP) + inset) * k, hy - (TOP + up) * k); c.lineTo(hx + (faceX(TOP) + w) * k, hy - (TOP + up) * k);
+    for (let h = TOP; h >= 0; h -= 4) c.lineTo(hx + (faceX(h) + w) * k, hy - h * k);
+    c.lineTo(hx + (-8 + w) * k, hy + 12 * k); c.closePath();
+  }
+  // the hill's outline on the screen (its foot's left end at hx, hy; k screen px per hill unit), drawn `inset` hill units
+  // inside its real edge
+  function hillPath(c, hx, hy, k, inset) {
+    c.beginPath(); c.moveTo(hx + (-8 + inset) * k, hy + 12 * k);
+    for (let h = 0; h <= TOP - inset; h += 4) c.lineTo(hx + (faceX(h) + inset) * k, hy - h * k);
+    for (const [sx, sy] of [[46, -529], [60, -524], [72, -537], [86, -527]]) c.lineTo(hx + sx * k, hy + (sy + inset) * k);
+    for (let h = TOP - inset; h >= 0; h -= 4) c.lineTo(hx + (backX(h) - inset) * k, hy - h * k);
+    c.lineTo(hx + (backX(0) + 30 - inset) * k, hy + 12 * k); c.closePath();
+  }
   function build() {
     if (built) return; built = true;
     // the hill, twice: in the fair day's far blue-grey, and nearly black under its own cloud
@@ -726,7 +743,14 @@ const HL = (() => {
           c.globalCompositeOperation = 'source-over'; c.globalAlpha = 1; }
         // the hill: fair and far off at first, black under its own cloud when he stands by it
         const dx = hx - HOX * k, dy = hy - HOY * k;
-        c.globalAlpha = reveal; c.drawImage(!rocky && HILLV ? HILLV : HILL[0], dx, dy, HW * k, HH * k); if (dark > .01) { c.globalAlpha = dark; c.drawImage(HILL[1], dx, dy, HW * k, HH * k); } c.globalAlpha = 1;
+        // A CRISP EDGE UP CLOSE (owner, build 192: "The faded edge of the mountain in background is kinda bothering me"):
+        // the painting's own soft edge, with a pale rim the image model painted along it, was blown up about three times
+        // among the rocks and read as a blurred halo. There the hill's outline is drawn from its own shape (`hillPath`)
+        // in the dark rock's tone, sharp, and the painting is laid inside it, kept a few units in from the edge. Only the
+        // overhanging face is done so (`facePath`): elsewhere the painting's own outline differs a little from the drawn one.
+        if (rocky) { c.fillStyle = css(mix([46, 36, 36], [33, 25, 26], dark)); facePath(c, hx, hy, k, 0, 30); c.fill(); c.save(); facePath(c, hx, hy, k, 2, 3000, 400); c.clip(); }
+        c.globalAlpha = reveal; c.drawImage(!rocky && HILLV ? HILLV : HILL[0], dx, dy, HW * k, HH * k); if (dark > .01) { c.globalAlpha = dark; c.drawImage(HILL[1], dx, dy, HW * k, HH * k); }
+        if (rocky) c.restore(); c.globalAlpha = 1;
         // IT IS THERE FROM THE START, VEILED (owner, build 181: "when you first see the hill it kinda appears out of
         // nowhere - it should be there already and to the right"): until Wiseman points to it, its lower slopes stand
         // pale in the plain's haze and its summit is lost in a bank of cloud; at "Do you see that hill?" the cloud draws
