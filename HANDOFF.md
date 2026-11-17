@@ -6,7 +6,7 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 **The keepsakes have their own chat now** ("Pilgrim's Progress: the keepsakes (Bible, roll, title book)", https://claude.ai/code/session_017HrTSDUqJDSdrXPbhc33zT). Open question there: the wax seal on Evangelist's roll is ours, not the book's (`{14}` has no seal; the sealed roll is given at the Cross, `{94}`): take it off and keep `waxSeal()` for Level 5, or keep it as a departure.
 
-**Build 251 (small-tweaks chat): the gate's darks warmed to Rembrandt's red-browns (sky, wall, road, edges, the light's falloff, Christian). See `CLAUDE.md`, "Build 251". Nothing spent.**
+**Build 252 (small-tweaks chat): the gate's darks warmed to Rembrandt's red-browns (sky, wall, road, edges, the light's falloff, Christian). See `CLAUDE.md`, "Build 252". Nothing spent.**
 
 **Build 250 (small-tweaks chat): the lantern's iron arm now comes straight out of the wall at us, with its shadow on the wall when the door opens. See `CLAUDE.md`, "Build 250". Nothing spent.**
 
@@ -16,7 +16,7 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 **Build 245 (keepsakes chat): the closed book's ribbon painted as woven silk (threads, a drifting sheen with a slight twist, a cut end with loose threads). Nothing spent.**
 
-**Build 251 (Level 3 edits chat): the smoke columns in the cloud's colour, paler near the rock, with frayed wispy edges. See `CLAUDE.md`, "Build 251". Nothing spent.**
+**Build 251 (Level 3 edits chat): the smoke columns in the cloud's colour, paler near the rock, with frayed wispy edges. See `CLAUDE.md`, "Build 252". Nothing spent.**
 
 **Build 250 (Level 3 edits chat): a touched strike leaves the cloud straight above the touch; no glow on the smoke where it meets the cloud. See `CLAUDE.md`, "Build 250". Nothing spent.**
 
