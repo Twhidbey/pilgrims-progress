@@ -1082,7 +1082,24 @@ const HL = (() => {
         // below it stays open and glowing down to the horizon, so the black mountain reads (John Martin). Far off on the
         // fair plain it is a pale lid in the haze lying over the far mountain only; as he turns aside it darkens and
         // spreads over the whole sky. Two tiles, the nearer darker and a little lower, drift slowly left with the wind.
-        let deckWisp = null, SMK = null, SMK3 = null;
+        let deckWisp = null;
+        // the columns' shapes are also laid in `SMK` (builds 244, 248), so no light of the cloud shows through them
+        const SMKC = tintC.smk || (tintC.smk = [mk(8, 8), mk(8, 8)]); for (const o of SMKC) if (o.width !== Math.ceil(VW) || o.height !== Math.ceil(VH)) { o.width = Math.ceil(VW); o.height = Math.ceil(VH); }
+        const SMK = SMKC[0], SMK3 = SMKC[1], qs = SMK.getContext('2d'); qs.clearRect(0, 0, VW, VH);
+        // (build 233, owner: "Can we make another column going up from other lit up spot at peak of mt"): a second, slimmer
+        // column rises from the brightest fire just right of the summit (hill x 205, on the rock's top), a little out of step
+        // (build 248) the billows are denser, so the glow behind them no longer shows through (`DENSE`)
+        const DENSE = 1.9;
+        const cols = mask => { for (const [ox, N, sp, ph0] of [[0, 96, 1, 0], [145, 64, .78, .37]]) { const ps = [], kS = Math.min(k, 1), Dh = rocky ? 195 : 90 + 105 * clamp(dark * 1.5), bx0 = sx0 + ox * k, by0 = ox ? hy + (rockTopAt(205) + 6) * k : sy0, dTop = (by0 - sy0) / kS;
+          for (let i = 0; i < N; i++) { const h1 = Math.sin(i * 12.9898 + ox) * 43758.5453, h2 = Math.sin(i * 78.233 + ox) * 12543.123; ps.push([(i / N + G.t / 2600 + ph0) % 1, h1 - Math.floor(h1), h2 - Math.floor(h2), i]); }
+          ps.sort((a, b) => b[0] - a[0]);
+          for (const [u, r1, r2, i] of ps) { const rise = 1 - Math.pow(1 - u, 1.6), spread = (24 + 120 * u) * kS * sp, px = bx0 - (50 * u + 110 * u * u) * kS + (r1 - .5) * spread + 10 * Math.sin(G.t / 300 + i) * u * kS, py = by0 - (14 + (Dh + 90 + dTop) * rise) * kS + (r2 - .5) * spread * .5, rr = (26 + 120 * u) * kS * sp * (.8 + .4 * r2), a = smooth(0, .05, u) * (1 - smooth(.5, .95, u)), P = PUFF[i % 3];
+            const hzP = rocky ? 0 : clamp(1 - dark * 1.6), aP = a * .7 * (.1 + .75 * Math.max(dark, farK * 1.3)) * reveal; if (mask) { qs.globalAlpha = Math.min(1, aP * 3); qs.drawImage(P.d, px - rr * 1.3, py - rr * .8, 2.6 * rr, 1.6 * rr); continue; }
+            c.globalCompositeOperation = 'source-over'; if (hzP > 0) { c.globalAlpha = aP * hzP; c.drawImage(P.h, px - rr * 1.3, py - rr * .8, 2.6 * rr, 1.6 * rr); } c.globalAlpha = Math.min(1, aP * DENSE) * (1 - hzP); c.drawImage(P.d, px - rr * 1.3, py - rr * .8, 2.6 * rr, 1.6 * rr);
+            const la = a * (burn * (.3 + .7 * Math.pow(1 - u, 2)) + F * .3 * (1 - u)); if (la > .01) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = la; c.drawImage(P.l, px - rr, py - rr, 2 * rr, 2 * rr); } } } };
+        // (build 248, owner: "The light still shines thru billows - don't like that"): the columns' shapes are laid in the mask
+        // first, so the light on the cloud's underside behind them (fire and strike) is cut out where the smoke stands
+        cols(true);
         { const sK = Math.min(1, Math.max(dark * (rocky ? 1.5 : 1), farK * 1.6)), hzS = rocky ? 0 : clamp(1 - dark * 1.6), spread = rocky ? 1 : clamp(dark * 1.8);
           if (sK > .03 && DECK) { c.globalCompositeOperation = 'source-over';
             // its base: above the summit by B; close among the rocks (the summit far above the picture) it hangs as a ceiling
@@ -1107,10 +1124,10 @@ const HL = (() => {
               // (build 244, owner: "I want the lighting up level of the clouds from lightning to be behind columns of smoke going
               // up"): on the front tile, drawn after the columns, a strike's light is cut out wherever the smoke stands (`SMK`,
               // the columns' shapes), so the smoke stays dark against the flash; the fire's glow on it is as before
-              if (j && fl > .02 && SMK) { const q3 = SMK3.getContext('2d'); q3.globalCompositeOperation = 'copy'; q3.globalAlpha = 1; q3.drawImage(D2, 0, 0); q3.globalCompositeOperation = 'source-over';
+              if (j && fl > .02) { const q3 = SMK3.getContext('2d'); q3.globalCompositeOperation = 'copy'; q3.globalAlpha = 1; q3.drawImage(D2, 0, 0); q3.globalCompositeOperation = 'source-over';
                 across(q3, x => strikeAt(x) * lid(x)); q3.globalCompositeOperation = 'destination-out'; q3.drawImage(SMK, 0, 0); q3.drawImage(SMK, 0, 0); q3.globalCompositeOperation = 'source-over';
                 c.globalCompositeOperation = 'lighter'; c.globalAlpha = Math.min(1, sK * .8); c.drawImage(SMK3, 0, 0); }
-              if (burn + F + fl > .02) { across(q2, x => (j && SMK ? fireAt(x) : litAt(x)) * lid(x)); c.globalCompositeOperation = 'lighter'; c.globalAlpha = Math.min(1, sK * (j ? .8 : 1)); c.drawImage(D2, 0, 0); } };
+              if (burn + F + fl > .02) { across(q2, x => (j ? fireAt(x) : litAt(x)) * lid(x)); if (!j) { q2.globalCompositeOperation = 'destination-out'; q2.globalAlpha = 1; q2.drawImage(SMK, 0, 0); q2.drawImage(SMK, 0, 0); q2.globalCompositeOperation = 'source-over'; } c.globalCompositeOperation = 'lighter'; c.globalAlpha = Math.min(1, sK * (j ? .8 : 1)); c.drawImage(D2, 0, 0); } };
             layer(DECK[0], 0);
             // (build 237, owner: "layers from bottom to top: (1) dark cloud backdrop across sky (2) 'light up' layer for lightning
             // flashes (3) billowing up smoke in front of light up layer (4) another cloud layer across sky providing foreground
@@ -1122,17 +1139,7 @@ const HL = (() => {
         // the column of smoke is drawn after the cloud, so it rises in front of the cloud's firelit underside and on up
         // into the dark body of the cloud, melting away there
         c.save();
-        // the columns' shapes are also laid in `SMK` (build 244), so the front cloud's lightning can be cut out behind them
-        const SMKC = tintC.smk || (tintC.smk = [mk(8, 8), mk(8, 8)]); for (const o of SMKC) if (o.width !== Math.ceil(VW) || o.height !== Math.ceil(VH)) { o.width = Math.ceil(VW); o.height = Math.ceil(VH); }
-        SMK = SMKC[0]; SMK3 = SMKC[1]; const qs = SMK.getContext('2d'); qs.clearRect(0, 0, VW, VH);
-        // (build 233, owner: "Can we make another column going up from other lit up spot at peak of mt"): a second, slimmer
-        // column rises from the brightest fire just right of the summit (hill x 205, on the rock's top), a little out of step
-        for (const [ox, N, sp, ph0] of [[0, 96, 1, 0], [145, 64, .78, .37]]) { const ps = [], kS = Math.min(k, 1), Dh = rocky ? 195 : 90 + 105 * clamp(dark * 1.5), bx0 = sx0 + ox * k, by0 = ox ? hy + (rockTopAt(205) + 6) * k : sy0, dTop = (by0 - sy0) / kS;
-          for (let i = 0; i < N; i++) { const h1 = Math.sin(i * 12.9898 + ox) * 43758.5453, h2 = Math.sin(i * 78.233 + ox) * 12543.123; ps.push([(i / N + G.t / 2600 + ph0) % 1, h1 - Math.floor(h1), h2 - Math.floor(h2), i]); }
-          ps.sort((a, b) => b[0] - a[0]);
-          for (const [u, r1, r2, i] of ps) { const rise = 1 - Math.pow(1 - u, 1.6), spread = (24 + 120 * u) * kS * sp, px = bx0 - (50 * u + 110 * u * u) * kS + (r1 - .5) * spread + 10 * Math.sin(G.t / 300 + i) * u * kS, py = by0 - (14 + (Dh + 90 + dTop) * rise) * kS + (r2 - .5) * spread * .5, rr = (26 + 120 * u) * kS * sp * (.8 + .4 * r2), a = smooth(0, .05, u) * (1 - smooth(.5, .95, u)), P = PUFF[i % 3];
-            c.globalCompositeOperation = 'source-over'; const hzP = rocky ? 0 : clamp(1 - dark * 1.6), aP = a * .7 * (.1 + .75 * Math.max(dark, farK * 1.3)) * reveal; if (hzP > 0) { c.globalAlpha = aP * hzP; c.drawImage(P.h, px - rr * 1.3, py - rr * .8, 2.6 * rr, 1.6 * rr); } c.globalAlpha = aP * (1 - hzP); c.drawImage(P.d, px - rr * 1.3, py - rr * .8, 2.6 * rr, 1.6 * rr); qs.globalAlpha = Math.min(1, aP * 3); qs.drawImage(P.d, px - rr * 1.3, py - rr * .8, 2.6 * rr, 1.6 * rr);
-            const la = a * (burn * (.3 + .7 * Math.pow(1 - u, 2)) + F * .3 * (1 - u)); if (la > .01) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = la; c.drawImage(P.l, px - rr, py - rr, 2 * rr, 2 * rr); } } }
+        cols(false);
         c.restore();
         // (build 233, owner: "still need another layer of wispy smoke to go over billowing up smoke so it's going into cloud
         // in front of lit up section"): the cloud's hanging wisps are drawn once more, in front of the columns, over the
