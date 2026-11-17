@@ -80,7 +80,9 @@ Older handovers (builds 41 to 137, with the picture and video prompts used for H
 
 **Build 213: Level 3's lightning: no more strokes through cloud; every strike comes out of a dark storm bank over the mountain and its strands end on the rock. See `CLAUDE.md`, "Build 213". Nothing spent.**
 
-**Build 234: Good-will's own figure (bare-headed, white-bearded, hands folded) stands in Level 3's doorway in place of Evangelist's stand-in. Nothing spent. Waiting on the owner: which wall photo, A (stone and flint, Ash, CC0), B (flint, Merton Priory, PD) or C (coursed stone, PD); a sheet was sent in the chat.**
+**Build 235: the gate wall is ONE big photograph (A: stone and flint, St Peter's Ash, CC0), under one set of lights (dusk, lantern, door) shared with the surround, the door and the figures; the height-map bake removed. Nothing spent.**
+
+**Build 234: Good-will's own figure (bare-headed, white-bearded, hands folded) stands in Level 3's doorway in place of Evangelist's stand-in. Nothing spent.**
 
 **Build 231: the gate wall back to build 225's (the owner found 227's worse); Christian at the gate dark but not black. Nothing spent.**
 
