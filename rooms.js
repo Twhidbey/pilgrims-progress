@@ -28,7 +28,7 @@ const RM = (() => {
   const darkOn = () => { try { return localStorage.getItem('pp-dark') === '1'; } catch (e) { return false; } };
 
   // the two visitors (sprites face LEFT as made; face 1 = turned to face right)
-  const VIS = { C: { n: 'room-christian', ax: 92, g: 631, who: 'Christian', ph: 0, ct: 1.2, mul: .62, sat: .42, warm: [1, 1, 1] }, I: { n: 'room-interpreter', ax: 107, g: 634, who: I, ph: 1.7, ct: 1.15, mul: .66, sat: .45, say: { n: 'room-interpreter-say', ax: 171, g: 631, noSh: 1, ct: 1.15, mul: .66, sat: .45 } } };
+  const VIS = { C: { n: 'room-christian', ax: 92, g: 631, who: 'Christian', ph: 0, ct: 1.2, mul: .62, sat: .42, warm: [1, 1, 1] }, I: { n: 'room-interpreter', ax: 107, g: 634, who: I, ph: 1.7, ct: 1.15, mul: .66, sat: .45, say: { n: 'room-interpreter-say', ax: 82, g: 334, s: 635 / 331, ct: 1.15, mul: .66, sat: .45, cols: 8, fr: 57, W: 142, H: 336 } } };
   const BRAVE = { plain: { n: 'room5-brave', ax: 94, g: 519 }, armed: { n: 'room5-brave-armed', ax: 123, g: 536 } };
 
   let R = null, t = 0, ph = '', cam = { x: 0, to: 0 }, fade = 1, fadeTo = 0, after = null, toned = {}, startId = 'door', motes = [];
@@ -107,9 +107,9 @@ const RM = (() => {
   }
   function fig(c, spec, meta, x, y, face, k = 1, a = 1, col = R.tone || [255, 255, 255], who = null, ph0 = 0, bob = 0) {
     const im = toneOf(spec, col, meta.ct, meta.mul, meta.sat); if (!im || a <= .01) return;
-    const sc = S / K * k, fx = u(x), fy = v(y), mv = who && talkMove(who);
+    const sc0 = S / K * k, sc = sc0 * (meta.s || 1), fx = u(x), fy = v(y), mv = who && talkMove(who);
     const sy = (1 + .006 * Math.sin(G.t / 62 + ph0)) * (mv ? mv.sy : 1);
-    if (!meta.noSh && !R.noShadow) { c.globalAlpha = a; c.fillStyle = 'rgba(12,6,3,.18)'; c.beginPath(); c.ellipse(fx + 6 * face, fy - 1, 55 * sc, 6 * sc, 0, 0, 6.2832); c.fill(); }
+    if (!meta.noSh && !R.noShadow) { c.globalAlpha = a; c.fillStyle = 'rgba(12,6,3,.18)'; c.beginPath(); c.ellipse(fx + 6 * face, fy - 1, 55 * sc0, 6 * sc0, 0, 0, 6.2832); c.fill(); }
     c.globalAlpha = a; c.save(); c.translate(fx, fy - bob); if (mv) c.transform(1, 0, -mv.sh * -face, 1, 0, 0); c.scale(-face, sy);
     c.drawImage(im, -meta.ax * sc, -meta.g * sc, im.width * sc, im.height * sc);
     // a strong light near them (the fire, the opened door, the candle) warms the side of the figure that faces it
@@ -126,11 +126,19 @@ const RM = (() => {
   }
   // the Interpreter lifts his open hand while he speaks (his second picture), and folds his hands again after
   let sayK = 0;
+  // cut a sheet of frames into one picture per frame, once (pics['name#i'])
+  function sayFrames(f) {
+    if (pics[f.n + '#0']) return true; const im = pics[f.n]; if (!im) { pic(f.n); return false; }
+    for (let i = 0; i < f.fr; i++) { const cv = document.createElement('canvas'); cv.width = f.W; cv.height = f.H; cv.getContext('2d').drawImage(im, (i % f.cols) * f.W, Math.floor(i / f.cols) * f.H, f.W, f.H, 0, 0, f.W, f.H); pics[f.n + '#' + i] = cv; }
+    return true;
+  }
   const speaking = () => (SPK && SPK.who === I) || (G.state === 'dialog' && dWho.textContent === I);
   const visitor = (c, key, x, face, k = R.k || 1, a = 1, up = 0) => {
     const m = VIS[key];
     const col = key === 'C' ? (R.toneC || R.tone).map((v, i) => v * m.warm[i]) : R.tone;
-    if (m.say && pics[m.say.n]) { const q = smooth(0, 1, sayK); if (q < 1) fig(c, m.n, m, x, R.FY - up, face, k, a, col, m.who, m.ph); if (q > 0) fig(c, m.say.n, m.say, x, R.FY - up, face, k, a * q, col, m.who, m.ph); return; }
+    // the Interpreter's gesture: frames of one video (hands folded -> the open hand lifted as he explains), played at the video's own pace
+    if (m.say && m.say.cols && sayFrames(m.say)) { const f = m.say, i = Math.round(sayK * (f.fr - 1)); fig(c, f.n + '#' + i, f, x, R.FY - up, face, k, a, col, m.who, m.ph); return; }
+    if (m.say && !m.say.cols && pics[m.say.n]) { const q = smooth(0, 1, sayK); if (q < 1) fig(c, m.n, m, x, R.FY - up, face, k, a, col, m.who, m.ph); if (q > 0) fig(c, m.say.n, m.say, x, R.FY - up, face, k, a * q, col, m.who, m.ph); return; }
     fig(c, m.n, m, x, R.FY - up, face, k, a, col, m.who, m.ph);
   };
   // Christian walking (leaving): the game's own walk pictures, dark against the night
@@ -516,7 +524,7 @@ const RM = (() => {
     if (!R) return;
     cam.x += (cam.to - cam.x) * .03;
     for (const m of motes) { m.x += m.v; m.y += Math.sin(G.t / 90 + m.p) * .05; if (m.x > VW) m.x = 0; }
-    sayK = Math.max(0, Math.min(1, sayK + (speaking() ? .25 : -.2)));
+    sayK = Math.max(0, Math.min(1, sayK + (speaking() ? 1 : -1) / 214));
     ambTick();
     R.upd && R.upd();
     if (R.id !== 'pass') cam.x = cam.to = 0;
