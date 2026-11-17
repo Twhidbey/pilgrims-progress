@@ -158,7 +158,7 @@ const HL = (() => {
   let farewell = 0;
 
   // ---------- pictures baked once ----------
-  let CLOUDW = null, CLOUDG = null;
+  let CLOUDW = null, CLOUDG = null, SMOKEL = null;
   let HILL = null, SMOKE = null, CLOUD = null, TOWN = null; const CRACKS = [], STONES = [], SEAMS = [], PUFF = [];
   // the hill's outline: h = height above its foot, 0 to TOP; its left side hangs far out over the way
   const TOP = 520, HW = 1500, HH = 640, HOX = 300, HOY = 610;      // the baked picture's size and where the foot's left end lies in it
@@ -231,6 +231,9 @@ const HL = (() => {
     const cloud = (w, h, seed, thr, sx, sy) => { const c = mk(w, h), k = c.getContext('2d'), im = k.createImageData(w, h), n = noise2(seed);
       for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { const e = Math.sin(Math.PI * y / h) * Math.min(1, x / 30, (w - x) / 30), v = smooth(thr, thr + .22, n(x * sx, y * sy)) * e; const i = (y * w + x) * 4; im.data[i] = im.data[i + 1] = im.data[i + 2] = 255; im.data[i + 3] = 255 * v; }
       k.putImageData(im, 0, 0); return c; };
+    // (build 203) long thin layers of smoke, like the mist at the mountain's foot: dark, and again as the fire's light on their undersides
+    { const L = [cloud(640, 56, 61, .4, .0085, .06), cloud(640, 48, 73, .42, .011, .07), cloud(640, 64, 89, .38, .007, .05)], tintL = (im, col) => { const t = mk(im.width, im.height), q = t.getContext('2d'); q.drawImage(im, 0, 0); q.globalCompositeOperation = 'source-in'; q.fillStyle = col; q.fillRect(0, 0, t.width, t.height); return t; };
+      SMOKEL = L.map(im => ({ d: tintL(im, 'rgb(66,52,56)'), l: tintL(im, 'rgb(255,186,130)') })); }
     SMOKE = cloud(240, 80, 5, .4, .022, .05); CLOUD = cloud(400, 90, 31, .46, .014, .045);
     { const tintOf = col => { const t = mk(CLOUD.width, CLOUD.height), q = t.getContext('2d'); q.drawImage(CLOUD, 0, 0); q.globalCompositeOperation = 'source-in'; q.fillStyle = col; q.fillRect(0, 0, t.width, t.height); return t; }; CLOUDW = tintOf('rgb(255,226,176)'); CLOUDG = tintOf('rgb(168,160,176)'); }
     // billows of smoke: three soft round shapes, each baked dark and again as the light the fire lays on its underside
@@ -818,10 +821,17 @@ const HL = (() => {
         // those near the summit faintly lit from beneath; at a flash the light is inside the cloud. Drawn before
         // the hill, so nothing of it lies over the hill.
         const cK = Math.max(dark, farK * 1.4);
-        if (cK > .02) { const kS = Math.min(k, 1); for (let i = 0; i < 34; i++) { const h1 = Math.sin(i * 39.3468) * 24634.6345, h2 = Math.sin(i * 11.135) * 7541.931, h3 = Math.sin(i * 73.156) * 3141.59, r1 = h1 - Math.floor(h1), r2 = h2 - Math.floor(h2), r3 = h3 - Math.floor(h3);
-            const left = r1 * r1, px = sx0 + (420 - 2100 * r1) * kS + 26 * kS * Math.sin(G.t / 700 + i), py = sy0 - (60 + 250 * r2) * kS + left * 430 * r3 * kS, rr = (120 + 200 * r3) * kS, P = PUFF[i % 3];
-            c.globalCompositeOperation = 'source-over'; c.globalAlpha = cK * (.5 + .3 * r2) * (dark > .3 ? 1 : .8); c.drawImage(P.d, px - rr, py - rr * .62, 2 * rr, 1.24 * rr);
-            const near = Math.max(0, 1 - Math.hypot(px - sx0, py - sy0) / (760 * k)), la = burn * (.13 + .36 * near * near) + F * .3 * near; if (la > .01) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = la; c.drawImage(P.l, px - rr, py - rr * .62, 2 * rr, 1.24 * rr); } }
+        // SMOKE IN LAYERS (owner, build 203: "The clouds of smoke should be more like the mist at the base of the mount - maybe a
+        // layer instead of clear puff?"): the smoke no longer gathers as round billows. A short rise of billows leaves the
+        // summit (below), then it flattens into long thin layers that stream away left with the wind and lie one above
+        // another across the top of the sky, ragged at their edges, like the low mist at the foot. Each layer is drawn
+        // twice, half a journey apart, each copy fading in and out as it drifts, so the drift never jumps. The layers
+        // nearest the summit are lit from beneath by the fire; at a flash the light is inside them.
+        if (cK > .02 && SMOKEL) { const kS = Math.min(k, 1);
+          for (let i = 0; i < 5; i++) { const T = SMOKEL[i % 3], h = (105 + 62 * i + 18 * Math.sin(i * 2.3)) * kS, Lw = (1400 + 300 * i) * kS, Hh = (95 + 26 * i) * kS, tr = 520 * kS, sp = 1 / (2600 + 400 * i);
+            for (const off of [0, .5]) { const ph = (G.t * sp + off + i * .13) % 1, x1 = sx0 + (200 - 60 * i) * kS - ph * tr, yy = sy0 - h + 10 * kS * Math.sin(G.t / 900 + i) - Hh / 2, fa = Math.sin(Math.PI * ph);
+              c.globalCompositeOperation = 'source-over'; c.globalAlpha = Math.min(1, cK * (.62 - .06 * i) * fa); c.drawImage(T.d, x1 - Lw, yy, Lw, Hh);
+              const la = (burn * (.5 - .06 * i) + F * (.45 - .05 * i)) * fa; if (la > .01) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = Math.min(1, la * .55); c.drawImage(T.l, x1 - Lw * .45, yy + Hh * .25, Lw * .45, Hh * .9); } } }
           c.globalCompositeOperation = 'source-over'; c.globalAlpha = 1; }
         // the hill: fair and far off at first, black under its own cloud when he stands by it
         const dx = hx - HOX * k, dy = hy - HOY * k;
@@ -882,8 +892,8 @@ const HL = (() => {
         { const N = 46, ps = [], kS = Math.min(k, 1);
           for (let i = 0; i < N; i++) { const h1 = Math.sin(i * 12.9898) * 43758.5453, h2 = Math.sin(i * 78.233) * 12543.123; ps.push([(i / N + G.t / 3400) % 1, h1 - Math.floor(h1), h2 - Math.floor(h2), i]); }
           ps.sort((a, b) => b[0] - a[0]);
-          for (const [u, r1, r2, i] of ps) { const rise = 1 - Math.pow(1 - u, 3), spread = (40 + 230 * u) * kS, px = sx0 - (240 * u + 900 * u * u) * kS + (r1 - .5) * spread, py = sy0 - (14 + 150 * rise - 60 * u * u) * kS + (r2 - .5) * spread * .7, rr = (40 + 210 * u) * kS * (.8 + .4 * r2), a = smooth(0, .05, u) * (1 - smooth(.72, 1, u)), P = PUFF[i % 3];
-            c.globalCompositeOperation = 'source-over'; c.globalAlpha = a * (.07 + .73 * Math.max(dark, farK * 1.2)) * reveal; c.drawImage(P.d, px - rr, py - rr, 2 * rr, 2 * rr);
+          for (const [u, r1, r2, i] of ps) { const rise = 1 - Math.pow(1 - u, 3), spread = (40 + 230 * u) * kS, px = sx0 - (240 * u + 900 * u * u) * kS + (r1 - .5) * spread, py = sy0 - (14 + 150 * rise - 60 * u * u) * kS + (r2 - .5) * spread * .7, rr = (40 + 210 * u) * kS * (.8 + .4 * r2), a = smooth(0, .05, u) * (1 - smooth(.2, .42, u)), P = PUFF[i % 3];
+            c.globalCompositeOperation = 'source-over'; c.globalAlpha = a * .55 * (.07 + .73 * Math.max(dark, farK * 1.2)) * reveal; c.drawImage(P.d, px - rr * 1.3, py - rr * .8, 2.6 * rr, 1.6 * rr);
             const la = a * (burn * (.3 + .7 * Math.pow(1 - u, 2)) + F * .3 * (1 - u)); if (la > .01) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = la; c.drawImage(P.l, px - rr, py - rr, 2 * rr, 2 * rr); } } }
         c.globalCompositeOperation = 'source-over'; c.globalAlpha = 1;
         if (flames) { c.save(); c.globalCompositeOperation = 'lighter'; flames(); c.restore(); }
