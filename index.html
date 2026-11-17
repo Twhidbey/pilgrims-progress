@@ -68,6 +68,8 @@ body.opened .tribbon{opacity:0}
 #levels .lv i{flex:0 0 2.3em;font-style:normal;color:#8a2a1e}
 #levels .lv:not(.dim){color:#2a2018}#levels .lv:not(.dim)::after{content:'\261C';color:#8a2a1e;margin-left:auto;padding-left:.4em}
 #levels .lv:active{color:#8a2a1e}
+#levels .lvx{display:flex;align-items:baseline;white-space:nowrap;font-family:'IM Fell English',Georgia,serif;font-style:italic;font-size:max(7px,calc(var(--u,1) * 12.5px));background:none;border:none;color:rgba(42,32,24,.5);padding:.5em .2em .3em;cursor:pointer;text-align:left}
+#levels .lvx i{flex:0 0 2.8em;font-style:normal;color:#8a2a1e}#levels .lvx i::before{content:'\25C7'}#levels .lvx.on{color:#2a2018}#levels .lvx.on i::before{content:'\25C6'}
 .tfoot{display:flex;align-items:center;justify-content:center;height:calc(var(--u,1) * 70px);margin-top:calc(var(--u,1) * 12px)}
 .tfoot h2{margin:0;font-family:'IM Fell English',Georgia,serif;font-style:italic;text-transform:none;letter-spacing:.05em}
 body.opened .tfoot{visibility:hidden}
@@ -137,6 +139,8 @@ body.portrait #rot{display:block}
           <button class="lv" data-lv="1"><i>I.</i>The City of Destruction</button>
           <button class="lv" data-lv="2"><i>II.</i>The Slough of Despond</button>
           <button class="lv" data-lv="3"><i>III.</i>Mr. Worldly Wiseman</button>
+          <button class="lv" data-lv="4"><i>IV.</i>The Interpreter&#8217;s House</button>
+          <button class="lvx" id="darkRooms"><i></i>Shew the darker rooms</button>
         </div>
         <div class="trule d"></div>
         <div class="t6 tdream">As I walked through the wilderness of this world, I lighted on a certain place where was a Den, and I laid me down in that place to sleep: and, as I slept, I dreamed a dream.</div>
@@ -152,7 +156,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">build 260 · Nov 17 2026</div>
+  <div id="build">build 261 · Nov 17 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -2307,7 +2311,7 @@ stage.addEventListener('pointerdown', e => {
   if (G.state !== 'title' && rx < ITEM_X + 58 && ry < ITEM_Y + 36) { if (rx < ITEM_X + 23) { KS.book(); return; } if (G.roll && G.roll.t > 90) { KS.roll(); return; } }
   if (G.state !== 'title' && G.state !== 'end') G.taps.push({ x: sx, y: sy, t: 0 });
   if (G.state === 'dialog') {
-    if (RM.on && G.act) { RM.touch(sx, sy); return; }
+    if (RM.on && G.act) { if (RM.HOLDS.includes(G.act)) downs.set(e.pointerId, G.t); RM.touch(sx, sy); return; }
     if (HL.on && G.act) { HL.touch(sx, sy); return; }
     if (G.act === 'hand') { SL.touch(sx, sy); return; }
     if (G.act === 'light') { const l = lightPos(); if (Math.hypot(sx - l.x, sy - l.y) < 95) lightTouched(); else G.actT = Math.max(G.actT, 149); return; }
@@ -2329,7 +2333,7 @@ addEventListener('keydown', e => {
   if (G.state === 'choice') { if (e.code === 'ArrowLeft') pick(true); if (e.code === 'ArrowRight') pick(false); return; }
   if (!go) return; e.preventDefault();
   if (G.state === 'dialog') {
-    if (G.act === 'gate' || G.act === 'walkon') keys.push = true;
+    if (G.act === 'gate' || G.act === 'walkon' || (RM.on && RM.HOLDS.includes(G.act))) keys.push = true;
     else if (G.act === 'light') { if (!e.repeat) lightTouched(); }
     else if (RM.on && G.act) { if (!e.repeat) RM.key(); }
     else if (HL.on && G.act) { if (!e.repeat) HL.key(); }
@@ -2349,7 +2353,7 @@ let runN = 0;
 // the child was last in (kept on the device; ?level=2 in the link overrides it): its button is the bright one, and its
 // own scene is the picture behind the title (Level 2: the oak over the bog, SL.title()). Any level can be chosen.
 const store = { get() { try { return +localStorage.getItem('pp-level') || 0; } catch (e) { return 0; } }, set(n) { try { localStorage.setItem('pp-level', n); } catch (e) {} } };
-const LV = (q => TEST_X ? 1 : q ? (+q === 2 || +q === 3 ? +q : 1) : store.get() === 2 || store.get() === 3 ? store.get() : 1)(new URLSearchParams(location.search).get('level'));
+const LV = (q => TEST_X ? 1 : q ? (+q >= 2 && +q <= 4 ? +q : 1) : store.get() >= 2 && store.get() <= 4 ? store.get() : 1)(new URLSearchParams(location.search).get('level'));
 // NO BOOK AFTER LEVEL 1 (build BNEXT; owner: "i'm not sure christian should have book in his hand" ... "Everywhere please" ...
 // "That's expensive! Any way w[e can] do it without spending that much"): Bunyan's opening picture has "a book in his
 // hand", so Level 1 keeps it; after that his walking, standing and turning pictures are copies with the book painted out
@@ -2365,7 +2369,7 @@ function bookless(on) { wantNB = on; if (on) nbLoad(); bookSync(); }
 function go3() { RM.on = false; bookless(true); store.set(3); SL.on = false; SL.show = false; document.getElementById('title').style.opacity = 0; setTimeout(() => { document.getElementById('title').style.display = 'none'; }, 900); HL.start(); }
 function go2() { RM.on = false; bookless(true); store.set(2); HL.on = false; HL.show = false; document.getElementById('title').style.opacity = 0; setTimeout(() => { document.getElementById('title').style.display = 'none'; }, 900); SL.start(); }
 // a room of Level 4 on its own (build 257, a preview: ?room=3)
-function goRoom() { bookless(true); document.getElementById('title').style.opacity = 0; setTimeout(() => { document.getElementById('title').style.display = 'none'; }, 900); RM.start(); }
+function goRoom(id) { if (!id || typeof id !== 'string') { id = new URLSearchParams(location.search).get('room') || 'door'; if (/^[1-7]$/.test(id)) id = 'r' + id; } if (id === 'door') store.set(4); bookless(true); document.getElementById('title').style.opacity = 0; setTimeout(() => { document.getElementById('title').style.display = 'none'; }, 900); RM.start(id); }
 const END1 = [...document.querySelectorAll('#endc h1, #endc p')].map(e => e.textContent);
 function start() {
   bookless(false);
@@ -2380,7 +2384,7 @@ function start() {
   if (TEST_X) { G.state = 'play'; return; }
   const run = ++runN; G.state = 'wait'; setTimeout(() => { if (run === runN && G.state === 'wait') talk(INTRO); }, 1700);   // the bell, then the story
 }
-for (const b of document.querySelectorAll('#levels .lv')) { b.classList.toggle('dim', +b.dataset.lv !== LV); b.onclick = () => +b.dataset.lv === 3 ? go3() : +b.dataset.lv === 2 ? go2() : start(); }
+for (const b of document.querySelectorAll('#levels .lv')) { b.classList.toggle('dim', +b.dataset.lv !== LV); b.onclick = () => +b.dataset.lv === 4 ? goRoom('door') : +b.dataset.lv === 3 ? go3() : +b.dataset.lv === 2 ? go2() : start(); }
 // the title page's paper (build 187): laid paper as in a book of the 1670s: warm cream, cloudy pulp, faint chain lines,
 // a few spots of foxing, darker toward the edges. Made once, small, and stretched over both pages.
 (function paperPages() {
@@ -2504,7 +2508,9 @@ document.getElementById('open').onclick = () => {
   if (new URLSearchParams(location.search).has('room')) { RM.preload(); setTimeout(goRoom, 1300); }
 };
 document.getElementById('again').onclick = () => RM.on ? RM.start() : HL.on ? HL.start() : SL.on ? SL.start() : start();
-document.getElementById('on2').onclick = () => SL.on ? go3() : go2();
+document.getElementById('on2').onclick = () => SL.on ? go3() : HL.on ? goRoom('door') : go2();
+// the darker rooms of the Interpreter's House (6 and 7) are shewn only when this line is marked (kept on the device)
+{ const d = document.getElementById('darkRooms'), on = () => { try { return localStorage.getItem('pp-dark') === '1'; } catch (e) { return false; } }, set = () => d.classList.toggle('on', on()); set(); d.onclick = () => { try { localStorage.setItem('pp-dark', on() ? '0' : '1'); } catch (e) {} set(); }; }
 
 // ---------- boot: build the scenery, fetch Christian, then the others while the child is already playing ----------
 // THE HOME SCREEN LINK STAYS UP TO DATE (owner, build 85: "is there a way to force update link when I open it"). A
@@ -2542,9 +2548,9 @@ document.getElementById('on2').onclick = () => SL.on ? go3() : go2();
 })();
 </script>
 <script src="slough.js?v=259"></script>
-<script src="hill.js?v=260"></script>
-<script src="rooms.js?v=257"></script>
-<script src="keepsakes.js?v=247"></script>
-<script src="editor.js?v=257"></script>
+<script src="hill.js?v=261"></script>
+<script src="rooms.js?v=261"></script>
+<script src="keepsakes.js?v=261"></script>
+<script src="editor.js?v=261"></script>
 </body>
 </html>

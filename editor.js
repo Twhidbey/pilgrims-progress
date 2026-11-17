@@ -42,7 +42,7 @@ const ED = (() => {
       if (G.state === 'end' || G.state === 'choice') return true;
       keys.r = G.state === 'play';
       if (G.state === 'dialog') {
-        if (G.act === 'gate' || G.act === 'walkon') keys.push = true;
+        if (G.act === 'gate' || G.act === 'walkon' || (RM.on && RM.HOLDS.includes(G.act))) keys.push = true;
         else if (G.act === 'hand') SL.grip();
         else if (G.act === 'light') lightTouched();
         else if (RM.on && G.act) RM.key();
@@ -67,7 +67,7 @@ const ED = (() => {
     hush(); dlg.className = ''; choiceEl.className = ''; document.body.classList.remove('talking', 'capped', 'slough');
     G.capQ.length = 0; G.cap = 0; G.hint = null; G.act = null; G.ring = null; G.state = 'wait';
     document.getElementById('endc').className = 'card';
-    if (lv === 4) goRoom(); else if (lv === 3) go3(); else if (lv === 2) go2(); else start();
+    if (lv === 4) goRoom('door'); else if (lv === 3) go3(); else if (lv === 2) go2(); else start();
     n = 0;
     // a level begins after a short pause of its own ('wait'): come forward once it is under way
     const t0 = Date.now(), poll = setInterval(() => {
