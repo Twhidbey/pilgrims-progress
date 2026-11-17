@@ -1122,10 +1122,13 @@ const HL = (() => {
       // was going through rocky terrain to get there"): the mountain's own spurs (`crag`, the same breaking-wave outline as
       // the rocky path's crags), small and hazed far off: a back row rising behind the village toward the mountain, and a
       // lower, darker front row across its foot and out to the left, both hidden on the right by the mountain's foot
-      const farRocks = (front, va, hz) => { const u0 = front ? -660 : -600, u1 = front ? 60 : 20, base = hy + (front ? -2 : -36) * k, hgt = (front ? 42 : 80) * k, seg = front ? 40 : 70, sd = front ? 71 : 53;
-        const col = mix(mix(front ? [84, 72, 78] : [104, 90, 96], hz, .2), mix([58, 50, 52], [30, 27, 32], dark), dark * .6), g = c.createLinearGradient(hx + u0 * k, 0, hx + u1 * k, 0);
-        g.addColorStop(0, css(col, 0)); g.addColorStop(.22, css(col, va)); g.addColorStop(1, css(col, va)); c.fillStyle = g;
-        c.beginPath(); c.moveTo(hx + u0 * k, base + 2 * k); for (let u = u0; u <= u1; u += 2) { const e = smooth(u0, u0 + 140, u); c.lineTo(hx + u * k, base - hgt * e * crag(u + 4000, sd, seg, false, .6, 1)); }
+      // (build 300, owner: "a little more variety of rock and connecting to mountain"): three rows, each with spurs of uneven
+      // width and now and then a taller one, rising toward the right and running on in under the mountain's foot
+      const FR = [{ u0: -620, u1: 320, b: -40, h: 72, seg: 55, sd: 53, wk: .7, col: [108, 94, 100] }, { u0: -540, u1: 300, b: -20, h: 48, seg: 32, sd: 61, wk: .6, col: [96, 82, 88] }, { u0: -690, u1: 140, b: -2, h: 34, seg: 22, sd: 71, wk: .55, col: [82, 70, 76] }];
+      const farRocks = (li, va, hz) => { const L = FR[li], u0 = L.u0, u1 = L.u1, base = hy + L.b * k, hgt = L.h * k, seg = L.seg, sd = L.sd, front = li === 2;
+        const col = mix(mix(L.col, hz, .2), mix([58, 50, 52], [30, 27, 32], dark), dark * .6), g = c.createLinearGradient(hx + u0 * k, 0, hx + u1 * k, 0);
+        g.addColorStop(0, css(col, 0)); g.addColorStop(.2, css(col, va)); g.addColorStop(1, css(col, va)); c.fillStyle = g;
+        c.beginPath(); c.moveTo(hx + u0 * k, base + 2 * k); for (let u = u0; u <= u1; u += 2) { const e = smooth(u0, u0 + 120, u) * (.45 + .85 * smooth(u0, 60, u)) + (li === 2 ? 0 : .5 * smooth(-200, 200, u)); c.lineTo(hx + u * k, base - hgt * e * Math.max(crag(u + 4000, sd, seg, true, .6, L.wk), li === 2 ? 0 : .85 * smooth(-280, -50, u))); }
         c.lineTo(hx + u1 * k, base + 2 * k); c.closePath(); c.fill();
         // the plain's haze over their foot, so they stand in it
         const fg = c.createLinearGradient(0, base - hgt * .3, 0, base + 2 * k), fc = colAt(clamp((base - hor) / (Y(0) - hor))); fg.addColorStop(0, css(fc, 0)); fg.addColorStop(1, css(fc, .7 * va));
@@ -1135,7 +1138,7 @@ const HL = (() => {
           t.globalCompositeOperation = 'source-over'; t.globalAlpha = 1; t.clearRect(0, 0, W2, H2); t.drawImage(VILP, 0, 0);
           t.globalCompositeOperation = 'source-atop'; t.fillStyle = css(hz, .5 + .2 * dark); t.fillRect(0, 0, W2, H2);
           const fh = t.createLinearGradient(0, H2 * .5, 0, H2); fh.addColorStop(0, css(colAt(clamp((ty - hor) / (Y(0) - hor))), 0)); fh.addColorStop(1, css(colAt(clamp((ty - hor) / (Y(0) - hor))), .85)); t.fillStyle = fh; t.fillRect(0, H2 * .5, W2, H2);
-          farRocks(0, va, hz); t.globalCompositeOperation = 'source-over'; c.globalAlpha = va; c.drawImage(tc, tx, ty - th, tw, th); c.globalAlpha = 1; farRocks(1, va, hz); } } };
+          farRocks(0, va, hz); farRocks(1, va, hz); t.globalCompositeOperation = 'source-over'; c.globalAlpha = va; c.drawImage(tc, tx, ty - th, tw, th); c.globalAlpha = 1; farRocks(2, va, hz); } } };
       if ((rocky || reveal > .002) && hx > -1300 * k && hx < VW + 400 * k) {
         // AWE FIRST (owner, build 135: "the burning hill can be frightening - but most importantly stunning - it should
         // awe first"). After John Martin's pictures of the sublime and the book's own Sinai (Exodus 19: fire at the top,
