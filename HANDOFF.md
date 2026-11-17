@@ -52,6 +52,8 @@ Older handovers (builds 41 to 137, with the picture and video prompts used for H
 
 **Build 213: Level 3's lightning: no more strokes through cloud; every strike comes out of a dark storm bank over the mountain and its strands end on the rock. See `CLAUDE.md`, "Build 213". Nothing spent.**
 
+**Build 215: Level 3's gate from photographs: a public-domain old oak door, a CC0 fieldstone wall with soft joints, light streaming out of the opened door, Good-will a dark figure in the doorway (a stand-in from Evangelist's frames). See `CLAUDE.md`, "Build 215". Nothing spent.**
+
 **Build 209: Level 3's far smoke is pale with distance (never darker than the mountain), with more cloud layers about the far mountain. See `CLAUDE.md`, "Build 209". Nothing spent.**
 
 **Build 207: Level 3's lightning traced from two public-domain NOAA photographs (a great branching strike and single strokes), landing on the mountain's shoulders, flickering like real strikes. See `CLAUDE.md`, "Build 207". Nothing spent.**
