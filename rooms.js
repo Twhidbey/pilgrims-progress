@@ -12,7 +12,7 @@
 // Every room is ONE still picture, painted by the image model in the game's watercolour after its master (concept
 // notes in CLAUDE.md, "THE INTERPRETER'S HOUSE IN THE GAME"), quietened in code: assets/room-door.webp, room1..7.webp
 // (room3.webp is cut narrower). The people who belong to a room are in its picture; Christian and the Interpreter are
-// the game's watercolour figures coloured in the house's palette (room3-christian.webp; the Interpreter's own two pictures,
+// the game's watercolour figures coloured in the house's palette (room-christian.webp, Christian painted once in colour; the Interpreter's own two pictures,
 // room-interpreter.webp standing and room-interpreter-say.webp explaining), placed in each room, breathing in code. Everything that moves is code:
 // light, dust, water, gold, bubbles, fire, the brave man, the dreamer's trembling. 
 //
@@ -28,7 +28,7 @@ const RM = (() => {
   const darkOn = () => { try { return localStorage.getItem('pp-dark') === '1'; } catch (e) { return false; } };
 
   // the two visitors (sprites face LEFT as made; face 1 = turned to face right)
-  const VIS = { C: { n: 'room3-christian', ax: 150, g: 624, who: 'Christian', ph: 0, ct: 1.5, mul: .9, warm: [1.05, 1, .92] }, I: { n: 'room-interpreter', ax: 86, g: 611, who: I, ph: 1.7, say: { n: 'room-interpreter-say', ax: 153, g: 611, noSh: 1 } } };
+  const VIS = { C: { n: 'room-christian', ax: 92, g: 631, who: 'Christian', ph: 0, ct: 1.15, mul: .88, sat: .85, warm: [1, 1, 1] }, I: { n: 'room-interpreter', ax: 86, g: 611, who: I, ph: 1.7, say: { n: 'room-interpreter-say', ax: 153, g: 611, noSh: 1 } } };
   const BRAVE = { plain: { n: 'room5-brave', ax: 65, g: 519 }, armed: { n: 'room5-brave-armed', ax: 163, g: 519 } };
 
   let R = null, t = 0, ph = '', cam = { x: 0, to: 0 }, fade = 1, fadeTo = 0, after = null, toned = {}, startId = 'door', motes = [];
@@ -57,18 +57,18 @@ const RM = (() => {
 
   // ---------- figures ----------
   // each figure picture, coloured for the room it stands in (baked once per room: no canvas is touched while playing)
-  function toneOf(n, col, ct = 1.2, mul = 1) {
-    const key = n + '|' + col.join(',') + '|' + ct + '|' + mul; if (toned[key]) return toned[key];
+  function toneOf(n, col, ct = 1.2, mul = 1, sat0 = null) {
+    const key = n + '|' + col.join(',') + '|' + ct + '|' + mul + '|' + sat0; if (toned[key]) return toned[key];
     const im = pics[n]; if (!im) return null;
     const cv2 = document.createElement('canvas'); cv2.width = im.width; cv2.height = im.height; const x = cv2.getContext('2d');
-    x.drawImage(im, 0, 0); const d = x.getImageData(0, 0, im.width, im.height), p = d.data, sat = R && R.sat != null ? R.sat : .6;
+    x.drawImage(im, 0, 0); const d = x.getImageData(0, 0, im.width, im.height), p = d.data, sat = sat0 != null ? sat0 : R && R.sat != null ? R.sat : .6;
     let m = 0, cnt = 0; for (let i = 0; i < p.length; i += 4) if (p[i + 3] > 128) { m += (p[i] + p[i + 1] + p[i + 2]) / 3; cnt++; } m /= cnt || 1;
     for (let i = 0; i < p.length; i += 4) { const l = (p[i] + p[i + 1] + p[i + 2]) / 3; for (let k = 0; k < 3; k++) { let c = l + (p[i + k] - l) * sat; c = (m + (c - m) * ct) * mul; p[i + k] = Math.max(0, Math.min(255, c * col[k] / 255)); } }
     x.putImageData(d, 0, 0);
     return toned[key] = cv2;
   }
   function fig(c, spec, meta, x, y, face, k = 1, a = 1, col = R.tone || [255, 255, 255], who = null, ph0 = 0, bob = 0) {
-    const im = toneOf(spec, col, meta.ct, meta.mul); if (!im || a <= .01) return;
+    const im = toneOf(spec, col, meta.ct, meta.mul, meta.sat); if (!im || a <= .01) return;
     const sc = S / K * k, fx = u(x), fy = v(y), mv = who && talkMove(who);
     const sy = (1 + .006 * Math.sin(G.t / 62 + ph0)) * (mv ? mv.sy : 1);
     if (!meta.noSh && !R.noShadow) { c.globalAlpha = a; c.fillStyle = 'rgba(12,6,3,.18)'; c.beginPath(); c.ellipse(fx + 6 * face, fy - 1, 55 * sc, 6 * sc, 0, 0, 6.2832); c.fill(); }
@@ -88,7 +88,7 @@ const RM = (() => {
   const WALKT = new Map();
   function walker(c, x, frame, k) {
     const src = CHR[frame]; if (!src) { visitor(c, 'C', x, 1, k); return; }
-    let im = WALKT.get(src); if (!im) { im = document.createElement('canvas'); im.width = src.width; im.height = src.height; const q = im.getContext('2d'); q.drawImage(src, 0, 0); const d = q.getImageData(0, 0, im.width, im.height), p = d.data, col = [40, 36, 44]; for (let i = 0; i < p.length; i += 4) for (let j = 0; j < 3; j++) p[i + j] = p[i + j] * col[j] / 255; q.putImageData(d, 0, 0); WALKT.set(src, im); }
+    let im = WALKT.get(src); if (!im) { im = document.createElement('canvas'); im.width = src.width; im.height = src.height; const q = im.getContext('2d'); q.drawImage(src, 0, 0); const d = q.getImageData(0, 0, im.width, im.height), p = d.data, col = [58, 44, 36]; for (let i = 0; i < p.length; i += 4) for (let j = 0; j < 3; j++) p[i + j] = p[i + j] * col[j] / 255; q.putImageData(d, 0, 0); WALKT.set(src, im); }
     const sc = (790 * k * S) / 300, walkC = im;
     const fx = u(x), fy = v(R.FY);
     c.fillStyle = 'rgba(8,6,6,.35)'; c.beginPath(); c.ellipse(fx, fy - 1, 34, 4, 0, 0, 6.2832); c.fill();
@@ -154,7 +154,7 @@ const RM = (() => {
     },
     // 2 THE DUSTY PARLOUR (after Vermeer's Milkmaid): the broom raises the dust; the water lays it
     r2: {
-      pic: 'room2', FY: 1262, cam0: 140, tone: [300, 288, 268], toneC: [345, 315, 275], noShadow: 1,
+      pic: 'room2', FY: 1262, cam0: 140, tone: [300, 288, 268], noShadow: 1,
       enter() { this.dust = []; this.haze = .22; this.wet = []; const r = rngR(5); for (let i = 0; i < 70; i++) this.dust.push({ x: 300 + r() * 2800, y: 300 + r() * 900, vx: 0, vy: 0, s: 2 + r() * 5, a: .5 + r() * .5, p: r() * 7 }); },
       run() { talk([[N, 'He led him into a very large parlour, full of dust, because it was never swept.'], [TIP, 'Touch the broom.', 'broom']], () => { ph = 'sweep'; t = 0; G.state = 'auto'; }); },
       act(sx, sy) {
@@ -192,7 +192,7 @@ const RM = (() => {
     },
     // 3 PASSION AND PATIENCE (after Chardin's Soap Bubbles): the bag, the gold, the bubbles, the rags
     r3: {
-      pic: 'room3', FY: 1250, PW: 2566, cam0: 15, tone: [255, 255, 255],
+      pic: 'room3', FY: 1235, PW: 2561, cam0: 13, tone: [255, 255, 255],
       enter() {
         this.bag = { show: false, a: 0, tip: 0, empty: 0 }; this.coins = []; this.bubbles = []; this.great = null; this.rags = 0; pic('room3-rags');
       },
@@ -200,9 +200,9 @@ const RM = (() => {
         const self = this;
         talk([[N, 'In a little room sat two little children. The name of the eldest was Passion, and of the other, Patience.'], [C, 'Why is Passion so discontented?'], [I, 'He must wait for his best things till next year, but he will have all now. Patience is willing to wait.'], [N, 'Then one came to Passion, and brought him a bag of treasure.', null, () => { self.bag.show = true; }], [TIP, 'Touch the bag.', 'bag']], () => { ph = 'pour'; t = 0; G.state = 'auto'; if (audio()) note(79, .03, 1.6); });
       },
-      act(sx, sy) { if (G.act === 'bag' && (sx == null || near(sx, sy, 1325, 1210, 160))) next(true); },
+      act(sx, sy) { if (G.act === 'bag' && (sx == null || near(sx, sy, 1290, 1200, 160))) next(true); },
       upd() {
-        const B = { x: 1325, y: 1240 }, HP = { x: 1150, y: 1246 }, bag = this.bag;
+        const B = { x: 1290, y: 1230 }, HP = { x: 1120, y: 1234 }, bag = this.bag;
         if (bag.show) bag.a = Math.min(1, bag.a + .02);
         if (G.act === 'bag' && G.actT >= 70 && !G.ring) G.ring = ring(B.x, B.y - 30);
         if (ph === 'pour') {
@@ -225,8 +225,8 @@ const RM = (() => {
         this.bubbles = this.bubbles.filter(b => b.pop < 14);
         const g = this.great; if (g) { g.life++; g.r = Math.min(g.R, g.r + .47); if (!g.pop) { g.y -= 1.45 * smooth(0, 60, g.life); g.x += Math.sin(g.life / 70) * .8; if (g.life > g.L) { g.pop = 1; note(91, .02, 1.4); } } else g.pop++; }
       },
-      under(c) { if (this.rags > 0 && pics['room3-rags']) { c.globalAlpha = smooth(0, 1, this.rags); c.drawImage(pics['room3-rags'], u(720), v(580), 790 * S, 754 * S); c.globalAlpha = 1; } },
-      people(c) { visitor(c, 'I', 2440, -1, 1.22, 1, 6); visitor(c, 'C', 360, 1, 1.22); },
+      under(c) { if (this.rags > 0 && pics['room3-rags']) { c.globalAlpha = smooth(0, 1, this.rags); c.drawImage(pics['room3-rags'], u(700), v(600), 570 * S, 720 * S); c.globalAlpha = 1; } },
+      people(c) { visitor(c, 'I', 2410, -1, 1, 1, 10); visitor(c, 'C', 2140, -1); },
       over(c) { drawBag(c, this.bag); drawCoins(c, this.coins); for (const b of this.bubbles) bubble(c, u(b.x), v(b.y), b.r * S, b.pop); if (this.great) bubble(c, u(this.great.x), v(this.great.y), this.great.r * S, this.great.pop); },
     },
     // 4 THE FIRE FED WITH OIL (after La Tour's St Joseph the Carpenter): round the back of the wall
@@ -351,6 +351,35 @@ const RM = (() => {
       people(c) { c.globalAlpha = this.a; if (this.w > 0 || this.fr > 0) walker(c, this.x, Math.floor(this.fr) % Math.max(1, CHR.length), .58); else visitor(c, 'C', this.x, 1, .58); c.globalAlpha = 1; },
     },
   };
+  // FOLLOW THE INTERPRETER (owner, build 267: "Ok to do 1"): between two rooms a dark passage; the child holds to follow
+  // the Interpreter's candle ("he took him by the hand, and led him into ..."). Christian walks (his own walk pictures,
+  // dark), the Interpreter goes a step ahead with a candle, its light moving along the wall and the floor.
+  ROOMS.pass = {
+    pic: null, FY: 1160, cam0: 0, tone: [120, 92, 74], k: .82, PW: 2526,
+    enter() { this.p = 0; this.fr = 0; this.w = 0; this.st = 0; if (this.to && ROOMS[this.to].pic) pic(ROOMS[this.to].pic); },
+    run() { talk([[TIP, 'Hold to follow the Interpreter.', 'follow']], () => {}); },
+    act() {},
+    x() { return 380 + this.p * 1500; },
+    upd() {
+      if (G.act === 'follow') {
+        if (G.actT >= 50 && !hold() && !G.ring) G.ring = () => [u(this.x() + 420), v(820)];
+        if (hold()) { G.ring = null; this.w = Math.min(1, this.w + .06); } else this.w = Math.max(0, this.w - .06);
+        if (this.p >= 1) { next(true); G.state = 'auto'; goTo(this.to); }
+      } else this.w = Math.max(0, this.w - .03);
+      this.p = Math.min(1, this.p + .0042 * this.w); this.fr += .3 * this.w;
+      const step = Math.floor(this.fr / 9.5); if (step !== this.st) { this.st = step; noise(200, 1.5, .2, .06); noise(140, 1.2, .25, .04, .05); }
+    },
+    draw(c) {
+      const g = c.createLinearGradient(0, 0, 0, VH); g.addColorStop(0, '#0c0705'); g.addColorStop(.8, '#140c08'); g.addColorStop(1, '#0a0604'); c.fillStyle = g; c.fillRect(0, 0, VW, VH);
+      const ix = this.x() + 430, fl = 1 + .06 * Math.sin(G.t / 4.7) * Math.sin(G.t / 11), bob0 = Math.abs(Math.sin(this.fr * Math.PI / 9.5)) * 2 * this.w, lx = u(ix) + 30, ly = v(this.FY) - 124 - bob0;
+      // the candle's light on the passage wall and, flat, on the floor
+      glow(c, lx, ly, 330 * fl, [255, 170, 90], .2); c.save(); c.translate(lx, v(this.FY) + 2); c.scale(1, .12); glow(c, 0, 0, 380 * fl, [255, 170, 90], .32); c.restore();
+      const bob = Math.abs(Math.sin(this.fr * Math.PI / 9.5)) * 2 * this.w;
+      fig(c, VIS.I.n, VIS.I, ix, this.FY, 1, this.k, 1, this.tone, I, 1.7, bob);
+      walker(c, this.x(), Math.floor(this.fr) % Math.max(1, CHR.length), this.k);
+      glow(c, lx, ly, 26 * fl, [255, 226, 160], .7); c.fillStyle = 'rgba(255,240,200,.95)'; c.beginPath(); c.ellipse(lx, ly - 2, 1.6, 3.4, 0, 0, 6.2832); c.fill();
+    },
+  };
   const ORDER = ['door', 'r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r7', 'leave'];
   function rngR(seed) { let s = seed; return () => (s = (s * 16807) % 2147483647) / 2147483647; }
 
@@ -358,7 +387,7 @@ const RM = (() => {
   function drawBag(c, bag) {
     if (bag.a <= .01) return;
     const k = smooth(0, 1, bag.tip), e = bag.empty;
-    c.save(); c.globalAlpha = bag.a; c.translate(u(1325) + 12, v(1240)); c.rotate(-1.35 * k); c.translate(-12, 0); c.scale(1.6 * (1 - .38 * e), 1.6 * (1 - .12 * e));
+    c.save(); c.globalAlpha = bag.a; c.translate(u(1290) + 12, v(1230)); c.rotate(-1.35 * k); c.translate(-12, 0); c.scale(1.6 * (1 - .38 * e), 1.6 * (1 - .12 * e));
     c.fillStyle = 'rgba(12,6,3,.3)'; c.beginPath(); c.ellipse(2, 0, 16, 3, 0, 0, 6.2832); c.fill();
     const g = c.createLinearGradient(-15, 0, 15, 0); g.addColorStop(0, '#6e4b2e'); g.addColorStop(.5, '#4a301c'); g.addColorStop(1, '#24170c');
     c.fillStyle = g; c.beginPath(); c.moveTo(-5, -24); c.bezierCurveTo(-13, -21, -18, -12, -15, -4); c.quadraticCurveTo(-12, .5, 0, .5); c.quadraticCurveTo(12, .5, 15, -4); c.bezierCurveTo(18, -12, 13, -21, 5, -24); c.closePath(); c.fill();
@@ -403,6 +432,7 @@ const RM = (() => {
   }
   function goTo(id) {
     if (id === 'r6' && !darkOn()) id = 'leave';
+    if (R && R.id !== 'door' && R.id !== 'pass' && id !== 'pass') { ROOMS.pass.to = id; id = 'pass'; }
     after = id; fadeTo = 1; G.state = 'auto';
     if (audio()) { noise(220, 1.5, .25, .08, .2); noise(220, 1.5, .25, .07, .75); }
   }
@@ -427,7 +457,7 @@ const RM = (() => {
   function update() {
     G.t++; t++;
     if (G.act) G.actT++;
-    if (fadeTo === 1) { fade = Math.min(1, fade + .03); if (fade >= 1 && after) { const id = after; after = null; Promise.all([pic(ROOMS[id].pic)]).then(() => { enterRoom(id); fadeTo = 0; setTimeout(() => { if (RM.on && R && R.id === id) { ph = 'run'; R.run(); } }, 700); }); } }
+    if (fadeTo === 1) { fade = Math.min(1, fade + .03); if (fade >= 1 && after) { const id = after; after = null; Promise.all([ROOMS[id].pic ? pic(ROOMS[id].pic) : null]).then(() => { enterRoom(id); fadeTo = 0; setTimeout(() => { if (RM.on && R && R.id === id) { ph = 'run'; R.run(); } }, 700); }); } }
     else fade = Math.max(0, fade - .025);
     if (!R) return;
     cam.x += (cam.to - cam.x) * .03;
@@ -448,7 +478,8 @@ const RM = (() => {
     const c = ctx; c.setTransform(DPR, 0, 0, DPR, 0, 0);
     c.fillStyle = '#140c08'; c.fillRect(0, 0, VW, VH);
     const im = R && pics[R.pic];
-    if (im) {
+    if (R && R.id === 'pass') R.draw(c);
+    else if (im) {
       const w = R.PW * S, h = PH * S, x0 = u(0), y0 = v(0), bot = y0 + h;
       c.drawImage(im, x0, y0, w, h);
       if (bot < VH) { const hh = 60 * im.height / PH; c.save(); c.translate(0, 2 * bot); c.scale(1, -1); c.drawImage(im, 0, im.height - hh, im.width, hh, x0, bot - 60 * S, w, 60 * S); c.restore(); const g = c.createLinearGradient(0, bot - 10, 0, VH); g.addColorStop(0, 'rgba(14,8,5,.15)'); g.addColorStop(1, 'rgba(14,8,5,.9)'); c.fillStyle = g; c.fillRect(0, bot - 10, VW, VH - bot + 10); }
@@ -466,7 +497,7 @@ const RM = (() => {
     drawItems();
   }
 
-  const HOLDS = ['round', 'walkout'];
+  const HOLDS = ['round', 'walkout', 'follow'];
   const lines = []; // for the voice tool: every room's lines are written out in full above
   return { on: false, start, update, draw, touch, key, preload, HOLDS, darkOn, setDark: on => { try { localStorage.setItem('pp-dark', on ? '1' : '0'); } catch (e) {} }, lines,
     peek: () => ({ room: R && R.id, ph, t, cam: Math.round(cam.x), fade: +fade.toFixed(2), r3: R && R.id === 'r3' ? { coins: R.coins.length, rags: +R.rags.toFixed(2) } : null }) };
