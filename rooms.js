@@ -28,7 +28,7 @@ const RM = (() => {
   const darkOn = () => { try { return localStorage.getItem('pp-dark') === '1'; } catch (e) { return false; } };
 
   // the two visitors (sprites face LEFT as made; face 1 = turned to face right)
-  const VIS = { C: { n: 'room-christian', ax: 92, g: 631, who: 'Christian', ph: 0, ct: 1.2, mul: .62, sat: .42, warm: [1, 1, 1], walk: { n: 'room-christian-walk', ax: 117, g: 355, s: 632 / 347, ct: 1.2, mul: .62, sat: .42, cols: 8, fr: 15, W: 192, H: 359, vpx: 6 } }, I: { n: 'room-interpreter', ax: 107, g: 634, who: I, ph: 1.7, ct: 1.15, mul: .66, sat: .45, walk: { n: 'room-interpreter-walk', ax: 102, g: 374, s: 635 / 364, ct: 1.15, mul: .66, sat: .45, cols: 8, fr: 27, W: 184, H: 376, vpx: 6 }, say: { n: 'room-interpreter-say', ax: 82, g: 334, s: 635 / 331, ct: 1.15, mul: .66, sat: .45, cols: 8, fr: 57, W: 142, H: 336 } } };
+  const VIS = { C: { n: 'room-christian', ax: 92, g: 631, who: 'Christian', ph: 0, ct: 1.2, mul: .62, sat: .42, warm: [1, 1, 1], walk: { n: 'room-christian-walk', ax: 117, g: 355, s: 632 / 347, ct: 1.2, mul: .62, sat: .42, cols: 8, fr: 15, W: 192, H: 359, vpx: 6 } }, I: { n: 'room-interpreter', ax: 107, g: 634, who: I, ph: 1.7, ct: 1.15, mul: .66, sat: .45, walk: { n: 'room-interpreter-walk', ax: 102, g: 374, s: 635 / 365, ct: 1.15, mul: .66, sat: .45, cols: 8, fr: 27, W: 184, H: 376, vpx: 6 }, say: { n: 'room-interpreter-say', ax: 84, g: 334, s: 635 / 331, ct: 1.15, mul: .66, sat: .45, cols: 8, fr: 56, W: 142, H: 336 } } };
   const BRAVE = { plain: { n: 'room5-brave', ax: 94, g: 519 }, armed: { n: 'room5-brave-armed', ax: 123, g: 536 } };
 
   let R = null, t = 0, ph = '', cam = { x: 0, to: 0 }, fade = 1, fadeTo = 0, after = null, toned = {}, startId = 'door', motes = [];
@@ -202,7 +202,7 @@ const RM = (() => {
     },
     // 1 THE PICTURE (after Rembrandt's Apostle Paul): the room dark but for the servant's taper; he lights the candle
     r1: {
-      pic: 'room1', FY: 1262, cam0: 244, tone: [205, 185, 165], k: 1.06,
+      pic: 'room1', FY: 1262, cam0: 244, tone: [205, 185, 165], k: 1.48,
       light() { return { x: 1478, a: .32 * smooth(.3, 1, this.lit) * (1 + .05 * Math.sin(G.t / 5)), col: [255, 196, 130] }; },
       enter() { this.lit = 0; },
       run() { talk([[TIP, 'Touch the candle.', 'candle']], () => { ph = 'light'; t = 0; G.state = 'auto'; }); },
@@ -259,7 +259,7 @@ const RM = (() => {
     },
     // 3 PASSION AND PATIENCE (after Chardin's Soap Bubbles): the bag, the gold, the bubbles, the rags
     r3: {
-      pic: 'room3', FY: 1235, PW: 2561, cam0: 13, tone: [255, 255, 255],
+      pic: 'room3', FY: 1235, PW: 2561, cam0: 13, tone: [255, 255, 255], k: 1.3,
       enter() {
         this.bag = { show: false, a: 0, tip: 0, empty: 0 }; this.coins = []; this.bubbles = []; this.great = null; this.rags = 0; pic('room3-rags');
       },
@@ -293,7 +293,7 @@ const RM = (() => {
         const g = this.great; if (g) { g.life++; g.r = Math.min(g.R, g.r + .47); if (!g.pop) { g.y -= 1.45 * smooth(0, 60, g.life); g.x += Math.sin(g.life / 70) * .8; if (g.life > g.L) { g.pop = 1; note(91, .02, 1.4); } } else g.pop++; }
       },
       under(c) { if (this.rags > 0 && pics['room3-rags']) { c.globalAlpha = smooth(0, 1, this.rags); c.drawImage(pics['room3-rags'], u(700), v(600), 570 * S, 720 * S); c.globalAlpha = 1; } },
-      people(c) { visitor(c, 'I', 2450, -1, 1, 1, 10); visitor(c, 'C', 2170, -1); },
+      people(c) { visitor(c, 'I', 2460, -1, R.k, 1, 10); visitor(c, 'C', 2060, -1); },
       over(c) { drawBag(c, this.bag); drawCoins(c, this.coins); for (const b of this.bubbles) bubble(c, u(b.x), v(b.y), b.r * S, b.pop); if (this.great) bubble(c, u(this.great.x), v(this.great.y), this.great.r * S, this.great.pop); },
     },
     // 4 THE FIRE FED WITH OIL (after La Tour's St Joseph the Carpenter): round the back of the wall
