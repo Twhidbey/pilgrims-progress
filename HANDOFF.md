@@ -26,6 +26,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 **Build 286 (Level 3 art chat): a softer glow on the figures; the village smaller and peeking out from behind the mountain's left side (a new tree-less picture still to make). A free image model found: FLUX.1 Kontext on Hugging Face (see CLAUDE.md, build 286). Nothing spent.**
 
+**Build 305 (Level 2 chat):** owner: "decrease the drips a little or make them more mud like (it looks like water now)". All drops go through `drop()` in `slough.js`: about half as many (45% skipped), thrown at .7 of the speed, 1.7 times thicker, stronger pull back down (`MUD_G` .27, was .21), drawn as short round globs (a third of the old streak), and fewer, smaller rings where they land. Nothing spent.
+
 **Build 303 (Level 2 chat):** owner on build 299: "back up, instead of thickening strips can you just make more to cover white strips (the up and down of new one is too much)". The near mud's patches are back to build 298's gentle height (3 + .14 j); there are twice as many rows (37) with shorter gaps (`gk` .6), so they cover the white between them. Nothing spent.
 
 **Build 299 (Level 2 chat):** owner on build 298: "look great! and little less stripy in the front (waves cohesively grey)". The near mud has fewer, taller, overlapping rows and shorter gaps (`lay(..., gk)`; 13 rows, height 6 + .3 j), so it is one wavy grey mass with a pool now and then, still opening into water toward the far bank. Nothing spent.

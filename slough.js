@@ -454,7 +454,7 @@ const SL = (() => {
   // SPLASHES (build 121, owner: "splashes are great - maybe crank that up a bit"): drops of mud thrown up from the water
   // line wherever someone heaves, falls or is hauled out; they rise, fall back and leave a small ring
   let drops = [], churns = [];
-  function splash(x, n = 7, k = 1, still) { if (!still) churns.push({ x, a: Math.min(1, .5 + n * .05) }); for (let i = 0; i < n; i++) drops.push({ x: x + (Math.random() - .5) * 30, y: 0, vx: (Math.random() - .5) * 2 * k, vy: -(1.1 + Math.random() * 2.1) * k, r: .7 + Math.random() * 1.1, t: 0 }); }
+  function splash(x, n = 7, k = 1, still) { if (!still) churns.push({ x, a: Math.min(1, .5 + n * .05) }); for (let i = 0; i < n; i++) drop(x + (Math.random() - .5) * 30, 0, (Math.random() - .5) * 2 * k, -(1.1 + Math.random() * 2.1) * k, .7 + Math.random() * 1.1); }
   // ============================================================
   // THE MUD ANSWERS THE FIGURES (build 143; owner, build 141: "the way it acts does not look good - it doesn't stick to
   // character [or] act like coordinated response to their movements"). The figures move by their videos; the mud used to
@@ -493,7 +493,10 @@ const SL = (() => {
   const wxOf = (r, c) => r.x + r.face * (c * 2 - r.meta.ax) * CHR_K, wyOf = (r, row) => r.y + (row * 2 - r.meta.ground) * CHR_K;
   let MREC = null, FIG_WET = null, RECS = {}, strings = [], sndT = 0;
   const MS = {};      // per figure: the last picture's crossings, how hard he is moving (act), cool-downs
-  function drop(x, y, vx, vy, r = 1) { drops.push({ x, y, vx, vy, r, t: 0 }); }
+  // build 305 (owner: "decrease the drips a little or make them more mud like (it looks like water now)"): fewer of them, and
+  // heavy: thrown lower and slower, thicker, falling back sooner (MUD_G), drawn as short round globs
+  const MUD_G = .27;
+  function drop(x, y, vx, vy, r = 1) { if (Math.random() < .45) return; drops.push({ x, y, vx: vx * .7, vy: vy * .7, r: r * 1.7, t: 0 }); }
   // (3) an arm goes in: a dip where the hand enters and a swell either side, a slow ring, a few heavy drops, a thick sound
   function plop(x, w, S) { if (G.t - (S.pt ?? -99) < 6) return; S.pt = G.t;
     fPush(x, -1.8, 4); fPush(x - 9 - w * .3, 1, 5); fPush(x + 9 + w * .3, 1, 5);
@@ -799,7 +802,7 @@ const SL = (() => {
     }
     for (const s of steps) if (s.lit) s.lit = Math.min(1, s.lit + .02);
     for (const r of rings) r.t++; rings = rings.filter(r => r.t < 150);
-    for (const d of drops) { d.t++; d.x += d.vx * .97; d.y += d.vy; d.vy += .21; if (d.y > 0 && Math.random() < .25) rings.push({ x: d.x, y: 0, t: 70, k: .28 }); }
+    for (const d of drops) { d.t++; d.x += d.vx * .97; d.y += d.vy; d.vy += MUD_G; if (d.y > 0 && Math.random() < .12) rings.push({ x: d.x, y: 0, t: 70, k: .22 }); }
     drops = drops.filter(d => d.y <= 0 && d.t < 120);
     for (const c of churns) c.a -= .0045; churns = churns.filter(c => c.a > 0); if (churns.length > 40) churns.splice(0, churns.length - 40);
     // --- the camera draws back in the mire, and the look follows the story: gold on the plain, mist and grey in the bog ---
@@ -1177,7 +1180,7 @@ const SL = (() => {
       }
     }
     ctx.strokeStyle = css(fig); ctx.lineCap = 'round';
-    for (const d of drops) { ctx.globalAlpha = clamp(1.4 - d.t / 60); ctx.lineWidth = d.r; ctx.beginPath(); ctx.moveTo(d.x, d.y); ctx.lineTo(d.x - d.vx * 1.3, d.y - d.vy * 1.3); ctx.stroke(); } ctx.globalAlpha = 1;
+    for (const d of drops) { ctx.globalAlpha = clamp(1.4 - d.t / 60); ctx.lineWidth = d.r; ctx.beginPath(); ctx.moveTo(d.x, d.y); ctx.lineTo(d.x - d.vx * .45, d.y - d.vy * .45); ctx.stroke(); } ctx.globalAlpha = 1;
     ctx.setTransform(S, 0, 0, S, 0, 0);
     ripples(false);      // the near half of every ripple, in front of the figures
     // the banks of mist (see "MIST THAT HIDES" in update)
