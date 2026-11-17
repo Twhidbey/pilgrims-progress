@@ -476,7 +476,7 @@ const SL = (() => {
   function fPush(x, amt, sig = 6) { const i0 = Math.max(1, Math.floor((x - 3 * sig - FX0) / FD)), i1 = Math.min(FN - 2, Math.ceil((x + 3 * sig - FX0) / FD));
     for (let i = i0; i <= i1; i++) { const q = (FX0 + i * FD - x) / sig; fh[i] += amt * Math.exp(-q * q); } }
   // heavy mud: the swell travels slowly and only a short way, and settles
-  function fStep() { for (let i = 1; i < FN - 1; i++) fv[i] += .07 * (fh[i - 1] + fh[i + 1] - 2 * fh[i]) - .01 * fh[i] - .09 * fv[i];
+  function fStep() { for (let i = 1; i < FN - 1; i++) fv[i] += .035 * (fh[i - 1] + fh[i + 1] - 2 * fh[i]) - .006 * fh[i] - .16 * fv[i];      // build 310: thicker
     for (let i = 1; i < FN - 1; i++) fh[i] = clamp(fh[i] + fv[i], -4, 9); }
   function fReset() { fh.fill(0); fv.fill(0); }
   // each picture's see-through mask, at half size, measured once (and its last row with body in it)
@@ -496,7 +496,7 @@ const SL = (() => {
   // build 305 (owner: "decrease the drips a little or make them more mud like (it looks like water now)"): fewer of them, and
   // heavy: thrown lower and slower, thicker, falling back sooner (MUD_G), drawn as short round globs
   const MUD_G = .27;
-  function drop(x, y, vx, vy, r = 1) { if (Math.random() < .45) return; drops.push({ x, y, vx: vx * .7, vy: vy * .7, r: r * 1.7, t: 0 }); }
+  function drop(x, y, vx, vy, r = 1) { if (Math.random() < .6) return; drops.push({ x, y, vx: vx * .55, vy: vy * .6, r: r * 1.8, t: 0 }); }
   // (3) an arm goes in: a dip where the hand enters and a swell either side, a slow ring, a few heavy drops, a thick sound
   function plop(x, w, S) { if (G.t - (S.pt ?? -99) < 6) return; S.pt = G.t;
     fPush(x, -1.8, 4); fPush(x - 9 - w * .3, 1, 5); fPush(x + 9 + w * .3, 1, 5);
@@ -802,7 +802,7 @@ const SL = (() => {
     }
     for (const s of steps) if (s.lit) s.lit = Math.min(1, s.lit + .02);
     for (const r of rings) r.t++; rings = rings.filter(r => r.t < 150);
-    for (const d of drops) { d.t++; d.x += d.vx * .97; d.y += d.vy; d.vy += MUD_G; if (d.y > 0 && Math.random() < .12) rings.push({ x: d.x, y: 0, t: 70, k: .22 }); }
+    for (const d of drops) { d.t++; d.x += d.vx * .97; d.y += d.vy; d.vy += MUD_G; if (d.y > 0 && Math.random() < .12 * wetAt(d.x)) rings.push({ x: d.x, y: 0, t: 70, k: .22 }); }
     drops = drops.filter(d => d.y <= 0 && d.t < 120);
     for (const c of churns) c.a -= .0045; churns = churns.filter(c => c.a > 0); if (churns.length > 40) churns.splice(0, churns.length - 40);
     // --- the camera draws back in the mire, and the look follows the story: gold on the plain, mist and grey in the bog ---
@@ -1015,9 +1015,12 @@ const SL = (() => {
       for (const r of rings) {
         const u = r.t / 150, cxr = X(r.x), cyr = wl + 1 + r.y * z, a0 = far ? Math.PI : 0, a1 = far ? 2 * Math.PI : Math.PI;
         const wet = wetAt(r.x);      // build 132: in mud a slow dark swell; the more water there is, the quicker, wider and brighter the ring
-        for (let i = 1; i <= 2; i++) { const rx = (14 + i * 18 + u * lerp(46, 78, wet)) * z * r.k, ry = rx * .08, a = (1 - u) * (1 - i * .28) * (far ? .82 : 1);
-          ctx.lineWidth = 2.4 * (1 - .45 * wet); ctx.strokeStyle = css(DARK, .36 * a * (1 - .5 * wet)); ctx.beginPath(); ctx.ellipse(cxr, cyr, rx, ry, 0, a0, a1); ctx.stroke();
-          ctx.lineWidth = 1; ctx.strokeStyle = css(LIGHT, (.24 + .4 * wet) * a); ctx.beginPath(); ctx.ellipse(cxr, cyr + 1.9, rx, ry, 0, a0, a1); ctx.stroke(); }
+        // build 310 (owner: "mud still acts little water - needs more viscosity"): in mud a ring is one slow, thick, dull swell that
+        // eases to a stop close to where it began (u ** .45), with hardly any sheen; the second ring and the bright lip only in water
+        const vis = 1 - smooth(.25, .75, wet), ue = lerp(u, Math.pow(u, .45), vis), n = wet > .4 ? 2 : 1;
+        for (let i = 1; i <= n; i++) { const rx = (14 + i * 18 + ue * lerp(18, 78, wet)) * z * r.k, ry = rx * .08, a = (1 - u) * (1 - i * .28) * (far ? .82 : 1);
+          ctx.lineWidth = lerp(3.4, 2.4 * (1 - .45 * wet), 1 - vis); ctx.strokeStyle = css(DARK, .36 * a * (1 - .5 * wet)); ctx.beginPath(); ctx.ellipse(cxr, cyr, rx, ry, 0, a0, a1); ctx.stroke();
+          ctx.lineWidth = 1; ctx.strokeStyle = css(LIGHT, (.24 + .4 * wet) * a * (1 - .8 * vis)); ctx.beginPath(); ctx.ellipse(cxr, cyr + 1.9, rx, ry, 0, a0, a1); ctx.stroke(); }
       }
       if (far) ctx.restore(); };
     if (ph !== 'plain') threadsNow();
