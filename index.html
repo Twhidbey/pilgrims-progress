@@ -148,7 +148,7 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">build 196 · Nov 17 2026</div>
+  <div id="build">build 197 · Nov 17 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -1135,6 +1135,10 @@ const RUN_META = {"ax": 136, "ground": 309, "frames": 29, "start": 27, "vpx": 17
 // Two runs (build 54; owner: "when he runs, he doesn't need to cover his ears (that doesn't happen till he runs from
 // family)"): RUNP = a plain run, arms free, from Evangelist to his own door (assets/christian-run-plain.pack); RUN = hands
 // over his ears, from the moment his wife cries after him (G.ears, coverEars()). 'steps' = the frames where a foot lands.
+// build 190: he goes down on both knees with his burden, clasps his hands and bows; from about frame 46 he only breathes
+// (assets/christian-kneel.pack, one video made to serve many levels: Evangelist's feet, the Cross, prayer; played backwards
+// it is his rising). Frame 0 joins his quiet standing picture. hold = the breathing part, played back and forth.
+const KNEEL = [], KNEEL_META = {"ax": 336, "ground": 298, "frames": 96, "step": .2, "hold": [50, 95]};
 const WEEP = [], WEEP_META = {"ax": 101, "ground": 302, "frames": 96, "step": .13};      // Christian opens his book, reads, weeps and trembles (assets/christian-weep.pack); step = stored frames per tick
 const EVS = [], EVS_META = {"ax": 82, "ground": 311, "frames": 48};      // Evangelist standing, facing right, breathing
 const RUNP_META = {"ax": 132, "ground": 298, "frames": 28, "start": 20, "vpx": 16.6, "steps": [0, 15]}, RUNP = [];
@@ -2415,7 +2419,7 @@ document.getElementById('on2').onclick = () => SL.on ? go3() : go2();
 })();
 </script>
 <script src="slough.js?v=189"></script>
-<script src="hill.js?v=194"></script>
+<script src="hill.js?v=197"></script>
 <script src="keepsakes.js?v=179"></script>
 <script src="editor.js?v=196"></script>
 </body>

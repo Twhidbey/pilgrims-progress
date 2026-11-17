@@ -118,7 +118,7 @@ const HL = (() => {
   // ---------- state ----------
   let ph = 'plain', built = false, loading = null;
   const cam = { cx: 0, z: 1, wl: 440 };
-  const C3 = { x: 0, face: 1, faceA: 1, anim: 12, sd: null, alpha: 1, run: 0, ranim: 0, weep: false, wt: 0, wa: 0, tv: null };
+  const C3 = { x: 0, face: 1, faceA: 1, anim: 12, sd: null, alpha: 1, run: 0, ranim: 0, weep: false, wt: 0, wa: 0, kf: 0, kp: 0, tv: null };
   // MERCY, AFTER REMBRANDT (build 159; agreed master for this moment: one warm light in a great dark). When Evangelist
   // takes him by the right hand a small warm light gathers on the two men and lies in a flat pool at their feet
   // (`mercy`), the only warm thing under the black hill; when he says the man at the gate will receive him, the
@@ -344,7 +344,7 @@ const HL = (() => {
   function preload() {
     loadOak();
     if (!loading) loading = Promise.all([Promise.all([loadImg('hill-rock.webp'), loadImg('hill-fire.webp')]).then(([r, f]) => { if (r) { build(); paintHill(r, f); } }), loadPack('wiseman', WIS).catch(() => {}), loadPack('evangelist-walk', EVW).catch(() => {}), loadImg('wiseman-stand.webp').then(im => { if (im) WIS_ST = im; }), OBS.ready || loadPack('obstinate', OBS).catch(() => {}), EVS.ready || loadPack('evangelist-stand', EVS).catch(() => {}), RUNP.ready || loadPack('christian-run-plain', RUNP).catch(() => {}),
-      WEEP.ready || loadPack('christian-weep', WEEP).catch(() => {}), TURN.ready || loadPack('christian-turn', TURN).then(() => bookLoaded('TURN')).catch(() => {}),
+      WEEP.ready || loadPack('christian-weep', WEEP).catch(() => {}), KNEEL.ready || loadPack('christian-kneel', KNEEL).catch(() => {}), TURN.ready || loadPack('christian-turn', TURN).then(() => bookLoaded('TURN')).catch(() => {}),
       OBS_ST ? 0 : loadImg('obstinate-stand.webp').then(im => { if (im && !OBS_ST) OBS_ST = im; }),
       loadImg('tree-a.webp').then(im => { if (!im) return; const c = mk(im.width, im.height), k = c.getContext('2d'); k.drawImage(im, 0, 0); k.globalCompositeOperation = 'source-in'; k.fillStyle = '#fff'; k.fillRect(0, 0, c.width, c.height); OAKT = c; })]).catch(() => {});
     return loading;
@@ -406,7 +406,7 @@ const HL = (() => {
 
   // ---------- start, title, end ----------
   function reset0() {
-    Object.assign(C3, { x: START, face: 1, faceA: 1, anim: 12, sd: QUIET[0], alpha: 1, run: 0, ranim: RUNP_META.start || 0, weep: false, wt: 0, wa: 0, tv: null, fired: false });
+    Object.assign(C3, { x: START, face: 1, faceA: 1, anim: 12, sd: QUIET[0], alpha: 1, run: 0, ranim: RUNP_META.start || 0, weep: false, wt: 0, wa: 0, kf: 0, kp: 0, tv: null, fired: false });
     mercy = mercyTo = calm = calmTo = 0;
     wise = null; evan = null; dark = 0; hope = 0; flash = 0; flashT = 200; veil = 0; veilTo = 0; knocks = 0; knockT = 0; door = 0; doorTo = 0;
     reveal = 0; vil = vilTo = 0; ROCKS.length = 0; C3.dy = 0; cut = cutTo = 0; Zw = 0; zs = ''; zT = 0;
@@ -469,7 +469,15 @@ const HL = (() => {
     if (C3.sd != null) C3.sd += .4;
     C3.faceA = clamp(C3.faceA + (C3.face - C3.faceA) * .06, -1, 1);
     if (C3.tv) { C3.tv.t += C3.tv.d * TURN_META.step * C3.tv.k; if (C3.tv.t >= TURN.length - 1 || C3.tv.t <= 0) { C3.face = C3.faceA = C3.tv.d; C3.tv = null; } }
-    C3.wa = clamp(C3.wa + (C3.weep ? .05 : -.04)); if (C3.weep) C3.wt = Math.min(64, C3.wt + WEEP_META.step);
+    C3.wa = clamp(C3.wa + (C3.weep || (wantNB && C3.kf > .5) ? .05 : -.04)); if (C3.weep) C3.wt = Math.min(64, C3.wt + WEEP_META.step);
+    // the kneel: down at the video's own speed, then its breathing part eased back and forth (never faster than its own
+    // speed); when he stands up it plays backwards from wherever it is
+    if (wantNB && KNEEL.ready) {
+      const st = KNEEL_META.step, [h0, h1] = KNEEL_META.hold;
+      if (!C3.weep) { C3.kf = Math.max(0, C3.kf - st); C3.kp = 0; }
+      else if (C3.kf < h0 && !C3.kp) C3.kf = Math.min(h0, C3.kf + st);
+      else { C3.kp += st / 1.6; C3.kf = h0 + (h1 - h0) * (1 - Math.cos(C3.kp * Math.PI / (h1 - h0))) / 2; }
+    }
     mercy += (mercyTo - mercy) * .012; calm += (calmTo - calm) * .008; if (ph === 'back' || ph === 'mist') mercyTo = 0;
     flash *= .93; door += (doorTo - door) * .02; cut = clamp(cut + Math.sign(cutTo - cut) * (cutTo ? .022 : .016)); veil = clamp(veil + Math.sign(veilTo - veil) * .012);
     hintT++;
@@ -609,8 +617,12 @@ const HL = (() => {
       if (f0 + 1 < TURN.length && tf - f0 > .02) figure(c, 'turn2', TURN[f0 + 1], TURN_META, x, 1, tint, a * (tf - f0));
       TALKM = null; return;
     }
-    const wa = WEEP.ready ? smooth(0, 1, C3.wa) : 0, ra = RUNP.ready ? C3.run : 0, rest = a * (1 - ra);
-    if (wa > 0 && wantNB && STD.length) {
+    const wa = WEEP.ready || (wantNB && KNEEL.ready) ? smooth(0, 1, C3.wa) : 0, ra = RUNP.ready ? C3.run : 0, rest = a * (1 - ra);
+    if (wa > 0 && wantNB && KNEEL.ready) {
+      const kf = clamp(C3.kf, 0, KNEEL.length - 1), f0 = Math.floor(kf), ka = a * smooth(0, .6, wa);
+      figure(c, 'weep', KNEEL[f0], KNEEL_META, x, C3.face, tint, ka);
+      if (f0 + 1 < KNEEL.length && kf - f0 > .02) figure(c, 'weep2', KNEEL[f0 + 1], KNEEL_META, x, C3.face, tint, ka * (kf - f0));
+    } else if (wa > 0 && wantNB && STD.length) {
       // build BNEXT: no book after Level 1, so instead of opening his book and weeping he bows low and trembles at Evangelist's
       // feet: his quiet standing picture leaned forward from his feet and pressed down a little, shaking
       const bw = smooth(0, 1, wa), im = STD[atTime(STD_META, breathT(QUIET[0] + G.t * .4))];
