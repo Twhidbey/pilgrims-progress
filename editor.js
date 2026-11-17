@@ -30,7 +30,7 @@ const ED = (() => {
   const stage = document.getElementById('stage'), mkB = (cls, txt) => { const b = document.createElement('button'); b.className = 'edarrow ' + cls; b.textContent = txt; stage.appendChild(b); return b; };
   const bl = mkB('l', '◂'), br = mkB('r', '▸'), tag = document.createElement('div'); tag.id = 'edtag'; stage.appendChild(tag);
   let n = 0, busy = false;
-  const lvl = () => HL.on ? 3 : SL.on ? 2 : 1;
+  const lvl = () => RM.on ? 4 : HL.on ? 3 : SL.on ? 2 : 1;
   const text = () => { const d = document.getElementById('dlg'); return d.classList.contains('on') && !d.classList.contains('hint') ? d.querySelector('.t').textContent : ''; };
   const quiet = on => { try { if (typeof AC !== 'undefined' && AC && MASTER) { MASTER.gain.cancelScheduledValues(AC.currentTime); MASTER.gain.setTargetAtTime(on ? 0 : 1, AC.currentTime, on ? .005 : .25); } } catch (e) {} };
   const label = () => { tag.textContent = G.state === 'title' ? 'editor on · tap build no. 5× to turn off' : 'editor · level ' + lvl() + ' · moment ' + n; };
@@ -45,6 +45,7 @@ const ED = (() => {
         if (G.act === 'gate' || G.act === 'walkon') keys.push = true;
         else if (G.act === 'hand') SL.grip();
         else if (G.act === 'light') lightTouched();
+        else if (RM.on && G.act) RM.key();
         else if (HL.on && G.act) HL.key();
         else if (!G.act) next(true);
       }
@@ -66,7 +67,7 @@ const ED = (() => {
     hush(); dlg.className = ''; choiceEl.className = ''; document.body.classList.remove('talking', 'capped', 'slough');
     G.capQ.length = 0; G.cap = 0; G.hint = null; G.act = null; G.ring = null; G.state = 'wait';
     document.getElementById('endc').className = 'card';
-    if (lv === 3) go3(); else if (lv === 2) go2(); else start();
+    if (lv === 4) goRoom(); else if (lv === 3) go3(); else if (lv === 2) go2(); else start();
     n = 0;
     // a level begins after a short pause of its own ('wait'): come forward once it is under way
     const t0 = Date.now(), poll = setInterval(() => {

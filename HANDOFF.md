@@ -8,6 +8,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 **Build 255 (small-tweaks chat): the gate's wall and door softer still, with less contrast. See `CLAUDE.md`, "Build 255". Nothing spent.**
 
+**Build 257 (room 3 chat): room 3, Passion and Patience, playable by `?room=3` (`rooms.js`, object `RM`): the bag, the gold, the bubbles, Passion left in rags. See `CLAUDE.md`, "ROOM 3 IN THE GAME". Nothing spent.**
+
 **Build 254 (small-tweaks chat): the gate's wall and door softened a little, toward watercolour. See `CLAUDE.md`, "Build 254". Nothing spent.**
 
 **Build 252 (small-tweaks chat): the gate's darks warmed to Rembrandt's red-browns (sky, wall, road, edges, the light's falloff, Christian). See `CLAUDE.md`, "Build 252". Nothing spent.**
