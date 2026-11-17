@@ -1,6 +1,6 @@
 // Level 3 on an emulated iPhone with real touches only (no keys, no calls into the story): hold a finger to walk,
 // tap to pass lines, touch the hill, knock on the gate. It also checks that he never moves while no finger is down
-// (except the mist's jump to the gate), and prints where each phase began.
+// (except the mist's jump to the gate and the cut from the brow to the rocky path), and prints where each phase began.
 //   python3 -m http.server 8123 &   then   node tools/phone-test-3.js            (or: node tools/phone-test-3.js hill|evangelist|gate)
 const { chromium, devices } = require('playwright');
 const at = process.argv[2] || '';
@@ -25,7 +25,7 @@ const at = process.argv[2] || '';
     if (s.st === 'end') { console.log('end card after', Math.round((Date.now() - t0) / 1000), 's'); break; }
     const key = s.st + ':' + s.ph;
     if (key !== last) { console.log(key.padEnd(16), 'x', s.x, '|', s.txt); last = key; }
-    if (lastX != null && !down && lastStand && Math.abs(s.x - lastX) > 3 && s.ph !== 'gate' && s.ph !== 'mist') moved.push(`${s.ph} ${lastX} -> ${s.x}`);
+    if (lastX != null && !down && lastStand && Math.abs(s.x - lastX) > 3 && s.ph !== 'gate' && s.ph !== 'mist' && !(s.ph === 'path' && lastX < 2900)) moved.push(`${s.ph} ${lastX} -> ${s.x}`);
     lastX = s.x; lastStand = s.stand;      // finishing a stride after the finger lifts is allowed; moving while standing is not
     if (s.st === 'play') { if (!down) await press(480, 200); await pg.waitForTimeout(250); continue; }
     if (down) await lift();

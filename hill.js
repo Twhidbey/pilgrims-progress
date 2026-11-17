@@ -28,11 +28,25 @@ const HL = (() => {
     return (x, y) => { let s = 0, a = 1, t = 0; for (let k = 0; k < 5; k++) { s += a * n(x, y); t += a; a *= .5; x = x * 2.03 + 17; y = y * 2.03 + 9; } return s / t; };
   }
   const nz = noise2(57), nz2 = noise2(3);
+  const ease5 = t => t * t * t * (t * (t * 6 - 15) + 10);
 
   // ---------- the places ----------
-  const START = 0, MEET = 900, STILL = 2400, GATE_X = 9000, GATE_FROM = GATE_X - 640, GATE_STOP = GATE_X - 58;
-  const PH = .3, HS = 1.6, NEAR = 2.6, HILL_A = STILL + 330, HILL_Y = -60;      // the hill: how much it slides with the camera, the place on the road it stands beside, its foot above the road line
-  const EV_X = STILL - 135;
+  const START = 0, MEET = 900, GATE_X = 9000, GATE_FROM = GATE_X - 640, GATE_STOP = GATE_X - 58;
+  // INTO THE ROCKS (owner, build 185: "i don't like that hill looks initially - it looks fake ... after he decides to go
+  // off path, pilgrim goes away from viewer and down the hill descending so his body disappear ... then scene shift to
+  // him walking a mountain path rocky ... then when he reaches foot of mountain and narrator speaks we zoom out super
+  // wide ... then back to zoomed in where evangelist meets him"; and "we need a surrounding of rockiness, not just
+  // ground then big rock"). The hill is not seen at all until Wiseman points: the camera pans right across the plain
+  // to it, far off (HILL_F, HSF). He turns aside, walks over a brow and down out of sight behind it (BROW0 to BROW1);
+  // the picture goes dark and finds him on a stony path among crags (PATH0 to FOOT) that rise higher on every layer as
+  // he goes; at the foot the camera pulls back to the whole mountain (HSN times the far hill's units: its foot's
+  // left end at HX0), lightning at the widest, and comes back down to him for Evangelist.
+  const BROW0 = MEET + 520, BROW1 = BROW0 + 300, PATH0 = 3000, FOOT = 4400, STILL = FOOT, HX0 = FOOT + 150;
+  const PH = .3, HSF = .72, HILL_F = 4700, HILL_Y = -60, HSN = 8, VIL_W = 2400;      // the far hill: how much it slides with the camera, its place, its size; the mountain close to: its size
+  const Z_NEAR = .8, Z_WIDE = .085;
+  // the brow: the ground swells a little (crest, in road units) to CREST and falls away beyond it, out of sight
+  const CREST = BROW0 + 70, crest = x => 52 * smooth(BROW0 - 330, CREST, x) * (1 - smooth(CREST + 30, CREST + 560, x));
+  const EV_X = FOOT - 135;
 
   // ---------- the words: Bunyan's, shortened and made plain ----------
   const SEEN = [      // {37}
@@ -117,7 +131,7 @@ const HL = (() => {
   // stones and dust falling from the overhang when he stands beneath it (in the hill's own units, from its foot's
   // left end; y up is negative): each { x, y, vx, vy, r, t, dust }
   const ROCKS = [];
-  function shed(n, k = 1) { for (let i = 0; i < n; i++) { const h = 40 + Math.random() * 300; ROCKS.push({ x: faceX(h) - 2, y: -h, vx: -(.2 + Math.random() * .7) * k, vy: Math.random() * .4, r: .8 + Math.random() * 2.4 * k, t: 0, s: Math.random() * 6 }); } }
+  function shed(n, k = 1) { for (let i = 0; i < n; i++) { const h = 40 + Math.random() * 100; ROCKS.push({ x: faceX(h) - 2, y: -h, vx: -(.2 + Math.random() * .7) * k, vy: Math.random() * .4, r: .8 + Math.random() * 2.4 * k, t: 0, s: Math.random() * 6 }); } }
   // the sweet tune of his counsel: a pretty phrase in the major that goes nowhere (k 1: fuller, with a chord)
   function sweet(k) { const M = k ? [67, 71, 74, 79, 76, 74] : [72, 76, 79, 76]; M.forEach((m, i) => note(m, .028 + .008 * k, 2.4, i * .42)); if (k) [55, 59, 62].forEach(m => note(m, .02, 4.5, .1)); }
   // the burden groans: two heavy creaks of the pack
@@ -125,6 +139,9 @@ const HL = (() => {
   let wise = null, evan = null, dark = 0, hope = 0, flash = 0, flashT = 0, veil = 0, veilTo = 0, knocks = 0, knockT = 0, door = 0, doorTo = 0;
   let greeted = false, saidSeen = false, saidHigh = false, stillT = 0, hasteSaid = false, gateSaid = false, hintT = 0, noteI = 0, noteX = 0, lastFr = 0, hillSeen = false;
   let OAKT = null, hillBox = [0, 0, 1];
+  // the scene shift (`cut`: the picture goes dark, 0 .. 1) and the great pull back at the foot (`Zw`: 0 close .. 1 the
+  // whole mountain; `zs` its stage: 'out', 'hold', 'in', 'done')
+  let cut = 0, cutTo = 0, Zw = 0, zs = '', zT = 0;
 
   // ---------- pictures baked once ----------
   let CLOUDW = null, CLOUDG = null;
@@ -293,11 +310,10 @@ const HL = (() => {
     const R = rock.width / HW;
     HILL = [[[74, 62, 66], .74], [[22, 20, 26], .58]].map(([col, a]) => { const c = mk(HW * R, HH * R), k = c.getContext('2d'); k.drawImage(rock, 0, 0, HW * R, HH * R);
       k.globalCompositeOperation = 'source-atop'; k.globalAlpha = a; k.fillStyle = css(col); k.fillRect(0, 0, HW * R, HH * R); return c; });
-    // the hill veiled (build 181): the same shape washed with the fair evening's haze, the summit almost lost in it
-    // (its tones follow the sky behind it at each height, a trace of the rock shows through, and it is baked at a
-    // quarter size and stretched, so its edges are soft, as a far mountain's are through haze)
-    { const c = mk(HW / 4, HH / 4), k = c.getContext('2d'); k.drawImage(HILL[0], 0, 0, HW / 4, HH / 4); k.globalCompositeOperation = 'source-atop';
-      const g = k.createLinearGradient(0, (HOY - TOP) / 4, 0, HOY / 4); g.addColorStop(0, 'rgba(146,156,172,.8)'); g.addColorStop(.35, 'rgba(176,170,172,.62)'); g.addColorStop(.75, 'rgba(198,182,164,.52)'); g.addColorStop(1, 'rgba(200,184,160,.46)'); k.fillStyle = g; k.fillRect(0, 0, HW, HH); HILLV = c; }
+    // the hill far off (build 185): the dark rock seen through the evening's air, its colours taken toward the sky behind
+    // it at each height, and baked small so its edges and the painting's detail go soft, as a far mountain's do
+    { const c = mk(HW / 3, HH / 3), k = c.getContext('2d'); k.drawImage(HILL[1], 0, 0, HW / 3, HH / 3); k.globalCompositeOperation = 'source-atop';
+      const g = k.createLinearGradient(0, (HOY - TOP) / 3, 0, HOY / 3); g.addColorStop(0, 'rgba(112,112,134,.6)'); g.addColorStop(.6, 'rgba(150,132,138,.62)'); g.addColorStop(1, 'rgba(196,170,150,.78)'); k.fillStyle = g; k.fillRect(0, 0, HW, HH); HILLV = c; }
     if (fire) { LAVA = mk(HW, HH); LAVA.getContext('2d').drawImage(fire, 0, 0, HW, HH); LAVAB = mk(HW / 10, HH / 10); LAVAB.getContext('2d').drawImage(fire, 0, 0, HW / 10, HH / 10); }
   }
   function preload() {
@@ -368,11 +384,11 @@ const HL = (() => {
     Object.assign(C3, { x: START, face: 1, faceA: 1, anim: 12, sd: QUIET[0], alpha: 1, run: 0, ranim: RUNP_META.start || 0, weep: false, wt: 0, wa: 0, tv: null, fired: false });
     mercy = mercyTo = calm = calmTo = 0;
     wise = null; evan = null; dark = 0; hope = 0; flash = 0; flashT = 200; veil = 0; veilTo = 0; knocks = 0; knockT = 0; door = 0; doorTo = 0;
-    reveal = 0; vil = vilTo = 0; ROCKS.length = 0;
+    reveal = 0; vil = vilTo = 0; ROCKS.length = 0; C3.dy = 0; cut = cutTo = 0; Zw = 0; zs = ''; zT = 0;
     saidSeen = saidHigh = hasteSaid = gateSaid = hillSeen = greeted = false; stillT = 0; hintT = 0; noteI = 0; noteX = 0;
   }
   // the picture behind the title page when Level 3 is the child's level: the hill hanging over the way, nobody there
-  function title() { build(); preload(); HL.show = true; reset0(); ph = 'title'; dark = 1; reveal = 1; Object.assign(cam, { cx: STILL + 60, z: .42, wl: 399, lift: 0 }); }
+  function title() { build(); preload(); HL.show = true; reset0(); ph = 'title'; dark = 1; reveal = 1; C3.x = FOOT; Object.assign(cam, { cx: FOOT + 2200, z: .1, wl: 480 }); }
   function start() {
     HL.on = true; HL.show = false; build(); preload();
     document.getElementById('title').style.display = 'none';
@@ -384,10 +400,10 @@ const HL = (() => {
     if (audio()) { AC.resume(); if (rainG) rainG.gain.setTargetAtTime(0, AC.currentTime, .8); }
     // SKIP-AHEAD LINKS: ?level=3&at=hill (close to the hill), ?level=3&at=evangelist, ?level=3&at=gate
     const at = new URLSearchParams(location.search).get('at');
-    if (at === 'hill') { ph = 'aside'; C3.x = STILL - 760; saidSeen = true; hillSeen = true; }
-    if (at === 'evangelist') { ph = 'still'; C3.x = STILL; saidSeen = saidHigh = true; dark = 1; stillT = 1e4; }
+    if (at === 'hill') { ph = 'path'; C3.x = PATH0; saidSeen = true; hillSeen = true; dark = .55; }
+    if (at === 'evangelist') { ph = 'still'; C3.x = FOOT; saidSeen = saidHigh = true; dark = 1; stillT = 1e4; zs = 'done'; }
     if (at === 'gate') { ph = 'gate'; C3.x = GATE_FROM; saidSeen = true; hope = 1; }
-    if (at) { cam.cx = C3.x + 150; reveal = 1; }
+    if (at) { cam.cx = C3.x + 150; reveal = 1; if (at !== 'gate') { cam.z = Z_NEAR; cam.wl = 440 - (1 - Z_NEAR) * 70; } }
     G.state = 'wait'; setTimeout(() => { if (HL.on && G.state === 'wait') { G.state = ph === 'still' ? 'auto' : 'play'; } }, 1400);
   }
   function finish() {
@@ -430,7 +446,7 @@ const HL = (() => {
     if (C3.tv) { C3.tv.t += C3.tv.d * TURN_META.step * C3.tv.k; if (C3.tv.t >= TURN.length - 1 || C3.tv.t <= 0) { C3.face = C3.faceA = C3.tv.d; C3.tv = null; } }
     C3.wa = clamp(C3.wa + (C3.weep ? .05 : -.04)); if (C3.weep) C3.wt = Math.min(64, C3.wt + WEEP_META.step);
     mercy += (mercyTo - mercy) * .012; calm += (calmTo - calm) * .008; if (ph === 'back' || ph === 'mist') mercyTo = 0;
-    flash *= .93; door += (doorTo - door) * .02; veil = clamp(veil + Math.sign(veilTo - veil) * .012);
+    flash *= .93; door += (doorTo - door) * .02; cut = clamp(cut + Math.sign(cutTo - cut) * (cutTo ? .022 : .016)); veil = clamp(veil + Math.sign(veilTo - veil) * .012);
     hintT++;
     reveal = clamp(reveal + (G.act === 'hill' || (ph !== 'plain' && ph !== 'meet') ? .011 : 0)); vil += (vilTo - vil) * .02;
     if ((ph === 'still' || ph === 'come' || ph === 'evan') && dark > .5 && Math.random() < .035) shed(1, .7);
@@ -450,20 +466,44 @@ const HL = (() => {
     } else if (ph === 'meet') {
       walk(1, 0);
     } else if (ph === 'aside') {
-      const heavy = lerp(1, .45, smooth(STILL - 700, STILL - 40, C3.x));
-      let v = want ? MAXV * heavy : 0;
-      if (v && saying() && !saidHigh && C3.x + v >= STILL - 560) v = 0;      // the words keep with the place they tell of
-      v = walk(1, v, MAXV * heavy);
-      if (!saidHigh && C3.x > STILL - 550) { saidHigh = true; caption(HIGH); }
+      // OVER THE BROW AND DOWN OUT OF SIGHT: past BROW0 the way falls away behind the near edge of the ground; he goes
+      // down it, feet first, then his body, then his head (drawn lower by C3.dy, and the near ground drawn over him)
+      let v = want ? MAXV * lerp(1, .8, smooth(BROW0, BROW1, C3.x)) : 0;
+      v = walk(1, v);
+      C3.dy = C3.x < CREST ? -crest(C3.x) : 175 * Math.pow(smooth(CREST, BROW1, C3.x), 1.3) - crest(CREST) * (1 - smooth(CREST, CREST + 60, C3.x));
       if (v && C3.x > noteX) { noteX = C3.x + 58 * 1.5; note(WRONG[noteI++ % WRONG.length], .04, 3.2); }
       if (!want && hintT === 500) hint('walk', 'Hold to walk.'); if (want) clearHint('walk');
-      if (C3.x >= STILL) { ph = 'still'; G.state = 'auto'; clearHint('walk'); stillT = 0; }
+      if (C3.x >= BROW1) { ph = 'down'; G.state = 'auto'; clearHint('walk'); cutTo = 1; }
+    } else if (ph === 'down') {
+      // the scene shifts: dark, and then the rocky path
+      walk(1, 0);
+      if (cut >= 1) { ph = 'path'; C3.x = PATH0; C3.dy = 0; C3.sd = QUIET[0]; Object.assign(cam, { cx: PATH0 + 150, z: Z_NEAR, wl: 440 - (1 - Z_NEAR) * 70 }); dark = .55; wise = null; cutTo = 0; noteX = PATH0 + 40;
+        G.state = 'play'; hintT = 0; }
+    } else if (ph === 'path') {
+      // the rocky way: holding does less and less as the rock closes in
+      const heavy = lerp(1, .5, smooth(FOOT - 700, FOOT - 20, C3.x));
+      let v = want && cut < .3 ? MAXV * heavy : 0;
+      v = walk(1, v, MAXV * heavy);
+      if (v && C3.x > noteX) { noteX = C3.x + 58 * 1.5; note(WRONG[noteI++ % WRONG.length], .04, 3.2); }
+      if (v && Math.random() < .012 * smooth(PATH0, FOOT, C3.x) && audio()) sweep(52 + Math.random() * 8, 34, 1.4, .05);
+      if (!want && hintT === 400) hint('walk', 'Hold to walk.'); if (want) clearHint('walk');
+      if (C3.x >= FOOT) { C3.x = FOOT; ph = 'still'; G.state = 'auto'; clearHint('walk'); stillT = 0; zs = ''; }
     } else if (ph === 'still') {
       walk(1, 0); stillT++;
-      if (stillT === 60 || stillT > 9999) { stillT = 61; caption(STOOD); }
+      // AT THE FOOT, THE CAMERA PULLS BACK (owner, build 185: "we zoom out super wide (like one of those zooming out from
+      // individual to city to world - fast but epic) and see entire mountain its is incredible glory with lightning ...
+      // then back to zoomed in where evangelist meets him"). It starts slow, gathers speed and settles gently (about
+      // three and a half seconds, eased in the scale's logarithm, so every moment of it shrinks the picture by the same
+      // kind of step); lightning as it settles; it holds while the fire's line is said, then comes back down to him.
+      if (stillT === 20 && !saidHigh) { saidHigh = true; caption(HIGH); caption(STOOD); }
+      if (stillT > 9999) { stillT = 9999; zs = 'done'; }
+      if (zs === '' && stillT >= 40) { zs = 'out'; zT = 0; }
+      if (zs === 'out') { zT++; Zw = ease5(clamp(zT / 210)); if (zT === 196) fire(1.1); if (zT >= 210) { zs = 'hold'; zT = 0; } }
+      else if (zs === 'hold') { zT++; const t = dlg.querySelector('.t').textContent; if (zT > 200 && C3.fired && !t.startsWith('Flashes of fire') && !t.startsWith('But close to')) { zs = 'in'; zT = 0; } }
+      else if (zs === 'in') { zT++; Zw = 1 - ease5(clamp(zT / 170)); if (zT >= 170) { zs = 'done'; Zw = 0; } }
       // the lines' own happenings (captions carry no fn): the fire comes with its words
       if (dlg.querySelector('.t').textContent.startsWith('Flashes of fire came out of the hill') && !C3.fired) { C3.fired = true; fire(1); }
-      if (stillT > 780 && !saying() && G.cap <= 0 && C3.sd != null) { ph = 'come'; caption(COMING); evan = EVW.ready ? { a: 1, t: 0, x: EV_X - EV_FROM, anim: 0, walk: true, st: 0 } : { a: 0, t: 0 }; turnC(-1); }
+      if (zs === 'done' && !saying() && G.cap <= 0 && !G.capQ.length && C3.sd != null) { ph = 'come'; caption(COMING); evan = EVW.ready ? { a: 1, t: 0, x: EV_X - EV_FROM, anim: 0, walk: true, st: 0 } : { a: 0, t: 0 }; turnC(-1); }
     } else if (ph === 'come') {
       walk(1, 0);
       if (evan.walk) {
@@ -476,12 +516,12 @@ const HL = (() => {
       walk(1, 0);
     } else if (ph === 'back') {
       // back with haste: he runs (his plain run from Level 1), to the place where he left the way
-      let go = want && C3.x > MEET + 40;
+      let go = want && C3.x > PATH0 + 120;
       if (want && !hasteSaid) { hasteSaid = true; caption(HASTE); }
       if (go && RUNP.ready) { const st = RUNP_META.vpx * CHR_K; C3.x -= st * .4; C3.ranim += .4; C3.run = clamp(C3.run + .14); C3.sd = QUIET[0]; if (Math.floor(C3.ranim) % 14 === 0 && Math.floor(C3.ranim - .4) % 14 !== 0 && audio()) sfx.step(false, 1.3); }
       else { C3.run = clamp(C3.run - .1); if (go) walk(-1, MAXV); else if (C3.sd == null) walk(-1, 0); }
       if (want) clearHint('haste'); else if (hintT === 150) hint('haste', 'Hold to hurry back.');
-      if (C3.x <= MEET + 40 && C3.run <= 0 && !saying() && G.cap <= 0) { ph = 'mist'; G.state = 'auto'; veilTo = 1; }
+      if (C3.x <= PATH0 + 120 && C3.run <= 0 && !saying() && G.cap <= 0) { ph = 'mist'; G.state = 'auto'; veilTo = 1; }
     } else if (ph === 'mist') {
       if (veil >= 1) { ph = 'gate'; C3.x = GATE_FROM; C3.face = C3.faceA = 1; C3.sd = QUIET[0]; cam.cx = C3.x + 150; cam.z = 1; cam.wl = 440; dark = 0; hope = 1; evan = null; wise = null; veilTo = 0; G.state = 'play'; hintT = 0; }
     } else if (ph === 'gate') {
@@ -511,26 +551,24 @@ const HL = (() => {
     }
 
     // the sky darkens as he goes out of the way, and clears as he comes back; fire out of the hill while he stands under it
-    const dTo = ph === 'aside' || ph === 'back' || ph === 'mist' ? smooth(MEET + 250, STILL - 150, C3.x) : ph === 'still' || ph === 'come' || ph === 'evan' ? 1 : 0;
+    const dTo = ph === 'aside' || ph === 'down' ? .35 * smooth(MEET + 150, BROW1, C3.x) : ph === 'path' ? lerp(.55, 1, smooth(PATH0, FOOT - 200, C3.x)) : ph === 'back' || ph === 'mist' ? lerp(.45, 1, smooth(PATH0, FOOT, C3.x)) : ph === 'still' || ph === 'come' || ph === 'evan' ? 1 : 0;
     dark += (dTo - dark) * .03;
-    if (ph === 'still' || ph === 'come' || ph === 'evan') { if (--flashT < 0 && stillT > 61 && calmTo < .5) { fire(ph === 'evan' ? .45 : .7 + Math.random() * .3); flashT = (ph === 'evan' ? 700 : 330) + Math.random() * 500; } }
+    if (ph === 'still' || ph === 'come' || ph === 'evan') { if (--flashT < 0 && (zs === 'done' || zs === 'hold') && calmTo < .5) { fire(ph === 'evan' ? .45 : .7 + Math.random() * .3); flashT = (ph === 'evan' ? 700 : 330) + Math.random() * 500; } }
 
     // the camera
     let tx = C3.x + 150, tz = 1;
     if (ph === 'plain') tz = wise ? .84 : .9;
-    if (ph === 'meet') { tx = C3.x + 60 + 330 * vil; tz = .86 - .14 * vil; if (G.act === 'hill') { tx = C3.x + 1250; tz = .3; } }
-    if (ph === 'aside') { tx = C3.x + 180; tz = lerp(.86, .8, smooth(STILL - 1000, STILL - 100, C3.x)); }
-    if (ph === 'still' || ph === 'come' || ph === 'evan') { tx = ph === 'still' ? STILL + 120 : STILL - 40; tz = .8; }
-    if (ph === 'back' || ph === 'mist') { tx = C3.x - 150; tz = .86; }
+    if (ph === 'meet') { tx = C3.x + 60 + 330 * vil; tz = .86 - .14 * vil; if (G.act === 'hill') { tx = HILL_F + 260; tz = .55; } }
+    if (ph === 'aside' || ph === 'down') { tx = Math.min(C3.x + 180, BROW0 + 140); tz = .86; }
+    if (ph === 'path') { tx = C3.x + 150; tz = Z_NEAR; }
+    if (ph === 'still' || ph === 'come' || ph === 'evan') { tx = ph === 'still' ? FOOT + 150 : FOOT - 40; tz = Z_NEAR; }
+    if (ph === 'back' || ph === 'mist') { tx = C3.x - 150; tz = Z_NEAR; }
     if (ph === 'gate' || ph === 'knock' || ph === 'open') { tx = Math.min(C3.x + 150, GATE_X - 215); tz = lerp(1, .96, smooth(GATE_X - 500, GATE_STOP, C3.x)); }
-    // THE CAMERA LOOKS UP (owner, build 181, agreeing to my proposal): when he stands beneath the overhang, the child
-    // is not steering, so the camera leaves him: it climbs the cliff face to the burning summit over about five
-    // seconds, holds there, and sinks back down to him, small at its foot. `cam.lift` = how far the picture is raised
-    // (screen pixels); Evangelist comes only once it is back down (`stillT > 780`).
-    { const top = TOP * cam.z * HS * NEAR - 250, u = ph === 'still' ? stillT : 0;
-      const L = u < 70 ? 0 : u < 340 ? smooth(70, 340, u) : u < 520 ? 1 : 1 - smooth(520, 770, u); cam.lift = (top + 120) * L; cam.liftX = 60 * HS * NEAR * L; }
-    tx += cam.liftX || 0;
-    cam.cx += (tx - cam.cx) * .035; cam.z += (tz - cam.z) * .03; cam.wl = 440 - (1 - cam.z) * 70 + (cam.lift || 0);
+    cam.cx += (tx - cam.cx) * .035; cam.z += (tz - cam.z) * .03; cam.wl = 440 - (1 - cam.z) * 70;
+    // the pull back (see 'still'): the scale goes from close to the whole mountain in its logarithm; he slides a little
+    // left of the middle; the road comes down so the summit and its cloud fit above
+    if (ph === 'still' && Zw > 0) { const zz = Math.exp(lerp(Math.log(Z_NEAR), Math.log(Z_WIDE), Zw)), sx = lerp(VW / 2 - 150 * Z_NEAR, VW * .29, Zw);
+      cam.z = zz; cam.cx = FOOT - (sx - VW / 2) / zz; cam.wl = lerp(440 - (1 - Z_NEAR) * 70, 470, Zw); }
   }
 
   // ---------- drawing ----------
@@ -581,11 +619,32 @@ const HL = (() => {
         if (dark > .02) { c.globalAlpha = .55 * dark; c.globalCompositeOperation = 'multiply'; c.drawImage(CLOUD, x0 - 260, 0, 900, 230); c.globalCompositeOperation = 'source-over'; } }
       c.globalAlpha = 1; }
     // the far light: ahead of him on the plain; over the gate at the end. The hill, drawn after it, comes between.
-    const lx = lerp(VW * .5, clamp(X(GATE_X), 200, VW - 120), gateish), ly = lerp(hor - 96, Y(-262), gateish), la = (1 - .35 * dark) * (1 - gateish);
+    const rocky = ph === 'path' || ph === 'still' || ph === 'come' || ph === 'evan' || ph === 'back' || ph === 'mist' || ph === 'title';
+    const lx = lerp(VW * .5, clamp(X(GATE_X), 200, VW - 120), gateish), ly = lerp(hor - 96, Y(-262), gateish), la = (1 - .35 * dark) * (1 - gateish) * (rocky ? 0 : 1);
+    // AMONG THE ROCKS (build 185; owner: "we need a surrounding of rockiness, not just ground then big rock"). Every layer
+    // becomes rock, each one clean shape of one tone, pale far and dark near: the far ridges of the mountain's roots,
+    // the crags behind the path, the stony path, and the nearest crags along the bottom of the picture, sliding past
+    // faster than he does and now and then hiding his feet (owner: yes). The crags rise as he goes (low boulders and
+    // open sky at first; rock up to the top of the picture at the foot); the edges that face the hidden fire ahead
+    // catch a thin warm light. A crag's outline is straight runs with sharp breaks (`crag`), so it reads as rock.
+    const crag = (L, seed, seg, pin) => { const i = Math.floor(L / seg), f = L / seg - i, hs = (j, q) => { const v = Math.sin(j * 127.1 + seed * 311.7 + q * 74.7) * 43758.5453; return v - Math.floor(v); };
+      const hh = j => (.3 + .7 * Math.pow(hs(j, 0), .8)) * (pin && hs(j, 1) < .16 ? 1.35 : 1), a = hh(i), b = hh(i + 1), m = .25 + .5 * hs(i, 2), r = hs(i, 3), mid = r < .5 ? Math.min(a, b) * (.55 + .5 * r) : Math.max(a, b) * (.9 + .25 * (r - .5));
+      return (f < m ? lerp(a, mid, f / m) : lerp(mid, b, (f - m) / (1 - m))) + (nz(L * .03, seed) - .5) * .07; };
+    const burnR = clamp(dark) * (1 - .6 * calm);
+    const crags = (p, seed, seg, base, hLo, hHi, col, edge, pin) => {
+      const Ls = FOOT + p * (PATH0 - 700 - FOOT), pts = [];
+      for (let sx = -12; sx <= VW + 12; sx += 5) { const L = FOOT + p * (cx - FOOT) + (sx - VW / 2) / z, e = Math.pow(smooth(Ls, FOOT, L), 1.2); pts.push([sx, Y(base) - lerp(hLo, hHi, e) * crag(L, seed, seg, pin) * z]); }
+      c.fillStyle = css(col); c.beginPath(); c.moveTo(-12, VH + 10); for (const [x, y] of pts) c.lineTo(x, y); c.lineTo(VW + 12, VH + 10); c.fill();
+      if (edge > .01) { c.save(); c.globalCompositeOperation = 'lighter'; c.strokeStyle = css([236, 150, 96], edge); c.lineWidth = 1.3; c.lineCap = 'round'; c.beginPath();
+        for (let j = 1; j < pts.length; j++) { const [x0, y0] = pts[j - 1], [x1, y1] = pts[j]; if (y1 - y0 > 1.2) { c.moveTo(x0, y0); c.lineTo(x1, y1); } } c.stroke(); c.restore(); } };
     { const g = c.createRadialGradient(lx, ly, 0, lx, ly, 330); g.addColorStop(0, css([255, 236, 190], .85 * la)); g.addColorStop(.12, css([255, 222, 160], .5 * la)); g.addColorStop(.45, css([255, 214, 150], .16 * la)); g.addColorStop(1, css([255, 214, 150], 0));
       c.fillStyle = g; c.fillRect(lx - 330, ly - 330, 660, 660); c.fillStyle = css([255, 248, 226], la); c.beginPath(); c.arc(lx, ly, 7 + 1.2 * Math.sin(G.t / 40), 0, 7); c.fill(); }
-    // the far ridge
-    { const col = mix(mix(mix(low, top, .45), [150, 138, 160], .5 * (1 - dark) * (1 - gateish)), [60, 52, 60], dark * .6); c.fillStyle = css(col); c.beginPath(); c.moveTo(0, hor + 2);
+    // the far ridge (among the rocks: the far crags instead, and the fire's light in the sky ahead)
+    if (rocky) {
+      { c.save(); c.globalCompositeOperation = 'screen'; const gx = VW * .8, gy = -40, rr = VW * .8, g = c.createRadialGradient(gx, gy, 0, gx, gy, rr), a = .34 * burnR * (1 - Zw);
+        g.addColorStop(0, css([240, 150, 96], a)); g.addColorStop(.4, css([170, 80, 64], a * .45)); g.addColorStop(1, css([120, 50, 50], 0)); c.fillStyle = g; c.fillRect(0, 0, VW, VH); c.restore(); }
+      crags(.35, 3, 260, -140, 40, 300, mix(mix(low, top, .35), [84, 64, 68], .45), .1 * burnR, false);
+    } else { const col = mix(mix(mix(low, top, .45), [150, 138, 160], .5 * (1 - dark) * (1 - gateish)), [60, 52, 60], dark * .6); c.fillStyle = css(col); c.beginPath(); c.moveTo(0, hor + 2);
       for (let sx = 0; sx <= VW + 16; sx += 16) { const u = cx * .1 + (sx - VW / 2) / z; c.lineTo(sx, hor - (26 + 96 * nz(u * .0035, 5) + 22 * nz2(u * .02, 1)) * z * .8); }
       c.lineTo(VW, hor + 2); c.fill();
       // FOOTHILLS: a nearer, lower line of hills in front of the far ridge. At first they are all there is to see where
@@ -597,17 +656,19 @@ const HL = (() => {
     { const far = mix(mix([214, 196, 138], [50, 48, 56], gateish), [78, 68, 70], dark), near = mix(mix([52, 54, 40], [24, 24, 32], gateish), [38, 36, 44], dark);
       const g = c.createLinearGradient(0, hor, 0, Y(0)); g.addColorStop(0, css(far)); g.addColorStop(.35, css(mix(far, near, .5))); g.addColorStop(1, css(near)); c.fillStyle = g; c.fillRect(0, hor, VW, Y(0) - hor + 1);
       { const fk = (1 - dark) * (1 - gateish); if (fk > .02) { const hg = c.createLinearGradient(0, hor - 34 * z, 0, hor + 26 * z); hg.addColorStop(0, css(low, 0)); hg.addColorStop(.55, css(low, .62 * fk)); hg.addColorStop(1, css(low, 0)); c.fillStyle = hg; c.fillRect(0, hor - 34 * z, VW, 60 * z); } }
-      // the village and the hill stand on the plain, further back
-      // THE ROAD BENDS TOWARD THE MOUNTAIN (owner, build 177: "i'd like for christian to get much closer to mountain
-      // and really feel the fire and rocks and trembling"; my proposal, agreed). The picture stays a flat side view,
-      // but as he walks out of his way the hill comes near, as if the road curved toward it: it slides more with the
-      // camera (PH toward 1), grows (to 1.35 times) and its foot comes down to the road, until the overhang hangs over
-      // his head. `appr` 0 far off .. 1 at its foot; it falls again as he runs back.
-      const appr = (ph === 'title' ? .3 : ph === 'plain' || ph === 'meet' || ph === 'gate' || ph === 'knock' || ph === 'open' ? 0 : smooth(MEET + 300, STILL - 40, C3.x)), ap = appr * appr * (3 - 2 * appr);
-      const hx = VW / 2 + (HILL_A - cx) * lerp(PH, 1, ap) * z, hy = Y(lerp(HILL_Y, 6, ap)), k = z * HS * lerp(1, NEAR, ap);
+      // THE HILL IS NOT SEEN UNTIL WISEMAN POINTS (owner, build 185: "let's hide it entirely till worldly wise tells him to
+      // look and then screen pans right and we see it"). On the plain it stands far off to the right (HILL_F), out of the
+      // picture until the camera pans to it at "Do you see that hill?", and comes out of the haze as it does (`reveal`).
+      // Among the rocks it is the mountain itself, at its true size (HSN), its foot just beyond the end of the path.
+      const ap = rocky ? 1 : 0;
+      const hx = rocky ? X(HX0) : VW / 2 + (HILL_F - cx) * PH * z, hy = rocky ? Y(6) : Y(HILL_Y), k = z * (rocky ? HSN : HSF);
       HL.appr = ap;
       hillBox = [hx, hy, k];
-      if (hx > -1300 * k && hx < VW + 400 * k) {
+      // the village of Morality, small and far on the plain, nearer than the hill ("the first house you come to is his")
+      if (!rocky) { const tw = 310 * z, th = 54 * z, tx = VW / 2 + (VIL_W - cx) * PH * z - tw / 2, ty = hy + 2 * z, va = Math.max(reveal, .9 * vil);
+        if (va > .01 && tx < VW && tx + tw > 0) { const tc = tintC.town || (tintC.town = mk(400, 70)), t = tc.getContext('2d'); t.globalCompositeOperation = 'source-over'; t.clearRect(0, 0, 400, 70); t.drawImage(TOWN, 0, 0); t.globalCompositeOperation = 'source-in'; t.fillStyle = css(mix(mix(mix(far, top, .4), [96, 84, 90], .6), [46, 42, 50], dark * .7)); t.fillRect(0, 0, 400, 70); c.globalAlpha = va; c.drawImage(tc, tx, ty - th, tw, th); c.globalAlpha = 1;
+          for (const [wx, wy] of TOWN.lit) { c.fillStyle = css([255, 214, 140], Math.min(1, (.5 + .4 * dark) * va + .35 * vil * (1 - dark))); c.fillRect(tx + wx * tw / 400, ty - th + wy * th / 70, Math.max(1.5, 3.6 * z), Math.max(1.5, 3.6 * z)); } } }
+      if ((rocky || reveal > .002) && hx > -1300 * k && hx < VW + 400 * k) {
         // AWE FIRST (owner, build 135: "the burning hill can be frightening - but most importantly stunning - it should
         // awe first"). After John Martin's pictures of the sublime and the book's own Sinai (Exodus 19: fire at the top,
         // thick cloud, lightnings): the hill is far taller than the people, black against a fire that burns at its
@@ -625,24 +686,18 @@ const HL = (() => {
         // gathers only in the top of the sky and on the far left, where the plume flows into it. Dark billows,
         // those near the summit faintly lit from beneath; at a flash the light is inside the cloud. Drawn before
         // the hill, so nothing of it lies over the hill.
-        if (dark > .02) { const kS = Math.min(k, z * HS * 1.25); for (let i = 0; i < 34; i++) { const h1 = Math.sin(i * 39.3468) * 24634.6345, h2 = Math.sin(i * 11.135) * 7541.931, h3 = Math.sin(i * 73.156) * 3141.59, r1 = h1 - Math.floor(h1), r2 = h2 - Math.floor(h2), r3 = h3 - Math.floor(h3);
+        if (dark > .02) { const kS = Math.min(k, 1); for (let i = 0; i < 34; i++) { const h1 = Math.sin(i * 39.3468) * 24634.6345, h2 = Math.sin(i * 11.135) * 7541.931, h3 = Math.sin(i * 73.156) * 3141.59, r1 = h1 - Math.floor(h1), r2 = h2 - Math.floor(h2), r3 = h3 - Math.floor(h3);
             const left = r1 * r1, px = sx0 + (420 - 2100 * r1) * kS + 26 * kS * Math.sin(G.t / 700 + i), py = sy0 - (60 + 250 * r2) * kS + left * 430 * r3 * kS, rr = (120 + 200 * r3) * kS, P = PUFF[i % 3];
             c.globalCompositeOperation = 'source-over'; c.globalAlpha = dark * (.5 + .3 * r2); c.drawImage(P.d, px - rr, py - rr * .62, 2 * rr, 1.24 * rr);
             const near = Math.max(0, 1 - Math.hypot(px - sx0, py - sy0) / (760 * k)), la = burn * (.13 + .36 * near * near) + F * .3 * near; if (la > .01) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = la; c.drawImage(P.l, px - rr, py - rr * .62, 2 * rr, 1.24 * rr); } }
           c.globalCompositeOperation = 'source-over'; c.globalAlpha = 1; }
         // the hill: fair and far off at first, black under its own cloud when he stands by it
         const dx = hx - HOX * k, dy = hy - HOY * k;
-        c.globalAlpha = HILLV ? reveal : 1; c.drawImage(HILL[0], dx, dy, HW * k, HH * k); if (dark > .01) { c.globalAlpha = dark; c.drawImage(HILL[1], dx, dy, HW * k, HH * k); } c.globalAlpha = 1;
+        c.globalAlpha = reveal; c.drawImage(!rocky && HILLV ? HILLV : HILL[0], dx, dy, HW * k, HH * k); if (dark > .01) { c.globalAlpha = dark; c.drawImage(HILL[1], dx, dy, HW * k, HH * k); } c.globalAlpha = 1;
         // IT IS THERE FROM THE START, VEILED (owner, build 181: "when you first see the hill it kinda appears out of
         // nowhere - it should be there already and to the right"): until Wiseman points to it, its lower slopes stand
         // pale in the plain's haze and its summit is lost in a bank of cloud; at "Do you see that hill?" the cloud draws
         // off (`reveal` 0 .. 1) and the fire can show
-        if (reveal < 1 && HILLV) { const v = 1 - reveal; c.globalAlpha = v; c.drawImage(HILLV, dx, dy, HW * k, HH * k);
-          const yM = hy - TOP * k * .55, x0 = hx - 300 * k, w = 1300 * k; c.globalAlpha = .55 * v; for (let i = 0; i < 4; i++) c.drawImage(CLOUDG, x0 + i * w / 4 - 60 * k + 30 * k * Math.sin(G.t / 400 + i), yM - 90 * k, w / 3, 140 * k); c.globalAlpha = 1; }
-        // falling stones (dark, tumbling) and the dust where they land
-        for (const r of ROCKS) { const px = hx + r.x * k, py = hy + r.y * k;
-          if (r.dust) { const u = r.t / 70, rr = (4 + 22 * u) * k * (.5 + r.r * .3); c.fillStyle = css([92, 70, 62], .22 * (1 - u)); c.beginPath(); c.ellipse(px, py - rr * .3, rr, rr * .45, 0, 0, 7); c.fill(); continue; }
-          c.save(); c.translate(px, py); c.rotate(r.t * .2 + r.s); c.fillStyle = css([20, 16, 18], .9); const kk = Math.min(k, 1.8); c.fillRect(-r.r * kk, -r.r * .7 * kk, 2 * r.r * kk, 1.4 * r.r * kk); c.restore(); }
         // the burning edge down the overhanging face, and fire in the cracks when it flashes
         c.save(); c.globalCompositeOperation = 'lighter'; c.lineCap = c.lineJoin = 'round';
         if (!LAVA && (burn > .01 || F > .02)) {
@@ -671,13 +726,6 @@ const HL = (() => {
         }
         if (F > .02) { const g = c.createRadialGradient(sx0, sy0, 0, sx0, sy0, 420 * k); g.addColorStop(0, css([255, 190, 120], .22 * F)); g.addColorStop(1, css([255, 150, 90], 0)); c.fillStyle = g; c.fillRect(sx0 - 420 * k, sy0 - 420 * k, 840 * k, 840 * k); }
         c.restore();
-        // the village of Morality, at the hill's long foot on its far side
-        // (build 177: the village stands at the hill's near foot, under the overhang: "the first house you come to is
-        // his"; so it can glow warm on the plain while Wiseman names it, before the hill is shown. It fades into the
-        // dark as he comes close: he never reaches it.)
-        const tw = 310 * z, th = 54 * z, tx = hx - 110 * k - tw / 2, ty = hy + 2 * z;      // (build 177: small and far; build 181: a fixed small size, whatever the hill's)
-        { const tc = tintC.town || (tintC.town = mk(400, 70)), t = tc.getContext('2d'); t.globalCompositeOperation = 'source-over'; t.clearRect(0, 0, 400, 70); t.drawImage(TOWN, 0, 0); t.globalCompositeOperation = 'source-in'; t.fillStyle = css(mix(mix(mix(far, top, .4), [96, 84, 90], .6), [46, 42, 50], dark * .7)); t.fillRect(0, 0, 400, 70); c.globalAlpha = Math.max(reveal, .9 * vil) * (1 - smooth(.45, .9, ap)); c.drawImage(tc, tx, ty - th, tw, th); c.globalAlpha = 1; }
-        for (const [wx, wy] of TOWN.lit) { c.fillStyle = css([255, 214, 140], Math.min(1, (.5 + .4 * dark) * Math.max(reveal, vil) + .35 * vil * (1 - dark)) * (1 - smooth(.45, .9, ap))); c.fillRect(tx + wx * tw / 400, ty - th + wy * th / 70, Math.max(1.5, 3.6 * z), Math.max(1.5, 3.6 * z)); }
         // the cloud on the summit: a towering column that leans with the wind and spreads, dark, lit from within
         // THE SMOKE IN THE SKY (owner, build 146, of the reference painting: "the red ... was too much but I did like
         // smoke in sky - that was cool"). A great slow plume: it rises from the summit, bends with the wind and
@@ -686,7 +734,7 @@ const HL = (() => {
         // minute and melts away at the end; the far ones are drawn first.
         // (build 183: the smoke and the cloud keep the size they have from a distance, `kS`: stretched to the near hill's
         // size the soft billows became one huge blur filling the close-up)
-        { const N = 46, ps = [], kS = Math.min(k, z * HS * 1.25);
+        { const N = 46, ps = [], kS = Math.min(k, 1);
           for (let i = 0; i < N; i++) { const h1 = Math.sin(i * 12.9898) * 43758.5453, h2 = Math.sin(i * 78.233) * 12543.123; ps.push([(i / N + G.t / 3400) % 1, h1 - Math.floor(h1), h2 - Math.floor(h2), i]); }
           ps.sort((a, b) => b[0] - a[0]);
           for (const [u, r1, r2, i] of ps) { const rise = 1 - Math.pow(1 - u, 3), spread = (40 + 230 * u) * kS, px = sx0 - (240 * u + 900 * u * u) * kS + (r1 - .5) * spread, py = sy0 - (14 + 150 * rise - 60 * u * u) * kS + (r2 - .5) * spread * .7, rr = (40 + 210 * u) * kS * (.8 + .4 * r2), a = smooth(0, .05, u) * (1 - smooth(.72, 1, u)), P = PUFF[i % 3];
@@ -705,15 +753,25 @@ const HL = (() => {
         // level band of low cloud lies across its lower slopes, drifting very slowly; the mountain rises clear above
         // it. That band is what tells the eye how big it is. It thins away as the sky darkens and he comes near.
         { const fair = (1 - dark) * reveal; if (fair > .02) { const hz = mix(low, [226, 222, 214], .5);
-            const bg = c.createLinearGradient(0, hy - 210 * k, 0, hy + 50 * k); bg.addColorStop(0, css(hz, 0)); bg.addColorStop(.55, css(hz, .5 * fair)); bg.addColorStop(.82, css(hz, .7 * fair)); bg.addColorStop(1, css(hz, 0)); c.fillStyle = bg; c.fillRect(0, hy - 210 * k, VW, 260 * k);
+            const bg = c.createLinearGradient(0, hy - 210 * k, 0, hy + 50 * k); bg.addColorStop(0, css(hz, 0)); bg.addColorStop(.55, css(hz, .26 * fair)); bg.addColorStop(.82, css(hz, .36 * fair)); bg.addColorStop(1, css(hz, 0)); c.fillStyle = bg; c.fillRect(0, hy - 210 * k, VW, 260 * k);
             for (let i = 0; i < 4; i++) { const w = (900 + i * 260) * k, h2 = (64 + i * 16) * k, xx = hx + (-420 + i * 190 + 60 * Math.sin(G.t / 1100 + i * 1.9)) * k, yy = hy - (70 + i * 36 + (i % 2) * 22) * k - h2 / 2;
-              c.globalAlpha = (.62 - i * .1) * fair; c.drawImage(CLOUD, xx, yy, w, h2); }
+              c.globalAlpha = (.3 - i * .05) * fair; c.drawImage(CLOUD, xx, yy, w, h2); }
             c.globalAlpha = 1;
             // its shadow lies on the plain on our side of it: a flat band of shade, widest under the mass
             { c.save(); c.translate(hx + 260 * k, hy + 26 * z); c.scale(1, .1); const sg = c.createRadialGradient(0, 0, 0, 0, 0, 760 * k); sg.addColorStop(0, css([22, 26, 22], .46 * fair)); sg.addColorStop(.6, css([22, 26, 22], .26 * fair)); sg.addColorStop(1, css([22, 26, 22], 0)); c.fillStyle = sg; c.fillRect(-760 * k, -760 * k, 1520 * k, 1520 * k); c.restore(); } } }
         // the field's haze at its foot, so it stands in the plain and not on it
-        const fg = c.createLinearGradient(0, hy - 34 * k, 0, hy + 14 * k), ft = clamp((hy - hor) / (Y(0) - hor)), fc = ft < .35 ? mix(far, mix(far, near, .5), ft / .35) : mix(mix(far, near, .5), near, (ft - .35) / .65);
-        fg.addColorStop(0, css(fc, 0)); fg.addColorStop(.6, css(fc, .85 * reveal)); fg.addColorStop(1, css(fc, 0)); c.fillStyle = fg; c.fillRect(0, hy - 34 * k, VW, 48 * k);
+        if (!rocky) { const fg = c.createLinearGradient(0, hy - 34 * k, 0, hy + 14 * k), ft = clamp((hy - hor) / (Y(0) - hor)), fc = ft < .35 ? mix(far, mix(far, near, .5), ft / .35) : mix(mix(far, near, .5), near, (ft - .35) / .65);
+        fg.addColorStop(0, css(fc, 0)); fg.addColorStop(.6, css(fc, .85 * reveal)); fg.addColorStop(1, css(fc, 0)); c.fillStyle = fg; c.fillRect(0, hy - 34 * k, VW, 48 * k); }
+      }
+      // among the rocks: a haze in the gully, then the crags behind the path, then the stones falling from the overhang
+      if (rocky) {
+        { const hz = mix(mix(low, top, .3), [120, 84, 80], .3), g = c.createLinearGradient(0, Y(-220), 0, Y(0)); g.addColorStop(0, css(hz, 0)); g.addColorStop(1, css(hz, .42)); c.fillStyle = g; c.fillRect(0, Y(-220), VW, 222 * z); }
+        crags(.75, 11, 150, 0, 70, 470, mix([40, 32, 36], [28, 23, 27], dark), .22 * burnR, true);
+        { const g = c.createLinearGradient(0, Y(-70), 0, Y(0)); g.addColorStop(0, css([90, 66, 64], 0)); g.addColorStop(1, css([90, 66, 64], .3 * dark)); c.fillStyle = g; c.fillRect(0, Y(-70), VW, 72 * z); }
+        // falling stones (dark, tumbling) and the dust where they land
+        for (const r of ROCKS) { const px = hx + r.x * k, py = hy + r.y * k;
+          if (r.dust) { const u = r.t / 70, rr = (4 + 22 * u) * k * (.5 + r.r * .3); c.fillStyle = css([92, 70, 62], .22 * (1 - u)); c.beginPath(); c.ellipse(px, py - rr * .3, rr, rr * .45, 0, 0, 7); c.fill(); continue; }
+          c.save(); c.translate(px, py); c.rotate(r.t * .2 + r.s); c.fillStyle = css([20, 16, 18], .9); const kk = Math.min(k, 1.8); c.fillRect(-r.r * kk, -r.r * .7 * kk, 2 * r.r * kk, 1.4 * r.r * kk); c.restore(); }
       }
     }
     // THE WICKET-GATE, AFTER REMBRANDT (builds 139, 140). Owner on build 139: "I like light on gate - bricks not doing it
@@ -728,7 +786,7 @@ const HL = (() => {
     // slab: now a plank door in a deep stone arch, with iron straps and a ring, and it opens on a light with soft
     // edges that blooms outward. (5) The gate stands off-centre, in the right third; the lantern, his face and the
     // doorstep make one slanting line of light. Evening has come ("in process of time").
-    const gateOn = X(GATE_X - 1300) < VW, gx = X(GATE_X), r = 30 * z, gy0 = Y(-120), lnx = gx - 58 * z, lny = Y(-150), flick = .86 + .1 * Math.sin(G.t / 7) + .04 * Math.sin(G.t / 2.3);
+    const gateOn = !rocky && X(GATE_X - 1300) < VW, gx = X(GATE_X), r = 30 * z, gy0 = Y(-120), lnx = gx - 58 * z, lny = Y(-150), flick = .86 + .1 * Math.sin(G.t / 7) + .04 * Math.sin(G.t / 2.3);
     if (gateOn) {
       const x0 = GATE_X - 1300, wtop = x => 300 + (nz(x * .012, 3) - .5) * 26 + (nz(x * .09, 6) - .5) * 8;
       const wallPath = () => { c.beginPath(); c.moveTo(X(x0), Y(2)); for (let x = x0; x <= GATE_X + 900; x += 14) c.lineTo(X(x), Y(-wtop(x) * smooth(x0, x0 + 500, x))); c.lineTo(X(GATE_X + 900), Y(2)); };
@@ -774,7 +832,11 @@ const HL = (() => {
       for (let i = 0; i < knocks; i++) { const q = clamp(knockT / 40); if (i === knocks - 1 && q < 1) { c.strokeStyle = css([255, 236, 190], .7 * (1 - q)); c.lineWidth = 2; c.beginPath(); c.arc(gx, Y(-70), (10 + 46 * q) * z, 0, 7); c.stroke(); } }
     }
     // the road under everyone's feet
-    { const g = c.createLinearGradient(0, Y(0), 0, VH); const rc = mix([46, 40, 36], [22, 22, 30], Math.max(dark, .9 * gateish)); g.addColorStop(0, css(mix(rc, [120, 116, 100], .25))); g.addColorStop(.08, css(rc)); g.addColorStop(1, css(mix(rc, [0, 0, 0], .35))); c.fillStyle = g; c.fillRect(0, Y(0), VW, VH - Y(0)); }
+    const road = () => { const g = c.createLinearGradient(0, Y(0), 0, VH); const rc = mix(rocky ? [40, 35, 36] : [46, 40, 36], [22, 22, 30], Math.max(dark, .9 * gateish)); g.addColorStop(0, css(mix(rc, [120, 116, 100], .25))); g.addColorStop(.08, css(rc)); g.addColorStop(1, css(mix(rc, [0, 0, 0], .35))); c.fillStyle = g; c.fillRect(0, Y(0), VW, VH); };
+    road();
+    const humpC = css(mix(mix([46, 40, 36], [120, 116, 100], .25), [22, 22, 30], dark));
+    // the swell of the brow, on the road (only on the plain, where he goes out of sight over it)
+    if (!rocky && !gateish && X(BROW0 - 300) < VW && X(CREST + 600) > 0) { c.beginPath(); c.moveTo(X(BROW0 - 340), Y(1)); for (let x = BROW0 - 330; x <= CREST + 570; x += 10) c.lineTo(X(x), Y(-crest(x))); c.lineTo(X(CREST + 580), Y(1)); c.fillStyle = humpC; c.fill(); }
     // the lantern's and the open door's light lie in flat pools on the road
     if (gateOn) { c.save(); c.globalCompositeOperation = 'lighter';
       for (const [px, rr, al, col] of [[lnx + 10 * z, 230 * z, .26 * flick, [255, 170, 90]], [gx - 30 * z, 400 * z, .6 * door, [255, 208, 134]]]) { if (al < .01) continue; c.save(); c.translate(px, Y(5)); c.scale(1, .09); const g = c.createRadialGradient(0, 0, 0, 0, 0, rr); g.addColorStop(0, css(col, al)); g.addColorStop(1, css(col, 0)); c.fillStyle = g; c.fillRect(-rr, -rr, 2 * rr, 2 * rr); c.restore(); }
@@ -843,12 +905,19 @@ const HL = (() => {
       else figure(c, 'wis', wim, M, wise.x, -1, wt, wise.alpha);
       TALKM = null;
     }
-    drawChr(c, tintM); RIM = null;
+    // in the wide shot he is a tiny dark figure: a faint warm light round him so the eye can find him
+    if (Zw > .05) { const g = c.createRadialGradient(C3.x, -60, 0, C3.x, -60, 34 / z); g.addColorStop(0, css([255, 196, 130], .28 * Zw)); g.addColorStop(1, css([255, 170, 110], 0)); c.save(); c.globalCompositeOperation = 'lighter'; c.fillStyle = g; c.fillRect(C3.x - 34 / z, -60 - 34 / z, 68 / z, 68 / z); c.restore(); }
+    c.save(); c.translate(0, C3.dy || 0); drawChr(c, tintM); c.restore(); RIM = null;
     c.restore();
+    // over the brow: the near ground is drawn again over him as he goes down behind it
+    if (C3.dy > .5 && C3.x > CREST) { c.save(); c.beginPath(); c.moveTo(X(CREST), VH); for (let x = CREST; x <= CREST + 700; x += 10) c.lineTo(X(x), Y(-crest(x))); c.lineTo(VW, Y(0)); c.lineTo(VW, VH); c.clip(); road(); c.fillStyle = humpC; c.fillRect(0, 0, VW, Y(0) + 1); c.restore(); }
+    // the nearest crags, along the bottom of the picture, in front of everyone
+    if (rocky) crags(1.3, 29, 95, 150, 60, 175, [12, 10, 12], .1 * burnR, false);
     // the smoke Evangelist comes out of
     if (evan && evan.a < 1) { const ex = X(EV_X - 30), ey = Y(-90), a = Math.sin(Math.PI * clamp(evan.a * 1.1)) * .8 + (1 - evan.a) * .0; c.globalAlpha = a; for (let i = 0; i < 3; i++) c.drawImage(SMOKE, ex - (200 + i * 40) * z + 30 * Math.sin(G.t / 90 + i), ey - (110 - i * 30) * z, 400 * z, 200 * z); c.globalAlpha = 1; }
     // the flash over everything, the veil of mist between the hill and the gate, the burned edges
     if (flash > .02) { c.fillStyle = css([255, 176, 120], .07 * Math.min(1, flash)); c.fillRect(0, 0, VW, VH); }
+    if (cut > .003) { c.fillStyle = css([10, 9, 12], smooth(0, 1, cut)); c.fillRect(0, 0, VW, VH); }
     if (veil > .003) { c.fillStyle = css(mix([226, 222, 214], [150, 146, 150], dark), smooth(0, 1, veil)); c.fillRect(0, 0, VW, VH); }
     { const g = c.createRadialGradient(VW * .5, VH * .5, VH * .42, VW * .5, VH * .5, VW * .78); g.addColorStop(0, 'rgba(12,12,18,0)'); g.addColorStop(1, css([12, 12, 18], .42 + .2 * dark + .22 * gateish)); c.fillStyle = g; c.fillRect(0, 0, VW, VH); }
     // touches, the ring that shows where to touch, the things he carries
@@ -859,5 +928,5 @@ const HL = (() => {
   }
 
   // for testing: HL.peek() tells where the story is
-  return { on: false, show: false, hillPics: () => HILL, title, start, update, draw, touch, key, preload, lines: ALL, pt: k => k === 'hill' ? hillPt() : gatePt(), peek: () => ({ ph, x: Math.round(C3.x), stillT, stand: C3.sd != null, wx: wise && Math.round(wise.x), ex: evan && evan.x != null ? Math.round(evan.x) : null, dark: +dark.toFixed(2), wise: wise && wise.mode, evan: evan && +evan.a.toFixed(2), knocks, cam: { ...cam } }) };
+  return { on: false, show: false, hillPics: () => HILL, title, start, update, draw, touch, key, preload, lines: ALL, pt: k => k === 'hill' ? hillPt() : gatePt(), peek: () => ({ ph, x: Math.round(C3.x), stillT, zs, zT, Zw: +Zw.toFixed(2), stand: C3.sd != null, wx: wise && Math.round(wise.x), ex: evan && evan.x != null ? Math.round(evan.x) : null, dark: +dark.toFixed(2), wise: wise && wise.mode, evan: evan && +evan.a.toFixed(2), knocks, cam: { ...cam } }) };
 })();

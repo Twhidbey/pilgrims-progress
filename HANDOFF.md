@@ -30,6 +30,8 @@ Older handovers (builds 41 to 137, with the picture and video prompts used for H
 - The concept art from the picture chat is not in the repo (it was only shown in that chat); ask that chat to put any keepers in a `concept/` folder.
 - Earlier offers not answered: the sketch of Levels 3 to 6 as a first whole game; a child playing it; carrying the tune through the levels; Evangelist handing over the roll as an animation; repainting the three cottages with true door and window proportions (about 45 cents).
 
+**Build 185: Level 3 into the rocks (owner's sequence): the hill hidden until Wiseman points (the camera pans right to it, far off and hazed); he goes over a brow and down out of sight; a dark cut to a rocky path among crags on every layer, the nearest passing in front; at the foot the camera pulls back to the whole mountain with lightning, then comes back to him for Evangelist. See `CLAUDE.md`, "Build 185: INTO THE ROCKS". Nothing spent. Waiting on the owner's eyes for the motion (pan, descent, pull back).**
+
 **Build 184 (small tweaks): the editor's link `?edit`: skip arrows on each side of the picture to jump to the next or previous story moment (`editor.js`). Nothing spent.**
 
 **Build 180 (small tweaks): Christian turns on "Do you see that wicket gate?" and a little faster, lifts his head toward the shining light, and after "Run on" runs on by himself to the lamp past his house. Nothing spent.**
