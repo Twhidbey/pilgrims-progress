@@ -107,7 +107,7 @@ def run(maxjobs):
 
 
 def stamp():
-    return datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')
+    return datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%d %H:%M UTC')
 
 
 if __name__ == '__main__':

@@ -26,7 +26,10 @@
    },
    "seconds": 5,
    "prompt": "An old grave kind man in a long red-brown gown and a dark skull-cap walks slowly and steadily to the RIGHT, his hands folded in front of him, an unhurried dignified walk. The camera moves along with him and does NOT zoom: he stays in the centre of the frame at exactly the same size, his whole body always visible; he walks on the spot in the frame with even, regular steps, so the walk can loop.",
-   "status": "todo"
+   "status": "done",
+   "made": "2026-11-17 18:29 UTC",
+   "frames": 81,
+   "secs": 37
   },
   {
    "id": "christian-oil-walk",
@@ -37,7 +40,10 @@
    },
    "seconds": 5,
    "prompt": "A pilgrim in a worn hooded cloak with a great bundle tied with rope on his back walks slowly and steadily to the RIGHT, bent a little under the weight, his hands empty. The camera moves along with him and does NOT zoom: he stays in the centre of the frame at exactly the same size, his whole body always visible; he walks on the spot in the frame with even, regular steps, so the walk can loop.",
-   "status": "todo"
+   "status": "done",
+   "made": "2026-11-17 18:30 UTC",
+   "frames": 81,
+   "secs": 41
   },
   {
    "id": "room2-living",
@@ -53,7 +59,10 @@
    },
    "seconds": 5,
    "prompt": "The young woman slowly pours a thin stream of water from her red-brown jug onto the floor, and the man beside her slowly sweeps the floor with his broom; fine dust drifts in the window light. The camera is completely still: no zoom, no pan, no cut. Only the people and the light move; the room, the walls and every object stay exactly where they are. Keep the oil-painting style and colours exactly.",
-   "status": "todo"
+   "status": "done",
+   "made": "2026-11-17 18:30 UTC",
+   "frames": 81,
+   "secs": 50
   },
   {
    "id": "room4-living",
