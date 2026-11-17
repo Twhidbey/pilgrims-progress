@@ -4,6 +4,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 ## START HERE (rewritten at build 140, Nov 16 2026)
 
+**Good-will has his own figure (older small-tweaks chat, about 15 cents):** `assets/goodwill-stand.webp` and `assets/goodwill-reach.webp`, facing right, faces plain, feet level; see "GOOD-WILL'S OWN FIGURE" in `CLAUDE.md`. Not yet in the game; the gate's chat was asked to put the standing one in Level 3's doorway.
+
 **Build 228 (older small-tweaks chat): the book cover toned down** (the leather photo calmer and a little darker, the page edges and ribbon muted). Level 3's voices: `tools/make-voice.py` found every line already recorded (89 of 89); nothing spent.
 
 **Level 4 and the shared gate (small-tweaks chat):** the wicket-gate is ONE gate for Levels 3 and 4, still being changed in the Level 3 chat; Level 4 must reuse it, not copy it (see "THE GATE IS SHARED" in `CLAUDE.md`). Level 4's rooms each after a painting, two darker rooms behind a contents-page switch: mood boards in `concept/level4-moodboard*.jpg`, the gate in the Prodigal Son's colours `concept/level4-gate-prodigal.jpg`. Not built.
