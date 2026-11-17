@@ -313,7 +313,7 @@ const HL = (() => {
   // trunk's middle, ground = the row that stands on the field's edge (the grass at its foot goes a little below, behind
   // the road), tw = sunlit leaves that twinkle. It is toned a little darker here to sit in the game's quiet tones,
   // and has an all-dark copy for when the sky darkens. Until it has loaded, the code-drawn oak (bakeOak) stands in.
-  const OAK_META = { w: 936, h: 640, ax: 432, ground: 606, k: .76 };
+  const OAK_META = { w: 920, h: 680, ax: 195, ground: 664, k: .88 };
   // OAK_SIL: how far the painting is pulled toward one dark tone (owner, build 165: "Tone it down to slightly more silhouette"): 0 = the painting, 1 = a flat silhouette
   const OAK_SIL = .8;
   let OAKP = null, oakLoading = null;
@@ -1554,7 +1554,7 @@ const HL = (() => {
     // kin to the bare black oak over the mire, but alive: he is out of the slough. It stands as the great dark tree
     // of John Martin's quiet pictures (The Plains of Heaven), its long limb reaching over the place where the two
     // meet, with the light of late afternoon in the edge of its crown.
-    if (OAKP) { const M = OAK_META, s = M.k * z, tx = VW / 2 + (MEET - 150 - cx) * z, ty = Y(7), x0 = tx - M.ax * s, y0 = ty - M.ground * s, w = M.w * s, h = M.h * s;
+    if (OAKP) { const M = OAK_META, s = M.k * z, tx = VW / 2 + (MEET - 250 - cx) * z, ty = Y(7), x0 = tx - M.ax * s, y0 = ty - M.ground * s, w = M.w * s, h = M.h * s;
       if (x0 < VW && x0 + w > 0) {
         { c.save(); c.translate(tx + 70 * z, Y(-1)); c.scale(1, .09); const g = c.createRadialGradient(0, 0, 0, 0, 0, 360 * z); g.addColorStop(0, css([14, 26, 20], .46 * (1 - dark))); g.addColorStop(1, css([14, 26, 20], 0)); c.fillStyle = g; c.fillRect(-360 * z, -360 * z, 720 * z, 720 * z); c.restore(); }
         c.drawImage(OAKP.c, x0, y0, w, h);
