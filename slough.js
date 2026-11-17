@@ -66,7 +66,7 @@ const SL = (() => {
   // small pools at first, more and bigger ones further on, open water at last; long across and thin down the picture,
   // since pools are seen edge-on)
   const poolAt = (x, yy) => { const w = smooth(-770, -225, x), T = .86 - .52 * w, n = .6 * cloudN(x * .009, yy * .3 + 3) + .4 * cloudN(x * .024 + 9, yy * .55 + 1); return smooth(T - .022, T + .022, n); };
-  const MUD_X0 = -1010, MUD_W = 880, MUD_H = 270;
+  const MUD_X0 = -1040, MUD_W = 880, MUD_H = 270;
   const BANK0 = -160, HOME0 = -1010;                       // where each bank meets the water
   const WATER_L = -1250;                                  // the water in front of everything begins here; to the left is the plain
   // build 121 (owner: "feet connecting with ground once Christian hits the right side is a continuous problem"): the far
@@ -202,7 +202,7 @@ const SL = (() => {
     mudMap = mk(MUD_W, MUD_H); { const c = mudMap.getContext('2d'), d = c.createImageData(MUD_W, MUD_H);
       for (let j = 0; j < MUD_H; j++) for (let i = 0; i < MUD_W; i++) {
         const x = MUD_X0 + i, yy = Math.pow(j + 1, .82), a = 1 - poolAt(x, yy);
-        const o = (j * MUD_W + i) * 4; d.data[o] = d.data[o + 1] = d.data[o + 2] = 255; d.data[o + 3] = 255 * clamp(a * smooth(HOME0 + 5, HOME0 + 75, x));
+        const o = (j * MUD_W + i) * 4; d.data[o] = d.data[o + 1] = d.data[o + 2] = 255; d.data[o + 3] = 255 * clamp(a * smooth(HOME0 - 20, HOME0 + 240, x));
       }
       c.putImageData(d, 0, 0); }
     fogBank = mk(360, 96); { const c = fogBank.getContext('2d'), d = c.createImageData(360, 96), col = tone(.93);
@@ -743,10 +743,20 @@ const SL = (() => {
     // --- the camera draws back in the mire, and the look follows the story: gold on the plain, mist and grey in the bog ---
     let t, p = clamp((C2.x - FALL_X) / (STUCK_X - FALL_X));
     if (ph === 'plain') { const f = smooth(-1350, FALL_X, C2.x); t = { cx: lerp(C2.x + 150, -470, f), z: lerp(1, .8, f), wl: lerp(440, 392, f) }; }
-    else if (['fall', 'pli', 'back', 'backtalk'].includes(ph)) t = { cx: -470, z: .8, wl: 392 };
+    // build 199 (owner: the mire "just doesn't look right ... think very carefully about composition"): the struggle was a
+    // twentieth of the picture's height, jammed in the bottom-left corner on the words, the right two-thirds empty sky. Now
+    // the camera pushes in slowly as they fall (the plain's .8 eases to 1.05), the two men about a fifth of the picture's
+    // height, their home bank at the left edge, the oak's long limb reaching in over them; the water line is higher so
+    // a band of mud lies between them and the words
+    else if (['fall', 'pli', 'back', 'backtalk'].includes(ph)) t = { cx: -740, z: 1.05, wl: 330 };
     // build 114: the oak is bigger, so at the far bank the camera draws back a little more and the water line sits lower,
     // so the whole crown is in the picture (the top of the screen must be above about 640 units over the water: wl / z)
-    else if (ph === 'wade' || ph === 'stuck') t = { cx: lerp(-470, -250, p), z: lerp(.8, .66, p), wl: lerp(392, 392, p) };      // build 183: a little closer at the far bank (was .6); Help's coming draws it back to .6 for the oak
+    // build 199: wading he starts on the left third, close, with open mud ahead; the camera draws back as he nears the far
+    // bank, so the oak comes into the picture as his goal
+    else if (ph === 'wade' || ph === 'stuck') { const q = smooth(.45, 1, p); t = { cx: lerp(C2.x + 150, -290, q), z: lerp(1.05, .9, q), wl: lerp(335, 365, q) }; }      // build 183: a little closer at the far bank (was .6); Help's coming draws it back to .6 for the oak
+    // build 199: "he could not get out" is seen close, as he struggles at the far bank; only when Help comes does the camera
+    // draw back to the whole oak
+    else if (ph === 'help' && !help) t = { cx: -290, z: .9, wl: 365 };
     else if (ph === 'help' || ph === 'drawn') t = { cx: -240, z: .6, wl: 392 };
     else t = { cx: Math.max(-330, C2.x + 120), z: .66, wl: 425 };
     const e = ph === 'plain' ? .06 : .02;
@@ -846,7 +856,7 @@ const SL = (() => {
         if (wk < 1) figure(n, 'pli0', PLI[pli.wf || 0], PLI_META, pli.wx, pli.sy, 1, fig, true, pli.alpha * (1 - smooth(.5, 1, wk)));
         MREC = 'P'; FIG_WET = { D: pli.maxY || 0, a: .78 }; FIG_DIP = 60 * (1 - smooth(.6, .8, (pli.ct || 0) / 119));
         // build 183: each picture of his climbing video melts into the next (12 a second, each held five ticks, was steppy)
-        const pc = pli.ct || 0, im2 = PLIC[Math.min(PLIC.length - 1, Math.floor(pc) + 1)], bk = pc - Math.floor(pc);
+        const pc = pli.ct || 0, im2 = PLIC[Math.min(PLIC.length - 1, Math.floor(pc) + 1)], bk = smooth(.65, 1, pc - Math.floor(pc));      // build 199: only a quick dissolve at the end of each picture (a half-and-half blend of two poses read as a ghost outline)
         if (fl < .99) { const a2 = pli.alpha * smooth(0, .5, wk) * (1 - smooth(.5, 1, fl)); figure(n, 'pli2', im, META.climb, pli.x + cw, pli.y, 1, fig, true, a2); if (bk > .03) figure(n, 'pli2b', im2, META.climb, pli.x + cw, pli.y, 1, fig, true, a2 * bk); }
         if (fl > .01) { const a1 = pli.alpha * smooth(0, .5, wk) * smooth(0, .5, fl); figure(n, 'pli', im, META.climb, pli.x, pli.y, -1, fig, true, a1); if (bk > .03) figure(n, 'plib', im2, META.climb, pli.x, pli.y, -1, fig, true, a1 * bk); }
         FIG_DIP = 0; MREC = null; FIG_WET = null;
@@ -981,7 +991,7 @@ const SL = (() => {
         for (const c of churns) { const a = Math.min(1, c.a * 2.2), mx = X(c.x); if (mx < -200 || mx > VW + 200) continue;
           mc.save(); mc.translate(mx, wl); mc.scale(105 * z, 95 * z); const q = mc.createRadialGradient(0, 0, 0, 0, 0, 1); q.addColorStop(0, 'rgba(255,255,255,' + a + ')'); q.addColorStop(.6, 'rgba(255,255,255,' + a * .85 + ')'); q.addColorStop(1, 'rgba(255,255,255,0)');
           mc.fillStyle = q; mc.fillRect(-1, 0, 2, 1); mc.restore(); }
-        mc.globalCompositeOperation = 'source-in'; const q = mc.createLinearGradient(0, hor, 0, VH); q.addColorStop(0, css(tone(.86))); q.addColorStop(.3, css(tone(lerp(.7, .78, look.mist)))); q.addColorStop(1, css(tone(lerp(.44, .56, look.mist))));
+        mc.globalCompositeOperation = 'source-in'; const q = mc.createLinearGradient(0, hor, 0, VH); q.addColorStop(0, css(tone(.64))); q.addColorStop(.3, css(tone(lerp(.5, .56, look.mist)))); q.addColorStop(1, css(tone(lerp(.3, .38, look.mist))));      // build 199: the mire a clear step darker than the sky (it was nearly the sky's own pale, and read as mist or water): heavy earth under a bright horizon, the pools bright in it
         mc.fillStyle = q; mc.fillRect(0, wl, VW, VH - wl); mc.globalCompositeOperation = 'source-over'; }
       ctx.drawImage(mudC, 0, 0, VW, VH);
       for (let sx = Math.floor(wx0 / bw) * bw; sx < VW; sx += bw) {
@@ -1146,7 +1156,7 @@ const SL = (() => {
     const wk = ph === 'fall' ? smooth(36, 46, C2.fallT) : smooth(36, 40, C2.y); let wa = 1;      // build 119: he flounders from the fall on
     if (WADE.length && inWater && wk > 0 && ['fall', 'pli', 'back', 'backtalk', 'wade', 'stuck', 'help'].includes(ph)) {
       if (wk < 1) figure(n, 'chr0', walkIm, CHR_META, C2.x, C2.y, C2.face, fig, true, alpha * C2.alpha * (1 - smooth(.5, 1, wk)));
-      const wf = C2.wa || 0; walkIm = WADE[Math.floor(wf) % WADE.length]; walkM = META.wade; wa = smooth(0, .5, wk); FIG_DIP = 46; blendIm = WADE[(Math.floor(wf) + 1) % WADE.length]; blendK = wf - Math.floor(wf); }
+      const wf = C2.wa || 0; walkIm = WADE[Math.floor(wf) % WADE.length]; walkM = META.wade; wa = smooth(0, .5, wk); FIG_DIP = 46; blendIm = WADE[(Math.floor(wf) + 1) % WADE.length]; blendK = smooth(.65, 1, wf - Math.floor(wf)); }
     if (ph === 'help' && C2.reach > 0) {
       const gx = HX + GRASP.dx * CHR_K, gy = STUCK_Y() + (C2.y - STUCK_Y()) * (1 - smooth(20, 140, C2.rt || 0));      // he heaves up out of the deep as he reaches (build 114)
       if (C2.reach < 1) figure(n, 'chr', walkIm, walkM, C2.x, C2.y, 1, fig, true, alpha * (1 - C2.reach)); FIG_DIP = 0;
@@ -1172,5 +1182,5 @@ const SL = (() => {
   // for testing: SL.peek() tells where the story is
   // grow, ribbons: the tree grower and its painter, for Level 3's oak in leaf (hill.js, bakeOak): keep these exports
   // oakPic: the great oak baked small in one colour, for Level 1's far glimpse of the Slough (index.html, drawFarSlough)
-  return { on: false, show: false, title, start, update, draw, touch, grip, pick, preload, lines: ALL, oakPic: (col, k) => bakeTree(oak(18), col, k), grow: (seed, hero, depth) => oak(seed, hero, depth), ribbons, peek: () => ({ ph, x: C2.x, y: C2.y, mv: mv && mv.t, lift: lift && lift.t, pli: pli && pli.mode, plx: pli && Math.round(pli.x), plStop: !!(pli && pli.stop), cam, mud: { strings: strings.length, hmax: Math.max(...fh), hmin: Math.min(...fh), drops: drops.length, rings: rings.length, recs: Object.fromEntries(Object.entries(RECS).map(([o, r]) => [o, { body: r.body, arms: (r.arms || []).length, act: MS[o] ? MS[o].act : 0, y: r.y, a: r.a }])) }, c2: { wa: C2.wa, D: C2.D, rt: C2.rt, reach: C2.reach, fallT: C2.fallT }, pl: pli && { y: pli.y, ct: pli.ct, wt: pli.wt, x: pli.x, duck: pli.duck, mode: pli.mode, out: pli.out } }) };
+  return { on: false, show: false, title, start, update, draw, touch, grip, pick, preload, lines: ALL, oakPic: (col, k) => bakeTree(oak(18), col, k), grow: (seed, hero, depth) => oak(seed, hero, depth), ribbons, peek: () => ({ ph, x: C2.x, y: C2.y, mv: mv && mv.t, lift: lift && lift.t, pli: pli && pli.mode, plx: pli && Math.round(pli.x), plStop: !!(pli && pli.stop), cam, mud: { strings: strings.length, hmax: Math.max(...fh), hmin: Math.min(...fh), drops: drops.length, rings: rings.length, recs: Object.fromEntries(Object.entries(RECS).map(([o, r]) => [o, { body: r.body, arms: (r.arms || []).length, act: MS[o] ? MS[o].act : 0, y: r.y, a: r.a }])) }, c2: { wa: C2.wa, D: C2.D, rt: C2.rt, reach: C2.reach, fallT: C2.fallT }, pl: pli && { y: pli.y, ct: pli.ct, wk: pli.wk, wal: pli.wal, fa: pli.fa, wt: pli.wt, x: pli.x, duck: pli.duck, mode: pli.mode, out: pli.out } }) };
 })();
