@@ -70,8 +70,8 @@ body.playing #pause{display:block}
 #ksbook u{text-decoration:none;background:url("data:image/svg+xml,${pen}") repeat-x 0 100%;background-size:auto .5em;padding-bottom:.1em;-webkit-box-decoration-break:clone;box-decoration-break:clone}
 #ksbook .marg{position:absolute;width:11%;font-family:'Herr Von Muellerhoff','La Belle Aurore',cursive;font-size:1.5em;line-height:.85;color:#3b2412;opacity:.88;text-align:center;transform:rotate(-6deg);pointer-events:none;text-shadow:0 0 .5px rgba(59,36,18,.6)}
 #ksbook .bar{position:absolute;width:.13em;border-radius:.1em;background:${INK};opacity:.75;pointer-events:none}
-#ksbook .spine{position:absolute;left:50%;top:calc(var(--W) * -.011);bottom:calc(var(--W) * -.011);width:5%;margin-left:-2.5%;background:linear-gradient(to right,rgba(60,35,10,0),rgba(60,35,10,.3) 42%,rgba(20,10,0,.5) 50%,rgba(60,35,10,.3) 58%,rgba(60,35,10,0));pointer-events:none;z-index:3}
-#ksbook .ribbon{position:absolute;left:51.3%;top:calc(var(--W) * -.011);width:1%;height:calc(108% + var(--W) * .011);background:linear-gradient(to right,#4d0d09,#8f2016 35%,#a8301f 50%,#7a1a12 70%,#4d0d09);z-index:4;clip-path:polygon(0 0,100% 0,100% 100%,50% 98.2%,0 100%);transform-origin:50% 0;transform:rotate(-1.4deg);box-shadow:1px 1px 2px rgba(40,20,5,.35);opacity:.96;pointer-events:none;transition:opacity .3s}
+#ksbook .spine{position:absolute;left:50%;top:calc(var(--W) * -.011);bottom:calc(var(--W) * -.011);width:5%;margin-left:-2.5%;background:linear-gradient(to right,rgba(60,35,10,0),rgba(60,35,10,.3) 42%,rgba(20,10,0,.5) 50%,rgba(60,35,10,.3) 58%,rgba(60,35,10,0));pointer-events:none;z-index:400}
+#ksbook .ribbon{position:absolute;left:51.3%;top:calc(var(--W) * -.011);width:1%;height:calc(108% + var(--W) * .011);background:linear-gradient(to right,#4d0d09,#8f2016 35%,#a8301f 50%,#7a1a12 70%,#4d0d09);z-index:401;clip-path:polygon(0 0,100% 0,100% 100%,50% 98.2%,0 100%);transform-origin:50% 0;transform:rotate(-1.4deg);box-shadow:1px 1px 2px rgba(40,20,5,.35);opacity:.96;pointer-events:none;transition:opacity .3s}
 #ksbook .ribbon::before{content:'';position:absolute;left:0;right:0;top:0;height:3%;background:linear-gradient(rgba(30,10,5,.6),rgba(30,10,5,0))}
 #ksbook .ribbon.tailR,#ksbook .ribbon.tailL{top:calc(100% + var(--W) * .005);height:calc(var(--W) * .045);transform:rotate(-3deg);box-shadow:0 -1px 1px rgba(40,20,5,.3);clip-path:polygon(0 0,100% 0,100% 100%,50% 84%,0 100%)}
 #ksbook .ribbon.tailR::before,#ksbook .ribbon.tailL::before{height:22%;background:linear-gradient(rgba(30,10,5,.55),rgba(30,10,5,0))}
@@ -80,6 +80,10 @@ body.playing #pause{display:block}
 #ksbook .leaf.on{display:block}
 #ksbook .leaf .face{width:100%;-webkit-backface-visibility:hidden;backface-visibility:hidden}
 #ksbook .leaf .face.back{transform:rotateY(180deg)}
+#ksbook .leaf .face::after{content:'';position:absolute;inset:0;pointer-events:none;opacity:var(--sh,0)}
+#ksbook .leaf .face.R::after{background:linear-gradient(to right,rgba(45,28,8,.55),rgba(45,28,8,.12) 45%,rgba(45,28,8,0) 80%)}
+#ksbook .leaf .face.L::after{background:linear-gradient(to left,rgba(45,28,8,.55),rgba(45,28,8,.12) 45%,rgba(45,28,8,0) 80%)}
+#ksbook .page.scratch{visibility:hidden;z-index:-1}
 .ksarrow{position:absolute;top:50%;transform:translateY(-50%);width:2.2em;height:3.4em;border:none;background:none;color:rgba(244,236,220,.75);font:34px Georgia,serif;cursor:pointer;padding:0;z-index:9}
 .ksarrow:disabled{opacity:.15}
 .ksarrow.l{left:max(2px,env(safe-area-inset-left))}
@@ -371,7 +375,7 @@ body.playing #pause{display:block}
   const menu = mkEl(`<div id="ksmenu" class="kscover"><div class="kscard"><h1>Resting a while</h1><button class="btn" data-go="on">Go on</button>
     <p>or begin again at</p>${NAMES.map((n, i) => `<button class="btn" data-go="${i + 1}"><i>${i + 1}</i>${n}</button>`).join('')}</div></div>`);
   const book = mkEl(`<div id="ksbook" class="kscover"><div class="bible"><div class="spread"><div class="edges"></div><div class="page L"></div><div class="page R"></div>
-    <div class="leaf"><div class="face front"></div><div class="face back"></div></div><div class="spine"></div><div class="ribbon"></div></div></div>
+    <div class="leaf"><div class="face front"></div><div class="face back"></div></div><div class="spine"></div><div class="ribbon"></div><div class="page scratch"></div></div></div>
     <button class="ksarrow l" aria-label="Turn back">‹</button><button class="ksarrow r" aria-label="Turn on">›</button><button class="ksx" aria-label="Close">×</button></div>`);
   const roll = mkEl(`<div id="ksroll" class="kscover"><div class="sheetw"><div class="curl"></div><div class="clip"><div class="body">
     ${FLOUR}<div class="words"><span style="color:#86190f;font-size:1.75em;line-height:.8;vertical-align:-.13em">F</span>lee from the wrath to come.</div><div class="ref">Matt. iii. 7.</div>
@@ -448,40 +452,64 @@ body.playing #pause{display:block}
     render();
   }
   function openBook() { makePaper(); show(book, .45); render(); fit(); rustle(1.2); }
+  // PAGES TURN ON ONE CLOCK (build 236): every leaf is moved frame by frame from performance.now, not by CSS transitions
+  // and timers (which drift apart on a busy phone). A leaf lifting off its stack lies above the leaves still waiting;
+  // once past upright it lies above those already landed, so no leaf ever vanishes behind the next one. The back of a
+  // leaf is laid out flat on a hidden page first, so it lands with Christian's notes already on it; the crease shadow
+  // stays over the leaves; the ribbon fades out and back only when it has to move; a lifting leaf darkens toward the spine.
+  const bez = (x1, y1, x2, y2) => t => { let lo = 0, hi = 1, u = t;
+    for (let k = 0; k < 24; k++) { u = (lo + hi) / 2; const x = 3 * (1 - u) * (1 - u) * u * x1 + 3 * (1 - u) * u * u * x2 + u * u * u; if (x < t) lo = u; else hi = u; }
+    return 3 * (1 - u) * (1 - u) * u * y1 + 3 * (1 - u) * u * u * y2 + u * u * u; };
+  const EASE1 = bez(.45, .05, .3, 1), EASE2 = bez(.4, .05, .3, 1);
+  const scratch = book.querySelector('.page.scratch');
+  function putBack(face, p, side) { scratch.className = 'page scratch ' + side; put(scratch, p); face.innerHTML = scratch.innerHTML; scratch.innerHTML = ''; }
+  function setLeaf(lf, fwd, side) { lf.style.left = fwd ? '50%' : '0'; lf.style.transformOrigin = fwd ? '0 50%' : '100% 50%'; lf.style.transition = 'none'; lf.style.transform = 'rotateY(0deg)';
+    lf.querySelector('.front').className = 'face front ' + side[0]; lf.querySelector('.back').className = 'face back ' + side[1]; lf.classList.add('on'); }
+  function ribbonTo(to) { const rb = book.querySelector('.ribbon'), want = 'ribbon' + (to === MARKED ? '' : to < MARKED ? ' tailR' : ' tailL');
+    if (rb.className !== want) rb.style.opacity = '0'; return () => { rb.style.opacity = ''; }; }
+  function flip(leaves, fwd, stag, dur, ease, done) {
+    const t0 = performance.now(), n = leaves.length; let said = -1;
+    const step = now => {
+      const t = now - t0;
+      leaves.forEach((lf, i) => {
+        const u = Math.max(0, Math.min(1, (t - i * stag) / dur)), a = 180 * ease(u);
+        lf.style.transform = `rotateY(${fwd ? -a : a}deg)`;
+        lf.style.zIndex = u <= 0 ? 60 - i : a < 90 ? 200 - i : 300 + i;
+        lf.style.setProperty('--sh', (.9 * Math.sin(a * Math.PI / 180)).toFixed(3));
+        if (u > 0 && i > said) { said = i; if (n > 1 && i % 2 === 0) rustle(.6); }
+      });
+      if (t < (n - 1) * stag + dur) requestAnimationFrame(step); else done();
+    };
+    requestAnimationFrame(step);
+  }
   function turn(d) {
     const to = sp + d; if (turning || to < 0 || to >= SPREADS.length) return;
     turning = true; rustle();
-    const cur = SPREADS[sp], nx = SPREADS[to], fwd = d > 0;
+    const cur = SPREADS[sp], nx = SPREADS[to], fwd = d > 0, side = fwd ? ['R', 'L'] : ['L', 'R'];
     const jump = (fwd ? nx[0] : cur[0]).jump; if (jump) { riffle(fwd, cur, nx, to, fwd ? jump : jump.slice().reverse()); return; }
     // the leaf lies over the page that turns; beneath it, the page that will be uncovered
-    leaf.style.left = fwd ? '50%' : '0'; leaf.style.transformOrigin = fwd ? '0 50%' : '100% 50%';
-    front.className = 'face front ' + (fwd ? 'R' : 'L'); back.className = 'face back ' + (fwd ? 'L' : 'R');
-    leaf.style.transition = 'none'; leaf.style.transform = 'rotateY(0deg)'; leaf.classList.add('on');
-    put(front, fwd ? cur[1] : cur[0]); back.innerHTML = pageHTML(fwd ? nx[0] : nx[1]);
-    put(fwd ? R : L, fwd ? nx[1] : nx[0]); void leaf.offsetWidth;
-    leaf.style.transition = 'transform .85s cubic-bezier(.45,.05,.3,1)'; leaf.style.transform = `rotateY(${fwd ? -180 : 180}deg)`;
-    setTimeout(() => { sp = to; render(); leaf.classList.remove('on'); turning = false; }, 880);
+    const back2 = ribbonTo(to);
+    setLeaf(leaf, fwd, side); put(front, fwd ? cur[1] : cur[0]); putBack(back, fwd ? nx[0] : nx[1], side[1]);
+    put(fwd ? R : L, fwd ? nx[1] : nx[0]);
+    flip([leaf], fwd, 0, 850, EASE1, () => { sp = to; render(); leaf.classList.remove('on'); back2(); turning = false; });
   }
   // RIFFLING ON TO ANOTHER BOOK (build 201): from Romans to Hebrews (or back) several leaves turn one after another, quick,
   // each a little behind the last; their running heads show the books passing (Corinthians, Galatians ...); the last
-  // leaf brings the new page. Each leaf is a copy of the turning leaf, laid on top of those already turned.
+  // leaf brings the new page. Each leaf is a copy of the turning leaf.
   function riffle(fwd, cur, nx, to, heads) {
-    const spread = book.querySelector('.spread'), n = heads.length, stag = 130, dur = 620, leaves = [];
+    const spread = book.querySelector('.spread'), n = heads.length, leaves = [], side = fwd ? ['R', 'L'] : ['L', 'R'];
     // the pages flicking past: other text, unmarked and a little soft (they pass too quickly to be read)
     const filler = h => pageHTML({ head: ['', h, ''], foot: ['', '', ''], body: SPREADS[0][1].body.replace(/<\/?u>/g, '') }).replace('<div class="in">', '<div class="in" style="filter:blur(.7px);opacity:.85">');
+    const back2 = ribbonTo(to);
     put(fwd ? R : L, fwd ? nx[1] : nx[0]);
     for (let i = 0; i < n; i++) {
       const lf = leaf.cloneNode(true), fr = lf.querySelector('.front'), bk = lf.querySelector('.back');
-      lf.style.left = fwd ? '50%' : '0'; lf.style.transformOrigin = fwd ? '0 50%' : '100% 50%'; lf.style.transition = 'none'; lf.style.transform = 'rotateY(0deg)';
-      lf.classList.add('on'); lf.style.zIndex = 60 - i;
-      fr.className = 'face front ' + (fwd ? 'R' : 'L'); bk.className = 'face back ' + (fwd ? 'L' : 'R');
+      setLeaf(lf, fwd, side); lf.style.zIndex = 60 - i;
       if (i === 0) put(fr, fwd ? cur[1] : cur[0]); else fr.innerHTML = filler(heads[i - 1]);
-      bk.innerHTML = i === n - 1 ? pageHTML(fwd ? nx[0] : nx[1]) : filler(heads[i]);
+      if (i === n - 1) putBack(bk, fwd ? nx[0] : nx[1], side[1]); else bk.innerHTML = filler(heads[i]);
       spread.appendChild(lf); leaves.push(lf);
     }
-    void spread.offsetWidth;
-    leaves.forEach((lf, i) => setTimeout(() => { lf.style.zIndex = 100 + i; lf.style.transition = `transform ${dur}ms cubic-bezier(.4,.05,.3,1)`; lf.style.transform = `rotateY(${fwd ? -180 : 180}deg)`; if (i % 2 === 0) rustle(.6); }, i * stag));
-    setTimeout(() => { sp = to; render(); for (const lf of leaves) lf.remove(); turning = false; }, (n - 1) * stag + dur + 40);
+    flip(leaves, fwd, 130, 620, EASE2, () => { sp = to; render(); for (const lf of leaves) lf.remove(); back2(); turning = false; });
   }
   bL.onclick = () => turn(-1); bR.onclick = () => turn(1);
   let sx0 = null;
@@ -502,7 +530,7 @@ body.playing #pause{display:block}
   function unroll() {
     const w = roll.querySelector('.sheetw'), cl = roll.querySelector('.clip'), rb = roll.querySelector('.curl.b'), t0 = performance.now(), run = ++unrollT;
     const step = now => { if (run !== unrollT) return;
-      const H = w.clientHeight, u = Math.min(1, (now - t0) / 2100), p = 1 - Math.pow(1 - u, 2.6), h = H * (.12 - .062 * p), top = H * .04 + (H * .942 - H * .04) * p;
+      const H = w.clientHeight, u = Math.max(0, Math.min(1, (now - t0 - 380) / 2100)), p = 1 - Math.pow(1 - u, 2.6), h = H * (.12 - .062 * p), top = H * .04 + (H * .942 - H * .04) * p;
       rb.style.top = top + 'px'; rb.style.height = h + 'px'; rb.style.borderRadius = h / 2 + 'px';
       const edge = top + h * .5 - cl.offsetTop; cl.style.clipPath = `inset(0 0 ${Math.max(0, cl.clientHeight - edge)}px 0)`;
       if (u < 1) requestAnimationFrame(step); else cl.style.clipPath = ''; };
