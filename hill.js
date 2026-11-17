@@ -319,7 +319,9 @@ const HL = (() => {
   // pictures the code-drawn hill used (HILL, HW x HH, its foot's left end at HOX, HOY); the fire is laid on with
   // 'lighter', breathing, as strong as the hill burns (`LAVA`, `LAVAB` its soft bloom). The code-drawn seams and the
   // burning edge are no longer drawn once it has loaded. Until then the code-drawn hill stands in.
-  let LAVA = null, LAVAB = null, HILLV = null, ROCKTEX = null, ROCKPAT = null;
+  let LAVA = null, LAVAB = null, HILLV = null, ROCKTEX = null, ROCKPAT = null, ROCKA = null;
+  // how far inside the rock a point is (hill units from its foot's left end, y up negative): 0 outside or within m of the edge, 1 well inside
+  const inRock = (x, y, m) => { if (!ROCKA) return 1; let lo = 255; for (const [dx, dy] of [[0, 0], [-m, 0], [m, 0], [0, -m], [-m * .7, -m * .7], [m * .7, -m * .7]]) { const u = Math.round((x + dx + HOX) / 5), v = Math.round((y + dy + HOY) / 5); lo = Math.min(lo, u < 0 || v < 0 || u >= HW / 5 || v >= HH / 5 ? 0 : ROCKA[v * HW / 5 + u]); } return smooth(120, 250, lo); };
   function paintHill(rock, fire) {
     // (build 183, owner: "Gotta increase resolution, no?": the painting was made again at the image model's highest
     // size, 6336 px wide, and kept at 3000 x 1280, twice the hill's own units, so the close-up and the summit stay
@@ -339,6 +341,8 @@ const HL = (() => {
       for (let i = 0; i < D.length; i += 4) { const v = clamp(128 + (D[i] * .3 + D[i + 1] * .59 + D[i + 2] * .11 - m) * 1.15, 0, 255); D[i] = D[i + 1] = D[i + 2] = v; D[i + 3] = 255; } q.putImageData(d, 0, 0);
       ROCKTEX = mk(2 * w, 2 * h); const r = ROCKTEX.getContext('2d'); r.drawImage(t, 0, 0); r.save(); r.translate(2 * w, 0); r.scale(-1, 1); r.drawImage(t, 0, 0); r.restore(); r.save(); r.translate(0, 2 * h); r.scale(1, -1); r.drawImage(ROCKTEX, 0, 0, 2 * w, h, 0, 0, 2 * w, h); r.restore();
       ROCKPAT = ctx.createPattern(ROCKTEX, 'repeat'); }
+    // where the rock is, at a fifth of the hill's units (build 197: the steam fades before it reaches the painting's edge)
+    { const w = HW / 5, h = HH / 5, t = mk(w, h), q = t.getContext('2d'); q.drawImage(rock, 0, 0, w, h); const D = q.getImageData(0, 0, w, h).data; ROCKA = new Uint8Array(w * h); for (let i = 0; i < w * h; i++) ROCKA[i] = D[i * 4 + 3]; }
     if (fire) { LAVA = mk(HW, HH); LAVA.getContext('2d').drawImage(fire, 0, 0, HW, HH); LAVAB = mk(HW / 10, HH / 10); LAVAB.getContext('2d').drawImage(fire, 0, 0, HW / 10, HH / 10); }
   }
   function preload() {
@@ -392,7 +396,17 @@ const HL = (() => {
   // fire out of the hill: a flash and thunder (no words out of the mountain: left out for young children)
   let bolt = null; const embers = [];
   function tintSmoke() { if (tintC.smoke) return; const tc = tintC.smoke = mk(SMOKE.width, SMOKE.height), t = tc.getContext('2d'); t.drawImage(SMOKE, 0, 0); t.globalCompositeOperation = 'source-in'; t.fillStyle = 'rgb(255,120,50)'; t.fillRect(0, 0, tc.width, tc.height); }
-  function fire(k = 1) { flash = Math.max(flash, k); if (dark > .5 && HL.on) shed(3 + Math.floor(4 * k), 1);
+  // THE CRACKS BREATHE (owner, build 197: "Should smoke come from multiple cracks (but not obstructing any of the view of
+  // the super cool mt)? I love how cracks light up so cool"; agreed as proposed). Not columns (build 153's threads of smoke
+  // read as chimneys): a faint, ragged breath of steam seeps from each of the four brightest cracks of the painted fire
+  // (`VENTS`, found in hill-fire.webp, in the hill's own units: x from its foot's left end, y up negative, and how far
+  // down the crack runs), clings to the rock, spreads a little, lifts and thins within a short height. Warm where it
+  // leaves the crack, grey as it rises; a flash makes each crack puff. It fades before it reaches the hill's outline
+  // (`faceX`/`backX`), so it never blurs the silhouette, and it is see-through: the summit's plume stays the one big smoke.
+  const VENTS = [[62, -374, 50], [238, -330, 80], [378, -313, 70], [637, -159, 45]], STEAMP = [];
+  let STEAMC = null;
+  function steamPuff(v, burst = 0) { const [x, y, len] = VENTS[v]; STEAMP.push({ x: x + (Math.random() - .5) * 8, y: y + Math.random() * len, vx: -.06 - Math.random() * .1, vy: -.28 - Math.random() * .18 - .15 * burst, r: 6 + Math.random() * 5 + 4 * burst, g: .12 + Math.random() * .08, t: 0, life: 240 + Math.random() * 160, s: Math.random() * 6.28 }); }
+  function fire(k = 1) { flash = Math.max(flash, k); for (let v = 0; v < VENTS.length; v++) steamPuff(v, k); if (dark > .5 && HL.on) shed(3 + Math.floor(4 * k), 1);
     { let x = -40 + Math.random() * 120, y = -260 - Math.random() * 120; bolt = [[x, y]]; while (y < 60) { x += (Math.random() - .62) * 70; y += 22 + Math.random() * 40; bolt.push([x, y]); } } if (audio()) { sweep(64, 30, 1.8, .09 * k); hiss(190, .7, .11 * k, 1.6, 'lowpass'); hiss(900, 1, .03 * k, .5, 'bandpass', .05); } }
   // the tune on the wrong path: Amazing Grace's first phrase with its bright notes bent flat, low and slow
   const WRONG = [62, 67, 70, 67, 70, 68, 67, 63, 62].map(m => m - 12);
@@ -409,7 +423,7 @@ const HL = (() => {
     Object.assign(C3, { x: START, face: 1, faceA: 1, anim: 12, sd: QUIET[0], alpha: 1, run: 0, ranim: RUNP_META.start || 0, weep: false, wt: 0, wa: 0, kf: 0, kp: 0, tv: null, fired: false });
     mercy = mercyTo = calm = calmTo = 0;
     wise = null; evan = null; dark = 0; hope = 0; flash = 0; flashT = 200; veil = 0; veilTo = 0; knocks = 0; knockT = 0; door = 0; doorTo = 0;
-    reveal = 0; vil = vilTo = 0; ROCKS.length = 0; C3.dy = 0; cut = cutTo = 0; Zw = 0; zs = ''; zT = 0;
+    reveal = 0; vil = vilTo = 0; ROCKS.length = 0; STEAMP.length = 0; C3.dy = 0; cut = cutTo = 0; Zw = 0; zs = ''; zT = 0;
     saidSeen = saidHigh = hasteSaid = gateSaid = hillSeen = greeted = false; stillT = 0; hintT = 0; noteI = 0; noteX = 0;
   }
   // the picture behind the title page when Level 3 is the child's level: the hill hanging over the way, nobody there
@@ -485,6 +499,9 @@ const HL = (() => {
     if ((ph === 'still' || ph === 'come' || ph === 'evan') && dark > .5 && Math.random() < .035) shed(1, .7);
     for (const r of ROCKS) { r.t++; if (r.dust) continue; r.vy += .09; r.x += r.vx; r.y += r.vy; if (r.y >= 0) { r.y = 0; r.dust = 1; r.t = 0; } } for (let i = ROCKS.length - 1; i >= 0; i--) if (ROCKS[i].dust && ROCKS[i].t > 70) ROCKS.splice(i, 1);
     if (dark > .4 && Math.random() < .07 * dark) embers.push({ x: 20 + Math.random() * 70, y: 10 - Math.random() * 40, vx: -.2 - Math.random() * .4, vy: -.35 - Math.random() * .5, r: .6 + Math.random() * .8, h: Math.random(), t: 0, life: 140 + Math.random() * 160 });
+    if (dark > .3 && ph !== 'title') { for (let v = 0; v < VENTS.length; v++) if (Math.random() < (.035 + .015 * Math.sin(G.t / 47 + v * 1.7)) * dark) steamPuff(v); }
+    for (const p of STEAMP) { p.t++; p.x += p.vx + .05 * Math.sin(p.t / 40 + p.s); p.y += p.vy; p.vy *= .997; p.r += p.g; }
+    for (let i = STEAMP.length - 1; i >= 0; i--) if (STEAMP[i].t >= STEAMP[i].life) STEAMP.splice(i, 1);
     for (const e of embers) { e.t++; e.x += e.vx + .3 * Math.sin((e.t + e.life) / 23); e.y += e.vy; } for (let i = embers.length - 1; i >= 0; i--) if (embers[i].t >= embers[i].life) embers.splice(i, 1);
 
     if (ph === 'plain') {
@@ -788,6 +805,12 @@ const HL = (() => {
             const g = c.createRadialGradient(px, py, 0, px, py, rr); g.addColorStop(0, css([255, 232, 190], al)); g.addColorStop(.5, css([255, 170, 96], al * .45)); g.addColorStop(1, css([240, 110, 60], 0)); c.fillStyle = g; c.fillRect(px - rr, py - rr, 2 * rr, 2 * rr); }
           // the seam: fire from the same source, running down inside the overhang, thinning and dying away
           // the painted fire in the clefts, breathing; a soft bloom round it; brighter at a flash
+          if (STEAMP.length) { if (!STEAMC) { const mkB = col => { const b = mk(64, 64), q = b.getContext('2d'), g = q.createRadialGradient(32, 32, 0, 32, 32, 32); g.addColorStop(0, css(col, .5)); g.addColorStop(.45, css(col, .32)); g.addColorStop(1, css(col, 0)); q.fillStyle = g; q.fillRect(0, 0, 64, 64); return b; }; STEAMC = [mkB([226, 150, 104]), mkB([118, 106, 108])]; }
+            c.save();
+            for (const p of STEAMP) { const u = p.t / p.life, a = smooth(0, .3, u) * (1 - smooth(.45, 1, u)) * inRock(p.x, p.y, p.r * 1.4) * (burn * .5 + .15) * (rocky ? 1 : reveal * .6);
+              if (a < .006) continue; const px = hx + p.x * k, py = hy + p.y * k, rr = p.r * k, rx = rr * (1.5 + .25 * Math.sin(p.s + p.t / 60)), w = smooth(.1, .5, u);
+              c.globalAlpha = Math.min(1, a * .4 * (1 - w)); c.drawImage(STEAMC[0], px - rx, py - rr, 2 * rx, 2 * rr); c.globalAlpha = Math.min(1, a * .55 * w); c.drawImage(STEAMC[1], px - rx, py - rr, 2 * rx, 2 * rr); }
+            c.restore(); }
           if (LAVA) { const al = Math.min(.75, (burn * .55 + .6 * F) * (.75 + .25 * Math.sin(G.t / 47))) * reveal; c.globalAlpha = al; c.drawImage(LAVA, dx, dy, HW * k, HH * k); c.globalAlpha = al * .7; c.drawImage(LAVAB, dx, dy, HW * k, HH * k); c.globalAlpha = 1; }
           if (!LAVA) for (const [seam, len, ph0, depth] of SEAMS) for (let j = 1; j < seam.length; j++) { const u = j / len, fade = Math.pow(1 - u, 1.25) * (depth ? .7 : 1), breathe = .55 + .45 * Math.sin(G.t / 58 - u * 6 + ph0), al = fade * breathe * (burn * 1.25 + F);
             if (al < .02) continue; const [x0, y0] = seam[j - 1], [x1, y1] = seam[j];
