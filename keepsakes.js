@@ -88,16 +88,16 @@ body.playing #pause{display:block}
 .ksarrow:disabled{opacity:.15}
 .ksarrow.l{left:max(2px,env(safe-area-inset-left))}
 .ksarrow.r{right:max(2px,env(safe-area-inset-right))}
-/* the roll: rough parchment between its own curled ends, an engrossing hand, a wax seal */
+/* the roll: rough parchment between its own curled ends, an engrossing hand; no seal (build 242: Evangelist's roll in the book has none; the sealed roll is the Cross's, {94}) */
 #ksroll .sheetw{position:relative;--H:min(86vh,calc(88vw * 1.3));height:var(--H);width:calc(var(--H) * .64);display:flex;flex-direction:column;align-items:stretch;filter:drop-shadow(0 14px 22px rgba(0,0,0,.5))}
 #ksroll .curl{height:calc(var(--H) * .058);margin:0 -2.5%;border-radius:calc(var(--H) * .03);position:relative;z-index:2;flex:none;background-color:#cdb381;background-image:linear-gradient(rgba(70,45,15,.55),rgba(255,245,215,.25) 30%,rgba(255,245,215,.05) 55%,rgba(70,45,15,.6)),var(--parch);background-size:100% 100%,cover;box-shadow:0 calc(var(--H) * .006) calc(var(--H) * .01) rgba(60,38,14,.35)}
 #ksroll .curl.b{position:absolute;left:-2.5%;right:-2.5%;margin:0;top:94.2%}
 #ksroll .curl::after{content:'';position:absolute;top:8%;bottom:8%;width:calc(var(--H) * .04);border-radius:50%;right:-.3%;background:radial-gradient(ellipse at 45% 50%,#5b3f1e 0 22%,#b39363 30%,#8a6a3e 46%,#d4bb8d 58%,#7a5a30 80%)}
 #ksroll .clip{flex:1;position:relative;margin:calc(var(--H) * -.02) 0 calc(var(--H) * .038)}
 #ksroll .body{position:absolute;inset:0;background-color:#e2cc9c;background-image:radial-gradient(ellipse at 50% 42%,rgba(255,248,226,.35),rgba(120,80,30,.0) 60%,rgba(110,70,25,.28)),var(--parch);background-size:100% 100%,cover;clip-path:var(--deckle)}
-#ksroll .words{position:absolute;left:11%;right:11%;top:13%;text-align:center;font-family:'UnifrakturCook','Old English Text MT',Georgia,serif;font-weight:700;color:#24160b;font-size:calc(var(--H) * .068);line-height:1.32;letter-spacing:.01em;text-shadow:0 0 .6px rgba(35,21,11,.55),0 0 2.5px rgba(60,35,12,.22)}
-#ksroll .flour{position:absolute;left:4%;width:92%;top:5%;height:46%;pointer-events:none;overflow:visible}
-#ksroll .ref{position:absolute;left:0;right:0;top:50%;text-align:center;font-family:'IM Fell English',Georgia,serif;font-style:italic;color:#46301c;font-size:calc(var(--H) * .031)}
+#ksroll .words{position:absolute;left:11%;right:11%;top:30%;text-align:center;font-family:'UnifrakturCook','Old English Text MT',Georgia,serif;font-weight:700;color:#24160b;font-size:calc(var(--H) * .068);line-height:1.32;letter-spacing:.01em;text-shadow:0 0 .6px rgba(35,21,11,.55),0 0 2.5px rgba(60,35,12,.22)}
+#ksroll .flour{position:absolute;left:4%;width:92%;top:22%;height:46%;pointer-events:none;overflow:visible}
+#ksroll .ref{position:absolute;left:0;right:0;top:67%;text-align:center;font-family:'IM Fell English',Georgia,serif;font-style:italic;color:#46301c;font-size:calc(var(--H) * .031)}
 #ksroll .sealw{position:absolute;left:50%;bottom:4%;width:40%;aspect-ratio:1/1.25;transform:translateX(-50%) rotate(-7deg)}
 #ksroll .tails{position:absolute;left:0;top:0;width:100%;height:100%}
 #ksroll .seal{position:absolute;left:0;top:0;width:100%;filter:drop-shadow(0 4px 4px rgba(50,8,4,.45)) drop-shadow(0 1px 1px rgba(50,8,4,.5))}
@@ -164,6 +164,7 @@ body.playing #pause{display:block}
   }
 
   // ---------- THE WAX SEAL: a height map lit by one light, like real sealing wax ----------
+  // Off Evangelist's roll since build 242 (the book gives it no seal); kept for the Cross's sealed roll (Level 5, {94}).
   // The wax is a puddle with an uneven outline and a rounded edge; the matrix pressed into its middle leaves a sunken
   // field with a raised lip of pushed-up wax round it; in the field stand the raised device (the King's crown with a cross
   // above it), a ring of beads and the legend SIGILLVM REGIS ("the King's seal", Latin as on seals of the time). Each pixel's
@@ -378,8 +379,7 @@ body.playing #pause{display:block}
     <div class="leaf"><div class="face front"></div><div class="face back"></div></div><div class="spine"></div><div class="ribbon"></div><div class="page scratch"></div></div></div>
     <button class="ksarrow l" aria-label="Turn back">‹</button><button class="ksarrow r" aria-label="Turn on">›</button><button class="ksx" aria-label="Close">×</button></div>`);
   const roll = mkEl(`<div id="ksroll" class="kscover"><div class="sheetw"><div class="curl"></div><div class="clip"><div class="body">
-    ${FLOUR}<div class="words"><span style="color:#86190f;font-size:1.75em;line-height:.8;vertical-align:-.13em">F</span>lee from the wrath to come.</div><div class="ref">Matt. iii. 7.</div>
-    <div class="sealw">${TAILS}<img class="seal" alt=""></div></div></div><div class="curl b"></div></div>
+    ${FLOUR}<div class="words"><span style="color:#86190f;font-size:1.75em;line-height:.8;vertical-align:-.13em">F</span>lee from the wrath to come.</div><div class="ref">Matt. iii. 7.</div></div></div><div class="curl b"></div></div>
     <button class="ksx" aria-label="Close">×</button></div>`);
   for (const e of [menu, book, roll]) document.body.appendChild(e);
   // (build 217) a thing in the world seen close up: one picture that grows out of the scene; a touch anywhere puts it back
@@ -535,7 +535,7 @@ body.playing #pause{display:block}
       const edge = top + h * .5 - cl.offsetTop; cl.style.clipPath = `inset(0 0 ${Math.max(0, cl.clientHeight - edge)}px 0)`;
       if (u < 1) requestAnimationFrame(step); else cl.style.clipPath = ''; };
     requestAnimationFrame(step); }
-  function openRoll() { makeParch(); makeSeal(); unroll(); show(roll, .45); rustle(1.4); }
+  function openRoll() { makeParch(); unroll(); show(roll, .45); rustle(1.4); }
   roll.addEventListener('click', e => { if (e.target === roll || e.target.closest('.ksx')) hide(); });
 
   // keys: Escape pauses or closes; the arrows turn the pages; nothing reaches the game while something is open

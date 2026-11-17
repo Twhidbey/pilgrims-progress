@@ -6,6 +6,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 **The keepsakes have their own chat now** ("Pilgrim's Progress: the keepsakes (Bible, roll, title book)", https://claude.ai/code/session_017HrTSDUqJDSdrXPbhc33zT). Open question there: the wax seal on Evangelist's roll is ours, not the book's (`{14}` has no seal; the sealed roll is given at the Cross, `{94}`): take it off and keep `waxSeal()` for Level 5, or keep it as a departure.
 
+**Build 242 (keepsakes chat): the wax seal taken off Evangelist's roll (the book gives it none; the sealed roll is the Cross's, `{94}`); `waxSeal()` kept for Level 5. Still waiting on the owner: the Bible's turns and the roll on the iPhone, and the cover (brighter, darker or left; a leather rim round the open pages?). Nothing spent.**
+
 **Build 240 (small-polish chat): the Bible's page turns and riffles on one clock, notes on the page as it lands, the ribbon fading instead of jumping; the roll waits closed until it has faded in. See `CLAUDE.md`, "Motion checked, build 240". The title book's cover checked in stills (twice size), waiting on the owner: more or less toning, and whether a thin leather rim should show round the open pages. Nothing spent.**
 
 **HANDOVER FROM THE LEVEL 3 ART CHAT (builds 185 to 238, Nov 17 2026; the owner: "Looks fantastic - can we start a new chat for edits to level 3 after this keeping what we've done in notes"). Nothing in it spent money.** Every change is written up in `CLAUDE.md` under its build, in the Level 3 section (the entries from 218 on are not in number order: search "Build 2NN").
