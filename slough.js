@@ -873,21 +873,40 @@ const SL = (() => {
       putTree(ctx, g.b, gx, gy, s); ctx.globalAlpha = .3; putTree(ctx, g.b, gx, gy, s, -s * .7); ctx.globalAlpha = 1;
     }
     // the mire running back behind them (FARMUD, laid in build): nearer rows slide more with the camera, are taller and darker
-    for (const row of FARMUD) {
-      const q = row.q, p = .3 + .7 * q, gy = hor + (wl - hor) * q, col = mix(tone(.4), tone(.84), Math.pow(1 - q, 1.1)), hz = (.2 + .8 * q) * z;
-      ctx.fillStyle = css(col, .6 + .4 * q);
-      for (const m of row.ps) {
-        const sx = (m.x - cx * p) * z + VW / 2, w = m.L * z; if (sx > VW + 20 || sx + w < -20) continue;
-        ctx.beginPath(); const N = Math.max(6, Math.round(w / 6));
-        for (let i = 0; i <= N; i++) { const u = i / N, e = Math.pow(Math.sin(Math.PI * u), .45), x = sx + w * u;
-          ctx[i ? 'lineTo' : 'moveTo'](x, gy - m.h * hz * e * (.65 + .35 * Math.sin(u * 9 + m.s))); }
-        for (let i = N; i >= 0; i--) { const u = i / N, e = Math.pow(Math.sin(Math.PI * u), .6), x = sx + w * u;
-          ctx.lineTo(x, gy + m.h * .35 * hz * e * (.6 + .4 * Math.sin(u * 13 + m.s * 2))); }
-        ctx.fill(); }
-    }
     // mist lying on the far water, hiding the horizon
     { const g = ctx.createLinearGradient(0, hor - 90, 0, wl + 20); g.addColorStop(0, css(LIGHT, 0)); g.addColorStop(.5, css(LIGHT, .35 + .6 * look.mist)); g.addColorStop(.75, css(LIGHT, .25 + .5 * look.mist)); g.addColorStop(1, css(LIGHT, 0));
       ctx.fillStyle = g; ctx.fillRect(0, hor - 90, VW, wl + 110 - hor); }
+    for (const row of FARMUD) {
+      // build 294 (owner: "make mud beyond match the style of the mud closer (or better yet mix styles - because i like the
+      // wavy look of mud beyond)"): the far patches keep their wavy shapes but are painted like the near mud: the same grey
+      // where they meet the surface line (mudTone), a dark wet rim along their edges, broad wetter patches inside, and now and
+      // then a thin dull sheen where the sky catches wet mud; all hazed toward the mist with distance
+      const q = row.q, p = .3 + .7 * q, gy = hor + (wl - hor) * q, hz = (.2 + .8 * q) * z, haze = Math.pow(1 - q, 1.5) * (.8 + .15 * look.mist);
+      const mudTone = tone(lerp(.5, .56, look.mist) - .04);
+      const col = mix(mudTone, tone(.86), haze), dk = mix(tone(.14), tone(.8), haze), lt = tone(.92);
+      for (const m of row.ps) {
+        const sx = (m.x - cx * p) * z + VW / 2, w = m.L * z; if (sx > VW + 20 || sx + w < -20) continue;
+        const N = Math.max(6, Math.round(w / 6)), top = [], bot = [];
+        for (let i = 0; i <= N; i++) { const u = i / N, x = sx + w * u;
+          top.push([x, gy - m.h * hz * Math.pow(Math.sin(Math.PI * u), .45) * (.65 + .35 * Math.sin(u * 9 + m.s))]);
+          bot.push([x, gy + m.h * .35 * hz * Math.pow(Math.sin(Math.PI * u), .6) * (.6 + .4 * Math.sin(u * 13 + m.s * 2))]); }
+        const shape = new Path2D(); top.forEach(([x, y], i) => i ? shape.lineTo(x, y) : shape.moveTo(x, y)); for (let i = N; i >= 0; i--) shape.lineTo(bot[i][0], bot[i][1]); shape.closePath();
+        ctx.fillStyle = css(col, .7 + .3 * q); ctx.fill(shape);
+        // a broad wetter patch inside some of them
+        if (m.s > 3.5) { ctx.save(); ctx.clip(shape); ctx.fillStyle = css(dk, .16 * q); ctx.beginPath();
+          const c0 = sx + w * (.2 + .05 * (m.s % 3)), cw = w * .45; ctx.ellipse(c0 + cw / 2, gy - m.h * hz * .25, cw / 2, m.h * hz * .5, 0, 0, 7); ctx.fill(); ctx.restore(); }
+        // the dark wet rim where mud meets the pool, strongest along the near edge
+        ctx.strokeStyle = css(dk, .5 * q + .1); ctx.lineWidth = .6 + 1.4 * q * z; ctx.beginPath(); bot.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)); ctx.stroke();
+        ctx.strokeStyle = css(dk, .25 * q + .05); ctx.lineWidth = .5 + .8 * q * z; ctx.beginPath(); top.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)); ctx.stroke();
+        // small pale pools caught in the bigger patches, their edges ragged like the near mud's
+        if (m.L > 260) { ctx.fillStyle = css(mix(tone(.9), tone(.86), haze), .75); for (let k = 0; k < 3; k++) { const u = .2 + .25 * k + .05 * Math.sin(m.s * (k + 1)), pw = w * (.06 + .05 * ((m.s * (k + 3)) % 1)), py = gy - m.h * hz * (.15 + .1 * k % .3);
+          if ((m.s * 7 + k) % 3 < 1.2) continue; ctx.beginPath(); ctx.moveTo(sx + w * u - pw, py); for (let i = 0; i <= 8; i++) { const v = i / 8; ctx.lineTo(sx + w * u - pw + 2 * pw * v, py - (1.2 + .8 * Math.sin(v * 7 + m.s)) * q * z * Math.sin(Math.PI * v)); }
+          for (let i = 8; i >= 0; i--) { const v = i / 8; ctx.lineTo(sx + w * u - pw + 2 * pw * v, py + (.8 + .6 * Math.sin(v * 9 + k)) * q * z * Math.sin(Math.PI * v)); } ctx.fill(); } }
+        // a thin dull sheen on some
+        if (m.s > 6) { ctx.strokeStyle = css(lt, .22 * q); ctx.lineWidth = .7 * z + .3; ctx.beginPath();
+          for (let i = Math.floor(N * .25); i <= Math.floor(N * .7); i++) { const [x, y] = top[i]; const y2 = y + (gy - y) * .45; i > Math.floor(N * .25) ? ctx.lineTo(x, y2) : ctx.moveTo(x, y2); } ctx.stroke(); }
+      }
+    }
 
     // --- everything near, painted apart so the water can mirror it: banks, oak, people, steps, lights ---
     const n = nearC.getContext('2d'); n.setTransform(1, 0, 0, 1, 0, 0); n.clearRect(0, 0, nearC.width, nearC.height);
