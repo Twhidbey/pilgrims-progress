@@ -28,7 +28,7 @@ const RM = (() => {
   const darkOn = () => { try { return localStorage.getItem('pp-dark') === '1'; } catch (e) { return false; } };
 
   // the two visitors (sprites face LEFT as made; face 1 = turned to face right)
-  const VIS = { C: { n: 'room-christian', ax: 92, g: 631, who: 'Christian', ph: 0, ct: 1.2, mul: .62, sat: .42, warm: [1, 1, 1] }, I: { n: 'room-interpreter', ax: 107, g: 634, who: I, ph: 1.7, ct: 1.15, mul: .66, sat: .45, say: { n: 'room-interpreter-say', ax: 82, g: 334, s: 635 / 331, ct: 1.15, mul: .66, sat: .45, cols: 8, fr: 57, W: 142, H: 336 } } };
+  const VIS = { C: { n: 'room-christian', ax: 92, g: 631, who: 'Christian', ph: 0, ct: 1.2, mul: .62, sat: .42, warm: [1, 1, 1], walk: { n: 'room-christian-walk', ax: 117, g: 355, s: 632 / 347, ct: 1.2, mul: .62, sat: .42, cols: 8, fr: 15, W: 192, H: 359, vpx: 6 } }, I: { n: 'room-interpreter', ax: 107, g: 634, who: I, ph: 1.7, ct: 1.15, mul: .66, sat: .45, walk: { n: 'room-interpreter-walk', ax: 102, g: 374, s: 635 / 364, ct: 1.15, mul: .66, sat: .45, cols: 8, fr: 27, W: 184, H: 376, vpx: 6 }, say: { n: 'room-interpreter-say', ax: 82, g: 334, s: 635 / 331, ct: 1.15, mul: .66, sat: .45, cols: 8, fr: 57, W: 142, H: 336 } } };
   const BRAVE = { plain: { n: 'room5-brave', ax: 94, g: 519 }, armed: { n: 'room5-brave-armed', ax: 123, g: 536 } };
 
   let R = null, t = 0, ph = '', cam = { x: 0, to: 0 }, fade = 1, fadeTo = 0, after = null, toned = {}, startId = 'door', motes = [];
@@ -127,7 +127,7 @@ const RM = (() => {
   // the Interpreter lifts his open hand while he speaks (his second picture), and folds his hands again after
   let sayK = 0;
   // cut a sheet of frames into one picture per frame, once (pics['name#i'])
-  function sayFrames(f) {
+  function sheetFrames(f) {
     if (pics[f.n + '#0']) return true; const im = pics[f.n]; if (!im) { pic(f.n); return false; }
     for (let i = 0; i < f.fr; i++) { const cv = document.createElement('canvas'); cv.width = f.W; cv.height = f.H; cv.getContext('2d').drawImage(im, (i % f.cols) * f.W, Math.floor(i / f.cols) * f.H, f.W, f.H, 0, 0, f.W, f.H); pics[f.n + '#' + i] = cv; }
     return true;
@@ -137,10 +137,18 @@ const RM = (() => {
     const m = VIS[key];
     const col = key === 'C' ? (R.toneC || R.tone).map((v, i) => v * m.warm[i]) : R.tone;
     // the Interpreter's gesture: frames of one video (hands folded -> the open hand lifted as he explains), played at the video's own pace
-    if (m.say && m.say.cols && sayFrames(m.say)) { const f = m.say, i = Math.round(sayK * (f.fr - 1)); fig(c, f.n + '#' + i, f, x, R.FY - up, face, k, a, col, m.who, m.ph); return; }
+    if (m.say && m.say.cols && sheetFrames(m.say)) { const f = m.say, i = Math.round(sayK * (f.fr - 1)); fig(c, f.n + '#' + i, f, x, R.FY - up, face, k, a, col, m.who, m.ph); return; }
     if (m.say && !m.say.cols && pics[m.say.n]) { const q = smooth(0, 1, sayK); if (q < 1) fig(c, m.n, m, x, R.FY - up, face, k, a, col, m.who, m.ph); if (q > 0) fig(c, m.say.n, m.say, x, R.FY - up, face, k, a * q, col, m.who, m.ph); return; }
     fig(c, m.n, m, x, R.FY - up, face, k, a, col, m.who, m.ph);
   };
+  // a visitor walking (the free Hugging Face clips, build 279): frame f (any real number) of his walk sheet,
+  // and the floor speed (plate px a tick) at which his planted foot stays put at the video's own pace
+  const WALK_FPT = 16 / 60;
+  function walkSpeed(key, k) { const w = VIS[key].walk; return w.vpx * k * w.s / K * WALK_FPT; }
+  function walkFig(c, key, x, f, k, a = 1, col = R.tone) {
+    const w = VIS[key].walk; if (!sheetFrames(w)) { if (key === 'C') walker(c, x, Math.floor(f) % Math.max(1, CHR.length), k); return; }
+    const i = ((Math.floor(f) % w.fr) + w.fr) % w.fr; fig(c, w.n + '#' + i, w, x, R.FY, 1, k, a, col, null, 0, 0);
+  }
   // Christian walking (leaving): the game's own walk pictures, dark against the night
   const WALKT = new Map();
   function walker(c, x, frame, k) {
@@ -397,19 +405,19 @@ const RM = (() => {
     leave: {
       pic: 'room-door', FY: 1200, cam0: 210, tone: [100, 94, 112], k: .58,
       light(x) { return x < DOOR.x - 100 ? { x: DOOR.x, a: .55, col: [230, 140, 70] } : null; },
-      enter() { this.x = 1880; this.w = 0; this.fr = 0; this.a = 1; },
+      enter() { this.x = 1880; this.w = 0; this.fr = 0; this.a = 1; pic(VIS.C.walk.n); },
       run() { talk([[I, 'Have you thought on all these things?'], [C, 'Yes, and they put me in hope and fear.'], [I, 'The Comforter be always with you, good Christian, to guide you in the way that leads to the City.'], [N, 'The highway was fenced on either side with a wall, and that wall was called Salvation.'], [TIP, 'Hold to go on your way.', 'walkout']], () => {}); },
       act() {},
       upd() {
         if (G.act === 'walkout') { if (G.actT >= 60 && !hold() && !G.ring) G.ring = () => [u(this.x + 160), v(1000)]; if (hold()) { G.ring = null; this.w = Math.min(1, this.w + .05); } else this.w = Math.max(0, this.w - .05); }
-        if (this.w > 0) { this.fr += .45 * this.w; this.x += CHR_META.vpx * .45 * this.w * (790 * .58 * S / 300) / S; }
+        if (this.w > 0) { this.fr += WALK_FPT * this.w; this.x += walkSpeed('C', .58) * this.w; }
         cam.to = Math.min(R.PW * S - VW, Math.max(R.cam0, u(this.x) + cam.x - 500));
-        if (this.x > R.PW - 80) { this.a = Math.max(0, this.a - .03); if (G.act === 'walkout') { next(true); G.state = 'auto'; } }
+        if (this.x > 2800) { this.a = Math.max(0, this.a - .03); if (G.act === 'walkout') { next(true); G.state = 'auto'; } }
         if (this.a <= 0 && ph !== 'end') { ph = 'end'; t = 0; }
         if (ph === 'end' && t === 40) finish();
       },
       under(c) { doorLight(c, 1, () => visitor(c, 'I', DOOR.x, -1, .58)); },
-      people(c) { c.globalAlpha = this.a; if (this.w > 0 || this.fr > 0) walker(c, this.x, Math.floor(this.fr) % Math.max(1, CHR.length), .58); else visitor(c, 'C', this.x, 1, .58); c.globalAlpha = 1; },
+      people(c) { c.globalAlpha = this.a; if (this.w > 0 || this.fr > 0) walkFig(c, 'C', this.x, this.fr, .58); else visitor(c, 'C', this.x, 1, .58); c.globalAlpha = 1; },
     },
   };
   // FOLLOW THE INTERPRETER (owner, build 267: "Ok to do 1"): between two rooms a dark passage; the child holds to follow
@@ -417,27 +425,27 @@ const RM = (() => {
   // dark), the Interpreter goes a step ahead with a candle, its light moving along the wall and the floor.
   ROOMS.pass = {
     pic: null, FY: 1160, cam0: 0, tone: [120, 92, 74], k: .82, PW: 2526,
-    enter() { this.p = 0; this.fr = 0; this.w = 0; this.st = 0; if (this.to && ROOMS[this.to].pic) pic(ROOMS[this.to].pic); },
+    enter() { this.p = 0; this.fr = 0; this.w = 0; this.st = 0; pic(VIS.C.walk.n); pic(VIS.I.walk.n); if (this.to && ROOMS[this.to].pic) pic(ROOMS[this.to].pic); },
     run() { talk([[TIP, 'Hold to follow the Interpreter.', 'follow']], () => {}); },
     act() {},
-    x() { return 380 + this.p * 1500; },
+    x() { return 380 + this.p * 900; },
     upd() {
       if (G.act === 'follow') {
         if (G.actT >= 50 && !hold() && !G.ring) G.ring = () => [u(this.x() + 420), v(820)];
         if (hold()) { G.ring = null; this.w = Math.min(1, this.w + .06); } else this.w = Math.max(0, this.w - .06);
         if (this.p >= 1) { next(true); G.state = 'auto'; goTo(this.to); }
       } else this.w = Math.max(0, this.w - .03);
-      this.p = Math.min(1, this.p + .0042 * this.w); this.fr += .3 * this.w;
-      const step = Math.floor(this.fr / 9.5); if (step !== this.st) { this.st = step; noise(200, 1.5, .2, .06); noise(140, 1.2, .25, .04, .05); }
+      this.p = Math.min(1, this.p + walkSpeed('C', this.k) / 900 * this.w); this.fr += WALK_FPT * this.w;
+      const step = Math.floor(this.fr * 2 / VIS.C.walk.fr); if (step !== this.st) { this.st = step; noise(200, 1.5, .2, .06); noise(140, 1.2, .25, .04, .05); }
     },
     draw(c) {
       const g = c.createLinearGradient(0, 0, 0, VH); g.addColorStop(0, '#0c0705'); g.addColorStop(.8, '#140c08'); g.addColorStop(1, '#0a0604'); c.fillStyle = g; c.fillRect(0, 0, VW, VH);
-      const ix = this.x() + 430, fl = 1 + .06 * Math.sin(G.t / 4.7) * Math.sin(G.t / 11), bob0 = Math.abs(Math.sin(this.fr * Math.PI / 9.5)) * 2 * this.w, lx = u(ix) + 30, ly = v(this.FY) - 124 - bob0;
+      const ix = this.x() + 430, fl = 1 + .06 * Math.sin(G.t / 4.7) * Math.sin(G.t / 11), lx = u(ix) + 34, ly = v(this.FY) - 128;
       // the candle's light on the passage wall and, flat, on the floor
       glow(c, lx, ly, 330 * fl, [255, 170, 90], .2); c.save(); c.translate(lx, v(this.FY) + 2); c.scale(1, .12); glow(c, 0, 0, 380 * fl, [255, 170, 90], .32); c.restore();
-      const bob = Math.abs(Math.sin(this.fr * Math.PI / 9.5)) * 2 * this.w;
-      fig(c, VIS.I.n, VIS.I, ix, this.FY, 1, this.k, 1, this.tone, I, 1.7, bob);
-      walker(c, this.x(), Math.floor(this.fr) % Math.max(1, CHR.length), this.k);
+      // the two walk at their videos' own pace (the Interpreter's longer stride turns over a little slower)
+      walkFig(c, 'I', ix, this.fr * walkSpeed('C', this.k) / walkSpeed('I', this.k), this.k);
+      walkFig(c, 'C', this.x(), this.fr, this.k);
       glow(c, lx, ly, 26 * fl, [255, 226, 160], .7); c.fillStyle = 'rgba(255,240,200,.95)'; c.beginPath(); c.ellipse(lx, ly - 2, 1.6, 3.4, 0, 0, 6.2832); c.fill();
     },
   };
