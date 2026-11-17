@@ -50,7 +50,7 @@ const SL = (() => {
     [C, 'Sir, a man called Evangelist sent me this way to the gate, and I fell in here.'],
     [H, 'But why did you not look for the steps?'],
     [C, 'Fear followed me so hard that I fled the nearest way, and fell in.'],
-    [H, 'Give me your hand.', 'hand', () => { mv = mv || { t: 0 }; mv.to = 150; }],      // he is already down on his knee: now he holds out his hand
+    [H, 'Give me your hand.', 'hand', () => { mv = mv || { t: 0 }; mv.to = 150; C2.handGo = true; }],      // he is already down on his knee: now he holds out his hand
   ];
   const DRAWN = [];      // {32}
   const STEPS = [[N, 'There were good, strong steps through the very middle of the bog. But in the mist, they were hard to see.']];      // {35}
@@ -393,7 +393,7 @@ const SL = (() => {
     // the last words ended; a finger only walks him if it went down after that) still held Level 1's clock, thousands
     // of ticks ahead, so no finger counted until the clock caught up. Keys were never affected, so the tests passed.
     G.calm = 0;
-    C2.rt = 0; C2.tv = null; C2.fy = null; C2.md = null; C2.rq0 = null; C2.q = 0; drops = []; churns = []; fReset(); strings = []; RECS = {}; for (const k in MS) delete MS[k]; C2.D = 0;
+    C2.rt = 0; C2.handGo = false; C2.tv = null; C2.fy = null; C2.md = null; C2.rq0 = null; C2.q = 0; drops = []; churns = []; fReset(); strings = []; RECS = {}; for (const k in MS) delete MS[k]; C2.D = 0;
     ph = 'plain'; Object.assign(C2, { x: START, y: bankY(START) + 4, face: 1, anim: 12, alpha: 1, sink: 0, reach: 0, stand: 1, sd: QUIET[0], st: 0, faceA: 1, done: 0 });
     pli = { x: START - 80, y: 0, face: 1, anim: 0, alpha: 1, sink: 0, mode: 'follow', px: START - 80, stop: { t: 50, x0: START - 80 - 72.5 * CHR_K } };      // he starts standing (his stop video's breathing part)
     prints = []; fogH = 1; fogS = 1; help = null; mv = null; lift = null; rings = []; steps = []; gloom = gloomTo = 0; noteI = 0; strain = 0; slipT = 0; fearT = 300; fearsSaid = false; goldT = 0; onwayT = 0; capsSaid = new Set(); nearSaid = false;
@@ -553,11 +553,11 @@ const SL = (() => {
   const handPt = () => [HX - 82 * CHR_K, HY() - 55 * CHR_K];
   function touch(sx, sy) {
     const wx = (sx - VW / 2) / cam.z + cam.cx, wy = (sy - cam.wl) / cam.z;
-    if (G.act === 'hand') { const [hx, hy] = handPt(); if (mv && mv.t >= 150 && Math.hypot(wx - hx, wy - hy) * cam.z < 120) grip(); else G.actT = Math.max(G.actT, 60); return; }
+    if (G.act === 'hand') { const [hx, hy] = handPt(); if (mv && mv.t >= 150 && (C2.rt || 0) >= 150 && Math.hypot(wx - hx, wy - hy) * cam.z < 120) grip(); else G.actT = Math.max(G.actT, 60); return; }
     if (wy > 0 && wx > WATER_L) { rings.push({ x: wx, y: Math.max(0, wy), t: 0, k: .7 }); sfxS.wade(); }
   }
   function grip() {
-    if (G.act !== 'hand' || lift || !mv || mv.t < 150) return;
+    if (G.act !== 'hand' || lift || !mv || mv.t < 150 || (C2.rt || 0) < 150) return;
     lift = { t: 0 }; sfxS.grip(); splash(C2.x + 10, 12, 1.4, true); G.ring = null; next(true); caption(DRAWN);
   }
 
@@ -664,7 +664,9 @@ const SL = (() => {
       // him coming, lifts his head and has his arm up as Help arrives (C2.rt, his own clock; the two used to share mv).
       if (help && help.w < HSEQ.length - 1) { help.w += .3; if (help.w >= HSEQ.length - 1) mv = { t: 40, to: 82 }; }
       else if (help && !mv) mv = { t: 40, to: 82 };
-      if (help && (help.w > 14 || C2.rt)) C2.rt = Math.min(150, (C2.rt || 0) + .4);
+      // build 287 (owner: "can christian not extend his hand, until it prompts him to take hand?"): he keeps struggling
+      // while they talk and only lifts his head and arm once Help says "Give me your hand" (C2.handGo)
+      if (help && C2.handGo) C2.rt = Math.min(150, (C2.rt || 0) + .4);
       if (help && help.w >= HSEQ.length - 1 && !help.said && G.state === 'play') { help.said = true; talk(HELP.slice(1), () => {}); }
       if (lift) { lift.t = Math.min(236, lift.t + .4); if (lift.t >= 236) { ph = 'drawn'; C2.done = 0; C2.x = HX + (LIFT_CHR - META.lift.ax) * CHR_K; C2.y = bankY(C2.x) + 4; C2.D = (META.lift.ground - liftWet(LIFT.length - 1).r) * CHR_K; C2.face = 1; C2.faceA = 1; C2.stand = 1; C2.sd = QUIET[0]; } }
     } else if (ph === 'drawn') {
@@ -703,7 +705,7 @@ const SL = (() => {
     }
     fogS = ph === 'look' ? 1 - smooth(60, 60 + LAST.length * 55 + 120, goldT) : ph === 'on' ? Math.max(0, fogS - .01) : fogS;
     if (mv) mv.t = Math.min(mv.to ?? 150, mv.t + .4);
-    if (G.act === 'hand') { G.actT++; if (mv && mv.t >= 150 && !G.ring && G.actT > 20) { dMore.textContent = 'take his hand ✦'; const [hx, hy] = handPt(); G.ring = () => [(hx - cam.cx) * cam.z + VW / 2, cam.wl + hy * cam.z]; } }
+    if (G.act === 'hand') { G.actT++; if (mv && mv.t >= 150 && (C2.rt || 0) >= 150 && !G.ring && G.actT > 20) { dMore.textContent = 'take his hand ✦'; const [hx, hy] = handPt(); G.ring = () => [(hx - cam.cx) * cam.z + VW / 2, cam.wl + hy * cam.z]; } }
     // --- Pliable ---
     if (pli) {
       if (pli.mode === 'follow') {
@@ -1087,6 +1089,19 @@ const SL = (() => {
     if (mudGd) { ctx.fillStyle = mudGd; for (const [sx, a] of mudCh) { ctx.globalAlpha = a * .35; ctx.fillRect(sx, wl, 5, 16 * z); } ctx.globalAlpha = 1; }
     ripples(true);
     ctx.setTransform(S * z, 0, 0, S * z, S * (VW / 2 - cx * z), S * wl);
+    // build 287 (owner: "put some of the grey mud with wavy boundary behind Christian and pliable's profiles in the mud"):
+    // a low heap of grey mud on the surface behind each one sunk in it, its top a slow wavy line, soft at the ends
+    const mound = (mx, k, seed) => {
+      const W = 80 * k, Hm = 20 * k, t = G.t / 70;
+      const g = ctx.createLinearGradient(mx - W, 0, mx + W, 0), col = mix(fig, tone(.55), .55);
+      g.addColorStop(0, css(col, 0)); g.addColorStop(.22, css(col, .85)); g.addColorStop(.78, css(col, .85)); g.addColorStop(1, css(col, 0));
+      ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(mx - W, 2);
+      for (let x = -W; x <= W; x += 3) { const u = x / W, b = Math.cos(u * Math.PI / 2) ** 1.5;
+        ctx.lineTo(mx + x, 2 - Hm * b * (.75 + .25 * Math.sin(x * .19 + t + seed) + .12 * Math.sin(x * .47 - t * 1.6 + seed * 2))); }
+      ctx.lineTo(mx + W, 2); ctx.closePath(); ctx.fill();
+    };
+    if (pliIn && pli) mound(pli.x, .9, 1.7);
+    if (chrLate > 0) { ctx.globalAlpha = chrLate; mound(C2.x, 1, 0); ctx.globalAlpha = 1; }
     if (pliIn) { TALKM = talkMove(PL); pliMire(ctx); TALKM = null; }
     if (chrLate > 0) { MREC = 'C'; FIG_WET = { D: C2.D || 0, a: .8 }; TALKM = C2.reach > 0 ? null : talkMove(C); drawChr(ctx, fig, chrLate); TALKM = null; MREC = null; FIG_WET = null; }
     sense();

@@ -8,6 +8,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 **Build 286 (Level 3 art chat): a softer glow on the figures; the village smaller and peeking out from behind the mountain's left side (a new tree-less picture still to make). A free image model found: FLUX.1 Kontext on Hugging Face (see CLAUDE.md, build 286). Nothing spent.**
 
+**Build 287 (Level 2 chat), four things the owner asked, nothing spent:** (1) blank paper shut in between the legs cleaned out of `pliable-stop.pack` (frame 37), `lift.pack` (frame 56, both men), `help-walk.pack` and `help-turn.pack` (pale opaque patches in the lower half of each frame made see-through); `PACK_V` bumped. (2) A low heap of grey mud with a slow wavy top behind Christian and Pliable while they are sunk (`mound` in `slough.js`, drawn just before each figure in the mire). (3) Christian no longer lifts his head and arm as Help comes: he keeps heaving while they talk and reaches only at "Give me your hand" (`C2.handGo`); the touch ring waits until his hand is up (`C2.rt` 150, about 6 s). (4) Tests: `index.html?level=2` now opens the contents page; after "Open the book", press "II. The Slough of Despond".
+
 **Build 285 (Level 2 chat): blank paper shut in between Pliable's legs as he climbs out of the Slough showed as a pale block (owner); cleaned in `assets/pliable-climb.pack` itself (pale opaque patches below row 250 made see-through, frames 4 to 95), `PACK_V` bumped. Nothing spent.**
 
 **Build 284 (room 3 chat): the Interpreter and Christian really walk in the passage between rooms and when leaving, from the first day's free Hugging Face clips. Nothing spent. See `CLAUDE.md`, "Build 284".**
