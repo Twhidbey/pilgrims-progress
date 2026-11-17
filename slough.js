@@ -176,7 +176,7 @@ const SL = (() => {
     return { c, x0: x0 - 2 / k, y0: y0 - 2 / k, k };
   }
   const putTree = (c, b, x, y, s, sy = s) => c.drawImage(b.c, x + b.x0 * s, y + b.y0 * sy, b.c.width / b.k * s, b.c.height / b.k * sy);
-  let FARMUD = [], mudDk = null, mudLt = null, shC = null, mistC = null, fogC = null, SHN = [], SH0 = [];
+  let SHB = null, FARMUD = [], mudDk = null, mudLt = null, shC = null, mistC = null, fogC = null, SHN = [], SH0 = [];
   let SHORE = null, OAK = null, GHOSTS = null, skyMist = null, skyClear = null, paper = null, threads = null, puff = null, fogBank = null, mudMap = null, built = false;
   function build() {
     if (built) return; built = true;
@@ -1093,7 +1093,10 @@ const SL = (() => {
     // so the black banks melt into the slough instead of sitting on it as hard slivers.
     // build 317 (owner: "the shadow now looks kinda pixelized"): at a sixth of the size the squashed figure was only a few rows
     // tall and its edge stepped when stretched back up; now soft across (KX) but four times the rows down (KY)
-    { const KX = 6, KY = 1.5, W = Math.ceil(VW / KX) + 2, H = Math.ceil((VH - wl) / KY) + 2;
+    // build 319 (owner: "still looks pixelated because of how it acts with the strips of mud"): its own edges (the squashed
+    // outline) lined up with the thin strips of mud and pools and read as steps; now it is blurred smoothly in stages (down to a
+    // quarter and back up through a half, each step bilinear) into one soft darkening with no edges, and laid a little fainter
+    { const KX = 3, KY = 1.5, W = Math.ceil(VW / KX) + 2, H = Math.ceil((VH - wl) / KY) + 2;
       if (!shC || shC.width !== W || shC.height !== H) shC = mk(W, H);
       const s = shC.getContext('2d'); s.setTransform(1, 0, 0, 1, 0, 0); s.globalCompositeOperation = 'source-over'; s.globalAlpha = 1; s.clearRect(0, 0, W, H);
       s.setTransform(z / KX, 0, 0, z / KY, (VW / 2 - cx * z) / KX, 0);
@@ -1105,7 +1108,12 @@ const SL = (() => {
       s.globalCompositeOperation = 'source-in'; s.fillStyle = css(tone(.1)); s.fillRect(0, 0, W, H);
       s.globalCompositeOperation = 'destination-in'; { const g = s.createLinearGradient(0, 0, 0, 58 * z / KY); g.addColorStop(0, 'rgba(0,0,0,1)'); g.addColorStop(.35, 'rgba(0,0,0,.55)'); g.addColorStop(1, 'rgba(0,0,0,0)'); s.fillStyle = g; s.fillRect(0, 0, W, H); }
       s.globalCompositeOperation = 'source-over';
-      ctx.imageSmoothingEnabled = true; ctx.globalAlpha = .62; ctx.drawImage(shC, 0, 0, W, H, 0, wl, W * KX, H * KY); ctx.globalAlpha = 1;
+      const w2 = Math.ceil(W / 2), h2 = Math.ceil(H / 2), w4 = Math.ceil(W / 4), h4 = Math.ceil(H / 4);
+      if (!SHB || SHB[0].width !== w2 || SHB[0].height !== h2) SHB = [mk(w2, h2), mk(w4, h4), mk(w2, h2)];
+      const [b2, b4, u2] = SHB, c2 = b2.getContext('2d'), c4 = b4.getContext('2d'), cu = u2.getContext('2d');
+      for (const c of [c2, c4, cu]) { c.imageSmoothingEnabled = true; c.globalCompositeOperation = 'copy'; }
+      c2.drawImage(shC, 0, 0, w2, h2); c4.drawImage(b2, 0, 0, w4, h4); cu.drawImage(b4, 0, 0, w2, h2);
+      ctx.imageSmoothingEnabled = true; ctx.globalAlpha = .5; ctx.drawImage(u2, 0, 0, w2, h2, 0, wl, w2 * 2 * KX, h2 * 2 * KY); ctx.globalAlpha = 1;
       // the mist along the shores: one long flat layer lying on the water line, thickest over the bank's foot, thinning
       // upward over the land and quickly downward over the mud; it fades in and out along the shore (no round puffs: they
       // read as pale discs)
