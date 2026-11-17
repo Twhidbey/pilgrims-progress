@@ -923,10 +923,10 @@ const HL = (() => {
     // mountain as one long slope of fallen rock (`scree`).
     const crag = (L, seed, seg, pin, fl = 1, wk = 1) => { const i = Math.floor(L / seg), hs = (j, q) => { const v = Math.sin(j * 127.1 + seed * 311.7 + q * 74.7) * 43758.5453; return v - Math.floor(v); };
       let H = fl * (.34 + .3 * nz(L * .0011, seed + 5));
-      for (let j = i - 4; j <= i + 1; j++) { const xc = (j + .15 + .7 * hs(j, 0)) * seg, h = (.42 + .5 * hs(j, 2)) * (pin && hs(j, 3) < .14 ? 1.25 : 1), w = seg * (1.8 + 2.2 * hs(j, 1)) * (.55 + .9 * h) * wk, u = (L - xc) / w;
+      for (let j = i - 4; j <= i + 1; j++) { const xc = (j + .15 + .7 * hs(j, 0)) * seg, h = (.42 + .5 * hs(j, 2)) * (pin && hs(j, 3) < .14 ? 1.25 : 1), w = seg * (1.8 + 2.2 * hs(j, 1)) * (.55 + .9 * h) * (wk < 1 ? wk * (.65 + .9 * hs(j, 6)) : 1), u = (L - xc) / w;
         if (u < -.12 || u > 1) continue;
         // a steep face on the left, a short rounded brow, then a long fall to the right broken by one or two ledges
-        const ld = .4 + .3 * hs(j, 4), br = .14 + .14 * hs(j, 5), f = u < 0 ? Math.pow(smooth(-.12, 0, u), .6) : u < br ? 1 - .1 * (u / br) * (u / br) : .9 * Math.pow(1 - (u - br) / (1 - br), 1.2) - .07 * smooth(ld - .03, ld + .03, u) * (1 - u) * 2;
+        const ld = .4 + .3 * hs(j, 4), br = .14 + .14 * hs(j, 5) + (wk < 1 ? .04 + .12 * hs(j, 7) : 0), f = u < 0 ? Math.pow(smooth(-.12, 0, u), .6) : u < br ? 1 - (wk < 1 ? .32 : .1) * (u / br) * (u / br) : .9 * Math.pow(1 - (u - br) / (1 - br), 1.2) - .07 * smooth(ld - .03, ld + .03, u) * (1 - u) * 2;
         H = Math.max(H, h * f); }
       return H + (nz(L * .022, seed) - .5) * .05 + (nz(L * .06, seed + 2) - .5) * .035 + (nz(L * .2, seed + 4) - .5) * .012; };
     const burnR = clamp(dark) * (1 - .6 * calm);
@@ -1449,8 +1449,10 @@ const HL = (() => {
     // layer behind, wider, and now and then a tall one passes wholly in front of him; near the foot, where he and
     // Evangelist stand and talk, they stay low (`clear`)
     // (build 237, owner: "top layer of rock (dark) can be more varied up and down so we see his body go behind and then appear
-    // quickly"): the nearest crags are narrow spurs (`wk`), tall ones all along the path, with deep dips between (a low floor, `fl`)
-    if (rocky) crags(1.3, 29, 240, 150, 300, 560, [15, 12, 11], .25 * burnR, true, .45, 0, FOOT - 70, .22, .5);
+    // quickly"): the nearest crags are narrow spurs (`wk`), tall ones all along the path, with deep dips between (a low floor, `fl`);
+    // build 238 ("not quite so pointy and slightly more varied in shape and maybe not quite so much covering Christian"): each
+    // spur's width varies (.65 to 1.55 of `wk`), its brow a little longer and rounded, and they are a little lower (210 to 430)
+    if (rocky) crags(1.3, 29, 240, 150, 210, 430, [15, 12, 11], .25 * burnR, true, .45, 0, FOOT - 70, .22, .62);
     // the smoke Evangelist comes out of
     if (evan && evan.a < 1) { const ex = X(EV_X - 30), ey = Y(-90), a = Math.sin(Math.PI * clamp(evan.a * 1.1)) * .8 + (1 - evan.a) * .0; c.globalAlpha = a; for (let i = 0; i < 3; i++) c.drawImage(SMOKE, ex - (200 + i * 40) * z + 30 * Math.sin(G.t / 90 + i), ey - (110 - i * 30) * z, 400 * z, 200 * z); c.globalAlpha = 1; }
     // the flash over everything, the veil of mist between the hill and the gate, the burned edges
