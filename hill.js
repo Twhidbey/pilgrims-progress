@@ -138,8 +138,8 @@ const HL = (() => {
   // realistic"); the stones are rough many-sided shapes, not rectangles.
   const rockShape = () => { const p = []; for (let i = 0; i < 7; i++) p.push(.65 + Math.random() * .45); return p; };
   function boulder() { if (!ROCKA) return; const x = 120 + Math.random() * 560, u = Math.round((x + HOX) / 5); let top = 0; for (let v = 0; v < HH / 5; v++) if (ROCKA[v * HW / 5 + u] > 200) { top = v * 5 - HOY; break; }
-    if (top >= -40) return; ROCKS.push({ x, y: top * (.25 + .5 * Math.random()), vx: (Math.random() - .6) * .25, vy: 0, r: 3.5 + Math.random() * 6, t: 0, s: Math.random() * 6, big: 1, sh: rockShape() }); }
-  function dust(x, y, r, n, a = 1) { for (let i = 0; i < n; i++) DUST.push({ x: x + (Math.random() - .5) * r * 2, y: y - Math.random() * r * .6, vx: (Math.random() - .5) * .25 * r / 4, vy: -.04 - Math.random() * .12, r: r * (.5 + Math.random() * .5), g: .03 + .02 * r / 4, t: 0, life: 120 + Math.random() * 120, a: a * (.5 + Math.random() * .5) }); }
+    if (top >= -40) return; ROCKS.push({ x, y: top * (.25 + .5 * Math.random()), vx: (Math.random() - .6) * .25, vy: 0, r: Math.random() < .2 ? 16 + Math.random() * 9 : 6 + Math.random() * 9, t: 0, s: Math.random() * 6, big: 1, sh: rockShape() }); }
+  function dust(x, y, r, n, a = 1, big = 0) { for (let i = 0; i < n; i++) DUST.push({ big, x: x + (Math.random() - .5) * r * 2, y: y - Math.random() * r * .6, vx: (Math.random() - .5) * .25 * r / 4, vy: -.04 - Math.random() * .12, r: r * (.5 + Math.random() * .5), g: .03 + .02 * r / 4, t: 0, life: 120 + Math.random() * 120, a: a * (.5 + Math.random() * .5) }); }
   let DUSTC = null;
   function shed(n, k = 1) { for (let i = 0; i < n; i++) { const h = 40 + Math.random() * 100; ROCKS.push({ x: faceX(h) - 2, y: -h, vx: -(.2 + Math.random() * .7) * k, vy: Math.random() * .4, r: .8 + Math.random() * 2.4 * k, t: 0, s: Math.random() * 6, sh: rockShape() }); } }
   // the sweet tune of his counsel: a pretty phrase in the major that goes nowhere (k 1: fuller, with a chord)
@@ -440,7 +440,12 @@ const HL = (() => {
   let STEAMC = null;
   function steamPuff(v, burst = 0) { const [x, y, len] = VENTS[v]; STEAMP.push({ x: x + (Math.random() - .5) * 8, y: y + Math.random() * len, vx: -.06 - Math.random() * .1, vy: -.28 - Math.random() * .18 - .15 * burst, r: 6 + Math.random() * 5 + 4 * burst, g: .12 + Math.random() * .08, t: 0, life: 240 + Math.random() * 160, s: Math.random() * 6.28 }); }
   function fire(k = 1) { flash = Math.max(flash, k); for (let v = 0; v < VENTS.length; v++) steamPuff(v, k); if (dark > .6 && HL.on) for (let i = Math.floor(Math.random() * 2.4 * k); i > 0; i--) boulder(); if (dark > .5 && HL.on) shed(3 + Math.floor(4 * k), 1);
-    { let x = -40 + Math.random() * 120, y = -260 - Math.random() * 120; bolt = [[x, y]]; while (y < 60) { x += (Math.random() - .62) * 70; y += 22 + Math.random() * 40; bolt.push([x, y]); } } if (audio()) { sweep(64, 30, 1.8, .09 * k); hiss(190, .7, .11 * k, 1.6, 'lowpass'); hiss(900, 1, .03 * k, .5, 'bandpass', .05); } }
+    // LIGHTNING (build 205, owner: "more lightning bolts"): one to three bolts out of the cloud over the summit, each a jagged
+    // line down to the rock with a branch or two, drawn as a white-gold core in a soft glow (`bolt`: a list of lines)
+    bolt = []; for (let b = 0, nb = 1 + Math.floor(Math.random() * (1.6 + k)); b < nb; b++) { let x = -160 + Math.random() * 420, y = -330 - Math.random() * 160; const ln = [[x, y]], end = -20 + Math.random() * 140;
+      while (y < end) { x += (Math.random() - .55) * 60; y += 18 + Math.random() * 34; ln.push([x, y]);
+        if (Math.random() < .16) { let bx = x, by = y; const br = [[bx, by]], d = Math.random() < .5 ? -1 : 1; for (let j = 0; j < 3 + Math.random() * 4; j++) { bx += d * (12 + Math.random() * 30); by += 14 + Math.random() * 24; br.push([bx, by]); } bolt.push(br); } }
+      bolt.push(ln); } if (audio()) { sweep(64, 30, 1.8, .09 * k); hiss(190, .7, .11 * k, 1.6, 'lowpass'); hiss(900, 1, .03 * k, .5, 'bandpass', .05); } }
   // the tune on the wrong path: Amazing Grace's first phrase with its bright notes bent flat, low and slow
   const WRONG = [62, 67, 70, 67, 70, 68, 67, 63, 62].map(m => m - 12);
   const RIGHT = [62, 67, 71, 67, 71, 69, 67];
@@ -528,11 +533,14 @@ const HL = (() => {
     mercy += (mercyTo - mercy) * .012; calm += (calmTo - calm) * .008; if (ph === 'back' || ph === 'mist') mercyTo = 0;
     flash *= .93; door += (doorTo - door) * .02; cut = clamp(cut + Math.sign(cutTo - cut) * (cutTo ? .022 : .016)); veil = clamp(veil + Math.sign(veilTo - veil) * .012);
     hintT++;
-    reveal = clamp(reveal + (G.act === 'hill' || (ph !== 'plain' && ph !== 'meet') ? .011 : 0)); vil += (vilTo - vil) * .02;
+    // (build 205, owner: "when we zoom over to mountain while worldly is talking it still flickers - can we make it solid"): the
+    // mountain no longer fades in while the camera pans (half-seen, the ridges and sky showed through it as it slid); it is
+    // simply there, solid, off to the right, and the pan brings it into view
+    if (G.act === 'hill' || (ph !== 'plain' && ph !== 'meet')) reveal = 1; vil += (vilTo - vil) * .02;
     if ((ph === 'still' || ph === 'come' || ph === 'evan') && dark > .5 && Math.random() < .035) shed(1, .7);
     if (dark > .8 && (ph === 'still' || ph === 'come' || ph === 'evan' || farewell) && Math.random() < (zs === 'hold' || farewell ? .02 : .008)) boulder();
-    for (const r of ROCKS) { r.t++; r.vy += .09; r.x += r.vx; r.y += r.vy; if (r.big && r.t % 5 === 0) dust(r.x, r.y, r.r * .9, 1, .5);
-      if (r.y >= 0) { r.done = 1; dust(r.x, 0, r.big ? r.r * 2.2 : 4 + r.r * 2, r.big ? 6 : 2, r.big ? 1 : .6); } }
+    for (const r of ROCKS) { r.t++; r.vy += .09; r.x += r.vx; r.y += r.vy; if (r.big && r.t % 5 === 0) dust(r.x, r.y, r.r * .9, 1, .5, 1);
+      if (r.y >= 0) { r.done = 1; dust(r.x, 0, r.big ? r.r * 2.2 : 2 + r.r, r.big ? 6 : 2, r.big ? 1 : .5, r.big); } }
     for (let i = ROCKS.length - 1; i >= 0; i--) if (ROCKS[i].done) ROCKS.splice(i, 1);
     for (const d of DUST) { d.t++; d.x += d.vx; d.y += d.vy; d.vx *= .99; d.r += d.g; } for (let i = DUST.length - 1; i >= 0; i--) if (DUST[i].t >= DUST[i].life) DUST.splice(i, 1);
     if (dark > .4 && Math.random() < .07 * dark) embers.push({ x: 20 + Math.random() * 70, y: 10 - Math.random() * 40, vx: -.2 - Math.random() * .4, vy: -.35 - Math.random() * .5, r: .6 + Math.random() * .8, h: Math.random(), t: 0, life: 140 + Math.random() * 160 });
@@ -645,6 +653,8 @@ const HL = (() => {
     // (build 202, owner: "more lightning please"): flashes come every one to two and a half seconds while the whole mountain is
     // seen, every three to six at the foot
     if (ph === 'still' || ph === 'come' || ph === 'evan') { if (--flashT < 0 && (zs === 'done' || zs === 'hold') && calmTo < .5) { fire(ph === 'evan' ? .45 : .7 + Math.random() * .3); flashT = zs === 'hold' && ph === 'still' ? 60 + Math.random() * 90 : (ph === 'evan' ? 600 : 200) + Math.random() * 300; } }
+    // far off too, while Wiseman points to it and as he turns aside toward it: now and then a distant flash over the summit
+    if ((G.act === 'hill' || ph === 'aside' || ph === 'down') && --flashT < 0) { fire(.4 + Math.random() * .2); flashT = 160 + Math.random() * 220; }
     if (farewell && (ph === 'back' || ph === 'mist') && --flashT < 0) { fire(.55 + Math.random() * .3); flashT = 70 + Math.random() * 110; }
 
     // the camera
@@ -748,7 +758,7 @@ const HL = (() => {
         H = Math.max(H, h * f); }
       return H + (nz(L * .022, seed) - .5) * .05 + (nz(L * .06, seed + 2) - .5) * .035 + (nz(L * .2, seed + 4) - .5) * .012; };
     const burnR = clamp(dark) * (1 - .6 * calm);
-    const crags = (p, seed, seg, base, hLo, hHi, col, edge, pin, tex, scree) => {
+    const crags = (p, seed, seg, base, hLo, hHi, col, edge, pin, tex, scree, clear) => {
       const Ls = FOOT + p * (PATH0 - 700 - FOOT), L0 = FOOT + p * (cx - FOOT), pts = [];
       for (let sx = -12; sx <= VW + 12; sx += 4) { const L = L0 + (sx - VW / 2) / z, env = lerp(hLo, hHi, Math.pow(smooth(Ls, FOOT, L), 1.2));
         // (build 202, owner: "the rock around him only need to be around that little area not extend to the whole base of the
@@ -756,7 +766,7 @@ const HL = (() => {
         // world (`wx`), dying away a little before the path's start and soon past the mountain's foot
         const wx = cx + (sx - VW / 2) / z, tl = smooth(PATH0 - 1700, PATH0 - 500, wx) * (1 - smooth(FOOT + 350, FOOT + 1300, wx));
         let h = env * crag(L, seed, seg, pin); if (scree) h = Math.max(h, scree * Math.pow(smooth(FOOT - 300, FOOT + 650, L), 1.6) * (.94 + .1 * nz(L * .01, seed)));
-        h *= tl;
+        h *= tl; if (clear) h *= lerp(.26, 1, smooth(170, 480, Math.abs(wx - clear)));
         pts.push([sx, Y(base) - h * z, h / Math.max(env, 1)]); }
       const path = () => { c.beginPath(); c.moveTo(-12, VH + 10); for (const [x, y] of pts) c.lineTo(x, y); c.lineTo(VW + 12, VH + 10); };
       c.fillStyle = css(col); path(); c.fill();
@@ -809,7 +819,7 @@ const HL = (() => {
         // the cracks. Everything grows with `dark` (0 far off on a fair day .. 1 beneath it).
         // (build 202, owner: "can we put more smoke from mountain when we first see and maybe some clouds in the sky above"): far off
         // on the fair plain the mountain already burns a little (`farK`): a faint glow, a fuller plume and cloud gathering over it
-        const farK = rocky ? 0 : .4 * reveal, sx0 = hx + 60 * k, sy0 = hy - TOP * k, burn = Math.max(dark, farK) * (.72 + .18 * Math.sin(G.t / 53) + .1 * Math.sin(G.t / 17)) * (1 - .6 * calm), F = Math.min(1, flash);
+        const farK = rocky ? 0 : .4 * reveal, sx0 = hx + 60 * k, sy0 = hy - TOP * k, burn = Math.max(dark, farK) * (.72 + .18 * Math.sin(G.t / 53) + .1 * Math.sin(G.t / 17) * dark) * (1 - .6 * calm), F = Math.min(1, flash);
         let flames = null;
         // the fire behind the summit: the hill is cut out black against it
         if (burn > .01) { c.save(); c.globalCompositeOperation = 'screen';
@@ -889,17 +899,17 @@ const HL = (() => {
         // minute and melts away at the end; the far ones are drawn first.
         // (build 183: the smoke and the cloud keep the size they have from a distance, `kS`: stretched to the near hill's
         // size the soft billows became one huge blur filling the close-up)
-        { const N = 46, ps = [], kS = Math.min(k, 1);
+        { const N = 70, ps = [], kS = Math.min(k, 1);
           for (let i = 0; i < N; i++) { const h1 = Math.sin(i * 12.9898) * 43758.5453, h2 = Math.sin(i * 78.233) * 12543.123; ps.push([(i / N + G.t / 3400) % 1, h1 - Math.floor(h1), h2 - Math.floor(h2), i]); }
           ps.sort((a, b) => b[0] - a[0]);
           for (const [u, r1, r2, i] of ps) { const rise = 1 - Math.pow(1 - u, 3), spread = (40 + 230 * u) * kS, px = sx0 - (240 * u + 900 * u * u) * kS + (r1 - .5) * spread, py = sy0 - (14 + 150 * rise - 60 * u * u) * kS + (r2 - .5) * spread * .7, rr = (40 + 210 * u) * kS * (.8 + .4 * r2), a = smooth(0, .05, u) * (1 - smooth(.2, .42, u)), P = PUFF[i % 3];
-            c.globalCompositeOperation = 'source-over'; c.globalAlpha = a * .55 * (.07 + .73 * Math.max(dark, farK * 1.2)) * reveal; c.drawImage(P.d, px - rr * 1.3, py - rr * .8, 2.6 * rr, 1.6 * rr);
+            c.globalCompositeOperation = 'source-over'; c.globalAlpha = a * .7 * (.1 + .75 * Math.max(dark, farK * 1.3)) * reveal; c.drawImage(P.d, px - rr * 1.3, py - rr * .8, 2.6 * rr, 1.6 * rr);
             const la = a * (burn * (.3 + .7 * Math.pow(1 - u, 2)) + F * .3 * (1 - u)); if (la > .01) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = la; c.drawImage(P.l, px - rr, py - rr, 2 * rr, 2 * rr); } } }
         c.globalCompositeOperation = 'source-over'; c.globalAlpha = 1;
         if (flames) { c.save(); c.globalCompositeOperation = 'lighter'; flames(); c.restore(); }
         // lightning in the cloud, and sparks carried up
         c.save(); c.globalCompositeOperation = 'lighter'; c.lineCap = c.lineJoin = 'round';
-        if (bolt && flash > .5) for (const [w, al] of [[7, .06], [1.2, .32]]) { c.strokeStyle = css([255, 240, 214], Math.min(1, al * flash)); c.lineWidth = w * k; c.beginPath(); bolt.forEach(([bx, by], j) => j ? c.lineTo(sx0 + bx * k, sy0 + by * k) : c.moveTo(sx0 + bx * k, sy0 + by * k)); c.stroke(); }
+        if (bolt && flash > .3) for (const [w, al] of [[16, .05], [6, .12], [1.8, .7]]) { c.strokeStyle = css(w > 2 ? [255, 214, 170] : [255, 248, 230], Math.min(1, al * flash)); c.lineWidth = Math.max(w > 2 ? 2 : .8, w * Math.min(k, 1.2)); c.beginPath(); for (const ln of bolt) ln.forEach(([bx, by], j) => j ? c.lineTo(sx0 + bx * k, sy0 + by * k) : c.moveTo(sx0 + bx * k, sy0 + by * k)); c.stroke(); }
         for (const e of embers) { const al = Math.sin(Math.PI * e.t / e.life) * .9; c.fillStyle = css([255, 170 + 60 * e.h, 90], al); c.beginPath(); c.arc(sx0 + e.x * k, sy0 + e.y * k, Math.max(.7, e.r * k), 0, 7); c.fill(); }
         // the red sheen the fire lays on the plain
         if (burn > .01) { c.translate(hx - 120 * k, hy + 22 * z); c.scale(1, .1); const g = c.createRadialGradient(0, 0, 0, 0, 0, 640 * k); g.addColorStop(0, css([236, 130, 84], .2 * burn + .2 * F)); g.addColorStop(1, css([236, 130, 84], 0)); c.fillStyle = g; c.fillRect(-640 * k, -640 * k, 1280 * k, 1280 * k); }
@@ -928,7 +938,7 @@ const HL = (() => {
         { const g = c.createLinearGradient(0, Y(-70), 0, Y(0)); g.addColorStop(0, css([90, 66, 64], 0)); g.addColorStop(1, css([90, 66, 64], .3 * dark)); c.fillStyle = g; c.fillRect(0, Y(-70), VW, 72 * z); }
         // falling stones (dark, tumbling) and the dust where they land
         if (!DUSTC) { DUSTC = mk(64, 64); const q = DUSTC.getContext('2d'), g = q.createRadialGradient(32, 32, 0, 32, 32, 32); g.addColorStop(0, 'rgba(128,104,90,.55)'); g.addColorStop(.5, 'rgba(116,94,84,.3)'); g.addColorStop(1, 'rgba(110,90,80,0)'); q.fillStyle = g; q.fillRect(0, 0, 64, 64); }
-        for (const d of DUST) { const u = d.t / d.life, al = d.a * smooth(0, .08, u) * Math.pow(1 - u, 1.4) * (.6 + .4 * dark); if (al < .01) continue; const rr = d.r * k, rx = rr * 1.4;
+        for (const d of DUST) { const u = d.t / d.life, al = d.a * smooth(0, .08, u) * Math.pow(1 - u, 1.4) * (.6 + .4 * dark); if (al < .01) continue; const rr = d.r * (d.big ? k : Math.min(k, 1.8)), rx = rr * (d.big ? 1.4 : 2.4);
           c.globalAlpha = Math.min(1, al); c.drawImage(DUSTC, hx + d.x * k - rx, hy + d.y * k - rr, 2 * rx, 2 * rr); } c.globalAlpha = 1;
         for (const r of ROCKS) { const px = hx + r.x * k, py = hy + r.y * k, kk = r.big ? k : Math.min(k, 1.8), rr = r.r * kk;
           c.save(); c.translate(px, py); c.rotate(r.t * (r.big ? .06 : .2) + r.s); c.fillStyle = css([22, 18, 19], .95); c.beginPath(); r.sh.forEach((q, i) => { const an = i / 7 * 6.283; i ? c.lineTo(Math.cos(an) * q * rr, Math.sin(an) * q * rr * .8) : c.moveTo(Math.cos(an) * q * rr, Math.sin(an) * q * rr * .8); }); c.closePath(); c.fill();
@@ -1081,7 +1091,11 @@ const HL = (() => {
     // off at once; now it covers him from the moment he passes the top)
     if ((ph === 'aside' || ph === 'down') && C3.x > CREST - 2) { c.save(); c.beginPath(); c.moveTo(X(CREST), VH); for (let x = CREST; x <= CREST + 700; x += 10) c.lineTo(X(x), Y(-crest(x))); c.lineTo(VW, Y(0)); c.lineTo(VW, VH); c.clip(); road(); c.fillStyle = humpC; c.fillRect(0, 0, VW, Y(0) + 1); c.restore(); }
     // the nearest crags, along the bottom of the picture, in front of everyone
-    if (rocky) crags(1.3, 29, 120, 150, 60, 175, [15, 12, 11], .25 * burnR, false, .4);
+    // (build 205, owner: "the layer in front of Christian as he walks toward mountain can be higher in point and fully go in
+    // front of him - maybe make nice shapes like the layer behind him"): the nearest crags are the same leaning spurs as the
+    // layer behind, wider, and now and then a tall one passes wholly in front of him; near the foot, where he and
+    // Evangelist stand and talk, they stay low (`clear`)
+    if (rocky) crags(1.3, 29, 250, 150, 90, 580, [15, 12, 11], .25 * burnR, true, .45, 0, FOOT - 70);
     // the smoke Evangelist comes out of
     if (evan && evan.a < 1) { const ex = X(EV_X - 30), ey = Y(-90), a = Math.sin(Math.PI * clamp(evan.a * 1.1)) * .8 + (1 - evan.a) * .0; c.globalAlpha = a; for (let i = 0; i < 3; i++) c.drawImage(SMOKE, ex - (200 + i * 40) * z + 30 * Math.sin(G.t / 90 + i), ey - (110 - i * 30) * z, 400 * z, 200 * z); c.globalAlpha = 1; }
     // the flash over everything, the veil of mist between the hill and the gate, the burned edges

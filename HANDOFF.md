@@ -40,6 +40,8 @@ Older handovers (builds 41 to 137, with the picture and video prompts used for H
 - The concept art from the picture chat is not in the repo (it was only shown in that chat); ask that chat to put any keepers in a `concept/` folder.
 - Earlier offers not answered: the sketch of Levels 3 to 6 as a first whole game; a child playing it; carrying the tune through the levels; Evangelist handing over the roll as an animation; repainting the three cottages with true door and window proportions (about 45 cents).
 
+**Build 205: Level 3: the mountain solid in the pan, more and branching lightning (far off too), more smoke at the top, larger boulders, tall nearest crags that pass wholly in front of him on the path. See `CLAUDE.md`, "Build 205". Nothing spent.**
+
 **Build 203: Level 3's smoke lies out in long soft layers like the mist at the mountain's foot, instead of round billows. See `CLAUDE.md`, "Build 203". Nothing spent.**
 
 **Build 202: the owner's eleven Level 3 points (rocks only round his path; more lightning and falling boulders; no flicker over the brow, on the oak's edge, or at first sight of the mountain; the kneel's size; no see-through spots in Levels 2 and 3; firelight colour on him; a second wide look at the mountain; more smoke far off; soft dust). See `CLAUDE.md`, "Build 202". Nothing spent.**
