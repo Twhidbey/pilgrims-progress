@@ -4,6 +4,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 ## START HERE (rewritten at build 140, Nov 16 2026)
 
+**Level 4 has its own chat now** ("Pilgrim's Progress: Level 4, the Interpreter's House rooms", https://claude.ai/code/session_017HrTSFLdkNMnsDJ1SXFeY8): the gate, the narrow way, the house and its seven rooms after paintings, the darker-rooms switch. Its plan is in `CLAUDE.md`, Level 4. The gate itself stays shared with Level 3 (see "THE GATE IS SHARED").
+
 **Good-will has his own figure (older small-tweaks chat, about 15 cents):** `assets/goodwill-stand.webp` and `assets/goodwill-reach.webp`, facing right, faces plain, feet level; see "GOOD-WILL'S OWN FIGURE" in `CLAUDE.md`. Not yet in the game; the gate's chat was asked to put the standing one in Level 3's doorway.
 
 **Build 228 (older small-tweaks chat): the book cover toned down** (the leather photo calmer and a little darker, the page edges and ribbon muted). Level 3's voices: `tools/make-voice.py` found every line already recorded (89 of 89); nothing spent.
