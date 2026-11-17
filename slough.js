@@ -219,11 +219,15 @@ const SL = (() => {
   }
 
   // ---------- the people ----------
-  const HELPF = [], REACH = [], LIFT = [], PLIC = [], WADE = [], PSTOP = [], HWALK = [], HTURN = [];
+  const HELPF = [], REACH = [], LIFT = [], PLIC = [], WADE = [], STUCKP = [], PSTOP = [], HWALK = [], HTURN = [];
   const META = { help: { ax: 94, ground: 309 }, reach: { ax: 70, ground: 307 }, lift: { ax: 257, ground: 307 },
     climb: { ax: 363, ground: 342, top: 38, end: 440, sink: 39, c0: 168, top0: 143 },      // c0, top0: the middle and the head of him in the first frame (build 106)
     // Christian struggling through the mud (build 104): a loop, waist-deep in the video; ground = where his feet would be
-    wade: { ax: 174, ground: 294 },
+    // build 214 (owner: two videos made in deep mud, about $1.12): WADE = wading through the mud, a loop (christian-wade.pack,
+    // 48 pictures, he leans in, heaves, drags each leg); STUCKP = in the mud to the chest (christian-stuck.pack, 120 pictures:
+    // 0..5 settling, 6..58 heaving and straining on the spot, played back and forth, 60..119 lifting his head and raising his
+    // right arm high for help, held). Both are cut at the video's own mud line, 122 pictures-pixels (63 units) above his feet.
+    wade: { ax: 85, ground: 298 }, stuck: { ax: 120, ground: 299 },
     // Pliable coming to a stop (build 115, one video, about 56 cents: first frame his walk frame 0, last frame his standing
     // picture one step further on): pack frames 0..49 he slows over two or three steps and stops (video 0..98), 50..119 he
     // stands breathing (video 100..238, played back and forth). ax/ground = where walk frame 0's ax and ground fall in the
@@ -268,7 +272,7 @@ const SL = (() => {
   // line, top = how high the bank stands in the video (pack pixels), end = where his feet are in the last frame. Without the pack
   // he wades to his own bank and rises out of the water as he walks into the mist.
   function preload() {
-    if (!loading) loading = Promise.all([loadPack('help', HELPF), loadPack('help-walk', HWALK).catch(() => {}), loadPack('help-turn', HTURN).catch(() => {}), loadPack('christian-reach', REACH), loadPack('lift', LIFT), loadPack('pliable-climb', PLIC).catch(() => {}), loadPack('christian-wade', WADE).catch(() => {}), loadPack('pliable-stop', PSTOP).catch(() => {})]).catch(() => {});
+    if (!loading) loading = Promise.all([loadPack('help', HELPF), loadPack('help-walk', HWALK).catch(() => {}), loadPack('help-turn', HTURN).catch(() => {}), loadPack('christian-reach', REACH), loadPack('lift', LIFT), loadPack('pliable-climb', PLIC).catch(() => {}), loadPack('christian-wade', WADE).catch(() => {}), loadPack('christian-stuck', STUCKP).catch(() => {}), loadPack('pliable-stop', PSTOP).catch(() => {})]).catch(() => {});
     return loading;
   }
   // the middle of Pliable in a frame of his climbing video (measured once per frame, on a small copy), to mirror him about himself
@@ -1159,11 +1163,21 @@ const SL = (() => {
     const wk = ph === 'fall' ? smooth(36, 46, C2.fallT) : smooth(36, 40, C2.y); let wa = 1;      // build 119: he flounders from the fall on
     if (WADE.length && inWater && wk > 0 && ['fall', 'pli', 'back', 'backtalk', 'wade', 'stuck', 'help'].includes(ph)) {
       if (wk < 1) figure(n, 'chr0', walkIm, CHR_META, C2.x, C2.y, C2.face, fig, true, alpha * C2.alpha * (1 - smooth(.5, 1, wk)));
-      const wf = C2.wa || 0; walkIm = WADE[Math.floor(wf) % WADE.length]; walkM = META.wade; wa = smooth(0, .5, wk); FIG_DIP = 46; blendIm = WADE[(Math.floor(wf) + 1) % WADE.length]; blendK = 0; }      // build 212: no melting (see Pliable's climb)
+      const wf = C2.wa || 0; walkIm = WADE[Math.floor(wf) % WADE.length]; walkM = META.wade;
+      // build 214: heaving on the spot (the fall, Pliable's quarrel, going back, stuck at the far bank) is the stuck video;
+      // only the wading forward is the wading video
+      if (STUCKP.ready && ph !== 'wade') { const q = wf < 6 ? wf : 6 + 52 * (1 - Math.cos(Math.PI * (((wf - 6) / 52) % 2))) / 2; walkIm = STUCKP[Math.min(58, Math.floor(q))]; walkM = META.stuck; } wa = smooth(0, .5, wk); FIG_DIP = 46; blendIm = WADE[(Math.floor(wf) + 1) % WADE.length]; blendK = 0; }      // build 212: no melting (see Pliable's climb)
     if (ph === 'help' && C2.reach > 0) {
       const gx = HX + GRASP.dx * CHR_K, gy = STUCK_Y() + (C2.y - STUCK_Y()) * (1 - smooth(20, 140, C2.rt || 0));      // he heaves up out of the deep as he reaches (build 114)
       if (C2.reach < 1) figure(n, 'chr', walkIm, walkM, C2.x, C2.y, 1, fig, true, alpha * (1 - C2.reach)); FIG_DIP = 0;
-      figure(n, 'reach', REACH[at(REACH_SRC, C2.rt || 0)], META.reach, gx, gy, 1, fig, true, alpha * C2.reach);
+      // build 214: the reach is the stuck video's own end (his head lifts, his arm rises high, mud dripping), placed so his
+      // hand meets Help's as the old reaching picture's did (its hand is 7 units higher, so it stands 7 deeper)
+      // build 214: the reach is the stuck video's own: his head lifts and his right arm comes up and forward (pictures 60 to
+      // 78), and holds there with a breath (76..80), its mud line on the surface; at picture 78 his hand is just where Help
+      // holds out his (handPt), so the two meet
+      if (STUCKP.ready) { const r = smooth(0, 150, C2.rt || 0), f = r < 1 ? 60 + 18 * r : 78 + 2 * Math.sin(G.t / 40);
+        figure(n, 'reach', STUCKP[Math.round(f)], META.stuck, lerp(C2.x, HX - 110, r), 64, 1, fig, true, alpha * C2.reach); }
+      else figure(n, 'reach', REACH[at(REACH_SRC, C2.rt || 0)], META.reach, gx, gy, 1, fig, true, alpha * C2.reach);
       return;
     }
     if (C2.stand > 0 && STD.length) {
@@ -1176,7 +1190,7 @@ const SL = (() => {
     }
     // build 180: the struggling picture is never shown higher than its own mud line (58: five units of filled body, hidden by the
     // collar); while he is still shallower than that it stands a little deeper than his walking picture, under the splash
-    const wy = walkM === META.wade ? Math.max(C2.y, 58) : C2.y;
+    const wy = walkM === META.wade || walkM === META.stuck ? 64 : C2.y;      // build 214: the new videos carry their own depth (waist-deep wading, chest-deep stuck): their mud line lies on the surface
     figure(n, 'chr', walkIm, walkM, C2.x, wy, C2.face, fig, inWater, alpha * C2.alpha * wa);
     if (blendIm && blendK > .03) figure(n, 'chrB', blendIm, walkM, C2.x, wy, C2.face, fig, inWater, alpha * C2.alpha * wa * blendK);      // the next picture melts in over this one
     FIG_DIP = 0;
