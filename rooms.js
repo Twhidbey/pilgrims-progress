@@ -28,7 +28,7 @@ const RM = (() => {
   const darkOn = () => { try { return localStorage.getItem('pp-dark') === '1'; } catch (e) { return false; } };
 
   // the two visitors (sprites face LEFT as made; face 1 = turned to face right)
-  const VIS = { C: { n: 'room-christian-hd', ax: 138, g: 946.5, s: 1 / 1.5, who: 'Christian', ph: 0, ct: 1.2, mul: .62, sat: .42, warm: [1, 1, 1], walk: { n: 'room-christian-walk2', ax: 123.2, g: 371, s: 632 / 365, ct: 1.2, mul: .62, sat: .42, cols: 8, fr: 29, W: 203, H: 374, vpx: 6 } }, I: { n: 'room-interpreter-hd', ax: 160.5, g: 951, s: 1 / 1.5, who: I, ph: 1.7, ct: 1.15, mul: .66, sat: .45, walk: { n: 'room-interpreter-walk3', ax: 98.6, g: 381, s: 635 / 375, ct: 1.15, mul: .66, sat: .45, cols: 8, fr: 28, W: 192, H: 384, vpx: 6 }, say: { n: 'room-interpreter-say-hd', ax: 235.2, g: 935.2, s: 635 / 331 / 2.8, ct: 1.15, mul: .66, sat: .45, cols: 7, fr: 56, W: 398, H: 941, parts: 4, per: 14 } } };
+  const VIS = { C: { n: 'room-christian-p', ax: 191, g: 1357, s: 632 / 1344, who: 'Christian', ph: 0, ct: 1, mul: .78, sat: .9, warm: [1, 1, 1], walk: { n: 'room-christian-walk2', ax: 123.2, g: 371, s: 632 / 365, ct: 1.2, mul: .62, sat: .42, cols: 8, fr: 29, W: 203, H: 374, vpx: 6 } }, I: { n: 'room-interpreter-p', ax: 176.5, g: 1352, s: 635 / 1339, who: I, ph: 1.7, ct: 1, mul: .8, sat: .9, walk: { n: 'room-interpreter-walk3', ax: 98.6, g: 381, s: 635 / 375, ct: 1.15, mul: .66, sat: .45, cols: 8, fr: 28, W: 192, H: 384, vpx: 6 }, say: { n: 'room-interpreter-say-hd', ax: 235.2, g: 935.2, s: 635 / 331 / 2.8, ct: 1.15, mul: .66, sat: .45, cols: 7, fr: 56, W: 398, H: 941, parts: 4, per: 14, off: 1 } } };
   const BRAVE = { plain: { n: 'room5-brave', ax: 94, g: 519 }, armed: { n: 'room5-brave-armed', ax: 123, g: 536 } };
 
   let R = null, t = 0, ph = '', cam = { x: 0, to: 0 }, fade = 1, fadeTo = 0, after = null, toned = {}, startId = 'door', motes = [];
@@ -151,8 +151,8 @@ const RM = (() => {
     const m = VIS[key]; floorOut(c, x, k, a);
     const col = key === 'C' ? (R.toneC || R.tone).map((v, i) => v * m.warm[i]) : R.tone;
     // the Interpreter's gesture: frames of one video (hands folded -> the open hand lifted as he explains), played at the video's own pace
-    if (m.say && m.say.cols && sheetFrames(m.say)) { const f = m.say, i = Math.round(sayK * (f.fr - 1)); fig(c, f.n + '#' + i, f, x, R.FY - up, face, k, a, col, m.who, m.ph); return; }
-    if (m.say && !m.say.cols && pics[m.say.n]) { const q = smooth(0, 1, sayK); if (q < 1) fig(c, m.n, m, x, R.FY - up, face, k, a, col, m.who, m.ph); if (q > 0) fig(c, m.say.n, m.say, x, R.FY - up, face, k, a * q, col, m.who, m.ph); return; }
+    if (m.say && !m.say.off && m.say.cols && sheetFrames(m.say)) { const f = m.say, i = Math.round(sayK * (f.fr - 1)); fig(c, f.n + '#' + i, f, x, R.FY - up, face, k, a, col, m.who, m.ph); return; }
+    if (m.say && !m.say.off && !m.say.cols && pics[m.say.n]) { const q = smooth(0, 1, sayK); if (q < 1) fig(c, m.n, m, x, R.FY - up, face, k, a, col, m.who, m.ph); if (q > 0) fig(c, m.say.n, m.say, x, R.FY - up, face, k, a * q, col, m.who, m.ph); return; }
     fig(c, m.n, m, x, R.FY - up, face, k, a, col, m.who, m.ph);
   };
   // a visitor walking (the free Hugging Face clips, build 279): frame f (any real number) of his walk sheet,
@@ -235,7 +235,7 @@ const RM = (() => {
     },
     // 2 THE DUSTY PARLOUR (after Vermeer's Milkmaid): the broom raises the dust; the water lays it
     r2: {
-      pic: 'room2', FY: 1262, cam0: 140, tone: [300, 288, 268], noShadow: 1,
+      pic: 'room2', FY: 1262, cam0: 140, tone: [360, 346, 322], noShadow: 1,
       enter() { this.dust = []; this.haze = .22; this.wet = []; const r = rngR(5); for (let i = 0; i < 70; i++) this.dust.push({ x: 300 + r() * 2800, y: 300 + r() * 900, vx: 0, vy: 0, s: 2 + r() * 5, a: .5 + r() * .5, p: r() * 7 }); },
       run() { talk([[N, 'He led him into a very large parlour, full of dust, because it was never swept.'], [TIP, 'Touch the broom.', 'broom']], () => { ph = 'sweep'; t = 0; G.state = 'auto'; }); },
       act(sx, sy) {
@@ -560,10 +560,10 @@ const RM = (() => {
     downs.clear(); keys.r = keys.push = false; toned = {};
     if (audio()) { AC.resume(); if (rainG) rainG.gain.setTargetAtTime(0, AC.currentTime, .8); }
     G.state = 'wait'; fade = 1; fadeTo = 0; after = null;
-    sheetFrames(VIS.I.say); const need = [ROOMS[id].pic, VIS.C.n, VIS.I.n].concat(id === 'r3' ? ['room3-rags'] : []).concat(id === 'r5' ? [BRAVE.plain.n, BRAVE.armed.n] : []);
+    if (!VIS.I.say.off) sheetFrames(VIS.I.say); const need = [ROOMS[id].pic, VIS.C.n, VIS.I.n].concat(id === 'r3' ? ['room3-rags'] : []).concat(id === 'r5' ? [BRAVE.plain.n, BRAVE.armed.n] : []);
     Promise.all(need.map(pic)).then(() => { enterRoom(id); setTimeout(() => { if (RM.on && G.state === 'wait' && R && R.id === id) { ph = 'run'; R.run(); } }, 1200); });
   }
-  function preload() { pic(ROOMS.door.pic); pic(VIS.C.n); pic(VIS.I.n); sheetFrames(VIS.I.say); }
+  function preload() { pic(ROOMS.door.pic); pic(VIS.C.n); pic(VIS.I.n); if (!VIS.I.say.off) sheetFrames(VIS.I.say); }
 
   function touch(sx, sy) { if (R) [sx, sy] = unview(sx, sy); if (R && G.act && R.act) { const a = G.act; R.act(sx, sy); if (G.act === a && !G.ring) G.actT = Math.max(G.actT, 95); } }
   function key() { if (R && G.act && R.act) R.act(null, null); }
