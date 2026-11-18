@@ -22,6 +22,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 **Build 309: auto-walk switch for every level** ("Let him walk on by himself" on the contents page, and in the pause menu; `pp-auto`; `autoHeld()` in `index.html`). Nothing spent.
 
+**Build 325 (Level 3 art chat): stones and two boulders fall (with jolts) as he walks to the mountain; the rocks no longer slide in the pull back; the mist kept off the mountain; the near rocks steadier. Nothing spent.**
+
 **Build 318 (Level 3 art chat): no ghost roots below the oak's fade; a new picture rule in CLAUDE.md: look at every seam enlarged, fades end fully clear, no straight blend lines. Nothing spent.**
 
 **Build 316 (Level 3 art chat): the oak roots' fade wanders along the foot instead of a straight line. Nothing spent.**

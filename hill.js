@@ -148,6 +148,25 @@ const HL = (() => {
     if (top >= -40) return; ROCKS.push({ x, y: top * (.25 + .5 * Math.random()), vx: (Math.random() - .6) * .25, vy: 0, r: Math.random() < .2 ? 16 + Math.random() * 9 : 6 + Math.random() * 9, t: 0, s: Math.random() * 6, big: 1, sh: rockShape() }); }
   function dust(x, y, r, n, a = 1, big = 0) { for (let i = 0; i < n; i++) DUST.push({ big, x: x + (Math.random() - .5) * r * 2, y: y - Math.random() * r * .6, vx: (Math.random() - .5) * .25 * r / 4, vy: -.04 - Math.random() * .12, r: r * (.5 + Math.random() * .5), g: .03 + .02 * r / 4, t: 0, life: 120 + Math.random() * 120, a: a * (.5 + Math.random() * .5) }); }
   let DUSTC = null;
+  // STONES ON THE WAY TO THE FOOT (owner, build 325: "a couple small rocks then later a couple some medium boulder fall as he
+  // walks from left to right at base of mountain (to make walk interesting) maybe even a shake or two"). At fixed places
+  // on the path, as he first passes them, stones come down off the heights ahead of him and land on the rocks just behind
+  // the path, never on him: first two small ones, then one, then two medium boulders, each with a jolt of the ground
+  // (`jolt`, added to the trembling in draw()). In world units (`PATHR`), drawn behind the figures.
+  const PATHR = [], FALLS = [[3230, 2, 0], [3480, 1, 0], [3820, 1, 1], [4120, 1, 1.3]];
+  let fallI = 0, jolt = 0;
+  function pathFalls() { while (fallI < FALLS.length && ph === 'path' && C3.x > FALLS[fallI][0]) { const [, n, big] = FALLS[fallI++];
+      for (let i = 0; i < n; i++) { const r = big ? 11 + 4 * big + Math.random() * 3 : 3 + Math.random() * 2.5;
+        PATHR.push({ x: C3.x + 230 + Math.random() * 120 + i * 60, y: -560 - Math.random() * 120 - i * 90, vx: -(.5 + Math.random() * .6), vy: 0, r, big, rest: -16 - Math.random() * 18, b: 0, t: 0, s: Math.random() * 6, sh: rockShape() }); } }
+    for (const r of PATHR) { r.t++; if (r.b >= 3) continue; r.vy += .26; r.x += r.vx; r.y += r.vy;
+      if (r.y >= r.rest) { r.y = r.rest; r.b++; if (r.b === 1) { dustW(r.x, r.y, r.big ? r.r * 2.6 : r.r * 2.2, r.big ? 7 : 3);
+          if (r.big) { jolt = Math.max(jolt, r.big); if (audio()) { sweep(50, 30, 1.2, .1 * r.big); hiss(180, .7, .07 * r.big, 1.1, 'lowpass'); } }
+          else if (audio()) hiss(900, 2, .03, .12, 'bandpass'); }
+        r.vy = r.b >= 3 ? 0 : -r.vy * (r.b === 1 ? .28 : .15); r.vx *= .5; if (Math.abs(r.vy) < .3) r.b = 3; } }
+    jolt *= .93; }
+  // dust in world units, for the stones on the path
+  const DUSTW = [];
+  function dustW(x, y, r, n) { for (let i = 0; i < n; i++) DUSTW.push({ x: x + (Math.random() - .5) * r * 2, y: y - Math.random() * r * .5, vx: (Math.random() - .5) * .3, vy: -.05 - Math.random() * .15, r: r * (.6 + Math.random() * .6), t: 0, life: 110 + Math.random() * 110, a: .5 + Math.random() * .4 }); }
   function shed(n, k = 1) { for (let i = 0; i < n; i++) { const h = 40 + Math.random() * 100; ROCKS.push({ x: faceX(h) - 2, y: -h, vx: -(.2 + Math.random() * .7) * k, vy: Math.random() * .4, r: .8 + Math.random() * 2.4 * k, t: 0, s: Math.random() * 6, sh: rockShape() }); } }
   // the sweet tune of his counsel: a pretty phrase in the major that goes nowhere (k 1: fuller, with a chord)
   function sweet(k) { const M = k ? [67, 71, 74, 79, 76, 74] : [72, 76, 79, 76]; M.forEach((m, i) => note(m, .028 + .008 * k, 2.4, i * .42)); if (k) [55, 59, 62].forEach(m => note(m, .02, 4.5, .1)); }
@@ -693,7 +712,7 @@ const HL = (() => {
     Object.assign(C3, { x: START, face: 1, faceA: 1, anim: 12, sd: QUIET[0], alpha: 1, run: 0, ranim: RUNP_META.start || 0, weep: false, wt: 0, wa: 0, kf: 0, kp: 0, tv: null, fired: false, saidAt: 0, tapZ: 0 }); FLARES.length = 0;
     mercy = mercyTo = calm = calmTo = 0;
     wise = null; evan = null; dark = 0; hope = 0; flash = 0; flashT = 200; veil = 0; veilTo = 0; knocks = 0; knockT = 0; door = 0; doorTo = 0;
-    reveal = 0; vil = vilTo = 0; pan = panTo = 0; ROCKS.length = 0; DUST.length = 0; STEAMP.length = 0; farewell = 0; C3.dy = 0; cut = cutTo = 0; Zw = 0; zs = ''; zT = 0;
+    reveal = 0; vil = vilTo = 0; pan = panTo = 0; ROCKS.length = 0; DUST.length = 0; PATHR.length = 0; DUSTW.length = 0; fallI = 0; jolt = 0; STEAMP.length = 0; farewell = 0; C3.dy = 0; cut = cutTo = 0; Zw = 0; zs = ''; zT = 0;
     saidSeen = saidHigh = hasteSaid = gateSaid = hillSeen = greeted = false; stillT = 0; hintT = 0; noteI = 0; noteX = 0;
   }
   // the picture behind the title page when Level 3 is the child's level: the hill hanging over the way, nobody there
@@ -827,6 +846,7 @@ const HL = (() => {
     for (const r of ROCKS) { r.t++; r.vy += .09; r.x += r.vx; r.y += r.vy; if (r.big && r.t % 5 === 0) dust(r.x, r.y, r.r * .9, 1, .5, 1);
       if (r.y >= 0) { r.done = 1; dust(r.x, 0, r.big ? r.r * 2.2 : 2 + r.r, r.big ? 6 : 2, r.big ? 1 : .5, r.big); } }
     for (let i = ROCKS.length - 1; i >= 0; i--) if (ROCKS[i].done) ROCKS.splice(i, 1);
+    pathFalls(); for (const d of DUSTW) { d.t++; d.x += d.vx; d.y += d.vy; d.r += .04; } for (let i = DUSTW.length - 1; i >= 0; i--) if (DUSTW[i].t >= DUSTW[i].life) DUSTW.splice(i, 1);
     for (const d of DUST) { d.t++; d.x += d.vx; d.y += d.vy; d.vx *= .99; d.r += d.g; } for (let i = DUST.length - 1; i >= 0; i--) if (DUST[i].t >= DUST[i].life) DUST.splice(i, 1);
     if (dark > .4 && Math.random() < .07 * dark) embers.push({ x: 20 + Math.random() * 70, y: 10 - Math.random() * 40, vx: -.2 - Math.random() * .4, vy: -.35 - Math.random() * .5, r: .6 + Math.random() * .8, h: Math.random(), t: 0, life: 140 + Math.random() * 160 });
     if (dark > .3 && ph !== 'title') { for (let v = 0; v < VENTS.length; v++) if (Math.random() < (.035 + .015 * Math.sin(G.t / 47 + v * 1.7)) * dark) steamPuff(v); }
@@ -1019,7 +1039,7 @@ const HL = (() => {
     const gateish = smooth(0, 1, hope);
     // THE GROUND TREMBLES under the hill: a low steady rumble and a stronger jolt at each flash (the picture is drawn a
     // hair larger so its edges never show)
-    { const near = (ph === 'still' || ph === 'come' || ph === 'evan') ? dark : 0, F0 = Math.min(1, flash) * near, sh = (.35 * near * (1 - calm) + 2.6 * F0);
+    { const near = (ph === 'still' || ph === 'come' || ph === 'evan') ? dark : 0, F0 = Math.min(1, flash) * near, sh = (.35 * near * (1 - calm) + 2.6 * F0) + 2.4 * jolt;
       if (sh > .05) { const shx = sh * (Math.sin(G.t * 1.7) + .6 * Math.sin(G.t * 3.1)) * .6, shy = sh * Math.sin(G.t * 2.3) * .5, m = 1.01; c.setTransform(S * m, 0, 0, S * m, S * (shx - VW * (m - 1) / 2), S * (shy - VH * (m - 1) / 2)); }
       else c.setTransform(S, 0, 0, S, 0, 0); }
     c.globalAlpha = 1; c.globalCompositeOperation = 'source-over'; c.imageSmoothingEnabled = true;
@@ -1070,9 +1090,16 @@ const HL = (() => {
         H = Math.max(H, h * f); }
       return H + (nz(L * .022, seed) - .5) * .05 + (nz(L * .06, seed + 2) - .5) * .035 + (nz(L * .2, seed + 4) - .5) * .012; };
     const burnR = clamp(dark) * (1 - .6 * calm);
+    let MIDPTS = null;
     const crags = (p, seed, seg, base, hLo, hHi, col, edge, pin, tex, scree, clear, fl = 1, wk = 1) => {
+      // (build 325, owner: "when it zooms out there's a parallax like effect with the rocks around him as they scale differently
+      // than mountain on zoom"): while the camera pulls back every layer moves with the mountain (parallax 1)
+      p = lerp(p, 1, smooth(0, .12, Zw));
       const Ls = FOOT + p * (PATH0 - 700 - FOOT), L0 = FOOT + p * (cx - FOOT), pts = [];
-      for (let sx = -12; sx <= VW + 12; sx += 4) { const L = L0 + (sx - VW / 2) / z, env = lerp(hLo, hHi, Math.pow(smooth(Ls, FOOT, L), 1.2));
+      // (build 325, owner: "the sharp dark rocks in foreground flicker some as christian walks"): the outline is sampled at
+      // fixed places on the land (a step in whole powers of two), not at fixed places on the screen, so it does not shimmer
+      const du = Math.pow(2, Math.round(Math.log2(4 / z))), La = Math.floor((L0 - (VW / 2 + 12) / z) / du) * du;
+      for (let L = La; ; L += du) { const sx = VW / 2 + (L - L0) * z; if (sx > VW + 12 + du * z) break; const env = lerp(hLo, hHi, Math.pow(smooth(Ls, FOOT, L), 1.2));
         // (build 202, owner: "the rock around him only need to be around that little area not extend to the whole base of the
         // mountain. looks strange as a line"): the rocks stand only along the stretch of his path, by where they are in the
         // world (`wx`), dying away a little before the path's start and soon past the mountain's foot
@@ -1081,6 +1108,7 @@ const HL = (() => {
         h *= tl; if (clear) h *= lerp(.26, 1, smooth(170, 480, Math.abs(wx - clear)));
         pts.push([sx, Y(base) - h * z, h / Math.max(env, 1)]); }
       const path = () => { c.beginPath(); c.moveTo(-12, VH + 10); for (const [x, y] of pts) c.lineTo(x, y); c.lineTo(VW + 12, VH + 10); };
+      if (scree) MIDPTS = pts;
       c.fillStyle = css(col); path(); c.fill();
       if (tex && ROCKPAT) { c.save(); path(); c.clip(); const ts = 2.2 * z, tw = ROCKTEX.width * ts; ROCKPAT.setTransform(new DOMMatrix([ts, 0, 0, ts, ((VW / 2 - L0 * z) % tw + tw) % tw, Y(base) - 900 * z]));
         c.globalCompositeOperation = 'overlay'; c.globalAlpha = tex; c.fillStyle = ROCKPAT; c.fillRect(0, 0, VW, VH); c.restore(); }
@@ -1375,8 +1403,23 @@ const HL = (() => {
         // figure (HAZE, now off), one low bank of mist lies in front of the crags behind the path, along his stretch of it,
         // thickest about his chest height and thinning upward, so his dark shape stands against a paler band
         if (Zw < .98) alongPath(inPath, q => { const mc = mix([158, 128, 124], [124, 100, 108], dark), y0 = Y(-330), g = q.createLinearGradient(0, y0, 0, Y(0)), A = (1 - Zw) * (.6 - .06 * dark);
-          g.addColorStop(0, css(mc, 0)); g.addColorStop(.45, css(mc, .55 * A)); g.addColorStop(.72, css(mc, A)); g.addColorStop(1, css(mc, .8 * A)); q.fillStyle = g; q.fillRect(0, y0, VW, Y(0) - y0 + 2); });
+          g.addColorStop(0, css(mc, 0)); g.addColorStop(.45, css(mc, .55 * A)); g.addColorStop(.72, css(mc, A)); g.addColorStop(1, css(mc, .8 * A)); q.fillStyle = g; q.fillRect(0, y0, VW, Y(0) - y0 + 2);
+          // (build 325, owner: "the fog should go past the local rock layers at the left base part of the mountain so its framed by
+          // the rock and doesn't extend over mountain at all"): the mist is cut away wherever the mountain stands
+          if (HILL) { q.globalCompositeOperation = 'destination-out'; q.save(); facePath(q, hx, hy, k, 2, 3000, 400); q.clip(); q.drawImage(HILL[1], hx - HOX * k, hy - HOY * k, HW * k, HH * k); q.restore(); q.fillStyle = '#000'; facePath(q, hx, hy, k, 0, 30); q.fill();
+            // and off the crags behind the path where they rise into the mountain's foot (their fallen-rock slope reads as the
+            // mountain): fading in toward the foot, so the mist lies in the open gully, framed by rock
+            if (MIDPTS) { const g2 = q.createLinearGradient(0, 0, VW, 0); for (let i = 0; i <= 32; i++) g2.addColorStop(i / 32, 'rgba(0,0,0,' + smooth(FOOT - 650, FOOT - 250, wxAt(VW * i / 32)).toFixed(3) + ')');
+              q.fillStyle = g2; q.beginPath(); q.moveTo(-12, VH + 10); for (const [x, y] of MIDPTS) q.lineTo(x, y); q.lineTo(VW + 12, VH + 10); q.fill(); }
+            q.globalCompositeOperation = 'source-over'; } });
         alongPath(inPath, q => { const g = q.createLinearGradient(0, Y(-70), 0, Y(0)); g.addColorStop(0, css([90, 66, 64], 0)); g.addColorStop(1, css([90, 66, 64], .3 * dark)); q.fillStyle = g; q.fillRect(0, Y(-70), VW, 72 * z); });
+        // (build 325) the stones that fell on the way to the foot, and their dust
+        if (!DUSTC) { DUSTC = mk(64, 64); const q = DUSTC.getContext('2d'), g = q.createRadialGradient(32, 32, 0, 32, 32, 32); g.addColorStop(0, 'rgba(128,104,90,.55)'); g.addColorStop(.5, 'rgba(116,94,84,.3)'); g.addColorStop(1, 'rgba(110,90,80,0)'); q.fillStyle = g; q.fillRect(0, 0, 64, 64); }
+        for (const r of PATHR) { const px = X(r.x), py = Y(r.y), rr = r.r * z; if (px < -60 || px > VW + 60) continue;
+          c.save(); c.translate(px, py - rr * .7); c.rotate(r.b >= 3 ? r.s : r.t * (r.big ? .07 : .18) + r.s); c.fillStyle = css([20, 16, 17], .97); c.beginPath(); r.sh.forEach((q, i) => { const an = i / 7 * 6.283; i ? c.lineTo(Math.cos(an) * q * rr, Math.sin(an) * q * rr * .8) : c.moveTo(Math.cos(an) * q * rr, Math.sin(an) * q * rr * .8); }); c.closePath(); c.fill();
+          if (r.big) { c.strokeStyle = css([236, 150, 96], .35 * burnR); c.lineWidth = Math.max(.6, rr * .1); c.beginPath(); for (let i = 5; i <= 7; i++) { const an = i / 7 * 6.283, q = r.sh[i % 7]; i === 5 ? c.moveTo(Math.cos(an) * q * rr, Math.sin(an) * q * rr * .8) : c.lineTo(Math.cos(an) * q * rr, Math.sin(an) * q * rr * .8); } c.stroke(); }
+          c.restore(); }
+        for (const d of DUSTW) { const u = d.t / d.life, al = d.a * smooth(0, .08, u) * Math.pow(1 - u, 1.4); if (al < .01) continue; const rr = d.r * z, rx = rr * 1.6; c.globalAlpha = Math.min(1, al); c.drawImage(DUSTC, X(d.x) - rx, Y(d.y) - rr, 2 * rx, 2 * rr); } c.globalAlpha = 1;
         // falling stones (dark, tumbling) and the dust where they land
         if (!DUSTC) { DUSTC = mk(64, 64); const q = DUSTC.getContext('2d'), g = q.createRadialGradient(32, 32, 0, 32, 32, 32); g.addColorStop(0, 'rgba(128,104,90,.55)'); g.addColorStop(.5, 'rgba(116,94,84,.3)'); g.addColorStop(1, 'rgba(110,90,80,0)'); q.fillStyle = g; q.fillRect(0, 0, 64, 64); }
         // (build 232, owner: "Boulders too big when it's zoomed out. If zoomed in, they can be bigger"): the falling boulders and
