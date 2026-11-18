@@ -74,6 +74,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 **Build 297 (Level 3 art chat): rocky ground round the village (a small spur of the mountain behind it, low rocks across its foot). Nothing spent.**
 
+**Build 347 (Level 4 chat): the parlour's window wall carried up its full height (no inner corner), and its edges now fall away into shadow instead of a crop. Nothing spent.**
+
 **Build 345 (Level 4 chat): the parlour back to its old framing, with only a small piece of the new wall and floor at the bottom left for the two to stand on. Nothing spent.**
 
 **Build 344 (Level 4 chat): the parlour painted wider by the image model (side walls coming toward us, a front floor); shown cut to the old painting's shape with the new floor open at the bottom left, where Christian and the Interpreter now stand. Spent about 13 cents.**
