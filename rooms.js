@@ -238,7 +238,7 @@ const RM = (() => {
       pic: 'room2-wide', FY: 1262, cam0: 140, tone: [300, 288, 268],
       // the painting widened by the image model (build 344): the old room laid exactly where it was (0.716 of the new picture's
       // pixels, found by matching), and the new front floor open at its bottom left, where the two stand
-      lshape: { ox: 449.46, oy: -6.51, k: .716, bx: 133, by: 0 }, vz: .54, vx: 40, vy: -40,
+      lshape: { ox: 449.46, oy: -6.51, k: .716, bx: 130, by: 0 }, vx: 24, vy: -14,
       enter() { this.dust = []; this.haze = .22; this.wet = []; const r = rngR(5); for (let i = 0; i < 70; i++) this.dust.push({ x: 300 + r() * 2800, y: 300 + r() * 900, vx: 0, vy: 0, s: 2 + r() * 5, a: .5 + r() * .5, p: r() * 7 }); },
       run() { talk([[N, 'He led him into a very large parlour, full of dust, because it was never swept.'], [TIP, 'Touch the broom.', 'broom']], () => { ph = 'sweep'; t = 0; G.state = 'auto'; }); },
       act(sx, sy) {
@@ -267,7 +267,7 @@ const RM = (() => {
         for (const w of this.wet) { w.vy += .35; w.x += w.vx; w.y += w.vy; w.l++; }
         this.wet = this.wet.filter(w => w.y < 1260);
       },
-      people(c) { visitor(c, 'I', 330, 1, 1.1, 1, -390); visitor(c, 'C', -60, 1, 1.1, 1, -390); },
+      people(c) { visitor(c, 'I', 330, 1, 1.03, 1, -150); visitor(c, 'C', -200, 1, 1.03, 1, -150); },
       over(c) {
         const hz = Math.min(.2, this.haze * .75), LS = R.lshape, im = pics[R.pic];
         if (LS && im) {
