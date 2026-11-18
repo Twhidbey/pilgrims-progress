@@ -235,7 +235,10 @@ const RM = (() => {
     },
     // 2 THE DUSTY PARLOUR (after Vermeer's Milkmaid): the broom raises the dust; the water lays it
     r2: {
-      pic: 'room2', ext: 'L', FY: 1262, cam0: 140, tone: [300, 288, 268], noShadow: 1,
+      pic: 'room2-wide', FY: 1262, cam0: 140, tone: [300, 288, 268],
+      // the painting widened by the image model (build 344): the old room laid exactly where it was (0.716 of the new picture's
+      // pixels, found by matching), and the new front floor open at its bottom left, where the two stand
+      lshape: { ox: 449.46, oy: -6.51, k: .716, bx: 133, by: 0 }, vz: .54, vx: 40, vy: -40,
       enter() { this.dust = []; this.haze = .22; this.wet = []; const r = rngR(5); for (let i = 0; i < 70; i++) this.dust.push({ x: 300 + r() * 2800, y: 300 + r() * 900, vx: 0, vy: 0, s: 2 + r() * 5, a: .5 + r() * .5, p: r() * 7 }); },
       run() { talk([[N, 'He led him into a very large parlour, full of dust, because it was never swept.'], [TIP, 'Touch the broom.', 'broom']], () => { ph = 'sweep'; t = 0; G.state = 'auto'; }); },
       act(sx, sy) {
@@ -264,9 +267,14 @@ const RM = (() => {
         for (const w of this.wet) { w.vy += .35; w.x += w.vx; w.y += w.vy; w.l++; }
         this.wet = this.wet.filter(w => w.y < 1260);
       },
-      people(c) { visitor(c, 'I', 230, 1); visitor(c, 'C', -190, 1); },
+      people(c) { visitor(c, 'I', 330, 1, 1.1, 1, -390); visitor(c, 'C', -60, 1, 1.1, 1, -390); },
       over(c) {
-        c.fillStyle = css([170, 150, 120], Math.min(.2, this.haze * .75)); c.fillRect(u(0), v(0), (R.PW || 3168) * S, PH * S);
+        const hz = Math.min(.2, this.haze * .75), LS = R.lshape, im = pics[R.pic];
+        if (LS && im) {
+          const W2 = im.width / LS.k * S, H2 = im.height / LS.k * S, hc = this.hc || (this.hc = document.createElement('canvas')); hc.width = 160; hc.height = Math.round(160 * im.height / im.width);
+          const hx = hc.getContext('2d'); hx.globalCompositeOperation = 'source-over'; hx.fillStyle = css([170, 150, 120], hz); hx.fillRect(0, 0, hc.width, hc.height); hx.globalCompositeOperation = 'destination-in'; hx.drawImage(im, 0, 0, hc.width, hc.height);
+          c.restore(); c.drawImage(hc, u((LS.bx - LS.ox) / LS.k), v((LS.by - LS.oy) / LS.k), W2, H2); c.save();
+        } else { c.fillStyle = css([170, 150, 120], hz); c.fillRect(u(0), v(0), (R.PW || 3168) * S, PH * S); }
         for (const d of this.dust) { const a = Math.min(1, d.a * (.45 + this.haze)); const r = d.s * S * 3; const g = c.createRadialGradient(u(d.x), v(d.y), 0, u(d.x), v(d.y), r); g.addColorStop(0, css([206, 188, 160], a * .7)); g.addColorStop(1, css([196, 178, 150], 0)); c.fillStyle = g; c.fillRect(u(d.x) - r, v(d.y) - r, 2 * r, 2 * r); }
         c.fillStyle = 'rgba(200,215,225,.5)'; for (const w of this.wet) c.fillRect(u(w.x), v(w.y), 1.2, 2.4);
       },
@@ -593,7 +601,7 @@ const RM = (() => {
   const VZ = .64, VIEW = { Z: 1, ox: 0, oy: 0 };
   function setView() {
     const vz = (R && R.vz) || VZ, Z = R && R.id === 'pass' ? 1 : vz * Math.min(1, 1204 / (R.PW * S)), top = 440 - R.FY * S;
-    VIEW.Z = Z; VIEW.ox = R && R.id === 'pass' ? 0 : (VW - R.PW * S * Z) / 2; VIEW.oy = R && R.id === 'pass' ? 0 : 14 + PH * S * (Z / vz * .8 - Z) / 2 - top * Z;
+    VIEW.Z = Z; VIEW.ox = R && R.id === 'pass' ? 0 : (VW - R.PW * S * Z) / 2 + (R.vx || 0); VIEW.oy = R && R.id === 'pass' ? 0 : 14 + PH * S * (Z / vz * .8 - Z) / 2 - top * Z + (R.vy || 0);
   }
   const unview = (sx, sy) => [(sx - VIEW.ox) / VIEW.Z, (sy - VIEW.oy) / VIEW.Z];
   // THE FLOOR GOES ON (build 341, owner: "not enlarge room picture but actually extend room floor"): on a side named in R.ext
@@ -635,13 +643,14 @@ const RM = (() => {
     if (R && R.id === 'pass') R.draw(c);
     else if (im) {
       const w = R.PW * S, h = PH * S, x0 = u(0), y0 = v(0);
+      const LS = R.lshape; if (LS) c.drawImage(im, u((LS.bx - LS.ox) / LS.k), v((LS.by - LS.oy) / LS.k), im.width / LS.k * S, im.height / LS.k * S);
       c.save(); c.beginPath(); c.rect(x0, y0, w, h); c.clip();
-      c.drawImage(im, x0, y0, w, h);
+      if (!LS) c.drawImage(im, x0, y0, w, h);
       R.under && R.under(c);
-      edges(c, x0, y0, w, h);
+      if (!LS) edges(c, x0, y0, w, h);
       // the two visitors may stand in or over the dark frame round the painting, out of the way (build 331)
       c.restore(); extFloor(c, im); R.people && R.people(c);
-      for (const [e, d] of [[x0, -1], [x0 + w, 1]]) { const fl = R.ext && R.ext.includes(d < 0 ? 'L' : 'R') ? .2 : 1, g = c.createLinearGradient(e, 0, e + d * 150, 0); g.addColorStop(0, 'rgba(13,8,6,0)'); g.addColorStop(.35, 'rgba(13,8,6,' + (.35 * fl).toFixed(2) + ')'); g.addColorStop(1, 'rgba(13,8,6,' + (.72 * fl).toFixed(2) + ')'); c.fillStyle = g; c.fillRect(d < 0 ? e - 400 : e, y0 - 60, 400, h + 120); }
+      if (!LS) for (const [e, d] of [[x0, -1], [x0 + w, 1]]) { const fl = R.ext && R.ext.includes(d < 0 ? 'L' : 'R') ? .2 : 1, g = c.createLinearGradient(e, 0, e + d * 150, 0); g.addColorStop(0, 'rgba(13,8,6,0)'); g.addColorStop(.35, 'rgba(13,8,6,' + (.35 * fl).toFixed(2) + ')'); g.addColorStop(1, 'rgba(13,8,6,' + (.72 * fl).toFixed(2) + ')'); c.fillStyle = g; c.fillRect(d < 0 ? e - 400 : e, y0 - 60, 400, h + 120); }
       c.save(); c.beginPath(); c.rect(x0, y0, w, h); c.clip();
       R.over && R.over(c);
       if (R.id !== 'door' && R.id !== 'leave' && R.id !== 'r2') for (const m of motes) { const a = .08 * (.5 + .5 * Math.sin(G.t / 50 + m.p)); c.fillStyle = 'rgba(255,236,200,' + a.toFixed(3) + ')'; c.beginPath(); c.arc(m.x, m.y, m.s, 0, 6.2832); c.fill(); }
