@@ -1884,8 +1884,14 @@ const HL = (() => {
     if (evan && evan.x != null && EVW.ready) {
       // walking in out of the haze, then his standing frames dissolve in over the walk frame
       const ex = evan.x, fa = smooth(EV_X - EV_FROM, EV_X - EV_FROM + 220, ex), st = evan.st; TALKM = talkMove(E); foot(c, ex, fa);
-      if (st < 1) figure(c, 'evw', EVW[Math.floor(evan.anim) % EVW.length], EVW_META, ex, 1, tintM, fa * (1 - smooth(.4, 1, st)));
-      if (st > 0 && EVS.ready) figure(c, 'evan', EVS[Math.floor(G.t * .2) % EVS_META.frames], EVS_META, ex, 1, tintM, smooth(0, .6, st));
+      // (build 355, owner: "when evangelist shows up, there some cropping needed on evangelists sprite"): no cross-fade from
+      // his walk to his standing picture (both half see-through at once showed his arm and staff twice, a grey flap under the
+      // sleeve): he walks in, stops on a planted step, and the standing picture takes his place whole
+      // the walking picture is matched to the standing one: 1.048 times its size (measured: 292 against 306 picture pixels
+      // from the feet to the head) and set 37.5 picture pixels right (where the standing picture's body stands from its `ax`),
+      // so at the swap he neither grows nor jumps sideways
+      if (st < .5 || !EVS.ready) { FK = 1.048; figure(c, 'evw', EVW[Math.floor(evan.anim) % EVW.length], EVW_META, ex + 37.5 * CHR_K, 1, tintM, fa); FK = 1; }
+      else figure(c, 'evan', EVS[Math.floor(G.t * .2) % EVS_META.frames], EVS_META, ex, 1, tintM, 1);
       TALKM = null;
     } else if (evan && EVS.ready) { TALKM = talkMove(E); foot(c, EV_X, evan.a); figure(c, 'evan', EVS[Math.floor(G.t * .2) % EVS_META.frames], EVS_META, EV_X, 1, tintM, smooth(.25, 1, evan.a)); TALKM = null; }
     if (wise && (WIS.ready || OBS.ready)) {
