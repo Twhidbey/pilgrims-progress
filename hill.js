@@ -1324,7 +1324,16 @@ const HL = (() => {
           if (!mask && gl && burn + F > .02) { const R = 16 * k, g = c.createRadialGradient(bx0, by0 + 4 * k, 0, bx0, by0 + 4 * k, R); g.addColorStop(0, css([255, 214, 150], .7 * (burn + .5 * F) * reveal)); g.addColorStop(.3, css([240, 140, 80], .35 * (burn + .5 * F) * reveal)); g.addColorStop(1, css([200, 90, 60], 0));
             c.globalCompositeOperation = 'lighter'; c.globalAlpha = 1; c.fillStyle = g; c.fillRect(bx0 - R, by0 + 4 * k - R, 2 * R, 2 * R); c.globalCompositeOperation = 'source-over'; }
           for (const [u, r1, r2, i] of ps) { const rise = 1 - Math.pow(1 - u, 1.6), spread = (24 + 120 * u) * kS * sp, px = bx0 - (50 * u + 110 * u * u) * kS + (r1 - .5) * spread * 1.2 + 12 * Math.sin(G.t / 300 + i) * u * kS, py = by0 - (14 + (Dh + 90 + dTop) * rise) * kS + (r2 - .5) * spread * .65, eg = Math.pow(Math.abs(r1 - .5) * 2, 1.5 / E) * EDGE, rr = (26 + 120 * u) * kS * sp * (.8 + .4 * r2) * (1 + .3 * E * eg), a = smooth(0, .05, u) * (1 - smooth(.62, 1, u)) * (1 - Math.min(.5, .25 * E * eg)), P = PUFF[i % 3], gB = P.dB ? Math.min(1, eg * E * 1.1) : 0, X0 = px - rr * 1.65, Y0 = py - rr * 1.2, W0 = 3.3 * rr, H0 = 2.4 * rr;
-            const hzP = rocky ? 0 : clamp(1 - dark * 1.6), aP = a * .7 * (.1 + .75 * Math.max(dark, farK * 1.3)) * reveal; if (mask) { const mA = Math.min(1, aP * 3); qs.globalAlpha = mA * (1 - gB); qs.drawImage(P.d, px - rr * 1.1, py - rr * .8, 2.2 * rr, 1.6 * rr); if (gB > 0) { qs.globalAlpha = mA * gB; qs.drawImage(P.dB, X0, Y0, W0, H0); } continue; }
+            const hzP = rocky ? 0 : clamp(1 - dark * 1.6), aP = a * .7 * (.1 + .75 * Math.max(dark, farK * 1.3)) * reveal;
+            // (build 342, owner: "the top where plumes meet clouds could use a little more detail (seems too monochromatic)"): the
+            // upper billows are laid once more, faintly, over the front of the cloud: their dark rolls and a paler, warmer
+            // underside a little below each, so the columns' shapes and a little colour carry on up into the cloud
+            if (mask === 'top') { const t = smooth(.42, .6, u) * (1 - smooth(.86, 1, u)); if (t < .02) continue; const A = Math.min(1, aP * DENSE) * (1 - hzP) * t; c.globalCompositeOperation = 'source-over';
+              c.globalAlpha = A * .3; c.drawImage(gB > .5 ? P.dB : P.d, gB > .5 ? X0 : px - rr * 1.1, gB > .5 ? Y0 : py - rr * .8, gB > .5 ? W0 : 2.2 * rr, gB > .5 ? H0 : 1.6 * rr);
+              c.globalAlpha = A * .12; c.drawImage(P.p, px - rr * .9, py - rr * .45, 1.8 * rr, 1.2 * rr);
+              const lt = (burn * .35 + F * .4 + flS * Math.max(0, 1 - Math.abs(px - bxS) / (650 * k))) * t * a; if (lt > .01) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = Math.min(1, lt * .3); c.drawImage(P.l, px - rr, py - rr * .7, 2 * rr, 1.6 * rr); }
+              continue; }
+            if (mask) { const mA = Math.min(1, aP * 3); qs.globalAlpha = mA * (1 - gB); qs.drawImage(P.d, px - rr * 1.1, py - rr * .8, 2.2 * rr, 1.6 * rr); if (gB > 0) { qs.globalAlpha = mA * gB; qs.drawImage(P.dB, X0, Y0, W0, H0); } continue; }
             c.globalCompositeOperation = 'source-over'; const dr = (im, imB, al) => { c.globalAlpha = al * (1 - gB); c.drawImage(im, px - rr * 1.1, py - rr * .8, 2.2 * rr, 1.6 * rr); if (gB > 0) { c.globalAlpha = al * gB; c.drawImage(imB, X0, Y0, W0, H0); } }; if (hzP > 0) dr(P.h, P.hB, aP * hzP); const lo = 1 - smooth(.04, .42, u), A = Math.min(1, aP * DENSE) * (1 - hzP); dr(P.d, P.dB, A * (1 - .4 * lo)); if (lo > .01) dr(P.p, P.pB, A * lo * .75);
             const la = a * (burn * (.3 + .7 * Math.pow(1 - u, 2)) + F * .3 * (1 - u)); if (la > .01) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = la; c.drawImage(P.l, px - rr, py - rr * .8, 2 * rr, 1.6 * rr); }
             const sL = flS * Math.min(1, a * 1.6) * Math.max(0, 1 - Math.abs(px - bxS) / (650 * k)) * (.4 + .6 * smooth(.1, .7, u)) * (rocky ? 1 : .6); if (sL > .01 && P.s) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = Math.min(1, sL * .55); c.drawImage(P.s, px - rr * 1.1, py - rr * .8, 2.2 * rr, 1.6 * rr); } } } };
@@ -1375,7 +1384,8 @@ const HL = (() => {
         // (build 233, owner: "still need another layer of wispy smoke to go over billowing up smoke so it's going into cloud
         // in front of lit up section"): the cloud's hanging wisps are drawn once more, in front of the columns, over the
         // stretch of sky where they rise, so the smoke goes up INTO the lit wisps rather than standing before them
-        if (deckWisp) deckWisp(); c.globalCompositeOperation = 'lighter';
+        if (deckWisp) deckWisp();
+        c.save(); cols('top'); c.restore(); c.globalCompositeOperation = 'lighter';
         for (const e of embers) { const al = Math.sin(Math.PI * e.t / e.life) * .9; c.fillStyle = css([255, 170 + 60 * e.h, 90], al); c.beginPath(); c.arc(sx0 + e.x * k, sy0 + e.y * k, Math.max(.7, e.r * k), 0, 7); c.fill(); }
         // the red sheen the fire lays on the plain
         if (burn > .01) { c.translate(hx - 120 * k, hy + 22 * z); c.scale(1, .1); const g = c.createRadialGradient(0, 0, 0, 0, 0, 640 * k); g.addColorStop(0, css([236, 130, 84], .2 * burn + .2 * F)); g.addColorStop(1, css([236, 130, 84], 0)); c.fillStyle = g; c.fillRect(-640 * k, -640 * k, 1280 * k, 1280 * k); }
