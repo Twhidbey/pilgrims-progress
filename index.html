@@ -9,14 +9,14 @@
 <meta name="apple-mobile-web-app-title" content="Pilgrim">
 <meta name="theme-color" content="#1b1c22">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="assets/icon-180.png?v=358">
+<link rel="apple-touch-icon" href="assets/icon-180.png?v=359">
 <script>
 // THE EDITOR AS ITS OWN HOME SCREEN APP (build 193; owner: "I want an editor link that I can put on my phone Home Screen and it
 // updates with changes"). On the editor's link the page offers its own manifest (start "./?edit"), name and icon, so an icon
 // added from it opens the editor; it updates itself like the game (freshCopy keeps ?edit when it reloads).
 if (/[?&]edit(=|&|$)/.test(location.search)) {
   document.querySelector('link[rel=manifest]').href = 'edit.webmanifest';
-  document.querySelector('link[rel=apple-touch-icon]').href = 'assets/icon-edit-180.png?v=358';
+  document.querySelector('link[rel=apple-touch-icon]').href = 'assets/icon-edit-180.png?v=359';
   document.querySelector('meta[name=apple-mobile-web-app-title]').content = 'PP Editor';
   document.title = "Pilgrim's Progress (editor)";
 }
@@ -164,7 +164,7 @@ body.portrait #rot{display:block}
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
   <button id="autoWalk" aria-label="He walks on by himself"><svg viewBox="0 0 24 24"><path d="M5 6l6 6-6 6M12 6l6 6-6 6"/></svg></button>
-  <div id="build">build 358 · Nov 18 2026</div>
+  <div id="build">build 359 · Nov 18 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -2481,14 +2481,14 @@ for (const b of document.querySelectorAll('#levels .lv')) { b.classList.toggle('
       const py = y0 - amp * (.5 + .3 * Math.sin(px / 60 * f + ph) + .2 * Math.sin(px / 23 * f + ph * 2)) + (r() - .5) * 2 + drop; ridge.push([px, py]); x.lineTo(px, py); }
     x.lineTo(cx + ww, bot); x.closePath(); x.fill(); }
   // build 358 (owner: "add the tiny pilgrim"): a tiny dark pilgrim on the nearest hill, his burden on his back, walking
-  // toward the far light; the hill behind him is paler, so his outline reads. No face, one tone, like every figure.
+  // toward the far light; the hill behind him is paler, so his outline reads. One tone, like every figure.
   { const fx = cx - ww * .32, i = ridge.findIndex(p => p[0] >= fx), a = ridge[Math.max(0, i - 1)], b = ridge[i], t = (fx - a[0]) / ((b[0] - a[0]) || 1), fy = a[1] + (b[1] - a[1]) * t + 1.5;
-    x.save(); x.translate(fx, fy); x.rotate(.07); x.fillStyle = x.strokeStyle = '#17110d'; x.lineCap = 'round';
-    x.lineWidth = 2.2; x.beginPath(); x.moveTo(-.5, -11); x.lineTo(-3.6, 0); x.moveTo(.5, -11); x.lineTo(3.8, -.3); x.stroke();
-    x.beginPath(); x.moveTo(-4.2, -9); x.quadraticCurveTo(0, -7.6, 4.6, -9.4); x.lineTo(3.4, -21); x.lineTo(-2.6, -21.5); x.closePath(); x.fill();
-    x.beginPath(); x.ellipse(-4.6, -18.5, 4.4, 5.4, -.2, 0, 7); x.fill();
-    x.beginPath(); x.arc(1.6, -24.2, 3.3, 0, 7); x.fill();
-    x.restore(); }
+    // build 359 (owner: "that pilgrim is unrealistic - can you use a more realistic shape"): his own outline, traced from
+    // a picture of his book-free walk (christian-walk-nb, picture 14, mid-stride), 100 units tall, feet at 0
+    const P = [13,-100,10,-100,1,-91,-1,-92,-5,-92,-9,-90,-11,-88,-11,-83,-19,-76,-21,-71,-21,-70,-22,-66,-21,-61,-17,-56,-13,-55,-15,-50,-23,-37,-21,-35,-22,-31,-19,-29,-19,-27,-18,-25,-19,-20,-17,-19,-16,-17,-19,-14,-21,-14,-23,-11,-21,-7,-20,-4,-17,0,-15,-1,-17,-4,-15,-11,-9,-17,-2,-15,-1,-14,0,-15,5,-15,5,-9,4,-5,5,-2,15,-1,19,-2,17,-4,14,-4,12,-5,10,-9,11,-17,15,-17,15,-31,13,-42,12,-44,12,-63,13,-71,13,-80,14,-83,18,-88,19,-95,18,-98], k = .3;
+    x.save(); x.translate(fx, fy); x.fillStyle = '#17110d'; x.beginPath();
+    for (let j = 0; j < P.length; j += 2) j ? x.lineTo(P[j] * k, P[j + 1] * k) : x.moveTo(P[j] * k, P[j + 1] * k);
+    x.closePath(); x.fill(); x.restore(); }
   x.restore();
   for (const k of [0, 1]) { x.lineWidth = 7 - k * 4; x.strokeStyle = 'rgba(30,19,13,' + (.2 + k * .2) + ')'; arch(); x.stroke(); }
   x.save(); x.lineWidth = 1.5; x.strokeStyle = 'rgba(196,160,98,.4)'; x.beginPath(); x.moveTo(cx - ww - 10, bot + 10); x.lineTo(cx - ww - 10, top + ww); x.arc(cx, top + ww, ww + 10, Math.PI, 0); x.lineTo(cx + ww + 10, bot + 10); x.closePath(); x.stroke(); x.restore();
