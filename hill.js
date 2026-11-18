@@ -1733,26 +1733,32 @@ const HL = (() => {
     };
     if (!rocky && !gateish && X(BROW0 - 300) < VW && X(CREST + 600) > 0) humpDraw();
     // build 334 (owner: "can you put a gravelly path arcing from where he started over the hill (showing its a detour from
-    // the flat path forward"): a worn gravel track leaves the road where the ways cross under the oak, runs along the road's
-    // edge a little way, then climbs over the brow exactly where his feet go and ends at its top (beyond, it is out of sight);
-    // the road itself goes on flat beyond the brow. A pale bed of trodden earth with small stones in it, light on their
-    // sunward tops, set by place on the land (so they slide with the ground, never shimmer); faded in where it leaves the road.
-    if (!rocky && gateish < .5 && X(MEET + 20) < VW && X(CREST + 20) > 0) {
-      const x0 = MEET + 20, x1 = CREST + 6, fy = x => Y(pathOff(x) - crest(x)), fin = x => smooth(x0, x0 + 220, x) * (1 - smooth(CREST - 30, x1, x)),
-        bed = mix([104, 92, 76], [34, 33, 38], dark), bed2 = mix([126, 112, 92], [40, 39, 44], dark), lt = mix([176, 160, 132], [70, 68, 74], dark), dk = mix([28, 24, 22], [14, 14, 18], dark), hh = n => { const t = Math.sin(n * 127.1 + 31.7) * 43758.5453; return t - Math.floor(t); };
-      const xa = Math.max(x0, cx - VW / 2 / z - 10), xb = Math.min(x1, cx + VW / 2 / z + 10);
-      if (xb > xa) {
-        // the bed: a soft band under the feet line, a little wider below than above
-        c.save(); for (const [up, dn, al, bc] of [[7, 9.5, .12, bed], [6, 8, .16, bed], [5, 6.5, .2, bed], [4, 5, .24, bed], [3, 3.6, .22, bed2], [2, 2.2, .2, bed2]]) { c.beginPath();
-          for (let x = xa; x <= xb; x += 4) c.lineTo(X(x), fy(x) - up * z * fin(x)); for (let x = xb; x >= xa; x -= 4) c.lineTo(X(x), fy(x) + dn * z * fin(x));
+    // the flat path forward"); build 336 (owner: "the tip needs to transition over hill better (look like path going over) -
+    // also please add a path going straight so it looks like fork in the road"): ONE worn gravel way runs along the road on
+    // the fair plain, and where the brow begins it FORKS: the straight way goes on flat along the road (drawn last: it is
+    // nearer than the brow), the turning climbs the brow exactly where his feet go and goes over its top, narrowing as it
+    // tips away and vanishing behind the outline (clipped there), as he does. Pale trodden earth in soft layered bands with
+    // fine stones set by place on the land (a fixed hash, so they slide with the ground and never shimmer).
+    const gravel = () => { if (rocky || gateish >= .5) return;
+      const bed = mix([104, 92, 76], [34, 33, 38], dark), bed2 = mix([126, 112, 92], [40, 39, 44], dark), lt = mix([176, 160, 132], [70, 68, 74], dark), dk = mix([28, 24, 22], [14, 14, 18], dark), hh = n => { const t = Math.sin(n * 127.1 + 31.7) * 43758.5453; return t - Math.floor(t); };
+      const L = cx - VW / 2 / z - 12, Rr = cx + VW / 2 / z + 12, F0 = BROW0 - 330;
+      const way = (xa, xb, fy, wf, seed) => { if (xb <= xa) return;
+        for (const [up, dn, al, bc] of [[7, 9.5, .12, bed], [6, 8, .16, bed], [5, 6.5, .2, bed], [4, 5, .24, bed], [3, 3.6, .22, bed2], [2, 2.2, .2, bed2]]) { c.beginPath();
+          for (let x = xa; x <= xb; x += 4) c.lineTo(X(x), fy(x) - up * z * wf(x)); c.lineTo(X(xb), fy(xb) - up * z * wf(xb)); for (let x = xb; x >= xa; x -= 4) c.lineTo(X(x), fy(x) + dn * z * wf(x)); c.lineTo(X(xa), fy(xa) + dn * z * wf(xa));
           c.closePath(); c.fillStyle = css(bc, al); c.fill(); }
-        // the stones
-        for (let x = Math.floor(xa / 1.4) * 1.4; x <= xb; x += 1.4) { const k0 = Math.round(x / 1.4), f = fin(x); if (f < .05) continue;
+        for (let x = Math.floor(xa / 1.4) * 1.4; x <= xb; x += 1.4) { const k0 = Math.round(x / 1.4) + seed, f = wf(x); if (f < .08) continue;
           for (let j = 0; j < 3; j++) { const r1 = hh(k0 * 3.1 + j * 17), r2 = hh(k0 * 7.7 + j * 5), r3 = hh(k0 * 1.3 + j * 11); if (r1 > .55 + .35 * (1 - f)) continue;
-            const px = X(x + r2 * 1.4), py = fy(x + r2 * 1.4) + (r3 * 11 - 5) * z, rr = (.3 + .6 * hh(k0 + j * 3)) * z;
+            const px = X(x + r2 * 1.4), py = fy(x + r2 * 1.4) + (r3 * 11 - 5) * z * f, rr = (.3 + .6 * hh(k0 + j * 3)) * z * (.5 + .5 * f);
             c.fillStyle = css(dk, .4 * f); c.beginPath(); c.ellipse(px, py + rr * .25, rr * 1.15, rr * .6, 0, 0, 6.283); c.fill();
-            c.fillStyle = css(lt, (.2 + .3 * r3) * f); c.beginPath(); c.ellipse(px - rr * .15, py - rr * .1, rr * .8, rr * .42, 0, 0, 6.283); c.fill(); } }
-        c.restore(); } }
+            c.fillStyle = css(lt, (.2 + .3 * r3) * f); c.beginPath(); c.ellipse(px - rr * .15, py - rr * .1, rr * .8, rr * .42, 0, 0, 6.283); c.fill(); } } };
+      c.save();
+      // the turning, clipped to the brow's body so it tips over the top and is lost behind it
+      if (X(F0) < VW && X(CREST + 120) > 0) { c.save(); c.beginPath(); c.moveTo(X(F0 - 10), VH); c.lineTo(X(F0 - 10), Y(.5)); for (let x = F0; x <= CREST + 130; x += 6) c.lineTo(X(x), Y(-crest(x) + .3)); c.lineTo(X(CREST + 140), VH); c.closePath(); c.clip();
+        way(Math.max(F0, L), Math.min(CREST + 120, Rr), x => Y(pathOff(x) - crest(x)), x => (.35 + .65 * smooth(F0, F0 + 120, x)) * (1 - .95 * smooth(CREST - 60, CREST + 110, x)), 1); c.restore(); }
+      // the straight way, on along the road
+      way(L, Rr, () => Y(12), () => 1, 0);
+      c.restore(); };
+    gravel();
     // the lantern's and the open door's light lie in flat pools on the road
     if (gateOn) { c.save(); c.globalCompositeOperation = 'lighter';
       for (const [px, rr, al, col] of [[lnx + 10 * z, 190 * z, .24 * flick * (1 - .4 * open), [255, 170, 90]], [gx - 110 * z, 300 * z, .5 * open, [255, 208, 134]], [gx - 10 * z, 110 * z, .55 * open, [255, 236, 190]]]) { if (al < .01) continue; c.save(); c.translate(px, Y(5)); c.scale(1, .09); const g = c.createRadialGradient(0, 0, 0, 0, 0, rr); g.addColorStop(0, css(col, al)); g.addColorStop(1, css(col, 0)); c.fillStyle = g; c.fillRect(-rr, -rr, 2 * rr, 2 * rr); c.restore(); }
@@ -1853,7 +1859,7 @@ const HL = (() => {
     // (build 202, owner: "when he goes down after talking with worldly wise, he flickers a little": the near ground used to be
     // drawn over him only once he was below the road line, so for a moment his feet sank into the slope and then were cut
     // off at once; now it covers him from the moment he passes the top)
-    if ((ph === 'aside' || ph === 'down') && C3.x > CREST - 2) { c.save(); c.beginPath(); const xc0 = Math.round(X(CREST)); c.moveTo(xc0, VH); c.lineTo(xc0, Y(-crest(CREST))); for (let x = CREST + 10; x <= CREST + 700; x += 10) c.lineTo(X(x), Y(-crest(x))); c.lineTo(VW, Y(0)); c.lineTo(VW, VH); c.clip(); road(); humpDraw(); c.restore(); }
+    if ((ph === 'aside' || ph === 'down') && C3.x > CREST - 2) { c.save(); c.beginPath(); const xc0 = Math.round(X(CREST)); c.moveTo(xc0, VH); c.lineTo(xc0, Y(-crest(CREST))); for (let x = CREST + 10; x <= CREST + 700; x += 10) c.lineTo(X(x), Y(-crest(x))); c.lineTo(VW, Y(0)); c.lineTo(VW, VH); c.clip(); road(); humpDraw(); gravel(); c.restore(); }
     // the nearest crags, along the bottom of the picture, in front of everyone
     // (build 212, owner: "the layer in front of Christian as he walks toward mountain can be higher in point and fully go in
     // front of him - maybe make nice shapes like the layer behind him"): the nearest crags are the same leaning spurs as the
