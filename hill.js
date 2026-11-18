@@ -1727,6 +1727,27 @@ const HL = (() => {
       c.fillStyle = css(top); for (const [up, al] of [[6, .14], [3.5, .3], [1.6, .55]]) { c.globalAlpha = al; c.beginPath(); c.moveTo(X(BROW0 - 340), Y(1)); for (let x = BROW0 - 330; x <= CREST + 570; x += 10) c.lineTo(X(x), Y(-crest(x) - up * (crest(x) / 52))); c.lineTo(X(CREST + 580), Y(1)); c.fill(); } c.globalAlpha = 1; c.restore();
     };
     if (!rocky && !gateish && X(BROW0 - 300) < VW && X(CREST + 600) > 0) humpDraw();
+    // build 334 (owner: "can you put a gravelly path arcing from where he started over the hill (showing its a detour from
+    // the flat path forward"): a worn gravel track leaves the road where the ways cross under the oak, runs along the road's
+    // edge a little way, then climbs over the brow exactly where his feet go and ends at its top (beyond, it is out of sight);
+    // the road itself goes on flat beyond the brow. A pale bed of trodden earth with small stones in it, light on their
+    // sunward tops, set by place on the land (so they slide with the ground, never shimmer); faded in where it leaves the road.
+    if (!rocky && gateish < .5 && X(MEET + 20) < VW && X(CREST + 20) > 0) {
+      const x0 = MEET + 20, x1 = CREST + 6, fy = x => Y(pathOff(x) - crest(x)), fin = x => smooth(x0, x0 + 220, x) * (1 - smooth(CREST - 30, x1, x)),
+        bed = mix([104, 92, 76], [34, 33, 38], dark), bed2 = mix([126, 112, 92], [40, 39, 44], dark), lt = mix([176, 160, 132], [70, 68, 74], dark), dk = mix([28, 24, 22], [14, 14, 18], dark), hh = n => { const t = Math.sin(n * 127.1 + 31.7) * 43758.5453; return t - Math.floor(t); };
+      const xa = Math.max(x0, cx - VW / 2 / z - 10), xb = Math.min(x1, cx + VW / 2 / z + 10);
+      if (xb > xa) {
+        // the bed: a soft band under the feet line, a little wider below than above
+        c.save(); for (const [up, dn, al, bc] of [[7, 9.5, .12, bed], [6, 8, .16, bed], [5, 6.5, .2, bed], [4, 5, .24, bed], [3, 3.6, .22, bed2], [2, 2.2, .2, bed2]]) { c.beginPath();
+          for (let x = xa; x <= xb; x += 4) c.lineTo(X(x), fy(x) - up * z * fin(x)); for (let x = xb; x >= xa; x -= 4) c.lineTo(X(x), fy(x) + dn * z * fin(x));
+          c.closePath(); c.fillStyle = css(bc, al); c.fill(); }
+        // the stones
+        for (let x = Math.floor(xa / 1.4) * 1.4; x <= xb; x += 1.4) { const k0 = Math.round(x / 1.4), f = fin(x); if (f < .05) continue;
+          for (let j = 0; j < 3; j++) { const r1 = hh(k0 * 3.1 + j * 17), r2 = hh(k0 * 7.7 + j * 5), r3 = hh(k0 * 1.3 + j * 11); if (r1 > .55 + .35 * (1 - f)) continue;
+            const px = X(x + r2 * 1.4), py = fy(x + r2 * 1.4) + (r3 * 11 - 5) * z, rr = (.3 + .6 * hh(k0 + j * 3)) * z;
+            c.fillStyle = css(dk, .4 * f); c.beginPath(); c.ellipse(px, py + rr * .25, rr * 1.15, rr * .6, 0, 0, 6.283); c.fill();
+            c.fillStyle = css(lt, (.2 + .3 * r3) * f); c.beginPath(); c.ellipse(px - rr * .15, py - rr * .1, rr * .8, rr * .42, 0, 0, 6.283); c.fill(); } }
+        c.restore(); } }
     // the lantern's and the open door's light lie in flat pools on the road
     if (gateOn) { c.save(); c.globalCompositeOperation = 'lighter';
       for (const [px, rr, al, col] of [[lnx + 10 * z, 190 * z, .24 * flick * (1 - .4 * open), [255, 170, 90]], [gx - 110 * z, 300 * z, .5 * open, [255, 208, 134]], [gx - 10 * z, 110 * z, .55 * open, [255, 236, 190]]]) { if (al < .01) continue; c.save(); c.translate(px, Y(5)); c.scale(1, .09); const g = c.createRadialGradient(0, 0, 0, 0, 0, rr); g.addColorStop(0, css(col, al)); g.addColorStop(1, css(col, 0)); c.fillStyle = g; c.fillRect(-rr, -rr, 2 * rr, 2 * rr); c.restore(); }

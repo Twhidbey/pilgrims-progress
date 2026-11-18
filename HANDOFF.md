@@ -6,6 +6,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 **The keepsakes have their own chat now** ("Pilgrim's Progress: the keepsakes (Bible, roll, title book)", https://claude.ai/code/session_017HrTSDUqJDSdrXPbhc33zT). Open question there: the wax seal on Evangelist's roll is ours, not the book's (`{14}` has no seal; the sealed roll is given at the Cross, `{94}`): take it off and keep `waxSeal()` for Level 5, or keep it as a departure.
 
+**Build 334 (Level 3 art chat): a gravel track from the oak over the brow, the way he turns aside. Nothing spent.**
+
 **Build 329 (Level 3 art chat): the shadows toward us on the plain a little longer, fading gently. Nothing spent.**
 
 **Build 327 (Level 3 art chat): the brow the same road surface as the road (no paler body), and only the shadow toward us under the figures on the plain. Nothing spent.**
