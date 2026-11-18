@@ -141,7 +141,7 @@ const RM = (() => {
   const speaking = () => (SPK && SPK.who === I) || (G.state === 'dialog' && dWho.textContent === I);
   // where a visitor stands at or past the painting's edge, a faint floor goes on under his feet into the dark (build 333)
   function floorOut(c, x, k, a) {
-    const out = Math.max(smooth(260, -60, x), smooth(R.PW - 260, R.PW + 60, x)); if (out <= .01 || R.id === 'pass') return;
+    const out = Math.max(R.ext && R.ext.includes('L') ? 0 : smooth(260, -60, x), R.ext && R.ext.includes('R') ? 0 : smooth(R.PW - 260, R.PW + 60, x)); if (out <= .01 || R.id === 'pass') return;
     const fx = u(x), fy = v(R.FY), rx = 150 * S * k, g = c.createRadialGradient(fx, fy, 0, fx, fy, rx);
     g.addColorStop(0, 'rgba(74,54,38,' + (.5 * out * a).toFixed(3) + ')'); g.addColorStop(1, 'rgba(74,54,38,0)');
     c.save(); c.translate(0, fy); c.scale(1, .09); c.translate(0, -fy); c.fillStyle = g; c.fillRect(fx - rx, fy - rx, 2 * rx, 2 * rx); c.restore();
@@ -235,7 +235,7 @@ const RM = (() => {
     },
     // 2 THE DUSTY PARLOUR (after Vermeer's Milkmaid): the broom raises the dust; the water lays it
     r2: {
-      pic: 'room2', vz: .8, FY: 1262, cam0: 140, tone: [300, 288, 268], noShadow: 1,
+      pic: 'room2', ext: 'L', FY: 1262, cam0: 140, tone: [300, 288, 268], noShadow: 1,
       enter() { this.dust = []; this.haze = .22; this.wet = []; const r = rngR(5); for (let i = 0; i < 70; i++) this.dust.push({ x: 300 + r() * 2800, y: 300 + r() * 900, vx: 0, vy: 0, s: 2 + r() * 5, a: .5 + r() * .5, p: r() * 7 }); },
       run() { talk([[N, 'He led him into a very large parlour, full of dust, because it was never swept.'], [TIP, 'Touch the broom.', 'broom']], () => { ph = 'sweep'; t = 0; G.state = 'auto'; }); },
       act(sx, sy) {
@@ -264,7 +264,7 @@ const RM = (() => {
         for (const w of this.wet) { w.vy += .35; w.x += w.vx; w.y += w.vy; w.l++; }
         this.wet = this.wet.filter(w => w.y < 1260);
       },
-      people(c) { visitor(c, 'I', 500, 1); visitor(c, 'C', 210, 1); },
+      people(c) { visitor(c, 'I', 230, 1); visitor(c, 'C', -190, 1); },
       over(c) {
         c.fillStyle = css([170, 150, 120], Math.min(.2, this.haze * .75)); c.fillRect(u(0), v(0), (R.PW || 3168) * S, PH * S);
         for (const d of this.dust) { const a = Math.min(1, d.a * (.45 + this.haze)); const r = d.s * S * 3; const g = c.createRadialGradient(u(d.x), v(d.y), 0, u(d.x), v(d.y), r); g.addColorStop(0, css([206, 188, 160], a * .7)); g.addColorStop(1, css([196, 178, 150], 0)); c.fillStyle = g; c.fillRect(u(d.x) - r, v(d.y) - r, 2 * r, 2 * r); }
@@ -273,7 +273,7 @@ const RM = (() => {
     },
     // 3 PASSION AND PATIENCE (after Chardin's Soap Bubbles): the bag, the gold, the bubbles, the rags
     r3: {
-      pic: 'room3', vz: .76, FY: 1235, PW: 2561, cam0: 13, tone: [255, 255, 255], k: 1.3,
+      pic: 'room3', ext: 'R', FY: 1235, PW: 2561, cam0: 13, tone: [255, 255, 255], k: 1.3,
       enter() {
         this.bag = { show: false, a: 0, tip: 0, empty: 0 }; this.coins = []; this.bubbles = []; this.great = null; this.rags = 0; pic('room3-rags');
       },
@@ -307,7 +307,7 @@ const RM = (() => {
         const g = this.great; if (g) { g.life++; g.r = Math.min(g.R, g.r + .47); if (!g.pop) { g.y -= 1.45 * smooth(0, 60, g.life); g.x += Math.sin(g.life / 70) * .8; if (g.life > g.L) { g.pop = 1; note(91, .02, 1.4); } } else g.pop++; }
       },
       under(c) { if (this.rags > 0 && pics['room3-rags']) { c.globalAlpha = smooth(0, 1, this.rags); c.drawImage(pics['room3-rags'], u(700), v(600), 570 * S, 720 * S); c.globalAlpha = 1; } },
-      people(c) { visitor(c, 'I', 2480, -1, R.k, 1, 10); visitor(c, 'C', 2220, -1); },
+      people(c) { visitor(c, 'I', 2420, -1, R.k, 1, 10); visitor(c, 'C', 2760, -1); },
       over(c) { drawBag(c, this.bag); drawCoins(c, this.coins); for (const b of this.bubbles) bubble(c, u(b.x), v(b.y), b.r * S, b.pop); if (this.great) bubble(c, u(this.great.x), v(this.great.y), this.great.r * S, this.great.pop); },
     },
     // 4 THE FIRE FED WITH OIL (after La Tour's St Joseph the Carpenter): round the back of the wall
@@ -596,6 +596,32 @@ const RM = (() => {
     VIEW.Z = Z; VIEW.ox = R && R.id === 'pass' ? 0 : (VW - R.PW * S * Z) / 2; VIEW.oy = R && R.id === 'pass' ? 0 : 14 + PH * S * (Z / vz * .8 - Z) / 2 - top * Z;
   }
   const unview = (sx, sy) => [(sx - VIEW.ox) / VIEW.Z, (sy - VIEW.oy) / VIEW.Z];
+  // THE FLOOR GOES ON (build 341, owner: "not enlarge room picture but actually extend room floor"): on a side named in R.ext
+  // the painting's floor band (from a little above the floor line to its foot) is mirrored outward past its edge, fading
+  // into the dark, so the visitors can stand on the room's own floor out in the frame. Baked once per room and side.
+  const EXT_L = 760, EXT_IN = 160, EXT_UP = 30, EXT_OFF = 170;
+  function extBake(im, side) {
+    const key = 'ext' + side; if (im[key]) return im[key];
+    // the floor is taken from EXT_OFF in from the edge (the painting's own edge was darkened when it was made), mirrored outward,
+    // and laid EXT_IN back over the painting, blending in, so there is no seam
+    const sc = im.width / R.PW, y0 = (R.FY - EXT_UP) * sc, hh = im.height - y0, L = EXT_L * sc, IN = EXT_IN * sc, OFF = EXT_OFF * sc;
+    const cv = document.createElement('canvas'); cv.width = Math.ceil(L + IN); cv.height = Math.ceil(hh); const x = cv.getContext('2d');
+    if (side === 'L') { x.drawImage(im, OFF, y0, IN, hh, L, 0, IN, hh); x.save(); x.translate(L, 0); x.scale(-1, 1); x.drawImage(im, OFF, y0, L, hh, 0, 0, L, hh); x.restore(); }
+    else { x.drawImage(im, im.width - OFF - IN, y0, IN, hh, 0, 0, IN, hh); x.save(); x.translate(IN + L, 0); x.scale(-1, 1); x.drawImage(im, im.width - OFF - L, y0, L, hh, 0, 0, L, hh); x.restore(); }
+    x.globalCompositeOperation = 'destination-in';
+    const a0 = side === 'L' ? 0 : cv.width, a1 = side === 'L' ? cv.width : 0, gx = x.createLinearGradient(a0, 0, a1, 0), e = L / cv.width;
+    gx.addColorStop(0, 'rgba(0,0,0,0)'); gx.addColorStop(.3 * e, 'rgba(0,0,0,.8)'); gx.addColorStop(.55 * e, 'rgba(0,0,0,1)'); gx.addColorStop(e, 'rgba(0,0,0,1)'); gx.addColorStop(1, 'rgba(0,0,0,0)');
+    x.fillStyle = gx; x.fillRect(0, 0, cv.width, cv.height);
+    const gy = x.createLinearGradient(0, 0, 0, cv.height); gy.addColorStop(0, 'rgba(0,0,0,0)'); gy.addColorStop(Math.min(.5, EXT_UP * sc * 1.6 / cv.height), 'rgba(0,0,0,1)'); gy.addColorStop(.8, 'rgba(0,0,0,1)'); gy.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = gy; x.fillRect(0, 0, cv.width, cv.height);
+    return im[key] = { cv, sc };
+  }
+  function extFloor(c, im) {
+    if (!R.ext || !im) return;
+    for (const side of R.ext) {
+      const e = extBake(im, side), w = e.cv.width / e.sc * S, h = e.cv.height / e.sc * S, y = v(R.FY - EXT_UP);
+      c.drawImage(e.cv, side === 'L' ? u(-EXT_L) : u(R.PW - EXT_IN), y, w, h);
+    }
+  }
   // the painting's edges sink softly into the dark round it
   function edges(c, x0, y0, w, h) {
     for (const [ax, ay, bx, by, xx, yy, ww, hh] of [[x0, 0, x0 + 40, 0, x0, y0, 40, h], [x0 + w, 0, x0 + w - 40, 0, x0 + w - 40, y0, 40, h], [0, y0, 0, y0 + 30, x0, y0, w, 30], [0, y0 + h, 0, y0 + h - 30, x0, y0 + h - 30, w, 30]]) { const g = c.createLinearGradient(ax, ay, bx, by); g.addColorStop(0, 'rgba(13,8,6,.85)'); g.addColorStop(1, 'rgba(13,8,6,0)'); c.fillStyle = g; c.fillRect(xx, yy, ww, hh); }
@@ -614,8 +640,8 @@ const RM = (() => {
       R.under && R.under(c);
       edges(c, x0, y0, w, h);
       // the two visitors may stand in or over the dark frame round the painting, out of the way (build 331)
-      c.restore(); R.people && R.people(c);
-      for (const [e, d] of [[x0, -1], [x0 + w, 1]]) { const g = c.createLinearGradient(e, 0, e + d * 150, 0); g.addColorStop(0, 'rgba(13,8,6,0)'); g.addColorStop(.35, 'rgba(13,8,6,.35)'); g.addColorStop(1, 'rgba(13,8,6,.72)'); c.fillStyle = g; c.fillRect(d < 0 ? e - 400 : e, y0 - 60, 400, h + 120); }
+      c.restore(); extFloor(c, im); R.people && R.people(c);
+      for (const [e, d] of [[x0, -1], [x0 + w, 1]]) { const fl = R.ext && R.ext.includes(d < 0 ? 'L' : 'R') ? .2 : 1, g = c.createLinearGradient(e, 0, e + d * 150, 0); g.addColorStop(0, 'rgba(13,8,6,0)'); g.addColorStop(.35, 'rgba(13,8,6,' + (.35 * fl).toFixed(2) + ')'); g.addColorStop(1, 'rgba(13,8,6,' + (.72 * fl).toFixed(2) + ')'); c.fillStyle = g; c.fillRect(d < 0 ? e - 400 : e, y0 - 60, 400, h + 120); }
       c.save(); c.beginPath(); c.rect(x0, y0, w, h); c.clip();
       R.over && R.over(c);
       if (R.id !== 'door' && R.id !== 'leave' && R.id !== 'r2') for (const m of motes) { const a = .08 * (.5 + .5 * Math.sin(G.t / 50 + m.p)); c.fillStyle = 'rgba(255,236,200,' + a.toFixed(3) + ')'; c.beginPath(); c.arc(m.x, m.y, m.s, 0, 6.2832); c.fill(); }
