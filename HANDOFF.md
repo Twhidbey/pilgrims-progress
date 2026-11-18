@@ -78,6 +78,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 **Build 352 (Level 4 chat): in the parlour Christian moved right onto the floorboards, the Interpreter beside him. Nothing spent.**
 
+**Build 353 (Level 4 chat): in the parlour the Interpreter moved a little left, clear of the basket. Nothing spent.**
+
 **Build 351 (Level 4 chat): Christian and the Interpreter painted again for the house, dark and quiet (lighter in the bright parlour); the Interpreter's hand movement off until a new free clip is made from the new picture. Spent about 15 cents.**
 
 **Build 350 (Level 4 chat): in the parlour both men's feet now stand on the floorboards. Nothing spent.**
