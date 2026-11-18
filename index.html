@@ -98,6 +98,11 @@ body.slough #dlg{background:linear-gradient(rgba(14,14,20,0),rgba(14,14,20,.78) 
 #snd{position:absolute;right:1%;top:1.5%;width:2.2em;height:2.2em;border-radius:50%;border:none;background:rgba(20,22,30,.22);color:rgba(244,236,220,.8);font-size:clamp(14px,2vw,19px);cursor:pointer;display:none}
 body.playing #snd,body.opened #snd{display:block}
 #snd.off{color:rgba(244,236,220,.35);text-decoration:line-through}
+/* build 322 (owner: "take it off book page and make it separate button next to pause button"): the auto-walk switch, left of the pause button; bright when on */
+#autoWalk{position:absolute;right:calc(1% + 5.2em);top:1.5%;width:2.2em;height:2.2em;border-radius:50%;border:none;background:rgba(20,22,30,.22);color:rgba(244,236,220,.35);font-size:clamp(14px,2vw,19px);cursor:pointer;display:none;padding:0}
+#autoWalk svg{width:.95em;height:.95em;vertical-align:middle;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+#autoWalk.on{color:rgba(240,206,140,.95);background:rgba(20,22,30,.4)}
+body.playing #autoWalk{display:block}
 #build{position:absolute;right:1.2%;bottom:1%;font:max(8px,calc(var(--s,1) * 12px)) Georgia,serif;color:rgba(255,250,235,.7);text-shadow:0 0 3px rgba(0,0,0,.7);pointer-events:none}
 body.talking #build,body.capped #build{visibility:hidden}
 #rot{position:fixed;left:0;right:0;text-align:center;font:15px Georgia,serif;color:#cfc6bb;display:none}
@@ -141,7 +146,6 @@ body.portrait #rot{display:block}
           <button class="lv" data-lv="3"><i>III.</i>Mr. Worldly Wiseman</button>
           <button class="lv" data-lv="4"><i>IV.</i>The Interpreter&#8217;s House</button>
           <button class="lvx" id="darkRooms"><i></i>Shew the darker rooms</button>
-          <button class="lvx" id="autoWalk"><i></i>Let him walk on by himself</button>
         </div>
         <div class="trule d"></div>
         <div class="t6 tdream">As I walked through the wilderness of this world, I lighted on a certain place where was a Den, and I laid me down in that place to sleep: and, as I slept, I dreamed a dream.</div>
@@ -157,7 +161,8 @@ body.portrait #rot{display:block}
     <button class="btn" id="again">Walk again</button>
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
-  <div id="build">build 321 · Nov 18 2026</div>
+  <button id="autoWalk" aria-label="He walks on by himself"><svg viewBox="0 0 24 24"><path d="M5 6l6 6-6 6M12 6l6 6-6 6"/></svg></button>
+  <div id="build">build 322 · Nov 18 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -2489,7 +2494,7 @@ document.getElementById('open').onclick = () => {
 document.getElementById('again').onclick = () => RM.on ? RM.start() : HL.on ? HL.start() : SL.on ? SL.start() : start();
 document.getElementById('on2').onclick = () => SL.on ? go3() : HL.on ? goRoom('door') : go2();
 // the darker rooms of the Interpreter's House (6 and 7) are shewn only when this line is marked (kept on the device)
-{ const a = document.getElementById('autoWalk'); a.classList.toggle('on', AUTOW); a.onclick = () => setAuto(!AUTOW); }
+{ const a = document.getElementById('autoWalk'); a.classList.toggle('on', AUTOW); a.onclick = e => { e.stopPropagation(); setAuto(!AUTOW); }; a.addEventListener('pointerdown', e => e.stopPropagation()); }
 { const d = document.getElementById('darkRooms'), on = () => { try { return localStorage.getItem('pp-dark') === '1'; } catch (e) { return false; } }, set = () => d.classList.toggle('on', on()); set(); d.onclick = () => { try { localStorage.setItem('pp-dark', on() ? '0' : '1'); } catch (e) {} set(); }; }
 
 // ---------- boot: build the scenery, fetch Christian, then the others while the child is already playing ----------
