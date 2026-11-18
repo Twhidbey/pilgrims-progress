@@ -62,6 +62,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 **Build 297 (Level 3 art chat): rocky ground round the village (a small spur of the mountain behind it, low rocks across its foot). Nothing spent.**
 
+**Build 337 (Level 4 chat): the parlour and Passion and Patience's room shown larger again, Christian and the Interpreter standing on their floors inside the painting. Nothing spent.**
+
 **Build 333 (Level 4 chat): the house's visitors straddle the painting's edge instead of standing out in the black, the part outside falling into shadow, with a faint floor under their feet. Nothing spent.**
 
 **Build 331 (Level 4 chat): the house's rooms shown smaller in a dark frame; Christian and the Interpreter moved out of the way, into or over the frame where the room allows (the parlour: Christian behind the Interpreter, in the frame). Nothing spent.**

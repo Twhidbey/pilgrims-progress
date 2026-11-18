@@ -235,7 +235,7 @@ const RM = (() => {
     },
     // 2 THE DUSTY PARLOUR (after Vermeer's Milkmaid): the broom raises the dust; the water lays it
     r2: {
-      pic: 'room2', FY: 1262, cam0: 140, tone: [300, 288, 268], noShadow: 1,
+      pic: 'room2', vz: .8, FY: 1262, cam0: 140, tone: [300, 288, 268], noShadow: 1,
       enter() { this.dust = []; this.haze = .22; this.wet = []; const r = rngR(5); for (let i = 0; i < 70; i++) this.dust.push({ x: 300 + r() * 2800, y: 300 + r() * 900, vx: 0, vy: 0, s: 2 + r() * 5, a: .5 + r() * .5, p: r() * 7 }); },
       run() { talk([[N, 'He led him into a very large parlour, full of dust, because it was never swept.'], [TIP, 'Touch the broom.', 'broom']], () => { ph = 'sweep'; t = 0; G.state = 'auto'; }); },
       act(sx, sy) {
@@ -264,7 +264,7 @@ const RM = (() => {
         for (const w of this.wet) { w.vy += .35; w.x += w.vx; w.y += w.vy; w.l++; }
         this.wet = this.wet.filter(w => w.y < 1260);
       },
-      people(c) { visitor(c, 'I', 330, 1); visitor(c, 'C', 40, 1); },
+      people(c) { visitor(c, 'I', 500, 1); visitor(c, 'C', 210, 1); },
       over(c) {
         c.fillStyle = css([170, 150, 120], Math.min(.2, this.haze * .75)); c.fillRect(u(0), v(0), (R.PW || 3168) * S, PH * S);
         for (const d of this.dust) { const a = Math.min(1, d.a * (.45 + this.haze)); const r = d.s * S * 3; const g = c.createRadialGradient(u(d.x), v(d.y), 0, u(d.x), v(d.y), r); g.addColorStop(0, css([206, 188, 160], a * .7)); g.addColorStop(1, css([196, 178, 150], 0)); c.fillStyle = g; c.fillRect(u(d.x) - r, v(d.y) - r, 2 * r, 2 * r); }
@@ -273,7 +273,7 @@ const RM = (() => {
     },
     // 3 PASSION AND PATIENCE (after Chardin's Soap Bubbles): the bag, the gold, the bubbles, the rags
     r3: {
-      pic: 'room3', FY: 1235, PW: 2561, cam0: 13, tone: [255, 255, 255], k: 1.3,
+      pic: 'room3', vz: .76, FY: 1235, PW: 2561, cam0: 13, tone: [255, 255, 255], k: 1.3,
       enter() {
         this.bag = { show: false, a: 0, tip: 0, empty: 0 }; this.coins = []; this.bubbles = []; this.great = null; this.rags = 0; pic('room3-rags');
       },
@@ -307,7 +307,7 @@ const RM = (() => {
         const g = this.great; if (g) { g.life++; g.r = Math.min(g.R, g.r + .47); if (!g.pop) { g.y -= 1.45 * smooth(0, 60, g.life); g.x += Math.sin(g.life / 70) * .8; if (g.life > g.L) { g.pop = 1; note(91, .02, 1.4); } } else g.pop++; }
       },
       under(c) { if (this.rags > 0 && pics['room3-rags']) { c.globalAlpha = smooth(0, 1, this.rags); c.drawImage(pics['room3-rags'], u(700), v(600), 570 * S, 720 * S); c.globalAlpha = 1; } },
-      people(c) { visitor(c, 'I', 2380, -1, R.k, 1, 10); visitor(c, 'C', 2650, -1); },
+      people(c) { visitor(c, 'I', 2480, -1, R.k, 1, 10); visitor(c, 'C', 2220, -1); },
       over(c) { drawBag(c, this.bag); drawCoins(c, this.coins); for (const b of this.bubbles) bubble(c, u(b.x), v(b.y), b.r * S, b.pop); if (this.great) bubble(c, u(this.great.x), v(this.great.y), this.great.r * S, this.great.pop); },
     },
     // 4 THE FIRE FED WITH OIL (after La Tour's St Joseph the Carpenter): round the back of the wall
@@ -592,8 +592,8 @@ const RM = (() => {
   // drawn in the same units as before through this one transform; touches are turned back through it (`unview`).
   const VZ = .64, VIEW = { Z: 1, ox: 0, oy: 0 };
   function setView() {
-    const Z = R && R.id === 'pass' ? 1 : VZ * Math.min(1, 1204 / (R.PW * S)), top = 440 - R.FY * S;
-    VIEW.Z = Z; VIEW.ox = R && R.id === 'pass' ? 0 : (VW - R.PW * S * Z) / 2; VIEW.oy = R && R.id === 'pass' ? 0 : 14 + PH * S * (Z / VZ * .8 - Z) / 2 - top * Z;
+    const vz = (R && R.vz) || VZ, Z = R && R.id === 'pass' ? 1 : vz * Math.min(1, 1204 / (R.PW * S)), top = 440 - R.FY * S;
+    VIEW.Z = Z; VIEW.ox = R && R.id === 'pass' ? 0 : (VW - R.PW * S * Z) / 2; VIEW.oy = R && R.id === 'pass' ? 0 : 14 + PH * S * (Z / vz * .8 - Z) / 2 - top * Z;
   }
   const unview = (sx, sy) => [(sx - VIEW.ox) / VIEW.Z, (sy - VIEW.oy) / VIEW.Z];
   // the painting's edges sink softly into the dark round it
