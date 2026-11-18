@@ -1742,11 +1742,14 @@ const HL = (() => {
     const gravel = () => { if (rocky || gateish >= .5) return;
       const bed = mix([104, 92, 76], [34, 33, 38], dark), bed2 = mix([126, 112, 92], [40, 39, 44], dark), lt = mix([176, 160, 132], [70, 68, 74], dark), dk = mix([28, 24, 22], [14, 14, 18], dark), hh = n => { const t = Math.sin(n * 127.1 + 31.7) * 43758.5453; return t - Math.floor(t); };
       const L = cx - VW / 2 / z - 12, Rr = cx + VW / 2 / z + 12, F0 = BROW0 - 330;
+      // (build 338, owner: "the straight path should look a little less hard lines but have some slight bumpiness (wave) to it"):
+      // the way wanders a little up and down and swells and narrows along its length, set by place on the land
+      const wav = x => 1.7 * Math.sin(x * .0093 + .6) + 1.1 * Math.sin(x * .027 + 2.3) + .5 * Math.sin(x * .061 + 4.1), wid = x => .82 + .16 * Math.sin(x * .013 + 1.7) + .1 * Math.sin(x * .041 + .4);
       const way = (xa, xb, fy, wf, seed) => { if (xb <= xa) return;
         for (const [up, dn, al, bc] of [[7, 9.5, .12, bed], [6, 8, .16, bed], [5, 6.5, .2, bed], [4, 5, .24, bed], [3, 3.6, .22, bed2], [2, 2.2, .2, bed2]]) { c.beginPath();
           for (let x = xa; x <= xb; x += 4) c.lineTo(X(x), fy(x) - up * z * wf(x)); c.lineTo(X(xb), fy(xb) - up * z * wf(xb)); for (let x = xb; x >= xa; x -= 4) c.lineTo(X(x), fy(x) + dn * z * wf(x)); c.lineTo(X(xa), fy(xa) + dn * z * wf(xa));
           c.closePath(); c.fillStyle = css(bc, al); c.fill(); }
-        for (let x = Math.floor(xa / 1.4) * 1.4; x <= xb; x += 1.4) { const k0 = Math.round(x / 1.4) + seed, f = wf(x); if (f < .08) continue;
+        for (let x = Math.floor(xa / 1.4) * 1.4; x <= xb; x += 1.4) { const k0 = Math.round(x / 1.4) + seed, f = Math.min(1, wf(x)); if (f < .08) continue;
           for (let j = 0; j < 3; j++) { const r1 = hh(k0 * 3.1 + j * 17), r2 = hh(k0 * 7.7 + j * 5), r3 = hh(k0 * 1.3 + j * 11); if (r1 > .55 + .35 * (1 - f)) continue;
             const px = X(x + r2 * 1.4), py = fy(x + r2 * 1.4) + (r3 * 11 - 5) * z * f, rr = (.3 + .6 * hh(k0 + j * 3)) * z * (.5 + .5 * f);
             c.fillStyle = css(dk, .4 * f); c.beginPath(); c.ellipse(px, py + rr * .25, rr * 1.15, rr * .6, 0, 0, 6.283); c.fill();
@@ -1754,9 +1757,9 @@ const HL = (() => {
       c.save();
       // the turning, clipped to the brow's body so it tips over the top and is lost behind it
       if (X(F0) < VW && X(CREST + 120) > 0) { c.save(); c.beginPath(); c.moveTo(X(F0 - 10), VH); c.lineTo(X(F0 - 10), Y(.5)); for (let x = F0; x <= CREST + 130; x += 6) c.lineTo(X(x), Y(-crest(x) + .3)); c.lineTo(X(CREST + 140), VH); c.closePath(); c.clip();
-        way(Math.max(F0, L), Math.min(CREST + 120, Rr), x => Y(pathOff(x) - crest(x)), x => (.35 + .65 * smooth(F0, F0 + 120, x)) * (1 - .95 * smooth(CREST - 60, CREST + 110, x)), 1); c.restore(); }
+        way(Math.max(F0, L), Math.min(CREST + 120, Rr), x => Y(pathOff(x) - crest(x) + wav(x) * (1 - smooth(F0, F0 + 160, x))), x => (.35 + .65 * smooth(F0, F0 + 120, x)) * (1 - .95 * smooth(CREST - 60, CREST + 110, x)) * lerp(wid(x), 1, smooth(F0, F0 + 160, x)), 1); c.restore(); }
       // the straight way, on along the road
-      way(L, Rr, () => Y(12), () => 1, 0);
+      way(L, Rr, x => Y(12 + wav(x)), wid, 0);
       c.restore(); };
     gravel();
     // the lantern's and the open door's light lie in flat pools on the road
