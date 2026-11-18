@@ -163,11 +163,17 @@ const HL = (() => {
   function pathFalls() { while (fallI < FALLS.length && ph === 'path' && C3.x > FALLS[fallI][0]) { const [, n, big] = FALLS[fallI++];
       for (let i = 0; i < n; i++) { const r = big ? 11 + 4 * big + Math.random() * 3 : 3 + Math.random() * 2.5;
         PATHR.push({ x: C3.x + 230 + Math.random() * 120 + i * 60, y: -560 - Math.random() * 120 - i * 90, vx: -(.5 + Math.random() * .6), vy: 0, r, big, b: 0, t: 0, s: Math.random() * 6, sh: rockShape() }); } }
-    for (const r of PATHR) { r.t++; if (r.b >= 3) continue; r.vy += .26; r.x += r.vx; r.y += r.vy;
-      const rest = groundAt(r.x, r.r); if (r.y >= rest) { r.y = rest; r.b++; if (r.b === 1) { dustW(r.x, r.y, r.big ? r.r * 2.6 : r.r * 2.2, r.big ? 7 : 3);
-          if (r.big) { jolt = Math.max(jolt, r.big); if (audio()) { sweep(50, 30, 1.2, .1 * r.big); hiss(180, .7, .07 * r.big, 1.1, 'lowpass'); } }
-          else if (audio()) hiss(900, 2, .03, .12, 'bandpass'); }
-        r.vy = r.b >= 3 ? 0 : -r.vy * (r.b === 1 ? .28 : .15); r.vx *= .5; if (Math.abs(r.vy) < .3) r.b = 3; } }
+    for (const r of PATHR) { r.t++; r.vy += .26; r.x += r.vx; r.y += r.vy;
+      // (build 356, owner: "Can you make stones disappear behind blue layer"): a stone strikes the top of the path's stony far
+      // edge (dust, a thud, the jolt) and then drops on behind it out of sight (the stones are drawn before the path, so the
+      // blue-black path covers them); gone once wholly below the edge
+      const rest = groundAt(r.x, r.r) - r.r * .2;
+      if (!r.b && r.y >= rest) { r.b = 1; dustW(r.x, rest, r.big ? r.r * 2.6 : r.r * 2.2, r.big ? 7 : 3);
+        if (r.big) { jolt = Math.max(jolt, r.big); if (audio()) { sweep(50, 30, 1.2, .1 * r.big); hiss(180, .7, .07 * r.big, 1.1, 'lowpass'); } }
+        else if (audio()) hiss(900, 2, .03, .12, 'bandpass');
+        r.vx *= .4; r.vy *= .5; }
+      if (r.b && r.y > rest + r.r * 4) r.gone = 1; }
+    for (let i = PATHR.length - 1; i >= 0; i--) if (PATHR[i].gone) PATHR.splice(i, 1);
     jolt *= .93; }
   // dust in world units, for the stones on the path
   const DUSTW = [];
@@ -1935,5 +1941,5 @@ const HL = (() => {
   }
 
   // for testing: HL.peek() tells where the story is
-  return { on: false, show: false, hillPics: () => HILL, title, start, update, draw, touch, key, preload, lines: ALL, pt: k => k === 'hill' ? hillPt() : gatePt(), peek: () => ({ ph, x: Math.round(C3.x), vil: +vil.toFixed(2), reveal: +reveal.toFixed(2), stillT, zs, zT, Zw: +Zw.toFixed(2), farewell, kf: +(C3.kf || 0).toFixed(1), stand: C3.sd != null, wx: wise && Math.round(wise.x), ex: evan && evan.x != null ? Math.round(evan.x) : null, dark: +dark.toFixed(2), wise: wise && wise.mode, evan: evan && +evan.a.toFixed(2), knocks, cam: { ...cam }, hb: hillBox.map(v => Math.round(v * 100) / 100), boltT, bolt: bolt && bolt.map(l => [l[0], l[l.length - 1]].map(p => p.map(Math.round))) }) };
+  return { on: false, show: false, hillPics: () => HILL, title, start, update, draw, touch, key, preload, lines: ALL, pt: k => k === 'hill' ? hillPt() : gatePt(), peek: () => ({ ph, x: Math.round(C3.x), stones: PATHR.map(r => [Math.round(r.x), Math.round(r.y), r.b]), vil: +vil.toFixed(2), reveal: +reveal.toFixed(2), stillT, zs, zT, Zw: +Zw.toFixed(2), farewell, kf: +(C3.kf || 0).toFixed(1), stand: C3.sd != null, wx: wise && Math.round(wise.x), ex: evan && evan.x != null ? Math.round(evan.x) : null, dark: +dark.toFixed(2), wise: wise && wise.mode, evan: evan && +evan.a.toFixed(2), knocks, cam: { ...cam }, hb: hillBox.map(v => Math.round(v * 100) / 100), boltT, bolt: bolt && bolt.map(l => [l[0], l[l.length - 1]].map(p => p.map(Math.round))) }) };
 })();
