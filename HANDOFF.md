@@ -36,6 +36,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 **Build 309: auto-walk switch for every level** ("Let him walk on by himself" on the contents page, and in the pause menu; `pp-auto`; `autoHeld()` in `index.html`). Nothing spent.
 
+**Build 346 (Level 3 art chat): the four plumes now merge into one continuous mass that spreads under the cloud (after a photograph of Mount St Helens, 1980), with softer, larger billows. Nothing spent.**
+
 **Build 343 (Level 3 art chat): the storm cloud has its own rolling masses lit from below; the plumes' tops softer and no longer reaching too high. Nothing spent.**
 
 **Build 342 (Level 3 art chat): more detail and a little colour where the plumes meet the cloud. Nothing spent.**
