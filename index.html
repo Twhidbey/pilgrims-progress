@@ -9,14 +9,14 @@
 <meta name="apple-mobile-web-app-title" content="Pilgrim">
 <meta name="theme-color" content="#1b1c22">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="assets/icon-180.png?v=357">
+<link rel="apple-touch-icon" href="assets/icon-180.png?v=358">
 <script>
 // THE EDITOR AS ITS OWN HOME SCREEN APP (build 193; owner: "I want an editor link that I can put on my phone Home Screen and it
 // updates with changes"). On the editor's link the page offers its own manifest (start "./?edit"), name and icon, so an icon
 // added from it opens the editor; it updates itself like the game (freshCopy keeps ?edit when it reloads).
 if (/[?&]edit(=|&|$)/.test(location.search)) {
   document.querySelector('link[rel=manifest]').href = 'edit.webmanifest';
-  document.querySelector('link[rel=apple-touch-icon]').href = 'assets/icon-edit-180.png?v=357';
+  document.querySelector('link[rel=apple-touch-icon]').href = 'assets/icon-edit-180.png?v=358';
   document.querySelector('meta[name=apple-mobile-web-app-title]').content = 'PP Editor';
   document.title = "Pilgrim's Progress (editor)";
 }
@@ -164,7 +164,7 @@ body.portrait #rot{display:block}
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
   <button id="autoWalk" aria-label="He walks on by himself"><svg viewBox="0 0 24 24"><path d="M5 6l6 6-6 6M12 6l6 6-6 6"/></svg></button>
-  <div id="build">build 357 · Nov 18 2026</div>
+  <div id="build">build 358 · Nov 18 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -2452,9 +2452,11 @@ for (const b of document.querySelectorAll('#levels .lv')) { b.classList.toggle('
   const blob = (px, py, rad, col, n = 22) => { x.fillStyle = col; x.beginPath();
     for (let i = 0; i <= n; i++) { const a = i / n * Math.PI * 2, k = rad * (.72 + r() * .5); i ? x.lineTo(px + Math.cos(a) * k, py + Math.sin(a) * k * .8) : x.moveTo(px + Math.cos(a) * k, py + Math.sin(a) * k * .8); }
     x.fill(); };
-  x.fillStyle = '#5a4434'; x.fillRect(0, 0, W, H);
-  for (let i = 0; i < 260; i++) blob(r() * W, r() * H, 30 + r() * 110, r() < .5 ? 'rgba(38,26,20,.06)' : 'rgba(120,92,66,.05)');
-  for (let i = 0; i < 40; i++) { const px = r() * W, py = r() * H, rad = 40 + r() * 90; blob(px, py, rad, 'rgba(110,84,60,.05)'); x.lineWidth = 2 + r() * 3; x.strokeStyle = 'rgba(34,22,16,.07)'; x.stroke(); }
+  // build 358 (owner: "clean up the board"): a cleaner, warmer brown; fewer, softer washes and no dark rings round them
+  // (they read as cracks and dirt); the random numbers are still drawn in the same order, so the hills are unchanged
+  x.fillStyle = '#5d412d'; x.fillRect(0, 0, W, H);
+  for (let i = 0; i < 260; i++) blob(r() * W, r() * H, 30 + r() * 110, r() < .5 ? 'rgba(42,24,14,.035)' : 'rgba(132,92,58,.03)');
+  for (let i = 0; i < 40; i++) { const px = r() * W, py = r() * H, rad = 40 + r() * 90; blob(px, py, rad, 'rgba(128,90,58,.025)'); r(); }
   let g = x.createLinearGradient(0, 0, 70, 0); g.addColorStop(0, 'rgba(24,15,10,.5)'); g.addColorStop(1, 'rgba(24,15,10,0)'); x.fillStyle = g; x.fillRect(0, 0, 70, H);
   const line = (pts, lw, col) => { x.lineWidth = lw; x.strokeStyle = col; x.lineJoin = x.lineCap = 'round'; x.beginPath();
     pts.forEach(([a0, b0], i) => { const [a1, b1] = pts[(i + 1) % pts.length], L = Math.hypot(a1 - a0, b1 - b0), n = Math.max(2, L / 26 | 0);
@@ -2471,18 +2473,27 @@ for (const b of document.querySelectorAll('#levels .lv')) { b.classList.toggle('
   for (let i = 0; i < 26; i++) blob(cx - ww + r() * ww * 2, top + r() * 220, 20 + r() * 50, r() < .5 ? 'rgba(80,78,84,.07)' : 'rgba(230,210,170,.05)');
   // build 280 (owner: "i liked the old hills - maybe just the second from the front on the right could be slightly
   // lower as it hits the third layer a bit"): build 276's hills, the second range from the front lowered toward the right
-  const hills = [[480, '#857a6e', 30, .55, 0], [520, '#655a50', 42, .8, 0], [570, '#43382f', 55, 1.1, 22], [612, '#2c231d', 40, 1.6, 0]];
-  for (const [y0, col, amp, f, dropR] of hills) {
+  const hills = [[480, '#857a6e', 30, .55, 0], [520, '#655a50', 42, .8, 0], [570, '#43382f', 55, 1.1, 22], [612, '#2c231d', 40, 1.6, 0]], ridge = [];
+  for (const [y0, col, amp, f, dropR] of hills) { ridge.length = 0;
     g = x.createLinearGradient(0, y0 - amp - 50, 0, y0); g.addColorStop(0, 'rgba(200,184,156,0)'); g.addColorStop(1, 'rgba(200,184,156,.3)'); x.fillStyle = g; x.fillRect(cx - ww, y0 - amp - 50, ww * 2, amp + 50);
     x.fillStyle = col; x.beginPath(); x.moveTo(cx - ww, bot);
     const ph = r() * 6; for (let px = cx - ww; px <= cx + ww + 8; px += 8) { const u = Math.min(1, Math.max(0, (px - cx) / ww)), drop = dropR * u * u * (3 - 2 * u);
-      x.lineTo(px, y0 - amp * (.5 + .3 * Math.sin(px / 60 * f + ph) + .2 * Math.sin(px / 23 * f + ph * 2)) + (r() - .5) * 2 + drop); }
+      const py = y0 - amp * (.5 + .3 * Math.sin(px / 60 * f + ph) + .2 * Math.sin(px / 23 * f + ph * 2)) + (r() - .5) * 2 + drop; ridge.push([px, py]); x.lineTo(px, py); }
     x.lineTo(cx + ww, bot); x.closePath(); x.fill(); }
+  // build 358 (owner: "add the tiny pilgrim"): a tiny dark pilgrim on the nearest hill, his burden on his back, walking
+  // toward the far light; the hill behind him is paler, so his outline reads. No face, one tone, like every figure.
+  { const fx = cx - ww * .32, i = ridge.findIndex(p => p[0] >= fx), a = ridge[Math.max(0, i - 1)], b = ridge[i], t = (fx - a[0]) / ((b[0] - a[0]) || 1), fy = a[1] + (b[1] - a[1]) * t + 1.5;
+    x.save(); x.translate(fx, fy); x.rotate(.07); x.fillStyle = x.strokeStyle = '#17110d'; x.lineCap = 'round';
+    x.lineWidth = 2.2; x.beginPath(); x.moveTo(-.5, -11); x.lineTo(-3.6, 0); x.moveTo(.5, -11); x.lineTo(3.8, -.3); x.stroke();
+    x.beginPath(); x.moveTo(-4.2, -9); x.quadraticCurveTo(0, -7.6, 4.6, -9.4); x.lineTo(3.4, -21); x.lineTo(-2.6, -21.5); x.closePath(); x.fill();
+    x.beginPath(); x.ellipse(-4.6, -18.5, 4.4, 5.4, -.2, 0, 7); x.fill();
+    x.beginPath(); x.arc(1.6, -24.2, 3.3, 0, 7); x.fill();
+    x.restore(); }
   x.restore();
   for (const k of [0, 1]) { x.lineWidth = 7 - k * 4; x.strokeStyle = 'rgba(30,19,13,' + (.2 + k * .2) + ')'; arch(); x.stroke(); }
   x.save(); x.lineWidth = 1.5; x.strokeStyle = 'rgba(196,160,98,.4)'; x.beginPath(); x.moveTo(cx - ww - 10, bot + 10); x.lineTo(cx - ww - 10, top + ww); x.arc(cx, top + ww, ww + 10, Math.PI, 0); x.lineTo(cx + ww + 10, bot + 10); x.closePath(); x.stroke(); x.restore();
   // paper grain and a soft darkening toward the edges
-  const id = x.getImageData(0, 0, W, H), d = id.data; for (let i = 0; i < d.length; i += 4) { const n = (r() - .5) * 12; d[i] += n; d[i + 1] += n; d[i + 2] += n * .9; } x.putImageData(id, 0, 0);
+  const id = x.getImageData(0, 0, W, H), d = id.data; for (let i = 0; i < d.length; i += 4) { const n = (r() - .5) * 10; d[i] += n; d[i + 1] += n * .92; d[i + 2] += n * .82; } x.putImageData(id, 0, 0);
   g = x.createRadialGradient(W / 2, H / 2, H * .3, W / 2, H / 2, H * .72); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(16,10,6,.38)'); x.fillStyle = g; x.fillRect(0, 0, W, H);
   const el = document.querySelector('.tcover'), url = c.toDataURL('image/jpeg', .9); el.style.backgroundImage = 'url(' + url + ')';
   { const im = new Image(), ready = () => document.body.classList.add('coverready'); im.onload = ready; im.onerror = ready; im.src = url; setTimeout(ready, 1500); }
