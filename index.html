@@ -9,14 +9,14 @@
 <meta name="apple-mobile-web-app-title" content="Pilgrim">
 <meta name="theme-color" content="#1b1c22">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="assets/icon-180.png?v=206">
+<link rel="apple-touch-icon" href="assets/icon-180.png?v=357">
 <script>
 // THE EDITOR AS ITS OWN HOME SCREEN APP (build 193; owner: "I want an editor link that I can put on my phone Home Screen and it
 // updates with changes"). On the editor's link the page offers its own manifest (start "./?edit"), name and icon, so an icon
 // added from it opens the editor; it updates itself like the game (freshCopy keeps ?edit when it reloads).
 if (/[?&]edit(=|&|$)/.test(location.search)) {
   document.querySelector('link[rel=manifest]').href = 'edit.webmanifest';
-  document.querySelector('link[rel=apple-touch-icon]').href = 'assets/icon-edit-180.png?v=206';
+  document.querySelector('link[rel=apple-touch-icon]').href = 'assets/icon-edit-180.png?v=357';
   document.querySelector('meta[name=apple-mobile-web-app-title]').content = 'PP Editor';
   document.title = "Pilgrim's Progress (editor)";
 }
@@ -40,8 +40,10 @@ button{font-family:Georgia,'Times New Roman',serif;-webkit-appearance:none;appea
 .btn:active{transform:scale(.96)}
 /* the title page (build 187): the book alone, one warm light on it, nothing of the world behind (--u = picture width / 960) */
 #title{background:radial-gradient(ellipse 55% 60% at 50% 46%,#2e2820,#17161a 70%,#0f0f13);justify-content:flex-start;perspective:calc(var(--u,1) * 1800px)}
-.tbook{position:relative;width:calc(var(--u,1) * 640px);height:calc(var(--u,1) * 448px);margin-top:calc(var(--u,1) * 16px);transform:translateX(calc(var(--u,1) * -160px));transition:transform 1.5s cubic-bezier(.4,.1,.2,1);transform-style:preserve-3d}
+.tbook{position:relative;width:calc(var(--u,1) * 640px);height:calc(var(--u,1) * 448px);margin-top:calc(var(--u,1) * 16px);transform:translateX(calc(var(--u,1) * -160px));transition:transform 1.5s cubic-bezier(.4,.1,.2,1),opacity .35s;opacity:0;transform-style:preserve-3d}
 body.opened .tbook{transform:none}
+/* build 357: the book shows only once its painted cover is ready (no plain brown board first) */
+body.coverready .tbook{opacity:1}
 .tpage{position:absolute;top:0;width:50%;height:100%;box-sizing:border-box;color:#2a2018;text-shadow:none;font-family:'IM Fell English',Georgia,serif;background-color:#e6d9bc;background-size:cover;box-shadow:0 calc(var(--u,1) * 10px) calc(var(--u,1) * 40px) rgba(0,0,0,.55)}
 .tleaf{position:absolute;left:50%;top:0;width:50%;height:100%;transform-origin:0 50%;transform-style:preserve-3d;-webkit-transform-style:preserve-3d;transform:translateZ(2px);transition:transform 1.7s cubic-bezier(.45,.05,.2,1);z-index:2}
 body.opened .tleaf{transform:translateZ(2px) rotateY(-180deg)}
@@ -162,7 +164,7 @@ body.portrait #rot{display:block}
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
   <button id="autoWalk" aria-label="He walks on by himself"><svg viewBox="0 0 24 24"><path d="M5 6l6 6-6 6M12 6l6 6-6 6"/></svg></button>
-  <div id="build">build 356 · Nov 18 2026</div>
+  <div id="build">build 357 · Nov 18 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -2482,7 +2484,8 @@ for (const b of document.querySelectorAll('#levels .lv')) { b.classList.toggle('
   // paper grain and a soft darkening toward the edges
   const id = x.getImageData(0, 0, W, H), d = id.data; for (let i = 0; i < d.length; i += 4) { const n = (r() - .5) * 12; d[i] += n; d[i + 1] += n; d[i + 2] += n * .9; } x.putImageData(id, 0, 0);
   g = x.createRadialGradient(W / 2, H / 2, H * .3, W / 2, H / 2, H * .72); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(16,10,6,.38)'); x.fillStyle = g; x.fillRect(0, 0, W, H);
-  const el = document.querySelector('.tcover'); el.style.backgroundImage = 'url(' + c.toDataURL('image/jpeg', .9) + ')';
+  const el = document.querySelector('.tcover'), url = c.toDataURL('image/jpeg', .9); el.style.backgroundImage = 'url(' + url + ')';
+  { const im = new Image(), ready = () => document.body.classList.add('coverready'); im.onload = ready; im.onerror = ready; im.src = url; setTimeout(ready, 1500); }
   el.onclick = () => { const o = document.getElementById('open'); if (o.style.visibility === 'visible' && o.style.display !== 'none') o.click(); };
 })();
 document.getElementById('open').onclick = () => {
