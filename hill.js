@@ -295,27 +295,37 @@ const HL = (() => {
       DECK = [mkDeck(83, [26, 22, 27], [50, 40, 44], [150, 138, 142], [140, 130, 138]), mkDeck(97, [32, 27, 32], [60, 48, 52], [160, 148, 150], [146, 136, 144])]; }
     SMOKE = cloud(240, 80, 5, .4, .022, .05); CLOUD = cloud(400, 90, 31, .46, .014, .045);
     { const tintOf = col => { const t = mk(CLOUD.width, CLOUD.height), q = t.getContext('2d'); q.drawImage(CLOUD, 0, 0); q.globalCompositeOperation = 'source-in'; q.fillStyle = col; q.fillRect(0, 0, t.width, t.height); return t; }; CLOUDW = tintOf('rgb(255,226,176)'); CLOUDG = tintOf('rgb(168,160,176)'); }
-    // billows of smoke: three soft round shapes, each baked dark and again as the light the fire lays on its underside
-    for (const seed of [5, 17, 29]) { const base = mk(160, 160), b2 = base.getContext('2d'), Rp = rngS(seed);
-      for (let j = 0; j < 10; j++) { const an = Rp() * 6.283, d = j ? 21 + Rp() * 22 : 0, r = j ? 26 + Rp() * 15 : 45, x = 80 + Math.cos(an) * d, y = 80 + Math.sin(an) * d * .8, g = b2.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, 'rgba(255,255,255,.7)'); g.addColorStop(.45, 'rgba(255,255,255,.45)'); g.addColorStop(.8, 'rgba(255,255,255,.14)'); g.addColorStop(1, 'rgba(255,255,255,0)'); b2.fillStyle = g; b2.fillRect(x - r, y - r, 2 * r, 2 * r); }
-      // (build 251, owner: "make em slightly wispier"; build 253, "too wispy": halfway back; build 256, "a bit more billowy": rounder lobes with fuller cores and a firmer rounded edge, fewer wisps, each billow lighter on top and darker beneath so it reads as a volume): a ragged fringe of small drawn-out wisps round the core, and a few
-      // soft holes worn through it, so a billow's edge frays into the air instead of ending in a round outline
-      // (build 308, owner: "make them less wide please - also maybe more wispy and diffuse"): softer lobes (cores .7, falling off from
-      // the middle), more and longer wisps, more holes; drawn narrower than build 306 (2.2 by 1.6 of the radius)
-      for (let j = 0; j < 18; j++) { const an = Rp() * 6.283, d = 34 + Rp() * 34, r = 7 + Rp() * 13, x = 80 + Math.cos(an) * d, y = 80 + Math.sin(an) * d * .7, g = b2.createRadialGradient(0, 0, 0, 0, 0, r);
-        g.addColorStop(0, 'rgba(255,255,255,.22)'); g.addColorStop(1, 'rgba(255,255,255,0)'); b2.save(); b2.translate(x, y); b2.rotate((Rp() - .5) * 1.4); b2.scale(2.2, .7); b2.fillStyle = g; b2.fillRect(-r, -r, 2 * r, 2 * r); b2.restore(); }
-      b2.globalCompositeOperation = 'destination-out';
-      for (let j = 0; j < 7; j++) { const an = Rp() * 6.283, d = 20 + Rp() * 40, r = 6 + Rp() * 9, x = 80 + Math.cos(an) * d, y = 80 + Math.sin(an) * d * .7, g = b2.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, 'rgba(0,0,0,.3)'); g.addColorStop(1, 'rgba(0,0,0,0)'); b2.fillStyle = g; b2.fillRect(x - r, y - r, 2 * r, 2 * r); }
-      b2.globalCompositeOperation = 'source-over';
-      const tinted = fill => { const c2 = mk(160, 160), k2 = c2.getContext('2d'); k2.drawImage(base, 0, 0); k2.globalCompositeOperation = 'source-in'; k2.fillStyle = fill(k2); k2.fillRect(0, 0, 160, 160); return c2; };
-      // (build 251, owner: "match billows color with clouds better - also lighten billows closer to mountain"): the dark is the
-      // cloud's own underside colour (`DECK`), and a paler smoke-grey (`p`) for the billows just leaving the rock
-      PUFF.push({ h: tinted(() => 'rgb(146,134,140)'), d: tinted(k2 => { const g = k2.createLinearGradient(0, 30, 0, 140); g.addColorStop(0, 'rgb(68,56,60)'); g.addColorStop(1, 'rgb(42,34,39)'); return g; }), p: tinted(k2 => { const g = k2.createLinearGradient(0, 30, 0, 140); g.addColorStop(0, 'rgb(124,106,104)'); g.addColorStop(1, 'rgb(90,76,78)'); return g; }), s: tinted(k2 => { const g = k2.createLinearGradient(0, 20, 0, 150); g.addColorStop(0, 'rgba(255,232,214,.45)'); g.addColorStop(1, 'rgba(255,214,186,1)'); return g; }), l: tinted(k2 => { const g = k2.createLinearGradient(130, 150, 60, 60); g.addColorStop(0, 'rgba(255,200,146,1)'); g.addColorStop(.5, 'rgba(240,150,100,.35)'); g.addColorStop(1, 'rgba(220,120,90,0)'); return g; }) }); }
-    // (build 335, owner: "when i say diffuse i mean more guassian not wispy"): a soft blurred copy of every billow (`dB`, `pB`, `hB`),
-    // made once on a wider canvas (240 for the billow's 160) by shrinking and enlarging twice (no ctx.filter on iPhone), so
-    // a column's edge melts as a soft haze rather than fraying into wisps
-    { const soft = im => { const o = mk(240, 240), q = o.getContext('2d'); q.drawImage(im, 40, 40); for (let pass = 0; pass < 3; pass++) { const t = mk(30, 30), tq = t.getContext('2d'); tq.drawImage(o, 0, 0, 30, 30); q.clearRect(0, 0, 240, 240); q.drawImage(t, 0, 0, 240, 240); } return o; };
-      for (const P of PUFF) { P.dB = soft(P.d); P.pB = soft(P.p); P.hB = soft(P.h); } }
+    // BILLOWS AFTER REAL ERUPTION COLUMNS (build 348; owner: "look at 10 different photos of volcanos and billowing smoke to make
+    // the smoke look realistic", then "A let's go, aim for Tavurvur"): each billow is a cauliflower clump baked once: a core, a
+    // ring of lobes peeping out from behind it, smaller lobes behind those and small lumps on its face, every lobe an opaque
+    // ball lighter toward the sky and dark where it turns under the next, so the creases draw themselves and the outline is a
+    // crisp row of scallops with no drawn line. `d` the dark body, `k` its flat darkest tone (to sink it into the cloud), `h`
+    // pale for the far haze, `l` the fire's light on the lobes' undersides and `s` a strike's light on their tops (each lobe
+    // first hides the light of the lobes behind it), `dB`/`hB`/`lB` blurred copies for the soft trailing side.
+    for (const seed of [5, 17, 29, 43]) { const Rp = rngS(seed), D = [], Wp = 256, Hf = new Float32Array(Wp * Wp), Cv = new Float32Array(Wp * Wp);
+      // the clump as a surface: every lobe a low dome; small lumps sit on the domes under them
+      const dome = (x, y, r, z0) => { const x0 = Math.max(0, Math.floor(x - r)), x1 = Math.min(Wp - 1, Math.ceil(x + r)), y0 = Math.max(0, Math.floor(y - r)), y1 = Math.min(Wp - 1, Math.ceil(y + r));
+        for (let yy = y0; yy <= y1; yy++) for (let xx = x0; xx <= x1; xx++) { const d2 = (xx - x) * (xx - x) + (yy - y) * (yy - y), e = r - Math.sqrt(d2); if (e <= -1) continue; const i = yy * Wp + xx, h = z0 + Math.sqrt(Math.max(0, r * r - d2)) * .8; if (h > Hf[i]) Hf[i] = h; Cv[i] = Math.max(Cv[i], Math.min(1, e + 1)); } };
+      for (let j = 0; j < 9; j++) { const an = (j + Rp() * .8) / 9 * 6.283, d = 78 + Rp() * 18, r = 14 + Rp() * 12; dome(128 + Math.cos(an) * d, 128 + Math.sin(an) * d * .9, r, 1); }
+      for (let j = 0; j < 9; j++) { const an = (j + Rp() * .7) / 9 * 6.283, d = 44 + Rp() * 24, r = 30 + Rp() * 18; dome(128 + Math.cos(an) * d, 128 + Math.sin(an) * d * .9, r, 6); }
+      dome(128, 128, 60, 10);
+      for (let j = 0; j < 26; j++) { const an = Rp() * 6.283, d = Math.sqrt(Rp()) * 84, r = j < 10 ? 16 + Rp() * 12 : 8 + Rp() * 9, x = 128 + Math.cos(an) * d, y = 128 + Math.sin(an) * d * .9, z = Hf[Math.round(y) * Wp + Math.round(x)]; if (z > 0) dome(x, y, r, z - r * .45); }
+      // light by the surface's slope: `sh(lx, ly, lz)` is how far each point faces a light; creases (lower than the ground
+      // round them) fall darker
+      const at = (x, y) => Hf[Math.max(0, Math.min(Wp - 1, y)) * Wp + Math.max(0, Math.min(Wp - 1, x))];
+      const pic = fn => { const o = mk(Wp, Wp), q = o.getContext('2d'), im = q.createImageData(Wp, Wp), px = im.data;
+        for (let y = 0; y < Wp; y++) for (let x = 0; x < Wp; x++) { const i = y * Wp + x; if (Cv[i] <= 0) continue; const gx = (at(x + 2, y) - at(x - 2, y)) / 4, gy = (at(x, y + 2) - at(x, y - 2)) / 4, il = 1 / Math.sqrt(gx * gx + gy * gy + 1), nx = -gx * il, ny = -gy * il, nz = il;
+            const cav = clamp(((at(x + 7, y) + at(x - 7, y) + at(x, y + 7) + at(x, y - 7)) / 4 - Hf[i]) / 9), col = fn(nx, ny, nz, cav), j = i * 4; px[j] = col[0]; px[j + 1] = col[1]; px[j + 2] = col[2]; px[j + 3] = 255 * Cv[i] * (col.length > 3 ? col[3] : 1); }
+        q.putImageData(im, 0, 0); return o; };
+      const face = (nx, ny, nz, lx, ly, lz) => Math.max(0, nx * lx + ny * ly + nz * lz);
+      const body = (lo, hi) => (nx, ny, nz, cav) => mix(lo, hi, clamp(.2 + .8 * face(nx, ny, nz, .3, -.62, .72)) * (1 - .75 * cav));
+      PUFF.push({ d: pic(body([30, 24, 28], [90, 75, 75])), k: pic(() => [36, 29, 33]), h: pic(body([116, 105, 114], [170, 158, 160])),
+        l: pic((nx, ny, nz, cav) => { const f = Math.pow(face(nx, ny, nz, .1, .92, .38), 1.5) * (1 - cav); return [255, 150 + 50 * f, 90 + 40 * f, f]; }),
+        s: pic((nx, ny, nz, cav) => { const f = Math.pow(face(nx, ny, nz, .15, -.8, .58), 1.5) * (1 - .6 * cav); return [248, 232, 228, .8 * f]; }) }); }
+    // soft blurred copies (`dB`, `hB`), made once on a wider canvas (384 for the billow's 256) by shrinking and enlarging
+    // (no ctx.filter on iPhone): the smoke's trailing, downwind side melts away, as in the photographs
+    { const soft = im => { let o = mk(384, 384); o.getContext('2d').drawImage(im, 64, 64); for (const n of [192, 96, 48, 24, 48, 96, 192, 384]) { const t = mk(n, n); t.getContext('2d').drawImage(o, 0, 0, n, n); o = t; } return o; };
+      for (const P of PUFF) { P.dB = soft(P.k); P.hB = soft(P.h); P.lB = soft(P.l); } }
     // the wall's stones by the wicket-gate: rough courses, no two stones alike (shown only where light falls)
     { const Rs = rngS(71); for (let y = 0; y < 330;) { const h = 30 + Rs() * 24; for (let x = GATE_X - 560 - Rs() * 60; x < GATE_X + 560;) { const w = 44 + Rs() * 80; STONES.push({ x, y, w, h, t: Rs(), j: Rs() }); x += w; } y += h; } }
     // THE VILLAGE OF MORALITY (build 267; owner: "Town needs to look more polished and maybe closer to mt via story"):
@@ -1319,7 +1329,7 @@ const HL = (() => {
         const EDGE = 1;
         // the columns: [hill x from the summit, billows, width, phase]; (build 326, owner: "maybe we add one more plume"): a
         // third, smaller and younger, from the right shoulder, so the three step down from the summit
-        const PLUMES = [[0, 96, 1, 0], [145, 64, .78, .37], [255, 44, .6, .71, 1], [-48, 48, .62, .19, 1, 1.9]];
+        const PLUMES = [[0, 90, 1, 0], [145, 64, .5, .37, 0, 1], [255, 56, .45, .71, 1, 1]];
         // (build 332, owner: "the far left plume edges should be more diffuse"): a plume's 6th entry (`E`) widens the band of
         // billows counted as its edge; since build 335 those edge billows turn into soft blurred copies (`dB`), not larger wisps
         // (build 328, owner: "maybe one more plume to the left exiting near the light on the left of the top"): a fourth, small,
@@ -1335,28 +1345,36 @@ const HL = (() => {
         // (2) fewer, larger billows (.78 of them, 1.15 the size), each part blurred (`gB` at least .3), so less fine detail;
         // (3) the columns lean together as they rise (toward the summit's, .88 of the way by .55 of the rise) and merge;
         // (4) near the top they spread wide (`um`, up to 2.2 times), the umbrella under the cloud
-        const cols = mask => { for (const [ox, N, sp, ph0, gl, E = 1] of PLUMES) { const ps = [], kS = Math.min(k, 1), Dh = rocky ? 195 : 90 + 105 * clamp(dark * 1.5), bx0 = sx0 + ox * k, by0 = ox ? hy + (rockTopAt(60 + ox) + 6) * k : sy0, dTop = (by0 - sy0) / kS;
-          for (let i = 0, N2 = Math.round(N * .78); i < N2; i++) { const h1 = Math.sin(i * 12.9898 + ox) * 43758.5453, h2 = Math.sin(i * 78.233 + ox) * 12543.123; ps.push([(i / N2 + G.t / 2600 + ph0) % 1, h1 - Math.floor(h1), h2 - Math.floor(h2), i]); }
+        // (build 348, after ten photographs of real eruption columns, Tavurvur at dusk above all): ONE column from the summit,
+        // narrow at its neck and widening steadily, leaning once with the wind (no wriggle), dense and opaque and darker than
+        // the sky; big cauliflower clumps (`PUFF`), three or so across it, growing as they rise and rolling slowly outward;
+        // lit warm from beneath only near the fire; crisp scallops on the windward side, a soft dark trail downwind (`dB`,
+        // laid to the left); it keeps its texture up to the cloud, sinking to the cloud's own dark (`k`) and spreading wide
+        // under it. The other vents (`PLUMES` after the first) are small wisps that lean toward it and thin away.
+        const cols = mask => { for (const [ox, N, sp, ph0, gl, side] of PLUMES) { const ps = [], kS = Math.min(k, 1), Dh = rocky ? 195 : 90 + 105 * clamp(dark * 1.5), bx0 = sx0 + ox * k, by0 = ox ? hy + (rockTopAt(60 + ox) + 6) * k : sy0, dTop = (by0 - sy0) / kS, Ht = Dh + 90 + dTop;
+          for (let i = 0; i < N; i++) { const h1 = Math.sin(i * 12.9898 + ox) * 43758.5453, h2 = Math.sin(i * 78.233 + ox) * 12543.123; ps.push([(i / N + G.t / 2600 + ph0) % 1, h1 - Math.floor(h1), h2 - Math.floor(h2), i]); }
           ps.sort((a, b) => b[0] - a[0]);
-          // (build 326) the third column rises from a small fire of its own in a cleft of the shoulder
-          if ((!mask || mask === 'body') && gl && burn + F > .02 && mask !== 'body') { const R = 16 * k, g = c.createRadialGradient(bx0, by0 + 4 * k, 0, bx0, by0 + 4 * k, R); g.addColorStop(0, css([255, 214, 150], .7 * (burn + .5 * F) * reveal)); g.addColorStop(.3, css([240, 140, 80], .35 * (burn + .5 * F) * reveal)); g.addColorStop(1, css([200, 90, 60], 0));
+          // a side vent's column rises from a small fire of its own in a cleft of the shoulder
+          if (!mask && gl && burn + F > .02) { const R = 16 * k, g = c.createRadialGradient(bx0, by0 + 4 * k, 0, bx0, by0 + 4 * k, R); g.addColorStop(0, css([255, 214, 150], .7 * (burn + .5 * F) * reveal)); g.addColorStop(.3, css([240, 140, 80], .35 * (burn + .5 * F) * reveal)); g.addColorStop(1, css([200, 90, 60], 0));
             c.globalCompositeOperation = 'lighter'; c.globalAlpha = 1; c.fillStyle = g; c.fillRect(bx0 - R, by0 + 4 * k - R, 2 * R, 2 * R); c.globalCompositeOperation = 'source-over'; }
-          for (const [u, r1, r2, i] of ps) { const rise = 1 - Math.pow(1 - u, 1.6), um = smooth(.5, .9, u), spread = (24 + 120 * u) * kS * sp * (1 + 1.2 * um), px = bx0 - (50 * u + 110 * u * u) * kS + (sx0 - bx0) * .88 * smooth(.08, .55, u) + (r1 - .5) * spread * 1.2 + 12 * Math.sin(G.t / 300 + i) * u * kS, py = by0 - (14 + (Dh + 90 + dTop) * rise) * kS + (r2 - .5) * spread * .65, eg = Math.pow(Math.abs(r1 - .5) * 2, 1.5 / E) * EDGE, rr = (26 + 120 * u) * kS * sp * (.8 + .4 * r2) * (1 + .3 * E * eg) * 1.15, a = smooth(0, .05, u) * (1 - smooth(.56, .95, u)) * (1 - Math.min(.5, .25 * E * eg)), P = PUFF[i % 3], gB = P.dB ? Math.max(.3, Math.min(1, eg * E * 1.1)) : 0, X0 = px - rr * 1.65, Y0 = py - rr * 1.2, W0 = 3.3 * rr, H0 = 2.4 * rr;
-            const hzP = rocky ? 0 : clamp(1 - dark * 1.6), aP = a * .7 * (.1 + .75 * Math.max(dark, farK * 1.3)) * reveal;
-            // (build 342, owner: "the top where plumes meet clouds could use a little more detail (seems too monochromatic)"): the
-            // upper billows are laid once more, faintly, over the front of the cloud: their dark rolls and a paler, warmer
-            // underside a little below each, so the columns' shapes and a little colour carry on up into the cloud
-            // (build 346) the body: every billow's blurred copy laid first, larger, so the column is one continuous mass
-            if (mask === 'body') { if (!P.dB) continue; const A = Math.min(1, aP * DENSE) * (1 - hzP); c.globalCompositeOperation = 'source-over'; c.globalAlpha = A * .5; c.drawImage(P.dB, px - rr * 1.95, py - rr * 1.4, 3.9 * rr, 2.8 * rr); if (hzP > 0) { c.globalAlpha = aP * hzP * .5; c.drawImage(P.hB, px - rr * 1.95, py - rr * 1.4, 3.9 * rr, 2.8 * rr); } continue; }
-            if (mask === 'top') { const t = smooth(.42, .56, u) * (1 - smooth(.66, .82, u)); if (t < .02) continue; const A = Math.min(1, aP * DENSE) * (1 - hzP) * t; c.globalCompositeOperation = 'source-over';
-              c.globalAlpha = A * .34; c.drawImage(P.dB || P.d, X0, Y0, W0, H0);
-              c.globalAlpha = A * .14; c.drawImage(P.pB || P.p, px - rr * 1.4, py - rr * .9, 2.8 * rr, 1.9 * rr);
-              const lt = (burn * .35 + F * .4 + flS * Math.max(0, 1 - Math.abs(px - bxS) / (650 * k))) * t * a; if (lt > .01) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = Math.min(1, lt * .3); c.drawImage(P.l, px - rr, py - rr * .7, 2 * rr, 1.6 * rr); }
-              continue; }
-            if (mask) { const mA = Math.min(1, aP * 3); qs.globalAlpha = mA * (1 - gB); qs.drawImage(P.d, px - rr * 1.1, py - rr * .8, 2.2 * rr, 1.6 * rr); if (gB > 0) { qs.globalAlpha = mA * gB; qs.drawImage(P.dB, X0, Y0, W0, H0); } continue; }
-            c.globalCompositeOperation = 'source-over'; const dr = (im, imB, al) => { c.globalAlpha = al * (1 - gB); c.drawImage(im, px - rr * 1.1, py - rr * .8, 2.2 * rr, 1.6 * rr); if (gB > 0) { c.globalAlpha = al * gB; c.drawImage(imB, X0, Y0, W0, H0); } }; if (hzP > 0) dr(P.h, P.hB, aP * hzP); const lo = 1 - smooth(.04, .42, u), A = Math.min(1, aP * DENSE) * (1 - hzP); dr(P.d, P.dB, A * (1 - .4 * lo)); if (lo > .01) dr(P.p, P.pB, A * lo * .75);
-            const la = a * (burn * (.3 + .7 * Math.pow(1 - u, 2)) + F * .3 * (1 - u)); if (la > .01) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = la; c.drawImage(P.l, px - rr, py - rr * .8, 2 * rr, 1.6 * rr); }
-            const sL = flS * Math.min(1, a * 1.6) * Math.max(0, 1 - Math.abs(px - bxS) / (650 * k)) * (.4 + .6 * smooth(.1, .7, u)) * (rocky ? 1 : .6); if (sL > .01 && P.s) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = Math.min(1, sL * .55); c.drawImage(P.s, px - rr * 1.1, py - rr * .8, 2.2 * rr, 1.6 * rr); } } } };
+          const hzP = rocky ? 0 : clamp(1 - dark * 1.6);
+          for (const [u, r1, r2, i] of ps) { const rise = 1 - Math.pow(1 - u, 1.6), um = smooth(.5, .9, u), hw = (9 + 70 * Math.pow(rise, .8)) * sp * (1 + 1.3 * um) * kS,
+              px = bx0 - (26 * rise + 80 * rise * rise + 70 * um) * kS + (r1 - .5) * 1.5 * hw + 5 * Math.sin(G.t / 300 + i) * u * kS, py = by0 - (4 + Ht * rise) * kS + (r2 - .5) * hw * .5 * (1 - .5 * um),
+              rr = Math.min(hw * .58, 30 * kS) * (.75 + .5 * r2) * (.35 + .65 * smooth(0, .04, u)), a = smooth(0, .02, u) * (1 - smooth(.66, .9, u)) * (side ? 1 - smooth(.2, .5, u) : 1), cr = 1 - smooth(.33, .52, u), P = PUFF[i % PUFF.length], S = rr * 2.7, ang = ((i * .618) % 1 - .5) * .5 + (r1 - .5) * 1.1 * u;
+            if (a < .01) continue;
+            const aP = a * .7 * (.1 + .75 * Math.max(dark, farK * 1.3)) * reveal, A = Math.min(1, aP * DENSE) * (1 - hzP), AH = Math.min(1, aP * 2.4) * hzP;
+            // one clump, turned a little, laid on `q`; `m` its size (the blurred copies are 1.5 times wider), `ox2` a shift downwind
+            const put = (q, im, al, m, ox2) => { if (al < .004 || !im) return; q.save(); q.globalAlpha = Math.min(1, al); q.translate(px + (ox2 || 0), py); q.rotate(ang); const w = S * (m || 1); q.drawImage(im, -w / 2, -w * .45, w, w * .9); q.restore(); };
+            // the soft trail on the downwind side, under the clumps
+            if (side) { if (!mask) { c.globalCompositeOperation = 'source-over'; put(c, P.dB, A * .13, 2.2); put(c, P.hB, AH * .13, 2.2); } continue; }
+            if (mask === 'body') { c.globalCompositeOperation = 'source-over'; put(c, P.dB, A * (.5 + .4 * (1 - cr)), 1.5, -rr * .7 * cr); put(c, P.hB, AH * (.5 + .4 * (1 - cr)), 1.5, -rr * .7 * cr); continue; }
+            // (build 342) the upper clumps laid once more, faintly, over the front of the cloud, with a touch of the fire's and a strike's light
+            if (mask === 'top') { const t = smooth(.42, .56, u) * (1 - smooth(.66, .82, u)); if (t < .02) continue; c.globalCompositeOperation = 'source-over'; put(c, P.dB, A * t * .34, 1.5);
+              const lt = (burn * .35 + F * .4 + flS * Math.max(0, 1 - Math.abs(px - bxS) / (650 * k))) * t * a; c.globalCompositeOperation = 'lighter'; put(c, P.lB, lt * .3, 1.5); continue; }
+            if (mask) { const mA = Math.min(1, aP * 3); put(qs, P.k, mA * cr); put(qs, P.dB, mA * (.5 + .4 * (1 - cr)), 1.5, -rr * .7 * cr); continue; }
+            c.globalCompositeOperation = 'source-over'; put(c, P.h, AH * cr); put(c, P.d, A * cr); put(c, P.k, A * cr * Math.min(.85, .6 * smooth(.2, .5, u) + .5 * smooth(.62, .1, r1)));
+            c.globalCompositeOperation = 'lighter'; put(c, P.l, cr * a * (burn * .7 * Math.pow(1 - u, 7) + F * .25 * Math.pow(1 - u, 2)));
+            put(c, P.s, flS * Math.min(1, a * 1.6) * Math.max(0, 1 - Math.abs(px - bxS) / (650 * k)) * (.4 + .6 * smooth(.1, .7, u)) * (rocky ? 1 : .6) * .55 * cr); } } };
         // (build 248, owner: "The light still shines thru billows - don't like that"): the columns' shapes are laid in the mask
         // first, so the light on the cloud's underside behind them (fire and strike) is cut out where the smoke stands
         cols(true);
