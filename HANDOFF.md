@@ -28,6 +28,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 **Build 309: auto-walk switch for every level** ("Let him walk on by himself" on the contents page, and in the pause menu; `pp-auto`; `autoHeld()` in `index.html`). Nothing spent.
 
+**Build 332 (Level 3 art chat): the far-left plume's edges more diffuse. Nothing spent.**
+
 **Build 328 (Level 3 art chat): a fourth plume from the left shoulder. Nothing spent.**
 
 **Build 326 (Level 3 art chat): softer plume edges, a third plume from the right shoulder, the oak hidden in the wide shot. Nothing spent.**
