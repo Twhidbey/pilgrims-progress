@@ -54,6 +54,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 **Build 297 (Level 3 art chat): rocky ground round the village (a small spur of the mountain behind it, low rocks across its foot). Nothing spent.**
 
+**Build 331 (Level 4 chat): the house's rooms shown smaller in a dark frame; Christian and the Interpreter moved out of the way, into or over the frame where the room allows (the parlour: Christian behind the Interpreter, in the frame). Nothing spent.**
+
 **Build 324 (Level 4 chat): Christian's passage walk re-cut as a whole stride (it was half a stride, so his legs swapped at each repeat); the white wedge under the Interpreter's beard taken out. Nothing spent.**
 
 **Build 320 (Level 4 chat): the Interpreter's walk in the passage re-cut as a clean loop with his head up (it snapped from raised to bowed each loop), at his video's full pace. Nothing spent.**

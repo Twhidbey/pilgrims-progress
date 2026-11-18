@@ -217,7 +217,7 @@ const RM = (() => {
         if (G.act === 'candle' && G.actT >= 70 && !G.ring) G.ring = ring(1478, 760);
         if (ph === 'light') { this.lit = Math.min(1, this.lit + .0075); if (t === 160) talk([[C, 'What does this mean?'], [I, 'His eyes are lifted up to heaven, the best of books is in his hand, and the world is behind his back. A crown of gold hangs over his head.'], [I, 'He is the only man the Lord has sent to be your guide in hard places. Take good heed, lest you meet some who pretend to lead you right, but their way goes down to death.']], () => goTo('r2')); }
       },
-      people(c) { visitor(c, 'I', 2330, -1); visitor(c, 'C', 2720, -1); },
+      people(c) { visitor(c, 'I', 2490, -1); visitor(c, 'C', 2790, -1); },
       over(c) {
         const L = smooth(0, 1, this.lit), fl = 1 + .05 * Math.sin(G.t / 5) * Math.sin(G.t / 11);
         darkWith(c, [[u(1720), v(926), 70 + 40 * L, .9], [u(1478), v(716), (60 + 1100 * L) * fl, Math.min(1, L * 3)]], .9 - .62 * L);
@@ -256,7 +256,7 @@ const RM = (() => {
         for (const w of this.wet) { w.vy += .35; w.x += w.vx; w.y += w.vy; w.l++; }
         this.wet = this.wet.filter(w => w.y < 1260);
       },
-      people(c) { visitor(c, 'I', 560, 1); visitor(c, 'C', 1290, 1); },
+      people(c) { visitor(c, 'I', 190, 1); visitor(c, 'C', -170, 1); },
       over(c) {
         c.fillStyle = css([170, 150, 120], Math.min(.2, this.haze * .75)); c.fillRect(u(0), v(0), (R.PW || 3168) * S, PH * S);
         for (const d of this.dust) { const a = Math.min(1, d.a * (.45 + this.haze)); const r = d.s * S * 3; const g = c.createRadialGradient(u(d.x), v(d.y), 0, u(d.x), v(d.y), r); g.addColorStop(0, css([206, 188, 160], a * .7)); g.addColorStop(1, css([196, 178, 150], 0)); c.fillStyle = g; c.fillRect(u(d.x) - r, v(d.y) - r, 2 * r, 2 * r); }
@@ -299,7 +299,7 @@ const RM = (() => {
         const g = this.great; if (g) { g.life++; g.r = Math.min(g.R, g.r + .47); if (!g.pop) { g.y -= 1.45 * smooth(0, 60, g.life); g.x += Math.sin(g.life / 70) * .8; if (g.life > g.L) { g.pop = 1; note(91, .02, 1.4); } } else g.pop++; }
       },
       under(c) { if (this.rags > 0 && pics['room3-rags']) { c.globalAlpha = smooth(0, 1, this.rags); c.drawImage(pics['room3-rags'], u(700), v(600), 570 * S, 720 * S); c.globalAlpha = 1; } },
-      people(c) { visitor(c, 'I', 2460, -1, R.k, 1, 10); visitor(c, 'C', 2060, -1); },
+      people(c) { visitor(c, 'I', 2460, -1, R.k, 1, 10); visitor(c, 'C', 2700, -1); },
       over(c) { drawBag(c, this.bag); drawCoins(c, this.coins); for (const b of this.bubbles) bubble(c, u(b.x), v(b.y), b.r * S, b.pop); if (this.great) bubble(c, u(this.great.x), v(this.great.y), this.great.r * S, this.great.pop); },
     },
     // 4 THE FIRE FED WITH OIL (after La Tour's St Joseph the Carpenter): round the back of the wall
@@ -320,7 +320,7 @@ const RM = (() => {
         for (const o of this.oil) { o.vy += .3; o.y += o.vy; o.x -= .4; }
         this.oil = this.oil.filter(o => o.y < 1080);
       },
-      people(c) { const q = smooth(0, .5, this.rv), r = smooth(.6, 1, this.rv); visitor(c, 'I', 260, 1, 1, 1 - q); visitor(c, 'C', 560, 1, 1, 1 - q); if (r > 0) { visitor(c, 'I', 2700, -1, 1, r); visitor(c, 'C', 2930, -1, 1, r); } },
+      people(c) { const q = smooth(0, .5, this.rv), r = smooth(.6, 1, this.rv); visitor(c, 'I', 120, 1, 1, 1 - q); visitor(c, 'C', -180, 1, 1, 1 - q); if (r > 0) { visitor(c, 'I', 2700, -1, 1, r); visitor(c, 'C', 2930, -1, 1, r); } },
       over(c) {
         const f = .75 + .15 * Math.sin(G.t / 4.3) * Math.sin(G.t / 9.1) + .1 * Math.sin(G.t / 2.1);
         glow(c, u(1810), v(1000), 260 * f, [255, 140, 60], .32 * f); glow(c, u(1810), v(1080), 90, [255, 220, 140], .25 * f);
@@ -354,7 +354,7 @@ const RM = (() => {
         this.spark = this.spark.filter(s => s.l > 0);
       },
       people(c) {
-        visitor(c, 'I', 230, 1, .58); visitor(c, 'C', 450, 1, .58);
+        visitor(c, 'I', 60, 1, .58); visitor(c, 'C', -150, 1, .58);
         const b = this.bv; if (b.a > .01) {
           const bob = ph === 'fight' && b.x < 2490 ? Math.abs(Math.sin(G.t / 7)) * 3 : 0;
           if (b.arm < 1) fig(c, BRAVE.plain.n, BRAVE.plain, b.x, R.FY, b.face, .68, b.a * (1 - b.arm), [150, 125, 100], BR, 2.3, bob);
@@ -375,7 +375,7 @@ const RM = (() => {
         if (ph === 'cage' && t === 90) talk([[C, 'What are you?'], [MAN, 'I am what I was not once.'], [MAN, 'I am now a man of despair, shut up in it as in this iron cage. I cannot get out. Oh, now I cannot!'], [C, 'How did you come to this?'], [MAN, 'I left off to watch and be sober. I hardened my heart, so that I cannot repent.'], [TIP, 'Touch the cage again.', 'cage2']], () => { creak(); this.shk = 1; ph = 'nohope'; t = 0; G.state = 'auto'; });
         if (ph === 'nohope' && t === 60) talk([[I, 'Is there no hope, but you must be kept in this iron cage?'], [MAN, 'No, none at all.'], [I, 'Why, the Son of God is full of pity.'], [MAN, 'Oh, eternity, eternity!'], [C, 'This is fearful! God help me to watch and be sober, and to pray.']], () => goTo('r7'));
       },
-      people(c) { visitor(c, 'I', 2560, -1); visitor(c, 'C', 2900, -1); },
+      people(c) { visitor(c, 'I', 2980, -1); visitor(c, 'C', 3330, -1); },
       under(c) {
         glow(c, u(332), v(392), 180, [255, 200, 110], .14 + .03 * Math.sin(G.t / 50));
         // the cage rattles when it is touched: that part of the picture laid again a hair off, back and forth
@@ -582,12 +582,16 @@ const RM = (() => {
   // want to you can frame the rooms in black"): each room's whole painting at once, a little smaller (VIEW.Z), hung on the
   // dark like a picture on a wall, its edges softened into the dark; nothing pans (cam.x stays 0). Everything in the room is
   // drawn in the same units as before through this one transform; touches are turned back through it (`unview`).
-  const VZ = .8, VIEW = { Z: 1, ox: 0, oy: 0 };
+  const VZ = .64, VIEW = { Z: 1, ox: 0, oy: 0 };
   function setView() {
     const Z = R && R.id === 'pass' ? 1 : VZ * Math.min(1, 1204 / (R.PW * S)), top = 440 - R.FY * S;
-    VIEW.Z = Z; VIEW.ox = R && R.id === 'pass' ? 0 : (VW - R.PW * S * Z) / 2; VIEW.oy = R && R.id === 'pass' ? 0 : 14 - top * Z;
+    VIEW.Z = Z; VIEW.ox = R && R.id === 'pass' ? 0 : (VW - R.PW * S * Z) / 2; VIEW.oy = R && R.id === 'pass' ? 0 : 14 + PH * S * (Z / VZ * .8 - Z) / 2 - top * Z;
   }
   const unview = (sx, sy) => [(sx - VIEW.ox) / VIEW.Z, (sy - VIEW.oy) / VIEW.Z];
+  // the painting's edges sink softly into the dark round it
+  function edges(c, x0, y0, w, h) {
+    for (const [ax, ay, bx, by, xx, yy, ww, hh] of [[x0, 0, x0 + 40, 0, x0, y0, 40, h], [x0 + w, 0, x0 + w - 40, 0, x0 + w - 40, y0, 40, h], [0, y0, 0, y0 + 30, x0, y0, w, 30], [0, y0 + h, 0, y0 + h - 30, x0, y0 + h - 30, w, 30]]) { const g = c.createLinearGradient(ax, ay, bx, by); g.addColorStop(0, 'rgba(13,8,6,.85)'); g.addColorStop(1, 'rgba(13,8,6,0)'); c.fillStyle = g; c.fillRect(xx, yy, ww, hh); }
+  }
   function draw() {
     const c = ctx; c.setTransform(DPR, 0, 0, DPR, 0, 0);
     c.fillStyle = '#0d0806'; c.fillRect(0, 0, VW, VH);
@@ -600,11 +604,11 @@ const RM = (() => {
       c.save(); c.beginPath(); c.rect(x0, y0, w, h); c.clip();
       c.drawImage(im, x0, y0, w, h);
       R.under && R.under(c);
-      R.people && R.people(c);
+      edges(c, x0, y0, w, h);
+      // the two visitors may stand in or over the dark frame round the painting, out of the way (build 331)
+      c.restore(); R.people && R.people(c); c.save(); c.beginPath(); c.rect(x0, y0, w, h); c.clip();
       R.over && R.over(c);
       if (R.id !== 'door' && R.id !== 'leave' && R.id !== 'r2') for (const m of motes) { const a = .08 * (.5 + .5 * Math.sin(G.t / 50 + m.p)); c.fillStyle = 'rgba(255,236,200,' + a.toFixed(3) + ')'; c.beginPath(); c.arc(m.x, m.y, m.s, 0, 6.2832); c.fill(); }
-      // the painting's edges sink softly into the dark round it
-      for (const [ax, ay, bx, by, xx, yy, ww, hh] of [[x0, 0, x0 + 40, 0, x0, y0, 40, h], [x0 + w, 0, x0 + w - 40, 0, x0 + w - 40, y0, 40, h], [0, y0, 0, y0 + 30, x0, y0, w, 30], [0, y0 + h, 0, y0 + h - 30, x0, y0 + h - 30, w, 30]]) { const g = c.createLinearGradient(ax, ay, bx, by); g.addColorStop(0, 'rgba(13,8,6,.85)'); g.addColorStop(1, 'rgba(13,8,6,0)'); c.fillStyle = g; c.fillRect(xx, yy, ww, hh); }
       c.restore();
     }
     if (G.ring) { const [x, y] = G.ring(); c.strokeStyle = '#ffe6ae'; c.lineWidth = 2 / VIEW.Z; for (const q0 of [0, .5]) { const q = (G.t / 80 + q0) % 1; c.globalAlpha = .65 * (1 - q); c.beginPath(); c.arc(x, y, (14 + q * 40) / VIEW.Z, 0, 6.2832); c.stroke(); } c.globalAlpha = 1; }
