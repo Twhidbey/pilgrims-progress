@@ -264,7 +264,7 @@ const RM = (() => {
         for (const w of this.wet) { w.vy += .35; w.x += w.vx; w.y += w.vy; w.l++; }
         this.wet = this.wet.filter(w => w.y < 1260);
       },
-      people(c) { visitor(c, 'I', 640, 1); visitor(c, 'C', 330, 1); },
+      people(c) { visitor(c, 'I', 640, 1, 1, 1, -48); visitor(c, 'C', 330, 1, 1, 1, -48); },
       over(c) {
         const hz = Math.min(.2, this.haze * .75), LS = R.lshape, im = pics[R.pic];
         if (LS && im) {

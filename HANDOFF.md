@@ -74,6 +74,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 **Build 297 (Level 3 art chat): rocky ground round the village (a small spur of the mountain behind it, low rocks across its foot). Nothing spent.**
 
+**Build 350 (Level 4 chat): in the parlour both men's feet now stand on the floorboards. Nothing spent.**
+
 **Build 349 (Level 4 chat): in the parlour Christian and the Interpreter both stand by the window. Nothing spent.**
 
 **Build 348 (Level 4 chat): the parlour back to its original picture, Christian and the Interpreter standing inside the room as before (the widened-picture tries of builds 338 to 347 taken back). Nothing spent.**
