@@ -155,11 +155,16 @@ const HL = (() => {
   // (`jolt`, added to the trembling in draw()). In world units (`PATHR`), drawn behind the figures.
   const PATHR = [], FALLS = [[3230, 2, 0], [3480, 1, 0], [3820, 1, 1], [4120, 1, 1.3]];
   let fallI = 0, jolt = 0;
+  // (build 354, owner: "the rocks need to land and not float"): a stone comes to rest ON the ground under it: the top of the
+  // path's broken stony far edge at that place (the same outline `road()` draws among the rocks), sunk in a little, never
+  // at a fixed height in the air
+  const edgeAt = x => smooth(PATH0 - 900, PATH0 - 300, x) * (1 - smooth(FOOT + 250, FOOT + 800, x)) * Math.max(0, 70 * (nz(x * .006, 3.1) - .44) + 22 * (nz(x * .03, 7.7) - .42) + 5 * (nz(x * .14, 1.3) - .5));
+  const groundAt = (x, r) => { let h = 0; for (let d = -r; d <= r; d += Math.max(1, r / 3)) h = Math.max(h, edgeAt(x + d)); return -h + r * .2; };
   function pathFalls() { while (fallI < FALLS.length && ph === 'path' && C3.x > FALLS[fallI][0]) { const [, n, big] = FALLS[fallI++];
       for (let i = 0; i < n; i++) { const r = big ? 11 + 4 * big + Math.random() * 3 : 3 + Math.random() * 2.5;
-        PATHR.push({ x: C3.x + 230 + Math.random() * 120 + i * 60, y: -560 - Math.random() * 120 - i * 90, vx: -(.5 + Math.random() * .6), vy: 0, r, big, rest: -16 - Math.random() * 18, b: 0, t: 0, s: Math.random() * 6, sh: rockShape() }); } }
+        PATHR.push({ x: C3.x + 230 + Math.random() * 120 + i * 60, y: -560 - Math.random() * 120 - i * 90, vx: -(.5 + Math.random() * .6), vy: 0, r, big, b: 0, t: 0, s: Math.random() * 6, sh: rockShape() }); } }
     for (const r of PATHR) { r.t++; if (r.b >= 3) continue; r.vy += .26; r.x += r.vx; r.y += r.vy;
-      if (r.y >= r.rest) { r.y = r.rest; r.b++; if (r.b === 1) { dustW(r.x, r.y, r.big ? r.r * 2.6 : r.r * 2.2, r.big ? 7 : 3);
+      const rest = groundAt(r.x, r.r); if (r.y >= rest) { r.y = rest; r.b++; if (r.b === 1) { dustW(r.x, r.y, r.big ? r.r * 2.6 : r.r * 2.2, r.big ? 7 : 3);
           if (r.big) { jolt = Math.max(jolt, r.big); if (audio()) { sweep(50, 30, 1.2, .1 * r.big); hiss(180, .7, .07 * r.big, 1.1, 'lowpass'); } }
           else if (audio()) hiss(900, 2, .03, .12, 'bandpass'); }
         r.vy = r.b >= 3 ? 0 : -r.vy * (r.b === 1 ? .28 : .15); r.vx *= .5; if (Math.abs(r.vy) < .3) r.b = 3; } }
