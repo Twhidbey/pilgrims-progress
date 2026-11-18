@@ -1296,10 +1296,19 @@ const HL = (() => {
         const DENSE = 1.9;
         // (build 306, owner: "tweak the billows a little and make a little elongated horizontally"): each billow drawn wider and
         // flatter (3.2 by 1.4 of its radius, was 2.6 by 1.6) and strayed a little further to the sides
-        const cols = mask => { for (const [ox, N, sp, ph0] of [[0, 96, 1, 0], [145, 64, .78, .37]]) { const ps = [], kS = Math.min(k, 1), Dh = rocky ? 195 : 90 + 105 * clamp(dark * 1.5), bx0 = sx0 + ox * k, by0 = ox ? hy + (rockTopAt(205) + 6) * k : sy0, dTop = (by0 - sy0) / kS;
+        // (build 326, owner: "the interiors of the plumes of smoke look good but the edges could be a little more diffuse"): the
+        // billows toward a column's sides (`eg`, by how far out each strays) are drawn larger and fainter, so the edge melts
+        const EDGE = 1;
+        // the columns: [hill x from the summit, billows, width, phase]; (build 326, owner: "maybe we add one more plume"): a
+        // third, smaller and younger, from the right shoulder, so the three step down from the summit
+        const PLUMES = [[0, 96, 1, 0], [145, 64, .78, .37], [255, 44, .6, .71]];
+        const cols = mask => { for (const [ox, N, sp, ph0] of PLUMES) { const ps = [], kS = Math.min(k, 1), Dh = rocky ? 195 : 90 + 105 * clamp(dark * 1.5), bx0 = sx0 + ox * k, by0 = ox ? hy + (rockTopAt(60 + ox) + 6) * k : sy0, dTop = (by0 - sy0) / kS;
           for (let i = 0; i < N; i++) { const h1 = Math.sin(i * 12.9898 + ox) * 43758.5453, h2 = Math.sin(i * 78.233 + ox) * 12543.123; ps.push([(i / N + G.t / 2600 + ph0) % 1, h1 - Math.floor(h1), h2 - Math.floor(h2), i]); }
           ps.sort((a, b) => b[0] - a[0]);
-          for (const [u, r1, r2, i] of ps) { const rise = 1 - Math.pow(1 - u, 1.6), spread = (24 + 120 * u) * kS * sp, px = bx0 - (50 * u + 110 * u * u) * kS + (r1 - .5) * spread * 1.2 + 12 * Math.sin(G.t / 300 + i) * u * kS, py = by0 - (14 + (Dh + 90 + dTop) * rise) * kS + (r2 - .5) * spread * .65, rr = (26 + 120 * u) * kS * sp * (.8 + .4 * r2), a = smooth(0, .05, u) * (1 - smooth(.5, .95, u)), P = PUFF[i % 3];
+          // (build 326) the third column rises from a small fire of its own in a cleft of the shoulder
+          if (!mask && ox > 200 && burn + F > .02) { const R = 16 * k, g = c.createRadialGradient(bx0, by0 + 4 * k, 0, bx0, by0 + 4 * k, R); g.addColorStop(0, css([255, 214, 150], .7 * (burn + .5 * F) * reveal)); g.addColorStop(.3, css([240, 140, 80], .35 * (burn + .5 * F) * reveal)); g.addColorStop(1, css([200, 90, 60], 0));
+            c.globalCompositeOperation = 'lighter'; c.globalAlpha = 1; c.fillStyle = g; c.fillRect(bx0 - R, by0 + 4 * k - R, 2 * R, 2 * R); c.globalCompositeOperation = 'source-over'; }
+          for (const [u, r1, r2, i] of ps) { const rise = 1 - Math.pow(1 - u, 1.6), spread = (24 + 120 * u) * kS * sp, px = bx0 - (50 * u + 110 * u * u) * kS + (r1 - .5) * spread * 1.2 + 12 * Math.sin(G.t / 300 + i) * u * kS, py = by0 - (14 + (Dh + 90 + dTop) * rise) * kS + (r2 - .5) * spread * .65, eg = Math.pow(Math.abs(r1 - .5) * 2, 1.5) * EDGE, rr = (26 + 120 * u) * kS * sp * (.8 + .4 * r2) * (1 + .4 * eg), a = smooth(0, .05, u) * (1 - smooth(.5, .95, u)) * (1 - .55 * eg), P = PUFF[i % 3];
             const hzP = rocky ? 0 : clamp(1 - dark * 1.6), aP = a * .7 * (.1 + .75 * Math.max(dark, farK * 1.3)) * reveal; if (mask) { qs.globalAlpha = Math.min(1, aP * 3); qs.drawImage(P.d, px - rr * 1.1, py - rr * .8, 2.2 * rr, 1.6 * rr); continue; }
             c.globalCompositeOperation = 'source-over'; if (hzP > 0) { c.globalAlpha = aP * hzP; c.drawImage(P.h, px - rr * 1.1, py - rr * .8, 2.2 * rr, 1.6 * rr); } const lo = 1 - smooth(.04, .42, u), A = Math.min(1, aP * DENSE) * (1 - hzP); c.globalAlpha = A * (1 - .4 * lo); c.drawImage(P.d, px - rr * 1.1, py - rr * .8, 2.2 * rr, 1.6 * rr); if (lo > .01) { c.globalAlpha = A * lo * .75; c.drawImage(P.p, px - rr * 1.1, py - rr * .8, 2.2 * rr, 1.6 * rr); }
             const la = a * (burn * (.3 + .7 * Math.pow(1 - u, 2)) + F * .3 * (1 - u)); if (la > .01) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = la; c.drawImage(P.l, px - rr, py - rr * .8, 2 * rr, 1.6 * rr); } } } };
@@ -1719,7 +1728,9 @@ const HL = (() => {
     // of John Martin's quiet pictures (The Plains of Heaven), its long limb reaching over the place where the two
     // meet, with the light of late afternoon in the edge of its crown.
     OAKBOX = null;
-    if (OAKP) { const M = OAK_META, s = M.k * z, tx = VW / 2 + (MEET - 250 - cx) * z, ty = Y(7), x0 = tx - M.ax * s, y0 = ty - M.ground * s, w = M.w * s, h = M.h * s;
+    // (build 326, owner: "the oak tree should not be visible at all when you zoom out from mountain as it is back up the hill far
+    // away"): it is never drawn among the rocks (it stands at the crossing; the wide shot's camera would show it)
+    if (OAKP && !rocky) { const M = OAK_META, s = M.k * z, tx = VW / 2 + (MEET - 250 - cx) * z, ty = Y(7), x0 = tx - M.ax * s, y0 = ty - M.ground * s, w = M.w * s, h = M.h * s;
       if (x0 < VW && x0 + w > 0) { OAKBOX = [x0, y0, w, h];
         // build 309: a low swell of earth round its foot, the road's own colour rising softly into the field, so the ground
         // gathers up round the roots (and the road's pale edge is covered there)
@@ -1747,7 +1758,7 @@ const HL = (() => {
         if (dark < .6) for (let i = 0; i < 7; i++) { const T = 620 + i * 97, u = ((G.t + i * 233) % T) / T, lx2 = tx + (-90 + i * 60 + 34 * Math.sin(u * 7 + i)) * z + 50 * u * z, ly2 = ty - (260 - 30 * (i % 3)) * z * (1 - u), al = Math.sin(Math.PI * u) * .9 * (1 - dark);
           c.save(); c.translate(lx2, ly2); c.rotate(u * 9 + i); c.fillStyle = css([44, 50, 36], al); c.beginPath(); c.ellipse(0, 0, 3 * z, 1.3 * z, 0, 0, 7); c.fill(); c.restore(); } } }
     if (!OAKP && !OAKL && typeof SL !== 'undefined' && SL.grow) OAKL = bakeOak();
-    if (!OAKP && OAKL) { const s = .88 * z, tx = VW / 2 + (MEET - 185 - cx) * .92 * z, ty = Y(-6), w = OAKL.c.width * s, h = OAKL.c.height * s, x0 = tx + OAKL.x0 * s, y0 = ty + OAKL.y0 * s;
+    if (!OAKP && OAKL && !rocky) { const s = .88 * z, tx = VW / 2 + (MEET - 185 - cx) * .92 * z, ty = Y(-6), w = OAKL.c.width * s, h = OAKL.c.height * s, x0 = tx + OAKL.x0 * s, y0 = ty + OAKL.y0 * s;
       if (x0 < VW && x0 + w > 0) {
         // its shade on the field, flat
         { c.save(); c.translate(tx + 60 * z, Y(-2)); c.scale(1, .1); const g = c.createRadialGradient(0, 0, 0, 0, 0, 330 * z); g.addColorStop(0, css([14, 30, 22], .42 * (1 - dark))); g.addColorStop(1, css([14, 30, 22], 0)); c.fillStyle = g; c.fillRect(-330 * z, -330 * z, 660 * z, 660 * z); c.restore(); }
