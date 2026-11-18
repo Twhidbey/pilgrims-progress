@@ -22,6 +22,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 **Build 310 (Level 2 chat):** owner: "mud still acts little water - needs more viscosity". In mud (by `wetAt`; open water unchanged): a ring is one slow, thick, dull swell that eases to a stop close to where it began (no second ring, hardly any sheen); the surface swell travels half as fast, is damped more and settles more slowly (`fStep`); drops fewer again (60% skipped), lower and slower, and they leave rings only where there is water. Stills cannot show motion: the owner's eyes decide. Nothing spent.
 
+**Build 330: no "tap ▸" under the words any more (lines move on by themselves; a tap still skips sooner). Nothing spent.**
+
 **Build 322: the auto-walk switch is a button beside the pause button (gold when on), no longer on the contents page. Nothing spent.**
 
 **Build 309: auto-walk switch for every level** ("Let him walk on by himself" on the contents page, and in the pause menu; `pp-auto`; `autoHeld()` in `index.html`). Nothing spent.

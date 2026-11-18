@@ -112,7 +112,7 @@ body.portrait #rot{display:block}
 <body>
 <div id="wrap"><div id="stage">
   <canvas id="cv"></canvas>
-  <div id="dlg"><div class="txt"><span class="who"></span><span class="t"></span></div><div class="more">tap ▸</div></div>
+  <div id="dlg"><div class="txt"><span class="who"></span><span class="t"></span></div><div class="more"></div></div>
   <div id="choice"><button id="chHome">Go home</button><button id="chOn">Go on to the light</button></div>
   <div id="title" class="card">
     <!-- THE BOOK (build 187): the title page as first printed in 1678, alone on a dark ground; "Open the book" swings the
@@ -162,7 +162,7 @@ body.portrait #rot{display:block}
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
   <button id="autoWalk" aria-label="He walks on by himself"><svg viewBox="0 0 24 24"><path d="M5 6l6 6-6 6M12 6l6 6-6 6"/></svg></button>
-  <div id="build">build 329 · Nov 18 2026</div>
+  <div id="build">build 330 · Nov 18 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -978,9 +978,9 @@ function talk(arr, then) {
 }
 function show() {
   const [who, txt, act, fn] = lines[li];
-  G.act = act || null; G.actT = 0; G.autoT = 0; G.ring = null; dMore.textContent = act ? '' : 'tap ▸';
+  G.act = act || null; G.actT = 0; G.autoT = 0; G.ring = null; dMore.textContent = '';
   // No skipping by accident: a line cannot be tapped away until it has been spoken (say() sets the real length once the
-  // recording starts; without a recording, a short reading time). "tap ▸" only shows when the line is ready to move on.
+  // recording starts; without a recording, a short reading time). (build 330, owner: "take it out": no "tap ▸" any more; a spoken line moves on by itself, a tap still moves it on sooner, and the corner shows only the gold prompts for acts.)
   // A line already heard once (walking again) can be tapped straight through.
   const heard = HEARD.has(who + '|' + txt);
   G.guard = heard ? 20 : 45 + txt.length * 2; G.guardKey = who + '|' + txt;
