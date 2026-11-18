@@ -275,11 +275,22 @@ const HL = (() => {
           const d = edge[x] - y + 40 * (r - .5); let w = 0;
           for (const [off, th, al, o] of WISP) { const cy = edge[x] + off + 22 * (tn(x, 0, .003, 0, o) - .5) + 6 * (tn(x, 0, .02, 0, o + 1) - .5), u = (y - cy) / th; if (Math.abs(u) < 3) w = Math.max(w, Math.exp(-u * u) * al * smooth(.42, .7, tn(x, y, .008, .045, o + 3))); }
           const body = smooth(-14, 30, d); m[y * W + x] = Math.max(body, w); lit[y * W + x] = Math.max(smooth(-14, 6, d) * (1 - smooth(8, 64, d)), w * 1.3); }
+        // (build 343, owner: "maybe make clouds themselves more detailed?"): inside the deck, rolling masses: a field of soft
+        // noise at three sizes, stretched sideways (`sh`), lighter where a mass bulges, darker in broad soft hollows between them
+        // (`cr`; thin crease lines were tried and read as marble veins), strongest toward the underside where the light comes from below, and the firelight follows the masses too
+        const sh = new Float32Array(W * H), cr = new Float32Array(W * H);
+        for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const i = y * W + x; if (m[i] < .01) continue;
+          const V = yy => .62 * tn(x, yy, .011, .032, 50) + .38 * tn(x, yy, .026, .065, 60), v = V(y);
+          // relief, lit from below: where the masses' value falls going down (each mass's underside) it catches light
+          const dv = v - V(y + 5);
+          sh[i] = clamp(smooth(.22, .78, v) + 2.6 * dv); cr[i] = 1 - smooth(.25, .5, tn(x, y, .016, .045, 80)); lit[i] *= .55 + .9 * sh[i]; }
+        const shade = (col, x, y, i, k) => { const nb = 1 - clamp((edge[x] - y) / 170), f = (.78 + .44 * sh[i]) * (1 - .2 * cr[i] * (.4 + .6 * nb)), w = clamp((sh[i] - .55) * 2.5) * nb * .35;
+          return mixc(col.map(v => v * (1 + (f - 1) * k)), [92, 66, 62], w * k); };
         const tile = (fn) => { const c = mk(W, H), q = c.getContext('2d'), im = q.createImageData(W, H); for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const i = y * W + x, [r, g, b, a] = fn(x, y, i); im.data[i * 4] = r; im.data[i * 4 + 1] = g; im.data[i * 4 + 2] = b; im.data[i * 4 + 3] = a; } q.putImageData(im, 0, 0); return c; };
         const mixc = (a, b, t) => a.map((v, j) => v + (b[j] - v) * t);
         return { W, H, top, pale1,
-          d: tile((x, y, i) => { const t = clamp((edge[x] - y) / 150); return [...mixc(base, top, t), 255 * m[i]]; }),
-          h: tile((x, y, i) => { const t = clamp((edge[x] - y) / 150); return [...mixc(pale0, pale1, t), 255 * m[i]]; }),
+          d: tile((x, y, i) => { const t = clamp((edge[x] - y) / 150); return [...shade(mixc(base, top, t), x, y, i, 1), 255 * m[i]]; }),
+          h: tile((x, y, i) => { const t = clamp((edge[x] - y) / 150); return [...shade(mixc(pale0, pale1, t), x, y, i, .5), 255 * m[i]]; }),
           l: tile((x, y, i) => [255, 176, 120, 255 * lit[i]]) }; };
       DECK = [mkDeck(83, [26, 22, 27], [50, 40, 44], [150, 138, 142], [140, 130, 138]), mkDeck(97, [32, 27, 32], [60, 48, 52], [160, 148, 150], [146, 136, 144])]; }
     SMOKE = cloud(240, 80, 5, .4, .022, .05); CLOUD = cloud(400, 90, 31, .46, .014, .045);
@@ -1314,7 +1325,7 @@ const HL = (() => {
         // (build 328, owner: "maybe one more plume to the left exiting near the light on the left of the top"): a fourth, small,
         // from the left shoulder just below the light at the left of the top, with its own small fire
         // (build 340, owner: "can detail in plumes extend a bit higher and can they light up (like the bottom of sky) when lightning
-        // flashes"): the billows keep their shape further up (they fade from .62 of their rise, was .5), and a strike lights
+        // flashes"): the billows keep their shape further up (they fade from .56 of their rise, was .5; .62 in build 339 was too high), and a strike lights
         // them as it lights the cloud's underside: near the strike, more the higher they are (`sL`, `P.s`, laid on in 'lighter')
         const flS = bolt && boltT < 20 ? (boltT < 4 ? 1 : boltT < 8 ? .2 : boltTwice && boltT < 14 ? .8 : .1) : 0, bxS = bolt && bolt[0] ? sx0 + bolt[0][0][0] * k : 0;
         const cols = mask => { for (const [ox, N, sp, ph0, gl, E = 1] of PLUMES) { const ps = [], kS = Math.min(k, 1), Dh = rocky ? 195 : 90 + 105 * clamp(dark * 1.5), bx0 = sx0 + ox * k, by0 = ox ? hy + (rockTopAt(60 + ox) + 6) * k : sy0, dTop = (by0 - sy0) / kS;
@@ -1323,14 +1334,14 @@ const HL = (() => {
           // (build 326) the third column rises from a small fire of its own in a cleft of the shoulder
           if (!mask && gl && burn + F > .02) { const R = 16 * k, g = c.createRadialGradient(bx0, by0 + 4 * k, 0, bx0, by0 + 4 * k, R); g.addColorStop(0, css([255, 214, 150], .7 * (burn + .5 * F) * reveal)); g.addColorStop(.3, css([240, 140, 80], .35 * (burn + .5 * F) * reveal)); g.addColorStop(1, css([200, 90, 60], 0));
             c.globalCompositeOperation = 'lighter'; c.globalAlpha = 1; c.fillStyle = g; c.fillRect(bx0 - R, by0 + 4 * k - R, 2 * R, 2 * R); c.globalCompositeOperation = 'source-over'; }
-          for (const [u, r1, r2, i] of ps) { const rise = 1 - Math.pow(1 - u, 1.6), spread = (24 + 120 * u) * kS * sp, px = bx0 - (50 * u + 110 * u * u) * kS + (r1 - .5) * spread * 1.2 + 12 * Math.sin(G.t / 300 + i) * u * kS, py = by0 - (14 + (Dh + 90 + dTop) * rise) * kS + (r2 - .5) * spread * .65, eg = Math.pow(Math.abs(r1 - .5) * 2, 1.5 / E) * EDGE, rr = (26 + 120 * u) * kS * sp * (.8 + .4 * r2) * (1 + .3 * E * eg), a = smooth(0, .05, u) * (1 - smooth(.62, 1, u)) * (1 - Math.min(.5, .25 * E * eg)), P = PUFF[i % 3], gB = P.dB ? Math.min(1, eg * E * 1.1) : 0, X0 = px - rr * 1.65, Y0 = py - rr * 1.2, W0 = 3.3 * rr, H0 = 2.4 * rr;
+          for (const [u, r1, r2, i] of ps) { const rise = 1 - Math.pow(1 - u, 1.6), spread = (24 + 120 * u) * kS * sp, px = bx0 - (50 * u + 110 * u * u) * kS + (r1 - .5) * spread * 1.2 + 12 * Math.sin(G.t / 300 + i) * u * kS, py = by0 - (14 + (Dh + 90 + dTop) * rise) * kS + (r2 - .5) * spread * .65, eg = Math.pow(Math.abs(r1 - .5) * 2, 1.5 / E) * EDGE, rr = (26 + 120 * u) * kS * sp * (.8 + .4 * r2) * (1 + .3 * E * eg), a = smooth(0, .05, u) * (1 - smooth(.56, .95, u)) * (1 - Math.min(.5, .25 * E * eg)), P = PUFF[i % 3], gB = P.dB ? Math.min(1, eg * E * 1.1) : 0, X0 = px - rr * 1.65, Y0 = py - rr * 1.2, W0 = 3.3 * rr, H0 = 2.4 * rr;
             const hzP = rocky ? 0 : clamp(1 - dark * 1.6), aP = a * .7 * (.1 + .75 * Math.max(dark, farK * 1.3)) * reveal;
             // (build 342, owner: "the top where plumes meet clouds could use a little more detail (seems too monochromatic)"): the
             // upper billows are laid once more, faintly, over the front of the cloud: their dark rolls and a paler, warmer
             // underside a little below each, so the columns' shapes and a little colour carry on up into the cloud
-            if (mask === 'top') { const t = smooth(.42, .6, u) * (1 - smooth(.86, 1, u)); if (t < .02) continue; const A = Math.min(1, aP * DENSE) * (1 - hzP) * t; c.globalCompositeOperation = 'source-over';
-              c.globalAlpha = A * .3; c.drawImage(gB > .5 ? P.dB : P.d, gB > .5 ? X0 : px - rr * 1.1, gB > .5 ? Y0 : py - rr * .8, gB > .5 ? W0 : 2.2 * rr, gB > .5 ? H0 : 1.6 * rr);
-              c.globalAlpha = A * .12; c.drawImage(P.p, px - rr * .9, py - rr * .45, 1.8 * rr, 1.2 * rr);
+            if (mask === 'top') { const t = smooth(.42, .56, u) * (1 - smooth(.66, .82, u)); if (t < .02) continue; const A = Math.min(1, aP * DENSE) * (1 - hzP) * t; c.globalCompositeOperation = 'source-over';
+              c.globalAlpha = A * .34; c.drawImage(P.dB || P.d, X0, Y0, W0, H0);
+              c.globalAlpha = A * .14; c.drawImage(P.pB || P.p, px - rr * 1.4, py - rr * .9, 2.8 * rr, 1.9 * rr);
               const lt = (burn * .35 + F * .4 + flS * Math.max(0, 1 - Math.abs(px - bxS) / (650 * k))) * t * a; if (lt > .01) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = Math.min(1, lt * .3); c.drawImage(P.l, px - rr, py - rr * .7, 2 * rr, 1.6 * rr); }
               continue; }
             if (mask) { const mA = Math.min(1, aP * 3); qs.globalAlpha = mA * (1 - gB); qs.drawImage(P.d, px - rr * 1.1, py - rr * .8, 2.2 * rr, 1.6 * rr); if (gB > 0) { qs.globalAlpha = mA * gB; qs.drawImage(P.dB, X0, Y0, W0, H0); } continue; }
