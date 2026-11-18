@@ -139,8 +139,16 @@ const RM = (() => {
     return true;
   }
   const speaking = () => (SPK && SPK.who === I) || (G.state === 'dialog' && dWho.textContent === I);
+  // where a visitor stands at or past the painting's edge, a faint floor goes on under his feet into the dark (build 333)
+  function floorOut(c, x, k, a) {
+    const out = Math.max(smooth(260, -60, x), smooth(R.PW - 260, R.PW + 60, x)); if (out <= .01 || R.id === 'pass') return;
+    const fx = u(x), fy = v(R.FY), rx = 150 * S * k, g = c.createRadialGradient(fx, fy, 0, fx, fy, rx);
+    g.addColorStop(0, 'rgba(74,54,38,' + (.5 * out * a).toFixed(3) + ')'); g.addColorStop(1, 'rgba(74,54,38,0)');
+    c.save(); c.translate(0, fy); c.scale(1, .09); c.translate(0, -fy); c.fillStyle = g; c.fillRect(fx - rx, fy - rx, 2 * rx, 2 * rx); c.restore();
+    c.fillStyle = 'rgba(8,4,2,' + (.45 * out * a).toFixed(3) + ')'; c.beginPath(); c.ellipse(fx, fy, 60 * S * k, 4 * S * k + 1, 0, 0, 6.2832); c.fill();
+  }
   const visitor = (c, key, x, face, k = R.k || 1, a = 1, up = 0) => {
-    const m = VIS[key];
+    const m = VIS[key]; floorOut(c, x, k, a);
     const col = key === 'C' ? (R.toneC || R.tone).map((v, i) => v * m.warm[i]) : R.tone;
     // the Interpreter's gesture: frames of one video (hands folded -> the open hand lifted as he explains), played at the video's own pace
     if (m.say && m.say.cols && sheetFrames(m.say)) { const f = m.say, i = Math.round(sayK * (f.fr - 1)); fig(c, f.n + '#' + i, f, x, R.FY - up, face, k, a, col, m.who, m.ph); return; }
@@ -256,7 +264,7 @@ const RM = (() => {
         for (const w of this.wet) { w.vy += .35; w.x += w.vx; w.y += w.vy; w.l++; }
         this.wet = this.wet.filter(w => w.y < 1260);
       },
-      people(c) { visitor(c, 'I', 190, 1); visitor(c, 'C', -170, 1); },
+      people(c) { visitor(c, 'I', 330, 1); visitor(c, 'C', 40, 1); },
       over(c) {
         c.fillStyle = css([170, 150, 120], Math.min(.2, this.haze * .75)); c.fillRect(u(0), v(0), (R.PW || 3168) * S, PH * S);
         for (const d of this.dust) { const a = Math.min(1, d.a * (.45 + this.haze)); const r = d.s * S * 3; const g = c.createRadialGradient(u(d.x), v(d.y), 0, u(d.x), v(d.y), r); g.addColorStop(0, css([206, 188, 160], a * .7)); g.addColorStop(1, css([196, 178, 150], 0)); c.fillStyle = g; c.fillRect(u(d.x) - r, v(d.y) - r, 2 * r, 2 * r); }
@@ -299,7 +307,7 @@ const RM = (() => {
         const g = this.great; if (g) { g.life++; g.r = Math.min(g.R, g.r + .47); if (!g.pop) { g.y -= 1.45 * smooth(0, 60, g.life); g.x += Math.sin(g.life / 70) * .8; if (g.life > g.L) { g.pop = 1; note(91, .02, 1.4); } } else g.pop++; }
       },
       under(c) { if (this.rags > 0 && pics['room3-rags']) { c.globalAlpha = smooth(0, 1, this.rags); c.drawImage(pics['room3-rags'], u(700), v(600), 570 * S, 720 * S); c.globalAlpha = 1; } },
-      people(c) { visitor(c, 'I', 2460, -1, R.k, 1, 10); visitor(c, 'C', 2700, -1); },
+      people(c) { visitor(c, 'I', 2380, -1, R.k, 1, 10); visitor(c, 'C', 2650, -1); },
       over(c) { drawBag(c, this.bag); drawCoins(c, this.coins); for (const b of this.bubbles) bubble(c, u(b.x), v(b.y), b.r * S, b.pop); if (this.great) bubble(c, u(this.great.x), v(this.great.y), this.great.r * S, this.great.pop); },
     },
     // 4 THE FIRE FED WITH OIL (after La Tour's St Joseph the Carpenter): round the back of the wall
@@ -320,7 +328,7 @@ const RM = (() => {
         for (const o of this.oil) { o.vy += .3; o.y += o.vy; o.x -= .4; }
         this.oil = this.oil.filter(o => o.y < 1080);
       },
-      people(c) { const q = smooth(0, .5, this.rv), r = smooth(.6, 1, this.rv); visitor(c, 'I', 120, 1, 1, 1 - q); visitor(c, 'C', -180, 1, 1, 1 - q); if (r > 0) { visitor(c, 'I', 2700, -1, 1, r); visitor(c, 'C', 2930, -1, 1, r); } },
+      people(c) { const q = smooth(0, .5, this.rv), r = smooth(.6, 1, this.rv); visitor(c, 'I', 330, 1, 1, 1 - q); visitor(c, 'C', 40, 1, 1, 1 - q); if (r > 0) { visitor(c, 'I', 2700, -1, 1, r); visitor(c, 'C', 2930, -1, 1, r); } },
       over(c) {
         const f = .75 + .15 * Math.sin(G.t / 4.3) * Math.sin(G.t / 9.1) + .1 * Math.sin(G.t / 2.1);
         glow(c, u(1810), v(1000), 260 * f, [255, 140, 60], .32 * f); glow(c, u(1810), v(1080), 90, [255, 220, 140], .25 * f);
@@ -354,7 +362,7 @@ const RM = (() => {
         this.spark = this.spark.filter(s => s.l > 0);
       },
       people(c) {
-        visitor(c, 'I', 60, 1, .58); visitor(c, 'C', -150, 1, .58);
+        visitor(c, 'I', 210, 1, .58); visitor(c, 'C', 30, 1, .58);
         const b = this.bv; if (b.a > .01) {
           const bob = ph === 'fight' && b.x < 2490 ? Math.abs(Math.sin(G.t / 7)) * 3 : 0;
           if (b.arm < 1) fig(c, BRAVE.plain.n, BRAVE.plain, b.x, R.FY, b.face, .68, b.a * (1 - b.arm), [150, 125, 100], BR, 2.3, bob);
@@ -375,7 +383,7 @@ const RM = (() => {
         if (ph === 'cage' && t === 90) talk([[C, 'What are you?'], [MAN, 'I am what I was not once.'], [MAN, 'I am now a man of despair, shut up in it as in this iron cage. I cannot get out. Oh, now I cannot!'], [C, 'How did you come to this?'], [MAN, 'I left off to watch and be sober. I hardened my heart, so that I cannot repent.'], [TIP, 'Touch the cage again.', 'cage2']], () => { creak(); this.shk = 1; ph = 'nohope'; t = 0; G.state = 'auto'; });
         if (ph === 'nohope' && t === 60) talk([[I, 'Is there no hope, but you must be kept in this iron cage?'], [MAN, 'No, none at all.'], [I, 'Why, the Son of God is full of pity.'], [MAN, 'Oh, eternity, eternity!'], [C, 'This is fearful! God help me to watch and be sober, and to pray.']], () => goTo('r7'));
       },
-      people(c) { visitor(c, 'I', 2980, -1); visitor(c, 'C', 3330, -1); },
+      people(c) { visitor(c, 'I', 2880, -1); visitor(c, 'C', 3170, -1); },
       under(c) {
         glow(c, u(332), v(392), 180, [255, 200, 110], .14 + .03 * Math.sin(G.t / 50));
         // the cage rattles when it is touched: that part of the picture laid again a hair off, back and forth
@@ -606,7 +614,9 @@ const RM = (() => {
       R.under && R.under(c);
       edges(c, x0, y0, w, h);
       // the two visitors may stand in or over the dark frame round the painting, out of the way (build 331)
-      c.restore(); R.people && R.people(c); c.save(); c.beginPath(); c.rect(x0, y0, w, h); c.clip();
+      c.restore(); R.people && R.people(c);
+      for (const [e, d] of [[x0, -1], [x0 + w, 1]]) { const g = c.createLinearGradient(e, 0, e + d * 150, 0); g.addColorStop(0, 'rgba(13,8,6,0)'); g.addColorStop(.35, 'rgba(13,8,6,.35)'); g.addColorStop(1, 'rgba(13,8,6,.72)'); c.fillStyle = g; c.fillRect(d < 0 ? e - 400 : e, y0 - 60, 400, h + 120); }
+      c.save(); c.beginPath(); c.rect(x0, y0, w, h); c.clip();
       R.over && R.over(c);
       if (R.id !== 'door' && R.id !== 'leave' && R.id !== 'r2') for (const m of motes) { const a = .08 * (.5 + .5 * Math.sin(G.t / 50 + m.p)); c.fillStyle = 'rgba(255,236,200,' + a.toFixed(3) + ')'; c.beginPath(); c.arc(m.x, m.y, m.s, 0, 6.2832); c.fill(); }
       c.restore();
