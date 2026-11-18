@@ -9,14 +9,14 @@
 <meta name="apple-mobile-web-app-title" content="Pilgrim">
 <meta name="theme-color" content="#1b1c22">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="assets/icon-180.png?v=359">
+<link rel="apple-touch-icon" href="assets/icon-180.png?v=360">
 <script>
 // THE EDITOR AS ITS OWN HOME SCREEN APP (build 193; owner: "I want an editor link that I can put on my phone Home Screen and it
 // updates with changes"). On the editor's link the page offers its own manifest (start "./?edit"), name and icon, so an icon
 // added from it opens the editor; it updates itself like the game (freshCopy keeps ?edit when it reloads).
 if (/[?&]edit(=|&|$)/.test(location.search)) {
   document.querySelector('link[rel=manifest]').href = 'edit.webmanifest';
-  document.querySelector('link[rel=apple-touch-icon]').href = 'assets/icon-edit-180.png?v=359';
+  document.querySelector('link[rel=apple-touch-icon]').href = 'assets/icon-edit-180.png?v=360';
   document.querySelector('meta[name=apple-mobile-web-app-title]').content = 'PP Editor';
   document.title = "Pilgrim's Progress (editor)";
 }
@@ -164,7 +164,7 @@ body.portrait #rot{display:block}
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
   <button id="autoWalk" aria-label="He walks on by himself"><svg viewBox="0 0 24 24"><path d="M5 6l6 6-6 6M12 6l6 6-6 6"/></svg></button>
-  <div id="build">build 359 · Nov 18 2026</div>
+  <div id="build">build 360 · Nov 18 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -2475,10 +2475,17 @@ for (const b of document.querySelectorAll('#levels .lv')) { b.classList.toggle('
   // lower as it hits the third layer a bit"): build 276's hills, the second range from the front lowered toward the right
   const hills = [[480, '#857a6e', 30, .55, 0], [520, '#655a50', 42, .8, 0], [570, '#43382f', 55, 1.1, 22], [612, '#2c231d', 40, 1.6, 0]], ridge = [];
   for (const [y0, col, amp, f, dropR] of hills) { ridge.length = 0;
-    g = x.createLinearGradient(0, y0 - amp - 50, 0, y0); g.addColorStop(0, 'rgba(200,184,156,0)'); g.addColorStop(1, 'rgba(200,184,156,.3)'); x.fillStyle = g; x.fillRect(cx - ww, y0 - amp - 50, ww * 2, amp + 50);
+    const hb = y0 === 612 ? 632 : y0; g = x.createLinearGradient(0, y0 - amp - 50, 0, hb); g.addColorStop(0, 'rgba(200,184,156,0)'); g.addColorStop(1, 'rgba(200,184,156,.3)'); x.fillStyle = g; x.fillRect(cx - ww, y0 - amp - 50, ww * 2, hb - y0 + amp + 50);
     x.fillStyle = col; x.beginPath(); x.moveTo(cx - ww, bot);
-    const ph = r() * 6; for (let px = cx - ww; px <= cx + ww + 8; px += 8) { const u = Math.min(1, Math.max(0, (px - cx) / ww)), drop = dropR * u * u * (3 - 2 * u);
-      const py = y0 - amp * (.5 + .3 * Math.sin(px / 60 * f + ph) + .2 * Math.sin(px / 23 * f + ph * 2)) + (r() - .5) * 2 + drop; ridge.push([px, py]); x.lineTo(px, py); }
+    const ph = r() * 6; for (let px = cx - ww; px <= cx + ww + 8; px += 8) { const u = Math.min(1, Math.max(0, (px - cx) / ww)), drop = dropR * u * u * (3 - 2 * u), jit = (r() - .5) * 2;
+      // build 360 (owner: "make foreground hills much more gradual ... really stress the artistry and simplicity"): the two
+      // nearest ranges are long, gradual slopes, not short waves: a soft broad swell behind, its crown left of the middle,
+      // falling away toward the light; in front, low ground rising gently all the way across, which the pilgrim climbs
+      const v = (px - (cx - ww)) / (ww * 2);
+      const py = y0 === 570 ? 560 - 26 * Math.exp(-(((v - .2) / .42) ** 2)) + 20 * v * v + .3 * jit
+        : y0 === 612 ? 622 - 28 * Math.pow(v, 1.25) + 2.5 * Math.sin(v * 5.5 + 1) + .2 * jit
+        : y0 - amp * (.5 + .3 * Math.sin(px / 60 * f + ph) + .2 * Math.sin(px / 23 * f + ph * 2)) + jit + drop;
+      ridge.push([px, py]); x.lineTo(px, py); }
     x.lineTo(cx + ww, bot); x.closePath(); x.fill(); }
   // build 358 (owner: "add the tiny pilgrim"): a tiny dark pilgrim on the nearest hill, his burden on his back, walking
   // toward the far light; the hill behind him is paler, so his outline reads. One tone, like every figure.
