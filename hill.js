@@ -1625,13 +1625,20 @@ const HL = (() => {
     // among the rocks the path is a blue-black slate (build 224, the owner's choice from four: the cool of the night
     // under the warm rock and rose sky; build 221's warm brown-black made the whole picture one colour); its far edge is a low broken line
     // of stones (a few units high, behind the feet, so the walking line stays level), and the rock's grain lies over it
-    const road = () => { const g = c.createLinearGradient(0, Y(0), 0, VH); const rc = rocky ? mix([28, 29, 37], [21, 22, 29], dark) : mix(mix([46, 40, 36], [22, 22, 30], Math.max(dark, .9 * gateish)), [17, 9, 7], .75 * gateish);
+    const road = again => { const g = c.createLinearGradient(0, Y(0), 0, VH); const rc = rocky ? mix([28, 29, 37], [21, 22, 29], dark) : mix(mix([46, 40, 36], [22, 22, 30], Math.max(dark, .9 * gateish)), [17, 9, 7], .75 * gateish);
       if (rocky) { const xl = cx - VW / 2 / z - 20, xr = cx + VW / 2 / z + 20; c.beginPath(); c.moveTo(X(xl), VH);
         for (let x = Math.floor(xl / 5) * 5; x <= xr; x += 5) { const h = inPath(x) * Math.max(0, 70 * (nz(x * .006, 3.1) - .44) + 22 * (nz(x * .03, 7.7) - .42) + 5 * (nz(x * .14, 1.3) - .5)); c.lineTo(X(x), Y(-h)); }
-        c.lineTo(X(xr), VH); c.closePath(); c.fillStyle = css(rc); c.fill(); } g.addColorStop(0, css(mix(rc, [120, 116, 100], rocky ? 0 : .25 * (1 - .8 * gateish)))); g.addColorStop(.08, css(rc)); g.addColorStop(1, css(mix(rc, [0, 0, 0], .35))); c.fillStyle = g; c.fillRect(0, Y(0), VW, VH);
+        c.lineTo(X(xr), VH); c.closePath(); c.fillStyle = css(rc); c.fill(); } const g0 = css(mix(rc, [120, 116, 100], rocky ? 0 : .25 * (1 - .8 * gateish))); g.addColorStop(0, g0); g.addColorStop(.08, css(rc)); g.addColorStop(1, css(mix(rc, [0, 0, 0], .35))); c.fillStyle = g; c.fillRect(0, Y(0), VW, VH);
+      // build 323 (owner: "the bump has hard line between it and the ground below. also the path looks different as it
+      // goes from one to the other"): the brow is the ROAD ITSELF bent up: column by column the road's own gradient (its
+      // pale worn edge, then its earth, darkening down) is hung from the brow's top line instead of the road's, so there
+      // is no seam at its foot and the road's worn edge runs on up and over the top as the path
+      if (!rocky && gateish < .5 && X(BROW0 - 340) < VW && X(CREST + 580) > 0) { const x0 = Math.max(0, Math.floor(X(BROW0 - 340))), x1 = Math.min(VW, Math.ceil(X(CREST + 580))), H0 = VH - Y(0);
+        for (let xs = x0; xs < x1; xs += 3) { const h = crest(cx + (xs + 1.5 - VW / 2) / z); if (h <= .05) continue; const ty = Y(-h), gc = c.createLinearGradient(0, ty, 0, ty + H0);
+          gc.addColorStop(0, g0); gc.addColorStop(.08, css(rc)); gc.addColorStop(1, css(mix(rc, [0, 0, 0], .35))); c.fillStyle = gc; c.fillRect(xs, ty, 3.6, VH - ty); } }
       // (build 267) on the fair plain the road is warm earth: the low sun lies on it in one long flat sheen below the sun
       // (a worn track of two faint lines was tried and read as lane markings: taken out)
-      if (!rocky) { const fk = (1 - dark) * (1 - gateish); if (fk > .02) { c.save(); c.globalCompositeOperation = 'lighter';
+      if (!rocky && !again) { const fk = (1 - dark) * (1 - gateish); if (fk > .02) { c.save(); c.globalCompositeOperation = 'lighter';
           c.save(); c.translate(lx, Y(10)); c.scale(1, .06); const pg = c.createRadialGradient(0, 0, 0, 0, 0, VW * .6); pg.addColorStop(0, css([150, 110, 70], .3 * fk)); pg.addColorStop(.5, css([120, 86, 56], .12 * fk)); pg.addColorStop(1, css([100, 70, 50], 0)); c.fillStyle = pg; c.fillRect(-VW * .6, -VW * .6, VW * 1.2, VW * 1.2); c.restore();
           c.restore(); } }
       if (rocky && ROCKPAT) { c.save(); c.clip(); const ts = 1.6 * z, tw = ROCKTEX.width * ts; ROCKPAT.setTransform(new DOMMatrix([ts, 0, 0, ts, ((VW / 2 - cx * z) % tw + tw) % tw, Y(-16)]));
@@ -1643,25 +1650,16 @@ const HL = (() => {
       if (rocky) alongPath(x => 1 - inPath(x), q => { const t0 = Y(-34), t1 = Y(150), b = mix([40, 30, 29], [35, 26, 25], dark), g = q.createLinearGradient(0, t0, 0, t1), u = (Y(-4) - t0) / (t1 - t0);
         g.addColorStop(0, css(b, 0)); g.addColorStop(clamp(u), css(b)); g.addColorStop(clamp(u + (1 - u) * .45), css(mix(b, [15, 12, 11], .6))); g.addColorStop(1, css([15, 12, 11])); q.fillStyle = g; q.fillRect(0, t0, VW, VH - t0 + 2); }); };
     road();
-    const humpG = () => { const rc = mix([46, 40, 36], [22, 22, 30], dark), tc = mix([60, 57, 43], [24, 24, 30], dark), g = c.createLinearGradient(0, Y(-crest(CREST)), 0, Y(1));
-      g.addColorStop(0, css(tc)); g.addColorStop(.6, css(mix(tc, rc, .6))); g.addColorStop(1, css(rc)); return g; };
     // the swell of the brow, on the road (only on the plain, where he goes out of sight over it)
-    // build 309 (owner: "and bump too"): no longer one flat grey shape with a hard edge: its top a soft edge (laid three
-    // times, a hair higher and fainter each time), its turf a little of the field's olive near the top, darkening down into
-    // the road's own earth at its foot, so it rises out of the road and sits in the field
-    if (!rocky && !gateish && X(BROW0 - 300) < VW && X(CREST + 600) > 0) { c.fillStyle = humpG();
-      for (const [up, al] of [[6, .14], [3.5, .3], [1.6, .55], [0, 1]]) { c.globalAlpha = al; c.beginPath(); c.moveTo(X(BROW0 - 340), Y(1)); for (let x = BROW0 - 330; x <= CREST + 570; x += 10) c.lineTo(X(x), Y(-crest(x) - up * (crest(x) / 52))); c.lineTo(X(CREST + 580), Y(1)); c.fill(); } c.globalAlpha = 1;
-      // its foot runs on a little into the road and fades there, so there is no seam where the swell meets the road
-      { const a = X(BROW0 - 300), b = X(CREST + 540), gx = c.createLinearGradient(a, 0, b, 0), rc = mix([46, 40, 36], [22, 22, 30], dark); gx.addColorStop(0, css(rc, 0)); gx.addColorStop(.25, css(rc, .85)); gx.addColorStop(.7, css(rc, .85)); gx.addColorStop(1, css(rc, 0));
-        c.fillStyle = gx; c.fillRect(a, Y(1) - 1, b - a, 4 * z); c.globalAlpha = .5; c.fillRect(a, Y(1) + 3 * z, b - a, 5 * z); c.globalAlpha = 1; } }
-    // build 281 (owner: "maybe add a slight path on the bump that he follows down"): a faint worn track along the brow,
-    // a little below its top line where his feet go, paler than the turf, fading in from the road and on down the far side.
-    const humpPath = () => { if (rocky || gateish > .5) return; const g = c.createLinearGradient(X(BROW0 - 330), 0, X(CREST), 0), pc = mix(mix([92, 80, 66], [150, 138, 112], .2), [40, 38, 46], dark);
-      g.addColorStop(0, css(pc, 0)); g.addColorStop(.18, css(pc, .5)); g.addColorStop(.88, css(pc, .45)); g.addColorStop(1, css(pc, .1));
-      c.save(); c.beginPath(); c.moveTo(X(BROW0 - 340), Y(40)); for (let x = BROW0 - 330; x <= CREST + 570; x += 10) c.lineTo(X(x), Y(-crest(x) + .5)); c.lineTo(X(CREST + 580), Y(40)); c.clip();
-      c.beginPath(); for (let x = BROW0 - 330; x <= CREST; x += 8) { const y = Y(-crest(x) + pathOff(x) + (1.5 * Math.sin(x * .021) + Math.sin(x * .007)) * (pathOff(x) / 12)); if (x === BROW0 - 330) c.moveTo(X(x), y); else c.lineTo(X(x), y); }
-      c.strokeStyle = g; c.lineCap = 'round'; c.globalAlpha = .45; c.lineWidth = Math.max(2, 12 * z); c.stroke(); c.globalAlpha = .55; c.lineWidth = Math.max(1.2, 6 * z); c.stroke(); c.globalAlpha = 1; c.restore(); };
-    if (!rocky && !gateish && X(BROW0 - 300) < VW && X(CREST + 600) > 0) humpPath();
+    // build 323 (owner: "the bump has hard line between it and the ground below. also the path looks different as it goes
+    // from one to the other"): the brow is now the ROAD ITSELF rising: column by column it is painted with the road's own
+    // gradient hung from its top line (the road's pale worn edge, then its earth), and it runs down past the road's edge
+    // to where that edge has faded, so there is no seam, and the worn edge of the road IS the path over the top
+    // (the brow's body is drawn inside road(); here only its soft top edge, a hair higher and fainter each time)
+    const humpDraw = () => { const rc = mix([46, 40, 36], [22, 22, 30], dark), top = mix(rc, [120, 116, 100], .25);
+      c.fillStyle = css(top); for (const [up, al] of [[6, .14], [3.5, .3], [1.6, .55]]) { c.globalAlpha = al; c.beginPath(); c.moveTo(X(BROW0 - 340), Y(1)); for (let x = BROW0 - 330; x <= CREST + 570; x += 10) c.lineTo(X(x), Y(-crest(x) - up * (crest(x) / 52))); c.lineTo(X(CREST + 580), Y(1)); c.fill(); } c.globalAlpha = 1;
+    };
+    if (!rocky && !gateish && X(BROW0 - 300) < VW && X(CREST + 600) > 0) humpDraw();
     // the lantern's and the open door's light lie in flat pools on the road
     if (gateOn) { c.save(); c.globalCompositeOperation = 'lighter';
       for (const [px, rr, al, col] of [[lnx + 10 * z, 190 * z, .24 * flick * (1 - .4 * open), [255, 170, 90]], [gx - 110 * z, 300 * z, .5 * open, [255, 208, 134]], [gx - 10 * z, 110 * z, .55 * open, [255, 236, 190]]]) { if (al < .01) continue; c.save(); c.translate(px, Y(5)); c.scale(1, .09); const g = c.createRadialGradient(0, 0, 0, 0, 0, rr); g.addColorStop(0, css(col, al)); g.addColorStop(1, css(col, 0)); c.fillStyle = g; c.fillRect(-rr, -rr, 2 * rr, 2 * rr); c.restore(); }
@@ -1760,7 +1758,7 @@ const HL = (() => {
     // (build 202, owner: "when he goes down after talking with worldly wise, he flickers a little": the near ground used to be
     // drawn over him only once he was below the road line, so for a moment his feet sank into the slope and then were cut
     // off at once; now it covers him from the moment he passes the top)
-    if ((ph === 'aside' || ph === 'down') && C3.x > CREST - 2) { c.save(); c.beginPath(); c.moveTo(X(CREST), VH); for (let x = CREST; x <= CREST + 700; x += 10) c.lineTo(X(x), Y(-crest(x))); c.lineTo(VW, Y(0)); c.lineTo(VW, VH); c.clip(); road(); c.fillStyle = humpG(); c.fillRect(0, 0, VW, Y(0) + 1); humpPath(); c.restore(); }
+    if ((ph === 'aside' || ph === 'down') && C3.x > CREST - 2) { c.save(); c.beginPath(); const xc0 = Math.round(X(CREST)); c.moveTo(xc0, VH); c.lineTo(xc0, Y(-crest(CREST))); for (let x = CREST + 10; x <= CREST + 700; x += 10) c.lineTo(X(x), Y(-crest(x))); c.lineTo(VW, Y(0)); c.lineTo(VW, VH); c.clip(); road(); humpDraw(); c.restore(); }
     // the nearest crags, along the bottom of the picture, in front of everyone
     // (build 212, owner: "the layer in front of Christian as he walks toward mountain can be higher in point and fully go in
     // front of him - maybe make nice shapes like the layer behind him"): the nearest crags are the same leaning spurs as the
