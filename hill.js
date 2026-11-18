@@ -71,7 +71,7 @@ const HL = (() => {
     [WW, 'There is no more dangerous way in all the world! I see the mud of the Slough of Despond is on you already.', 0, () => { groan(); note(43, .045, 3.5); }],
     [WW, 'In that village, Morality, lives a gentleman named Legality. He can take burdens like yours away.', 0, () => { vilTo = 1; sweet(1); }],
     [C, 'Sir, which way is his house?'],
-    [WW, 'Do you see that hill?', 'hill'],
+    [WW, 'Do you see that hill?', 'hill', () => { panTo = 1; }],
     [WW, 'Go by that hill. The first house you come to is his.'],
   ];
   const TURNED = [[N, 'So Christian turned out of his way, to go to Mr. Legality\'s house for help.']];      // {46}
@@ -131,6 +131,10 @@ const HL = (() => {
   // will be cooler later"). `reveal` stays 0 across the plain and the talk: only foothills stand where it will be. At
   // "Do you see that hill?" the camera draws back and the hill comes out of the haze (about a second and a half).
   let reveal = 0, vil = 0, vilTo = 0;
+  // (build 321; owner: "when he first mentions house can he just reference it ... then only zoom over when he mentions
+  // mountain"): naming the village only warms its windows far off (`vil`); the camera stays on the two men and shifts
+  // right to the village and the hill only at "Do you see that hill?" (`pan`)
+  let pan = 0, panTo = 0;
   // stones and dust falling from the overhang when he stands beneath it (in the hill's own units, from its foot's
   // left end; y up is negative): each { x, y, vx, vy, r, t, dust }
   const ROCKS = [], DUST = [];
@@ -689,7 +693,7 @@ const HL = (() => {
     Object.assign(C3, { x: START, face: 1, faceA: 1, anim: 12, sd: QUIET[0], alpha: 1, run: 0, ranim: RUNP_META.start || 0, weep: false, wt: 0, wa: 0, kf: 0, kp: 0, tv: null, fired: false, saidAt: 0, tapZ: 0 }); FLARES.length = 0;
     mercy = mercyTo = calm = calmTo = 0;
     wise = null; evan = null; dark = 0; hope = 0; flash = 0; flashT = 200; veil = 0; veilTo = 0; knocks = 0; knockT = 0; door = 0; doorTo = 0;
-    reveal = 0; vil = vilTo = 0; ROCKS.length = 0; DUST.length = 0; STEAMP.length = 0; farewell = 0; C3.dy = 0; cut = cutTo = 0; Zw = 0; zs = ''; zT = 0;
+    reveal = 0; vil = vilTo = 0; pan = panTo = 0; ROCKS.length = 0; DUST.length = 0; STEAMP.length = 0; farewell = 0; C3.dy = 0; cut = cutTo = 0; Zw = 0; zs = ''; zT = 0;
     saidSeen = saidHigh = hasteSaid = gateSaid = hillSeen = greeted = false; stillT = 0; hintT = 0; noteI = 0; noteX = 0;
   }
   // the picture behind the title page when Level 3 is the child's level: the hill hanging over the way, nobody there
@@ -817,7 +821,7 @@ const HL = (() => {
     // (build 267) the camera has already come to the village when Wiseman names it, so at "Do you see that hill?" the hill
     // comes slowly up out of the haze behind it (about two and a half seconds) instead of all at once
     // (build 275, owner: "hill should be there from the beginning": the hill is always shown, out to the right)
-    reveal = 1; vil = Math.min(1, vil + (vilTo - vil) * .012 + (vilTo > vil ? .002 : 0));
+    reveal = 1; vil = Math.min(1, vil + (vilTo - vil) * .012 + (vilTo > vil ? .002 : 0)); pan = Math.min(1, pan + (panTo - pan) * .012 + (panTo > pan ? .002 : 0));
     if ((ph === 'still' || ph === 'come' || ph === 'evan') && dark > .5 && Math.random() < .035) shed(1, .7);
     if (dark > .8 && (ph === 'still' || ph === 'come' || ph === 'evan' || farewell) && Math.random() < (zs === 'hold' || farewell ? .02 : .008)) boulder();
     for (const r of ROCKS) { r.t++; r.vy += .09; r.x += r.vx; r.y += r.vy; if (r.big && r.t % 5 === 0) dust(r.x, r.y, r.r * .9, 1, .5, 1);
@@ -949,7 +953,7 @@ const HL = (() => {
     // the camera
     let tx = C3.x + 150, tz = 1;
     if (ph === 'plain') tz = wise ? .84 : .9;
-    if (ph === 'meet') { const e = vil * vil * (3 - 2 * vil); tx = lerp(C3.x + 60, HILL_F + 160, e); tz = lerp(.86, .6, e); if (G.act === 'hill') { tx = HILL_F + 160; tz = .6; } }
+    if (ph === 'meet') { const e = pan * pan * (3 - 2 * pan); tx = lerp(C3.x + 60, HILL_F + 160, e); tz = lerp(.86, .6, e); }
     if (ph === 'aside' || ph === 'down') { tx = Math.min(C3.x + 180, BROW0 + 140); tz = .86; }
     if (ph === 'path') { tx = C3.x + 150; tz = Z_NEAR; }
     if (ph === 'still' || ph === 'come' || ph === 'evan') { tx = ph === 'still' ? FOOT + 150 : FOOT - 40; tz = Z_NEAR; }

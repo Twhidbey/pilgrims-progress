@@ -6,6 +6,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 **The keepsakes have their own chat now** ("Pilgrim's Progress: the keepsakes (Bible, roll, title book)", https://claude.ai/code/session_017HrTSDUqJDSdrXPbhc33zT). Open question there: the wax seal on Evangelist's roll is ours, not the book's (`{14}` has no seal; the sealed roll is given at the Cross, `{94}`): take it off and keep `waxSeal()` for Level 5, or keep it as a departure.
 
+**Build 321 (Level 3 art chat): the camera moves to the village and hill only at "Do you see that hill?", not when the village is named. Nothing spent.**
+
 **Build 319 (Level 2 chat):** owner: "still looks pixelated because of how it acts with the strips of mud". The wet shadow's own edges (the squashed outline) lined up with the thin mud strips and read as steps; it is now blurred smoothly in stages (painted at a third across and two thirds down, then down to a quarter and back up through a half, each step bilinear: `SHB`) into one soft darkening with no edges, laid at .5 (was .62). Nothing spent.
 
 **Build 317 (Level 2 chat):** owner: "the shadow now looks kinda pixelized". The wet shadow under the figures (and the home bank) was painted at a sixth of the size both ways, so the squashed figure was a few rows tall and stepped when stretched; now a sixth across (soft) but two thirds down (`KX` 6, `KY` 1.5). Before and after stills of builds 305, 310 and this one were sent. Nothing spent.
