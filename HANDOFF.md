@@ -34,6 +34,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 **Build 309: auto-walk switch for every level** ("Let him walk on by himself" on the contents page, and in the pause menu; `pp-auto`; `autoHeld()` in `index.html`). Nothing spent.
 
+**Build 339 (Level 3 art chat): plume detail reaches higher; the plumes light up warm near a lightning strike, like the cloud's underside. Nothing spent.**
+
 **Build 335 (Level 3 art chat): plume edges now a soft blur (gaussian), not wisps; most on the far-left plume. Nothing spent.**
 
 **Build 332 (Level 3 art chat): the far-left plume's edges more diffuse. Nothing spent.**
