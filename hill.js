@@ -631,7 +631,7 @@ const HL = (() => {
   // on the fair plain everyone stands a little lower in the road (FY 12, was 5) and the shadow is flatter, so it lies on
   // the road, never on the field behind. Among the rocks and at the gate the old depth (5) is kept. Set each frame in draw().
   let FY = 5;
-  function foot(c, x, a = 1, rx = 46) { const g = c.createRadialGradient(0, 0, 0, 0, 0, 1); g.addColorStop(0, 'rgba(6,8,14,.5)'); g.addColorStop(.6, 'rgba(6,8,14,.26)'); g.addColorStop(1, 'rgba(6,8,14,0)'); c.save(); c.translate(x, FY + (FY > 5 ? 2 : -1)); c.scale(rx * (FY > 5 ? .62 : 1), FY > 5 ? 3.5 : 7); c.globalAlpha = a * (FY > 5 ? .7 : 1); c.fillStyle = g; c.fillRect(-1, -1, 2, 2); c.restore(); }
+  function foot(c, x, a = 1, rx = 46) { a *= 1 - clamp(SUNSH); const g = c.createRadialGradient(0, 0, 0, 0, 0, 1); g.addColorStop(0, 'rgba(6,8,14,.5)'); g.addColorStop(.6, 'rgba(6,8,14,.26)'); g.addColorStop(1, 'rgba(6,8,14,0)'); c.save(); c.translate(x, FY + (FY > 5 ? 2 : -1)); c.scale(rx * (FY > 5 ? .62 : 1), FY > 5 ? 3.5 : 7); c.globalAlpha = a * (FY > 5 ? .7 : 1); c.fillStyle = g; c.fillRect(-1, -1, 2, 2); c.restore(); }
 
   // ---------- sound ----------
   // fire out of the hill: a flash and thunder (no words out of the mountain: left out for young children)
@@ -1685,13 +1685,20 @@ const HL = (() => {
       // goes from one to the other"): the brow is the ROAD ITSELF bent up: column by column the road's own gradient (its
       // pale worn edge, then its earth, darkening down) is hung from the brow's top line instead of the road's, so there
       // is no seam at its foot and the road's worn edge runs on up and over the top as the path
-      if (!rocky && gateish < .5 && X(BROW0 - 340) < VW && X(CREST + 580) > 0) { const x0 = Math.max(0, Math.floor(X(BROW0 - 340))), x1 = Math.min(VW, Math.ceil(X(CREST + 580))), H0 = VH - Y(0);
-        for (let xs = x0; xs < x1; xs += 3) { const h = crest(cx + (xs + 1.5 - VW / 2) / z); if (h <= .05) continue; const ty = Y(-h), gc = c.createLinearGradient(0, ty, 0, ty + H0);
+      const HC = { list: [] };
+      if (!rocky && gateish < .5 && X(BROW0 - 340) < VW && X(CREST + 580) > 0) { const x0 = Math.max(0, Math.floor(X(BROW0 - 340))), x1 = Math.min(VW, Math.ceil(X(CREST + 580))), H0 = VH - Y(0); HC.x0 = x0; HC.x1 = x0 + 3 * Math.ceil((x1 - x0) / 3);
+        for (let xs = x0; xs < x1; xs += 3) { const h = crest(cx + (xs + 1.5 - VW / 2) / z); HC.list.push([xs, Math.max(0, h) * z]); if (h <= .05) continue; const ty = Y(-h), gc = c.createLinearGradient(0, ty, 0, ty + H0);
           gc.addColorStop(0, g0); gc.addColorStop(.08, css(rc)); gc.addColorStop(1, css(mix(rc, [0, 0, 0], .35))); c.fillStyle = gc; c.fillRect(xs, ty, 3.6, VH - ty); } }
       // (build 267) on the fair plain the road is warm earth: the low sun lies on it in one long flat sheen below the sun
       // (a worn track of two faint lines was tried and read as lane markings: taken out)
       if (!rocky && !again) { const fk = (1 - dark) * (1 - gateish); if (fk > .02) { c.save(); c.globalCompositeOperation = 'lighter';
-          c.save(); c.translate(lx, Y(10)); c.scale(1, .06); const pg = c.createRadialGradient(0, 0, 0, 0, 0, VW * .6); pg.addColorStop(0, css([150, 110, 70], .3 * fk)); pg.addColorStop(.5, css([120, 86, 56], .12 * fk)); pg.addColorStop(1, css([100, 70, 50], 0)); c.fillStyle = pg; c.fillRect(-VW * .6, -VW * .6, VW * 1.2, VW * 1.2); c.restore();
+          const pg = c.createRadialGradient(0, 0, 0, 0, 0, VW * .6); pg.addColorStop(0, css([150, 110, 70], .3 * fk)); pg.addColorStop(.5, css([120, 86, 56], .12 * fk)); pg.addColorStop(1, css([100, 70, 50], 0));
+          const sheen = dy => { c.save(); c.translate(lx, Y(10) - dy); c.scale(1, .06); c.fillStyle = pg; c.fillRect(-VW * .6, -VW * .6, VW * 1.2, VW * 1.2); c.restore(); };
+          // (build 327, owner: "it just need to be opaque so it doesn't look different over the transition") over the brow the
+          // sheen is lifted with the road, column by column, so the brow is the same road surface as the flat road beside it
+          if (HC.list.length) { c.save(); c.beginPath(); c.rect(0, 0, HC.x0, VH); c.rect(HC.x1, 0, VW - HC.x1, VH); c.clip(); sheen(0); c.restore();
+            for (const [xs, dy] of HC.list) { c.save(); c.beginPath(); c.rect(xs, 0, 3, VH); c.clip(); sheen(dy); c.restore(); } }
+          else sheen(0);
           c.restore(); } }
       if (rocky && ROCKPAT) { c.save(); c.clip(); const ts = 1.6 * z, tw = ROCKTEX.width * ts; ROCKPAT.setTransform(new DOMMatrix([ts, 0, 0, ts, ((VW / 2 - cx * z) % tw + tw) % tw, Y(-16)]));
         c.globalCompositeOperation = 'overlay'; c.globalAlpha = .55; c.fillStyle = ROCKPAT; c.fillRect(0, Y(-60), VW, VH); c.restore(); }
@@ -1709,7 +1716,9 @@ const HL = (() => {
     // to where that edge has faded, so there is no seam, and the worn edge of the road IS the path over the top
     // (the brow's body is drawn inside road(); here only its soft top edge, a hair higher and fainter each time)
     const humpDraw = () => { const rc = mix([46, 40, 36], [22, 22, 30], dark), top = mix(rc, [120, 116, 100], .25);
-      c.fillStyle = css(top); for (const [up, al] of [[6, .14], [3.5, .3], [1.6, .55]]) { c.globalAlpha = al; c.beginPath(); c.moveTo(X(BROW0 - 340), Y(1)); for (let x = BROW0 - 330; x <= CREST + 570; x += 10) c.lineTo(X(x), Y(-crest(x) - up * (crest(x) / 52))); c.lineTo(X(CREST + 580), Y(1)); c.fill(); } c.globalAlpha = 1;
+      // (build 327) only ABOVE the brow's outline, so the brow's body is the road's own surface, not lightened by these layers
+      c.save(); c.beginPath(); c.moveTo(X(BROW0 - 340), 0); c.lineTo(X(BROW0 - 340), Y(0)); for (let x = BROW0 - 330; x <= CREST + 570; x += 10) c.lineTo(X(x), Y(-crest(x))); c.lineTo(X(CREST + 580), Y(0)); c.lineTo(X(CREST + 580), 0); c.closePath(); c.clip();
+      c.fillStyle = css(top); for (const [up, al] of [[6, .14], [3.5, .3], [1.6, .55]]) { c.globalAlpha = al; c.beginPath(); c.moveTo(X(BROW0 - 340), Y(1)); for (let x = BROW0 - 330; x <= CREST + 570; x += 10) c.lineTo(X(x), Y(-crest(x) - up * (crest(x) / 52))); c.lineTo(X(CREST + 580), Y(1)); c.fill(); } c.globalAlpha = 1; c.restore();
     };
     if (!rocky && !gateish && X(BROW0 - 300) < VW && X(CREST + 600) > 0) humpDraw();
     // the lantern's and the open door's light lie in flat pools on the road
