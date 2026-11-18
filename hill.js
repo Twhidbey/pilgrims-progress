@@ -611,10 +611,12 @@ const HL = (() => {
     // on the fair plain the low sun stands behind everyone, so each shadow falls toward us: the figure's own outline turned
     // over at the feet and squashed flat (seen nearly edge-on), soft (made small and stretched), darkest at the feet and
     // fading as it comes forward
+    // (build 329, owner: "should we elongate shadow?" ... "yes go ahead"): a third of the figure's height (was a quarter), fading
+    // more gradually toward its far end, so it melts into the road for the low sun without reaching the words
     if (SUNSH > .02) { const W = im.width, H = im.height, sc = tintC['sh' + slot] || (tintC['sh' + slot] = mk(8, 8)), w2 = Math.ceil(W / 5), h2 = Math.ceil(H / 5);
       if (sc.width !== w2 || sc.height !== h2) { sc.width = w2; sc.height = h2; } const q = sc.getContext('2d'); q.globalCompositeOperation = 'source-over'; q.clearRect(0, 0, w2, h2); q.drawImage(fc, 0, 0, w2, h2);
-      q.globalCompositeOperation = 'source-in'; const gq = q.createLinearGradient(0, 0, 0, h2); gq.addColorStop(0, 'rgba(14,12,10,0)'); gq.addColorStop(.55, 'rgba(14,12,10,.35)'); gq.addColorStop(1, 'rgba(14,12,10,1)'); q.fillStyle = gq; q.fillRect(0, 0, w2, h2);
-      c.save(); c.globalAlpha = alpha * .55 * SUNSH; c.translate(x, FY - 1); c.scale(face * CHR_K * FK, -CHR_K * FK * .24); c.drawImage(sc, -meta.ax, -meta.ground, W, H); c.restore(); }
+      q.globalCompositeOperation = 'source-in'; const gq = q.createLinearGradient(0, 0, 0, h2); gq.addColorStop(0, 'rgba(14,12,10,0)'); gq.addColorStop(.35, 'rgba(14,12,10,.12)'); gq.addColorStop(.7, 'rgba(14,12,10,.5)'); gq.addColorStop(1, 'rgba(14,12,10,1)'); q.fillStyle = gq; q.fillRect(0, 0, w2, h2);
+      c.save(); c.globalAlpha = alpha * .55 * SUNSH; c.translate(x, FY - 1); c.scale(face * CHR_K * FK, -CHR_K * FK * .36); c.drawImage(sc, -meta.ax, -meta.ground, W, H); c.restore(); }
     if (HAZE && HAZE.k > .02) { const hh = meta.ground * CHR_K * FK * sy; c.save(); c.globalAlpha = alpha; c.translate(x, FY - hh * .48); c.scale(hh * .62, hh * .72);
       const g = c.createRadialGradient(0, 0, 0, 0, 0, 1); g.addColorStop(0, css(HAZE.c, .5 * HAZE.k)); g.addColorStop(.45, css(HAZE.c, .3 * HAZE.k)); g.addColorStop(1, css(HAZE.c, 0)); c.fillStyle = g; c.fillRect(-1, -1, 2, 2); c.restore(); }
     // build 282 (owner: "still unsure about the look of the 'silver lining' ...would a light glow be better?"): on the fair
