@@ -36,11 +36,13 @@ def main(maxjobs):
         if sp[m] >= CAP:
             R.log('- %s modal: stopped, the monthly cap ($%.0f) is reached' % (R.stamp(), CAP)); break
         f0, f1 = os.path.join(R.OUT, j['id'] + '-first.png'), os.path.join(R.OUT, j['id'] + '-last.png')
-        R.picture(j['first'], f0); body = {'first': open(f0, 'rb').read(), 'prompt': j['prompt'] + R.STYLE,
-                                           'negative': R.NEG, 'seconds': j.get('seconds', 3.5), 'steps': j.get('steps', 6),
-                                           'seed': j.get('seed', 42)}
-        if j.get('last'):
-            R.picture(j['last'], f1); body['last'] = open(f1, 'rb').read()
+        # as clips/run.py: a living part of a room gets no figure style and the job's own negative words
+        room = bool(j['first'].get('crop'))
+        R.picture(j['first'], f0); body = {'first': open(f0, 'rb').read(), 'prompt': j['prompt'] + ('' if room else R.STYLE),
+                                           'negative': j.get('negative', R.NEG), 'seconds': j.get('seconds', 3.5),
+                                           'steps': j.get('steps', 6), 'seed': j.get('seed', 42)}
+        if j.get('last') == 'first': body['last'] = body['first']
+        elif j.get('last'): R.picture(j['last'], f1); body['last'] = open(f1, 'rb').read()
         t = time.time()
         try:
             mp4 = v.make.remote(body)
