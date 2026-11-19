@@ -69,7 +69,7 @@
   },
   {
    "id": "room2-sweep",
-   "status": "todo",
+   "status": "done",
    "uses": "Level 4 room 2: the man sweeps (looped), laid back into the painting where his arms and broom move; again after the water, with no dust; any later sweeping",
    "first": {
     "src": "clips/in/room2-nostream.webp",
@@ -83,11 +83,14 @@
    "last": "first",
    "seconds": 3.0,
    "negative": "camera movement, zoom, pan, cut, scene change, new view, extra limbs, extra people, text, watermark, fast motion, morphing, changing walls, flicker",
-   "prompt": "An oil painting comes to life. The young man in the brown jerkin sweeps the wooden floor in front of him with his straw broom: slow, short, steady strokes to and fro, his feet planted, his body still, only his arms and the broom moving, and at the end the broom is back where it began. The young woman with the jug at the left edge does not move at all. One single continuous shot: the camera is completely still, no zoom, no pan, no cut. The wall, the tiles, the floor and the light stay exactly as they are. Keep the oil-painting style and colours exactly."
+   "prompt": "An oil painting comes to life. The young man in the brown jerkin sweeps the wooden floor in front of him with his straw broom: slow, short, steady strokes to and fro, his feet planted, his body still, only his arms and the broom moving, and at the end the broom is back where it began. The young woman with the jug at the left edge does not move at all. One single continuous shot: the camera is completely still, no zoom, no pan, no cut. The wall, the tiles, the floor and the light stay exactly as they are. Keep the oil-painting style and colours exactly.",
+   "made": "2026-11-19 19:47 UTC",
+   "frames": 49,
+   "secs": 30
   },
   {
    "id": "room2-damsel",
-   "status": "todo",
+   "status": "done",
    "uses": "Level 4 room 2: played BACKWARDS, the damsel lifts and tips her jug to sprinkle the room; its last frame is her standing by with the jug still",
    "first": {
     "src": "clips/in/room2-nostream.webp",
@@ -100,11 +103,14 @@
    },
    "seconds": 3.5,
    "negative": "camera movement, zoom, pan, cut, scene change, new view, extra limbs, extra people, text, watermark, fast motion, morphing, changing walls, flicker",
-   "prompt": "An oil painting comes to life. The young woman slowly stops pouring: she tips the red-brown jug upright, lowers it gently and holds it still in both hands in front of her waist, then stands quietly. She stays in the same place; her feet do not move. The man at the right edge does not move at all. One single continuous shot: the camera is completely still, no zoom, no pan, no cut. The wall, the tiles, the floor and the light stay exactly as they are. Keep the oil-painting style and colours exactly."
+   "prompt": "An oil painting comes to life. The young woman slowly stops pouring: she tips the red-brown jug upright, lowers it gently and holds it still in both hands in front of her waist, then stands quietly. She stays in the same place; her feet do not move. The man at the right edge does not move at all. One single continuous shot: the camera is completely still, no zoom, no pan, no cut. The wall, the tiles, the floor and the light stay exactly as they are. Keep the oil-painting style and colours exactly.",
+   "made": "2026-11-19 19:47 UTC",
+   "frames": 57,
+   "secs": 20
   },
   {
    "id": "interp-talk",
-   "status": "todo",
+   "status": "done",
    "seconds": 4,
    "uses": "Level 4: the Interpreter (the dark repainted figure of build 351) lifts his open hand as he explains and folds his hands again; replaces the switched-off gesture; drawn large so the face is sharp",
    "first": {
@@ -117,7 +123,10 @@
     "flip": true,
     "h": 650
    },
-   "prompt": "The old man with a grey beard and a dark skull-cap, his hands folded, speaks gently and kindly as he explains: he slowly lifts one open hand in front of him, palm up, his lips moving as he talks, then slowly folds his hands again as at the start. He stands still on the spot, both feet planted."
+   "prompt": "The old man with a grey beard and a dark skull-cap, his hands folded, speaks gently and kindly as he explains: he slowly lifts one open hand in front of him, palm up, his lips moving as he talks, then slowly folds his hands again as at the start. He stands still on the spot, both feet planted.",
+   "made": "2026-11-19 19:47 UTC",
+   "frames": 65,
+   "secs": 24
   },
   {
    "id": "goodwill-pull",
@@ -131,7 +140,10 @@
    },
    "seconds": 3.5,
    "prompt": "An old bare-headed man with a short white beard and a long gown and cloak, his hands folded, leans forward and reaches out low with both hands, warmly, as if to take hold of someone and draw them in.",
-   "status": "todo"
+   "status": "done",
+   "made": "2026-11-19 19:48 UTC",
+   "frames": 57,
+   "secs": 20
   },
   {
    "id": "room7-living",
@@ -147,7 +159,10 @@
    },
    "seconds": 3,
    "prompt": "The man sitting up in the curtained bed trembles, breathing hard, staring up in awe and fear; his hand grips the bedclothes; the curtains stir very slightly. The camera is completely still: no zoom, no pan, no cut. Only the people and the light move; the room, the walls and every object stay exactly where they are. Keep the oil-painting style and colours exactly. ONE single continuous shot from beginning to end: it never cuts, never changes to another view or another room.",
-   "status": "todo"
+   "status": "done",
+   "made": "2026-11-19 19:48 UTC",
+   "frames": 49,
+   "secs": 17
   },
   {
    "id": "brave-stride",
@@ -158,7 +173,10 @@
    },
    "seconds": 3,
    "prompt": "A man in a steel helmet and breastplate, sword drawn, strides steadily and boldly to the RIGHT. The camera moves along with him and does NOT zoom: he stays in the centre of the frame at exactly the same size, his whole body always visible; he walks on the spot in the frame with even, regular steps, so the walk can loop.",
-   "status": "todo"
+   "status": "done",
+   "made": "2026-11-19 19:48 UTC",
+   "frames": 49,
+   "secs": 17
   },
   {
    "id": "room4-living",
@@ -174,7 +192,10 @@
    },
    "seconds": 3,
    "prompt": "The fire burns and flickers higher, the man keeps casting water on it from his wooden bucket and steam rises; behind the wall the man in the long robe slowly pours oil from his jug. The camera is completely still: no zoom, no pan, no cut. Only the people and the light move; the room, the walls and every object stay exactly where they are. Keep the oil-painting style and colours exactly. ONE single continuous shot from beginning to end: it never cuts, never changes to another view or another room.",
-   "status": "todo"
+   "status": "done",
+   "made": "2026-11-19 19:49 UTC",
+   "frames": 49,
+   "secs": 17
   },
   {
    "id": "christian-burden-falls",
