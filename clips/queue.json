@@ -86,7 +86,8 @@
    "prompt": "An oil painting comes to life. The young man in the brown jerkin sweeps the wooden floor in front of him with his straw broom: slow, short, steady strokes to and fro, his feet planted, his body still, only his arms and the broom moving, and at the end the broom is back where it began. The young woman with the jug at the left edge does not move at all. One single continuous shot: the camera is completely still, no zoom, no pan, no cut. The wall, the tiles, the floor and the light stay exactly as they are. Keep the oil-painting style and colours exactly.",
    "made": "2026-11-19 19:47 UTC",
    "frames": 49,
-   "secs": 30
+   "secs": 30,
+   "check": "Good: he sweeps with short strokes and the broom comes back to where it began (loops); camera still; the girl at the left edge moves a little, so only his side is used. In the game since build 364."
   },
   {
    "id": "room2-damsel",
@@ -106,7 +107,8 @@
    "prompt": "An oil painting comes to life. The young woman slowly stops pouring: she tips the red-brown jug upright, lowers it gently and holds it still in both hands in front of her waist, then stands quietly. She stays in the same place; her feet do not move. The man at the right edge does not move at all. One single continuous shot: the camera is completely still, no zoom, no pan, no cut. The wall, the tiles, the floor and the light stay exactly as they are. Keep the oil-painting style and colours exactly.",
    "made": "2026-11-19 19:47 UTC",
    "frames": 57,
-   "secs": 20
+   "secs": 20,
+   "check": "Frames 0 to 14 good: she brings the jug from pouring to upright, in profile. After about frame 16 she turns to face us: not used. In the game (played backwards for the pour) since build 364."
   },
   {
    "id": "interp-talk",
@@ -126,7 +128,8 @@
    "prompt": "The old man with a grey beard and a dark skull-cap, his hands folded, speaks gently and kindly as he explains: he slowly lifts one open hand in front of him, palm up, his lips moving as he talks, then slowly folds his hands again as at the start. He stands still on the spot, both feet planted.",
    "made": "2026-11-19 19:47 UTC",
    "frames": 65,
-   "secs": 24
+   "secs": 24,
+   "check": "Good: the new dark Interpreter lifts an open hand and folds his hands again, feet planted, side view, camera still. Can replace the switched-off gesture."
   },
   {
    "id": "goodwill-pull",
@@ -143,7 +146,8 @@
    "status": "done",
    "made": "2026-11-19 19:48 UTC",
    "frames": 57,
-   "secs": 20
+   "secs": 20,
+   "check": "Good: Good-will leans forward and reaches out with both hands, side view, feet level, camera still."
   },
   {
    "id": "room7-living",
@@ -162,7 +166,8 @@
    "status": "done",
    "made": "2026-11-19 19:48 UTC",
    "frames": 49,
-   "secs": 17
+   "secs": 17,
+   "check": "Good: the man in bed stares up, mouth opening in awe; camera still, room kept."
   },
   {
    "id": "brave-stride",
@@ -176,7 +181,8 @@
    "status": "done",
    "made": "2026-11-19 19:48 UTC",
    "frames": 49,
-   "secs": 17
+   "secs": 17,
+   "check": "Good: walks on the spot in his helmet with the sword, feet on one line; the sword wobbles a little."
   },
   {
    "id": "room4-living",
@@ -195,7 +201,8 @@
    "status": "done",
    "made": "2026-11-19 19:49 UTC",
    "frames": 49,
-   "secs": 17
+   "secs": 17,
+   "check": "Mostly good: the man throws water, the fire burns, the man behind the wall pours oil; at the end the water man changes his pose with the bucket a little abruptly; check before use."
   },
   {
    "id": "christian-burden-falls",
