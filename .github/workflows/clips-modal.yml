@@ -1,0 +1,53 @@
+# Free clips on Modal's monthly credits, run by GitHub (the owner's Modal token is in the repository's secrets
+# MODAL_TOKEN_ID and MODAL_TOKEN_SECRET; never printed). Works only on the `clips` branch; never touches the game.
+# task "setup": deploy the app and fetch the model into Modal's storage (once). task "run": make the next clips.
+name: Clips on Modal
+on:
+  workflow_dispatch:
+    inputs:
+      task:
+        description: setup or run
+        type: choice
+        options: [run, setup]
+        default: run
+      max:
+        description: most clips this run
+        default: '8'
+permissions:
+  contents: write
+concurrency:
+  group: clips-modal
+  cancel-in-progress: false
+jobs:
+  clips:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      MODAL_TOKEN_ID: ${{ secrets.MODAL_TOKEN_ID }}
+      MODAL_TOKEN_SECRET: ${{ secrets.MODAL_TOKEN_SECRET }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: clips
+          fetch-depth: 0
+      - run: git fetch origin main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -q modal pillow opencv-python-headless numpy
+      - name: setup (deploy the app, fetch the model)
+        if: inputs.task == 'setup'
+        run: |
+          modal deploy clips/modal_video.py
+          modal run clips/modal_video.py::download
+      - name: run (the next clips)
+        if: inputs.task != 'setup'
+        run: python3 clips/modal_run.py "${{ inputs.max || '8' }}"
+      - name: save to the clips branch
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add clips
+          git diff --cached --quiet || git commit -m "Clips on Modal: $(date -u +%F)"
+          for i in 1 2 3 4; do git pull --rebase origin clips && git push origin clips && break; sleep 8; done
