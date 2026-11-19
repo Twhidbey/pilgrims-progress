@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The mannequin</title>
+<style>
+  html, body { margin: 0; background: #23211f; color: #d8d2c6; font: 15px/1.4 Georgia, serif; -webkit-text-size-adjust: 100%; }
+  h1 { font-size: 18px; font-weight: normal; margin: 12px 14px 2px; }
+  p { margin: 2px 14px 8px; color: #a59f93; font-size: 13px; }
+  canvas { display: block; width: 100%; height: auto; }
+  .bar { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 12px; }
+  button { font: inherit; font-size: 14px; color: #e6dfd0; background: #3a3632; border: 1px solid #5d564c; border-radius: 6px; padding: 7px 11px; }
+  button.on { border-color: #c9a45a; color: #f0d79a; }
+  #info { padding: 0 14px 6px; color: #a59f93; font-size: 13px; }
+</style>
+</head>
+<body>
+<h1>The mannequin: Christian drawn in code</h1>
+<p>Left: his picture frames. Middle: the mannequin, drawn with shapes only. Right: one laid over the other. Below: the mannequin walking at the game's size.</p>
+<canvas id="c" width="1500" height="700"></canvas>
+<div id="info"></div>
+<div class="bar" id="anims"></div>
+<div class="bar">
+  <button id="play" class="on">Pause</button>
+  <button id="back">◂ frame</button>
+  <button id="fwd">frame ▸</button>
+  <button id="speed">Speed: 1</button>
+  <button id="bones">Bones</button>
+  <button id="smooth" class="on">Smooth between frames</button>
+  <button id="ground">Ground: grey</button>
+</div>
+<canvas id="w" width="1500" height="300"></canvas>
+<script src="mannequin.js"></script>
+<script>
+(async () => {
+  const cv = document.getElementById('c'), ctx = cv.getContext('2d'), wv = document.getElementById('w'), wx = wv.getContext('2d');
+  const D = await MQ.load('assets/mannequin.json?' + Date.now()), C = MQ.costume, PACKS = {};
+  async function pack(name) {
+    if (PACKS[name]) return PACKS[name];
+    const buf = await (await fetch('assets/' + name + '.pack')).arrayBuffer(), dv = new DataView(buf), n = dv.getUint32(0, true), ims = []; let off = 4 + 4 * n;
+    const toIm = blob => window.createImageBitmap ? createImageBitmap(blob) : new Promise(r => { const im = new Image(); im.onload = () => r(im); im.src = URL.createObjectURL(blob); });
+    for (let i = 0; i < n; i++) { const len = dv.getUint32(4 + 4 * i, true); ims.push(await toIm(new Blob([buf.slice(off, off + len)], { type: 'image/webp' }))); off += len; }
+    return PACKS[name] = ims;
+  }
+  const names = Object.keys(MQ.anims); let cur = names[0], ims = await pack(MQ.anims[cur].pack);
+  let f = 0, playing = true, speed = 1, bones = false, smooth = true, gi = 0, wxp = -80, last = performance.now();
+  const GROUNDS = [['grey', '#7d8a96', '#5f6a74'], ['pale', '#d9d4c8', '#b9b2a2'], ['dark', '#2c2a2e', '#1b1a1d'], ['green', '#8a9364', '#5c6540']];
+  const $ = id => document.getElementById(id);
+  for (const n of names) { const b = document.createElement('button'); b.textContent = n; b.onclick = async () => { cur = n; ims = await pack(MQ.anims[n].pack); f = 0; marks(); }; $('anims').appendChild(b); }
+  const marks = () => [...$('anims').children].forEach(b => b.classList.toggle('on', b.textContent === cur)); marks();
+  $('play').onclick = e => { playing = !playing; e.target.textContent = playing ? 'Pause' : 'Play'; e.target.classList.toggle('on', playing); };
+  $('back').onclick = () => { playing = false; $('play').textContent = 'Play'; $('play').classList.remove('on'); f = Math.round(f) - 1; };
+  $('fwd').onclick = () => { playing = false; $('play').textContent = 'Play'; $('play').classList.remove('on'); f = Math.round(f) + 1; };
+  $('speed').onclick = e => { speed = speed === 1 ? .5 : speed === .5 ? .2 : 1; e.target.textContent = 'Speed: ' + speed; };
+  $('bones').onclick = e => { bones = !bones; e.target.classList.toggle('on', bones); };
+  $('smooth').onclick = e => { smooth = !smooth; e.target.classList.toggle('on', smooth); };
+  $('ground').onclick = e => { gi = (gi + 1) % GROUNDS.length; e.target.textContent = 'Ground: ' + GROUNDS[gi][0]; };
+  function skeleton(x, P, ox, oy, Z) {
+    const B = MQ.bones(P), pt = p => [ox + (p[0] - C.ax) * Z, oy + (p[1] - C.ground) * Z];
+    const line = (pts, col) => { x.strokeStyle = col; x.lineWidth = 3; x.lineCap = 'round'; x.beginPath(); pts.forEach((p, i) => { const q = pt(p); i ? x.lineTo(q[0], q[1]) : x.moveTo(q[0], q[1]); }); x.stroke(); x.fillStyle = '#fff'; pts.forEach(p => { const q = pt(p); x.beginPath(); x.arc(q[0], q[1], 3.5, 0, 7); x.fill(); }); };
+    line([B.F.hip, B.F.knee, B.F.ankle, B.F.toe], '#d9603a'); line([B.N.hip, B.N.knee, B.N.ankle, B.N.toe], '#f0c24a'); line([B.pelvis, B.neck, B.head], '#6fc3e8');
+  }
+  function frame(now) {
+    const A = MQ.anims[cur], n = A.frames.length, dt = Math.min(.1, (now - last) / 1000); last = now;
+    if (playing) f += dt * (A.fps || 24) * speed;
+    if (A.loop) f = ((f % n) + n) % n; else if (f > n - 1 + 12) f = 0;
+    const ff = Math.max(0, Math.min(A.loop ? n : n - 1, f)), fi = Math.floor(ff) % n, P = MQ.poseAt(cur, smooth ? ff : fi);
+    const ax = A.ax || C.ax, gr = A.ground || C.ground, im = ims[fi], Z = 2, pw = 500, gy = 650, G = GROUNDS[gi];
+    ctx.fillStyle = G[1]; ctx.fillRect(0, 0, 1500, 700); ctx.fillStyle = G[2]; ctx.fillRect(0, gy - 6, 1500, 56);
+    for (let k = 0; k < 3; k++) {
+      const ox = k * pw + 250;
+      if (k !== 1) ctx.drawImage(im, ox - ax * Z, gy - gr * Z, im.width * Z, im.height * Z);
+      if (k === 2) ctx.globalAlpha = .5;
+      if (k !== 0) MQ.draw(ctx, P, ox, gy, 1, Z);
+      ctx.globalAlpha = 1;
+      if (bones && k === 1) skeleton(ctx, P, ox, gy, Z);
+    }
+    $('info').textContent = cur + ' · frame ' + fi + ' of ' + n;
+    // walking across at the game's size and pace
+    wx.fillStyle = G[1]; wx.fillRect(0, 0, 1500, 300); wx.fillStyle = G[2]; wx.fillRect(0, 236, 1500, 64);
+    const K = 1.04;
+    if (A.vpx) { if (playing) wxp += dt * (A.fps || 24) * speed * A.vpx * K; if (wxp > 1580) wxp = -80; MQ.draw(wx, P, wxp, 240, 1, K); }
+    else MQ.draw(wx, P, 750, 240, 1, K);
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

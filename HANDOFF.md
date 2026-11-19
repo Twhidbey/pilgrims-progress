@@ -4,6 +4,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 ## START HERE (rewritten at build 140, Nov 16 2026)
 
+**Characters chat (after build 364, no game change): THE MANNEQUIN, a lab.** Christian drawn in code as a jointed figure in parts, its poses measured from his own walk frames (`mannequin.js`, `assets/mannequin.json`, `mannequin.html`, `tools/mannequin/`; see CLAUDE.md, "The mannequin"). Only the walk so far (outline overlap .96 with his frames). Waiting on the owner's eyes for the look and the motion; then standing, arms, the other movements, a cloth rule for new movements, and the game. The owner allowed up to $5 for motion videos to map: nothing spent yet (running total for this job: $0).
+
 **Build 362 (Level 4 videos chat): every frame pack checked; the gaps between Christian's legs (walk, turn, kneel, run) no longer filled in, and in Levels 2 and 3 no fill between Evangelist's boots or staff and robe, nor between Help's, Pliable's and Wiseman's legs. `tools/pack-check.py` added. Open: a white patch on the first frame of `?level=3&at=evangelist` (skip link only). Nothing spent.**
 
 **Build 361 (Level 4 videos chat): Level 2's lift no longer has a grey or dark block between Help and Christian (the gap between the two men was being filled, in the pack and again by `solidOf`). Nothing spent.**
