@@ -68,6 +68,41 @@
    "check": "First half good (pouring, sweeping); about 2.5 s in the model cut to another view of the room: use only frames 0 to about 40."
   },
   {
+   "id": "room2-sweep",
+   "status": "todo",
+   "uses": "Level 4 room 2: the man sweeps (looped), laid back into the painting where his arms and broom move; again after the water, with no dust; any later sweeping",
+   "first": {
+    "src": "clips/in/room2-nostream.webp",
+    "crop": [
+     1325,
+     375,
+     2534,
+     1055
+    ]
+   },
+   "last": "first",
+   "seconds": 3.0,
+   "negative": "camera movement, zoom, pan, cut, scene change, new view, extra limbs, extra people, text, watermark, fast motion, morphing, changing walls, flicker",
+   "prompt": "An oil painting comes to life. The young man in the brown jerkin sweeps the wooden floor in front of him with his straw broom: slow, short, steady strokes to and fro, his feet planted, his body still, only his arms and the broom moving, and at the end the broom is back where it began. The young woman with the jug at the left edge does not move at all. One single continuous shot: the camera is completely still, no zoom, no pan, no cut. The wall, the tiles, the floor and the light stay exactly as they are. Keep the oil-painting style and colours exactly."
+  },
+  {
+   "id": "room2-damsel",
+   "status": "todo",
+   "uses": "Level 4 room 2: played BACKWARDS, the damsel lifts and tips her jug to sprinkle the room; its last frame is her standing by with the jug still",
+   "first": {
+    "src": "clips/in/room2-nostream.webp",
+    "crop": [
+     800,
+     375,
+     2009,
+     1055
+    ]
+   },
+   "seconds": 3.5,
+   "negative": "camera movement, zoom, pan, cut, scene change, new view, extra limbs, extra people, text, watermark, fast motion, morphing, changing walls, flicker",
+   "prompt": "An oil painting comes to life. The young woman slowly stops pouring: she tips the red-brown jug upright, lowers it gently and holds it still in both hands in front of her waist, then stands quietly. She stays in the same place; her feet do not move. The man at the right edge does not move at all. One single continuous shot: the camera is completely still, no zoom, no pan, no cut. The wall, the tiles, the floor and the light stay exactly as they are. Keep the oil-painting style and colours exactly."
+  },
+  {
    "id": "interp-talk",
    "status": "todo",
    "seconds": 3.5,

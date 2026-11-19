@@ -35,6 +35,9 @@ def main_file(path):
 
 
 def figure(src):
+    if src.startswith('clips/'):
+        # a picture kept on this branch (e.g. a room painting prepared for a clip)
+        return Image.open(os.path.join(ROOT, src)).convert('RGBA')
     if src.startswith('pack:'):
         _, name, k = src.split(':')
         b = main_file('assets/' + name + '.pack'); n = struct.unpack_from('<I', b, 0)[0]
@@ -86,10 +89,13 @@ def run(maxjobs):
     for j in todo[:maxjobs]:
         f0, f1 = os.path.join(OUT, j['id'] + '-first.png'), os.path.join(OUT, j['id'] + '-last.png')
         picture(j['first'], f0); last = None
-        if j.get('last'): picture(j['last'], f1); last = handle_file(f1)
+        if j.get('last') == 'first': last = handle_file(f0)
+        elif j.get('last'): picture(j['last'], f1); last = handle_file(f1)
+        # a living part of a room is not a figure on white: no figure style, the job's own negative words
+        room = bool(j['first'].get('crop')); neg = j.get('negative', NEG)
         t = time.time()
         try:
-            r = c.predict(handle_file(f0), last, j['prompt'] + STYLE, j.get('steps', 6), NEG, j.get('seconds', 3.5),
+            r = c.predict(handle_file(f0), last, j['prompt'] + ('' if room else STYLE), j.get('steps', 6), neg, j.get('seconds', 3.5),
                           1, 1, j.get('seed', 42), False, 6, 'UniPCMultistep', 3.0, 16, True, True, True, api_name='/generate_video')
         except Exception as e:
             msg = str(e)[:300].replace('\n', ' ')
