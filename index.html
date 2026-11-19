@@ -164,7 +164,7 @@ body.portrait #rot{display:block}
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
   <button id="autoWalk" aria-label="He walks on by himself"><svg viewBox="0 0 24 24"><path d="M5 6l6 6-6 6M12 6l6 6-6 6"/></svg></button>
-  <div id="build">build 361 · Nov 19 2026</div>
+  <div id="build">build 362 · Nov 19 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -1171,7 +1171,7 @@ const runNow = () => G.ears || !RUNP.ready ? [RUN, RUN_META] : [RUNP, RUNP_META]
 function coverEars() { if (G.ears) return; if (P.run) poseChange(8, true); G.ears = true; }
 const CHR = [], PLI = [], OBS = [], EVA = [], STD = [], RUN = [], CHR_K = .52, RUN_STEP = RUN_META.vpx * CHR_K, RUNV = RUN_STEP * .4,   // the run at its video's own speed (24 frames a second)
    CHR_STEP = CHR_META.vpx * CHR_K, PLI_STEP = PLI_META.vpx * CHR_K, OBS_STEP = OBS_META.vpx * CHR_K;
-const PACK_V = 38;                          // bump when the .pack files change, so phones fetch the new ones
+const PACK_V = 39;                          // bump when the .pack files change, so phones fetch the new ones
 // SOLID FIGURES (build 202; owner: "in both level 2 and 3, pilgrims sprite is clear in spots. we need to fix this"). The
 // figures were cut from their white paper by how white each pixel is, so the white paper showing inside the watercolour
 // (highlights on the cloak, the pack, the hood) was cut away too and the scene showed through those spots (2 to 7 per cent
@@ -1189,12 +1189,12 @@ function solidOf(im) {
   for (let x = 0; x < W; x++) { push(x); push((H - 1) * W + x); }
   for (let y = 0; y < H; y++) { push(y * W); push(y * W + W - 1); }
   while (sp) { const i = st[--sp], x = i % W; if (x > 0) push(i - 1); if (x < W - 1) push(i + 1); if (i >= W) push(i - W); if (i < W * (H - 1)) push(i + W); }
-  // a LARGE clear space shut in by the figure is open air (the gap between two men who hold hands, Level 2's lift), not a
-  // spot of white paper: it is left clear
+  // only SMALL shut-in clear spots (up to 50 px) are white paper to fill; anything larger is open air (between the legs,
+  // between a staff and a robe, between two men who hold hands) and is left clear
   for (let i0 = 0; i0 < W * H; i0++) { if (out[i0] || D[i0 * 4 + 3] >= 40) continue; const from = sp = 0; let n = 0; out[i0] = 2; st[sp++] = i0; const got = [];
     const p2 = i => { if (!out[i] && D[i * 4 + 3] < 40) { out[i] = 2; st[sp++] = i; } };
     while (sp) { const i = st[--sp], x = i % W; got.push(i); n++; if (x > 0) p2(i - 1); if (x < W - 1) p2(i + 1); if (i >= W) p2(i - W); if (i < W * (H - 1)) p2(i + W); }
-    if (n <= 2500) for (const i of got) out[i] = 3; }
+    if (n <= 50) for (const i of got) out[i] = 3; }
   for (let i = 0; i < W * H; i++) out[i] = out[i] === 3 ? 0 : out[i] ? 1 : 0;
   let near = out;
   for (let pass = 0; pass < 4; pass++) { const nx = near.slice(); for (let i = 0; i < W * H; i++) if (!near[i]) { const x = i % W; if ((x > 0 && near[i - 1]) || (x < W - 1 && near[i + 1]) || (i >= W && near[i - W]) || (i < W * (H - 1) && near[i + W])) nx[i] = 1; } near = nx; }
