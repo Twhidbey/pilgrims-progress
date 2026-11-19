@@ -88,7 +88,10 @@ def run(maxjobs):
     c = Client(SPACE, verbose=False); made = 0
     for j in todo[:maxjobs]:
         f0, f1 = os.path.join(OUT, j['id'] + '-first.png'), os.path.join(OUT, j['id'] + '-last.png')
-        picture(j['first'], f0); last = None
+        try: picture(j['first'], f0)
+        except Exception as e:
+            log('- %s %s: skipped, its picture could not be made (%s)' % (stamp(), j['id'], str(e)[:120])); continue
+        last = None
         if j.get('last') == 'first': last = handle_file(f0)
         elif j.get('last'): picture(j['last'], f1); last = handle_file(f1)
         # a living part of a room is not a figure on white: no figure style, the job's own negative words

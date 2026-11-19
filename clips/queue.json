@@ -105,61 +105,19 @@
   {
    "id": "interp-talk",
    "status": "todo",
-   "seconds": 3.5,
-   "uses": "Level 4: the Interpreter speaking (lips and beard moving, small nods, the open hand), looped while he talks; drawn large in the frame so the face is sharp",
-   "first": {
-    "src": "assets/room-interpreter-say.webp",
-    "cell": [
-     8,
-     142,
-     336,
-     55
-    ],
-    "flip": true,
-    "h": 650
-   },
-   "last": {
-    "src": "assets/room-interpreter-say.webp",
-    "cell": [
-     8,
-     142,
-     336,
-     55
-    ],
-    "flip": true,
-    "h": 650
-   },
-   "prompt": "The old man with a grey beard and a dark skull-cap, his open hand raised, speaks gently and kindly: his lips move clearly as he talks, his beard moves with his jaw, he nods slightly and his raised hand moves a little with his words. His feet stay where they are."
-  },
-  {
-   "id": "room4-living",
-   "uses": "Level 4 room 4: the fire burns and flickers, the man keeps casting water on it, steam rises; behind the wall the oil is poured",
-   "first": {
-    "src": "assets/room4.webp",
-    "crop": [
-     880,
-     376,
-     2000,
-     1006
-    ]
-   },
-   "seconds": 3,
-   "prompt": "The fire burns and flickers higher, the man keeps casting water on it from his wooden bucket and steam rises; behind the wall the man in the long robe slowly pours oil from his jug. The camera is completely still: no zoom, no pan, no cut. Only the people and the light move; the room, the walls and every object stay exactly where they are. Keep the oil-painting style and colours exactly. ONE single continuous shot from beginning to end: it never cuts, never changes to another view or another room.",
-   "status": "todo"
-  },
-  {
-   "id": "brave-arm",
-   "uses": "Level 4 room 5: the brave man puts on his helmet and draws his sword; Apollyon (Level 8) if Christian arms the same way",
-   "first": {
-    "src": "assets/room5-brave.webp"
-   },
-   "last": {
-    "src": "assets/room5-brave-armed.webp",
-    "h": 580
-   },
    "seconds": 4,
-   "prompt": "A strong plain man in a long brown coat puts a steel helmet on his head and draws his sword, then strides forward to the RIGHT, determined.",
-   "status": "todo"
+   "uses": "Level 4: the Interpreter (the dark repainted figure of build 351) lifts his open hand as he explains and folds his hands again; replaces the switched-off gesture; drawn large so the face is sharp",
+   "first": {
+    "src": "assets/room-interpreter-p.webp",
+    "flip": true,
+    "h": 650
+   },
+   "last": {
+    "src": "assets/room-interpreter-p.webp",
+    "flip": true,
+    "h": 650
+   },
+   "prompt": "The old man with a grey beard and a dark skull-cap, his hands folded, speaks gently and kindly as he explains: he slowly lifts one open hand in front of him, palm up, his lips moving as he talks, then slowly folds his hands again as at the start. He stands still on the spot, both feet planted."
   },
   {
    "id": "goodwill-pull",
@@ -173,36 +131,6 @@
    },
    "seconds": 3.5,
    "prompt": "An old bare-headed man with a short white beard and a long gown and cloak, his hands folded, leans forward and reaches out low with both hands, warmly, as if to take hold of someone and draw them in.",
-   "status": "todo"
-  },
-  {
-   "id": "christian-oil-look",
-   "uses": "Level 4: looking up at the picture (room 1), at the light (room 7), at the palace (room 5); Level 5 looking up at the Cross",
-   "first": {
-    "src": "assets/room-christian.webp",
-    "flip": true
-   },
-   "last": {
-    "src": "assets/room-christian.webp",
-    "flip": true
-   },
-   "seconds": 3,
-   "prompt": "The pilgrim with the great bundle on his back stands still, slowly lifts his head to look up at something high in front of him, holds the look a moment in wonder, then slowly lowers his head again.",
-   "status": "todo"
-  },
-  {
-   "id": "interp-nod",
-   "uses": "Level 4: the Interpreter listening while Christian speaks, in every room",
-   "first": {
-    "src": "assets/room-interpreter.webp",
-    "flip": true
-   },
-   "last": {
-    "src": "assets/room-interpreter.webp",
-    "flip": true
-   },
-   "seconds": 3,
-   "prompt": "The old man with folded hands stands still, breathing quietly, and slowly nods his head once or twice, kindly, as if listening and agreeing.",
    "status": "todo"
   },
   {
@@ -222,20 +150,6 @@
    "status": "todo"
   },
   {
-   "id": "christian-oil-turn",
-   "uses": "Level 4: turning round in the rooms and at the door; any painted room later",
-   "first": {
-    "src": "assets/room-christian.webp",
-    "flip": true
-   },
-   "last": {
-    "src": "assets/room-christian.webp"
-   },
-   "seconds": 3,
-   "prompt": "The pilgrim with the great bundle on his back slowly turns round on the spot, from facing right to facing left, his feet stepping round in place.",
-   "status": "todo"
-  },
-  {
    "id": "brave-stride",
    "uses": "Level 4 room 5: the brave man striding through the guards (a loop)",
    "first": {
@@ -247,6 +161,22 @@
    "status": "todo"
   },
   {
+   "id": "room4-living",
+   "uses": "Level 4 room 4: the fire burns and flickers, the man keeps casting water on it, steam rises; behind the wall the oil is poured",
+   "first": {
+    "src": "assets/room4.webp",
+    "crop": [
+     880,
+     376,
+     2000,
+     1006
+    ]
+   },
+   "seconds": 3,
+   "prompt": "The fire burns and flickers higher, the man keeps casting water on it from his wooden bucket and steam rises; behind the wall the man in the long robe slowly pours oil from his jug. The camera is completely still: no zoom, no pan, no cut. Only the people and the light move; the room, the walls and every object stay exactly where they are. Keep the oil-painting style and colours exactly. ONE single continuous shot from beginning to end: it never cuts, never changes to another view or another room.",
+   "status": "todo"
+  },
+  {
    "id": "christian-burden-falls",
    "uses": "Level 5, the Cross: the burden loosens, falls from his back and tumbles away (an experiment: no last picture yet)",
    "first": {
@@ -255,6 +185,86 @@
    },
    "seconds": 5,
    "prompt": "The pilgrim stands still; the ropes holding the great bundle on his back loosen by themselves, the bundle slips from his shoulders, falls behind him and tumbles away out of the picture; he straightens up, lighter, and stands tall.",
+   "status": "todo"
+  },
+  {
+   "id": "brave-arm",
+   "uses": "Level 4 room 5: the brave man puts on his helmet and draws his sword; Apollyon (Level 8) if Christian arms the same way",
+   "first": {
+    "src": "assets/room5-brave.webp"
+   },
+   "last": {
+    "src": "assets/room5-brave-armed.webp",
+    "h": 580
+   },
+   "seconds": 4,
+   "prompt": "A strong plain man in a long brown coat puts a steel helmet on his head and draws his sword, then strides forward to the RIGHT, determined.",
+   "status": "todo"
+  },
+  {
+   "id": "christian-p-walk",
+   "status": "todo",
+   "uses": "Level 4: the dark passages between rooms and leaving the house, in the repainted figures of build 351 (the old walks no longer match them)",
+   "first": {
+    "src": "assets/room-christian-p.webp",
+    "flip": true
+   },
+   "seconds": 4,
+   "prompt": "A pilgrim in a worn hooded cloak with a great bundle tied with rope on his back walks slowly and steadily to the RIGHT, bent a little under the weight, his hands empty. The camera moves along with him and does NOT zoom: he stays in the centre of the frame at exactly the same size, his whole body always visible; he walks on the spot in the frame with even, regular steps, so the walk can loop."
+  },
+  {
+   "id": "interp-p-walk",
+   "status": "todo",
+   "uses": "Level 4: the dark passages between rooms and leaving the house, in the repainted figures of build 351 (the old walks no longer match them)",
+   "first": {
+    "src": "assets/room-interpreter-p.webp",
+    "flip": true
+   },
+   "seconds": 4,
+   "prompt": "An old grave kind man in a long dark gown and a dark skull-cap walks slowly and steadily to the RIGHT, his hands folded in front of him, an unhurried dignified walk. The camera moves along with him and does NOT zoom: he stays in the centre of the frame at exactly the same size, his whole body always visible; he walks on the spot in the frame with even, regular steps, so the walk can loop."
+  },
+  {
+   "id": "christian-oil-look",
+   "uses": "Level 4: looking up at the picture (room 1), at the light (room 7), at the palace (room 5); Level 5 looking up at the Cross",
+   "first": {
+    "src": "assets/room-christian-p.webp",
+    "flip": true
+   },
+   "last": {
+    "src": "assets/room-christian-p.webp",
+    "flip": true
+   },
+   "seconds": 3,
+   "prompt": "The pilgrim with the great bundle on his back stands still, slowly lifts his head to look up at something high in front of him, holds the look a moment in wonder, then slowly lowers his head again.",
+   "status": "todo"
+  },
+  {
+   "id": "interp-nod",
+   "uses": "Level 4: the Interpreter listening while Christian speaks, in every room",
+   "first": {
+    "src": "assets/room-interpreter-p.webp",
+    "flip": true
+   },
+   "last": {
+    "src": "assets/room-interpreter-p.webp",
+    "flip": true
+   },
+   "seconds": 3,
+   "prompt": "The old man with folded hands stands still, breathing quietly, and slowly nods his head once or twice, kindly, as if listening and agreeing.",
+   "status": "todo"
+  },
+  {
+   "id": "christian-oil-turn",
+   "uses": "Level 4: turning round in the rooms and at the door; any painted room later",
+   "first": {
+    "src": "assets/room-christian-p.webp",
+    "flip": true
+   },
+   "last": {
+    "src": "assets/room-christian-p.webp"
+   },
+   "seconds": 3,
+   "prompt": "The pilgrim with the great bundle on his back slowly turns round on the spot, from facing right to facing left, his feet stepping round in place.",
    "status": "todo"
   }
  ]
