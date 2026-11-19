@@ -17,7 +17,7 @@
 </head>
 <body>
 <h1>The mannequin: a skeleton that walks, and clothes that follow it</h1>
-<p>Left: the bare mannequin and its bones. Middle: Christian's clothes built on it, drawn in shapes. Right: his old picture frames, only to compare the feel. Below: walking at the game's size.</p>
+<p>Left: the bare mannequin and its bones. Middle: Christian's clothes built on it, a dark quiet silhouette. Right: his old picture frames, only to compare the feel. Below: walking at the game's size.</p>
 <canvas id="c" width="1500" height="700"></canvas>
 <div id="info"></div>
 <div class="bar" id="anims"></div>
@@ -27,6 +27,7 @@
   <button id="fwd">frame ▸</button>
   <button id="speed">Speed: 1</button>
   <button id="bones">Bones on him</button>
+  <button id="detail">Inside: quiet</button>
   <button id="ground">Ground: grey</button>
 </div>
 <canvas id="w" width="1500" height="300"></canvas>
@@ -54,6 +55,8 @@
   $('fwd').onclick = () => { stop(); f = Math.round(f) + 1; };
   $('speed').onclick = e => { speed = speed === 1 ? .5 : speed === .5 ? .2 : 1; e.target.textContent = 'Speed: ' + speed; };
   $('bones').onclick = e => { bones = !bones; e.target.classList.toggle('on', bones); };
+  const DET = [['quiet', 1], ['none', 0], ['more', 2.2]]; let di = 0;
+  $('detail').onclick = e => { di = (di + 1) % DET.length; MQ.LOOK.detail = DET[di][1]; e.target.textContent = 'Inside: ' + DET[di][0]; };
   $('ground').onclick = e => { gi = (gi + 1) % GROUNDS.length; e.target.textContent = 'Ground: ' + GROUNDS[gi][0]; };
   function skeleton(x, S, ox, oy, Z) {
     const J = MQ.joints(S), pt = p => [ox + (p[0] - K.ax) * Z, oy + (p[1] - K.ground) * Z];
