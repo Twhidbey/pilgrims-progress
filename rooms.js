@@ -235,8 +235,13 @@ const RM = (() => {
     },
     // 2 THE DUSTY PARLOUR (after Vermeer's Milkmaid): the broom raises the dust; the water lays it
     r2: {
-      pic: 'room2', FY: 1262, cam0: 140, tone: [360, 346, 322], noShadow: 1,
-      enter() { this.dust = []; this.haze = .22; this.wet = []; const r = rngR(5); for (let i = 0; i < 70; i++) this.dust.push({ x: 300 + r() * 2800, y: 300 + r() * 900, vx: 0, vy: 0, s: 2 + r() * 5, a: .5 + r() * .5, p: r() * 7 }); },
+      pic: 'room2-dry', FY: 1262, cam0: 140, tone: [360, 346, 322], noShadow: 1,
+      // the sweeper and the girl move by free clips laid back into the painting where they move (build 364): SW his sweep (a loop),
+      // DM her jug from pouring (frame 0) to held upright (14), shown at 14 until she pours; x, y, W, H in the asset's own pixels, the sheets at .7 (the clip's own resolution)
+      SW: { n: 'room2-sweep', x: 1770, y: 375, W: 417, H: 680, sw: 292, sh: 476, cols: 8, fr: 49 }, DM: { n: 'room2-damsel', x: 1261, y: 380, W: 359, H: 675, sw: 251, sh: 472, cols: 8, fr: 15 },
+      ov(c, o, f) { const im = pics[o.n]; if (!im) return; f = Math.max(0, Math.min(o.fr - 1, Math.round(f))); c.drawImage(im, (f % o.cols) * o.sw, Math.floor(f / o.cols) * o.sh, o.sw, o.sh, u(o.x / K), v(o.y / K), o.W / K * S, o.H / K * S); },
+      under(c) { this.ov(c, this.DM, this.df); this.ov(c, this.SW, this.sf); },
+      enter() { pic('room2-sweep'); pic('room2-damsel'); this.sf = 0; this.sweeps = 0; this.df = 14; this.dt = 14; this.dust = []; this.haze = .22; this.wet = []; const r = rngR(5); for (let i = 0; i < 70; i++) this.dust.push({ x: 300 + r() * 2800, y: 300 + r() * 900, vx: 0, vy: 0, s: 2 + r() * 5, a: .5 + r() * .5, p: r() * 7 }); },
       run() { talk([[N, 'He led him into a very large parlour, full of dust, because it was never swept.'], [TIP, 'Touch the broom.', 'broom']], () => { ph = 'sweep'; t = 0; G.state = 'auto'; }); },
       act(sx, sy) {
         if (G.act === 'broom' && (sx == null || near(sx, sy, 2390, 1180, 160))) next(true);
@@ -245,19 +250,29 @@ const RM = (() => {
       upd() {
         if (G.act === 'broom' && G.actT >= 70 && !G.ring) G.ring = ring(2390, 1200);
         if (G.act === 'jug' && G.actT >= 70 && !G.ring) G.ring = ring(1900, 840);
+        // his strokes at the clip's own pace (16 a second); each sweep is whole loops, ending where it began
+        if (this.sweeps > 0) { this.sf += 16 / 60; if (this.sf >= this.SW.fr - 1) { this.sf = 0; this.sweeps--; } }
+        // her jug eases toward its target frame at 12 a second (14 held upright, 0 pouring)
+        if (this.df !== this.dt) this.df += Math.sign(this.dt - this.df) * Math.min(12 / 60, Math.abs(this.dt - this.df));
         if (ph === 'sweep') {
-          if (t < 160 && t % 2 === 0) for (let k = 0; k < 6; k++) this.dust.push({ x: 2390 + (rnd() - .5) * 120, y: 1240 - rnd() * 40, vx: -1 - rnd() * 6, vy: -.6 - rnd() * 2.2, s: 2 + rnd() * 6, a: .6 + rnd() * .4, p: rnd() * 7, life: 0 });
+          if (t === 1) this.sweeps = 2;
+          if (t < 300 && this.sweeps > 0 && t % 2 === 0) for (let k = 0; k < 6; k++) this.dust.push({ x: 2390 + (rnd() - .5) * 120, y: 1240 - rnd() * 40, vx: -1 - rnd() * 6, vy: -.6 - rnd() * 2.2, s: 2 + rnd() * 6, a: .6 + rnd() * .4, p: rnd() * 7, life: 0 });
           if (t % 18 === 0 && t < 140) noise(1800, .8, .3, .06);
           this.haze = Math.min(.55, this.haze + .003);
           if (t === 120) cough(0); if (t === 200) cough(0);
           if (t === 270) talk([[I, 'Bring the water, and sprinkle the room.'], [TIP, 'Touch the jug.', 'jug']], () => { ph = 'sprinkle'; t = 0; G.state = 'auto'; });
         }
         if (ph === 'sprinkle') {
-          if (t < 220 && t % 3 === 0) for (let k = 0; k < 2; k++) this.wet.push({ x: 1910 + rnd() * 30, y: 850, vx: (rnd() - .5) * 1.2, vy: -rnd() * 1.5, l: 0 });
-          if (t % 24 === 0 && t < 220) noise(6000, 1, .4, .025);
+          // she tips the jug (the clip played backwards), pours while it is tipped, then holds it upright again; then he sweeps the room clean, no dust
+          if (t === 1) this.dt = 0;
+          if (t === 240) this.dt = 14;
+          if (t === 260) this.sweeps = 1;
+          const pour = this.df < 1.5 && t < 240;
+          if (pour && t % 3 === 0) for (let k = 0; k < 2; k++) this.wet.push({ x: 1944 + rnd() * 14, y: 842, vx: (rnd() - .5) * 1.2, vy: -rnd() * 1.5, l: 0 });
+          if (pour && t % 24 === 0) noise(6000, 1, .4, .025);
           this.haze = Math.max(0, this.haze - .0028);
           for (const d of this.dust) { d.vy += .03; d.vx *= .96; }
-          if (t === 280) talk([[C, 'What does this mean?'], [I, 'This parlour is the heart of a man. The dust is his sin. He who swept first is the Law: it stirs the dust up, but cannot make the heart clean.'], [I, 'She who brought the water is the Gospel. By it the heart is made clean, fit for the King of glory to live in.']], () => goTo('r3'));
+          if (t === 330) talk([[C, 'What does this mean?'], [I, 'This parlour is the heart of a man. The dust is his sin. He who swept first is the Law: it stirs the dust up, but cannot make the heart clean.'], [I, 'She who brought the water is the Gospel. By it the heart is made clean, fit for the King of glory to live in.']], () => goTo('r3'));
         }
         for (const d of this.dust) { d.life = (d.life || 0) + 1; d.dr = d.dr || (.95 + rnd() * .04); d.vx *= d.dr; if (d.life > 120) d.a *= .99; if (Math.abs(d.x - 1900) < 160 && d.y < 1000) d.a *= .97; if (d.y < 1000) d.vy = Math.max(d.vy, 0); d.x += d.vx + Math.sin(G.t / 60 + d.p) * .4; d.y += d.vy; d.vx *= .985; d.vy = d.vy * .985 + (ph === 'sprinkle' ? .05 : -.004); if (ph === 'sprinkle' && d.y > 1240) d.a *= .9; }
         this.dust = this.dust.filter(d => d.a > .03 && d.y < 1400);

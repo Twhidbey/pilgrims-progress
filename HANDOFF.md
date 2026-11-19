@@ -102,6 +102,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 **Build 353 (Level 4 chat): in the parlour the Interpreter moved a little left, clear of the basket. Nothing spent.**
 
+**Build 364 (Level 4 chat): the parlour's sweeper and girl move, from two free clips. The girl first stands holding her jug upright (the water stream painted out: `room2-dry.webp`, was `room2.webp`); at the broom touch he sweeps (two whole strokes, a loop); at the jug touch she tips the jug and pours (her clip played backwards), then holds it upright again, and he sweeps once more with no dust (the book: "it was swept and cleansed with pleasure"). Only the moving parts of each clip are laid over the painting, colour-matched, soft-edged. THE CLIPS: the daily scheduled task's run of 18 Nov made six clips and lost them (its session had no write access to the repository, so the push was refused). Its prompt now attaches the repository with write access first and stops if it cannot; on 19 Nov the owner's Level 4 chat ran the batch itself (seven clips: the two parlour clips, the Interpreter's hand from his new painting, Good-will's pull, room 7, the brave man striding, room 4; checks in `clips/queue.json`). Nothing spent.**
+
 **Build 351 (Level 4 chat): Christian and the Interpreter painted again for the house, dark and quiet (lighter in the bright parlour); the Interpreter's hand movement off until a new free clip is made from the new picture. Spent about 15 cents.**
 
 **Build 350 (Level 4 chat): in the parlour both men's feet now stand on the floorboards. Nothing spent.**
