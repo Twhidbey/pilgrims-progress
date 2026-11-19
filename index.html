@@ -9,14 +9,14 @@
 <meta name="apple-mobile-web-app-title" content="Pilgrim">
 <meta name="theme-color" content="#1b1c22">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="assets/icon-180.png?v=360">
+<link rel="apple-touch-icon" href="assets/icon-180.png?v=363">
 <script>
 // THE EDITOR AS ITS OWN HOME SCREEN APP (build 193; owner: "I want an editor link that I can put on my phone Home Screen and it
 // updates with changes"). On the editor's link the page offers its own manifest (start "./?edit"), name and icon, so an icon
 // added from it opens the editor; it updates itself like the game (freshCopy keeps ?edit when it reloads).
 if (/[?&]edit(=|&|$)/.test(location.search)) {
   document.querySelector('link[rel=manifest]').href = 'edit.webmanifest';
-  document.querySelector('link[rel=apple-touch-icon]').href = 'assets/icon-edit-180.png?v=360';
+  document.querySelector('link[rel=apple-touch-icon]').href = 'assets/icon-edit-180.png?v=363';
   document.querySelector('meta[name=apple-mobile-web-app-title]').content = 'PP Editor';
   document.title = "Pilgrim's Progress (editor)";
 }
@@ -164,7 +164,7 @@ body.portrait #rot{display:block}
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
   <button id="autoWalk" aria-label="He walks on by himself"><svg viewBox="0 0 24 24"><path d="M5 6l6 6-6 6M12 6l6 6-6 6"/></svg></button>
-  <div id="build">build 362 · Nov 19 2026</div>
+  <div id="build">build 363 · Nov 19 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -2500,7 +2500,7 @@ for (const b of document.querySelectorAll('#levels .lv')) { b.classList.toggle('
     // build 359 (owner: "that pilgrim is unrealistic - can you use a more realistic shape"): his own outline, traced from
     // a picture of his book-free walk (christian-walk-nb, picture 14, mid-stride), 100 units tall, feet at 0
     const P = [13,-100,10,-100,1,-91,-1,-92,-5,-92,-9,-90,-11,-88,-11,-83,-19,-76,-21,-71,-21,-70,-22,-66,-21,-61,-17,-56,-13,-55,-15,-50,-23,-37,-21,-35,-22,-31,-19,-29,-19,-27,-18,-25,-19,-20,-17,-19,-16,-17,-19,-14,-21,-14,-23,-11,-21,-7,-20,-4,-17,0,-15,-1,-17,-4,-15,-11,-9,-17,-2,-15,-1,-14,0,-15,5,-15,5,-9,4,-5,5,-2,15,-1,19,-2,17,-4,14,-4,12,-5,10,-9,11,-17,15,-17,15,-31,13,-42,12,-44,12,-63,13,-71,13,-80,14,-83,18,-88,19,-95,18,-98], k = .3;
-    x.save(); x.translate(fx, fy); x.fillStyle = '#17110d'; x.beginPath();
+    x.save(); x.translate(fx, fy); x.fillStyle = '#2c231d'; x.beginPath();
     for (let j = 0; j < P.length; j += 2) j ? x.lineTo(P[j] * k, P[j + 1] * k) : x.moveTo(P[j] * k, P[j + 1] * k);
     x.closePath(); x.fill(); x.restore(); }
   x.restore();
