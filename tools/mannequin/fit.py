@@ -4,7 +4,9 @@
 import sys, os, numpy as np, cv2
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from costume import build, BG, PIV, HIP, KNEE, THIGH
-from rig import NP, ROWS, place, prepare, rot
+from rig import NP, ROWS, place as place0, prepare, rot
+from skel import ik, hip_of, AREF, SHIN
+from costume import HIPS
 from scipy.optimize import least_squares
 W, parts, edges = build()
 H, Wd = W[0][0].shape
@@ -14,11 +16,19 @@ STEP = np.array([.5, .5, .008] * 3 + [.5, .5, .012, .012] * 2 + [.02, .02] + [.5
 WT = np.array([.02, .02, 2.] + [.5, .5, 6.] * 2 + [.06, .06, 1.5, 1.5] * 2 + [.3, .3] + [.05] * (ROWS * 2) + [.1, .1])
 cg = np.stack(np.meshgrid(np.arange(1, Wd, 3), np.arange(1, H, 3)), -1).reshape(-1, 2)
 PT = np.array(PIV['torso'])
+def expand(x):
+    # the legs are bones: the shin's angle comes from hip, ankle and the bones' lengths (the knee forward); slots 11 and 15
+    # hold only a small correction to it, which the frame may ask for where the shin shows
+    P = x.copy(); c = rot(np.array(HIP)[None], PT, x[2])[0] + x[0:2]
+    for o, k in ((9, 'F'), (13, 'N')):
+        a_t, a_s = ik(hip_of(k, c, x[2]), np.array(PIV['leg' + k]) + x[o:o + 2], k); P[o + 2] = AREF[k] - (a_s + x[o + 2])
+    return P
+def place(p, x): return place0(p, x)
 def target(k, s):
     g, a = W[k]; T = a * g + (1 - a) * BG
     return cv2.GaussianBlur(T, (0, 0), s), cv2.GaussianBlur((a > .5).astype(np.float32), (0, 0), s)
 def render(x):
-    lab = np.zeros((H, Wd), np.uint8); out = []
+    lab = np.zeros((H, Wd), np.uint8); out = []; x = expand(x)
     for p in parts:
         q = place(p, x); out.append(q)
         cv2.fillPoly(lab, [np.round(q[p['n']:] - .5).astype(np.int32)], p['id'])
@@ -36,11 +46,10 @@ def resid(x, T, A, s, prev):
     L = x[19:27].reshape(ROWS, 2)      # the skirt hangs smoothly: no sudden change from one height to the next
     r.append(.06 * np.diff(np.concatenate([np.zeros((2, 2)), L]), n=2, axis=0).ravel())
     r.append(.02 * L.ravel()); r.append(.08 * x[27:29]); r.append(.3 * x[17:19])
+    r.append(.35 * x[[3, 4, 6, 7]]); r.append(3. * x[[5, 8]])      # the hood and the burden sit on the torso: they shift and turn only a little
     if prev is not None: r.append(WT * (x - prev))
-    hip = rot(np.array(HIP)[None], PT, x[2])[0] + x[0:2]
-    for o, k in ((9, 'F'), (13, 'N')):
-        kn = rot(np.array(KNEE[k])[None], np.array(PIV['leg' + k]), x[o + 2])[0] + x[o:o + 2]
-        r.append(np.array([.25 * max(0., abs(np.hypot(*(kn - hip)) - THIGH) - 5.)]))
+    r.append(4. * x[[11, 15]])
+    r.append(.15 * np.maximum(0, -x[[10, 14]] - 18.))      # a walking foot is not lifted high
     return np.concatenate(r)
 def jac(x, *a):
     J = []
@@ -77,6 +86,7 @@ if __name__ == '__main__':
         print(k, 'overlap %.3f' % iou(k, x), flush=True)
     for k in order[:3]:      # once more round the join, so the loop closes
         X[k] = fit(k, X[k], X[(k - 1) % N])
-    np.save(sys.argv[2], np.array(X))
+    render0 = render
+    np.save(sys.argv[2], np.array([expand(x) for x in X]))
     if len(sys.argv) > 3: cv2.imwrite(sys.argv[3], np.hstack([show(k, X[k], 3) for k in [0, 7, 14, 18, 22, 26, 30, 34]]))
     I = [iou(k, X[k]) for k in range(N)]; print('mean overlap %.3f lowest %.3f' % (np.mean(I), np.min(I)))

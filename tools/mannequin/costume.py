@@ -20,7 +20,8 @@ P_LEGN = [(31,249),(51,247),(52,262),(46,272),(68,284),(68,295),(20,295),(20,268
 FLAP_LINE = [(150, 52.), (180, 46.), (205, 42.), (246, 40.)]      # (y, x): the dark fold where the cloak's back flap lies on the skirt
 FLAP_TOP, FLAP_LEN = 140., 100.
 PIV = dict(torso=(80., 150.), hood=(95., 54.), burden=(62., 62.), legF=(122., 273.), legN=(36., 274.), flap=(47., 140.))
-HIP = (82., 157.); KNEE = dict(F=(109.4, 216.4), N=(49., 217.5)); THIGH = 65.
+HIP = (82., 157.); KNEE = dict(F=(109.4, 216.4), N=(49., 217.5)); THIGH = 62.
+HIPS = dict(F=(82., 159.), N=(68., 159.))      # each leg's own hip joint (he is seen a little from behind: the near hip lies further back), calibrated from the frames where each leg shows
 WAIST, HEM = 150., 246.
 def build():
     W = load('christian-walk-nb'); g0, a0 = W[0]; g7, a7 = W[7]; sh = g0.shape
