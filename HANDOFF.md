@@ -4,6 +4,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 ## START HERE (rewritten at build 140, Nov 16 2026)
 
+**Build 361 (Level 4 videos chat): Level 2's lift no longer has a grey or dark block between Help and Christian (the gap between the two men was being filled, in the pack and again by `solidOf`). Nothing spent.**
+
 **Level 4 videos chat (after build 360, no game change): `tools/clip-cut.py`, one command from a free clip to a clean looping sheet with its META and two check pictures (see CLAUDE.md, Files, tools). Tried on the three past clips: matches the hand cuts. Next, on the owner's word: three free clips from the new dark paintings (the Interpreter's hand, both walks; about one day's free allowance), cut with this tool. Nothing spent.**
 
 **The keepsakes have their own chat now** ("Pilgrim's Progress: the keepsakes (Bible, roll, title book)", https://claude.ai/code/session_017HrTSDUqJDSdrXPbhc33zT). Open question there: the wax seal on Evangelist's roll is ours, not the book's (`{14}` has no seal; the sealed roll is given at the Cross, `{94}`): take it off and keep `waxSeal()` for Level 5, or keep it as a departure.
