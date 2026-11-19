@@ -17,7 +17,7 @@
 </head>
 <body>
 <h1>The mannequin: a skeleton that walks, and clothes that follow it</h1>
-<p>Left: the bare mannequin and its bones. Middle: Christian's clothes built on it, a dark quiet silhouette. Right: his old picture frames, only to compare the feel. Below: walking at the game's size.</p>
+<p>Left: the bare mannequin and its bones (green: the shoulder line and the hip line, which turn against each other as he walks). Middle: Christian's clothes built on it, a dark quiet silhouette. Right: his old picture frames, only to compare the feel. Below: walking at the game's size.</p>
 <canvas id="c" width="1500" height="700"></canvas>
 <div id="info"></div>
 <div class="bar" id="anims"></div>
@@ -58,12 +58,7 @@
   const DET = [['quiet', 1], ['none', 0], ['more', 2.2]]; let di = 0;
   $('detail').onclick = e => { di = (di + 1) % DET.length; MQ.LOOK.detail = DET[di][1]; e.target.textContent = 'Inside: ' + DET[di][0]; };
   $('ground').onclick = e => { gi = (gi + 1) % GROUNDS.length; e.target.textContent = 'Ground: ' + GROUNDS[gi][0]; };
-  function skeleton(x, S, ox, oy, Z) {
-    const J = MQ.joints(S), pt = p => [ox + (p[0] - K.ax) * Z, oy + (p[1] - K.ground) * Z];
-    const line = (pts, col) => { x.strokeStyle = col; x.lineWidth = 1.3 * Z; x.lineCap = 'round'; x.lineJoin = 'round'; x.beginPath(); pts.forEach((p, i) => { const q = pt(p); i ? x.lineTo(q[0], q[1]) : x.moveTo(q[0], q[1]); }); x.stroke(); x.fillStyle = '#fff'; pts.forEach(p => { const q = pt(p); x.beginPath(); x.arc(q[0], q[1], 1.5 * Z, 0, 7); x.fill(); }); };
-    const leg = (L, col) => line([L.hip, L.knee, L.ank, L.heel, L.ball], col), arm = (A, col) => line([A.sh, A.el, A.wr, A.hand], col);
-    arm(J.armF, '#b06a8f'); leg(J.legF, '#d9603a'); line([J.hip, J.neck, J.head], '#6fc3e8'); leg(J.legN, '#f0c24a'); arm(J.armN, '#e8a0c4');
-  }
+  const skeleton = (x, S, ox, oy, Z) => MQ.bones(x, S, ox, oy, 1, Z);
   function frame(now) {
     const A = MQ.anims[cur], n = A.skel.length, dt = Math.min(.1, (now - last) / 1000); last = now;
     if (playing) f += dt * (A.fps || 24) * speed;
@@ -71,6 +66,7 @@
     const fi = Math.floor(f) % n, S = MQ.skelAt(cur, f), Q = MQ.clothAt(cur, f), Z = 2, pw = 500, gy = 650, G = GROUNDS[gi];
     ctx.fillStyle = G[1]; ctx.fillRect(0, 0, 1500, 700); ctx.fillStyle = G[2]; ctx.fillRect(0, gy - 6, 1500, 56);
     MQ.body(ctx, S, 250, gy, 1, Z); skeleton(ctx, S, 250, gy, Z);
+    MQ.above(ctx, S, 78, 84, 1.7, 3); ctx.fillStyle = '#eef0f2'; ctx.font = '15px Georgia'; ctx.fillText('From above: shoulders (green) and hips (gold).', 14, 172); ctx.fillText('Their turn is drawn three times as large.', 14, 192);
     MQ.figure(ctx, S, Q, 750, gy, 1, Z); if (bones) skeleton(ctx, S, 750, gy, Z);
     const im = ims[(fi + (A.track ? 0 : 7)) % ims.length]; ctx.drawImage(im, 1250 - K.ax * Z, gy - K.ground * Z, im.width * Z, im.height * Z);
     $('info').textContent = (A.label || cur) + ' · frame ' + fi + ' of ' + n;

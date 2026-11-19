@@ -10,7 +10,7 @@ const { chromium } = require('playwright');
     const x = cv.getContext('2d'); x.fillStyle = '#7d8a96'; x.fillRect(0, 0, cv.width, cv.height); x.fillStyle = '#5f6a74'; x.fillRect(0, (H - 12) * Z, cv.width, 12 * Z); x.fillRect(0, (2 * H - 12) * Z, cv.width, 12 * Z);
     picks.forEach((f, i) => {
       const S = MQ.skelAt(anim, f), Q = MQ.clothAt(anim, f), ox = (i * W + 95) * Z;
-      MQ.body(x, S, ox, (H - 12) * Z, 1, Z); MQ.figure(x, S, Q, ox, (2 * H - 12) * Z, 1, Z);
+      MQ.body(x, S, ox, (H - 12) * Z, 1, Z); MQ.bones(x, S, ox, (H - 12) * Z, 1, Z); MQ.above(x, S, (i * W + 30) * Z, 50 * Z, Z * .8, 3); MQ.figure(x, S, Q, ox, (2 * H - 12) * Z, 1, Z);
       x.fillStyle = '#fff'; x.font = '14px sans-serif'; x.fillText('frame ' + f, i * W * Z + 6, 16);
     });
   }, { anim, picks: JSON.parse(picks), Z });
