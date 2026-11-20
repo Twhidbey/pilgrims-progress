@@ -37,7 +37,10 @@ const MQ = (() => {
   //           size of his head (1 = seven and a half heads), bow = how far his head is bowed, tilt = the whole hood tipped
   //           forward (+) or pushed back, rake = its opening slanted back toward the jaw, size = the whole hood larger
   //           or closer, tail = a tail hanging from the back of the crown, roll = a turned-back rim, bib = how far its
-  //           front falls on his chest
+  //           front falls on his chest; and the tip above his forehead: sharp (round or a sharp point), hook (its end
+  //           curled down, or flipped up), thick (how thick it is at its root), sweep (its top scooped or bulging),
+  //           cut (how far the rim cuts back under it). cape below 0 draws the hood's lower edge up to his neck, so
+  //           that it does not lie over his shoulder.
   //   face:   nose, chin, brow (1 = as drawn)       shoe: toe = its length past the ball, point, lift (the tip turned up), bulk
   //   leg:    calf, ankle (widths), shaft (how far the boot stands off the leg)
   //   build:  legs, arms (lengths), girth (how deep his body is), lean (how far he leans in)
@@ -45,9 +48,10 @@ const MQ = (() => {
   //   sack:   size, high (how low on his back it is tied), round (how far it stands out); the smaller bundle tied on top of
   //           it: top (its size, 0 = none), set (further back or forward), flat (a flat roll or a round ball)
   //   gait:   step, bob, rock, swagger, arm (swing), bend (the elbow's flexing)
-  const HOOD = { beak: 2.6, droop: -3, top: 2.9, peak: 0, back: 6.8, hang: 8.2, rim: -2.8, cape: 0, head: .99, bow: .38, tilt: 0, rake: 0, size: 1, tail: 0, roll: 0, bib: 0 };
-  // THE OWNER'S OWN CHOICE (sent as links from the lab's sliders): the hood's first ten measures above (before: 5.6, 0, 3.6, 0,
-  // 9, 0, 0, 0, 1, .27), and face, shoe, leg, build, robe, sleeve and the sack's first three below.
+  const HOOD = { beak: 2, droop: -2.8, top: 2.1, peak: 0, back: 6.8, hang: 8.2, rim: -2.8, cape: -12, head: .99, bow: .38, tilt: .1, rake: .8, size: .96, tail: 0, roll: 0, bib: 21,
+    sharp: 0, hook: 0, thick: 4.6, sweep: 0, cut: 0 };
+  // THE OWNER'S OWN CHOICE (sent as links from the lab's sliders): the hood's first sixteen measures above, but cape, which
+  // they asked to be drawn up off the shoulder (before any choice: 5.6, 0, 3.6, 0, 9, 0, 0, 0, 1, .27, then 0, 0, 1, 0, 0, 0), and face, shoe, leg, build, robe, sleeve and the sack's first three below.
   // Before it they were: face 1, 1, 1; shoe 1, 0, 0, 1; leg 1, 1, 1.2; build 1, 1, 1, .075; robe 0, 1, 1; sleeve 23, 1, 7; sack 1, 0, 1.
   const FACE = { nose: .75, chin: 1.1, brow: 1.5 }, SHOE = { toe: .86, point: .35, lift: .4, bulk: .88 }, LEG = { calf: 1.08, ankle: .92, shaft: 2.1 };
   const BUILD = { legs: 1.04, arms: 1.08, girth: 1.11, lean: .135 }, ROBE = { hem: -2, flare: 1, full: .98 }, SLEEVE = { width: 13, drop: 1.1, len: 0 };
@@ -450,7 +454,11 @@ const MQ = (() => {
     // a point of the hood on his head: the whole hood may be larger or closer, and tipped forward or pushed back
     const hh = v => hp(R([v[0] * HD.size, v[1] * HD.size], HD.tilt));
     // its rim, from under the jaw up to the tip of the beak (the opening may be raked back toward the jaw)
-    const RIM = [[11.5 - .6 * rm, 21.5], [9.4 - rm, 17], [8.6 - rm, 11], [9.6 - rm, 4], [11.4 - .8 * rm, -2], [14 - .4 * rm, tipY + 2.8], [14.4 + .5 * bk, tipY + 1], [14.8 + bk, tipY]].map(v => [v[0] - HD.rake * Math.max(0, v[1] - tipY) / 30, v[1]]);
+    const RIM = [[11.5 - .6 * rm, 21.5], [9.4 - rm, 17], [8.6 - rm, 11], [9.6 - rm, 4], [11.4 - .8 * rm - .5 * HD.cut, -2], [14 - .4 * rm - HD.cut, tipY + 2.8], [14.4 + .5 * bk, tipY + 1 + .3 * HD.hook], [14.8 + bk + 2 * HD.sharp, tipY + HD.hook]].map(v => [v[0] - HD.rake * Math.max(0, v[1] - tipY) / 30, v[1]]);
+    // the tip's top: Tb where the beak leaves the hood, Cf the front of the crown; between them the top may be scooped or bulge
+    const Tb = [14.2 + .75 * bk, tipY - HD.thick + .3 * HD.hook], Cf = [13.4, -18.8 - .6 * dt], Tl = Math.hypot(Tb[0] - Cf[0], Tb[1] - Cf[1]) || 1;
+    const beakTop = Math.abs(HD.sweep) > .01 ? [hh(Tb), hh([(Tb[0] + Cf[0]) / 2 + (Tb[1] - Cf[1]) / Tl * HD.sweep, (Tb[1] + Cf[1]) / 2 - (Tb[0] - Cf[0]) / Tl * HD.sweep]), hh(Cf)] : [hh(Tb), hh(Cf)];
+    const rimPts = RIM.map((v, i) => i === 7 && HD.sharp > .45 ? [...hh(v), 1] : hh(v));
     const off = (i, dx, dy) => [RIM[i][0] + dx, RIM[i][1] + (dy || 0)];
     ctx.save(); ctx.beginPath(); curve(ctx, skullPts().map(v => v[2] ? [...hp(v), 1] : hp(v)), true); ctx.clip();
     stroke(ctx, [off(7, -1.4, 1.6), off(5, 1.4, 1.6), off(4, 1.4, 2), off(3, 1.2, 2), off(2, 1.4, 1), off(1, 1.4, 1)].map(hh), t => 2.4, T('hoodSh'));      // the hood's shadow on his brow and down his cheek
@@ -463,10 +471,11 @@ const MQ = (() => {
     //     IS his face, the head bowed. Its cape ends on the shoulder and rides with the near shoulder; the back sags a
     //     beat after the body. Every measure is in HOOD.
     const so = sub(J.shN, J.shoulder), cp = (v, k) => add(np(v), [so[0] * k, so[1] * k]), sg = by * .6, jaw = hh(RIM[0]), dn = (q, k) => add(q, [0, sg * k]);
-    const hood = [cp([19.5, 13 + .9 * cl + bib], .3), add(jaw, [1.2, 4.5])].concat(RIM.map(hh), [hh([14.2 + .75 * bk, tipY - 4.6]),
-      hh([13.4, -18.8 - .6 * dt]), hh([6, -22.2 - .9 * dt]), hh([-3, -23 - dt - .3 * pk]), hh([-12 - .3 * pk, -21 - .9 * dt - .7 * pk]), hh([-19.5 - .5 * dk - .2 * pk, -15.4 - .3 * dt - .2 * pk]),
+    // drawn up to his neck (cape below 0) its lower edge stays level above the shoulder, and only then falls to the chest
+    const b4 = .25 * (1 - Math.min(1, Math.max(0, -cl) / 10));
+    const hood = [cp([19.5, 13 + .9 * cl + bib], .3), add(jaw, [1.2, 4.5])].concat(rimPts, beakTop, [hh([6, -22.2 - .9 * dt]), hh([-3, -23 - dt - .3 * pk]), hh([-12 - .3 * pk, -21 - .9 * dt - .7 * pk]), hh([-19.5 - .5 * dk - .2 * pk, -15.4 - .3 * dt - .2 * pk]),
       dn(hh([-24 - dk, -6.5]), .4), dn(hh([-25.4 - dk, 3 + .6 * hg]), .8), dn(hh([-23 - .8 * dk, 11 + hg]), 1), dn(cp([-19 - .3 * dk, 5 + .5 * hg], .2), .6),
-      cp([-16.5, 13.5 + .8 * cl], .4), cp([-7, 17.5 + cl], .7), cp([4, 18.6 + cl + .25 * bib], .9), cp([13, 16.8 + cl + .7 * bib], .7)]);
+      cp([-16.5 - .4 * Math.min(0, cl), 13.5 + .8 * cl], .4), cp([-7, 17.5 + cl], .7), cp([4, 18.6 + cl + b4 * bib], .9), cp([13, 16.8 + cl + .7 * bib], .7)]);
     // a tail from the back of the crown (the liripipe of an old hood): it hangs down his back and swings with the back panel
     if (HD.tail > 0) {
       const L = HD.tail, sw = (fl[1] - CL.fr[1]) * .5, r0 = hh([-20 - .6 * dk - .3 * pk, -13.5 - .3 * dt - .4 * pk]);
@@ -480,7 +489,7 @@ const MQ = (() => {
       fill(RIM.map(hh).concat(IN.map(hh).reverse()), T('hoodLt')); stroke(ctx, IN.map(hh), t => .8, T('hoodSh'));
     } else stroke(ctx, [off(7, -1.8, -.6), off(6, -1.8 - .1 * bk), off(5, -2, 1.2), off(4, -1.2, 1), off(3, -.8), off(2, -.8), off(1, -.8)].map(hh), t => .9, T('hoodSh'));      // the rim's fold
     stroke(ctx, [hh([-5, -23.5 - dt]), hh([-19 - .5 * dk, -12.5]), dn(hh([-23.5 - dk, 3 + .6 * hg]), .8), dn(cp([-17.5, 9 + .5 * hg], .3), .6)], t => 4 * t + 1.2, T('hoodSh'));      // the back of the hood in shade
-    stroke(ctx, [cp([-17, 14.5 + .8 * cl], .4), cp([-7, 18.4 + cl], .7), cp([4, 19.5 + cl + .25 * bib], .9), cp([13, 17.7 + cl + .7 * bib], .7), cp([20, 13.6 + .9 * cl + bib], .3)], t => 1.5, T('hoodSh'));      // the cape's hem
+    stroke(ctx, [cp([-17 - .4 * Math.min(0, cl), 14.5 + .8 * cl], .4), cp([-7, 18.4 + cl], .7), cp([4, 19.5 + cl + b4 * bib], .9), cp([13, 17.7 + cl + .7 * bib], .7), cp([20, 13.6 + .9 * cl + bib], .3)], t => 1.5, T('hoodSh'));      // the cape's hem
     ctx.restore();
     ctx.restore();
   }

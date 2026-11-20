@@ -79,11 +79,13 @@
   const hv = $('h'), hx = hv.getContext('2d');
   const GROUPS = [
     ['hood', 'His hood', 'head', [['beak', 'Beak: how far it comes forward', 0, 14, .2], ['droop', 'Beak: how low its tip hangs', -3, 8, .2], ['top', 'Room over the crown', 1.5, 14, .2], ['peak', 'A point at the back of the crown', 0, 14, .2],
-      ['back', 'Room behind his head', 3, 24, .2], ['hang', 'How low the back hangs', -6, 16, .2], ['rim', 'How much of his cheek shows', -4, 8, .2], ['cape', 'Cape below the shoulder', 0, 24, .5],
+      ['back', 'Room behind his head', 3, 24, .2], ['hang', 'How low the back hangs', -6, 16, .2], ['rim', 'How much of his cheek shows', -4, 8, .2], ['cape', 'Lower edge: up at his neck, or down over the shoulder', -14, 24, .5],
       ['head', 'Size of his head', .9, 1.3, .01], ['bow', 'How far his head is bowed', 0, .45, .01],
       ['tilt', 'Angle: pushed back, or tipped forward', -.3, .3, .01], ['rake', 'Slant of the opening (back toward the jaw)', -6, 9, .2], ['size', 'The whole hood larger or closer', .9, 1.4, .01],
-      ['tail', 'A tail hanging from the crown', 0, 70, 1], ['roll', 'A turned-back rim', 0, 7, .2], ['bib', 'How far its front falls on his chest', 0, 26, .5]],
-      [['Tipped forward', { tilt: .16, beak: 7.4 }], ['Pushed back', { tilt: -.2, rim: 2 }], ['With a tail', { tail: 42, peak: 6 }], ['Rolled rim and bib', { roll: 4, bib: 9 }], ['No beak', { beak: 0 }], ['Long beak, low', { beak: 9.6, droop: 3 }], ['Deeper hood', { beak: 8, droop: 2, top: 6, back: 14, hang: 6 }], ['Peaked', { peak: 9, top: 5, back: 12 }], ['Close cap', { beak: 0, top: 2.4, back: 4, rim: -1 }], ['Bigger head', { head: 1.2 }]]],
+      ['tail', 'A tail hanging from the crown', 0, 70, 1], ['roll', 'A turned-back rim', 0, 7, .2], ['bib', 'How far its front falls on his chest', 0, 26, .5],
+      ['sharp', 'Tip: round, or a sharp point', 0, 1, .05], ['hook', 'Tip: its end curled down, or flipped up', -3, 6, .2], ['thick', 'Tip: how thick at its root', 2, 11, .2],
+      ['sweep', 'Tip: its top scooped, or bulging', -4, 6, .2], ['cut', 'Tip: how far the rim cuts back under it', 0, 7, .2]],
+      [['Sharp hooked tip', { beak: 6.4, sharp: 1, hook: 2.4, sweep: -1.6, cut: 2.6 }], ['Tipped forward', { tilt: .16, beak: 7.4 }], ['Pushed back', { tilt: -.2, rim: 2 }], ['With a tail', { tail: 42, peak: 6 }], ['Rolled rim and bib', { roll: 4, bib: 9 }], ['No beak', { beak: 0 }], ['Long beak, low', { beak: 9.6, droop: 3 }], ['Deeper hood', { beak: 8, droop: 2, top: 6, back: 14, hang: 6 }], ['Peaked', { peak: 9, top: 5, back: 12 }], ['Close cap', { beak: 0, top: 2.4, back: 4, rim: -1 }], ['Bigger head', { head: 1.2 }]]],
     ['face', 'His face', 'head', [['nose', 'Nose', .3, 1.9, .05], ['chin', 'Chin', .4, 1.9, .05], ['brow', 'Brow', .4, 1.9, .05]]],
     ['shoe', 'His shoes', 'feet', [['toe', 'Length of the toe', .7, 1.7, .02], ['point', 'How pointed', 0, 1.5, .05], ['lift', 'How far the tip turns up', 0, 6, .2], ['bulk', 'How full over the foot', .7, 1.5, .02]],
       [['As in his painting (long, pointed)', { toe: 1.1, point: .9, lift: 3, bulk: .82 }], ['Blunt and plain', { toe: .9, bulk: 1.1 }]]],
