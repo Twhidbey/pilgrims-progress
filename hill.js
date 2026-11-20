@@ -52,55 +52,51 @@ const HL = (() => {
   const EV_X = FOOT - 135;
 
   // ---------- the words: Bunyan's, shortened and made plain ----------
-  const SEEN = [      // {37}
-    [N, 'His name was Mr. Worldly Wiseman, from the great town of Carnal Policy, near Christian\'s own city.'],
-  ];
+  // LESS WAITING, LEVEL 3 (owner, after build 364, chosen line by line in level3-cuts.html: "everything else as proposed",
+  // keeping "So Christian turned out of his way"): 31 lines became 16, about 3 minutes of speech about 1 1/2. What the
+  // words used to say is shown instead: the trickle of stones at the foot, Evangelist's hand (the child touches it to
+  // raise him), the fire sinking, his farewell, stones falling behind him and the far light coming back, a glint on the
+  // sign. The storyteller no longer names Wiseman (Evangelist names him later).
+  const SEEN = [];      // {37}
   // build 175 (owner: say lines while walking): the greeting is said as the two come toward each other (GREET, captions
   // while he walks); the talk at the crossing begins with "Who sent you this way?"
   const GREET = [      // {38}
     [WW, 'How now, good fellow! Where are you going, with such a burden?'],
-    [C, 'Sir, I am going to that little gate ahead. There I will be shown how to be rid of my heavy burden.'],
+    [C, 'To that little gate ahead, to be rid of my burden.'],
   ];
   const WISE = [      // {39} to {45}
     // THE WORLD ACTS OUT WHAT HE SAYS (owner, build 177: "the conversation with worldly wise lacks punch or interest
     // (kinda drags)"): a sweet, slightly too-sweet tune under his voice; the burden groans when he speaks of the
     // dangerous way; when he names the village, it glows warm on the plain far off and the camera drifts toward it
     // (`vil`), before the hill itself is shown
-    [WW, 'Who sent you this way?', 0, () => sweet(0)],
-    [C, 'A great and good man, called Evangelist.'],
-    [WW, 'There is no more dangerous way in all the world! I see the mud of the Slough of Despond is on you already.', 0, () => { groan(); note(43, .045, 3.5); }],
+    [WW, 'There is no more dangerous way in all the world!', 0, () => { sweet(0); groan(); note(43, .045, 3.5); }],
     [WW, 'In that village, Morality, lives a gentleman named Legality. He can take burdens like yours away.', 0, () => { vilTo = 1; sweet(1); }],
-    [C, 'Sir, which way is his house?'],
-    [WW, 'Do you see that hill?', 'hill', () => { panTo = 1; }],
-    [WW, 'Go by that hill. The first house you come to is his.'],
+    [WW, 'Do you see that hill? Go by it. The first house you come to is his.', 'hill', () => { panTo = 1; }],
   ];
   const TURNED = [[N, 'So Christian turned out of his way, to go to Mr. Legality\'s house for help.']];      // {46}
-  const HIGH = [[N, 'But close to, the hill was so high, and hung so far over the way, that Christian was afraid it would fall on his head.']];
-  const STOOD = [
-    [N, 'Flashes of fire came out of the hill, and Christian was afraid he would be burned.', 0, () => { fire(1); }],
-    [N, 'Now he was sorry he had listened to Mr. Worldly Wiseman.'],      // {47}
-  ];
+  const HIGH = [[N, 'The hill hung so far over the way that Christian was afraid it would fall on his head.']];      // {47}
+  const STOOD = [];
   const COMING = [];
   const EVANW = [      // {48} to {59}
-    [E, 'What are you doing here, Christian?'],
-    [E, 'Why have you turned aside so soon? You are out of the way.'],
+    [E, 'What are you doing here, Christian? You are out of the way.'],
     [C, 'Just after the Slough, I met a gentleman. He said a man in that village could take my burden off.'],
-    [N, 'Then Christian fell down at his feet, crying:', 0, () => { C3.weep = true; C3.wt = 0; }],
-    [C, 'Woe is me, for I am undone!'],
-    [N, 'At the sight of this, Evangelist caught him by the right hand.', 0, () => { note(67, .04, 4); note(71, .035, 4, .12); mercyTo = 1; }],
+    // he falls at Evangelist's feet as he cries out (the kneel shows "fell down at his feet")
+    [C, 'Woe is me, for I am undone!', 0, () => { C3.weep = true; C3.wt = 0; }],
+    // "Evangelist caught him by the right hand": he reaches out his hand (the reach of his Level 1 pointing), and the
+    // child touches it (an echo of Help's hand in the Slough); the warm light of mercy gathers on them (`EHAND`)
+    [TIP, 'Touch Evangelist\'s hand.', 'ehand', () => { evan.gTo = 1; }],
     [E, 'All manner of sin shall be forgiven unto men. Be not faithless, but believing.'],
-    [N, 'Then Christian revived a little, and stood up trembling.', 0, () => { C3.weep = false; }],
-    [E, 'That man was Worldly Wiseman. Mr. Legality cannot free you from your burden. No one was ever freed by him.'],
-    [C, 'Sir, is there hope? May I go back to the gate? I am sorry I listened to him. May I be forgiven?'],      // {59}
+    // he revives and stands (the kneel played backward) as Evangelist speaks on
+    [E, 'That man was Worldly Wiseman. Mr. Legality cannot free you.', 0, () => { C3.weep = false; evan.gTo = 0; }],
+    [C, 'Sir, is there hope? May I go back to the gate?'],      // {59}
     [E, 'Your sin is very great. Yet the man at the gate will receive you, for he has goodwill for men.', 0, () => { calmTo = 1; }],
-    [N, 'Then Evangelist gave him one smile, and bid him God-speed.'],
+    // "gave him one smile, and bid him God-speed": he lifts his hand a little as he says it; the light lingers where he stands
+    [E, 'God-speed.', 0, () => { evan.gTo = .7; evan.bye = 1; }],
   ];
-  const HASTE = [      // {59}
-    [N, 'He hurried like one treading on forbidden ground, and did not feel safe until he was back on the right way.'],
-  ];
-  const ATGATE = [[N, 'So, in time, Christian got up to the gate. Now over the gate there was written: Knock, and it shall be opened unto you.']];
+  const HASTE = [];      // {59}: shown (he runs, stones fall behind him, the far light comes back)
+  const ATGATE = [];      // the sign over the gate glints; a touch opens it close up
   const KNOCK = [      // {60}
-    [N, 'He knocked, more than once or twice, saying:', 'knock'],
+    [TIP, 'Knock on the gate.', 'knock'],
     [C, 'May I come in? Will he open to me, sorry as I am?'],
     [N, 'At last there came a grave person to the gate, named Good-will.', 0, () => { doorTo = 1; sfx.chord(); }],
   ];
@@ -154,7 +150,7 @@ const HL = (() => {
   // the path, never on him: first two small ones, then one, then two medium boulders, each with a jolt of the ground
   // (`jolt`, added to the trembling in draw()). In world units (`PATHR`), drawn behind the figures.
   const PATHR = [], FALLS = [[3230, 2, 0], [3480, 1, 0], [3820, 1, 1], [4120, 1, 1.3]];
-  let fallI = 0, jolt = 0;
+  let fallI = 0, jolt = 0, backFallT = 0;
   // (build 354, owner: "the rocks need to land and not float"): a stone comes to rest ON the ground under it: the top of the
   // path's broken stony far edge at that place (the same outline `road()` draws among the rocks), sunk in a little, never
   // at a fixed height in the air
@@ -184,7 +180,7 @@ const HL = (() => {
   // the burden groans: two heavy creaks of the pack
   function groan() { if (!audio()) return; sfx.step(false, 2.6); setTimeout(() => HL.on && sfx.step(false, 2.2), 520); }
   let wise = null, evan = null, dark = 0, hope = 0, flash = 0, flashT = 0, veil = 0, veilTo = 0, knocks = 0, knockT = 0, door = 0, doorTo = 0;
-  let greeted = false, saidSeen = false, saidHigh = false, stillT = 0, hasteSaid = false, gateSaid = false, hintT = 0, noteI = 0, noteX = 0, lastFr = 0, hillSeen = false;
+  let greeted = false, saidSeen = false, saidHigh = false, stillT = 0, hasteSaid = false, gateSaid = false, hintT = 0, noteI = 0, noteX = 0, lastFr = 0, hillSeen = false, signSeen = false;
   let OAKT = null, hillBox = [0, 0, 1];
   // the scene shift (`cut`: the picture goes dark, 0 .. 1) and the great pull back at the foot (`Zw`: 0 close .. 1 the
   // whole mountain; `zs` its stage: 'out', 'hold', 'in', 'done')
@@ -488,7 +484,7 @@ const HL = (() => {
   }
   function preload() {
     loadOak(); if (!VILP) loadImg('village-far.webp').then(im => { if (im) VILP = im; }).catch(() => {});
-    if (!loading) loading = Promise.all([Promise.all([loadImg('hill-rock.webp'), loadImg('hill-fire.webp')]).then(([r, f]) => { if (r) { build(); paintHill(r, f); } }), loadPack('wiseman', WIS).catch(() => {}), loadImg('gate-door.webp').then(im => { if (im) GDOOR = soften(im, 4, .7, false, .22); }), loadImg('goodwill-stand.webp').then(im => { if (im) GWST = im; }), loadImg('gate-wall.webp').then(im => { if (im) GWALL = soften(im, 4, .7, true, .22); }), loadImg('gate-stone.webp').then(im => { if (im) GSTONE = im; }), loadPack('evangelist-walk', EVW).catch(() => {}), loadImg('wiseman-stand.webp').then(im => { if (im) WIS_ST = im; }), OBS.ready || loadPack('obstinate', OBS).catch(() => {}), EVS.ready || loadPack('evangelist-stand', EVS).catch(() => {}), RUNP.ready || loadPack('christian-run-plain', RUNP).catch(() => {}),
+    if (!loading) loading = Promise.all([Promise.all([loadImg('hill-rock.webp'), loadImg('hill-fire.webp')]).then(([r, f]) => { if (r) { build(); paintHill(r, f); } }), loadPack('wiseman', WIS).catch(() => {}), loadImg('gate-door.webp').then(im => { if (im) GDOOR = soften(im, 4, .7, false, .22); }), loadImg('goodwill-stand.webp').then(im => { if (im) GWST = im; }), loadImg('gate-wall.webp').then(im => { if (im) GWALL = soften(im, 4, .7, true, .22); }), loadImg('gate-stone.webp').then(im => { if (im) GSTONE = im; }), loadPack('evangelist-walk', EVW).catch(() => {}), EVA.ready || loadPack('evangelist', EVA).catch(() => {}), loadImg('wiseman-stand.webp').then(im => { if (im) WIS_ST = im; }), OBS.ready || loadPack('obstinate', OBS).catch(() => {}), EVS.ready || loadPack('evangelist-stand', EVS).catch(() => {}), RUNP.ready || loadPack('christian-run-plain', RUNP).catch(() => {}),
       WEEP.ready || loadPack('christian-weep', WEEP).catch(() => {}), KNEEL.ready || loadPack('christian-kneel', KNEEL).catch(() => {}), TURN.ready || loadPack('christian-turn', TURN).then(() => bookLoaded('TURN')).catch(() => {}),
       OBS_ST ? 0 : loadImg('obstinate-stand.webp').then(im => { if (im && !OBS_ST) OBS_ST = im; }),
       loadImg('tree-a.webp').then(im => { if (!im) return; const c = mk(im.width, im.height), k = c.getContext('2d'); k.drawImage(im, 0, 0); k.globalCompositeOperation = 'source-in'; k.fillStyle = '#fff'; k.fillRect(0, 0, c.width, c.height); OAKT = c; })]).catch(() => {});
@@ -742,7 +738,7 @@ const HL = (() => {
     mercy = mercyTo = calm = calmTo = 0;
     wise = null; evan = null; dark = 0; hope = 0; flash = 0; flashT = 200; veil = 0; veilTo = 0; knocks = 0; knockT = 0; door = 0; doorTo = 0;
     reveal = 0; vil = vilTo = 0; pan = panTo = 0; ROCKS.length = 0; DUST.length = 0; PATHR.length = 0; DUSTW.length = 0; fallI = 0; jolt = 0; STEAMP.length = 0; farewell = 0; C3.dy = 0; cut = cutTo = 0; Zw = 0; zs = ''; zT = 0;
-    saidSeen = saidHigh = hasteSaid = gateSaid = hillSeen = greeted = false; stillT = 0; hintT = 0; noteI = 0; noteX = 0;
+    saidSeen = saidHigh = hasteSaid = gateSaid = hillSeen = greeted = signSeen = false; stillT = 0; hintT = 0; noteI = 0; noteX = 0;
   }
   // the picture behind the title page when Level 3 is the child's level: the hill hanging over the way, nobody there
   function title() { build(); preload(); HL.show = true; reset0(); ph = 'title'; dark = 1; reveal = 1; C3.x = FOOT; Object.assign(cam, { cx: FOOT + 2200, z: .1, wl: 480 }); }
@@ -783,7 +779,13 @@ const HL = (() => {
     if ((ph === 'gate' || ph === 'knock' || ph === 'open') && typeof KS !== 'undefined' && KS.look) { const [x, y, w, h] = signPt(); if (Math.abs(sx - x) < w && Math.abs(sy - y) < h) { showSign(); return; } }
     if (G.act === 'hill') { const [hx, hy] = hillPt(); if (Math.hypot(sx - hx, (sy - hy) * .7) < 230 * hillBox[2] + 40) sawHill(); else G.actT = Math.max(G.actT, 129); return; }
     if (G.act === 'knock') { const [gx, gy] = gatePt(); if (Math.hypot(sx - gx, sy - gy) < 130) knock(); else G.actT = Math.max(G.actT, 89); return; }
+    if (G.act === 'ehand') { const [hx, hy] = handPt(); if (Math.hypot(sx - hx, sy - hy) < 60 + 120 * cam.z) takeHand(); else G.actT = Math.max(G.actT, 59); return; }
   }
+  // EVANGELIST'S HAND (owner, after build 364, idea B): "Evangelist caught him by the right hand" ({55}) is no longer told:
+  // Evangelist reaches out his hand (`evan.g`, the reach of his Level 1 pointing, frames 40 to 58), and the child touches it;
+  // a warm chord, and the light of mercy gathers on the two (an echo of Help's hand in the Slough)
+  const handPt = () => [(EV_X + 58 - cam.cx) * cam.z + VW / 2, cam.wl - 95 * cam.z];
+  function takeHand() { if (G.act !== 'ehand') return; note(67, .04, 4); note(71, .035, 4, .12); note(74, .03, 4, .24); mercyTo = 1; next(true); }
   // the wide picture answers a touch (build 237): the sky above the rock = a strike there; the rock = its nearest crack flares
   const FLARES = [];
   function wideTouch(sx, sy) { const [hx, hy, k] = hillBox, ux = (sx - hx) / k + HOX - HOX, uy = (sy - hy) / k; C3.tapZ = zT; clearHint('wide');
@@ -827,10 +829,10 @@ const HL = (() => {
     return cv.toDataURL('image/jpeg', .9);
   }
   function showSign() {
-    const go = () => { if (!SIGNPIC) SIGNPIC = signPic(); KS.look(SIGNPIC); if (audio()) hiss(500, .5, .02, .2, 'bandpass'); };
+    signSeen = true; const go = () => { if (!SIGNPIC) SIGNPIC = signPic(); KS.look(SIGNPIC); if (audio()) hiss(500, .5, .02, .2, 'bandpass'); };
     if (SIGNPIC || !document.fonts || !document.fonts.load) go(); else document.fonts.load(`118px 'IM Fell English'`).then(go, go);
   }
-  function key() { if (G.act === 'hill') sawHill(); else if (G.act === 'knock') knock(); }
+  function key() { if (G.act === 'hill') sawHill(); else if (G.act === 'knock') knock(); else if (G.act === 'ehand') takeHand(); }
 
   // ---------- each tick ----------
   const frameOf = a => ((Math.floor(a) % CHR.length) + CHR.length) % CHR.length;
@@ -860,7 +862,7 @@ const HL = (() => {
       else if (C3.kf < h0 && !C3.kp) C3.kf = Math.min(h0, C3.kf + st);
       else { C3.kp += st / 1.6; C3.kf = h0 + (h1 - h0) * (1 - Math.cos(C3.kp * Math.PI / (h1 - h0))) / 2; }
     }
-    mercy += (mercyTo - mercy) * .012; calm += (calmTo - calm) * .008; if (ph === 'back' || ph === 'mist') mercyTo = 0;
+    mercy += (mercyTo - mercy) * .012; calm += (calmTo - calm) * .008; if (ph === 'back') mercyTo = Math.min(mercyTo, .55); if (ph === 'mist') mercyTo = 0;      // (idea E) the light lingers where Evangelist stands as Christian hurries off
     flash *= .93; boltT++; if (boltT === 8 && boltTwice) flash = Math.max(flash, .55); door += (doorTo - door) * .02; cut = clamp(cut + Math.sign(cutTo - cut) * (cutTo ? .022 : .016)); veil = clamp(veil + Math.sign(veilTo - veil) * .012);
     hintT++;
     // (build 212, owner: "when we zoom over to mountain while worldly is talking it still flickers - can we make it solid"): the
@@ -927,11 +929,15 @@ const HL = (() => {
       // then back to zoomed in where evangelist meets him"). It starts slow, gathers speed and settles gently (about
       // three and a half seconds, eased in the scale's logarithm, so every moment of it shrinks the picture by the same
       // kind of step); lightning as it settles; it holds while the fire's line is said, then comes back down to him.
-      if (stillT === 20 && !saidHigh) { saidHigh = true; caption(HIGH); caption(STOOD); }
+      // (idea A) the overhang creaks and a few small stones come down beside him before the words, close up
+      if (stillT === 6) { jolt = Math.max(jolt, .5); if (audio()) { sweep(40, 28, 1.6, .09); hiss(260, 1.2, .05, 1.2, 'lowpass'); } }
+      if ([6, 28, 44, 66, 92].includes(stillT)) { const i = [6, 28, 44, 66, 92].indexOf(stillT);
+        PATHR.push({ x: C3.x + 60 + i * 30 + Math.random() * 20, y: -330 - Math.random() * 40, vx: -(.15 + Math.random() * .25), vy: 0, r: 3.5 + Math.random() * 3, big: 0, b: 0, t: 0, s: Math.random() * 6, sh: rockShape() }); }
+      if (stillT === 30 && !saidHigh) { saidHigh = true; caption(HIGH); }
       if (stillT > 9999) { stillT = 9999; zs = 'done'; }
-      if (zs === '' && stillT >= 40) { zs = 'out'; zT = 0; }
+      if (zs === '' && stillT >= 150) { zs = 'out'; zT = 0; }
       if (zs === 'out') { zT++; Zw = ease5(clamp(zT / 210)); if (zT === 196) fire(1.1); if (zT >= 210) { zs = 'hold'; zT = 0; } }
-      else if (zs === 'hold') { zT++; const t = dlg.querySelector('.t').textContent, said = C3.fired && !t.startsWith('Flashes of fire') && !t.startsWith('But close to') && !saying() && G.cap <= 0 && !G.capQ.length;
+      else if (zs === 'hold') { zT++; const t = dlg.querySelector('.t').textContent, said = C3.fired && !t.startsWith('The hill hung') && !saying() && G.cap <= 0 && !G.capQ.length;
         // (build 237, owner: "When we're zoomed out can we pause for a bit and viewer can click cloud or cracks of fire to make
         // effects"): once the words are said the wide picture waits (`tapZ`): at least about eight seconds more, longer
         // while the child keeps touching the cloud (a strike comes down there) or the burning rock (the nearest crack flares)
@@ -939,7 +945,7 @@ const HL = (() => {
         if (said && zT - C3.saidAt > 480 && zT - (C3.tapZ || 0) > 240 || said && zT - C3.saidAt > 1500 || zT > 3200) { zs = 'in'; zT = 0; clearHint('wide'); } }
       else if (zs === 'in') { zT++; Zw = 1 - ease5(clamp(zT / 170)); if (zT >= 170) { zs = 'done'; Zw = 0; } }
       // the lines' own happenings (captions carry no fn): the fire comes with its words
-      if (dlg.querySelector('.t').textContent.startsWith('Flashes of fire came out of the hill') && !C3.fired) { C3.fired = true; fire(1); }
+      if (dlg.querySelector('.t').textContent.startsWith('The hill hung') && !C3.fired) { C3.fired = true; fire(1); }
       if (zs === 'done' && !saying() && G.cap <= 0 && !G.capQ.length && C3.sd != null) { ph = 'come'; caption(COMING); evan = EVW.ready ? { a: 1, t: 0, x: EV_X - EV_FROM, anim: 0, walk: true, st: 0 } : { a: 0, t: 0 }; turnC(-1); }
     } else if (ph === 'come') {
       walk(1, 0);
@@ -954,7 +960,10 @@ const HL = (() => {
     } else if (ph === 'back') {
       // back with haste: he runs (his plain run from Level 1), to the place where he left the way
       let go = want && C3.x > PATH0 + 120;
-      if (want && !hasteSaid) { hasteSaid = true; caption(HASTE); }
+      if (want && !hasteSaid) { hasteSaid = true; caption(HASTE); backFallT = 40; }
+      // (idea D) as he hurries back, stones come down behind him, where he has just been
+      if (hasteSaid && go && --backFallT < 0) { backFallT = 70 + Math.random() * 90; const big = Math.random() < .3 ? 1 : 0;
+        PATHR.push({ x: C3.x + 180 + Math.random() * 140, y: -520 - Math.random() * 120, vx: -(.3 + Math.random() * .4), vy: 0, r: big ? 12 + Math.random() * 4 : 3 + Math.random() * 3, big, b: 0, t: 0, s: Math.random() * 6, sh: rockShape() }); }
       if (go && RUNP.ready) { const st = RUNP_META.vpx * CHR_K; C3.x -= st * .4; C3.ranim += .4; C3.run = clamp(C3.run + .14); C3.sd = QUIET[0]; if (Math.floor(C3.ranim) % 14 === 0 && Math.floor(C3.ranim - .4) % 14 !== 0 && audio()) sfx.step(false, 1.3); }
       else { C3.run = clamp(C3.run - .1); if (go) walk(-1, MAXV); else if (C3.sd == null) walk(-1, 0); }
       if (want) clearHint('haste'); else if (hintT === 150) hint('haste', 'Hold to hurry back.');
@@ -980,6 +989,10 @@ const HL = (() => {
     // what the child is asked to do, shown after a while
     if (G.state === 'dialog' && G.act === 'hill') { G.actT++; if (G.actT === 130) { dMore.textContent = 'touch the hill ✦'; G.ring = hillPt; } }
     if (G.state === 'dialog' && G.act === 'knock') { G.actT++; if (G.actT === 90 && knocks < 3) { dMore.textContent = 'knock on the gate ✦'; G.ring = gatePt; } }
+    if (G.state === 'dialog' && G.act === 'ehand') { G.actT++; if (G.actT === 60) { dMore.textContent = 'touch his hand ✦'; G.ring = handPt; } }
+    // his hand comes out and goes back at the video's own pace (52 of its frames, about two seconds each way)
+    if (evan) { evan.g = evan.g || 0; const gt = evan.gTo || 0; evan.g += Math.sign(gt - evan.g) * Math.min(Math.abs(gt - evan.g), 1 / 130);
+      if (evan.bye && evan.g >= .69) { evan.gTo = 0; evan.bye = 0; } }
 
     // Mr. Worldly Wiseman crosses the field to meet him, stands, and afterwards goes on his own way
     if (wise) {
@@ -1018,6 +1031,10 @@ const HL = (() => {
   }
 
   // ---------- drawing ----------
+  // Evangelist standing, or reaching out his hand (`evan.g` 0..1: frames 40 to 58 of his Level 1 pointing, facing right)
+  function evFig(c, x, tint, a) {
+    if (evan.g > .01 && EVA.ready) figure(c, 'evan', EVA[atTime(EVA_META, 130 + 52 * evan.g)], EVA_META, x, 1, tint, a);
+    else figure(c, 'evan', EVS[Math.floor(G.t * .2) % EVS_META.frames], EVS_META, x, 1, tint, a); }
   function drawChr(c, tint) {
     if (ph === 'title') return;
     TALKM = talkMove(C);
@@ -1095,7 +1112,9 @@ const HL = (() => {
     // the far light: ahead of him on the plain; over the gate at the end. The hill, drawn after it, comes between.
     const rocky = ph === 'path' || ph === 'still' || ph === 'come' || ph === 'evan' || ph === 'back' || ph === 'mist' || ph === 'title';
     FY = rocky || gateish > .5 ? 5 : 12;
-    const lx = lerp(VW * .5, clamp(X(GATE_X), 200, VW - 120), gateish), ly = lerp(hor - 96, Y(-262), gateish), la = (1 - .35 * dark) * (1 - gateish) * (rocky ? 0 : 1);
+    // (idea D) as he looks back from the start of the path, the far light he left shows again low on the left, the way back
+    const fw = farewell && ph !== 'gate' ? smooth(120, 400, farewell) : 0;
+    const lx = lerp(lerp(VW * .5, VW * .07, fw), clamp(X(GATE_X), 200, VW - 120), gateish), ly = lerp(lerp(hor - 96, hor - 30, fw), Y(-262), gateish), la = (1 - .35 * dark * (1 - fw)) * (1 - gateish) * (rocky ? .8 * fw : 1);
     // AMONG THE ROCKS (build 185; owner: "we need a surrounding of rockiness, not just ground then big rock"). Every layer
     // becomes rock, each one clean shape of one tone, pale far and dark near: the far ridges of the mountain's roots,
     // the crags behind the path, the stony path, and the nearest crags along the bottom of the picture, sliding past
@@ -1879,11 +1898,11 @@ const HL = (() => {
       // (build 246, after Rembrandt: once the door opens he is a dark figure with a gold edge on the side that faces the light)
       if (op > .05) RIM = { k: .95 * op * smooth(.5, 1, gateish), x: GATE_X + 40, gold: true }; }
     const tint = rocky ? mix([38, 35, 39], [30, 27, 32], dark) : mix([74, 68, 60], [52, 47, 52], dark), fl = Math.min(1, flash) * dark, lit = gateish * smooth(GATE_X - 330, GATE_X - 60, C3.x), tintF = mix(mix(mix(tint, [66, 62, 72], gateish), [255, 170, 110], fl * .35), [255, 188, 120], lit * (.24 + .26 * door));
-    const tintM0 = mix(tintF, [255, 204, 150], mercy * .42);
+    const tintM0 = mix(tintF, [255, 204, 150], (ph === 'back' ? 0 : mercy) * .42);
     // (build 225, owner: "Instead of shadow can you just make Christian super dark"): at the gate he is a near-black figure
     // against the lit wall and the light from within, like Good-will in the doorway (no light and shade laid on him)
     const tintM = mix(tintM0, [30, 15, 11], .86 * smooth(.5, 1, gateish));      // build 231, owner: "I think christian looks too dark": dark against the light, not black
-    if (mercy > .01) { const mx = (C3.x + EV_X) / 2; c.save(); c.globalCompositeOperation = 'lighter';
+    if (mercy > .01) { const mx = ph === 'back' ? EV_X + 20 : (C3.x + EV_X) / 2; c.save(); c.globalCompositeOperation = 'lighter';
       { c.save(); c.translate(mx, 5); c.scale(1, .1); const g = c.createRadialGradient(0, 0, 0, 0, 0, 210); g.addColorStop(0, css([255, 196, 126], .5 * mercy)); g.addColorStop(1, css([255, 180, 110], 0)); c.fillStyle = g; c.fillRect(-210, -210, 420, 420); c.restore(); }
       { const g = c.createRadialGradient(mx, -84, 0, mx, -84, 170); g.addColorStop(0, css([255, 206, 150], .2 * mercy)); g.addColorStop(1, css([255, 190, 130], 0)); c.fillStyle = g; c.fillRect(mx - 170, -254, 340, 340); }
       c.restore(); }
@@ -1897,9 +1916,9 @@ const HL = (() => {
       // from the feet to the head) and set 37.5 picture pixels right (where the standing picture's body stands from its `ax`),
       // so at the swap he neither grows nor jumps sideways
       if (st < .5 || !EVS.ready) { FK = 1.048; figure(c, 'evw', EVW[Math.floor(evan.anim) % EVW.length], EVW_META, ex + 37.5 * CHR_K, 1, tintM, fa); FK = 1; }
-      else figure(c, 'evan', EVS[Math.floor(G.t * .2) % EVS_META.frames], EVS_META, ex, 1, tintM, 1);
+      else evFig(c, ex, tintM, 1);
       TALKM = null;
-    } else if (evan && EVS.ready) { TALKM = talkMove(E); foot(c, EV_X, evan.a); figure(c, 'evan', EVS[Math.floor(G.t * .2) % EVS_META.frames], EVS_META, EV_X, 1, tintM, smooth(.25, 1, evan.a)); TALKM = null; }
+    } else if (evan && EVS.ready) { TALKM = talkMove(E); foot(c, EV_X, evan.a); evFig(c, EV_X, tintM, smooth(.25, 1, evan.a)); TALKM = null; }
     if (wise && (WIS.ready || OBS.ready)) {
       const wt = mix([80, 72, 62], [92, 82, 84], dark); TALKM = talkMove(WW); foot(c, wise.x, wise.alpha);
       const { W, M, S, SM } = wFig(), wim = W[Math.floor(wise.anim) % W.length];
@@ -1926,6 +1945,12 @@ const HL = (() => {
     // build 238 ("not quite so pointy and slightly more varied in shape and maybe not quite so much covering Christian"): each
     // spur's width varies (.65 to 1.55 of `wk`), its brow a little longer and rounded, and they are a little lower (210 to 430)
     if (rocky) crags(1.3, 29, 240, 150, 210, 430, [15, 12, 11], .25 * burnR, true, .45, 0, FOOT - 70, .22, .62);
+    // his hand held out, waiting for the child's touch: a faint warm light gathers round it
+    if (G.act === 'ehand' && evan && evan.g > .5) { const [hx, hy] = handPt(), r = 26 + 40 * cam.z, k = (evan.g - .5) * 2 * (.75 + .25 * Math.sin(G.t / 30));
+      const g = c.createRadialGradient(hx, hy, 0, hx, hy, r); g.addColorStop(0, css([255, 214, 160], .32 * k)); g.addColorStop(1, css([255, 190, 130], 0)); c.save(); c.globalCompositeOperation = 'lighter'; c.fillStyle = g; c.fillRect(hx - r, hy - r, 2 * r, 2 * r); c.restore(); }
+    // (idea F) the stone over the gate glints now and then until it has been touched: a soft warm gleam passing along it
+    if ((ph === 'gate' || ph === 'knock') && !signSeen && veil < .5) { const [sx, sy, sw] = signPt(), k = Math.pow(Math.max(0, Math.sin(G.t / 55)), 6), gx = sx + sw * .8 * Math.sin(G.t / 110);
+      if (k > .02) { const g = c.createRadialGradient(gx, sy, 0, gx, sy, sw * .9); g.addColorStop(0, css([255, 226, 170], .45 * k)); g.addColorStop(1, css([255, 200, 140], 0)); c.save(); c.globalCompositeOperation = 'lighter'; c.fillStyle = g; c.fillRect(gx - sw, sy - sw, 2 * sw, 2 * sw); c.restore(); } }
     // the smoke Evangelist comes out of
     if (evan && evan.a < 1) { const ex = X(EV_X - 30), ey = Y(-90), a = Math.sin(Math.PI * clamp(evan.a * 1.1)) * .8 + (1 - evan.a) * .0; c.globalAlpha = a; for (let i = 0; i < 3; i++) c.drawImage(SMOKE, ex - (200 + i * 40) * z + 30 * Math.sin(G.t / 90 + i), ey - (110 - i * 30) * z, 400 * z, 200 * z); c.globalAlpha = 1; }
     // the flash over everything, the veil of mist between the hill and the gate, the burned edges
@@ -1941,5 +1966,5 @@ const HL = (() => {
   }
 
   // for testing: HL.peek() tells where the story is
-  return { on: false, show: false, hillPics: () => HILL, title, start, update, draw, touch, key, preload, lines: ALL, pt: k => k === 'hill' ? hillPt() : gatePt(), peek: () => ({ ph, x: Math.round(C3.x), stones: PATHR.map(r => [Math.round(r.x), Math.round(r.y), r.b]), vil: +vil.toFixed(2), reveal: +reveal.toFixed(2), stillT, zs, zT, Zw: +Zw.toFixed(2), farewell, kf: +(C3.kf || 0).toFixed(1), stand: C3.sd != null, wx: wise && Math.round(wise.x), ex: evan && evan.x != null ? Math.round(evan.x) : null, dark: +dark.toFixed(2), wise: wise && wise.mode, evan: evan && +evan.a.toFixed(2), knocks, cam: { ...cam }, hb: hillBox.map(v => Math.round(v * 100) / 100), boltT, bolt: bolt && bolt.map(l => [l[0], l[l.length - 1]].map(p => p.map(Math.round))) }) };
+  return { on: false, show: false, hillPics: () => HILL, title, start, update, draw, touch, key, preload, lines: ALL, pt: k => k === 'hill' ? hillPt() : k === 'hand' ? handPt() : k === 'sign' ? signPt() : gatePt(), peek: () => ({ ph, x: Math.round(C3.x), stones: PATHR.map(r => [Math.round(r.x), Math.round(r.y), r.b]), vil: +vil.toFixed(2), reveal: +reveal.toFixed(2), stillT, zs, zT, Zw: +Zw.toFixed(2), farewell, kf: +(C3.kf || 0).toFixed(1), stand: C3.sd != null, wx: wise && Math.round(wise.x), ex: evan && evan.x != null ? Math.round(evan.x) : null, dark: +dark.toFixed(2), wise: wise && wise.mode, evan: evan && +evan.a.toFixed(2), knocks, cam: { ...cam }, hb: hillBox.map(v => Math.round(v * 100) / 100), boltT, bolt: bolt && bolt.map(l => [l[0], l[l.length - 1]].map(p => p.map(Math.round))) }) };
 })();
