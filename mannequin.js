@@ -49,7 +49,7 @@ const MQ = (() => {
   //   sack:   size, high (how low on his back it is tied), round (how far it stands out); the smaller bundle tied on top of
   //           it: top (its size, 0 = none), set (further back or forward), flat (a flat roll or a round ball)
   //   gait:   step, bob, rock, swagger, arm (swing), bend (the elbow's flexing)
-  const HOOD = { beak: 2, droop: -2.8, top: 2.1, peak: 0, back: 6.8, hang: 8.2, rim: -2.8, cape: -12, head: .99, bow: .38, tilt: .1, rake: .8, size: .96, tail: 0, roll: 0, bib: 0,
+  const HOOD = { beak: 2, droop: -2.8, top: 2.1, peak: 0, back: 6.8, hang: 8.2, rim: -2.8, cape: -12, head: .99, bow: .38, tilt: .1, rake: .8, size: .96, tail: 0, roll: 0, bib: 21,
     sharp: .1, hook: -1, thick: 4.6, sweep: 0, cut: .2 };
   // THE OWNER'S OWN CHOICE (sent as links from the lab's sliders): the hood's first sixteen measures above, but cape, which
   // they asked to be drawn up off the shoulder (before any choice: 5.6, 0, 3.6, 0, 9, 0, 0, 0, 1, .27, then 0, 0, 1, 0, 0, 0), and face, shoe, leg, build, robe, sleeve and the sack's first three below.
@@ -476,13 +476,15 @@ const MQ = (() => {
     // ITS LOWER EDGE. Above 0 it is a cape lying down over the shoulder and riding with it. Below 0 the hood STOPS ON HIS TRAPS,
     // well before the shoulder: the edge is a collar round the base of his neck (at -12 about level with the neck's base, the
     // shoulder's top 4 lower and clear of it), it no longer rides with the shoulder, the back no longer bags out over his upper
-    // back, and any fall of its front (bib) lies on the chest in front of the shoulder, not across it. The collar slopes as
+    // back, and any fall of its front (bib) lies on the chest BEHIND the near shoulder and arm (see below). The collar slopes as
     // the base of a neck does: higher at the back, lower at the pit of the throat.
-    const up = Math.min(1, Math.max(0, -cl) / 12), ce = cl < 0 ? cl * 1.42 : cl, ride = 1 - .85 * up, b4 = .25 * (1 - up);
-    const EDGE = [[[-16.5 - .4 * Math.min(0, ce), 13.5 + .8 * ce - 2.5 * up], .4], [[-7, 17.5 + ce - 2 * up], .7], [[4 + 2 * up, 18.6 + ce + 2 * up + b4 * bib], .9], [[13 - 2 * up, 16.8 + ce + 5.7 * up + (.7 - .15 * up) * bib], .7], [[19.5 - 6 * up, 13 + .9 * ce + 8.8 * up + bib], .3]];
+    const up = Math.min(1, Math.max(0, -cl) / 12), ce = cl < 0 ? cl * 1.42 : cl, ride = 1 - .85 * up, b4 = .25;
+    const EDGE = [[[-16.5 - .4 * Math.min(0, ce), 13.5 + .8 * ce - 2.5 * up], .4], [[-7, 17.5 + ce - 2 * up], .7], [[4 + 2 * up, 18.6 + ce + 2 * up + b4 * bib], .9], [[13 - 4.5 * up, 16.8 + ce + 5.7 * up + (.7 - .15 * up) * bib], .7], [[19.5 - 5 * up, 13 + .9 * ce + 8.8 * up + bib], .3]];
     const hoodEdge = (i, dy) => cp([EDGE[i][0][0], EDGE[i][0][1] + (dy || 0)], EDGE[i][1] * ride);
     const pouch = dn(cp([-19 - .3 * dk + up * (7 + .3 * dk), 5 + .5 * hg - up * (5.5 + .3 * hg)], .2 * ride), .6 * (1 - .6 * up));
-    const hood = [hoodEdge(4), add(jaw, [1.2, 4.5])].concat(rimPts, beakTop, [hh([6, -22.2 - .9 * dt]), hh([-3, -23 - dt - .3 * pk]), hh([-12 - .3 * pk, -21 - .9 * dt - .7 * pk]), hh([-19.5 - .5 * dk - .2 * pk, -15.4 - .3 * dt - .2 * pk]),
+    // its front edge, from under his jaw down to its foot on the chest: cloth hanging from the chin bellies forward a little
+    const jw = add(jaw, [1.2, 4.5]), fe = hoodEdge(4), belly = up * Math.min(1, bib / 12) * 1.8;
+    const hood = (belly > .05 ? [fe, [fe[0] + (jw[0] - fe[0]) * .42 + belly, fe[1] + (jw[1] - fe[1]) * .42], jw] : [fe, jw]).concat(rimPts, beakTop, [hh([6, -22.2 - .9 * dt]), hh([-3, -23 - dt - .3 * pk]), hh([-12 - .3 * pk, -21 - .9 * dt - .7 * pk]), hh([-19.5 - .5 * dk - .2 * pk, -15.4 - .3 * dt - .2 * pk]),
       dn(hh([-24 - dk, -6.5]), .4), dn(hh([-25.4 - dk, 3 + .6 * hg]), .8), dn(hh([-23 - .8 * dk, 11 + hg]), 1), pouch, hoodEdge(0), hoodEdge(1), hoodEdge(2), hoodEdge(3)]);
     // a tail from the back of the crown (the liripipe of an old hood): it hangs down his back and swings with the back panel
     if (HD.tail > 0) {
@@ -499,6 +501,9 @@ const MQ = (() => {
     stroke(ctx, [hh([-5, -23.5 - dt]), hh([-19 - .5 * dk, -12.5]), dn(hh([-23.5 - dk, 3 + .6 * hg]), .8), dn(cp([-17.5, 9 + .5 * hg], .3), .6)], t => 4 * t + 1.2, T('hoodSh'));      // the back of the hood in shade
     stroke(ctx, [hoodEdge(0, 1), hoodEdge(1, .9), hoodEdge(2, .9), hoodEdge(3, .9), hoodEdge(4, .6)], t => 1.5, T('hoodSh'));      // the cape's hem
     ctx.restore();
+    // drawn up to his neck, the hood lies on his neck and chest, and his near shoulder and arm are nearer to us than it:
+    // they are drawn again over it, so the shoulder is clear and the hood's front shows on his chest in front of the arm
+    if (up > 0) { ctx.globalAlpha = Math.min(1, up * 2.5); arm(J.armN, false); ctx.globalAlpha = 1; }
     ctx.restore();
   }
 
