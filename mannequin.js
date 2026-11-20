@@ -29,6 +29,23 @@ const MQ = (() => {
   const K = { ax: 93, ground: 295, hip: [82, 150], neck: [94, 56], head: [104, 31], shoulder: [87, 68],
     thigh: 66, shin: 67, upper: 50, fore: 40, palm: 13, fing: 10.5, heel: [-9, 13], ball: [22, 13], shw: 30, hpw: 15 };      // shw, hpw: half the width between the shoulder joints, and between the hip joints
   const ANIMS = {}, LEGS = [['F', 4], ['N', 8]], DEG = 180 / Math.PI, TAU = 2 * Math.PI;
+  // EVERY KEY MEASURE OF HIM IS A NUMBER (MQ.DIM; the lab's sliders set them). After changing build, robe, gait or the
+  // hood's bow, call refresh(): his bones, the cloth's rest and the walk are made again.
+  //   hood:   beak = how far its top comes forward over his brow, droop = how low the beak's tip hangs, top = room over the
+  //           crown, peak = a point at the back of the crown, back = room behind his head, hang = how low the back hangs,
+  //           rim = how far back the rim lies on his cheek, cape = how far the cape goes below the shoulder, head = the
+  //           size of his head (1 = seven and a half heads), bow = how far his head is bowed
+  //   face:   nose, chin, brow (1 = as drawn)       shoe: toe = its length past the ball, point, lift (the tip turned up), bulk
+  //   leg:    calf, ankle (widths), shaft (how far the boot stands off the leg)
+  //   build:  legs, arms (lengths), girth (how deep his body is), lean (how far he leans in)
+  //   robe:   hem (longer or shorter), flare, full       sleeve: width at the cuff, drop (how it hangs), len (over the hand)
+  //   sack:   size, high (how low on his back it is tied), round (how far it stands out)
+  //   gait:   step, bob, rock, swagger, arm (swing), bend (the elbow's flexing)
+  const HOOD = { beak: 5.6, droop: 0, top: 3.6, peak: 0, back: 9, hang: 0, rim: 0, cape: 0, head: 1, bow: .27 };
+  const FACE = { nose: 1, chin: 1, brow: 1 }, SHOE = { toe: 1, point: 0, lift: 0, bulk: 1 }, LEG = { calf: 1, ankle: 1, shaft: 1.2 };
+  const BUILD = { legs: 1, arms: 1, girth: 1, lean: .075 }, ROBE = { hem: 0, flare: 1, full: 1 }, SLEEVE = { width: 23, drop: 1, len: 7 };
+  const SACK = { size: 1, high: 0, round: 1 }, GAIT = { step: 93, bob: 3.8, rock: .022, swagger: .018, arm: .12, bend: .25 };
+  const DIM = { hood: HOOD, face: FACE, shoe: SHOE, leg: LEG, build: BUILD, robe: ROBE, sleeve: SLEEVE, sack: SACK, gait: GAIT };
   // the body's side profile: along each part (0 at its top joint, 1 at its lower), how far its front and its back stand from the bone
   const BODY = {
     thigh: [[0, 11, 13], [.25, 12, 12], [.55, 10.5, 10.5], [.85, 8.6, 8.4], [1, 8, 7.6]],
@@ -176,6 +193,7 @@ const MQ = (() => {
     }
     const low = L.ank[1] >= L.knee[1] ? L.ank : L.knee; return [low[0] + 6, low[0] - 6];
   };
+  const CL0 = JSON.parse(JSON.stringify(CL));
   function clothNew() { return { f: CL.rf.slice(), b: CL.rb.slice(), fv: [0, 0, 0, 0], bv: [0, 0, 0, 0], fl: CL.fr.slice(), flv: [0, 0, 0], lift: 0, liftV: 0, by: 0, byV: 0, bt: 0, btV: 0, shAvg: null, leanAvg: null, h1: null, h2: null }; }
   // a skirt edge at any depth below the hip (above the first height it runs into the waist)
   function edgeAt(e, rest, d) {
@@ -228,7 +246,23 @@ const MQ = (() => {
 
   // ---------------------------------------------------------------- loading and playing
   function add_(name, A) { ANIMS[name] = A; if (A.track) A.skel = A.track.map(fromTrack); bake(name); return A; }
-  function walk(o) { const n = 38; return add_('classic', { label: 'A walk built from the principles', loop: true, fps: 24, vpx: 2 * 93 / n, skel: Array.from({ length: n }, (_, i) => classic(i / n, o)) }); }
+  function walk(o) {
+    const n = 38, step = GAIT.step * BUILD.legs;
+    o = Object.assign({ step, strike: step * 46 / 93, bob: GAIT.bob, rock: GAIT.rock, swagger: GAIT.swagger, arm: GAIT.arm, bend: GAIT.bend, head: HOOD.bow, lean: BUILD.lean }, o);
+    return add_('classic', { label: 'A walk built from the principles', loop: true, fps: 24, vpx: 2 * o.step / n, skel: Array.from({ length: n }, (_, i) => classic(i / n, o)) });
+  }
+  const K0 = { thigh: 66, shin: 67, upper: 50, fore: 40, hip: 150, neck: 56, head: 31, shoulder: 68 };
+  function refresh() {
+    // his bones: longer legs lift everything above them; the arms keep their place on the shoulders
+    K.thigh = K0.thigh * BUILD.legs; K.shin = K0.shin * BUILD.legs; K.upper = K0.upper * BUILD.arms; K.fore = K0.fore * BUILD.arms;
+    const dy = (K0.thigh + K0.shin) - (K.thigh + K.shin); K.hip[1] = K0.hip + dy; K.neck[1] = K0.neck + dy; K.head[1] = K0.head + dy; K.shoulder[1] = K0.shoulder + dy;
+    // the cloth's rest: a longer or shorter robe, more or less flared, fuller or closer; it hangs from a deeper or a slighter body
+    const k = (96 + ROBE.hem) / 96, w = ROBE.full * BUILD.girth;
+    CL.d = CL0.d.map(v => v * k); CL.fd = CL0.fd.map(v => v * k); CL.fr = CL0.fr.map(v => v * w);
+    CL.rf = CL0.rf.map(v => (CL0.rf[0] + (v - CL0.rf[0]) * ROBE.flare) * w); CL.rb = CL0.rb.map(v => (CL0.rb[0] + (v - CL0.rb[0]) * ROBE.flare) * w);
+    walk(); for (const name in ANIMS) if (ANIMS[name].track) add_(name, ANIMS[name]);
+    return ANIMS;
+  }
   async function load(url) {
     walk();
     try { const d = await (await fetch(url || 'assets/mannequin.json')).json(); for (const k in d.anims) add_(k, Object.assign({ label: 'The walk measured from his frames' }, d.anims[k])); } catch (e) { }
@@ -268,11 +302,22 @@ const MQ = (() => {
   // dark, quiet tones: a silhouette first, with only a trace of form inside it (LOOK.detail 0 = one flat tone)
   const TONE = { robe: .2, robeSh: .165, robeDk: .156, robeLt: .226, flap: .178, hose: .128, hoseFar: .104, shoe: .15, shoeFar: .118, sack: .176, sackSh: .146, sackLt: .2, strap: .118, hood: .206, hoodSh: .17, face: .262, hand: .25, handFar: .19, sleeve: .222, sleeveFar: .15, belt: .12 };
   const LOOK = { detail: 1, base: .185 };
-  // THE HOOD'S MEASURES (the lab's sliders set them; all in his units): beak = how far its top comes forward over his brow,
-  // droop = how low the beak's tip hangs, top = room over the crown, peak = a point at the back of the crown, back = room
-  // behind his head, hang = how low the back hangs, rim = how far back the rim lies on his cheek, cape = how far the cape
-  // goes below the shoulder, head = the size of his head (1 = seven and a half heads)
-  const HOOD = { beak: 5.6, droop: 0, top: 3.6, peak: 0, back: 9, hang: 0, rim: 0, cape: 0, head: 1 };
+  // his face by its measures: the nose stands out more or less from the line of the face, the brow and the chin likewise
+  const skullPts = () => BODY.skull.map((v, i) => {
+    let x = v[0];
+    if (i >= 5 && i <= 8) x = 15.4 + (x - 15.4) * FACE.nose; else if (i === 3) x = 14.6 + (x - 14.6) * FACE.brow; else if (i === 2) x += (FACE.brow - 1) * .5;
+    else if (i === 14) x += (FACE.chin - 1) * 2.6; else if (i === 15) x += (FACE.chin - 1) * 2; else if (i === 13) x += (FACE.chin - 1) * .8;
+    return v[2] ? [x, v[1], 1] : [x, v[1]];
+  });
+  // his lower leg: calf and ankle each wider or slighter
+  const shinP = () => BODY.shin.map(([t, f, b]) => { const k = lerp(LEG.calf, LEG.ankle, Math.max(0, Math.min(1, (t - .4) / .4))); return [t, f * k, b * k]; });
+  // his shoe: the toe longer or shorter past the ball, drawn to more or less of a point, its tip turned up, the upper fuller or lower
+  const shoeV = v => {
+    let x = v[0], y = v[1];
+    if (x > 22) { x = 22 + (x - 22) * SHOE.toe; const u = Math.min(1.5, (x - 22) / 11); x += SHOE.point * 6 * u * u; if (y < 11.5) y += SHOE.point * 2 * u * u; y -= SHOE.lift * u * u; }
+    if (v[0] > 2 && y < 13) y = 13 - (13 - y) * (1 + (SHOE.bulk - 1) * Math.max(0, Math.min(1, (v[0] - 2) / 10)));
+    return v.length > 2 ? [x, y, v[2], v[3]] : [x, y];
+  };
   const headPt = J => { const k = HOOD.head, c = add(J.head, R([0, -(k - 1) * 10], J.nod)); return v => add(c, R([v[0] * k, v[1] * k], J.nod)); };
   const closed = (ctx, F, Bk) => { ctx.beginPath(); curve(ctx, F); const r = Bk.slice().reverse(); ctx.lineTo(r[0][0], r[0][1]); curve(ctx, r, false, true); ctx.closePath(); ctx.fill(); };
   const disc = (ctx, c, r) => { ctx.beginPath(); ctx.arc(c[0], c[1], r, 0, 7); ctx.fill(); };
@@ -301,7 +346,7 @@ const MQ = (() => {
     Q = Q || clothPose(clothNew());
     const f = Q.slice(0, 4), b = Q.slice(4, 8), fl = Q.slice(8, 11), lift = Q[11], by = Q[12], h = J.hip, n = J.neck;
     ctx.save(); ctx.translate(x, y); ctx.scale((face || 1) * Kk, Kk); ctx.translate(-K.ax, -K.ground); ctx.lineJoin = 'round'; ctx.lineCap = 'round';
-    const sl = Math.hypot(h[0] - n[0], h[1] - n[1]), sd = [(h[0] - n[0]) / sl, (h[1] - n[1]) / sl], st = (t, off) => [n[0] + (h[0] - n[0]) * t + sd[1] * off, n[1] + (h[1] - n[1]) * t - sd[0] * off];
+    const sl = Math.hypot(h[0] - n[0], h[1] - n[1]), sd = [(h[0] - n[0]) / sl, (h[1] - n[1]) / sl], gi = BUILD.girth, st = (t, off) => [n[0] + (h[0] - n[0]) * t + sd[1] * off * gi, n[1] + (h[1] - n[1]) * t - sd[0] * off * gi];
     const fill = (pts, col, cl) => { ctx.fillStyle = col; ctx.beginPath(); curve(ctx, pts, cl !== false); ctx.fill(); };
     const hp = headPt(J), np = v => add(n, R(v, J.lean));
 
@@ -310,10 +355,10 @@ const MQ = (() => {
     //     trails behind a swinging arm and hangs below a raised one); the cuff covers the wrist
     const arm = (A, far) => {
       hand(ctx, A, T(far ? 'handFar' : 'hand'));
-      const W = 23, r = 5, s = Math.max(.06, Math.min(.86, .42 + 1.6 * (A.hb - A.b - .08) - .8 * Math.sin(A.b))), fd = r + 1.5 + s * (W - 2 * r - 3), ab = Math.abs(Math.sin(A.b));
+      const W = SLEEVE.width, r = 5, s = Math.max(.06, Math.min(.86, .42 + 1.6 * (A.hb - A.b - .08) - .8 * Math.sin(A.b))), fd = r + 1.5 + s * (W - 2 * r - 3), ab = Math.abs(Math.sin(A.b));
       ctx.fillStyle = T(far ? 'sleeveFar' : 'sleeve'); part(ctx, A.sh, A.el, BODY.upper, 3.2); disc(ctx, A.sh, 10.5); disc(ctx, A.el, 9.2);
-      const sv = sides(A.el, add(A.wr, dirv(A.b, 7)), [[0, 8.6, 9], [1, fd, W - fd]], 0, 1, 8);
-      sv[1].forEach((q, i) => { const t = i / 8; q[1] += (3 + 6 * ab) * Math.sin(Math.PI * t) * .8 + (2 + 4 * ab) * t * t; });
+      const sv = sides(A.el, add(A.wr, dirv(A.b, SLEEVE.len)), [[0, 8.6, 9], [1, fd, W - fd]], 0, 1, 8);
+      sv[1].forEach((q, i) => { const t = i / 8; q[1] += SLEEVE.drop * ((3 + 6 * ab) * Math.sin(Math.PI * t) * .8 + (2 + 4 * ab) * t * t); });
       closed(ctx, sv[0], sv[1]);
       const d = dirv(A.b, 1.6), m = mix(sv[0][8], sv[1][8], .5); stroke(ctx, [sv[0][8], [m[0] + d[0], m[1] + d[1]], sv[1][8]], leaf(1.5), T('robeDk'));      // the cuff's mouth, in shade
     };
@@ -321,12 +366,12 @@ const MQ = (() => {
 
     // --- legs: hose on the body's own profile, and soft shoes (they show below the hem)
     const leg = (L, far) => {
-      ctx.fillStyle = T(far ? 'hoseFar' : 'hose'); part(ctx, L.hip, L.knee, BODY.thigh, 0); part(ctx, L.knee, L.ank, BODY.shin, 1.2); disc(ctx, L.knee, 8); disc(ctx, L.ank, 6.6);
+      ctx.fillStyle = T(far ? 'hoseFar' : 'hose'); part(ctx, L.hip, L.knee, BODY.thigh, 0); part(ctx, L.knee, L.ank, shinP(), LEG.shaft); disc(ctx, L.knee, 8); disc(ctx, L.ank, (5.4 + LEG.shaft) * LEG.ankle);
       // his shoe, its sole, the fold at the ankle, and the creases across the toes where it bends
       const fp = footPt(L), bend = toeBend(L);
-      ctx.fillStyle = T(far ? 'shoeFar' : 'shoe'); ctx.beginPath(); curve(ctx, BODY.shoe.map(fp), true); ctx.fill();
-      stroke(ctx, [[-8.6, 11.4], [-1, 12.1], [9, 11.4], [18.5, 12.1], [26.5, 12.2], [31.6, 11]].map(fp), t => .55, T('belt'));
-      if (bend > .12) { const w = Math.min(1, bend * 1.6); stroke(ctx, [[20.4, 4], [21.6, 6.6], [22.6, 9.6]].map(fp), leaf(.9 * w), T('belt')); stroke(ctx, [[24.6, 5.4], [25.2, 7.6], [25.4, 10]].map(fp), leaf(.7 * w), T('belt')); }
+      ctx.fillStyle = T(far ? 'shoeFar' : 'shoe'); ctx.beginPath(); curve(ctx, BODY.shoe.map(shoeV).map(fp), true); ctx.fill();
+      stroke(ctx, [[-8.6, 11.4], [-1, 12.1], [9, 11.4], [18.5, 12.1], [26.5, 12.2], [31.6, 11]].map(shoeV).map(fp), t => .55, T('belt'));
+      if (bend > .12) { const w = Math.min(1, bend * 1.6); stroke(ctx, [[20.4, 4], [21.6, 6.6], [22.6, 9.6]].map(shoeV).map(fp), leaf(.9 * w), T('belt')); stroke(ctx, [[24.6, 5.4], [25.2, 7.6], [25.4, 10]].map(shoeV).map(fp), leaf(.7 * w), T('belt')); }
     };
     leg(J.legF, true); leg(J.legN, false);
 
@@ -355,18 +400,18 @@ const MQ = (() => {
     // the cord at his waist (a habit is girded with a cord, as a pilgrim is), knotted at his side; its long end hangs
     // with three knots in it, lying on the skirt and swinging with it
     ctx.strokeStyle = T('belt'); ctx.lineWidth = 2.2; ctx.beginPath(); curve(ctx, [st(.775, 19.6), st(.8, 8), st(.79, -4), st(.775, -14.6)]); ctx.stroke();
-    const sk = (u, d) => [h[0] + lerp(edgeAt(b, CL.rb, d), edgeAt(f, CL.rf, d), u), h[1] + d], knot = st(.8, 7);
+    const sk = (u, d) => [h[0] + lerp(edgeAt(b, CL.rb, d), edgeAt(f, CL.rf, d), u), h[1] + Math.min(d, CL.d[3] - 5)], knot = st(.8, 7);
     stroke(ctx, [knot, sk(.66, 4), sk(.67, 26), sk(.675, 48), sk(.68, 64)], t => 1.05 - .2 * t, T('belt'));
     ctx.fillStyle = T('belt'); disc(ctx, knot, 2.6); [36, 47, 58].forEach(d => disc(ctx, sk(.675, d), 1.8));
 
     // --- the back panel (a habit's scapular hangs from the shoulders, front and back; his shows below the sack): a loose panel hanging down his back, outside the skirt
-    const inX = d => h[0] + lerp(edgeAt(b, CL.rb, d), edgeAt(f, CL.rf, d), .3), o0 = [h[0] + fl[0], h[1] + CL.fd[0]], o1 = [h[0] + fl[1], h[1] + CL.fd[1]], o2 = [h[0] + fl[2], h[1] + CL.fd[2], 1], ib = [inX(80), h[1] + 80, 1];
-    fill([st(.62, -3), st(.6, -20), [h[0] + Math.min(b[0] - 2, fl[0] + 3), h[1] + 12], o0, o1, o2, [lerp(o2[0], ib[0], .35), o2[1] - 1.5], [lerp(o2[0], ib[0], .7), ib[1] + .5], ib, [inX(54), h[1] + 54], [inX(26), h[1] + 26]], T('flap'));
-    stroke(ctx, [st(.66, -4), [inX(26), h[1] + 26], [inX(54), h[1] + 54], [ib[0], ib[1]]], t => 1.5 * Math.min(1, 3 * t) * (1 - .4 * t), T('robeDk'));      // the dark fold where it lies on the skirt
+    const inX = d => h[0] + lerp(edgeAt(b, CL.rb, d), edgeAt(f, CL.rf, d), .3), o0 = [h[0] + fl[0], h[1] + CL.fd[0]], o1 = [h[0] + fl[1], h[1] + CL.fd[1]], o2 = [h[0] + fl[2], h[1] + CL.fd[2], 1], hk = CL.d[3] / 96, ib = [inX(80 * hk), h[1] + 80 * hk, 1];
+    fill([st(.62, -3), st(.6, -20), [h[0] + Math.min(b[0] - 2, fl[0] + 3), h[1] + 12], o0, o1, o2, [lerp(o2[0], ib[0], .35), o2[1] - 1.5], [lerp(o2[0], ib[0], .7), ib[1] + .5], ib, [inX(54 * hk), h[1] + 54 * hk], [inX(26 * hk), h[1] + 26 * hk]], T('flap'));
+    stroke(ctx, [st(.66, -4), [inX(26 * hk), h[1] + 26 * hk], [inX(54 * hk), h[1] + 54 * hk], [ib[0], ib[1]]], t => 1.5 * Math.min(1, 3 * t) * (1 - .4 * t), T('robeDk'));      // the dark fold where it lies on the skirt
 
     // --- the burden: a heavy sack bound on his back. It hangs from its tie behind his shoulders, its weight low, its inner
     //     side flat against him; it sags a beat after the body and spreads a little as it does
-    const tilt = J.lean + S[16] + .05 + by * .004 + (Q[13] || 0), tie = add(st(.07, -15), [0, by]), sq = 1 + .012 * Math.max(-3, Math.min(4, by)), sp = v => add(tie, R([v[0] * sq, v[1] / sq], tilt));
+    const tilt = J.lean + S[16] + .05 + by * .004 + (Q[13] || 0), tie = add(st(.07 + SACK.high, -15), [0, by]), sq = 1 + .012 * Math.max(-3, Math.min(4, by)), sp = v => add(tie, R([v[0] * sq * SACK.size * (v[0] < 0 ? SACK.round : 1), v[1] / sq * SACK.size], tilt));
     fill([[-2, -1], [-9, -9], [-6, -15], [1, -14], [5, -9], [4, -1]].map(sp), T('sackLt'));      // its gathered mouth above the tie
     const sack = [[3, 3], [6.5, 20], [7, 45], [3.5, 62], [-9, 73.5], [-27, 70.5], [-38, 57], [-36.5, 39], [-28.5, 20], [-17, 7], [-8, 2]].map(sp);
     fill(sack, T('sack'));
@@ -383,9 +428,9 @@ const MQ = (() => {
     // --- near arm; then his head. His face shows in the hood as a lit profile (brow, nose, lips, chin); the hood's rim
     //     throws its shadow down the cheek and into the hollow of the eye, and the neck is in shade under the jaw
     arm(J.armN, false);
-    ctx.fillStyle = T('hoodSh'); part(ctx, n, hp([-2, 12]), [[0, 6.5, 7], [1, 6, 6.5]], 0); fill(BODY.skull.map(v => v[2] ? [...hp(v), 1] : hp(v)), T('face'));
+    ctx.fillStyle = T('hoodSh'); part(ctx, n, hp([-2, 12]), [[0, 6.5, 7], [1, 6, 6.5]], 0); fill(skullPts().map(v => v[2] ? [...hp(v), 1] : hp(v)), T('face'));
     const HD = HOOD, bk = HD.beak, tipY = -9 + HD.droop, dt = HD.top - 3.6, dk = HD.back - 9, rm = HD.rim, cl = HD.cape, pk = HD.peak, hg = HD.hang;
-    ctx.save(); ctx.beginPath(); curve(ctx, BODY.skull.map(v => v[2] ? [...hp(v), 1] : hp(v)), true); ctx.clip();
+    ctx.save(); ctx.beginPath(); curve(ctx, skullPts().map(v => v[2] ? [...hp(v), 1] : hp(v)), true); ctx.clip();
     stroke(ctx, [[13.4 + bk, tipY + 1.6], [15.4 - .4 * rm, tipY + 4.4], [12.8 - .8 * rm, 0], [10.8 - rm, 6], [10 - rm, 12], [10.8 - rm, 18]].map(hp), t => 2.4, T('hoodSh'));      // the hood's shadow on his brow and down his cheek
     stroke(ctx, [hp([13.5, 17.6]), hp([8, 16.6]), hp([0, 14.6])], t => 1.3, T('hoodSh'));      // under the jaw
     ctx.restore();
@@ -416,10 +461,10 @@ const MQ = (() => {
     ctx.save(); ctx.translate(x, y); ctx.scale((face || 1) * Kk, Kk); ctx.translate(-K.ax, -K.ground); ctx.lineJoin = 'round';
     const hp = headPt(J), dot = (c, r) => { ctx.fillStyle = jc; disc(ctx, c, r); };
     const arm = (A, col) => { hand(ctx, A, col); ctx.fillStyle = col; disc(ctx, A.sh, 7.6); part(ctx, A.sh, A.el, BODY.upper, 0); part(ctx, A.el, A.wr, BODY.fore, 0); disc(ctx, A.el, 5.5); dot(A.el, 2.2); dot(A.wr, 1.8); dot(A.kn, 1.3); };
-    const leg = (L, col) => { ctx.fillStyle = col; disc(ctx, L.hip, 11.5); part(ctx, L.hip, L.knee, BODY.thigh, 0); part(ctx, L.knee, L.ank, BODY.shin, 0); disc(ctx, L.knee, 7.4); disc(ctx, L.ank, 5.6); foot(ctx, L); dot(L.knee, 3); dot(L.ank, 2.2); };
+    const leg = (L, col) => { ctx.fillStyle = col; disc(ctx, L.hip, 11.5); part(ctx, L.hip, L.knee, BODY.thigh, 0); part(ctx, L.knee, L.ank, shinP(), 0); disc(ctx, L.knee, 7.4); disc(ctx, L.ank, 5.6 * LEG.ankle); foot(ctx, L); dot(L.knee, 3); dot(L.ank, 2.2); };
     arm(J.armF, far); leg(J.legF, far);
-    ctx.fillStyle = mid; const t = sides(J.neck, J.hip, BODY.torso, 0, 1.26, 22); closed(ctx, t[0], t[1]);
-    part(ctx, J.neck, hp([-2, 12]), [[0, 6.5, 7], [1, 6, 6.5]], 0); ctx.beginPath(); curve(ctx, BODY.skull.map(v => v[2] ? [...hp(v), 1] : hp(v)), true); ctx.fill();
+    ctx.fillStyle = mid; const t = sides(J.neck, J.hip, BODY.torso.map(v => [v[0], v[1] * BUILD.girth, v[2] * BUILD.girth]), 0, 1.26, 22); closed(ctx, t[0], t[1]);
+    part(ctx, J.neck, hp([-2, 12]), [[0, 6.5, 7], [1, 6, 6.5]], 0); ctx.beginPath(); curve(ctx, skullPts().map(v => v[2] ? [...hp(v), 1] : hp(v)), true); ctx.fill();
     leg(J.legN, near); arm(J.armN, near); dot(J.shN, 2.8); dot(J.hipN, 3.4);
     ctx.restore();
   }
@@ -439,5 +484,5 @@ const MQ = (() => {
     ctx.fillStyle = '#d8d2c6'; ctx.beginPath(); ctx.ellipse(1, 0, 9, 8, 0, 0, 7); ctx.fill(); ctx.beginPath(); ctx.moveTo(9, -3.2); ctx.lineTo(14.5, 0); ctx.lineTo(9, 3.2); ctx.fill();      // his head, the nose to the right
     ctx.restore();
   }
-  return { K, CL, TONE, LOOK, HOOD, BODY, load, walk, figure, body, bones, above, joints, pose, fromTrack, classic, ik, clothNew, clothStep, clothPose, bake, add: add_, skelAt, clothAt, anims: ANIMS };
+  return { K, CL, TONE, LOOK, HOOD, DIM, BODY, load, walk, refresh, figure, body, bones, above, joints, pose, fromTrack, classic, ik, clothNew, clothStep, clothPose, bake, add: add_, skelAt, clothAt, anims: ANIMS };
 })();

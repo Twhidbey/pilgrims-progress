@@ -20,7 +20,10 @@
   .row label { display: flex; justify-content: space-between; gap: 10px; font-size: 14px; color: #d8d2c6; }
   .row label b { font-weight: normal; color: #f0d79a; }
   input[type=range] { width: 100%; height: 30px; margin: 0; accent-color: #c9a45a; }
-  #code { display: block; box-sizing: border-box; width: calc(100% - 24px); margin: 4px 12px; padding: 8px; font: 14px/1.2 monospace; color: #f0d79a; background: #2e2b28; border: 1px solid #5d564c; border-radius: 6px; }
+  #code { display: block; box-sizing: border-box; width: calc(100% - 24px); margin: 4px 12px; padding: 8px; font: 13px/1.3 monospace; color: #f0d79a; background: #2e2b28; border: 1px solid #5d564c; border-radius: 6px; resize: vertical; }
+  details { border-top: 1px solid #4a443c; padding: 4px 0 6px; }
+  summary { font-size: 16px; color: #f0d79a; padding: 8px 0; cursor: pointer; }
+  details .bar { padding: 2px 0 8px; }
 </style>
 </head>
 <body>
@@ -39,12 +42,11 @@
   <button id="ground">Ground: grey</button>
 </div>
 <canvas id="w" width="1500" height="300"></canvas>
-<h1>His hood: move the sliders to the one you like</h1>
-<p>The close-up stays in view while you move the sliders. When you like it, send me the line under the sliders (or the link).</p>
+<h1>His measures: move the sliders to the ones you like</h1>
+<p>Open a part, move its sliders; the close-up shows that part and stays in view. When you like him, send me the lines under the sliders (or the link).</p>
 <div class="hoodbox"><canvas id="h" width="720" height="500"></canvas><div id="sliders"></div></div>
-<div class="bar" id="presets"></div>
-<input id="code" readonly>
-<div class="bar"><button id="copy">Copy the link to this hood</button><button id="still">Close-up: walking</button></div>
+<textarea id="code" readonly rows="3"></textarea>
+<div class="bar"><button id="copy">Copy the link to these measures</button><button id="still">Close-up: walking</button><button id="allback">Everything back as it was</button></div>
 <script src="mannequin.js"></script>
 <script>
 (async () => {
@@ -73,34 +75,58 @@
   $('detail').onclick = e => { di = (di + 1) % DET.length; MQ.LOOK.detail = DET[di][1]; e.target.textContent = 'Inside: ' + DET[di][0]; };
   $('ground').onclick = e => { gi = (gi + 1) % GROUNDS.length; e.target.textContent = 'Ground: ' + GROUNDS[gi][0]; };
   const skeleton = (x, S, ox, oy, Z) => MQ.bones(x, S, ox, oy, 1, Z);
-  // ---- the hood's sliders
+  // ---- his measures, part by part: each slider sets one number of MQ.DIM
   const hv = $('h'), hx = hv.getContext('2d');
-  const SLD = [['beak', 'Beak: how far it comes forward', 0, 14, .2], ['droop', 'Beak: how low its tip hangs', -3, 8, .2], ['top', 'Room over the crown', 1.5, 14, .2], ['peak', 'A point at the back of the crown', 0, 14, .2],
-    ['back', 'Room behind his head', 3, 24, .2], ['hang', 'How low the back hangs', -6, 16, .2], ['rim', 'How much of his cheek shows', -4, 8, .2], ['cape', 'Cape below the shoulder', 0, 24, .5],
-    ['head', 'Size of his head', .9, 1.3, .01], ['bow', 'How far his head is bowed', 0, .45, .01]];
-  const DEF = Object.assign({}, MQ.HOOD, { bow: .27 }), val = Object.assign({}, DEF);
-  const PRE = [['As it is now', {}], ['No beak', { beak: 0 }], ['Long beak, low', { beak: 9.6, droop: 3 }], ['Deeper hood', { beak: 8, droop: 2, top: 6, back: 14, hang: 6 }], ['Peaked', { peak: 9, top: 5, back: 12 }], ['Close cap', { beak: 0, top: 2.4, back: 4, rim: -1 }], ['Bigger head', { head: 1.2 }]];
-  const m = /hood=([-\d.,]+)/.exec(location.hash); if (m) m[1].split(',').forEach((v, i) => { if (SLD[i] && isFinite(+v)) val[SLD[i][0]] = +v; });
-  let bowed = DEF.bow, frozen = false;
-  function apply(write) {
-    for (const [k] of SLD) if (k !== 'bow') MQ.HOOD[k] = val[k];
-    if (val.bow !== bowed) { bowed = val.bow; MQ.walk({ head: bowed }); }
-    for (const [k, , , , st] of SLD) { const el = $('s-' + k); if (el) { el.value = val[k]; $('v-' + k).textContent = (+val[k]).toFixed(st < .1 ? 2 : 1); } }
-    const code = 'hood=' + SLD.map(([k, , , , st]) => (+val[k]).toFixed(st < .1 ? 2 : 1).replace(/\.?0+$/, '')).join(',');
-    $('code').value = code; if (write) history.replaceState(null, '', '#' + code);
+  const GROUPS = [
+    ['hood', 'His hood', 'head', [['beak', 'Beak: how far it comes forward', 0, 14, .2], ['droop', 'Beak: how low its tip hangs', -3, 8, .2], ['top', 'Room over the crown', 1.5, 14, .2], ['peak', 'A point at the back of the crown', 0, 14, .2],
+      ['back', 'Room behind his head', 3, 24, .2], ['hang', 'How low the back hangs', -6, 16, .2], ['rim', 'How much of his cheek shows', -4, 8, .2], ['cape', 'Cape below the shoulder', 0, 24, .5],
+      ['head', 'Size of his head', .9, 1.3, .01], ['bow', 'How far his head is bowed', 0, .45, .01]],
+      [['No beak', { beak: 0 }], ['Long beak, low', { beak: 9.6, droop: 3 }], ['Deeper hood', { beak: 8, droop: 2, top: 6, back: 14, hang: 6 }], ['Peaked', { peak: 9, top: 5, back: 12 }], ['Close cap', { beak: 0, top: 2.4, back: 4, rim: -1 }], ['Bigger head', { head: 1.2 }]]],
+    ['face', 'His face', 'head', [['nose', 'Nose', .3, 1.9, .05], ['chin', 'Chin', .4, 1.9, .05], ['brow', 'Brow', .4, 1.9, .05]]],
+    ['shoe', 'His shoes', 'feet', [['toe', 'Length of the toe', .7, 1.7, .02], ['point', 'How pointed', 0, 1.5, .05], ['lift', 'How far the tip turns up', 0, 6, .2], ['bulk', 'How full over the foot', .7, 1.5, .02]],
+      [['As in his painting (long, pointed)', { toe: 1.1, point: .9, lift: 3, bulk: .82 }], ['Blunt and plain', { toe: .9, bulk: 1.1 }]]],
+    ['leg', 'His lower legs', 'feet', [['calf', 'Width of the calf', .7, 1.5, .02], ['ankle', 'Width of the ankle', .7, 1.6, .02], ['shaft', 'Thickness of the boot shaft', 0, 4, .1]]],
+    ['build', 'His build', 'body', [['legs', 'Length of his legs', .85, 1.2, .01], ['arms', 'Length of his arms', .85, 1.2, .01], ['girth', 'How stout he is', .8, 1.4, .01], ['lean', 'How far he leans in', 0, .2, .005]]],
+    ['robe', 'His robe', 'body', [['hem', 'Length (down to the hem)', -34, 34, 1], ['flare', 'How much it flares', 0, 3, .05], ['full', 'How full the skirt is', .8, 1.4, .01]]],
+    ['sleeve', 'His sleeves', 'body', [['width', 'Width at the cuff', 12, 36, .5], ['drop', 'How much they hang', 0, 2.5, .05], ['len', 'How far over the hand', 0, 16, .5]]],
+    ['sack', 'His burden', 'body', [['size', 'Size', .6, 1.5, .01], ['high', 'How low on his back it is tied', -.06, .3, .01], ['round', 'How far it stands out', .6, 1.5, .01]]],
+    ['gait', 'His walk', 'body', [['step', 'Length of his step', 60, 130, 1], ['bob', 'Up and down', 0, 7, .1], ['rock', 'Torso rocking', 0, .06, .002], ['swagger', 'Swagger (once a stride)', 0, .05, .002], ['arm', 'Arm swing', 0, .35, .01], ['bend', 'Elbow flexing', 0, .6, .01]]]
+  ];
+  const DEF = JSON.parse(JSON.stringify(MQ.DIM)), REBUILD = { build: 1, robe: 1, gait: 1 };
+  let view = 'head', frozen = false;
+  const fmt = (v, st) => (+v).toFixed(st < .01 ? 3 : st < .1 ? 2 : st < 1 ? 1 : 0).replace(/(\.\d*?)0+$/, '$1').replace(/\.$/, '');
+  location.hash.replace(/([a-z]+)=([-\d.,]+)/g, (all, g, list) => { const G = GROUPS.find(x => x[0] === g); if (G) list.split(',').forEach((v, i) => { if (G[3][i] && v !== '' && isFinite(+v)) MQ.DIM[g][G[3][i][0]] = +v; }); });
+  function show(write) {
+    const parts = [];
+    for (const [g, , , list] of GROUPS) {
+      let changed = false;
+      for (const [k, , , , st] of list) { const el = $('s-' + g + '-' + k); if (el) { el.value = MQ.DIM[g][k]; $('v-' + g + '-' + k).textContent = fmt(MQ.DIM[g][k], st); } if (Math.abs(MQ.DIM[g][k] - DEF[g][k]) > 1e-9) changed = true; }
+      if (changed) parts.push(g + '=' + list.map(([k, , , , st]) => fmt(MQ.DIM[g][k], st)).join(','));
+    }
+    $('code').value = parts.length ? parts.join('\n') : 'everything as it is now';
+    if (write) history.replaceState(null, '', parts.length ? '#' + parts.join('&') : location.pathname + location.search);
   }
-  for (const [k, label, lo, hi, st] of SLD) {
-    const d = document.createElement('div'); d.className = 'row'; d.innerHTML = '<label for="s-' + k + '"><span>' + label + '</span><b id="v-' + k + '"></b></label><input type="range" id="s-' + k + '" min="' + lo + '" max="' + hi + '" step="' + st + '">';
-    $('sliders').appendChild(d); d.querySelector('input').oninput = e => { val[k] = +e.target.value; apply(true); };
+  function changed(g, k) { if (REBUILD[g] || k === 'bow') MQ.refresh(); show(true); }
+  for (const [g, title, vw, list, presets] of GROUPS) {
+    const box = document.createElement('details'); if (g === 'hood') box.open = true; box.innerHTML = '<summary>' + title + '</summary>'; $('sliders').appendChild(box);
+    box.addEventListener('toggle', () => { if (box.open) view = vw; });
+    for (const [k, label, lo, hi, st] of list) {
+      const d = document.createElement('div'); d.className = 'row'; d.innerHTML = '<label for="s-' + g + '-' + k + '"><span>' + label + '</span><b id="v-' + g + '-' + k + '"></b></label><input type="range" id="s-' + g + '-' + k + '" min="' + lo + '" max="' + hi + '" step="' + st + '">';
+      box.appendChild(d); d.querySelector('input').oninput = e => { MQ.DIM[g][k] = +e.target.value; view = vw; changed(g, k); };
+    }
+    const bar = document.createElement('div'); bar.className = 'bar'; box.appendChild(bar);
+    for (const [name, o] of [['As it is now', {}]].concat(presets || [])) { const b = document.createElement('button'); b.textContent = name; b.onclick = () => { Object.assign(MQ.DIM[g], DEF[g], o); view = vw; changed(g, 'bow'); }; bar.appendChild(b); }
   }
-  for (const [name, o] of PRE) { const b = document.createElement('button'); b.textContent = name; b.onclick = () => { Object.assign(val, DEF, o); apply(true); }; $('presets').appendChild(b); }
-  $('copy').onclick = async e => { const url = location.href.split('#')[0] + '#' + $('code').value; try { await navigator.clipboard.writeText(url); e.target.textContent = 'Copied'; } catch (err) { $('code').value = url; $('code').select(); e.target.textContent = 'Select the line above and copy it'; } setTimeout(() => e.target.textContent = 'Copy the link to this hood', 2500); };
+  $('copy').onclick = async e => { const url = location.href; try { await navigator.clipboard.writeText(url); e.target.textContent = 'Copied'; } catch (err) { $('code').value = url; $('code').select(); e.target.textContent = 'Select the line above and copy it'; } setTimeout(() => e.target.textContent = 'Copy the link to these measures', 2500); };
   $('still').onclick = e => { frozen = !frozen; e.target.textContent = 'Close-up: ' + (frozen ? 'standing still' : 'walking'); };
-  apply(false);
+  $('allback').onclick = () => { for (const g in DEF) Object.assign(MQ.DIM[g], DEF[g]); MQ.refresh(); show(true); };
+  MQ.refresh(); show(false);
   function closeUp(S, Q, G) {
-    const Sx = frozen ? MQ.skelAt('classic', 9) : S, Qx = frozen ? MQ.clothAt('classic', 9) : Q, J = MQ.joints(Sx), Zh = 5.2;
+    const Sx = frozen ? MQ.skelAt('classic', 9) : S, Qx = frozen ? MQ.clothAt('classic', 9) : Q, J = MQ.joints(Sx);
     hx.fillStyle = G[1]; hx.fillRect(0, 0, 720, 500);
-    MQ.figure(hx, Sx, Qx, 400 - (J.head[0] - K.ax) * Zh, 215 - (J.head[1] - K.ground) * Zh, 1, Zh);
+    if (view === 'head') { const Z = 5.2; MQ.figure(hx, Sx, Qx, 400 - (J.head[0] - K.ax) * Z, 215 - (J.head[1] - K.ground) * Z, 1, Z); }
+    else if (view === 'feet') { const Z = 4.4; hx.fillStyle = G[2]; hx.fillRect(0, 440, 720, 60); MQ.figure(hx, Sx, Qx, 360 - (Sx[0] - K.ax) * Z, 442, 1, Z); }
+    else { const Z = 1.5; hx.fillStyle = G[2]; hx.fillRect(0, 470, 720, 30); MQ.figure(hx, Sx, Qx, 360, 472, 1, Z); }
   }
   function frame(now) {
     const A = MQ.anims[cur], n = A.skel.length, dt = Math.min(.1, (now - last) / 1000); last = now;
