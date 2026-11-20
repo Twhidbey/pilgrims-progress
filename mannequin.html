@@ -91,7 +91,9 @@
     ['build', 'His build', 'body', [['legs', 'Length of his legs', .85, 1.2, .01], ['arms', 'Length of his arms', .85, 1.2, .01], ['girth', 'How stout he is', .8, 1.4, .01], ['lean', 'How far he leans in', 0, .2, .005]]],
     ['robe', 'His robe', 'body', [['hem', 'Length (down to the hem)', -34, 34, 1], ['flare', 'How much it flares', 0, 3, .05], ['full', 'How full the skirt is', .8, 1.4, .01]]],
     ['sleeve', 'His sleeves', 'body', [['width', 'Width at the cuff', 12, 36, .5], ['drop', 'How much they hang', 0, 2.5, .05], ['len', 'How far over the hand', 0, 16, .5]]],
-    ['sack', 'His burden', 'body', [['size', 'Size', .6, 1.5, .01], ['high', 'How low on his back it is tied', -.06, .3, .01], ['round', 'How far it stands out', .6, 1.5, .01]]],
+    ['sack', 'His burden', 'body', [['size', 'Size', .6, 1.5, .01], ['high', 'How low on his back it is tied', -.06, .3, .01], ['round', 'How far it stands out', .6, 1.5, .01],
+      ['top', 'The bundle on top: its size (0 = none)', 0, 1.6, .02], ['set', 'The bundle on top: back or forward', -14, 12, .5], ['flat', 'The bundle on top: a flat roll or a round ball', .5, 1.6, .02]],
+      [['No bundle on top', { top: 0 }], ['A flat roll', { top: 1, flat: .62 }], ['A big round bundle', { top: 1.25, flat: 1.25 }]]],
     ['gait', 'His walk', 'body', [['step', 'Length of his step', 60, 130, 1], ['bob', 'Up and down', 0, 7, .1], ['rock', 'Torso rocking', 0, .06, .002], ['swagger', 'Swagger (once a stride)', 0, .05, .002], ['arm', 'Arm swing', 0, .35, .01], ['bend', 'Elbow flexing', 0, .6, .01]]]
   ];
   const DEF = JSON.parse(JSON.stringify(MQ.DIM)), REBUILD = { build: 1, robe: 1, gait: 1 };

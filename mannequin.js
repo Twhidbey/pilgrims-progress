@@ -42,14 +42,16 @@ const MQ = (() => {
   //   leg:    calf, ankle (widths), shaft (how far the boot stands off the leg)
   //   build:  legs, arms (lengths), girth (how deep his body is), lean (how far he leans in)
   //   robe:   hem (longer or shorter), flare, full       sleeve: width at the cuff, drop (how it hangs), len (over the hand)
-  //   sack:   size, high (how low on his back it is tied), round (how far it stands out)
+  //   sack:   size, high (how low on his back it is tied), round (how far it stands out); the smaller bundle tied on top of
+  //           it: top (its size, 0 = none), set (further back or forward), flat (a flat roll or a round ball)
   //   gait:   step, bob, rock, swagger, arm (swing), bend (the elbow's flexing)
-  const HOOD = { beak: 5.6, droop: 0, top: 3.6, peak: 0, back: 9, hang: 0, rim: 0, cape: 0, head: 1, bow: .27, tilt: 0, rake: 0, size: 1, tail: 0, roll: 0, bib: 0 };
-  // THE OWNER'S OWN CHOICE (sent as a link from the lab's sliders): face, shoe, leg, build, robe, sleeve and sack below.
+  const HOOD = { beak: 2.6, droop: -3, top: 2.9, peak: 0, back: 6.8, hang: 8.2, rim: -2.8, cape: 0, head: .99, bow: .38, tilt: 0, rake: 0, size: 1, tail: 0, roll: 0, bib: 0 };
+  // THE OWNER'S OWN CHOICE (sent as links from the lab's sliders): the hood's first ten measures above (before: 5.6, 0, 3.6, 0,
+  // 9, 0, 0, 0, 1, .27), and face, shoe, leg, build, robe, sleeve and the sack's first three below.
   // Before it they were: face 1, 1, 1; shoe 1, 0, 0, 1; leg 1, 1, 1.2; build 1, 1, 1, .075; robe 0, 1, 1; sleeve 23, 1, 7; sack 1, 0, 1.
   const FACE = { nose: .75, chin: 1.1, brow: 1.5 }, SHOE = { toe: .86, point: .35, lift: .4, bulk: .88 }, LEG = { calf: 1.08, ankle: .92, shaft: 2.1 };
   const BUILD = { legs: 1.04, arms: 1.08, girth: 1.11, lean: .135 }, ROBE = { hem: -2, flare: 1, full: .98 }, SLEEVE = { width: 13, drop: 1.1, len: 0 };
-  const SACK = { size: 1.43, high: -.06, round: 1.05 }, GAIT = { step: 93, bob: 3.8, rock: .022, swagger: .018, arm: .12, bend: .25 };
+  const SACK = { size: 1.43, high: -.06, round: 1.05, top: .8, set: 0, flat: 1 }, GAIT = { step: 93, bob: 3.8, rock: .022, swagger: .018, arm: .12, bend: .25 };
   const DIM = { hood: HOOD, face: FACE, shoe: SHOE, leg: LEG, build: BUILD, robe: ROBE, sleeve: SLEEVE, sack: SACK, gait: GAIT };
   // the body's side profile: along each part (0 at its top joint, 1 at its lower), how far its front and its back stand from the bone
   const BODY = {
@@ -414,10 +416,10 @@ const MQ = (() => {
     fill([st(.62, -3), st(.6, -20), [h[0] + Math.min(b[0] - 2, fl[0] + 3), h[1] + 12], o0, o1, o2, [lerp(o2[0], ib[0], .35), o2[1] - 1.5], [lerp(o2[0], ib[0], .7), ib[1] + .5], ib, [inX(54 * hk), h[1] + 54 * hk], [inX(26 * hk), h[1] + 26 * hk]], T('flap'));
     stroke(ctx, [st(.66, -4), [inX(26 * hk), h[1] + 26 * hk], [inX(54 * hk), h[1] + 54 * hk], [ib[0], ib[1]]], t => 1.5 * Math.min(1, 3 * t) * (1 - .4 * t), T('robeDk'));      // the dark fold where it lies on the skirt
 
-    // --- the burden: a heavy sack bound on his back. It hangs from its tie behind his shoulders, its weight low, its inner
-    //     side flat against him; it sags a beat after the body and spreads a little as it does
+    // --- the burden, in two tiers as in his painted frames: a heavy sack bound on his back, and a smaller bundle tied on top
+    //     of it behind his hood. The sack hangs from its tie behind his shoulders, its weight low, its inner side flat
+    //     against him; it sags a beat after the body and spreads a little as it does; the bundle on top jolts a little more.
     const tilt = J.lean + S[16] + .05 + by * .004 + (Q[13] || 0), tie = add(st(.07 + SACK.high, -15), [0, by]), sq = 1 + .012 * Math.max(-3, Math.min(4, by)), sp = v => add(tie, R([v[0] * sq * SACK.size * (v[0] < 0 ? SACK.round : 1), v[1] / sq * SACK.size], tilt));
-    fill([[-2, -1], [-9, -9], [-6, -15], [1, -14], [5, -9], [4, -1]].map(sp), T('sackLt'));      // its gathered mouth above the tie
     const sack = [[3, 3], [6.5, 20], [7, 45], [3.5, 62], [-9, 73.5], [-27, 70.5], [-38, 57], [-36.5, 39], [-28.5, 20], [-17, 7], [-8, 2]].map(sp);
     fill(sack, T('sack'));
     ctx.save(); ctx.beginPath(); curve(ctx, sack, true); ctx.clip();
@@ -425,6 +427,16 @@ const MQ = (() => {
     stroke(ctx, [sp([-3, 5]), sp([-14, 18]), sp([-20, 36])], leaf(1.1), T('sackSh')); stroke(ctx, [sp([0, 6]), sp([-4, 24]), sp([-5, 44])], leaf(.9), T('sackSh'));      // creases where the weight pulls from the tie
     stroke(ctx, [sp([9, 30]), sp([-6, 36]), sp([-23, 36.5]), sp([-40, 30])], t => .9, T('sackSh'));      // the rope round its girth
     ctx.restore();
+    if (SACK.top > 0) {
+      const rx = 15 * SACK.top, ry = 11.5 * SACK.top * SACK.flat, c = [-11.5 + SACK.set, 3.5 - ry * .78 + by * .35], bp = v => sp([c[0] + v[0] * rx, c[1] + v[1] * ry]);
+      const bun = [[0, -1], [.62, -.82], [.98, -.28], [.93, .42], [.5, .9], [-.42, .96], [-.92, .52], [-1, -.18], [-.68, -.78]].map(bp);
+      fill(bun, T('sackLt'));
+      ctx.save(); ctx.beginPath(); curve(ctx, bun, true); ctx.clip();
+      fill([[-1.2, .25], [-.5, .62], [.3, .66], [1.2, .3], [1.2, 1.3], [-1.2, 1.3]].map(bp), T('sack'));      // its underside, where it rests on the sack
+      stroke(ctx, [bp([.12, -1.1]), bp([.26, 0]), bp([.16, 1.1])], t => .9, T('sackSh')); stroke(ctx, [bp([-.46, -1]), bp([-.36, 0]), bp([-.44, 1.1])], t => .8, T('sackSh'));      // the cords that bind it
+      ctx.restore();
+      stroke(ctx, [bp([-.9, .62]), bp([-.2, .98]), bp([.74, .72])], leaf(1.3), T('sackSh'));      // its shadow on the sack
+    }
     stroke(ctx, [sp([-11, 3]), sp([-2, 1.5]), sp([5, 2.5])], leaf(1.7), T('strap'));      // the tie
 
     // the rope that binds it: over his shoulder, down the front of his chest, and back under his arm
