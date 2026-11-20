@@ -1,4 +1,7 @@
-# the outline of his head and hood in his old walk: every frame laid on frame 16 (the head held still), averaged, and its edge read to a fraction of a pixel
+# The outline of his head and hood in his old walk: every frame laid on frame 16 (the head held still), averaged, and its
+# edge read to a fraction of a pixel. HOW TO READ IT: the long upright line at the front (x about 128, y 15 to 40) is HIS
+# FACE, forehead to nose, the head bowed; the hood starts at its top, above his eyes, and follows his head. (It was first
+# misread as the hood's rim, which put a tall hood over a head set too low.) His head there is about 47 tall.
 import struct, io, sys, json
 import numpy as np
 from PIL import Image, ImageDraw
