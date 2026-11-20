@@ -32,7 +32,7 @@ const MQ = (() => {
   // the body's side profile: along each part (0 at its top joint, 1 at its lower), how far its front and its back stand from the bone
   const BODY = {
     thigh: [[0, 11, 13], [.25, 12, 12], [.55, 10.5, 10.5], [.85, 8.6, 8.4], [1, 8, 7.6]],
-    shin: [[0, 7.6, 7.2], [.12, 6.8, 8.6], [.3, 6.2, 10], [.5, 5.4, 8.6], [.72, 4.6, 6], [.9, 4.2, 4.6], [1, 4.6, 5.2]],
+    shin: [[0, 7.6, 7.2], [.12, 7, 9.2], [.3, 6.6, 11.4], [.5, 6, 10], [.72, 5.4, 7.2], [.9, 5.2, 5.8], [1, 5.6, 6.2]],
     upper: [[0, 7.5, 7.5], [.4, 6.6, 7.2], [.8, 5.6, 6], [1, 5.4, 5.6]],
     fore: [[0, 5.6, 5.8], [.25, 6, 6], [.6, 4.8, 4.6], [1, 3.6, 3.4]],
     torso: [[0, 7, 9], [.08, 10.5, 13], [.18, 16, 17.5], [.3, 19.8, 19], [.42, 20, 17.5], [.55, 18.5, 14.5], [.68, 17, 12], [.8, 17.2, 12.8], [.9, 17, 15.5], [1, 15, 18.8], [1.08, 12.5, 18.5], [1.16, 9, 15], [1.22, 4.5, 9], [1.26, 1, 3]],
@@ -45,9 +45,10 @@ const MQ = (() => {
     // under the joints of the toes, the lowest point), the crease behind the toes, the toe pad and tip, the toes'
     // knuckles, the instep. A 4th number: how much higher that point of the arch is on the foot's inner side (the far foot shows it)
     foot: [[-5.2, -3], [-9.2, 3], [-11.8, 8], [-10.8, 11.8], [-7, 13], [-2, 12.9], [3, 12, 0, 1], [8, 11.2, 0, 2], [13, 11.4, 0, 1.8], [17.5, 12.5, 0, .5], [21.5, 13], [24.6, 12.8], [26.2, 12.4], [28.4, 13], [30.3, 12.6], [31.4, 11], [30.4, 8], [26.5, 6.2], [21, 4.4], [14, 1.4], [8.6, -1.6], [5.2, -3.4]],
-    // his shoe: a soft leather turnshoe, a little longer and fuller than the foot, closed round the ankle; its thin sole
-    // lies on the ground, lifting only a little at the waist; it bends where the foot bends
-    shoe: [[-6.4, -6], [-9.8, 1.5], [-12.6, 8.5], [-12, 12], [-9.5, 13], [-3, 13], [3, 12.6, 0, 0], [9, 12.2, 0, 0], [14, 12.4, 0, 0], [18.5, 12.9], [22, 13], [27, 13], [31.5, 12.8], [35, 11.6], [34.2, 9], [29.5, 6], [23, 3.2], [15.5, -.4], [9.5, -3.8], [6.2, -6.4], [0, -4.6]]
+    // his shoe, MEASURED from his painted frames (the planted foot of old frame 11, row by row): a soft ankle boot, its
+    // shaft one with the leg (about 15 wide), a rounded heel close behind the ankle, a low forefoot, and a long toe
+    // drawn to a soft point that lifts a little off the ground; it bends where the foot bends
+    shoe: [[-6.6, -5], [-8.4, -1], [-9.2, 3], [-8.6, 7], [-7.2, 10.6], [-4.6, 12.8], [-1, 13], [3, 12.7, 0, 0], [9, 12.3, 0, 0], [14, 12.5, 0, 0], [18.5, 12.9], [22, 13], [26, 13], [29.5, 12.4], [32.4, 10.6], [34.2, 8.2], [32.6, 6], [28.5, 4.8], [23, 4.4], [18, 3], [13, .2], [9.6, -3], [7, -5.6], [0, -4.2]]
   };
   const pr = (P, t) => {
     if (t <= P[0][0]) return [P[0][1], P[0][2]];
@@ -263,7 +264,7 @@ const MQ = (() => {
   }
   const leaf = m => t => m * Math.pow(Math.sin(Math.PI * Math.min(1, Math.max(0, t))), .7);      // thin at both ends
   // dark, quiet tones: a silhouette first, with only a trace of form inside it (LOOK.detail 0 = one flat tone)
-  const TONE = { robe: .2, robeSh: .165, robeDk: .156, robeLt: .226, flap: .178, hose: .128, hoseFar: .104, shoe: .168, shoeFar: .128, sack: .176, sackSh: .146, sackLt: .2, strap: .118, hood: .206, hoodSh: .17, face: .262, hand: .25, handFar: .19, sleeve: .222, sleeveFar: .15, belt: .12 };
+  const TONE = { robe: .2, robeSh: .165, robeDk: .156, robeLt: .226, flap: .178, hose: .128, hoseFar: .104, shoe: .15, shoeFar: .118, sack: .176, sackSh: .146, sackLt: .2, strap: .118, hood: .206, hoodSh: .17, face: .262, hand: .25, handFar: .19, sleeve: .222, sleeveFar: .15, belt: .12 };
   const LOOK = { detail: 1, base: .185 };
   const closed = (ctx, F, Bk) => { ctx.beginPath(); curve(ctx, F); const r = Bk.slice().reverse(); ctx.lineTo(r[0][0], r[0][1]); curve(ctx, r, false, true); ctx.closePath(); ctx.fill(); };
   const disc = (ctx, c, r) => { ctx.beginPath(); ctx.arc(c[0], c[1], r, 0, 7); ctx.fill(); };
@@ -312,13 +313,12 @@ const MQ = (() => {
 
     // --- legs: hose on the body's own profile, and soft shoes (they show below the hem)
     const leg = (L, far) => {
-      ctx.fillStyle = T(far ? 'hoseFar' : 'hose'); part(ctx, L.hip, L.knee, BODY.thigh, 0); part(ctx, L.knee, L.ank, BODY.shin, 0); disc(ctx, L.knee, 7.4); disc(ctx, L.ank, 4.7);
+      ctx.fillStyle = T(far ? 'hoseFar' : 'hose'); part(ctx, L.hip, L.knee, BODY.thigh, 0); part(ctx, L.knee, L.ank, BODY.shin, 1.2); disc(ctx, L.knee, 8); disc(ctx, L.ank, 6.6);
       // his shoe, its sole, the fold at the ankle, and the creases across the toes where it bends
       const fp = footPt(L), bend = toeBend(L);
       ctx.fillStyle = T(far ? 'shoeFar' : 'shoe'); ctx.beginPath(); curve(ctx, BODY.shoe.map(fp), true); ctx.fill();
-      stroke(ctx, [[-11.6, 11.4], [-3, 12], [9, 11.3], [18.5, 12], [27, 12.1], [33.6, 11.2]].map(fp), t => .55, T('belt'));
-      stroke(ctx, [[-6.4, -5.4], [0, -3.9], [6.2, -5.8]].map(fp), t => .8, T('belt'));
-      if (bend > .12) { const w = Math.min(1, bend * 1.6); stroke(ctx, [[20.2, 3.6], [21.6, 6.4], [22.6, 9.4]].map(fp), leaf(.9 * w), T('belt')); stroke(ctx, [[24.6, 5.2], [25.2, 7.6], [25.4, 10]].map(fp), leaf(.7 * w), T('belt')); }
+      stroke(ctx, [[-7.6, 11.4], [-1, 12.1], [9, 11.5], [18.5, 12.1], [26, 12.2], [31.6, 10.6]].map(fp), t => .55, T('belt'));
+      if (bend > .12) { const w = Math.min(1, bend * 1.6); stroke(ctx, [[20.2, 4.4], [21.6, 6.8], [22.6, 9.6]].map(fp), leaf(.9 * w), T('belt')); stroke(ctx, [[24.6, 5.4], [25.2, 7.6], [25.4, 10]].map(fp), leaf(.7 * w), T('belt')); }
     };
     leg(J.legF, true); leg(J.legN, false);
 
@@ -381,16 +381,16 @@ const MQ = (() => {
     stroke(ctx, [hp([13.5, 17.6]), hp([8, 16.6]), hp([0, 14.6])], t => 1.3, T('hoodSh'));      // under the jaw
     ctx.restore();
     // --- THE HOOD starts above his eyes, at the top of his forehead, and follows his head: over the crown and down the
-    //     back of the skull with a little ease, then it falls straight to his shoulders. Its rim runs from the forehead
+    //     back of the skull, standing off the back of his head a little (as a cloak's hood does), and hangs to his shoulders. Its rim runs from the forehead
     //     back past the temple and the cheek to under the jaw, so his whole profile shows in front of it (forehead,
     //     nose, lips, chin). In his painted frames the long upright line at the front IS his face, the head bowed.
     //     Its cape ends on the shoulder and rides with the near shoulder; the back sags a beat after the body.
     const so = sub(J.shN, J.shoulder), cp = (v, k) => add(np(v), [so[0] * k, so[1] * k]), sg = by * .6, jaw = hp([11.5, 21.5]);
-    const hood = [cp([19.5, 13], .3), add(jaw, [1.2, 4.5]), jaw, hp([9.4, 17]), hp([8.6, 11]), hp([9.6, 4]), hp([11.6, -3]), hp([13.6, -9]), hp([14.8, -13.6]), hp([12.6, -18.6]), hp([6, -22.2]), hp([-3, -23]), hp([-11.5, -20.2]), hp([-17, -13.5]), hp([-19.2, -5]), hp([-19, 2]), add(cp([-18, 3], .2), [0, sg]), cp([-16.5, 13.5], .4), cp([-7, 17.5], .7), cp([4, 18.6], .9), cp([13, 16.8], .7)];
+    const hood = [cp([19.5, 13], .3), add(jaw, [1.2, 4.5]), jaw, hp([9.4, 17]), hp([8.6, 11]), hp([9.6, 4]), hp([11.6, -3]), hp([13.6, -9]), hp([14.8, -13.6]), hp([12.6, -18.6]), hp([6, -22.2]), hp([-3, -23]), hp([-12, -21]), hp([-19.5, -15.4]), add(hp([-24, -6.5]), [0, sg * .4]), add(hp([-25.4, 3]), [0, sg * .8]), add(hp([-23, 11]), [0, sg]), add(cp([-19, 5], .2), [0, sg * .6]), cp([-16.5, 13.5], .4), cp([-7, 17.5], .7), cp([4, 18.6], .9), cp([13, 16.8], .7)];
     fill(hood, T('hood'));
     ctx.save(); ctx.beginPath(); curve(ctx, hood, true); ctx.clip();
     stroke(ctx, [hp([14, -13]), hp([12.8, -9]), hp([10.8, -3]), hp([8.8, 4]), hp([7.8, 11]), hp([8.6, 17])], t => .9, T('hoodSh'));      // the rim's fold
-    stroke(ctx, [hp([-5, -23.5]), hp([-17, -11]), hp([-18.5, 2]), add(cp([-16.5, 9], .3), [0, sg])], t => 3.5 * t + 1.2, T('hoodSh'));      // the back of the hood in shade
+    stroke(ctx, [hp([-5, -23.5]), hp([-19, -12.5]), add(hp([-23.5, 3]), [0, sg * .8]), add(cp([-17.5, 9], .3), [0, sg * .6])], t => 4 * t + 1.2, T('hoodSh'));      // the back of the hood in shade
     stroke(ctx, [cp([-17, 14.5], .4), cp([-7, 18.4], .7), cp([4, 19.5], .9), cp([13, 17.7], .7), cp([20, 13.6], .3)], t => 1.5, T('hoodSh'));      // the cape's hem
     ctx.restore();
     ctx.restore();
@@ -402,7 +402,7 @@ const MQ = (() => {
     ctx.save(); ctx.translate(x, y); ctx.scale((face || 1) * Kk, Kk); ctx.translate(-K.ax, -K.ground); ctx.lineJoin = 'round';
     const hp = v => add(J.head, R(v, J.nod)), dot = (c, r) => { ctx.fillStyle = jc; disc(ctx, c, r); };
     const arm = (A, col) => { hand(ctx, A, col); ctx.fillStyle = col; disc(ctx, A.sh, 7.6); part(ctx, A.sh, A.el, BODY.upper, 0); part(ctx, A.el, A.wr, BODY.fore, 0); disc(ctx, A.el, 5.5); dot(A.el, 2.2); dot(A.wr, 1.8); dot(A.kn, 1.3); };
-    const leg = (L, col) => { ctx.fillStyle = col; disc(ctx, L.hip, 11.5); part(ctx, L.hip, L.knee, BODY.thigh, 0); part(ctx, L.knee, L.ank, BODY.shin, 0); disc(ctx, L.knee, 7.4); disc(ctx, L.ank, 4.7); foot(ctx, L); dot(L.knee, 3); dot(L.ank, 2.2); };
+    const leg = (L, col) => { ctx.fillStyle = col; disc(ctx, L.hip, 11.5); part(ctx, L.hip, L.knee, BODY.thigh, 0); part(ctx, L.knee, L.ank, BODY.shin, 0); disc(ctx, L.knee, 7.4); disc(ctx, L.ank, 5.6); foot(ctx, L); dot(L.knee, 3); dot(L.ank, 2.2); };
     arm(J.armF, far); leg(J.legF, far);
     ctx.fillStyle = mid; const t = sides(J.neck, J.hip, BODY.torso, 0, 1.26, 22); closed(ctx, t[0], t[1]);
     part(ctx, J.neck, hp([-2, 12]), [[0, 6.5, 7], [1, 6, 6.5]], 0); ctx.beginPath(); curve(ctx, BODY.skull.map(v => v[2] ? [...hp(v), 1] : hp(v)), true); ctx.fill();
