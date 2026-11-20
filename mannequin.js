@@ -172,27 +172,72 @@ const MQ = (() => {
   // rises and the toes bend back, the band under the foot is wound tight and the arch stands higher than at rest
   // (the anatomists' "windlass").
   // u: 0..1 round one stride (two steps), the far heel striking at 0. A foot's touching point never slides.
-  const PITCH = [[0, 15], [.07, 0], [.36, 0], [.5, -14], [.62, -40], [.72, -56], [.83, -28], [.93, 3], [1, 15]];
+  const PITCH = [[0, 15], [.09, 0], [.36, 0], [.5, -16], [.62, -46], [.71, -58], [.83, -28], [.93, 3], [1, 15]];
   const ARCH = [[0, 1], [.1, .62], [.36, .55], [.5, 1.05], [.62, 1.3], [.76, 1.05], [1, 1]];
-  function key(g, keys) { for (let i = 1; i < keys.length; i++) if (g <= keys[i][0]) { const a = keys[i - 1], b = keys[i], t = (g - a[0]) / (b[0] - a[0]); return a[1] + (b[1] - a[1]) * (1 - Math.cos(Math.PI * t)) / 2; } return keys[keys.length - 1][1]; }
-  function classic(u, o) {
-    o = Object.assign({ step: 93, lift: 8, bob: 3.8, sink: 0, stance: .62, strike: 46, lean: .075, rock: .022, swagger: .018, head: .27, nod: .026,
-      turn: .15, hipTurn: .1, tip: .05, hipTip: .07, hang: -.06, arm: .12, elbow: .3, bend: .25, wrist: .6 }, o);
+  // a value that runs through its keys round the stride WITHOUT STOPPING AT EACH ONE (owner: "he has a little stutter to his step":
+  // each stretch between two keys used to ease in and out by itself, so the foot's roll paused at every key). One smooth line
+  // through them all: at a key the line keeps the pace of the stretches on both sides (their harmonic mean); it rests only where
+  // the value turns back or lies level (the foot flat on the ground), so it never overshoots.
+  function key(g, keys) {
+    const n = keys.length - 1;
+    if (!keys.m) { const sl = i => { const j = ((i % n) + n) % n; return (keys[j + 1][1] - keys[j][1]) / (keys[j + 1][0] - keys[j][0]); };
+      keys.m = keys.map((k, i) => { const s0 = sl(i - 1), s1 = sl(i); return s0 * s1 <= 0 ? 0 : 2 * s0 * s1 / (s0 + s1); }); }
+    for (let i = 1; i <= n; i++) if (g <= keys[i][0]) { const a = keys[i - 1], b = keys[i], h = b[0] - a[0], t = (g - a[0]) / h, t2 = t * t, t3 = t2 * t;
+      return (2 * t3 - 3 * t2 + 1) * a[1] + (t3 - 2 * t2 + t) * h * keys.m[i - 1] + (3 * t2 - 2 * t3) * b[1] + (t3 - t2) * h * keys.m[i]; }
+    return keys[n][1];
+  }
+  const GAIT0 = { step: 93, lift: 8, bob: 3.8, sink: 0, stance: .62, strike: 46, lean: .075, rock: .022, swagger: .018, head: .27, nod: .026,
+    turn: .15, hipTurn: .1, tip: .05, hipTip: .07, hang: -.06, arm: .12, elbow: .3, bend: .25, wrist: .6 };
+  // where his feet are, how his two lines stand, where his hip would ride by its own bob (hip), and how low it must be for
+  // both legs to reach their feet (need)
+  function stride(u, o) {
     const gy = K.ground;
     const planted = (g) => {      // on the ground: the belt carries the touching point straight back; the foot turns on its heel, lies flat, then turns on the ball
       const p = key(g, PITCH) / DEG, flat = o.strike - 2 * o.step * g, pv = p > 0 ? K.heel : K.ball, r = pitched(pv, p);
       return [K.hip[0] + flat + pv[0] - r[0], gy - Math.max(pitched(K.heel, p)[1], pitched(K.ball, p)[1]), p];
     };
+    // THE FOOT IN THE AIR MEETS THE GROUND AT THE GROUND'S OWN PACE. It used to end its swing standing still against his BODY, so
+    // it came down still travelling forward and stopped dead at the strike. Now it reaches a little past its landing place and is
+    // already drawing back with the ground as the heel comes down (the gait laboratories' "swing leg retraction"), and it comes
+    // down softly. It still leaves the ground at his body's pace (a freed foot is whipped forward at once: tried, a foot that
+    // trailed on for a moment after the toe left made the knee straighten and bend again, a small hitch).
+    const T = 1 - o.stance, dg = 1e-4, a = planted(o.stance), b = planted(0), m0 = 0, m1 = (planted(dg)[0] - b[0]) / dg * T;
     const feet = LEGS.map(([k]) => {
       const g = frac(u + (k === 'N' ? .5 : 0));
       if (g <= o.stance) return planted(g);
-      const s = (g - o.stance) / (1 - o.stance), a = planted(o.stance), b = planted(0), p = key(g, PITCH) / DEG, e = (1 - Math.cos(Math.PI * s)) / 2;
-      return [a[0] + (b[0] - a[0]) * e, gy - Math.max(pitched(K.heel, p)[1], pitched(K.ball, p)[1]) - o.lift * Math.sin(Math.PI * s), p];
+      const q = (g - o.stance) / T, q2 = q * q, q3 = q2 * q, p = key(g, PITCH) / DEG, up = Math.sin(Math.PI * q);
+      return [(2 * q3 - 3 * q2 + 1) * a[0] + (q3 - 2 * q2 + q) * m0 + (3 * q2 - 2 * q3) * b[0] + (q3 - q2) * m1, gy - Math.max(pitched(K.heel, p)[1], pitched(K.ball, p)[1]) - o.lift * Math.pow(up, 1.4), p];
     });
     const sw = o.swagger / .018, hip = [K.hip[0] + 1.2 * Math.cos(TAU * (2 * u - .6)) + sw * Math.cos(TAU * (u - .71)), K.hip[1] + o.sink + o.bob + o.bob * Math.cos(TAU * (2 * u - .21)) + .6 * sw * Math.cos(TAU * (u - .06))];
-    const L = K.thigh + K.shin - 1.2;      // the hip sinks as far as the legs need to reach their feet
+    const L = K.thigh + K.shin - 1.2;      // a leg at its longest (the knee never quite straight)
     const G = [o.turn * Math.cos(TAU * (u - .02)), -o.hipTurn * Math.cos(TAU * u), o.tip * Math.cos(TAU * (u - .25)), -o.hipTip * Math.cos(TAU * (u - .25))];
-    feet.forEach((f, i) => { const e = lineEnd(K.hpw, G[1], G[3], i ? 1 : -1), dx = f[0] - hip[0] - e[0]; if (Math.abs(dx) < L) hip[1] = Math.max(hip[1], f[1] - Math.sqrt(L * L - dx * dx) - e[1]); });
+    let need = -1e9;
+    feet.forEach((f, i) => { const e = lineEnd(K.hpw, G[1], G[3], i ? 1 : -1), dx = f[0] - hip[0] - e[0]; if (Math.abs(dx) < L) need = Math.max(need, f[1] - Math.sqrt(L * L - dx * dx) - e[1]); });
+    return { feet, hip, G, sw, need };
+  }
+  // THE HIP'S HEIGHT IS ONE SMOOTH LINE ROUND THE STRIDE (owner: "he has a little stutter to his step"). The hip rides by its own
+  // bob, but must sink wherever a leg could not otherwise reach its foot. That used to be worked out afresh at each frame (the
+  // lower of the two), so the line had corners: measured, he dropped 4 units in two frames at every heel strike and then
+  // wavered, and his knees, which a nearly straight leg bends a great deal for a small change of height, jumped about
+  // (15, 25, 28, 24, 29 degrees). Now the whole stride's line is worked out first (304 places), then smoothed over about a
+  // frame each way, held down again wherever a leg needs it, and so on a few times; a last smoothing, and the whole line is
+  // lowered by the little that is still wanted, so it is smooth everywhere and every foot is still reached.
+  function hipLine(o) {
+    const M = 304, need = new Float64Array(M); let c = new Float64Array(M);
+    for (let j = 0; j < M; j++) { const g = stride(j / M, o); need[j] = g.need + .1; c[j] = Math.max(g.hip[1], need[j]); }
+    const sig = M / 38 * .9, R = Math.ceil(3 * sig), w = []; let ws = 0;
+    for (let k = -R; k <= R; k++) { w.push(Math.exp(-k * k / (2 * sig * sig))); ws += w[w.length - 1]; }
+    const smooth = a => { const r = new Float64Array(M); for (let j = 0; j < M; j++) { let t = 0; for (let k = -R; k <= R; k++) t += w[k + R] * a[(j + k + M) % M]; r[j] = t / ws; } return r; };
+    for (let it = 0; it < 10; it++) { c = smooth(c); for (let j = 0; j < M; j++) if (c[j] < need[j]) c[j] = need[j]; }
+    c = smooth(c); let low = 0; for (let j = 0; j < M; j++) low = Math.max(low, need[j] - c[j]);
+    for (let j = 0; j < M; j++) c[j] += low;
+    return c;
+  }
+  function classic(u, o) {
+    o = Object.assign({}, GAIT0, o);
+    const { feet, hip, G, sw, need } = stride(u, o);
+    if (o.hipLine) { const M = o.hipLine.length, x = frac(u) * M, j = Math.floor(x) % M, t = x - Math.floor(x); hip[1] = o.hipLine[j] * (1 - t) + o.hipLine[(j + 1) % M] * t; }
+    else hip[1] = Math.max(hip[1], need);
     const lean = o.lean + o.rock * Math.cos(TAU * (2 * u - .3)) + o.swagger * Math.cos(TAU * (u - .25)), nod = o.head - o.lean + o.nod * Math.cos(TAU * (2 * u - .62)) + .012 * sw * Math.cos(TAU * (u - .34)), S = pose(hip, lean, nod, feet, 0, G);
     S[25] = key(frac(u), ARCH); S[26] = key(frac(u + .5), ARCH);
     [[12, 21, 23, u + .5], [14, 22, 24, u]].forEach(([ai, hi, fi, p]) => {
@@ -276,7 +321,8 @@ const MQ = (() => {
   function add_(name, A) { ANIMS[name] = A; if (A.track) A.skel = A.track.map(fromTrack); bake(name); return A; }
   function walk(o) {
     const n = 38, step = GAIT.step * BUILD.legs;
-    o = Object.assign({ step, strike: step * 46 / 93, bob: GAIT.bob, rock: GAIT.rock, swagger: GAIT.swagger, arm: GAIT.arm, bend: GAIT.bend, head: HOOD.bow, lean: BUILD.lean }, o);
+    o = Object.assign({}, GAIT0, { step, strike: step * 46 / 93, bob: GAIT.bob, rock: GAIT.rock, swagger: GAIT.swagger, arm: GAIT.arm, bend: GAIT.bend, head: HOOD.bow, lean: BUILD.lean }, o);
+    o.hipLine = hipLine(o);
     return add_('classic', { label: 'A walk built from the principles', loop: true, fps: 24, vpx: 2 * o.step / n, skel: Array.from({ length: n }, (_, i) => classic(i / n, o)) });
   }
   const K0 = { thigh: 66, shin: 67, upper: 50, fore: 40, palm: 14, fing: 11.5, hip: 150, neck: 56, head: 31, shoulder: 68 };
