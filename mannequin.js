@@ -1,13 +1,14 @@
 // THE MANNEQUIN (object MQ): Christian drawn in code from first principles. No pictures, nothing traced, nothing stretched.
 // 1. A SKELETON (hip, spine, head, legs, arms, hands, the burden), set up as the cut-out animators set up a figure: one
 //    root (the hip), each part a child of the one before it, each turning about the middle of its joint, far limbs
-//    drawn before near ones. A skeleton pose is 25 numbers:
+//    drawn before near ones. A skeleton pose is 27 numbers:
 //      0,1 the hip's place   2 the body's lean   3 the head's nod
 //      4..7 far leg: (unused), thigh angle, knee bend, foot pitch (toe up +)   8..11 near leg
 //      12,13 far arm: shoulder, elbow   14,15 near arm   16 the burden's tilt
 //      17 the shoulder line's turn, 18 the hip line's turn (as seen from above; + = his near side forward)
 //      19 the shoulder line's tip, 20 the hip line's tip (as seen from in front; + = his near side up)
 //      21,22 far and near wrist (the hand's bend on the forearm)   23,24 far and near fingers (their curl)
+//      25,26 far and near arch of the foot (1 at rest; lower under his weight, higher as he pushes off)
 //    Angles: 0 hangs straight down, + swings forward. Units: his walk pack's pixels (he is about 283 tall).
 // 2. A BODY on the bones (BODY, body()), by the art schools' measures: seven and a half heads tall, the shoulders a head
 //    and a half down, the hips at the middle, the knees two heads above the ground, the elbow at the waist, the wrist at
@@ -35,7 +36,10 @@ const MQ = (() => {
     upper: [[0, 7.5, 7.5], [.4, 6.6, 7.2], [.8, 5.6, 6], [1, 5.4, 5.6]],
     fore: [[0, 5.6, 5.8], [.25, 6, 6], [.6, 4.8, 4.6], [1, 3.6, 3.4]],
     torso: [[0, 7, 9], [.08, 10.5, 13], [.18, 16, 17.5], [.3, 19.8, 19], [.42, 20, 17.5], [.55, 18.5, 14.5], [.68, 17, 12], [.8, 17.2, 12.8], [.9, 17, 15.5], [1, 15, 18.8], [1.08, 12.5, 18.5], [1.16, 9, 15], [1.22, 4.5, 9], [1.26, 1, 3]],
-    skull: [[10.5, -13], [12.5, -8], [13.5, -5], [13, -3], [17, 2], [13.6, 4], [14.6, 6.2], [14, 8], [14.4, 9.6], [13.4, 13.6], [9, 16.2], [1, 13.5], [-6, 13], [-12.5, 6], [-14, -4], [-11.5, -13], [-3, -17.6], [5, -16.6]],
+    // the head from the side, the middle of the head at 0,0 (a head is his height / 7.5, about 38 tall, three quarters as deep):
+    // skull, forehead, brow ridge, the root of the nose, its bridge and tip, the upper lip, the mouth, the lower lip, the
+    // hollow under it, the chin, the jaw back to its angle below the ear, the back of the skull
+    skull: [[5.5, -18.6], [11.6, -14.6], [14.6, -9.4], [15.9, -5.2], [14.6, -2.2], [16.6, .8], [19.4, 3.4], [20.6, 5], [19.2, 6.4], [16.2, 6.6, 1], [17.2, 8.6], [15.8, 9.9, 1], [16.6, 11.4], [14.9, 13.2], [15.8, 15.6], [13.6, 18], [8, 17.4], [0, 15.4], [-6.6, 13.6], [-13.8, 6.6], [-15.4, -4.4], [-12.7, -14.3], [-3.3, -19.4]],
     // a foot from the side, the ankle joint at 0,0 and the ground at 13 (the ankle is about 4% of his height up, the
     // foot 15% of his height long, a quarter of it behind the ankle): the heel's round pad, the arch, the ball (the pad
     // under the joints of the toes, the lowest point), the crease behind the toes, the toe pad and tip, the toes'
@@ -77,16 +81,16 @@ const MQ = (() => {
       const a = lean + S[o], b = a + S[o + 1], hb = b + g(ho), fb = hb + g(fo), el = add(sh, dirv(a, K.upper)), wr = add(el, dirv(b, K.fore)), kn = add(wr, dirv(hb, K.palm));
       J['arm' + k] = { sh, el, wr, kn, hand: add(kn, dirv(fb, K.fing)), a, b, hb, fb };      // kn: the knuckles; hand: the fingertips
       const at = S[so + 1], as = at - S[so + 2], knee = add(hk, dirv(at, K.thigh)), ank = add(knee, dirv(as, K.shin)), p = S[so + 3];
-      J['leg' + k] = { hip: hk, knee, ank, as, p, far: s < 0, heel: add(ank, pitched(K.heel, p)), ball: add(ank, pitched(K.ball, p)) };
+      J['leg' + k] = { hip: hk, knee, ank, as, p, far: s < 0, arch: S[s < 0 ? 25 : 26] === undefined ? 1 : S[s < 0 ? 25 : 26], heel: add(ank, pitched(K.heel, p)), ball: add(ank, pitched(K.ball, p)) };
     });
     return J;
   }
   // a skeleton pose from the hip, the lean and where each foot is (ankle x, ankle y, pitch); G: the shoulder line's and the hip line's turn, then their tip
   function pose(hip, lean, nod, feet, tilt, G) {
-    G = G || [0, 0, 0, 0]; const S = new Array(25).fill(0); S[0] = hip[0]; S[1] = hip[1]; S[2] = lean; S[3] = nod; S[16] = tilt || 0;
+    G = G || [0, 0, 0, 0]; const S = new Array(27).fill(0); S[0] = hip[0]; S[1] = hip[1]; S[2] = lean; S[3] = nod; S[16] = tilt || 0;
     for (let i = 0; i < 4; i++) S[17 + i] = G[i];
     LEGS.forEach(([k, so], i) => { const a = ik(add(hip, lineEnd(K.hpw, G[1], G[3], i ? 1 : -1)), feet[i]); S[so + 1] = a[0]; S[so + 2] = a[0] - a[1]; S[so + 3] = feet[i][2]; });
-    S[12] = S[14] = .04; S[13] = S[15] = .32; S[21] = S[22] = .08; S[23] = S[24] = .45;
+    S[12] = S[14] = .04; S[13] = S[15] = .32; S[21] = S[22] = .08; S[23] = S[24] = .45; S[25] = S[26] = 1;
     return S;
   }
   // a measured frame (tools/mannequin/anims.py) on these bones; his frames show his arms held still
@@ -103,17 +107,28 @@ const MQ = (() => {
   // strike, and the shoulder line turns the other way (so the arm opposite that leg is forward); seen from in front,
   // the hip of the leg in the air drops a little and the shoulders tip the other way.
   // THE ARMS (the animators' overlapping action, "successive breaking of joints"): the shoulder leads, the upper arm
-  // follows and is furthest forward on the DOWN, not the contact (Williams); the elbow bends as the arm comes forward
-  // and straightens as it goes back, later still; the hand trails the forearm and the fingers trail the hand.
-  // THE HEAD: it does not ride stiff on the body. Measured in his own old walk, and so the gait laboratories say: it
-  // tips forward as the body rises and back as the body drops, about a degree and a half, so his eyes stay level;
-  // and he leans in most just after each foot has taken the weight.
+  // follows and is furthest forward on the DOWN, not the contact (Williams); the elbow is never straight: it bends
+  // more as the arm comes forward and opens as it goes back, later still; the hand trails the forearm and the fingers
+  // trail the hand. The arms hang by their own weight, so they do not rock with the body.
+  // THE TORSO ROCKS (measured in his own old walk, twice over: on his bones and on his outline): the whole torso tips
+  // forward as each foot takes the weight (most at about a seventh of a stride after the heel strikes) and back as he
+  // pushes off, about a degree and a quarter each way; and once a stride it rolls as much again, one step heavier than
+  // the other (the SWAGGER: no real walker's two steps are alike, and the turning shoulders show from the side as a roll).
+  // THE HEAD does not ride stiff on the body: it tips forward as the body rises and back as it drops, about a degree
+  // and a half, so his eyes stay level.
+  // THE LEGS: the leg is straight as its heel strikes, gives at the knee as the weight comes on (the DOWN), straightens
+  // as he vaults over it (the UP; the body can rise no higher than a straight leg lets it), and the thigh goes back
+  // behind the hip before the foot leaves the ground. A slow walk keeps each foot down longer (about 62% of the stride).
+  // THE FOOT'S ARCH is a spring: it flattens as the weight comes onto it and is lowest in mid-stance; as the heel
+  // rises and the toes bend back, the band under the foot is wound tight and the arch stands higher than at rest
+  // (the anatomists' "windlass").
   // u: 0..1 round one stride (two steps), the far heel striking at 0. A foot's touching point never slides.
-  const PITCH = [[0, 15], [.07, 0], [.34, 0], [.48, -16], [.58, -42], [.68, -58], [.8, -28], [.92, 3], [1, 15]];
+  const PITCH = [[0, 15], [.07, 0], [.36, 0], [.5, -14], [.62, -40], [.72, -56], [.83, -28], [.93, 3], [1, 15]];
+  const ARCH = [[0, 1], [.1, .62], [.36, .55], [.5, 1.05], [.62, 1.3], [.76, 1.05], [1, 1]];
   function key(g, keys) { for (let i = 1; i < keys.length; i++) if (g <= keys[i][0]) { const a = keys[i - 1], b = keys[i], t = (g - a[0]) / (b[0] - a[0]); return a[1] + (b[1] - a[1]) * (1 - Math.cos(Math.PI * t)) / 2; } return keys[keys.length - 1][1]; }
   function classic(u, o) {
-    o = Object.assign({ step: 93, lift: 8, bob: 3.4, sink: 4, stance: .58, strike: 46, lean: .07, head: .085, nod: .024,
-      turn: .13, hipTurn: .1, tip: .05, hipTip: .07, hang: 0, arm: .15, elbow: .14, bend: .2, wrist: .6 }, o);
+    o = Object.assign({ step: 93, lift: 8, bob: 3.8, sink: 0, stance: .62, strike: 46, lean: .075, rock: .022, swagger: .018, head: .1, nod: .026,
+      turn: .15, hipTurn: .1, tip: .05, hipTip: .07, hang: -.06, arm: .12, elbow: .3, bend: .25, wrist: .6 }, o);
     const gy = K.ground;
     const planted = (g) => {      // on the ground: the belt carries the touching point straight back; the foot turns on its heel, lies flat, then turns on the ball
       const p = key(g, PITCH) / DEG, flat = o.strike - 2 * o.step * g, pv = p > 0 ? K.heel : K.ball, r = pitched(pv, p);
@@ -125,11 +140,12 @@ const MQ = (() => {
       const s = (g - o.stance) / (1 - o.stance), a = planted(o.stance), b = planted(0), p = key(g, PITCH) / DEG, e = (1 - Math.cos(Math.PI * s)) / 2;
       return [a[0] + (b[0] - a[0]) * e, gy - Math.max(pitched(K.heel, p)[1], pitched(K.ball, p)[1]) - o.lift * Math.sin(Math.PI * s), p];
     });
-    const hip = [K.hip[0] + 1.2 * Math.cos(TAU * (2 * u - .6)), K.hip[1] + o.sink + o.bob + o.bob * Math.cos(TAU * (2 * u - .21))];
+    const sw = o.swagger / .018, hip = [K.hip[0] + 1.2 * Math.cos(TAU * (2 * u - .6)) + sw * Math.cos(TAU * (u - .71)), K.hip[1] + o.sink + o.bob + o.bob * Math.cos(TAU * (2 * u - .21)) + .6 * sw * Math.cos(TAU * (u - .06))];
     const L = K.thigh + K.shin - 1.2;      // the hip sinks as far as the legs need to reach their feet
     const G = [o.turn * Math.cos(TAU * (u - .02)), -o.hipTurn * Math.cos(TAU * u), o.tip * Math.cos(TAU * (u - .25)), -o.hipTip * Math.cos(TAU * (u - .25))];
     feet.forEach((f, i) => { const e = lineEnd(K.hpw, G[1], G[3], i ? 1 : -1), dx = f[0] - hip[0] - e[0]; if (Math.abs(dx) < L) hip[1] = Math.max(hip[1], f[1] - Math.sqrt(L * L - dx * dx) - e[1]); });
-    const lean = o.lean + .016 * Math.cos(TAU * (2 * u - .26)), nod = o.head - o.lean + o.nod * Math.cos(TAU * (2 * u - .62)), S = pose(hip, lean, nod, feet, 0, G);
+    const lean = o.lean + o.rock * Math.cos(TAU * (2 * u - .3)) + o.swagger * Math.cos(TAU * (u - .25)), nod = o.head - o.lean + o.nod * Math.cos(TAU * (2 * u - .62)) + .012 * sw * Math.cos(TAU * (u - .34)), S = pose(hip, lean, nod, feet, 0, G);
+    S[25] = key(frac(u), ARCH); S[26] = key(frac(u + .5), ARCH);
     [[12, 21, 23, u + .5], [14, 22, 24, u]].forEach(([ai, hi, fi, p]) => {
       const trail = o.wrist * (o.arm * Math.sin(TAU * (p - .07)) + .5 * o.bend * Math.sin(TAU * (p - .13)));      // against the forearm's own swing
       S[ai] = o.hang - lean + o.arm * Math.cos(TAU * (p - .07)); S[ai + 1] = o.elbow + o.bend * (.5 + .5 * Math.cos(TAU * (p - .13)));
@@ -145,7 +161,7 @@ const MQ = (() => {
     ef: [4, 4.5, 5.5, 5], eb: [3, 3, 3, 2.5],      // how far heavy cloth stands off the leg that pushes it
     hz: [3.2, 2.5, 2.0, 1.7], zeta: .55,      // how fast each height swings back by itself (the hem slowest), and how soon it settles
     drag: [.1, .3, .6, .9],      // how far the air holds each height back, per pixel of his speed
-    fd: [36, 62, 86], fr: [-26, -27, -27], fhz: [2.1, 1.6, 1.3], fzeta: .3, fdrag: [.5, 1.3, 2.2]      // the cloak's back flap: looser, so it flies and settles later
+    fd: [36, 62, 86], fr: [-26, -27, -27], fhz: [2.1, 1.6, 1.3], fzeta: .22, fdrag: [.3, .8, 1.3], fsh: [1, .9, .8]      // the cloak's back flap: looser, so it flies and settles later
   };
   // a leg's front and back surface at a height (a leg lifted above it counts at its lowest joint)
   const legSurf = (L, y) => {
@@ -155,7 +171,7 @@ const MQ = (() => {
     }
     const low = L.ank[1] >= L.knee[1] ? L.ank : L.knee; return [low[0] + 6, low[0] - 6];
   };
-  function clothNew() { return { f: CL.rf.slice(), b: CL.rb.slice(), fv: [0, 0, 0, 0], bv: [0, 0, 0, 0], fl: CL.fr.slice(), flv: [0, 0, 0], lift: 0, liftV: 0, by: 0, byV: 0, h1: null, h2: null }; }
+  function clothNew() { return { f: CL.rf.slice(), b: CL.rb.slice(), fv: [0, 0, 0, 0], bv: [0, 0, 0, 0], fl: CL.fr.slice(), flv: [0, 0, 0], lift: 0, liftV: 0, by: 0, byV: 0, bt: 0, btV: 0, shAvg: null, leanAvg: null, h1: null, h2: null }; }
   // a skirt edge at any depth below the hip (above the first height it runs into the waist)
   function edgeAt(e, rest, d) {
     if (d <= CL.d[0]) return lerp(rest[0] * .92, e[0], Math.max(0, d / CL.d[0]));
@@ -167,6 +183,9 @@ const MQ = (() => {
     n = n || 1; vx = vx || 0; let ax = 0, ay = 0;
     if (E.h1 && E.h2) { ax = (S[0] - 2 * E.h1[0] + E.h2[0]) / (n * n); ay = (S[1] - 2 * E.h1[1] + E.h2[1]) / (n * n); }
     E.h2 = E.h1; E.h1 = [S[0], S[1]];
+    // the back panel hangs from the shoulders, so it is carried to and fro as the torso rocks and the shoulder line turns
+    const shx = J.shN[0] - S[0]; if (E.shAvg === null) { E.shAvg = shx; E.leanAvg = S[2]; } else if (!E.fixed) { E.shAvg += (shx - E.shAvg) * .03 * n; E.leanAvg += (S[2] - E.leanAvg) * .03 * n; }
+    const carry = shx - E.shAvg;
     // the legs hold the cloth out: at each height, the foremost leg in front, the hindmost behind; cloth held out above falls nearly straight down
     const pF = [], pB = [];
     for (let j = 0; j < 4; j++) {
@@ -185,18 +204,20 @@ const MQ = (() => {
         if (E.b[j] > pB[j]) { E.b[j] = pB[j]; if (E.bv[j] > 0) E.bv[j] = 0; }
       }
       for (let i = 0; i < 3; i++) {      // the flap lies outside the skirt's back and is pushed by it
-        const r = spring(E.fl[i], E.flv[i], CL.fr[i] - CL.fdrag[i] * vx, CL.fhz[i], CL.fzeta, -ax * (.5 + .5 * i / 2)); E.fl[i] = r[0]; E.flv[i] = r[1];
+        const r = spring(E.fl[i], E.flv[i], CL.fr[i] - CL.fdrag[i] * vx + CL.fsh[i] * carry, CL.fhz[i], CL.fzeta, -ax * (.5 + .5 * i / 2)); E.fl[i] = r[0]; E.flv[i] = r[1];
         const lim = edgeAt(E.b, CL.rb, CL.fd[i]) - 3; if (E.fl[i] > lim) { E.fl[i] = lim; if (E.flv[i] > 0) E.flv[i] = 0; }
       }
       let r = spring(E.lift, E.liftV, 0, 2.6, .4, ay * .7); E.lift = r[0]; E.liftV = r[1];      // the hem lifts a little as the body drops
       r = spring(E.by, E.byV, 0, 3, .45, -ay * .6); E.by = r[0]; E.byV = r[1];      // the burden sags a beat after the body rises
+      r = spring(E.bt, E.btV, -.4 * (S[2] - E.leanAvg), 2, .3, 0); E.bt = r[0]; E.btV = r[1];      // and as the torso rocks it hangs back, then follows
     }
     return E;
   }
-  const clothPose = E => [...E.f, ...E.b, ...E.fl, E.lift, E.by];
+  const clothPose = E => [...E.f, ...E.b, ...E.fl, E.lift, E.by, E.bt];
   // dress every pose of a movement once (three times round a loop, so the cloth has settled into its swing)
   function bake(name) {
     const A = ANIMS[name], n = A.skel.length, E = clothNew(); A.cloth = new Array(n);
+    if (A.loop) { E.shAvg = A.skel.reduce((a, S) => a + joints(S).shN[0] - S[0], 0) / n; E.leanAvg = A.skel.reduce((a, S) => a + S[2], 0) / n; E.fixed = true; }
     for (let pass = 0; pass < (A.loop ? 3 : 1); pass++) for (let i = 0; i < n; i++) { clothStep(E, A.skel[i], joints(A.skel[i]), 1, A.vpx || 0); A.cloth[i] = clothPose(E); }
   }
 
@@ -247,7 +268,7 @@ const MQ = (() => {
   // a foot (bare, or in its soft shoe): it bends at the ball; while the ball is on the ground the toes stay flat
   function foot(ctx, L) {
     const hinge = L.p < 0 && L.ball[1] > K.ground - 3, pts = BODY.foot.map(v => {
-      const w = [v[0], v[1] - (L.far ? v[3] || 0 : 0)], q = hinge && v[0] > K.ball[0] ? [L.ball[0] + w[0] - K.ball[0], L.ball[1] + w[1] - K.ball[1]] : add(L.ank, pitched(w, L.p)); return v[2] ? [q[0], q[1], 1] : q;
+      const w = [v[0], v[3] === undefined ? v[1] : K.heel[1] - (K.heel[1] - v[1] + (L.far ? v[3] : 0)) * (L.arch === undefined ? 1 : L.arch)], q = hinge && v[0] > K.ball[0] ? [L.ball[0] + w[0] - K.ball[0], L.ball[1] + w[1] - K.ball[1]] : add(L.ank, pitched(w, L.p)); return v[2] ? [q[0], q[1], 1] : q;
     });
     ctx.beginPath(); curve(ctx, pts, true); ctx.fill();
   }
@@ -327,7 +348,7 @@ const MQ = (() => {
 
     // --- the burden: a heavy sack bound on his back. It hangs from its tie behind his shoulders, its weight low, its inner
     //     side flat against him; it sags a beat after the body and spreads a little as it does
-    const tilt = J.lean + S[16] + .05 + by * .004, tie = add(st(.07, -15), [0, by]), sq = 1 + .012 * Math.max(-3, Math.min(4, by)), sp = v => add(tie, R([v[0] * sq, v[1] / sq], tilt));
+    const tilt = J.lean + S[16] + .05 + by * .004 + (Q[13] || 0), tie = add(st(.07, -15), [0, by]), sq = 1 + .012 * Math.max(-3, Math.min(4, by)), sp = v => add(tie, R([v[0] * sq, v[1] / sq], tilt));
     fill([[-2, -1], [-9, -9], [-6, -15], [1, -14], [5, -9], [4, -1]].map(sp), T('sackLt'));      // its gathered mouth above the tie
     const sack = [[3, 3], [6.5, 20], [7, 45], [3.5, 62], [-9, 73.5], [-27, 70.5], [-38, 57], [-36.5, 39], [-28.5, 20], [-17, 7], [-8, 2]].map(sp);
     fill(sack, T('sack'));
@@ -338,20 +359,27 @@ const MQ = (() => {
     ctx.restore();
     stroke(ctx, [sp([-11, 3]), sp([-2, 1.5]), sp([5, 2.5])], leaf(1.7), T('strap'));      // the tie
 
-    // --- near arm; then his head, and the hood with its shoulder cape (a capuce): the cape lies over the shoulders down to
-    //     the middle of the upper arm and rides with the near shoulder; the hood's edge stands back from his face, so
-    //     brow, nose and chin show; its soft point droops behind his head. The sack's rope lies over the cape.
+    // the rope that binds it: over his shoulder, down the front of his chest, and back under his arm
+    const shp = mix(J.shoulder, J.shN, .7);
+    ctx.strokeStyle = T('strap'); ctx.lineWidth = 1.8; ctx.beginPath(); curve(ctx, [sp([3, 2]), add(shp, [3, -6]), add(shp, [12, 5]), add(shp, [10, 19]), sp([8, 36])]); ctx.stroke();
+    // --- near arm; then his head. His face shows in the hood as a lit profile (brow, nose, lips, chin); the hood's rim
+    //     throws its shadow down the cheek and into the hollow of the eye, and the neck is in shade under the jaw
     arm(J.armN, false);
-    ctx.fillStyle = T('face'); part(ctx, n, hp([-2, 11]), [[0, 6.5, 7], [1, 6, 6.5]], 0); fill(BODY.skull.map(hp), T('face'));
-    const so = sub(J.shN, J.shoulder), cp = (v, k) => add(np(v), [so[0] * k, so[1] * k]);
-    const hood = [cp([22, 32.5], .3), np([21.6, 21]), np([21, 9]), hp([10.5, 20]), hp([9.2, 16]), hp([7, 11]), hp([7.4, 2]), hp([9.5, -7]), hp([13.8, -13.6]), hp([10.8, -19.6]), hp([2, -22.6]), hp([-8.5, -22.4]), hp([-17.5, -16.5]), hp([-22.5, -7.5]), hp([-25, 3]), hp([-21.5, 11]), np([-12.5, 4]), np([-12, 15]), np([-10.5, 27]), cp([-7, 36], .6), cp([2, 38.6], .9), cp([13, 37.6], .7)];
+    ctx.fillStyle = T('hoodSh'); part(ctx, n, hp([-2, 12]), [[0, 6.5, 7], [1, 6, 6.5]], 0); fill(BODY.skull.map(v => v[2] ? [...hp(v), 1] : hp(v)), T('face'));
+    ctx.save(); ctx.beginPath(); curve(ctx, BODY.skull.map(v => v[2] ? [...hp(v), 1] : hp(v)), true); ctx.clip();
+    stroke(ctx, [hp([16, -11]), hp([12.2, -3]), hp([10.6, 7]), hp([8, 19])], t => 2.6 + 1.2 * t, T('hoodSh')); ctx.fillStyle = T('hoodSh'); disc(ctx, hp([13.4, -1.8]), 2.3);
+    stroke(ctx, [hp([13.5, 17.6]), hp([8, 16.6]), hp([0, 14.6])], t => 1.3, T('hoodSh'));      // under the jaw
+    ctx.restore();
+    // --- the hood: a deep cowl. Its rim stands forward over his brow and back from his cheek; it rises to a soft
+    //     peak, and its back hangs well clear of his head, down onto his shoulders and the top of the sack (it sags
+    //     a beat after the body, like the sack). Its cape ends on the shoulder and rides with the near shoulder.
+    const so = sub(J.shN, J.shoulder), cp = (v, k) => add(np(v), [so[0] * k, so[1] * k]), sg = by * .6;
+    const hood = [cp([19.5, 13], .3), np([21.5, 3]), hp([12, 22]), hp([10.6, 16.5]), hp([9.2, 8]), hp([10.2, -2.5]), hp([13.6, -12]), hp([17.2, -19.4]), hp([15.6, -24.6]), hp([9, -27.8]), hp([-2, -27.6]), hp([-14, -23.5]), add(hp([-24.5, -14.5]), [0, sg * .5]), add(hp([-31.5, -2]), [0, sg]), add(hp([-33.5, 9]), [0, sg]), add(np([-24, -4]), [0, sg * .6]), np([-21, 6]), cp([-16.5, 13.5], .4), cp([-7, 17.5], .7), cp([4, 18.6], .9), cp([13, 16.8], .7)];
     fill(hood, T('hood'));
     ctx.save(); ctx.beginPath(); curve(ctx, hood, true); ctx.clip();
-    stroke(ctx, [hp([-7, -23]), hp([-18, -9]), hp([-21, 6]), np([-13, 10])], t => 4 * t + 1.5, T('hoodSh'));      // the back of the hood in shade
-    stroke(ctx, [hp([8, 14]), hp([4, 4]), hp([8, -8])], leaf(2.2), T('hoodSh'));      // the shadow inside the opening
-    stroke(ctx, [cp([-8, 37], .6), cp([2, 39.6], .9), cp([13, 38.6], .7), cp([23, 33], .3)], t => 1.7, T('hoodSh'));      // the cape's hem
-    const shp = mix(J.shoulder, J.shN, .7);
-    stroke(ctx, [sp([2, 1]), add(shp, [1, -9]), add(shp, [10, -1]), add(shp, [11, 11]), add(shp, [7, 22])], t => .95, T('hoodSh'));      // the rope over his shoulder and under his arm
+    stroke(ctx, [hp([-4, -29]), hp([-22, -16.5]), add(hp([-31, -1]), [0, sg]), np([-22, 5])], t => 4.5 * t + 1.5, T('hoodSh'));      // the back of the cowl in shade
+    stroke(ctx, [hp([8.5, -26]), hp([3.5, -12]), hp([4, 5]), np([7, 9])], leaf(1.5), T('hoodSh'));      // the fold where it wraps his head
+    stroke(ctx, [cp([-17, 14.5], .4), cp([-7, 18.4], .7), cp([4, 19.5], .9), cp([13, 17.7], .7), cp([20, 13.6], .3)], t => 1.5, T('hoodSh'));      // the cape's hem
     ctx.restore();
     ctx.restore();
   }
@@ -365,7 +393,7 @@ const MQ = (() => {
     const leg = (L, col) => { ctx.fillStyle = col; disc(ctx, L.hip, 11.5); part(ctx, L.hip, L.knee, BODY.thigh, 0); part(ctx, L.knee, L.ank, BODY.shin, 0); disc(ctx, L.knee, 7.4); disc(ctx, L.ank, 4.7); foot(ctx, L); dot(L.knee, 3); dot(L.ank, 2.2); };
     arm(J.armF, far); leg(J.legF, far);
     ctx.fillStyle = mid; const t = sides(J.neck, J.hip, BODY.torso, 0, 1.26, 22); closed(ctx, t[0], t[1]);
-    part(ctx, J.neck, hp([-2, 11]), [[0, 6.5, 7], [1, 6, 6.5]], 0); ctx.beginPath(); curve(ctx, BODY.skull.map(hp), true); ctx.fill();
+    part(ctx, J.neck, hp([-2, 12]), [[0, 6.5, 7], [1, 6, 6.5]], 0); ctx.beginPath(); curve(ctx, BODY.skull.map(v => v[2] ? [...hp(v), 1] : hp(v)), true); ctx.fill();
     leg(J.legN, near); arm(J.armN, near); dot(J.shN, 2.8); dot(J.hipN, 3.4);
     ctx.restore();
   }
