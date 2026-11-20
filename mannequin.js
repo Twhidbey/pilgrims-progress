@@ -7,7 +7,7 @@
 //      12,13 far arm: shoulder, elbow   14,15 near arm   16 the burden's tilt
 //      17 the shoulder line's turn, 18 the hip line's turn (as seen from above; + = his near side forward)
 //      19 the shoulder line's tip, 20 the hip line's tip (as seen from in front; + = his near side up)
-//      21,22 far and near wrist (the hand's bend on the forearm)   23,24 far and near fingers (their curl)
+//      21,22 far and near wrist (the hand's bend on the forearm)   23,24 far and near fingers (their curl; below 0 = back, toward the palm)
 //      25,26 far and near arch of the foot (1 at rest; lower under his weight, higher as he pushes off)
 //    Angles: 0 hangs straight down, + swings forward. Units: his walk pack's pixels (he is about 283 tall).
 // 2. A BODY on the bones (BODY, body()), by the art schools' measures: seven and a half heads tall, the shoulders a head
@@ -27,7 +27,7 @@
 //    high on his back, hose and soft shoes. Dark, quiet tones: he is a silhouette first.
 const MQ = (() => {
   const K = { ax: 93, ground: 295, hip: [82, 150], neck: [94, 56], head: [104, 31], shoulder: [87, 68],
-    thigh: 66, shin: 67, upper: 50, fore: 40, palm: 13, fing: 10.5, heel: [-9, 13], ball: [22, 13], shw: 30, hpw: 15 };      // shw, hpw: half the width between the shoulder joints, and between the hip joints
+    thigh: 66, shin: 67, upper: 50, fore: 40, palm: 14, fing: 11.5, heel: [-9, 13], ball: [22, 13], shw: 30, hpw: 15 };      // shw, hpw: half the width between the shoulder joints, and between the hip joints
   const ANIMS = {}, LEGS = [['F', 4], ['N', 8]], DEG = 180 / Math.PI, TAU = 2 * Math.PI;
   // EVERY KEY MEASURE OF HIM IS A NUMBER (MQ.DIM; the lab's sliders set them). After changing build, robe, gait or the
   // hood's bow, call refresh(): his bones, the cloth's rest and the walk are made again.
@@ -48,16 +48,18 @@ const MQ = (() => {
   //   robe:   hem (longer or shorter), flare, full       sleeve: width at the cuff, drop (how it hangs), len (over the hand)
   //   sack:   size, high (how low on his back it is tied), round (how far it stands out); the smaller bundle tied on top of
   //           it: top (its size, 0 = none), set (further back or forward), flat (a flat roll or a round ball)
+  //   hands:  size, width, fingers (their length), curl (0 = straight; more = further back toward the palm), thumb
   //   gait:   step, bob, rock, swagger, arm (swing), bend (the elbow's flexing)
   const HOOD = { beak: 2, droop: -2.8, top: 2.1, peak: 0, back: 6.8, hang: 8.2, rim: -2.8, cape: -12, head: .99, bow: .38, tilt: .1, rake: .8, size: .96, tail: 0, roll: 0, bib: 20,
     sharp: .1, hook: -1, thick: 4.6, sweep: .2, cut: 0 };
   // THE OWNER'S OWN CHOICE (sent as links from the lab's sliders): the hood's first sixteen measures above, but cape, which
   // they asked to be drawn up off the shoulder (before any choice: 5.6, 0, 3.6, 0, 9, 0, 0, 0, 1, .27, then 0, 0, 1, 0, 0, 0), and face, shoe, leg, build, robe, sleeve and the sack's first three below.
   // Before it they were: face 1, 1, 1; shoe 1, 0, 0, 1; leg 1, 1, 1.2; build 1, 1, 1, .075; robe 0, 1, 1; sleeve 23, 1, 7; sack 1, 0, 1.
-  const FACE = { nose: .75, chin: 1.1, brow: 1.5, tip: 0, bridge: 0, lips: 1, jaw: 0, forehead: 0 }, SHOE = { toe: .86, point: .35, lift: .4, bulk: .88 }, LEG = { calf: 1.08, ankle: .92, shaft: 2.1 };
-  const BUILD = { legs: 1.04, arms: .98, girth: .98, lean: .135 }, ROBE = { hem: -12, flare: 0, full: 1.17 }, SLEEVE = { width: 13, drop: 1.1, len: 0 };
-  const SACK = { size: 1.5, high: -.06, round: 1.14, top: .8, set: 6.5, flat: 1.1, back: 7 }, GAIT = { step: 96, bob: 3.3, rock: .032, swagger: .02, arm: .02, bend: .16 };
-  const DIM = { hood: HOOD, face: FACE, shoe: SHOE, leg: LEG, build: BUILD, robe: ROBE, sleeve: SLEEVE, sack: SACK, gait: GAIT };
+  const FACE = { nose: .75, chin: 1.1, brow: 1.5, tip: -.5, bridge: .3, lips: .65, jaw: .2, forehead: .2 }, SHOE = { toe: .86, point: .35, lift: .4, bulk: .88 }, LEG = { calf: 1.08, ankle: .92, shaft: 2.1 };
+  const BUILD = { legs: 1.07, arms: .98, girth: .98, lean: 0 }, ROBE = { hem: -12, flare: 0, full: 1.17 }, SLEEVE = { width: 13, drop: 1.1, len: 0 };
+  const SACK = { size: 1.5, high: -.05, round: 1.14, top: .8, set: 6.5, flat: 1.1, back: 7 }, GAIT = { step: 95, bob: 2.7, rock: .032, swagger: .016, arm: .02, bend: .16 };
+  const HANDS = { size: 1, width: 1, fingers: 1, curl: 1, thumb: 1 };
+  const DIM = { hood: HOOD, face: FACE, shoe: SHOE, leg: LEG, build: BUILD, robe: ROBE, sleeve: SLEEVE, hands: HANDS, sack: SACK, gait: GAIT };
   // SHAPED BY HAND: each named point of the hood's outline may carry an offset of its own, [dx, dy] in that point's own frame (his
   // head's, or his neck's), laid on top of what the measures give; so a shape drawn by hand goes with him as he moves. The lab's
   // draggable points set them. Names: r0..r5 the rim from under the jaw up to under the tip, tip, tt the tip's top, cf the front
@@ -135,7 +137,7 @@ const MQ = (() => {
     G = G || [0, 0, 0, 0]; const S = new Array(27).fill(0); S[0] = hip[0]; S[1] = hip[1]; S[2] = lean; S[3] = nod; S[16] = tilt || 0;
     for (let i = 0; i < 4; i++) S[17 + i] = G[i];
     LEGS.forEach(([k, so], i) => { const a = ik(add(hip, lineEnd(K.hpw, G[1], G[3], i ? 1 : -1)), feet[i]); S[so + 1] = a[0]; S[so + 2] = a[0] - a[1]; S[so + 3] = feet[i][2]; });
-    S[12] = S[14] = .04; S[13] = S[15] = .32; S[21] = S[22] = .08; S[23] = S[24] = .45; S[25] = S[26] = 1;
+    S[12] = S[14] = .04; S[13] = S[15] = .32; S[21] = S[22] = -.14; S[23] = S[24] = -.24; S[25] = S[26] = 1;
     return S;
   }
   // a measured frame (tools/mannequin/anims.py) on these bones; his frames show his arms held still
@@ -194,7 +196,8 @@ const MQ = (() => {
     [[12, 21, 23, u + .5], [14, 22, 24, u]].forEach(([ai, hi, fi, p]) => {
       const trail = o.wrist * (o.arm * Math.sin(TAU * (p - .07)) + .5 * o.bend * Math.sin(TAU * (p - .13)));      // against the forearm's own swing
       S[ai] = o.hang - lean + o.arm * Math.cos(TAU * (p - .07)); S[ai + 1] = o.elbow + o.bend * (.5 + .5 * Math.cos(TAU * (p - .13)));
-      S[hi] = .08 + trail; S[fi] = .45 + .8 * trail;
+      // the hand hangs from the wrist by its own weight (more upright than the forearm) and the fingers curl back, toward the palm
+      S[hi] = -.14 + trail; S[fi] = -.24 + .8 * trail;
     });
     return S;
   }
@@ -274,10 +277,11 @@ const MQ = (() => {
     o = Object.assign({ step, strike: step * 46 / 93, bob: GAIT.bob, rock: GAIT.rock, swagger: GAIT.swagger, arm: GAIT.arm, bend: GAIT.bend, head: HOOD.bow, lean: BUILD.lean }, o);
     return add_('classic', { label: 'A walk built from the principles', loop: true, fps: 24, vpx: 2 * o.step / n, skel: Array.from({ length: n }, (_, i) => classic(i / n, o)) });
   }
-  const K0 = { thigh: 66, shin: 67, upper: 50, fore: 40, hip: 150, neck: 56, head: 31, shoulder: 68 };
+  const K0 = { thigh: 66, shin: 67, upper: 50, fore: 40, palm: 14, fing: 11.5, hip: 150, neck: 56, head: 31, shoulder: 68 };
   function refresh() {
     // his bones: longer legs lift everything above them; the arms keep their place on the shoulders
     K.thigh = K0.thigh * BUILD.legs; K.shin = K0.shin * BUILD.legs; K.upper = K0.upper * BUILD.arms; K.fore = K0.fore * BUILD.arms;
+    K.palm = K0.palm * HANDS.size; K.fing = K0.fing * HANDS.size * HANDS.fingers;
     const dy = (K0.thigh + K0.shin) - (K.thigh + K.shin); K.hip[1] = K0.hip + dy; K.neck[1] = K0.neck + dy; K.head[1] = K0.head + dy; K.shoulder[1] = K0.shoulder + dy;
     // the cloth's rest: a longer or shorter robe, more or less flared, fuller or closer; it hangs from a deeper or a slighter body
     const k = (96 + ROBE.hem) / 96, w = ROBE.full * BUILD.girth;
@@ -362,13 +366,38 @@ const MQ = (() => {
   };
   const toeBend = L => L.p < 0 ? -L.p * Math.max(0, Math.min(1, 1 - (K.ground - L.ball[1]) / 6)) : 0;
   function foot(ctx, L) { ctx.beginPath(); curve(ctx, BODY.foot.map(footPt(L)), true); ctx.fill(); }
-  // a hand as it shows when the arm hangs at his side: the back of the hand, the thumb in front, the fingers a little
-  // curled (they bend at the knuckles, A.kn). Points are (along the hand, toward its front) from the wrist or the knuckles
+  // HIS HANDS (owner: "can you make hands look more normal too"). They were a broad mitten with small teeth for fingertips, and the
+  // fingers curled FORWARD, toward the thumb, which no hand can do. Now, by the drawing schools' measures: the back of the hand and
+  // the fingers about the same length, the whole about a third as wide as it is long (seen a little turned, as a hanging hand is);
+  // it hangs from the wrist by its own weight; the back of the hand is toward us, the thumb in front of it and a little behind,
+  // lying along the first finger; four fingers of unequal length (the middle longest, the little one shortest and set higher), each
+  // bending at its three joints and curling BACK, toward the palm, the little finger most; a fine line between the fingers.
+  // Points are (along the hand as a part of the palm's length, toward its front in units) from the wrist.
+  const FINGERS = [[1, 3.4, .92, 1.42, .8], [1.03, 1.1, 1, 1.44, 1], [.99, -1.2, .93, 1.36, 1.1], [.9, -3.45, .75, 1.2, 1.25]];      // where it leaves the knuckles (along, across), its length, half its width, how much it curls
   function hand(ctx, A, col) {
-    const P = (o, a, k, m) => { const s = Math.sin(a), c = Math.cos(a); return [o[0] + s * k + c * m, o[1] + c * k - s * m]; }, w = A.wr, kn = A.kn, hb = A.hb, fb = A.fb;
-    ctx.fillStyle = col; ctx.beginPath();
-    curve(ctx, [P(w, hb, -2, 3.8), P(w, hb, 4, 4.5), P(w, hb, 10.5, 5.1), P(kn, fb, 3.5, 4.5), P(kn, fb, 7.6, 3.8), P(kn, fb, 9.9, 2.6), [...P(kn, fb, 9, 1.4), 1], P(kn, fb, 10.9, .2), [...P(kn, fb, 9.6, -1.1), 1], P(kn, fb, 10.1, -2.4), [...P(kn, fb, 8.5, -3.3), 1], P(kn, fb, 8.2, -4.5), P(kn, fb, 5, -4.9), P(w, hb, 13.5, -5.4), P(w, hb, 7, -5), P(w, hb, -2, -3.8)], true); ctx.fill();
-    stroke(ctx, [P(w, hb, 2, 2.8), P(w, hb, 7, 5.8), P(w, hb, 12, 6.8), P(w, hb, 15.5, 5.9)], t => 2.6 - 1.1 * t, col);      // the thumb, lying along the first finger
+    const w = A.wr, hb = A.hb, Lp = K.palm, wd = HANDS.size * HANDS.width, c1 = (A.fb - hb) * HANDS.curl, th = HANDS.thumb, s = Math.sin(hb), c = Math.cos(hb);
+    const P = (t, m) => [w[0] + s * t * Lp + c * m * wd, w[1] + c * t * Lp - s * m * wd];
+    ctx.fillStyle = col;
+    // the thumb first: it lies on the palm's side of the hand, so the hand's front edge passes in front of it
+    const to = Math.min(1.25, th), TH = [P(.06, 2.1), P(.06 + .32 * th, 2.4 + 2.6 * to), P(.06 + .66 * th, 3.2 + 3.1 * to), P(.06 + .96 * th, 3.2 + 3.2 * to)], tw = wd * Math.sqrt(th);
+    stroke(ctx, TH, t => tw * (1.8 - .65 * t), col); ctx.fillStyle = col; disc(ctx, TH[3], tw * 1.15);
+    // (the web between the thumb and the hand is filled, so no hairline of sky shows between them)
+    ctx.beginPath(); [TH[0], TH[1], TH[2], TH[3], P(1, 4.8), P(.62, 4.3), P(.25, 3.5)].forEach((q, i) => i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1])); ctx.closePath(); ctx.fill();
+    // the back of the hand: narrow at the wrist, widening to the knuckles, the heel of the hand a soft swell behind
+    ctx.beginPath(); curve(ctx, [P(-.14, 3.1), P(.25, 3.5), P(.62, 4.3), P(1, 4.8), P(1.07, 2.3), P(1.09, 0), P(1.02, -2.5), P(.9, -4.6), P(.6, -4.8), P(.28, -4.3), P(-.14, -3.2)], true); ctx.fill();
+    // the fingers, each a line that thins a little to a round tip, bending at three joints
+    const F = FINGERS.map(([t, m, len, hw, ck]) => { const L = K.fing * len, B = P(t - .12, m), a1 = hb + c1 * ck, a2 = hb + 1.9 * c1 * ck, a3 = hb + 2.6 * c1 * ck;
+      const q0 = add(B, dirv(hb, .12 * Lp)), q1 = add(q0, dirv(a1, .45 * L)), q2 = add(q1, dirv(a2, .3 * L)), q3 = add(q2, dirv(a3, .25 * L)); return { pts: [B, q0, q1, q2, q3], hw: hw * wd }; });
+    // (the fingers lie together: the space between the first and the last is filled, so no chink of sky shows between them)
+    ctx.beginPath(); ctx.moveTo(F[0].pts[0][0], F[0].pts[0][1]); F[0].pts.forEach(q => ctx.lineTo(q[0], q[1])); ctx.lineTo(F[1].pts[4][0], F[1].pts[4][1]); ctx.lineTo(F[2].pts[4][0], F[2].pts[4][1]); F[3].pts.slice().reverse().forEach(q => ctx.lineTo(q[0], q[1])); ctx.closePath(); ctx.fill();
+    F.forEach(f => { stroke(ctx, f.pts, t => f.hw * (1 - .2 * t), col); ctx.fillStyle = col; disc(ctx, f.pts[4], f.hw * .8); });
+    // a trace of form inside: a fine line between each finger and the next, and where the hand's front edge lies over the thumb
+    if (LOOK.detail > 0) {
+      ctx.strokeStyle = 'rgba(0,0,0,' + (.2 * LOOK.detail) + ')'; ctx.lineWidth = .55 * HANDS.size; ctx.lineCap = 'round';
+      const mid = (a, b, k) => [(a[0] + b[0]) / 2 + (b[0] - a[0]) * k, (a[1] + b[1]) / 2 + (b[1] - a[1]) * k];
+      for (let i = 0; i < 3; i++) { const a = F[i].pts, b = F[i + 1].pts; ctx.beginPath(); const e = (q, r) => [q[0] + (r[0] - q[0]) * .55, q[1] + (r[1] - q[1]) * .55]; curve(ctx, [mid(a[1], b[1], 0), mid(a[2], b[2], 0), mid(a[3], b[3], 0), mid(e(a[3], a[4]), e(b[3], b[4]), 0)]); ctx.stroke(); }
+      ctx.beginPath(); curve(ctx, [P(.3, 3.6), P(.62, 4.3), P(1, 4.8)]); ctx.stroke();
+    }
   }
 
   // the clothed figure. (x, y) is the ground under him, face 1 right / -1 left, Kk the size; shade(tone) gives each tone's colour
