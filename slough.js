@@ -387,6 +387,7 @@ const SL = (() => {
   // It breaks off one phrase short at the far bank; the last phrase comes in the major as the steps light up.
   const m = { D: 50, E: 51, G: 55, A: 57, B: 58, d: 62 };
   const WADE_TUNE = 'D G B G B A G E D D G B G B A d B d B d B G D E G G E D'.split(' ').map(k => m[k]);
+  const TURN_TICKS = 50, HTURN_TICKS = 44;      // build 365: Christian's and Help's turns, quick pivots (see A QUICK TURN in update())
   const LAST = [62, 67, 71, 67, 71, 69, 67];             // "was blind, but now I see", in the major, as Level 1 sings it
   const sfxS = {
     wade: () => { hiss(520, .8, .05, .5, 'lowpass'); hiss(1500, 1.5, .012, .3, 'bandpass', .05); },
@@ -597,7 +598,13 @@ const SL = (() => {
     // (5) how high the mud has reached on him, above his feet (it stays when he rises, and dries off very slowly)
     if (['fall', 'pli', 'back', 'backtalk', 'wade', 'stuck', 'help'].includes(ph) && !lift) C2.D = Math.max(C2.D || 0, C2.y);
     else if (ph === 'drawn' || ph === 'look' || ph === 'onway' || ph === 'on') C2.D = Math.max(48, (C2.D || 0) - .008);
-    if (C2.tv) { C2.tv.t += C2.tv.d * TURN_META.step * C2.tv.k; if (C2.tv.t >= TURN.length - 1 || C2.tv.t <= 0 || (ph === 'on' && want)) { C2.face = C2.faceA = C2.tv.d; C2.tv = null; } }
+    // A QUICK TURN (build 365, owner: "it'd be nice for help turning to be a quick turn and go instead of drawn out slow turn
+    // with feet walking look ... much prefer a pivot on one foot or something quick ... christian also turns slow"): his
+    // turn video is played through in TURN_TICKS ticks (under a second), eased in and out, instead of at its own speed
+    // (over three seconds, the feet stepping round); the owner's own exception to "every clip at its own speed"
+    if (C2.tv) { C2.tv.p = Math.min(1, (C2.tv.p || 0) + 1 / TURN_TICKS); const e = C2.tv.p * C2.tv.p * (3 - 2 * C2.tv.p), N1 = TURN.length - 1;
+      C2.tv.t = C2.tv.d > 0 ? e * N1 : (1 - e) * N1;
+      if (C2.tv.p >= 1 || (ph === 'on' && want)) { C2.face = C2.faceA = C2.tv.d; C2.tv = null; } }
     // --- Christian ---
     if (ph === 'plain' || ph === 'on') {
       // stop points for the words (owner, build 106; as in Level 1): while the storyteller or the two of them are still
@@ -727,7 +734,7 @@ const SL = (() => {
       fogH = to < fogH ? Math.max(to, fogH - .0013) : Math.min(to, fogH + .004); help.a = 1;
       const lv = help.lv;
       if (lv && !help.gone) {
-        if (lv.t < HTURN.length - 1) lv.t = Math.min(HTURN.length - 1, lv.t + .2);
+        if (lv.t < HTURN.length - 1) { lv.p = Math.min(1, (lv.p || 0) + 1 / HTURN_TICKS); lv.t = lv.p >= 1 ? HTURN.length - 1 : lv.p * lv.p * (3 - 2 * lv.p) * (HTURN.length - 1); }      // build 365: a quick pivot (it took nearly seven seconds, walking round), then he goes
         else { lv.w += .2; lv.d += 13.1 * .2 * CHR_K; if (lv.d > 640) help.gone = true; }      // 13.1 pack px of ground to each frame of his walk (HW_OFF)
       }
     }
@@ -795,7 +802,7 @@ const SL = (() => {
     for (const mo of motes) {
       mo.tw += .03;
       if (mo.to) {
-        const tx = mo.to.x, ty = -40 - (mo.to.nt - 62) * 5;
+        const tx = mo.to.x, ty = -(mo.to.h + 2.5);      // build 365: each light settles ON its stone (they used to stop in the air above it)
         mo.x += (tx - mo.x) * .04; mo.y += (ty - mo.y) * .04;
         if (!mo.to.lit && Math.hypot(tx - mo.x, ty - mo.y) < 6) { mo.to.lit = .01; note(mo.to.nt, .06, 4); rings.push({ x: tx, y: 0, t: 0, k: .6 }); }
       } else { mo.x += (C2.x + mo.ox * C2.face - mo.x) * .05; mo.y += (C2.y + mo.oy + Math.sin(mo.tw) * 6 - mo.y) * .05; }
@@ -960,8 +967,8 @@ const SL = (() => {
       else if (lv.t < HTURN.length - 1) figure(n, 'help', HTURN[Math.floor(lv.t)], META.hturn, hx0, HY(), 1, fig, false, d);
       else {      // walking back the way he came, into the mist: his walk mirrored, one stride over and over
         const x = hx0 + lv.d, a = d * (1 - smooth(420, 640, lv.d));
-        if (lv.w < 4) figure(n, 'help', HTURN[HTURN.length - 1], META.hturn, hx0, HY(), 1, fig, false, a * (1 - smooth(2, 4, lv.w)));
-        figure(n, 'helpw', HWALK[16 + Math.floor(lv.w) % 16], META.hwalk, x, bankY(x) + 4, -1, fig, false, a * smooth(0, 2, lv.w));
+        if (lv.w < 2) figure(n, 'help', HTURN[HTURN.length - 1], META.hturn, hx0, HY(), 1, fig, false, a * (1 - smooth(.6, 2, lv.w)));
+        figure(n, 'helpw', HWALK[16 + Math.floor(lv.w) % 16], META.hwalk, x, bankY(x) + 4, -1, fig, false, a * smooth(0, .6, lv.w));
       }
       TALKM = talkC; FIG_WET = { D: C2.D || 0, a: .72 }; drawChr(n, fig, d); TALKM = null; FIG_WET = null;
     } else {
@@ -984,6 +991,16 @@ const SL = (() => {
     if (0) for (const pr of prints) { const a = .22 * (1 - smooth(900, 1600, pr.t)); if (a < .01) continue; n.fillStyle = css(LIGHT, a); n.beginPath(); n.ellipse(pr.x, bankY(pr.x) + 1.2, 6, .9, 0, 0, 7); n.fill(); }
     // build 114 (owner: "not sure about light dots above pliable's head"): the lights he gathered are no longer shown
     // following him; they first appear behind his shoulder when he looks back, and fly to the steps
+    // THE STEPS (build 365, owner: "the stepping stones don't show up any more - how does this fit with story in the book?").
+    // The stones were no longer drawn: only the mist over them thinned and the lights stopped in the air. In the book
+    // ({35}) the King's labourers laid "good and substantial steps ... through the very midst of this slough", hard to see
+    // in foul weather; Christian, fleeing in fear, never looked for them ({33}). So: low flat stones lying in a line across
+    // the slough, hidden until his lights find them; each light settles on its stone and leaves a warm edge on its top
+    for (const st of steps) { const c = smooth(0, .6, st.lit || 0); if (c < .01) continue;
+      const x0s = st.x - st.w, x1s = st.x + st.w, top = -st.h, k = st.lean * .04;
+      n.globalAlpha = c; n.fillStyle = css(mix(land, tone(.42), .22)); n.beginPath(); n.moveTo(x0s, 2);
+      n.bezierCurveTo(x0s + 1, top * .4, x0s + st.w * .35, top - k, st.x, top - k * .3); n.bezierCurveTo(x1s - st.w * .35, top + k, x1s - 1, top * .4, x1s, 2); n.closePath(); n.fill();
+      n.globalAlpha = c * (.35 + .4 * (1 - smooth(.6, 1, st.lit || 0))); n.strokeStyle = css(mix(GOLD, LIGHT, .4)); n.lineWidth = 1.1; n.beginPath(); n.moveTo(x0s + st.w * .25, top * .82); n.quadraticCurveTo(st.x, top - k * .3 - .6, x1s - st.w * .25, top * .82); n.stroke(); n.globalAlpha = 1; }
     for (const mo of motes) { if (!mo.to && ph !== 'look') continue; const a = (.55 + .3 * Math.sin(mo.tw * 1.7)) * (ph === 'look' ? smooth(0, 50, goldT) : 1); mote(n, mo.x, mo.y, mo.to ? 3 : 1.8, mo.to ? 1 : a); }
     // BEHIND THE PEOPLE, NOT ACROSS THEM (build 128, owner: "you don't think white mist between mud and the character looks
     // strange?"): the thin mist over the water and the low mist round the two in the bog were drawn over the figures, so a

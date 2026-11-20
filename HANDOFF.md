@@ -188,6 +188,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 **Build 276 (cover chat): the book cover painted in code in the game's own watercolour language (arched window of layered hills under the far light), replacing the leather photograph; no more flicker on opening. See `CLAUDE.md`, "Build 276". Nothing spent.**
 
+**Build 365 (Level 2 edits chat): Help's and Christian's turns in the Slough are quick pivots (under a second, eased); the stepping stones are drawn again, each light settling on its stone. See `CLAUDE.md`, "Build 365". Nothing spent.**
+
 **Build 271 (Level 2 edits chat): Christian deep in the mire (shoulder-deep at the far bank), the reach one continuous play into the lift with no jump; then five critic subagents' agreed fixes (softer pools, no seam by the far bank, a clean reflection, no hard horizon line, Help out of the mist dark and whole). Their other ideas (word cuts, staging) are proposals in `CLAUDE.md`, "Build 271". Nothing spent.**
 
 **Build 259 (Level 2 edits chat): the Slough's mud has its own tones (dark wet rims round the pools, wetter patches, dull sheen bands, a few foreground pools), a soft wet shadow under each man and under the home bank, and a flat mist along both shores. See `CLAUDE.md`, "Build 259". New: `tools/stills2.js`, and the owner's rule of before-and-after stills for every change. Nothing spent.**
