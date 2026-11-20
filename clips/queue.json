@@ -213,7 +213,11 @@
    },
    "seconds": 5,
    "prompt": "The pilgrim stands still; the ropes holding the great bundle on his back loosen by themselves, the bundle slips from his shoulders, falls behind him and tumbles away out of the picture; he straightens up, lighter, and stands tall.",
-   "status": "todo"
+   "status": "done",
+   "via": "modal",
+   "made": "2026-11-20 05:09 UTC",
+   "frames": 81,
+   "secs": 214
   },
   {
    "id": "brave-arm",
