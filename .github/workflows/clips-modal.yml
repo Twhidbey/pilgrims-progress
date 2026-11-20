@@ -3,6 +3,10 @@
 # task "setup": deploy the app and fetch the model into Modal's storage (once). task "run": make the next clips.
 name: Clips on Modal
 on:
+  # every day at 07:17 UTC, twelve hours from the free Hugging Face run, at most four clips (nothing is spent when
+  # the queue is empty; clips/modal_run.py stops at its monthly cap)
+  schedule:
+    - cron: '17 7 * * *'
   workflow_dispatch:
     inputs:
       task:
@@ -42,7 +46,7 @@ jobs:
           modal run clips/modal_video.py::download
       - name: run (the next clips)
         if: inputs.task != 'setup'
-        run: python3 clips/modal_run.py "${{ inputs.max || '8' }}"
+        run: python3 clips/modal_run.py "${{ inputs.max || '4' }}"
       - name: save to the clips branch
         if: always()
         run: |
