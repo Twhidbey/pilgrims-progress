@@ -49,14 +49,14 @@ const MQ = (() => {
   //   sack:   size, high (how low on his back it is tied), round (how far it stands out); the smaller bundle tied on top of
   //           it: top (its size, 0 = none), set (further back or forward), flat (a flat roll or a round ball)
   //   gait:   step, bob, rock, swagger, arm (swing), bend (the elbow's flexing)
-  const HOOD = { beak: 2, droop: -2.8, top: 2.1, peak: 0, back: 6.8, hang: 8.2, rim: -2.8, cape: -12, head: .99, bow: .38, tilt: .1, rake: .8, size: .96, tail: 0, roll: 0, bib: 21,
-    sharp: .1, hook: -1, thick: 4.6, sweep: 0, cut: .2 };
+  const HOOD = { beak: 2, droop: -2.8, top: 2.1, peak: 0, back: 6.8, hang: 8.2, rim: -2.8, cape: -12, head: .99, bow: .38, tilt: .1, rake: .8, size: .96, tail: 0, roll: 0, bib: 20,
+    sharp: .1, hook: -1, thick: 4.6, sweep: .2, cut: 0 };
   // THE OWNER'S OWN CHOICE (sent as links from the lab's sliders): the hood's first sixteen measures above, but cape, which
   // they asked to be drawn up off the shoulder (before any choice: 5.6, 0, 3.6, 0, 9, 0, 0, 0, 1, .27, then 0, 0, 1, 0, 0, 0), and face, shoe, leg, build, robe, sleeve and the sack's first three below.
   // Before it they were: face 1, 1, 1; shoe 1, 0, 0, 1; leg 1, 1, 1.2; build 1, 1, 1, .075; robe 0, 1, 1; sleeve 23, 1, 7; sack 1, 0, 1.
   const FACE = { nose: .75, chin: 1.1, brow: 1.5 }, SHOE = { toe: .86, point: .35, lift: .4, bulk: .88 }, LEG = { calf: 1.08, ankle: .92, shaft: 2.1 };
-  const BUILD = { legs: 1.04, arms: .98, girth: 1.11, lean: .135 }, ROBE = { hem: -2, flare: 1, full: .98 }, SLEEVE = { width: 13, drop: 1.1, len: 0 };
-  const SACK = { size: 1.43, high: -.06, round: 1.05, top: .8, set: 0, flat: 1 }, GAIT = { step: 93, bob: 3.8, rock: .022, swagger: .018, arm: .12, bend: .25 };
+  const BUILD = { legs: 1.04, arms: .98, girth: .98, lean: .135 }, ROBE = { hem: -12, flare: 0, full: 1.17 }, SLEEVE = { width: 13, drop: 1.1, len: 0 };
+  const SACK = { size: 1.5, high: -.06, round: 1.14, top: .8, set: 6.5, flat: 1.1 }, GAIT = { step: 96, bob: 3.6, rock: .044, swagger: .018, arm: .31, bend: .24 };
   const DIM = { hood: HOOD, face: FACE, shoe: SHOE, leg: LEG, build: BUILD, robe: ROBE, sleeve: SLEEVE, sack: SACK, gait: GAIT };
   // SHAPED BY HAND: each named point of the hood's outline may carry an offset of its own, [dx, dy] in that point's own frame (his
   // head's, or his neck's), laid on top of what the measures give; so a shape drawn by hand goes with him as he moves. The lab's
