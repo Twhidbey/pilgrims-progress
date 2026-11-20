@@ -54,9 +54,9 @@ const MQ = (() => {
   // THE OWNER'S OWN CHOICE (sent as links from the lab's sliders): the hood's first sixteen measures above, but cape, which
   // they asked to be drawn up off the shoulder (before any choice: 5.6, 0, 3.6, 0, 9, 0, 0, 0, 1, .27, then 0, 0, 1, 0, 0, 0), and face, shoe, leg, build, robe, sleeve and the sack's first three below.
   // Before it they were: face 1, 1, 1; shoe 1, 0, 0, 1; leg 1, 1, 1.2; build 1, 1, 1, .075; robe 0, 1, 1; sleeve 23, 1, 7; sack 1, 0, 1.
-  const FACE = { nose: .75, chin: 1.1, brow: 1.5 }, SHOE = { toe: .86, point: .35, lift: .4, bulk: .88 }, LEG = { calf: 1.08, ankle: .92, shaft: 2.1 };
+  const FACE = { nose: .75, chin: 1.1, brow: 1.5, tip: 0, bridge: 0, lips: 1, jaw: 0, forehead: 0 }, SHOE = { toe: .86, point: .35, lift: .4, bulk: .88 }, LEG = { calf: 1.08, ankle: .92, shaft: 2.1 };
   const BUILD = { legs: 1.04, arms: .98, girth: .98, lean: .135 }, ROBE = { hem: -12, flare: 0, full: 1.17 }, SLEEVE = { width: 13, drop: 1.1, len: 0 };
-  const SACK = { size: 1.5, high: -.06, round: 1.14, top: .8, set: 6.5, flat: 1.1 }, GAIT = { step: 96, bob: 3.6, rock: .044, swagger: .018, arm: .31, bend: .24 };
+  const SACK = { size: 1.5, high: -.06, round: 1.14, top: .8, set: 6.5, flat: 1.1, back: 4 }, GAIT = { step: 96, bob: 3.6, rock: .044, swagger: .018, arm: .31, bend: .24 };
   const DIM = { hood: HOOD, face: FACE, shoe: SHOE, leg: LEG, build: BUILD, robe: ROBE, sleeve: SLEEVE, sack: SACK, gait: GAIT };
   // SHAPED BY HAND: each named point of the hood's outline may carry an offset of its own, [dx, dy] in that point's own frame (his
   // head's, or his neck's), laid on top of what the measures give; so a shape drawn by hand goes with him as he moves. The lab's
@@ -65,7 +65,8 @@ const MQ = (() => {
   // edge from the back of the neck to its foot on the chest. While REC is an array, figure() notes each point's place in it.
   // THE OWNER'S OWN SHAPE (sent as a link from the lab's draggable points): the back of the hood drawn in, its collar level and
   // further forward, its foot on the chest a little up and forward, the rim lower under his jaw.
-  const HAND = { hood: { b2: [-1.3, -5.2], b3: [-2.3, -3.8], e0: [-.9, 2.2], e1: [6.8, 1.1], e4: [4.1, -3.3], po: [-5, 1.7], r0: [2.3, 5.1] } }; let REC = null;
+  // HAND.top: the nine points round the bundle on top of his burden (u0 at its top, then round by the front), in the same way.
+  const HAND = { hood: { b2: [-1.3, -5.2], b3: [-2.3, -3.8], e0: [-.9, 2.2], e1: [6.8, 1.1], e4: [4.1, -3.3], po: [-5, 1.7], r0: [2.3, 5.1] }, top: {} }; let REC = null;
   // the body's side profile: along each part (0 at its top joint, 1 at its lower), how far its front and its back stand from the bone
   const BODY = {
     thigh: [[0, 11, 13], [.25, 12, 12], [.55, 10.5, 10.5], [.85, 8.6, 8.4], [1, 8, 7.6]],
@@ -327,7 +328,15 @@ const MQ = (() => {
     let x = v[0];
     if (i >= 5 && i <= 8) x = 15.4 + (x - 15.4) * FACE.nose; else if (i === 3) x = 14.6 + (x - 14.6) * FACE.brow; else if (i === 2) x += (FACE.brow - 1) * .5;
     else if (i === 14) x += (FACE.chin - 1) * 2.6; else if (i === 15) x += (FACE.chin - 1) * 2; else if (i === 13) x += (FACE.chin - 1) * .8;
-    return v[2] ? [x, v[1], 1] : [x, v[1]];
+    // five more: the nose's tip turned up or hooked down, a hump on its bridge, fuller or thinner lips, a deeper jaw, and the
+    // forehead sloping back or standing forward
+    let y = v[1]; const F = FACE;
+    if (i === 7) y += F.tip; else if (i === 8) y += .75 * F.tip; else if (i === 6) y += .3 * F.tip;
+    if (i === 5) x += F.bridge; else if (i === 6) x += .7 * F.bridge;
+    if (i === 10 || i === 12) x = 15.6 + (x - 15.6) * F.lips;
+    if (i === 15 || i === 16) y += F.jaw; else if (i === 17) y += .8 * F.jaw; else if (i === 18) y += .45 * F.jaw; else if (i === 14) y += .5 * F.jaw;
+    if (i === 1) x += F.forehead; else if (i === 2) x += .7 * F.forehead; else if (i === 0) x += .5 * F.forehead;
+    return v[2] ? [x, y, 1] : [x, y];
   });
   // his lower leg: calf and ankle each wider or slighter
   const shinP = () => BODY.shin.map(([t, f, b]) => { const k = lerp(LEG.calf, LEG.ankle, Math.max(0, Math.min(1, (t - .4) / .4))); return [t, f * k, b * k]; });
@@ -366,6 +375,9 @@ const MQ = (() => {
     Q = Q || clothPose(clothNew());
     const f = Q.slice(0, 4), b = Q.slice(4, 8), fl = Q.slice(8, 11), lift = Q[11], by = Q[12], h = J.hip, n = J.neck;
     ctx.save(); ctx.translate(x, y); ctx.scale((face || 1) * Kk, Kk); ctx.translate(-K.ax, -K.ground); ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+    // a point of an outline with the offset set for it by hand, if any (and its place noted for the lab: p, and what one unit each way does)
+    const plG = (G, v, n) => { const o = G[n]; return o ? [v[0] + o[0], v[1] + o[1]] : v; };
+    const hptG = (grp, n, v, map, quiet) => { const w = plG(HAND[grp], v, n); if (REC && !quiet) { const q = map(w); REC.push({ name: n, grp, p: q, ex: sub(map([w[0] + 1, w[1]]), q), ey: sub(map([w[0], w[1] + 1]), q) }); } return w; };
     const sl = Math.hypot(h[0] - n[0], h[1] - n[1]), sd = [(h[0] - n[0]) / sl, (h[1] - n[1]) / sl], gi = BUILD.girth, st = (t, off) => [n[0] + (h[0] - n[0]) * t + sd[1] * off * gi, n[1] + (h[1] - n[1]) * t - sd[0] * off * gi];
     const fill = (pts, col, cl) => { ctx.fillStyle = col; ctx.beginPath(); curve(ctx, pts, cl !== false); ctx.fill(); };
     const hp = headPt(J), np = v => add(n, R(v, J.lean));
@@ -381,9 +393,11 @@ const MQ = (() => {
     // comes out of the body instead of lying on it.
     const nearTone = (() => { const a = np([0, -2]), c = np([0, 30]), g = ctx.createLinearGradient(a[0], a[1], c[0], c[1]); g.addColorStop(0, T('robe')); g.addColorStop(.3, T('robe')); g.addColorStop(1, T('sleeve')); return g; })();
     const upperSleeve = BODY.upper.map(v => { const e = 1.3 + 1.9 * Math.min(1, v[0] / .4); return [v[0], v[1] + e, v[2] + e]; });
-    const yoke = () => { const s = J.armN.sh, yk = (dx, dy) => add(s, R([dx, dy], J.lean)), q = (c, e) => ctx.quadraticCurveTo(c[0], c[1], e[0], e[1]), l = e => ctx.lineTo(e[0], e[1]), m = np([-9.5, -1.5]);
-      // from the back of his neck the cloth slopes down and rounds over the shoulder; the same in front, under the hood's fall
-      ctx.fillStyle = nearTone; ctx.beginPath(); ctx.moveTo(m[0], m[1]); q(yk(-7.6, -7.4), yk(-8.8, -.4)); l(yk(-6, 4)); l(yk(6, 4)); l(yk(8.8, -.4)); q(yk(7.6, -7), np([6.5, 2])); l(np([-1, -3])); ctx.closePath(); ctx.fill(); };
+    const sN = J.armN.sh, yk = (dx, dy) => add(sN, R([dx, dy], J.lean));
+    // from the back of his neck the cloth slopes down and rounds over the shoulder; the same in front, under the hood's fall
+    const yokePath = () => { const q = (c, e) => ctx.quadraticCurveTo(c[0], c[1], e[0], e[1]), l = e => ctx.lineTo(e[0], e[1]), m = np([-9.5, -1.5]);
+      ctx.beginPath(); ctx.moveTo(m[0], m[1]); q(yk(-7.6, -7.4), yk(-8.8, -.4)); l(yk(-6, 4)); l(yk(6, 4)); l(yk(8.8, -.4)); q(yk(7.6, -7), np([6.5, 2])); l(np([-1, -3])); ctx.closePath(); };
+    const yoke = () => { ctx.fillStyle = nearTone; yokePath(); ctx.fill(); };
     const arm = (A, far) => {
       hand(ctx, A, T(far ? 'handFar' : 'hand'));
       const W = SLEEVE.width, r = 5, s = Math.max(.06, Math.min(.86, .42 + 1.6 * (A.hb - A.b - .08) - .8 * Math.sin(A.b))), fd = r + 1.5 + s * (W - 2 * r - 3), ab = Math.abs(Math.sin(A.b));
@@ -444,7 +458,7 @@ const MQ = (() => {
     // --- the burden, in two tiers as in his painted frames: a heavy sack bound on his back, and a smaller bundle tied on top
     //     of it behind his hood. The sack hangs from its tie behind his shoulders, its weight low, its inner side flat
     //     against him; it sags a beat after the body and spreads a little as it does; the bundle on top jolts a little more.
-    const tilt = J.lean + S[16] + .05 + by * .004 + (Q[13] || 0), tie = add(st(.07 + SACK.high, -15), [0, by]), sq = 1 + .012 * Math.max(-3, Math.min(4, by)), sp = v => add(tie, R([v[0] * sq * SACK.size * (v[0] < 0 ? SACK.round : 1), v[1] / sq * SACK.size], tilt));
+    const tilt = J.lean + S[16] + .05 + by * .004 + (Q[13] || 0), tie = add(st(.07 + SACK.high, -15), [-SACK.back, by]), sq = 1 + .012 * Math.max(-3, Math.min(4, by)), sp = v => add(tie, R([v[0] * sq * SACK.size * (v[0] < 0 ? SACK.round : 1), v[1] / sq * SACK.size], tilt));
     const sack = [[3, 3], [6.5, 20], [7, 45], [3.5, 62], [-9, 73.5], [-27, 70.5], [-38, 57], [-36.5, 39], [-28.5, 20], [-17, 7], [-8, 2]].map(sp);
     fill(sack, T('sack'));
     ctx.save(); ctx.beginPath(); curve(ctx, sack, true); ctx.clip();
@@ -454,7 +468,8 @@ const MQ = (() => {
     ctx.restore();
     if (SACK.top > 0) {
       const rx = 15 * SACK.top, ry = 11.5 * SACK.top * SACK.flat, c = [-11.5 + SACK.set, 3.5 - ry * .78 + by * .35], bp = v => sp([c[0] + v[0] * rx, c[1] + v[1] * ry]);
-      const bun = [[0, -1], [.62, -.82], [.98, -.28], [.93, .42], [.5, .9], [-.42, .96], [-.92, .52], [-1, -.18], [-.68, -.78]].map(bp);
+      const bm = w => sp([c[0] + w[0], c[1] + w[1]]), bun = [[0, -1], [.62, -.82], [.98, -.28], [.93, .42], [.5, .9], [-.42, .96], [-.92, .52], [-1, -.18], [-.68, -.78]].map((v, i) => bm(hptG('top', 'u' + i, [v[0] * rx, v[1] * ry], bm)));
+      if (REC) (REC.outlines = REC.outlines || {}).top = bun;
       fill(bun, T('sackLt'));
       ctx.save(); ctx.beginPath(); curve(ctx, bun, true); ctx.clip();
       fill([[-1.2, .25], [-.5, .62], [.3, .66], [1.2, .3], [1.2, 1.3], [-1.2, 1.3]].map(bp), T('sack'));      // its underside, where it rests on the sack
@@ -464,9 +479,15 @@ const MQ = (() => {
     }
     stroke(ctx, [sp([-11, 3]), sp([-2, 1.5]), sp([5, 2.5])], leaf(1.7), T('strap'));      // the tie
 
-    // the rope that binds it: over his shoulder, down the front of his chest, and back under his arm
-    const shp = mix(J.shoulder, J.shN, .7);
-    ctx.strokeStyle = T('strap'); ctx.lineWidth = 1.8; ctx.beginPath(); curve(ctx, [sp([3, 2]), add(shp, [3, -6]), add(shp, [12, 5]), add(shp, [10, 19]), sp([8, 36])]); ctx.stroke();
+    // THE STRAP that holds it (owner: "the strap of his bag cuts through his arm": it ran down his chest and back to the sack, hidden
+    // only where the arm lay over it, so it showed on both sides of the arm as if it went through it). Now it goes from the sack up
+    // over the top of his shoulder, down in front of the shoulder, and in under his arm, where it ends out of sight; its last
+    // points go with the arm, so the arm always covers its end. It is drawn here, under the arm, and again over the shoulder
+    // itself once the arm is drawn (strapOn).
+    const strap = () => { const A = J.armN, ul = Math.hypot(A.el[0] - A.sh[0], A.el[1] - A.sh[1]) || 1, u = [(A.el[0] - A.sh[0]) / ul, (A.el[1] - A.sh[1]) / ul], af = (d, o) => [A.sh[0] + u[0] * d + u[1] * o, A.sh[1] + u[1] * d - u[0] * o];
+      ctx.strokeStyle = T('strap'); ctx.lineWidth = 1.8; ctx.beginPath(); curve(ctx, [sp([3, 2]), yk(-6.6, -7), yk(-.6, -9.5), yk(5.8, -6.8), yk(9.6, .4), af(8, 9.8), af(14, 5.5)]); ctx.stroke(); };
+    const strapOn = a => { ctx.save(); ctx.globalAlpha = a; yokePath(); ctx.moveTo(sN[0] + 8.8, sN[1]); ctx.arc(sN[0], sN[1], 8.8, 0, 6.2832, true); ctx.clip(); strap(); ctx.restore(); };
+    strap();
     // --- near arm; then his head. His face shows in the hood as a lit profile (brow, nose, lips, chin); the hood's rim
     //     throws its shadow down the cheek and into the hollow of the eye, and the neck is in shade under the jaw
     arm(J.armN, false); yoke();
@@ -474,9 +495,7 @@ const MQ = (() => {
     const HD = HOOD, bk = HD.beak, tipY = -9 + HD.droop, dt = HD.top - 3.6, dk = HD.back - 9, rm = HD.rim, cl = HD.cape, pk = HD.peak, hg = HD.hang, bib = HD.bib;
     // a point of the hood on his head: the whole hood may be larger or closer, and tipped forward or pushed back
     const hh = v => hp(R([v[0] * HD.size, v[1] * HD.size], HD.tilt));
-    // a point of its outline with the offset set by hand, if any (and its place noted for the lab: p, and what one unit each way does)
-    const HH = HAND.hood, pl = (v, n) => { const o = HH[n]; return o ? [v[0] + o[0], v[1] + o[1]] : v; };
-    const hpt = (n, v, map, quiet) => { const w = pl(v, n); if (REC && !quiet) { const q = map(w); REC.push({ name: n, p: q, ex: sub(map([w[0] + 1, w[1]]), q), ey: sub(map([w[0], w[1] + 1]), q) }); } return w; };
+    const HH = HAND.hood, pl = (v, n) => plG(HH, v, n), hpt = (n, v, map, quiet) => hptG('hood', n, v, map, quiet);
     // its rim, from under the jaw up to the tip of the beak (the opening may be raked back toward the jaw)
     const RIM = [[11.5 - .6 * rm, 21.5], [9.4 - rm, 17], [8.6 - rm, 11], [9.6 - rm, 4], [11.4 - .8 * rm - .5 * HD.cut, -2], [14 - .4 * rm - HD.cut, tipY + 2.8], [14.4 + .5 * bk, tipY + 1 + .3 * HD.hook], [14.8 + bk + 2 * HD.sharp, tipY + HD.hook]].map(v => [v[0] - HD.rake * Math.max(0, v[1] - tipY) / 30, v[1]]).map((v, i) => hpt(i < 6 ? 'r' + i : 'tip', v, hh, i === 6));
     // the tip's top: Tb where the beak leaves the hood, Cf the front of the crown; between them the top may be scooped or bulge
@@ -511,7 +530,7 @@ const MQ = (() => {
     // its front edge, from under his jaw down to its foot on the chest: cloth hanging from the chin bellies forward a little
     const jw = add(jaw, [1.2, 4.5]), fe = hoodEdge(4), belly = up * Math.min(1, bib / 12) * 1.8;
     const hood = (belly > .05 ? [fe, [fe[0] + (jw[0] - fe[0]) * .42 + belly, fe[1] + (jw[1] - fe[1]) * .42], jw] : [fe, jw]).concat(rimPts, beakTop, [hh(C1), hh(C2), hh(C3), hh(C4), dn(hh(B1), .4), dn(hh(B2), .8), dn(hh(B3), 1), pouch, hoodEdge(0), hoodEdge(1), hoodEdge(2), hoodEdge(3)]);
-    if (REC) REC.outline = hood;
+    if (REC) (REC.outlines = REC.outlines || {}).hood = hood;
     // a tail from the back of the crown (the liripipe of an old hood): it hangs down his back and swings with the back panel
     if (HD.tail > 0) {
       const L = HD.tail, sw = (fl[1] - CL.fr[1]) * .5, r0 = hh(pl([-20 - .6 * dk - .3 * pk, -13.5 - .3 * dt - .4 * pk], 'c4'));
@@ -529,7 +548,7 @@ const MQ = (() => {
     ctx.restore();
     // drawn up to his neck, the hood lies on his neck and chest, and his near shoulder and arm are nearer to us than it:
     // they are drawn again over it, so the shoulder is clear and the hood's front shows on his chest in front of the arm
-    if (up > 0) { ctx.globalAlpha = Math.min(1, up * 2.5); arm(J.armN, false); ctx.globalAlpha = 1; }
+    if (up > 0) { ctx.globalAlpha = Math.min(1, up * 2.5); arm(J.armN, false); ctx.globalAlpha = 1; strapOn(Math.min(1, up * 2.5)); }
     ctx.restore();
   }
 
