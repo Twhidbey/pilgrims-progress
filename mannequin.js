@@ -42,9 +42,11 @@ const MQ = (() => {
   //   sack:   size, high (how low on his back it is tied), round (how far it stands out)
   //   gait:   step, bob, rock, swagger, arm (swing), bend (the elbow's flexing)
   const HOOD = { beak: 5.6, droop: 0, top: 3.6, peak: 0, back: 9, hang: 0, rim: 0, cape: 0, head: 1, bow: .27 };
-  const FACE = { nose: 1, chin: 1, brow: 1 }, SHOE = { toe: 1, point: 0, lift: 0, bulk: 1 }, LEG = { calf: 1, ankle: 1, shaft: 1.2 };
-  const BUILD = { legs: 1, arms: 1, girth: 1, lean: .075 }, ROBE = { hem: 0, flare: 1, full: 1 }, SLEEVE = { width: 23, drop: 1, len: 7 };
-  const SACK = { size: 1, high: 0, round: 1 }, GAIT = { step: 93, bob: 3.8, rock: .022, swagger: .018, arm: .12, bend: .25 };
+  // THE OWNER'S OWN CHOICE (sent as a link from the lab's sliders): face, shoe, leg, build, robe, sleeve and sack below.
+  // Before it they were: face 1, 1, 1; shoe 1, 0, 0, 1; leg 1, 1, 1.2; build 1, 1, 1, .075; robe 0, 1, 1; sleeve 23, 1, 7; sack 1, 0, 1.
+  const FACE = { nose: .75, chin: 1.1, brow: 1.5 }, SHOE = { toe: .86, point: .35, lift: .4, bulk: .88 }, LEG = { calf: 1.08, ankle: .92, shaft: 2.1 };
+  const BUILD = { legs: 1.04, arms: 1.08, girth: 1.11, lean: .135 }, ROBE = { hem: -2, flare: 1, full: .98 }, SLEEVE = { width: 13, drop: 1.1, len: 0 };
+  const SACK = { size: 1.43, high: -.06, round: 1.05 }, GAIT = { step: 93, bob: 3.8, rock: .022, swagger: .018, arm: .12, bend: .25 };
   const DIM = { hood: HOOD, face: FACE, shoe: SHOE, leg: LEG, build: BUILD, robe: ROBE, sleeve: SLEEVE, sack: SACK, gait: GAIT };
   // the body's side profile: along each part (0 at its top joint, 1 at its lower), how far its front and its back stand from the bone
   const BODY = {
@@ -264,7 +266,7 @@ const MQ = (() => {
     return ANIMS;
   }
   async function load(url) {
-    walk();
+    refresh();
     try { const d = await (await fetch(url || 'assets/mannequin.json')).json(); for (const k in d.anims) add_(k, Object.assign({ label: 'The walk measured from his frames' }, d.anims[k])); } catch (e) { }
     return ANIMS;
   }
