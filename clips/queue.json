@@ -231,29 +231,41 @@
    },
    "seconds": 4,
    "prompt": "A strong plain man in a long brown coat puts a steel helmet on his head and draws his sword, then strides forward to the RIGHT, determined.",
-   "status": "todo"
+   "status": "done",
+   "via": "modal",
+   "made": "2026-11-20 16:10 UTC",
+   "frames": 65,
+   "secs": 144
   },
   {
    "id": "christian-p-walk",
-   "status": "todo",
+   "status": "done",
    "uses": "Level 4: the dark passages between rooms and leaving the house, in the repainted figures of build 351 (the old walks no longer match them)",
    "first": {
     "src": "assets/room-christian-p.webp",
     "flip": true
    },
    "seconds": 4,
-   "prompt": "A pilgrim in a worn hooded cloak with a great bundle tied with rope on his back walks slowly and steadily to the RIGHT, bent a little under the weight, his hands empty. The camera moves along with him and does NOT zoom: he stays in the centre of the frame at exactly the same size, his whole body always visible; he walks on the spot in the frame with even, regular steps, so the walk can loop."
+   "prompt": "A pilgrim in a worn hooded cloak with a great bundle tied with rope on his back walks slowly and steadily to the RIGHT, bent a little under the weight, his hands empty. The camera moves along with him and does NOT zoom: he stays in the centre of the frame at exactly the same size, his whole body always visible; he walks on the spot in the frame with even, regular steps, so the walk can loop.",
+   "via": "modal",
+   "made": "2026-11-20 16:12 UTC",
+   "frames": 65,
+   "secs": 100
   },
   {
    "id": "interp-p-walk",
-   "status": "todo",
+   "status": "done",
    "uses": "Level 4: the dark passages between rooms and leaving the house, in the repainted figures of build 351 (the old walks no longer match them)",
    "first": {
     "src": "assets/room-interpreter-p.webp",
     "flip": true
    },
    "seconds": 4,
-   "prompt": "An old grave kind man in a long dark gown and a dark skull-cap walks slowly and steadily to the RIGHT, his hands folded in front of him, an unhurried dignified walk. The camera moves along with him and does NOT zoom: he stays in the centre of the frame at exactly the same size, his whole body always visible; he walks on the spot in the frame with even, regular steps, so the walk can loop."
+   "prompt": "An old grave kind man in a long dark gown and a dark skull-cap walks slowly and steadily to the RIGHT, his hands folded in front of him, an unhurried dignified walk. The camera moves along with him and does NOT zoom: he stays in the centre of the frame at exactly the same size, his whole body always visible; he walks on the spot in the frame with even, regular steps, so the walk can loop.",
+   "via": "modal",
+   "made": "2026-11-20 16:14 UTC",
+   "frames": 65,
+   "secs": 91
   },
   {
    "id": "christian-oil-look",
@@ -268,7 +280,11 @@
    },
    "seconds": 3,
    "prompt": "The pilgrim with the great bundle on his back stands still, slowly lifts his head to look up at something high in front of him, holds the look a moment in wonder, then slowly lowers his head again.",
-   "status": "todo"
+   "status": "done",
+   "via": "modal",
+   "made": "2026-11-20 16:15 UTC",
+   "frames": 49,
+   "secs": 72
   },
   {
    "id": "interp-nod",

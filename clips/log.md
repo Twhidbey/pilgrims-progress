@@ -13,3 +13,7 @@
 - 2026-11-19 19:49 UTC room4-living: done, 49 frames, 17 s
 - 2026-11-19 19:49 UTC christian-burden-falls: stopped, the free daily GPU allowance is used up (You have exceeded your free ZeroGPU quota (90s requested vs. 2s left). Try again in 23:57:35. Subscribe to Hugging Face PRO to get 40 min of ZeroGPU quota a day - https://huggingface.co/subscribe/pro?from=ZeroGPU)
 - 2026-11-20 05:09 UTC christian-burden-falls: done on modal, 81 frames, 214 s, about $0.17
+- 2026-11-20 16:10 UTC brave-arm: done on modal, 65 frames, 143 s, about $0.11
+- 2026-11-20 16:12 UTC christian-p-walk: done on modal, 65 frames, 100 s, about $0.08
+- 2026-11-20 16:14 UTC interp-p-walk: done on modal, 65 frames, 91 s, about $0.07
+- 2026-11-20 16:15 UTC christian-oil-look: done on modal, 49 frames, 72 s, about $0.06
