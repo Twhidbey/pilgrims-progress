@@ -8,7 +8,7 @@
 // THE LAB UPDATES ITSELF, as the game does (the owner's phone kept showing an old saved copy: "I don't see new sliders"): it asks for
 // its newest copy, and if that copy's number is higher it reloads once onto ?v=N, keeping the measures in the address.
 // Bump LAB on every push that changes the lab; the number shows at the top of the page.
-const LAB = 23;
+const LAB = 24;
 fetch(location.pathname + '?fresh=' + Date.now(), { cache: 'no-store' }).then(r => r.text()).then(t => {
   const m = /const LAB = (\d+);/.exec(t), now = (/[?&]v=(\d+)/.exec(location.search) || [])[1];
   if (m && +m[1] > LAB && +now !== +m[1]) location.replace(location.pathname + '?v=' + m[1] + location.hash);
@@ -111,13 +111,15 @@ fetch(location.pathname + '?fresh=' + Date.now(), { cache: 'no-store' }).then(r 
     ['sleeve', 'His sleeves', 'body', [['width', 'Width at the cuff', 12, 36, .5], ['drop', 'How much they hang', 0, 2.5, .05], ['len', 'How far over the hand', 0, 16, .5]]],
     ['hands', 'His hands', 'hand', [['size', 'Size', .7, 1.4, .01], ['width', 'Width', .7, 1.4, .01], ['fingers', 'Length of the fingers', .6, 1.4, .01], ['curl', 'How far the fingers curl', 0, 2, .05], ['thumb', 'The thumb', .5, 1.5, .02]],
       [['Open hand', { curl: .3 }], ['Loosely closed', { curl: 1.7 }], ['Big working hands', { size: 1.15, width: 1.15 }]]],
+    ['cape', 'His cape', 'body', [['fall', 'How far it falls over his arm', 0, 44, 1], ['len', 'How low it hangs behind', .5, 1.35, .01], ['full', 'How far it stands out behind', .8, 1.6, .02], ['wrap', 'How far round his side it comes', .2, .8, .01], ['slant', 'Its hem: level, or slanting to a point behind', 0, 1.5, .05]],
+      [['Short, over the shoulder', { fall: 30, len: .7 }], ['Long and full', { len: 1.2, full: 1.35, wrap: .55 }], ['Level hem', { slant: 0 }]]],
     ['sack', 'His burden', 'body', [['size', 'Size', .6, 1.5, .01], ['high', 'How low on his back it is tied', -.06, .3, .01], ['round', 'How far it stands out', .6, 1.5, .01],
       ['top', 'The bundle on top: its size (0 = none)', 0, 1.6, .02], ['set', 'The bundle on top: back or forward', -14, 12, .5], ['flat', 'The bundle on top: a flat roll or a round ball', .5, 1.6, .02],
       ['back', 'How far the whole pack sits back from him', -4, 16, .5]],
       [['No bundle on top', { top: 0 }], ['A flat roll', { top: 1, flat: .62 }], ['A big round bundle', { top: 1.25, flat: 1.25 }]]],
     ['gait', 'His walk', 'body', [['step', 'Length of his step', 60, 130, 1], ['bob', 'Up and down', 0, 7, .1], ['rock', 'Torso rocking', 0, .06, .002], ['swagger', 'Swagger (once a stride)', 0, .05, .002], ['arm', 'Arm swing', 0, .35, .01], ['bend', 'Elbow flexing', 0, .6, .01]]]
   ];
-  const DEF = JSON.parse(JSON.stringify(MQ.DIM)), REBUILD = { build: 1, robe: 1, gait: 1, hands: 1 };
+  const DEF = JSON.parse(JSON.stringify(MQ.DIM)), REBUILD = { build: 1, robe: 1, gait: 1, hands: 1, cape: 1 };
   let view = 'head', frozen = false;
   const fmt = (v, st) => (+v).toFixed(st < .01 ? 3 : st < .1 ? 2 : st < 1 ? 1 : 0).replace(/(\.\d*?)0+$/, '$1').replace(/\.$/, '');
   location.hash.replace(/([a-z]+)=([-\d.,]+)/g, (all, g, list) => { const G = GROUPS.find(x => x[0] === g); if (G) list.split(',').forEach((v, i) => { if (G[3][i] && v !== '' && isFinite(+v)) MQ.DIM[g][G[3][i][0]] = +v; }); });

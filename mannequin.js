@@ -23,7 +23,7 @@
 //    them; left alone it swings back like a weight on a string, late, the hem latest (follow-through, overlapping
 //    action); going forward the air holds it back (drag); the burden sags a beat after the body.
 // 5. THE CLOTHES (figure()) lie on that body with a little ease, as a habit sits on a man: a tunic hung from the
-//    shoulders and girded with a knotted cord, wide sleeves, a hood with its shoulder cape, a back panel, the sack bound
+//    shoulders and girded with a knotted cord, wide sleeves, a hood, a cape over his near shoulder and down his back, the sack bound
 //    high on his back, hose and soft shoes. Dark, quiet tones: he is a silhouette first.
 const MQ = (() => {
   const K = { ax: 93, ground: 295, hip: [82, 150], neck: [94, 56], head: [104, 31], shoulder: [87, 68],
@@ -49,8 +49,10 @@ const MQ = (() => {
   //   sack:   size, high (how low on his back it is tied), round (how far it stands out); the smaller bundle tied on top of
   //           it: top (its size, 0 = none), set (further back or forward), flat (a flat roll or a round ball)
   //   hands:  size, width, fingers (their length), curl (0 = straight; more = further back toward the palm), thumb
+  //   cape:   fall (how far it falls over his upper arm), len (how low it hangs behind), full (how far it stands out behind),
+  //           wrap (how far round his side it comes), slant (its hem level, or slanting to a point behind)
   //   gait:   step, bob, rock, swagger, arm (swing), bend (the elbow's flexing)
-  const HOOD = { beak: 2, droop: -2.8, top: 2.1, peak: 0, back: 6.8, hang: 8.2, rim: -2.8, cape: -12, head: .99, bow: .38, tilt: .1, rake: .8, size: .96, tail: 0, roll: 0, bib: 20,
+  const HOOD = { beak: 1.6, droop: -2.6, top: 2.3, peak: 0, back: 6.8, hang: 8.2, rim: -2.8, cape: -12, head: .99, bow: .38, tilt: .1, rake: .8, size: .96, tail: 0, roll: 0, bib: 20,
     sharp: .1, hook: -1, thick: 4.6, sweep: .2, cut: 0 };
   // THE OWNER'S OWN CHOICE (sent as links from the lab's sliders): the hood's first sixteen measures above, but cape, which
   // they asked to be drawn up off the shoulder (before any choice: 5.6, 0, 3.6, 0, 9, 0, 0, 0, 1, .27, then 0, 0, 1, 0, 0, 0), and face, shoe, leg, build, robe, sleeve and the sack's first three below.
@@ -58,8 +60,8 @@ const MQ = (() => {
   const FACE = { nose: .75, chin: 1.1, brow: 1.5, tip: -.5, bridge: .3, lips: .65, jaw: .2, forehead: .2 }, SHOE = { toe: .86, point: .35, lift: .4, bulk: .88 }, LEG = { calf: 1.08, ankle: .92, shaft: 2.1 };
   const BUILD = { legs: 1.07, arms: .98, girth: .98, lean: 0 }, ROBE = { hem: -12, flare: 0, full: 1.17 }, SLEEVE = { width: 13, drop: 1.1, len: 0 };
   const SACK = { size: 1.5, high: -.05, round: 1.14, top: .8, set: 6.5, flat: 1.1, back: 7 }, GAIT = { step: 95, bob: 2.7, rock: .032, swagger: .016, arm: .02, bend: .16 };
-  const HANDS = { size: 1, width: 1, fingers: 1, curl: 1, thumb: 1 };
-  const DIM = { hood: HOOD, face: FACE, shoe: SHOE, leg: LEG, build: BUILD, robe: ROBE, sleeve: SLEEVE, hands: HANDS, sack: SACK, gait: GAIT };
+  const HANDS = { size: 1, width: 1, fingers: 1, curl: .3, thumb: 1 }, CAPE = { fall: 24, len: 1.04, full: 1.1, wrap: .42, slant: .6 };
+  const DIM = { hood: HOOD, face: FACE, shoe: SHOE, leg: LEG, build: BUILD, robe: ROBE, sleeve: SLEEVE, hands: HANDS, cape: CAPE, sack: SACK, gait: GAIT };
   // SHAPED BY HAND: each named point of the hood's outline may carry an offset of its own, [dx, dy] in that point's own frame (his
   // head's, or his neck's), laid on top of what the measures give; so a shape drawn by hand goes with him as he moves. The lab's
   // draggable points set them. Names: r0..r5 the rim from under the jaw up to under the tip, tip, tt the tip's top, cf the front
@@ -285,7 +287,7 @@ const MQ = (() => {
     const dy = (K0.thigh + K0.shin) - (K.thigh + K.shin); K.hip[1] = K0.hip + dy; K.neck[1] = K0.neck + dy; K.head[1] = K0.head + dy; K.shoulder[1] = K0.shoulder + dy;
     // the cloth's rest: a longer or shorter robe, more or less flared, fuller or closer; it hangs from a deeper or a slighter body
     const k = (96 + ROBE.hem) / 96, w = ROBE.full * BUILD.girth;
-    CL.d = CL0.d.map(v => v * k); CL.fd = CL0.fd.map(v => v * k); CL.fr = CL0.fr.map(v => v * w);
+    CL.d = CL0.d.map(v => v * k); CL.fd = CL0.fd.map(v => v * k * CAPE.len); CL.fr = CL0.fr.map((v, i) => v * w * (1 + (CAPE.full - 1) * (i + 1) / 3));      // the cape: longer or shorter, and fuller toward its hem
     CL.rf = CL0.rf.map(v => (CL0.rf[0] + (v - CL0.rf[0]) * ROBE.flare) * w); CL.rb = CL0.rb.map(v => (CL0.rb[0] + (v - CL0.rb[0]) * ROBE.flare) * w);
     walk(); for (const name in ANIMS) if (ANIMS[name].track) add_(name, ANIMS[name]);
     return ANIMS;
@@ -327,7 +329,7 @@ const MQ = (() => {
   }
   const leaf = m => t => m * Math.pow(Math.sin(Math.PI * Math.min(1, Math.max(0, t))), .7);      // thin at both ends
   // dark, quiet tones: a silhouette first, with only a trace of form inside it (LOOK.detail 0 = one flat tone)
-  const TONE = { robe: .2, robeSh: .165, robeDk: .156, robeLt: .226, flap: .178, hose: .128, hoseFar: .104, shoe: .15, shoeFar: .118, sack: .176, sackSh: .146, sackLt: .2, strap: .118, hood: .206, hoodSh: .17, hoodLt: .232, face: .262, hand: .25, handFar: .19, sleeve: .222, sleeveFar: .15, belt: .12 };
+  const TONE = { robe: .2, robeSh: .165, robeDk: .156, robeLt: .226, flap: .178, hose: .128, hoseFar: .104, shoe: .15, shoeFar: .118, sack: .176, sackSh: .146, sackLt: .2, cape: .16, capeSh: .136, capeLt: .186, strap: .118, hood: .206, hoodSh: .17, hoodLt: .232, face: .262, hand: .25, handFar: .19, sleeve: .222, sleeveFar: .15, belt: .12 };
   const LOOK = { detail: 1, base: .185 };
   // his face by its measures: the nose stands out more or less from the line of the face, the brow and the chin likewise
   const skullPts = () => BODY.skull.map((v, i) => {
@@ -481,11 +483,6 @@ const MQ = (() => {
     stroke(ctx, [knot, sk(.66, 4), sk(.67, 26), sk(.675, 48), sk(.68, 64)], t => 1.05 - .2 * t, T('belt'));
     ctx.fillStyle = T('belt'); disc(ctx, knot, 2.6); [36, 47, 58].forEach(d => disc(ctx, sk(.675, d), 1.8));
 
-    // --- the back panel (a habit's scapular hangs from the shoulders, front and back; his shows below the sack): a loose panel hanging down his back, outside the skirt
-    const inX = d => h[0] + lerp(edgeAt(b, CL.rb, d), edgeAt(f, CL.rf, d), .3), o0 = [h[0] + fl[0], h[1] + CL.fd[0]], o1 = [h[0] + fl[1], h[1] + CL.fd[1]], o2 = [h[0] + fl[2], h[1] + CL.fd[2], 1], hk = CL.d[3] / 96, ib = [inX(80 * hk), h[1] + 80 * hk, 1];
-    fill([st(.62, -3), st(.6, -20), [h[0] + Math.min(b[0] - 2, fl[0] + 3), h[1] + 12], o0, o1, o2, [lerp(o2[0], ib[0], .35), o2[1] - 1.5], [lerp(o2[0], ib[0], .7), ib[1] + .5], ib, [inX(54 * hk), h[1] + 54 * hk], [inX(26 * hk), h[1] + 26 * hk]], T('flap'));
-    stroke(ctx, [st(.66, -4), [inX(26 * hk), h[1] + 26 * hk], [inX(54 * hk), h[1] + 54 * hk], [ib[0], ib[1]]], t => 1.5 * Math.min(1, 3 * t) * (1 - .4 * t), T('robeDk'));      // the dark fold where it lies on the skirt
-
     // --- the burden, in two tiers as in his painted frames: a heavy sack bound on his back, and a smaller bundle tied on top
     //     of it behind his hood. The sack hangs from its tie behind his shoulders, its weight low, its inner side flat
     //     against him; it sags a beat after the body and spreads a little as it does; the bundle on top jolts a little more.
@@ -493,7 +490,7 @@ const MQ = (() => {
     const sack = [[3, 3], [6.5, 20], [7, 45], [3.5, 62], [-9, 73.5], [-27, 70.5], [-38, 57], [-36.5, 39], [-28.5, 20], [-17, 7], [-8, 2]].map(sp);
     // where the pack sits back from him, its mouth is drawn up to his shoulders by what ties it: this closes the chink of sky
     // that would otherwise flicker between his neck, the sack and the bundle (drawn first, so everything else lies over it)
-    fill([[...sp([-9, -1]), 1], [...sp([4, -2.5]), 1], [...np([-8, -3]), 1], [...np([-9, 9]), 1], [...sp([6.5, 14]), 1], [...sp([-4, 7]), 1]], T('sack'));
+    fill([[...sp([-9, -1]), 1], [...sp([4, -2.5]), 1], [...np([-8, -3]), 1], [...np([-9, 9]), 1], [...sp([6.5, 14]), 1], [...sp([-4, 7]), 1]], T('cape'));      // (between his back and the pack it is the cape that shows)
     fill(sack, T('sack'));
     ctx.save(); ctx.beginPath(); curve(ctx, sack, true); ctx.clip();
     fill([[-46, 38], [-37, 56], [-23, 65], [-5, 64], [8, 54], [12, 80], [-48, 80]].map(sp), T('sackSh'));      // its underside in shade
@@ -521,6 +518,33 @@ const MQ = (() => {
       stroke(ctx, [bm([BL[6][0], BL[6][1] + .1 * ry]), bm(add(mx(BL[5], BL[4], .25), [0, .05 * ry])), bm(add(mx(BL[4], BL[3], .5), [0, .06 * ry]))], leaf(1.3), T('sackSh'));      // its shadow on the sack, under its lower edge
     }
 
+    // --- HIS CAPE (owner: "can you draw cape over his shoulder and between his back and pack and down", then "see how it looks on
+    //     original sprite?"). In his painted frames it is ONE LONG BAND of cloth: it lies over the top of his near shoulder, runs
+    //     down behind his arm, where it shows as a strip between his arm and the pack, and below the pack hangs on down outside
+    //     the skirt almost to the hem, ending in a point behind, with long folds running its whole length. So here: this is its
+    //     body, drawn after the pack and before the arm (the strip lies over the pack's front edge, as it does in the painting);
+    //     capeTop, further on, is the part over the shoulder, drawn over the arm. Its back edge below the pack is the cloth's own
+    //     swinging edge (fl: it flies and settles later than the skirt); its hem slants up from the point to its front edge.
+    const cw = CAPE.wrap, cX = d => h[0] + lerp(edgeAt(b, CL.rb, d), edgeAt(f, CL.rf, d), cw), cd = CL.fd[2], tw = o => lerp(-19, 22, cw) * o, cfd = cd * (1 - .3 * CAPE.slant);
+    const o0 = [h[0] + fl[0], h[1] + CL.fd[0]], o1 = [h[0] + fl[1], h[1] + CL.fd[1]], o2 = [h[0] + fl[2], h[1] + cd, 1], cf = [cX(cfd), h[1] + cfd, 1], c12 = [h[0] + Math.min(b[0] - 2, fl[0] + 3), h[1] + 12];
+    const capeBack = [st(.12, -22.5), st(.3, -27.5), st(.5, -27), st(.68, -25), c12, o0, o1], hemPts = [[lerp(o2[0], cf[0], .3), lerp(o2[1], cf[1], .42)], [lerp(o2[0], cf[0], .68), lerp(o2[1], cf[1], .8) + 1]];
+    const capeBody = [np([-11.5, -3])].concat(capeBack, [o2], hemPts, [cf, [cX(cfd * .66), h[1] + cfd * .66], [cX(cfd * .36), h[1] + cfd * .36], [cX(10), h[1] + 10], st(.7, tw(1)), st(.4, tw(.7)), yk(1, 8), np([3, 0])]);
+    const capeEdge = d => { const D = CL.fd; return h[0] + (d <= D[0] ? lerp(Math.min(b[0] - 2, fl[0] + 3), fl[0], Math.max(0, (d - 12) / (D[0] - 12))) : d <= D[1] ? lerp(fl[0], fl[1], (d - D[0]) / (D[1] - D[0])) : lerp(fl[1], fl[2], Math.min(1, (d - D[1]) / (D[2] - D[1])))); };
+    // its shadow on the skirt, in front of its edge and under its hem (kept on the robe)
+    ctx.save(); robe(); ctx.clip();
+    stroke(ctx, [[cX(14) + 1.6, h[1] + 14], [cX(cfd * .36) + 1.6, h[1] + cfd * .36], [cX(cfd * .66) + 1.6, h[1] + cfd * .66], [cf[0] + 1.5, cf[1] + 1.2], [hemPts[1][0] + .6, hemPts[1][1] + 2.2], [hemPts[0][0] + .4, hemPts[0][1] + 2.2], [o2[0], o2[1] + 2]], t => 1.5 * Math.min(1, 5 * t), T('robeDk'));
+    ctx.restore();
+    fill(capeBody, T('cape'));
+    ctx.save(); ctx.beginPath(); curve(ctx, capeBody, true); ctx.clip();
+    edge(capeBack.concat([[o2[0], o2[1]]]), 9, T('capeSh'));      // its back in shade
+    edge([[o2[0], o2[1]]].concat(hemPts, [[cf[0], cf[1]]]), 3.4, T('capeSh'));      // the hem's weight
+    edge([[cX(10), h[1] + 10], [cX(cfd * .36), h[1] + cfd * .36], [cX(cfd * .66), h[1] + cfd * .66], [cf[0], cf[1]]], 3, T('capeLt'));      // its front edge, turned a little to the light
+    // long folds running its whole length, from the shoulder down behind the arm to the hem; they open as the cloth swings out behind
+    const fold = (u, wd) => { const up = [st(.16, lerp(-22.5, -4, u)), st(.36, lerp(-27.5, -9, u)), st(.6, lerp(-26, -8, u))], dn = [14, cd * .36, cd * .66, lerp(cd, cfd, u) - 3].map(d => [lerp(capeEdge(d), cX(d), u), h[1] + d]);
+      stroke(ctx, up.concat(dn), t => wd * Math.min(1, 6 * t) * (1 - .35 * t), T('capeSh')); };
+    fold(.3, 1.25); fold(.62, 1);
+    ctx.restore();
+
     // THE STRAP that holds it (owner: "the strap of his bag cuts through his arm": it ran down his chest and back to the sack, hidden
     // only where the arm lay over it, so it showed on both sides of the arm as if it went through it). Now it goes from the sack up
     // over the top of his shoulder, down in front of the shoulder, and in under his arm, where it ends out of sight; its last
@@ -530,9 +554,21 @@ const MQ = (() => {
       ctx.strokeStyle = T('strap'); ctx.lineWidth = 1.8; ctx.beginPath(); curve(ctx, [sp([3, 2]), yk(-6.6, -7), yk(-.6, -9.5), yk(5.8, -6.8), yk(9.6, .4), af(8, 9.8), af(14, 5.5)]); ctx.stroke(); };
     const strapOn = a => { ctx.save(); ctx.globalAlpha = a; yokePath(); ctx.moveTo(sN[0] + 8.8, sN[1]); ctx.arc(sN[0], sN[1], 8.8, 0, 6.2832, true); ctx.clip(); strap(); ctx.restore(); };
     strap();
+    // the cape over his near shoulder: from the base of his neck it lies over the top of the shoulder and falls behind the upper
+    // arm; its lower edge sweeps from the front of the shoulder down and back across the arm (the cloak is thrown back, so the
+    // arm is free in front of it), to where it goes in under the pack. Its top is fixed to his body (neck and shoulder), its fall
+    // lies on the arm and goes with it. The pack's strap lies over it.
+    const capeTop = () => { if (CAPE.fall <= 0) return;
+      const A = J.armN, ul = Math.hypot(A.el[0] - A.sh[0], A.el[1] - A.sh[1]) || 1, u = [(A.el[0] - A.sh[0]) / ul, (A.el[1] - A.sh[1]) / ul], af = (d, o) => [A.sh[0] + u[0] * d + u[1] * o, A.sh[1] + u[1] * d - u[0] * o], F = CAPE.fall, g = Math.min(1, F / 10);
+      const low = [af(F + 3, -10.6), af(F * .84 + 1, -3.5), af(F * .52, 4.4), af(F * .2 + 1.5 * g, 9.3)];
+      stroke(ctx, low.map(q => [q[0] + .4, q[1] + 1.5]), leaf(1.4), T('robeDk'));      // its shadow on the sleeve
+      fill([np([-11.5, -3]), yk(-9.6, -6.6), yk(-10.8, 0), af(F * .55 + 2, -10.9), [...low[0], 1], low[1], low[2], low[3], yk(9.9, -2.6), yk(7.6, -7.4), np([7.2, 2.4]), np([-1, -3.4])], T('cape'));
+      stroke(ctx, [yk(-7.6, -5.4), yk(-9, 2), af(F * .55 + 2, -8.9), af(F + 1, -8.6)], t => 2.2 * Math.min(1, 4 * t) * (1 - .3 * t), T('capeSh'));      // its back in shade
+      if (F > 12) stroke(ctx, [yk(1.5, -6.5), af(F * .3, .5), af(F * .68, -3.2)], leaf(.9), T('capeSh'));      // a fold from the shoulder
+      stroke(ctx, low.slice(1), t => .7, T('capeLt')); };      // its lower edge, turned a little to the light
     // --- near arm; then his head. His face shows in the hood as a lit profile (brow, nose, lips, chin); the hood's rim
     //     throws its shadow down the cheek and into the hollow of the eye, and the neck is in shade under the jaw
-    arm(J.armN, false); yoke();
+    arm(J.armN, false); yoke(); capeTop();
     ctx.fillStyle = T('hoodSh'); part(ctx, n, hp([-2, 12]), [[0, 6.5, 7], [1, 6, 6.5]], 0); fill(skullPts().map(v => v[2] ? [...hp(v), 1] : hp(v)), T('face'));
     const HD = HOOD, bk = HD.beak, tipY = -9 + HD.droop, dt = HD.top - 3.6, dk = HD.back - 9, rm = HD.rim, cl = HD.cape, pk = HD.peak, hg = HD.hang, bib = HD.bib;
     // a point of the hood on his head: the whole hood may be larger or closer, and tipped forward or pushed back
@@ -590,7 +626,7 @@ const MQ = (() => {
     ctx.restore();
     // drawn up to his neck, the hood lies on his neck and chest, and his near shoulder and arm are nearer to us than it:
     // they are drawn again over it, so the shoulder is clear and the hood's front shows on his chest in front of the arm
-    if (up > 0) { ctx.globalAlpha = Math.min(1, up * 2.5); arm(J.armN, false); ctx.globalAlpha = 1; strapOn(Math.min(1, up * 2.5)); }
+    if (up > 0) { ctx.globalAlpha = Math.min(1, up * 2.5); arm(J.armN, false); capeTop(); ctx.globalAlpha = 1; strapOn(Math.min(1, up * 2.5)); }
     ctx.restore();
   }
 
