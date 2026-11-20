@@ -4,6 +4,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>The mannequin</title>
+<script>
+// THE LAB UPDATES ITSELF, as the game does (the owner's phone kept showing an old saved copy: "I don't see new sliders"): it asks for
+// its newest copy, and if that copy's number is higher it reloads once onto ?v=N, keeping the measures in the address.
+// Bump LAB on every push that changes the lab; the number shows at the top of the page.
+const LAB = 21;
+fetch(location.pathname + '?fresh=' + Date.now(), { cache: 'no-store' }).then(r => r.text()).then(t => {
+  const m = /const LAB = (\d+);/.exec(t), now = (/[?&]v=(\d+)/.exec(location.search) || [])[1];
+  if (m && +m[1] > LAB && +now !== +m[1]) location.replace(location.pathname + '?v=' + m[1] + location.hash);
+}).catch(() => {});
+</script>
 <style>
   html, body { margin: 0; background: #23211f; color: #d8d2c6; font: 15px/1.4 Georgia, serif; -webkit-text-size-adjust: 100%; }
   h1 { font-size: 18px; font-weight: normal; margin: 12px 14px 2px; }
@@ -31,7 +41,7 @@
 </style>
 </head>
 <body>
-<h1>The mannequin: a skeleton that walks, and clothes that follow it</h1>
+<h1>The mannequin: a skeleton that walks, and clothes that follow it <span id="labv" style="color:#a59f93;font-size:13px"></span></h1>
 <p>Left: the bare mannequin and its bones (green: the shoulder line and the hip line, which turn against each other as he walks). Middle: Christian's clothes built on it, a dark quiet silhouette. Right: his old picture frames, only to compare the feel. Below: walking at the game's size.</p>
 <canvas id="c" width="1500" height="700"></canvas>
 <div id="info"></div>
@@ -51,7 +61,7 @@
 <div class="hoodbox"><div id="hwrap"><canvas id="h" width="720" height="500"></canvas><div id="handbar" class="bar"><span>Drag a point: the edge runs through the points. You can start your finger just beside a point.</span><button id="handundo">Undo</button><button id="handclear">Points back as they were</button><button id="handdone">Done</button></div></div><div id="sliders"></div></div>
 <textarea id="code" readonly rows="3"></textarea>
 <div class="bar"><button id="copy">Copy the link to these measures</button><button id="still">Close-up: walking</button><button id="allback">Everything back as it was</button></div>
-<script src="mannequin.js"></script>
+<script>document.getElementById('labv').textContent = '· lab ' + LAB; document.write('<script src="mannequin.js?v=' + LAB + '"><\/script>');</script>
 <script>
 (async () => {
   const cv = document.getElementById('c'), ctx = cv.getContext('2d'), wv = document.getElementById('w'), wx = wv.getContext('2d');
