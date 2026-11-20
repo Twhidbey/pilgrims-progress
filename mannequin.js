@@ -172,7 +172,7 @@ const MQ = (() => {
   // rises and the toes bend back, the band under the foot is wound tight and the arch stands higher than at rest
   // (the anatomists' "windlass").
   // u: 0..1 round one stride (two steps), the far heel striking at 0. A foot's touching point never slides.
-  const PITCH = [[0, 15], [.09, 0], [.36, 0], [.5, -16], [.62, -46], [.71, -58], [.83, -28], [.93, 3], [1, 15]];
+  const PITCH = [[0, 18], [.08, 0], [.36, 0], [.5, -12], [.62, -40], [.69, -52], [.78, -22], [.87, 2], [.94, 14], [1, 18]];
   const ARCH = [[0, 1], [.1, .62], [.36, .55], [.5, 1.05], [.62, 1.3], [.76, 1.05], [1, 1]];
   // a value that runs through its keys round the stride WITHOUT STOPPING AT EACH ONE (owner: "he has a little stutter to his step":
   // each stretch between two keys used to ease in and out by itself, so the foot's roll paused at every key). One smooth line
@@ -196,17 +196,17 @@ const MQ = (() => {
       const p = key(g, PITCH) / DEG, flat = o.strike - 2 * o.step * g, pv = p > 0 ? K.heel : K.ball, r = pitched(pv, p);
       return [K.hip[0] + flat + pv[0] - r[0], gy - Math.max(pitched(K.heel, p)[1], pitched(K.ball, p)[1]), p];
     };
-    // THE FOOT IN THE AIR MEETS THE GROUND AT THE GROUND'S OWN PACE. It used to end its swing standing still against his BODY, so
-    // it came down still travelling forward and stopped dead at the strike. Now it reaches a little past its landing place and is
-    // already drawing back with the ground as the heel comes down (the gait laboratories' "swing leg retraction"), and it comes
-    // down softly. It still leaves the ground at his body's pace (a freed foot is whipped forward at once: tried, a foot that
-    // trailed on for a moment after the toe left made the knee straighten and bend again, a small hitch).
-    const T = 1 - o.stance, dg = 1e-4, a = planted(o.stance), b = planted(0), m0 = 0, m1 = (planted(dg)[0] - b[0]) / dg * T;
+    // THE FOOT IN THE AIR SLOWS BEFORE IT LANDS, BUT IT LANDS. It used to end its swing standing still against his BODY, so it
+    // came down still travelling forward at his full pace and stopped dead at the strike (part of the stutter). Joined to the
+    // ground's own pace it hovered, drew back and was SET down (part of the tiptoe). So: half of each. It leaves the ground at
+    // his body's pace (a freed foot is whipped forward at once: a foot that trailed on after the toe left made the knee
+    // straighten and bend again), lifts off softly, and comes down at a steady rate onto the heel, the toe well up.
+    const T = 1 - o.stance, dg = 1e-4, a = planted(o.stance), b = planted(0), m0 = 0, m1 = .5 * (planted(dg)[0] - b[0]) / dg * T;
     const feet = LEGS.map(([k]) => {
       const g = frac(u + (k === 'N' ? .5 : 0));
       if (g <= o.stance) return planted(g);
       const q = (g - o.stance) / T, q2 = q * q, q3 = q2 * q, p = key(g, PITCH) / DEG, up = Math.sin(Math.PI * q);
-      return [(2 * q3 - 3 * q2 + 1) * a[0] + (q3 - 2 * q2 + q) * m0 + (3 * q2 - 2 * q3) * b[0] + (q3 - q2) * m1, gy - Math.max(pitched(K.heel, p)[1], pitched(K.ball, p)[1]) - o.lift * Math.pow(up, 1.4), p];
+      return [(2 * q3 - 3 * q2 + 1) * a[0] + (q3 - 2 * q2 + q) * m0 + (3 * q2 - 2 * q3) * b[0] + (q3 - q2) * m1, gy - Math.max(pitched(K.heel, p)[1], pitched(K.ball, p)[1]) - o.lift * Math.pow(up, q < .5 ? 1.4 : 1), p];
     });
     const sw = o.swagger / .018, hip = [K.hip[0] + 1.2 * Math.cos(TAU * (2 * u - .6)) + sw * Math.cos(TAU * (u - .71)), K.hip[1] + o.sink + o.bob + o.bob * Math.cos(TAU * (2 * u - .21)) + .6 * sw * Math.cos(TAU * (u - .06))];
     const L = K.thigh + K.shin - 1.2;      // a leg at its longest (the knee never quite straight)
@@ -215,21 +215,27 @@ const MQ = (() => {
     feet.forEach((f, i) => { const e = lineEnd(K.hpw, G[1], G[3], i ? 1 : -1), dx = f[0] - hip[0] - e[0]; if (Math.abs(dx) < L) need = Math.max(need, f[1] - Math.sqrt(L * L - dx * dx) - e[1]); });
     return { feet, hip, G, sw, need };
   }
-  // THE HIP'S HEIGHT IS ONE SMOOTH LINE ROUND THE STRIDE (owner: "he has a little stutter to his step"). The hip rides by its own
-  // bob, but must sink wherever a leg could not otherwise reach its foot. That used to be worked out afresh at each frame (the
-  // lower of the two), so the line had corners: measured, he dropped 4 units in two frames at every heel strike and then
-  // wavered, and his knees, which a nearly straight leg bends a great deal for a small change of height, jumped about
-  // (15, 25, 28, 24, 29 degrees). Now the whole stride's line is worked out first (304 places), then smoothed over about a
-  // frame each way, held down again wherever a leg needs it, and so on a few times; a last smoothing, and the whole line is
-  // lowered by the little that is still wanted, so it is smooth everywhere and every foot is still reached.
+  // THE HIP'S HEIGHT IS ONE SMOOTH LINE ROUND THE STRIDE, AND HIS WEIGHT COMES DOWN ONTO THE HEEL. Two faults, two fixes.
+  // (1) "he has a little stutter to his step": the hip's height used to be worked out afresh at each frame (its own bob, or
+  // lower wherever a leg could not otherwise reach its foot), so its line had corners: he dropped 4 units in two frames at
+  // every heel strike and then wavered, and his knees jumped about (15, 25, 28, 24, 29 degrees). So the whole stride's line is
+  // made first, as one smooth curve.
+  // (2) "now it kinda looks like he's tip toeing": my first smooth line was lowest exactly AS the heel touched, so he let
+  // himself down before each step and set the foot on the ground with no weight in it, as a man creeps. A walker FALLS onto his
+  // front foot (Williams: CONTACT, then the DOWN two or three frames later, the body at its lowest as the weight comes on and
+  // the knee gives, then up over the leg to the PASSING position). So the curve is built from those places: highest at the
+  // passing position, as high as a nearly straight leg lets it; still coming down at the heel strike, where it is just low
+  // enough for both legs to reach; lowest a little after it (pLo); then up again, quicker than it came down. The owner's "bob"
+  // deepens the DOWN. Last, the whole line is lowered by whatever little any leg still wants, so every foot is reached.
   function hipLine(o) {
-    const M = 304, need = new Float64Array(M); let c = new Float64Array(M);
-    for (let j = 0; j < M; j++) { const g = stride(j / M, o); need[j] = g.need + .1; c[j] = Math.max(g.hip[1], need[j]); }
-    const sig = M / 38 * .9, R = Math.ceil(3 * sig), w = []; let ws = 0;
-    for (let k = -R; k <= R; k++) { w.push(Math.exp(-k * k / (2 * sig * sig))); ws += w[w.length - 1]; }
-    const smooth = a => { const r = new Float64Array(M); for (let j = 0; j < M; j++) { let t = 0; for (let k = -R; k <= R; k++) t += w[k + R] * a[(j + k + M) % M]; r[j] = t / ws; } return r; };
-    for (let it = 0; it < 10; it++) { c = smooth(c); for (let j = 0; j < M; j++) if (c[j] < need[j]) c[j] = need[j]; }
-    c = smooth(c); let low = 0; for (let j = 0; j < M; j++) low = Math.max(low, need[j] - c[j]);
+    const M = 304, need = new Float64Array(M), c = new Float64Array(M), pLo = .07, pHi = .27, ease = t => (1 - Math.cos(Math.PI * Math.max(0, Math.min(1, t)))) / 2;
+    for (let j = 0; j < M; j++) need[j] = stride(j / M, o).need;
+    const nd = p => need[((Math.round(p * M) % M) + M) % M], fall = .5 + pLo - pHi;
+    const Hi = Math.max(nd(pHi), nd(pHi + .5), nd(pHi - .03), nd(pHi + .47), nd(pHi + .03), nd(pHi + .53)) + .3, N0 = Math.max(nd(0), nd(.5)) + .15;
+    const Lo = Hi + (N0 - Hi) / ease((.5 - pHi) / fall) + .15 * o.bob, sw = o.swagger / .018;
+    for (let j = 0; j < M; j++) { const u = j / M, p = frac(u * 2) / 2;
+      c[j] = (p < pLo ? Hi + (Lo - Hi) * ease((p + .5 - pHi) / fall) : p < pHi ? Lo + (Hi - Lo) * ease((p - pLo) / (pHi - pLo)) : Hi + (Lo - Hi) * ease((p - pHi) / fall)) + .6 * sw * Math.cos(TAU * (u - .06)); }
+    let low = 0; for (let j = 0; j < M; j++) low = Math.max(low, need[j] + .1 - c[j]);
     for (let j = 0; j < M; j++) c[j] += low;
     return c;
   }
