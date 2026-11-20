@@ -8,7 +8,7 @@
 // THE LAB UPDATES ITSELF, as the game does (the owner's phone kept showing an old saved copy: "I don't see new sliders"): it asks for
 // its newest copy, and if that copy's number is higher it reloads once onto ?v=N, keeping the measures in the address.
 // Bump LAB on every push that changes the lab; the number shows at the top of the page.
-const LAB = 21;
+const LAB = 22;
 fetch(location.pathname + '?fresh=' + Date.now(), { cache: 'no-store' }).then(r => r.text()).then(t => {
   const m = /const LAB = (\d+);/.exec(t), now = (/[?&]v=(\d+)/.exec(location.search) || [])[1];
   if (m && +m[1] > LAB && +now !== +m[1]) location.replace(location.pathname + '?v=' + m[1] + location.hash);

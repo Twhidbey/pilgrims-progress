@@ -56,7 +56,7 @@ const MQ = (() => {
   // Before it they were: face 1, 1, 1; shoe 1, 0, 0, 1; leg 1, 1, 1.2; build 1, 1, 1, .075; robe 0, 1, 1; sleeve 23, 1, 7; sack 1, 0, 1.
   const FACE = { nose: .75, chin: 1.1, brow: 1.5, tip: 0, bridge: 0, lips: 1, jaw: 0, forehead: 0 }, SHOE = { toe: .86, point: .35, lift: .4, bulk: .88 }, LEG = { calf: 1.08, ankle: .92, shaft: 2.1 };
   const BUILD = { legs: 1.04, arms: .98, girth: .98, lean: .135 }, ROBE = { hem: -12, flare: 0, full: 1.17 }, SLEEVE = { width: 13, drop: 1.1, len: 0 };
-  const SACK = { size: 1.5, high: -.06, round: 1.14, top: .8, set: 6.5, flat: 1.1, back: 4 }, GAIT = { step: 96, bob: 3.6, rock: .036, swagger: .02, arm: .02, bend: .16 };
+  const SACK = { size: 1.5, high: -.06, round: 1.14, top: .8, set: 6.5, flat: 1.1, back: 7 }, GAIT = { step: 96, bob: 3.3, rock: .032, swagger: .02, arm: .02, bend: .16 };
   const DIM = { hood: HOOD, face: FACE, shoe: SHOE, leg: LEG, build: BUILD, robe: ROBE, sleeve: SLEEVE, sack: SACK, gait: GAIT };
   // SHAPED BY HAND: each named point of the hood's outline may carry an offset of its own, [dx, dy] in that point's own frame (his
   // head's, or his neck's), laid on top of what the measures give; so a shape drawn by hand goes with him as he moves. The lab's
@@ -66,7 +66,9 @@ const MQ = (() => {
   // THE OWNER'S OWN SHAPE (sent as a link from the lab's draggable points): the back of the hood drawn in, its collar level and
   // further forward, its foot on the chest a little up and forward, the rim lower under his jaw.
   // HAND.top: the nine points round the bundle on top of his burden (u0 at its top, then round by the front), in the same way.
-  const HAND = { hood: { b2: [-1.3, -5.2], b3: [-2.3, -3.8], e0: [-.9, 2.2], e1: [6.8, 1.1], e4: [4.1, -3.3], po: [-5, 1.7], r0: [2.3, 5.1] }, top: {} }; let REC = null;
+  const HAND = { hood: { b2: [-1.3, -5.2], b3: [-2.3, -3.8], e0: [-.9, 2.2], e1: [6.8, 1.1], e4: [4.1, -3.3], po: [-5, 1.7], r0: [2.3, 5.1] },
+    // the owner's own bundle: taller, fuller, sagging onto the sack at the back
+    top: { u0: [3.5, -2.5], u1: [2.5, -1.6], u2: [1.5, -3.8], u4: [1, .5], u5: [1, 2.7], u6: [-2.8, 6.4], u7: [-3.6, 3.3], u8: [-1.1, -2.2] } }; let REC = null;
   // the body's side profile: along each part (0 at its top joint, 1 at its lower), how far its front and its back stand from the bone
   const BODY = {
     thigh: [[0, 11, 13], [.25, 12, 12], [.55, 10.5, 10.5], [.85, 8.6, 8.4], [1, 8, 7.6]],
@@ -460,24 +462,35 @@ const MQ = (() => {
     //     against him; it sags a beat after the body and spreads a little as it does; the bundle on top jolts a little more.
     const tilt = J.lean + S[16] + .05 + by * .004 + (Q[13] || 0), tie = add(st(.07 + SACK.high, -15), [-SACK.back, by]), sq = 1 + .012 * Math.max(-3, Math.min(4, by)), sp = v => add(tie, R([v[0] * sq * SACK.size * (v[0] < 0 ? SACK.round : 1), v[1] / sq * SACK.size], tilt));
     const sack = [[3, 3], [6.5, 20], [7, 45], [3.5, 62], [-9, 73.5], [-27, 70.5], [-38, 57], [-36.5, 39], [-28.5, 20], [-17, 7], [-8, 2]].map(sp);
+    // where the pack sits back from him, its mouth is drawn up to his shoulders by what ties it: this closes the chink of sky
+    // that would otherwise flicker between his neck, the sack and the bundle (drawn first, so everything else lies over it)
+    fill([[...sp([-9, -1]), 1], [...sp([4, -2.5]), 1], [...np([-8, -3]), 1], [...np([-9, 9]), 1], [...sp([6.5, 14]), 1], [...sp([-4, 7]), 1]], T('sack'));
     fill(sack, T('sack'));
     ctx.save(); ctx.beginPath(); curve(ctx, sack, true); ctx.clip();
     fill([[-46, 38], [-37, 56], [-23, 65], [-5, 64], [8, 54], [12, 80], [-48, 80]].map(sp), T('sackSh'));      // its underside in shade
     stroke(ctx, [sp([-3, 5]), sp([-14, 18]), sp([-20, 36])], leaf(1.1), T('sackSh')); stroke(ctx, [sp([0, 6]), sp([-4, 24]), sp([-5, 44])], leaf(.9), T('sackSh'));      // creases where the weight pulls from the tie
     stroke(ctx, [sp([9, 30]), sp([-6, 36]), sp([-23, 36.5]), sp([-40, 30])], t => .9, T('sackSh'));      // the rope round its girth
     ctx.restore();
+    // the sack's tie at its mouth: the bundle sits on it, so it is drawn first and shows only where the bundle leaves it clear
+    stroke(ctx, [sp([-11, 3]), sp([-2, 1.5]), sp([5, 2.5])], leaf(1.7), T('strap'));
     if (SACK.top > 0) {
       const rx = 15 * SACK.top, ry = 11.5 * SACK.top * SACK.flat, c = [-11.5 + SACK.set, 3.5 - ry * .78 + by * .35], bp = v => sp([c[0] + v[0] * rx, c[1] + v[1] * ry]);
-      const bm = w => sp([c[0] + w[0], c[1] + w[1]]), bun = [[0, -1], [.62, -.82], [.98, -.28], [.93, .42], [.5, .9], [-.42, .96], [-.92, .52], [-1, -.18], [-.68, -.78]].map((v, i) => bm(hptG('top', 'u' + i, [v[0] * rx, v[1] * ry], bm)));
+      // its outline: nine points, u0 at the top and round by the front (each may be moved by hand, HAND.top)
+      const bm = w => sp([c[0] + w[0], c[1] + w[1]]), BL = [[0, -1], [.62, -.82], [.98, -.28], [.93, .42], [.5, .9], [-.42, .96], [-.92, .52], [-1, -.18], [-.68, -.78]].map((v, i) => hptG('top', 'u' + i, [v[0] * rx, v[1] * ry], bm)), bun = BL.map(bm);
       if (REC) (REC.outlines = REC.outlines || {}).top = bun;
       fill(bun, T('sackLt'));
+      // WHAT IS DRAWN ON IT FOLLOWS ITS OUTLINE (owner: "adjust decor on top part of burden now that size has changed"): its underside,
+      // the two cords that bind it and its shadow on the sack are all placed from the nine points, wherever they have been moved
+      const mx = (a, b2, t) => [a[0] + (b2[0] - a[0]) * t, a[1] + (b2[1] - a[1]) * t], Cc = BL.reduce((a, v) => [a[0] + v[0] / 9, a[1] + v[1] / 9], [0, 0]), lowY = Math.max(...BL.map(v => v[1]));
       ctx.save(); ctx.beginPath(); curve(ctx, bun, true); ctx.clip();
-      fill([[-1.2, .25], [-.5, .62], [.3, .66], [1.2, .3], [1.2, 1.3], [-1.2, 1.3]].map(bp), T('sack'));      // its underside, where it rests on the sack
-      stroke(ctx, [bp([.12, -1.1]), bp([.26, 0]), bp([.16, 1.1])], t => .9, T('sackSh')); stroke(ctx, [bp([-.46, -1]), bp([-.36, 0]), bp([-.44, 1.1])], t => .8, T('sackSh'));      // the cords that bind it
+      const ub = mx(BL[7], BL[6], .61), uf = mx(BL[2], BL[3], .83);
+      fill([mx(Cc, ub, 1.25), mx(Cc, BL[5], .66), mx(Cc, BL[4], .7), mx(Cc, uf, 1.25), [uf[0] + .4 * rx, lowY + ry], [ub[0] - .4 * rx, lowY + ry]].map(bm), T('sack'));      // its underside, where it rests on the sack
+      // a cord runs from a place on its top edge to a place on its bottom edge, bowed a little by the bundle's roundness
+      const cord = (a0, a1, ta, b0, b1, tb, bow, wd) => { const pt = mx(BL[a0], BL[a1], ta), qb = mx(BL[b0], BL[b1], tb), m = mx(pt, qb, .5); stroke(ctx, [bm(mx(qb, pt, 1.12)), bm([m[0] + bow * rx, m[1]]), bm(mx(pt, qb, 1.12))], t => wd, T('sackSh')); };
+      cord(0, 1, .3, 4, 5, .37, .09, .9); cord(8, 0, .32, 5, 6, .06, .08, .8);
       ctx.restore();
-      stroke(ctx, [bp([-.9, .62]), bp([-.2, .98]), bp([.74, .72])], leaf(1.3), T('sackSh'));      // its shadow on the sack
+      stroke(ctx, [bm([BL[6][0], BL[6][1] + .1 * ry]), bm(add(mx(BL[5], BL[4], .25), [0, .05 * ry])), bm(add(mx(BL[4], BL[3], .5), [0, .06 * ry]))], leaf(1.3), T('sackSh'));      // its shadow on the sack, under its lower edge
     }
-    stroke(ctx, [sp([-11, 3]), sp([-2, 1.5]), sp([5, 2.5])], leaf(1.7), T('strap'));      // the tie
 
     // THE STRAP that holds it (owner: "the strap of his bag cuts through his arm": it ran down his chest and back to the sack, hidden
     // only where the arm lay over it, so it showed on both sides of the arm as if it went through it). Now it goes from the sack up
