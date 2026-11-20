@@ -174,6 +174,55 @@ const HL = (() => {
   // dust in world units, for the stones on the path
   const DUSTW = [];
   function dustW(x, y, r, n) { for (let i = 0; i < n; i++) DUSTW.push({ x: x + (Math.random() - .5) * r * 2, y: y - Math.random() * r * .5, vx: (Math.random() - .5) * .3, vy: -.05 - Math.random() * .15, r: r * (.6 + Math.random() * .6), t: 0, life: 110 + Math.random() * 110, a: .5 + Math.random() * .4 }); }
+  // EASTER EGGS (owner, after build 366: "need new easter eggs and things to show (like dodging rocks or something ;)";
+  // chose 1, 3, 4 and 7 of the ideas offered). Nothing here can be failed or missed for good; each is free to find.
+  // (1) A STONE THAT MISSES HIM: twice on the rocky path a stone tumbles down off the heights onto the way AHEAD of him,
+  // aimed where he will be a moment later plus a step: if the child keeps holding it crashes down just in front of him
+  // and bounces off the near edge of the path toward us (a near miss); if they let go, it lands further ahead. Never on him.
+  const ROLLX = [3420, 4020], ROLL = [];
+  let rollI = 0;
+  function rollers() {
+    while (rollI < ROLLX.length && ph === 'path' && C3.x > ROLLX[rollI]) { rollI++;
+      const T = 64, g = .22, v = Math.max(0, C3.lastV || 0), land = C3.x + v * T + 58 + Math.random() * 14;
+      ROLL.push({ x: land + .9 * T, y: -.5 * g * T * T, vx: -.9, vy: 0, g, r: 10 + Math.random() * 4, b: 0, t: 0, s: Math.random() * 6, sh: rockShape() });
+      if (audio()) hiss(420, .9, .04, 1.1, 'bandpass'); }
+    for (const r of ROLL) { r.t++; r.vy += r.g; r.x += r.vx; r.y += r.vy;
+      // it strikes the way once, hard (dust, a thud, the ground jolts), bounces high and drops off the path's near edge
+      if (!r.b && r.y >= -r.r * .6) { r.b = 1; r.y = -r.r * .6; r.vy = -6.2; r.vx = -.3; dustW(r.x, 0, r.r * 2.6, 8); jolt = Math.max(jolt, 1.1);
+        if (audio()) { sweep(48, 30, 1.1, .12); hiss(200, .7, .08, 1, 'lowpass'); hiss(1400, 2, .03, .15, 'bandpass'); } } }
+    for (let i = ROLL.length - 1; i >= 0; i--) if (ROLL[i].y > 420) ROLL.splice(i, 1); }
+  // (3) A LIZARD on the rocks: two along the path, on the top of its stony far edge, lit a little by the fire; one sits
+  // still, bobbing its head now and then, until he comes near or the child touches it, then darts away along the edge
+  // and is gone into a crack
+  const LIZ = [];
+  function lizards() {
+    if (!LIZ.length && ph === 'path') for (const x0 of [PATH0 + 420, PATH0 + 1080]) { let bx = x0, bh = -1; for (let x = x0 - 80; x <= x0 + 80; x += 4) { const h = edgeAt(x); if (h > bh) { bh = h; bx = x; } }
+      LIZ.push({ x: bx, y: -bh + .5, st: 'sit', t: Math.random() * 200, a: 1, f: Math.random() < .5 ? 1 : -1, run: 0 }); }
+    for (const L of LIZ) { L.t++;
+      if (L.st === 'sit' && C3.x > L.x - 150 && C3.x < L.x + 60) scurry(L);
+      if (L.st === 'run') { L.run++; L.x += 3.6 * L.f; L.y = -edgeAt(L.x) + .5; if (L.run > 22) L.a = Math.max(0, L.a - .05); } } }
+  function scurry(L) { if (L.st !== 'sit') return; L.st = 'run'; L.f = 1; if (audio()) { hiss(3200, 1.5, .02, .08, 'bandpass'); hiss(2600, 1.5, .02, .08, 'bandpass', .07); hiss(3000, 1.5, .015, .08, 'bandpass', .14); } }
+  // (4) THE OAK: a touch on its crown and a bird flies out with a chirp, and a few leaves come down
+  const OBIRD = [], OLEAF = [];
+  let oakT = 0;
+  function oakTouch(sx, sy) { if (G.t - oakT < 70) return; oakT = G.t; const wx = (sx - VW / 2) / cam.z + cam.cx, wy = (sy - cam.wl) / cam.z;
+    OBIRD.push({ x: wx, y: wy, vx: -(3 + Math.random() * .5), vy: -.3, t: 0, ph: Math.random() * 6 });
+    for (let i = 0; i < 6; i++) OLEAF.push({ x: wx + (Math.random() - .5) * 60, y: wy + (Math.random() - .5) * 30, vy: .35 + Math.random() * .3, t: 0, s: Math.random() * 6, life: 260 + Math.random() * 120 });
+    if (audio()) { for (let i = 0; i < 5; i++) hiss(900 + Math.random() * 300, 1, .03, .07, 'bandpass', i * .06); sweep(2900, 3700, .09, .025, false, .05); sweep(3100, 3900, .08, .022, false, .2); } }
+  function oakLife() { for (const b of OBIRD) { b.t++; b.x += b.vx; b.y += b.vy; b.vy = Math.max(-.7, b.vy - .003); }
+    for (let i = OBIRD.length - 1; i >= 0; i--) if (OBIRD[i].t > 420) OBIRD.splice(i, 1);
+    for (const l of OLEAF) { l.t++; l.y += l.vy; l.x += .25 + .5 * Math.sin(l.t / 20 + l.s); }
+    for (let i = OLEAF.length - 1; i >= 0; i--) if (OLEAF[i].t > OLEAF[i].life) OLEAF.splice(i, 1); }
+  // (7) THREE HIDDEN NOTES: faint lights in crevices along the rocky path; a touch on one sings a note of the hymn's first
+  // words ("A-maz-ing") bent flat, as the tune goes wrong off the right way, and the light drifts up and fades. When all
+  // three are found they are sung once more softly, in tune.
+  const HIDDEN = [[PATH0 + 260, 62, 61], [PATH0 + 760, 67, 66], [PATH0 + 1240, 71, 70]].map(([x, m, f]) => ({ x, m, f, y: 0, got: 0, up: 0 }));
+  function hiddenLife() { for (const h of HIDDEN) { if (!h.y) h.y = -edgeAt(h.x) - 3; if (h.got) h.up++; } }
+  function hiddenTouch(sx, sy) { for (const h of HIDDEN) { if (h.got) continue; const px = (h.x - cam.cx) * cam.z + VW / 2, py = cam.wl + h.y * cam.z;
+      if (Math.hypot(sx - px, sy - py) < 34 + 30 * cam.z) { h.got = 1; note(h.f - 12, .05, 3.4); note(h.f, .03, 3, .02);
+        if (HIDDEN.every(q => q.got)) HIDDEN.forEach((q, i) => note(q.m, .035, 3.2, 1.6 + i * .55));
+        return true; } }
+    return false; }
   function shed(n, k = 1) { for (let i = 0; i < n; i++) { const h = 40 + Math.random() * 100; ROCKS.push({ x: faceX(h) - 2, y: -h, vx: -(.2 + Math.random() * .7) * k, vy: Math.random() * .4, r: .8 + Math.random() * 2.4 * k, t: 0, s: Math.random() * 6, sh: rockShape() }); } }
   // the sweet tune of his counsel: a pretty phrase in the major that goes nowhere (k 1: fuller, with a chord)
   function sweet(k) { const M = k ? [67, 71, 74, 79, 76, 74] : [72, 76, 79, 76]; M.forEach((m, i) => note(m, .028 + .008 * k, 2.4, i * .42)); if (k) [55, 59, 62].forEach(m => note(m, .02, 4.5, .1)); }
@@ -737,7 +786,7 @@ const HL = (() => {
     Object.assign(C3, { x: START, face: 1, faceA: 1, anim: 12, sd: QUIET[0], alpha: 1, run: 0, ranim: RUNP_META.start || 0, weep: false, wt: 0, wa: 0, kf: 0, kp: 0, tv: null, fired: false, saidAt: 0, tapZ: 0 }); FLARES.length = 0;
     mercy = mercyTo = calm = calmTo = 0;
     wise = null; evan = null; dark = 0; hope = 0; flash = 0; flashT = 200; veil = 0; veilTo = 0; knocks = 0; knockT = 0; door = 0; doorTo = 0;
-    reveal = 0; vil = vilTo = 0; pan = panTo = 0; ROCKS.length = 0; DUST.length = 0; PATHR.length = 0; DUSTW.length = 0; fallI = 0; jolt = 0; STEAMP.length = 0; farewell = 0; C3.dy = 0; cut = cutTo = 0; Zw = 0; zs = ''; zT = 0;
+    reveal = 0; vil = vilTo = 0; pan = panTo = 0; ROCKS.length = 0; DUST.length = 0; PATHR.length = 0; DUSTW.length = 0; fallI = 0; jolt = 0; ROLL.length = 0; rollI = 0; LIZ.length = 0; OBIRD.length = 0; OLEAF.length = 0; HIDDEN.forEach(h => { h.got = 0; h.up = 0; h.y = 0; }); STEAMP.length = 0; farewell = 0; C3.dy = 0; cut = cutTo = 0; Zw = 0; zs = ''; zT = 0;
     saidSeen = saidHigh = hasteSaid = gateSaid = hillSeen = greeted = signSeen = false; stillT = 0; hintT = 0; noteI = 0; noteX = 0;
   }
   // the picture behind the title page when Level 3 is the child's level: the hill hanging over the way, nobody there
@@ -776,6 +825,10 @@ const HL = (() => {
   const signPt = () => [(GATE_X - cam.cx) * cam.z + VW / 2, cam.wl - (126 + 40 + 23 + 13) * cam.z, 70 * cam.z, 26 * cam.z];
   function touch(sx, sy) {
     if (ph === 'still' && zs === 'hold') { wideTouch(sx, sy); return; }
+    if (!G.act) {
+      if (ph === 'path') { if (hiddenTouch(sx, sy)) return;
+        for (const L of LIZ) { const px = (L.x - cam.cx) * cam.z + VW / 2, py = cam.wl + L.y * cam.z; if (L.st === 'sit' && Math.hypot(sx - px, sy - py) < 30 + 30 * cam.z) { scurry(L); return; } } }
+      if ((ph === 'plain' || ph === 'meet') && OAKBOX) { const [bx, by, bw, bh] = OAKBOX; if (sx > bx + bw * .08 && sx < bx + bw * .95 && sy > by + bh * .04 && sy < by + bh * .62) { oakTouch(sx, sy); return; } } }
     if ((ph === 'gate' || ph === 'knock' || ph === 'open') && typeof KS !== 'undefined' && KS.look) { const [x, y, w, h] = signPt(); if (Math.abs(sx - x) < w && Math.abs(sy - y) < h) { showSign(); return; } }
     if (G.act === 'hill') { const [hx, hy] = hillPt(); if (Math.hypot(sx - hx, (sy - hy) * .7) < 230 * hillBox[2] + 40) sawHill(); else G.actT = Math.max(G.actT, 129); return; }
     if (G.act === 'knock') { const [gx, gy] = gatePt(); if (Math.hypot(sx - gx, sy - gy) < 130) knock(); else G.actT = Math.max(G.actT, 89); return; }
@@ -842,7 +895,7 @@ const HL = (() => {
     const fr0 = frameOf(C3.anim);
     if (v) { if (C3.sd != null) { C3.sd = null; C3.anim = 1; } }
     else if (C3.sd == null) { if (fr0 === 28 || fr0 === 1 || !STD.length) C3.sd = fr0 === 28 ? 0 : STAND_FROM_1; else v = Math.max(.45, vmax); }
-    C3.x += dir * v; C3.anim = stepAnim(C3.anim, v, CHR_STEP, CHR_META);
+    C3.x += dir * v; C3.lastV = dir * v; C3.anim = stepAnim(C3.anim, v, CHR_STEP, CHR_META);
     const fr1 = frameOf(C3.anim);
     if (v && fr1 !== fr0 && CHR_META.rest.includes(fr1) && audio()) sfx.step(false, 1 + dark * .8);
     return v;
@@ -877,7 +930,7 @@ const HL = (() => {
     for (const r of ROCKS) { r.t++; r.vy += .09; r.x += r.vx; r.y += r.vy; if (r.big && r.t % 5 === 0) dust(r.x, r.y, r.r * .9, 1, .5, 1);
       if (r.y >= 0) { r.done = 1; dust(r.x, 0, r.big ? r.r * 2.2 : 2 + r.r, r.big ? 6 : 2, r.big ? 1 : .5, r.big); } }
     for (let i = ROCKS.length - 1; i >= 0; i--) if (ROCKS[i].done) ROCKS.splice(i, 1);
-    pathFalls(); for (const d of DUSTW) { d.t++; d.x += d.vx; d.y += d.vy; d.r += .04; } for (let i = DUSTW.length - 1; i >= 0; i--) if (DUSTW[i].t >= DUSTW[i].life) DUSTW.splice(i, 1);
+    pathFalls(); rollers(); lizards(); oakLife(); hiddenLife(); for (const d of DUSTW) { d.t++; d.x += d.vx; d.y += d.vy; d.r += .04; } for (let i = DUSTW.length - 1; i >= 0; i--) if (DUSTW[i].t >= DUSTW[i].life) DUSTW.splice(i, 1);
     for (const d of DUST) { d.t++; d.x += d.vx; d.y += d.vy; d.vx *= .99; d.r += d.g; } for (let i = DUST.length - 1; i >= 0; i--) if (DUST[i].t >= DUST[i].life) DUST.splice(i, 1);
     if (dark > .4 && Math.random() < .07 * dark) embers.push({ x: 20 + Math.random() * 70, y: 10 - Math.random() * 40, vx: -.2 - Math.random() * .4, vy: -.35 - Math.random() * .5, r: .6 + Math.random() * .8, h: Math.random(), t: 0, life: 140 + Math.random() * 160 });
     if (dark > .3 && ph !== 'title') { for (let v = 0; v < VENTS.length; v++) if (Math.random() < (.035 + .015 * Math.sin(G.t / 47 + v * 1.7)) * dark) steamPuff(v); }
@@ -1785,6 +1838,24 @@ const HL = (() => {
       if (rocky) alongPath(x => 1 - inPath(x), q => { const t0 = Y(-34), t1 = Y(150), b = mix([40, 30, 29], [35, 26, 25], dark), g = q.createLinearGradient(0, t0, 0, t1), u = (Y(-4) - t0) / (t1 - t0);
         g.addColorStop(0, css(b, 0)); g.addColorStop(clamp(u), css(b)); g.addColorStop(clamp(u + (1 - u) * .45), css(mix(b, [15, 12, 11], .6))); g.addColorStop(1, css([15, 12, 11])); q.fillStyle = g; q.fillRect(0, t0, VW, VH - t0 + 2); }); };
     road();
+    // (easter eggs 3 and 7) the lizards on the path's stony edge, and the three hidden lights in its crevices
+    if (rocky && Zw < .5) {
+      for (const L of LIZ) { if (L.a <= 0) continue; const px = X(L.x), py = Y(L.y), k = z * 1.7, f = L.f, run = L.st === 'run';
+        if (px < -40 || px > VW + 40) continue;
+        const bob = !run && (L.t % 260) < 24 ? Math.sin((L.t % 260) / 24 * Math.PI) * 1.2 : 0, step = run ? Math.sin(L.run * 1.6) : 0;
+        c.save(); c.globalAlpha = L.a; c.translate(px, py); c.scale(f * k, k); c.fillStyle = css(mix([30, 25, 27], [24, 20, 23], dark)); c.strokeStyle = c.fillStyle; c.lineCap = 'round';
+        // tail, body, head, and four short legs that scurry when it runs
+        c.lineWidth = 2; c.beginPath(); c.moveTo(-4, -2); c.quadraticCurveTo(-10, -1.2 + step * .8, -14, -2.6); c.quadraticCurveTo(-16.5, -3.6, -17.5, -2.8); c.stroke();
+        c.beginPath(); c.ellipse(0, -2.2, 5.2, 2.2, 0, 0, 7); c.fill();
+        c.beginPath(); c.ellipse(5.8, -2.9 - bob, 2.4, 1.6, -.2 - bob * .1, 0, 7); c.fill();
+        c.lineWidth = 1.1; for (const [lx, ph2] of [[2.6, 0], [-2.6, 1]]) for (const sd of [1, -1]) { const sw = run ? Math.sin(L.run * 1.6 + ph2 * 3 + (sd > 0 ? 0 : 1.5)) * 1.4 : 0; c.beginPath(); c.moveTo(lx, -1.2); c.lineTo(lx + sw + .8 * sd, 0); c.stroke(); }
+        // the fire's warm light along its back
+        c.strokeStyle = css([236, 150, 96], .45 * burnR); c.lineWidth = .55; c.beginPath(); c.moveTo(-4.5, -4); c.quadraticCurveTo(0, -4.7, 4, -4); c.quadraticCurveTo(6, -4.8, 7.6, -3.6); c.stroke();
+        c.restore(); }
+      for (const h of HIDDEN) { const u = h.up / 220; if (u >= 1) continue; const px = X(h.x), py = Y(h.y - (h.got ? 160 * Math.pow(u, 1.3) : 0)); if (px < -40 || px > VW + 40) continue;
+        const k = h.got ? 1.4 * (1 - u) : .45 + .2 * Math.sin(G.t / 37 + h.x), r = (h.got ? 16 + 10 * u : 9) * z;
+        const g = c.createRadialGradient(px, py, 0, px, py, r); g.addColorStop(0, css([255, 236, 190], .55 * k)); g.addColorStop(.3, css([255, 214, 150], .22 * k)); g.addColorStop(1, css([255, 200, 140], 0));
+        c.save(); c.globalCompositeOperation = 'lighter'; c.fillStyle = g; c.fillRect(px - r, py - r, 2 * r, 2 * r); c.fillStyle = css([255, 246, 220], .6 * k); c.beginPath(); c.arc(px, py, Math.max(.8, 1.3 * z), 0, 7); c.fill(); c.restore(); } }
     // the swell of the brow, on the road (only on the plain, where he goes out of sight over it)
     // build 323 (owner: "the bump has hard line between it and the ground below. also the path looks different as it goes
     // from one to the other"): the brow is now the ROAD ITSELF rising: column by column it is painted with the road's own
@@ -1886,6 +1957,12 @@ const HL = (() => {
         // a few leaves let go and drift down
         if (dark < .6) for (let i = 0; i < 7; i++) { const T = 620 + i * 97, u = ((G.t + i * 233) % T) / T, lx2 = tx + (-110 + i * 46 + 34 * Math.sin(u * 7 + i)) * z + 50 * u * z, ly2 = ty - (220 - 30 * (i % 3)) * z * (1 - u), al = Math.sin(Math.PI * u) * .9 * (1 - dark);
           c.save(); c.translate(lx2, ly2); c.rotate(u * 9 + i); c.fillStyle = css([40, 48, 40], al); c.beginPath(); c.ellipse(0, 0, 3 * z, 1.3 * z, 0, 0, 7); c.fill(); c.restore(); } } }
+    // (easter egg 4) the bird that flew out of the oak, and the leaves it shook down
+    if (!rocky) { c.save(); c.lineCap = 'round';
+      for (const b of OBIRD) { const px = X(b.x), py = Y(b.y), w = 7 * z, beat = .45 + .55 * Math.sin(b.t / 3.2 + b.ph), al = Math.min(1, b.t / 6) * (1 - smooth(300, 420, b.t)) * (1 - dark);
+        c.strokeStyle = css([40, 36, 38], .9 * al); c.lineWidth = Math.max(.8, 1.1 * z); c.beginPath(); c.moveTo(px - w, py - beat * w * .8); c.quadraticCurveTo(px - w * .4, py - w * .2, px, py); c.quadraticCurveTo(px + w * .4, py - w * .2, px + w, py - beat * w * .8); c.stroke(); }
+      for (const l of OLEAF) { const u = l.t / l.life, al = Math.min(1, l.t / 10) * (1 - smooth(.75, 1, u)) * .9 * (1 - dark); c.save(); c.translate(X(l.x), Y(l.y)); c.rotate(l.t / 14 + l.s); c.fillStyle = css([40, 48, 40], al); c.beginPath(); c.ellipse(0, 0, 3 * z, 1.3 * z, 0, 0, 7); c.fill(); c.restore(); }
+      c.restore(); }
     // the people (in the world's own units)
     c.save(); c.translate(VW / 2 - cx * z, wl); c.scale(z, z);
     RIM = { k: (1 - dark) * (1 - gateish) * .9, x: (lx - VW / 2) / z + cx };
@@ -1944,6 +2021,11 @@ const HL = (() => {
     // quickly"): the nearest crags are narrow spurs (`wk`), tall ones all along the path, with deep dips between (a low floor, `fl`);
     // build 238 ("not quite so pointy and slightly more varied in shape and maybe not quite so much covering Christian"): each
     // spur's width varies (.65 to 1.55 of `wk`), its brow a little longer and rounded, and they are a little lower (210 to 430)
+    // (easter egg 1) the stone that misses him: drawn nearer than the figures, so it crosses the way in front of him and
+    // drops off the near edge behind the nearest crags
+    for (const r of ROLL) { const px = X(r.x), py = Y(r.y), rr = r.r * z; if (px < -60 || px > VW + 60) continue;
+      c.save(); c.translate(px, py); c.rotate(r.t * .16 + r.s); c.fillStyle = css([18, 14, 15], .98); c.beginPath(); r.sh.forEach((q, i) => { const an = i / 7 * 6.283; i ? c.lineTo(Math.cos(an) * q * rr, Math.sin(an) * q * rr * .85) : c.moveTo(Math.cos(an) * q * rr, Math.sin(an) * q * rr * .85); }); c.closePath(); c.fill();
+      c.strokeStyle = css([236, 150, 96], .4 * burnR); c.lineWidth = Math.max(.6, rr * .1); c.beginPath(); for (let i = 5; i <= 7; i++) { const an = i / 7 * 6.283, q = r.sh[i % 7]; i === 5 ? c.moveTo(Math.cos(an) * q * rr, Math.sin(an) * q * rr * .85) : c.lineTo(Math.cos(an) * q * rr, Math.sin(an) * q * rr * .85); } c.stroke(); c.restore(); }
     if (rocky) crags(1.3, 29, 240, 150, 210, 430, [15, 12, 11], .25 * burnR, true, .45, 0, FOOT - 70, .22, .62);
     // his hand held out, waiting for the child's touch: a faint warm light gathers round it
     if (G.act === 'ehand' && evan && evan.g > .5) { const [hx, hy] = handPt(), r = 26 + 40 * cam.z, k = (evan.g - .5) * 2 * (.75 + .25 * Math.sin(G.t / 30));
@@ -1966,5 +2048,5 @@ const HL = (() => {
   }
 
   // for testing: HL.peek() tells where the story is
-  return { on: false, show: false, hillPics: () => HILL, title, start, update, draw, touch, key, preload, lines: ALL, pt: k => k === 'hill' ? hillPt() : k === 'hand' ? handPt() : k === 'sign' ? signPt() : gatePt(), peek: () => ({ ph, x: Math.round(C3.x), stones: PATHR.map(r => [Math.round(r.x), Math.round(r.y), r.b]), vil: +vil.toFixed(2), reveal: +reveal.toFixed(2), stillT, zs, zT, Zw: +Zw.toFixed(2), farewell, kf: +(C3.kf || 0).toFixed(1), stand: C3.sd != null, wx: wise && Math.round(wise.x), ex: evan && evan.x != null ? Math.round(evan.x) : null, dark: +dark.toFixed(2), wise: wise && wise.mode, evan: evan && +evan.a.toFixed(2), knocks, cam: { ...cam }, hb: hillBox.map(v => Math.round(v * 100) / 100), boltT, bolt: bolt && bolt.map(l => [l[0], l[l.length - 1]].map(p => p.map(Math.round))) }) };
+  return { on: false, show: false, hillPics: () => HILL, title, start, update, draw, touch, key, preload, lines: ALL, pt: k => k === 'hill' ? hillPt() : k === 'hand' ? handPt() : k === 'sign' ? signPt() : k === 'oak' ? (OAKBOX ? [OAKBOX[0] + OAKBOX[2] * .3, OAKBOX[1] + OAKBOX[3] * .45] : null) : k === 'hid' ? (h => h ? [(h.x - cam.cx) * cam.z + VW / 2, cam.wl + h.y * cam.z] : null)(HIDDEN.find(h => !h.got)) : gatePt(), peek: () => ({ ph, x: Math.round(C3.x), eggs: { roll: ROLL.map(r => [Math.round(r.x), Math.round(r.y), r.b]), liz: LIZ.map(L => L.st), hid: HIDDEN.map(h => h.got), birds: OBIRD.length, bird: OBIRD.map(b => [Math.round(b.x), Math.round(b.y), b.t]) }, stones: PATHR.map(r => [Math.round(r.x), Math.round(r.y), r.b]), vil: +vil.toFixed(2), reveal: +reveal.toFixed(2), stillT, zs, zT, Zw: +Zw.toFixed(2), farewell, kf: +(C3.kf || 0).toFixed(1), stand: C3.sd != null, wx: wise && Math.round(wise.x), ex: evan && evan.x != null ? Math.round(evan.x) : null, dark: +dark.toFixed(2), wise: wise && wise.mode, evan: evan && +evan.a.toFixed(2), knocks, cam: { ...cam }, hb: hillBox.map(v => Math.round(v * 100) / 100), boltT, bolt: bolt && bolt.map(l => [l[0], l[l.length - 1]].map(p => p.map(Math.round))) }) };
 })();
