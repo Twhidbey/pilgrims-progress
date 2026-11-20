@@ -63,7 +63,9 @@ const MQ = (() => {
   // draggable points set them. Names: r0..r5 the rim from under the jaw up to under the tip, tip, tt the tip's top, cf the front
   // of the crown, c1..c4 over the crown to its back, b1..b3 down the back, po where the back meets the collar, e0..e4 the lower
   // edge from the back of the neck to its foot on the chest. While REC is an array, figure() notes each point's place in it.
-  const HAND = { hood: {} }; let REC = null;
+  // THE OWNER'S OWN SHAPE (sent as a link from the lab's draggable points): the back of the hood drawn in, its collar level and
+  // further forward, its foot on the chest a little up and forward, the rim lower under his jaw.
+  const HAND = { hood: { b2: [-1.3, -5.2], b3: [-2.3, -3.8], e0: [-.9, 2.2], e1: [6.8, 1.1], e4: [4.1, -3.3], po: [-5, 1.7], r0: [2.3, 5.1] } }; let REC = null;
   // the body's side profile: along each part (0 at its top joint, 1 at its lower), how far its front and its back stand from the bone
   const BODY = {
     thigh: [[0, 11, 13], [.25, 12, 12], [.55, 10.5, 10.5], [.85, 8.6, 8.4], [1, 8, 7.6]],
@@ -371,10 +373,21 @@ const MQ = (() => {
     // --- an arm in its sleeve. A habit's sleeve is a wide tube hung from the shoulder: it lies on the upper arm, its
     //     underside sags, and at the cuff the arm rests against whichever side of the tube it is pushing (the cloth
     //     trails behind a swinging arm and hangs below a raised one); the cuff covers the wrist
+    // THE NEAR SHOULDER BELONGS TO HIS BODY, NOT TO HIS ARM (owner: "his shoulder doesn't seem cohesive with his torso (rotates like a
+    // separate piece)"). It was a round cap on top of the arm, in the arm's lighter tone, standing up beside the hood: a paper doll's
+    // pinned-on limb. Now (1) the cloth over the shoulder is a YOKE that hangs from the base of his neck down the slope of the
+    // trapezius to the shoulder, fixed to the body, and the arm turns under it; (2) the sleeve fits closer at the shoulder, so its top
+    // is lower than his collar; (3) the sleeve has the ROBE'S OWN TONE at the shoulder and grows lighter only down the arm, so the arm
+    // comes out of the body instead of lying on it.
+    const nearTone = (() => { const a = np([0, -2]), c = np([0, 30]), g = ctx.createLinearGradient(a[0], a[1], c[0], c[1]); g.addColorStop(0, T('robe')); g.addColorStop(.3, T('robe')); g.addColorStop(1, T('sleeve')); return g; })();
+    const upperSleeve = BODY.upper.map(v => { const e = 1.3 + 1.9 * Math.min(1, v[0] / .4); return [v[0], v[1] + e, v[2] + e]; });
+    const yoke = () => { const s = J.armN.sh, yk = (dx, dy) => add(s, R([dx, dy], J.lean)), q = (c, e) => ctx.quadraticCurveTo(c[0], c[1], e[0], e[1]), l = e => ctx.lineTo(e[0], e[1]), m = np([-9.5, -1.5]);
+      // from the back of his neck the cloth slopes down and rounds over the shoulder; the same in front, under the hood's fall
+      ctx.fillStyle = nearTone; ctx.beginPath(); ctx.moveTo(m[0], m[1]); q(yk(-7.6, -7.4), yk(-8.8, -.4)); l(yk(-6, 4)); l(yk(6, 4)); l(yk(8.8, -.4)); q(yk(7.6, -7), np([6.5, 2])); l(np([-1, -3])); ctx.closePath(); ctx.fill(); };
     const arm = (A, far) => {
       hand(ctx, A, T(far ? 'handFar' : 'hand'));
       const W = SLEEVE.width, r = 5, s = Math.max(.06, Math.min(.86, .42 + 1.6 * (A.hb - A.b - .08) - .8 * Math.sin(A.b))), fd = r + 1.5 + s * (W - 2 * r - 3), ab = Math.abs(Math.sin(A.b));
-      ctx.fillStyle = T(far ? 'sleeveFar' : 'sleeve'); part(ctx, A.sh, A.el, BODY.upper, 3.2); disc(ctx, A.sh, 10.5); disc(ctx, A.el, 9.2);
+      ctx.fillStyle = far ? T('sleeveFar') : nearTone; part(ctx, A.sh, A.el, upperSleeve, 0); disc(ctx, A.sh, 8.8); disc(ctx, A.el, 9.2);
       const sv = sides(A.el, add(A.wr, dirv(A.b, SLEEVE.len)), [[0, 8.6, 9], [1, fd, W - fd]], 0, 1, 8);
       sv[1].forEach((q, i) => { const t = i / 8; q[1] += SLEEVE.drop * ((3 + 6 * ab) * Math.sin(Math.PI * t) * .8 + (2 + 4 * ab) * t * t); });
       closed(ctx, sv[0], sv[1]);
@@ -456,7 +469,7 @@ const MQ = (() => {
     ctx.strokeStyle = T('strap'); ctx.lineWidth = 1.8; ctx.beginPath(); curve(ctx, [sp([3, 2]), add(shp, [3, -6]), add(shp, [12, 5]), add(shp, [10, 19]), sp([8, 36])]); ctx.stroke();
     // --- near arm; then his head. His face shows in the hood as a lit profile (brow, nose, lips, chin); the hood's rim
     //     throws its shadow down the cheek and into the hollow of the eye, and the neck is in shade under the jaw
-    arm(J.armN, false);
+    arm(J.armN, false); yoke();
     ctx.fillStyle = T('hoodSh'); part(ctx, n, hp([-2, 12]), [[0, 6.5, 7], [1, 6, 6.5]], 0); fill(skullPts().map(v => v[2] ? [...hp(v), 1] : hp(v)), T('face'));
     const HD = HOOD, bk = HD.beak, tipY = -9 + HD.droop, dt = HD.top - 3.6, dk = HD.back - 9, rm = HD.rim, cl = HD.cape, pk = HD.peak, hg = HD.hang, bib = HD.bib;
     // a point of the hood on his head: the whole hood may be larger or closer, and tipped forward or pushed back
