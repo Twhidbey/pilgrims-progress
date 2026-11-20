@@ -56,7 +56,7 @@ const MQ = (() => {
   // Before it they were: face 1, 1, 1; shoe 1, 0, 0, 1; leg 1, 1, 1.2; build 1, 1, 1, .075; robe 0, 1, 1; sleeve 23, 1, 7; sack 1, 0, 1.
   const FACE = { nose: .75, chin: 1.1, brow: 1.5, tip: 0, bridge: 0, lips: 1, jaw: 0, forehead: 0 }, SHOE = { toe: .86, point: .35, lift: .4, bulk: .88 }, LEG = { calf: 1.08, ankle: .92, shaft: 2.1 };
   const BUILD = { legs: 1.04, arms: .98, girth: .98, lean: .135 }, ROBE = { hem: -12, flare: 0, full: 1.17 }, SLEEVE = { width: 13, drop: 1.1, len: 0 };
-  const SACK = { size: 1.5, high: -.06, round: 1.14, top: .8, set: 6.5, flat: 1.1, back: 4 }, GAIT = { step: 96, bob: 3.6, rock: .044, swagger: .018, arm: .31, bend: .24 };
+  const SACK = { size: 1.5, high: -.06, round: 1.14, top: .8, set: 6.5, flat: 1.1, back: 4 }, GAIT = { step: 96, bob: 3.6, rock: .036, swagger: .02, arm: .02, bend: .16 };
   const DIM = { hood: HOOD, face: FACE, shoe: SHOE, leg: LEG, build: BUILD, robe: ROBE, sleeve: SLEEVE, sack: SACK, gait: GAIT };
   // SHAPED BY HAND: each named point of the hood's outline may carry an offset of its own, [dx, dy] in that point's own frame (his
   // head's, or his neck's), laid on top of what the measures give; so a shape drawn by hand goes with him as he moves. The lab's
