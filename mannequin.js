@@ -34,14 +34,17 @@ const MQ = (() => {
   //   hood:   beak = how far its top comes forward over his brow, droop = how low the beak's tip hangs, top = room over the
   //           crown, peak = a point at the back of the crown, back = room behind his head, hang = how low the back hangs,
   //           rim = how far back the rim lies on his cheek, cape = how far the cape goes below the shoulder, head = the
-  //           size of his head (1 = seven and a half heads), bow = how far his head is bowed
+  //           size of his head (1 = seven and a half heads), bow = how far his head is bowed, tilt = the whole hood tipped
+  //           forward (+) or pushed back, rake = its opening slanted back toward the jaw, size = the whole hood larger
+  //           or closer, tail = a tail hanging from the back of the crown, roll = a turned-back rim, bib = how far its
+  //           front falls on his chest
   //   face:   nose, chin, brow (1 = as drawn)       shoe: toe = its length past the ball, point, lift (the tip turned up), bulk
   //   leg:    calf, ankle (widths), shaft (how far the boot stands off the leg)
   //   build:  legs, arms (lengths), girth (how deep his body is), lean (how far he leans in)
   //   robe:   hem (longer or shorter), flare, full       sleeve: width at the cuff, drop (how it hangs), len (over the hand)
   //   sack:   size, high (how low on his back it is tied), round (how far it stands out)
   //   gait:   step, bob, rock, swagger, arm (swing), bend (the elbow's flexing)
-  const HOOD = { beak: 5.6, droop: 0, top: 3.6, peak: 0, back: 9, hang: 0, rim: 0, cape: 0, head: 1, bow: .27 };
+  const HOOD = { beak: 5.6, droop: 0, top: 3.6, peak: 0, back: 9, hang: 0, rim: 0, cape: 0, head: 1, bow: .27, tilt: 0, rake: 0, size: 1, tail: 0, roll: 0, bib: 0 };
   // THE OWNER'S OWN CHOICE (sent as a link from the lab's sliders): face, shoe, leg, build, robe, sleeve and sack below.
   // Before it they were: face 1, 1, 1; shoe 1, 0, 0, 1; leg 1, 1, 1.2; build 1, 1, 1, .075; robe 0, 1, 1; sleeve 23, 1, 7; sack 1, 0, 1.
   const FACE = { nose: .75, chin: 1.1, brow: 1.5 }, SHOE = { toe: .86, point: .35, lift: .4, bulk: .88 }, LEG = { calf: 1.08, ankle: .92, shaft: 2.1 };
@@ -302,7 +305,7 @@ const MQ = (() => {
   }
   const leaf = m => t => m * Math.pow(Math.sin(Math.PI * Math.min(1, Math.max(0, t))), .7);      // thin at both ends
   // dark, quiet tones: a silhouette first, with only a trace of form inside it (LOOK.detail 0 = one flat tone)
-  const TONE = { robe: .2, robeSh: .165, robeDk: .156, robeLt: .226, flap: .178, hose: .128, hoseFar: .104, shoe: .15, shoeFar: .118, sack: .176, sackSh: .146, sackLt: .2, strap: .118, hood: .206, hoodSh: .17, face: .262, hand: .25, handFar: .19, sleeve: .222, sleeveFar: .15, belt: .12 };
+  const TONE = { robe: .2, robeSh: .165, robeDk: .156, robeLt: .226, flap: .178, hose: .128, hoseFar: .104, shoe: .15, shoeFar: .118, sack: .176, sackSh: .146, sackLt: .2, strap: .118, hood: .206, hoodSh: .17, hoodLt: .232, face: .262, hand: .25, handFar: .19, sleeve: .222, sleeveFar: .15, belt: .12 };
   const LOOK = { detail: 1, base: .185 };
   // his face by its measures: the nose stands out more or less from the line of the face, the brow and the chin likewise
   const skullPts = () => BODY.skull.map((v, i) => {
@@ -431,9 +434,14 @@ const MQ = (() => {
     //     throws its shadow down the cheek and into the hollow of the eye, and the neck is in shade under the jaw
     arm(J.armN, false);
     ctx.fillStyle = T('hoodSh'); part(ctx, n, hp([-2, 12]), [[0, 6.5, 7], [1, 6, 6.5]], 0); fill(skullPts().map(v => v[2] ? [...hp(v), 1] : hp(v)), T('face'));
-    const HD = HOOD, bk = HD.beak, tipY = -9 + HD.droop, dt = HD.top - 3.6, dk = HD.back - 9, rm = HD.rim, cl = HD.cape, pk = HD.peak, hg = HD.hang;
+    const HD = HOOD, bk = HD.beak, tipY = -9 + HD.droop, dt = HD.top - 3.6, dk = HD.back - 9, rm = HD.rim, cl = HD.cape, pk = HD.peak, hg = HD.hang, bib = HD.bib;
+    // a point of the hood on his head: the whole hood may be larger or closer, and tipped forward or pushed back
+    const hh = v => hp(R([v[0] * HD.size, v[1] * HD.size], HD.tilt));
+    // its rim, from under the jaw up to the tip of the beak (the opening may be raked back toward the jaw)
+    const RIM = [[11.5 - .6 * rm, 21.5], [9.4 - rm, 17], [8.6 - rm, 11], [9.6 - rm, 4], [11.4 - .8 * rm, -2], [14 - .4 * rm, tipY + 2.8], [14.4 + .5 * bk, tipY + 1], [14.8 + bk, tipY]].map(v => [v[0] - HD.rake * Math.max(0, v[1] - tipY) / 30, v[1]]);
+    const off = (i, dx, dy) => [RIM[i][0] + dx, RIM[i][1] + (dy || 0)];
     ctx.save(); ctx.beginPath(); curve(ctx, skullPts().map(v => v[2] ? [...hp(v), 1] : hp(v)), true); ctx.clip();
-    stroke(ctx, [[13.4 + bk, tipY + 1.6], [15.4 - .4 * rm, tipY + 4.4], [12.8 - .8 * rm, 0], [10.8 - rm, 6], [10 - rm, 12], [10.8 - rm, 18]].map(hp), t => 2.4, T('hoodSh'));      // the hood's shadow on his brow and down his cheek
+    stroke(ctx, [off(7, -1.4, 1.6), off(5, 1.4, 1.6), off(4, 1.4, 2), off(3, 1.2, 2), off(2, 1.4, 1), off(1, 1.4, 1)].map(hh), t => 2.4, T('hoodSh'));      // the hood's shadow on his brow and down his cheek
     stroke(ctx, [hp([13.5, 17.6]), hp([8, 16.6]), hp([0, 14.6])], t => 1.3, T('hoodSh'));      // under the jaw
     ctx.restore();
     // --- THE HOOD starts above his eyes and follows his head: over the crown, standing off the back of his head a
@@ -442,17 +450,25 @@ const MQ = (() => {
     //     under the jaw, so his profile shows in front of it. In his painted frames the long upright line at the front
     //     IS his face, the head bowed. Its cape ends on the shoulder and rides with the near shoulder; the back sags a
     //     beat after the body. Every measure is in HOOD.
-    const so = sub(J.shN, J.shoulder), cp = (v, k) => add(np(v), [so[0] * k, so[1] * k]), sg = by * .6, jaw = hp([11.5 - .6 * rm, 21.5]), dn = (q, k) => add(q, [0, sg * k]);
-    const hood = [cp([19.5, 13 + .9 * cl], .3), add(jaw, [1.2, 4.5]), jaw,
-      hp([9.4 - rm, 17]), hp([8.6 - rm, 11]), hp([9.6 - rm, 4]), hp([11.4 - .8 * rm, -2]), hp([14 - .4 * rm, tipY + 2.8]), hp([14.4 + .5 * bk, tipY + 1]), hp([14.8 + bk, tipY]), hp([14.2 + .75 * bk, tipY - 4.6]),
-      hp([13.4, -18.8 - .6 * dt]), hp([6, -22.2 - .9 * dt]), hp([-3, -23 - dt - .3 * pk]), hp([-12 - .3 * pk, -21 - .9 * dt - .7 * pk]), hp([-19.5 - .5 * dk - .2 * pk, -15.4 - .3 * dt - .2 * pk]),
-      dn(hp([-24 - dk, -6.5]), .4), dn(hp([-25.4 - dk, 3 + .6 * hg]), .8), dn(hp([-23 - .8 * dk, 11 + hg]), 1), dn(cp([-19 - .3 * dk, 5 + .5 * hg], .2), .6),
-      cp([-16.5, 13.5 + .8 * cl], .4), cp([-7, 17.5 + cl], .7), cp([4, 18.6 + cl], .9), cp([13, 16.8 + cl], .7)];
+    const so = sub(J.shN, J.shoulder), cp = (v, k) => add(np(v), [so[0] * k, so[1] * k]), sg = by * .6, jaw = hh(RIM[0]), dn = (q, k) => add(q, [0, sg * k]);
+    const hood = [cp([19.5, 13 + .9 * cl + bib], .3), add(jaw, [1.2, 4.5])].concat(RIM.map(hh), [hh([14.2 + .75 * bk, tipY - 4.6]),
+      hh([13.4, -18.8 - .6 * dt]), hh([6, -22.2 - .9 * dt]), hh([-3, -23 - dt - .3 * pk]), hh([-12 - .3 * pk, -21 - .9 * dt - .7 * pk]), hh([-19.5 - .5 * dk - .2 * pk, -15.4 - .3 * dt - .2 * pk]),
+      dn(hh([-24 - dk, -6.5]), .4), dn(hh([-25.4 - dk, 3 + .6 * hg]), .8), dn(hh([-23 - .8 * dk, 11 + hg]), 1), dn(cp([-19 - .3 * dk, 5 + .5 * hg], .2), .6),
+      cp([-16.5, 13.5 + .8 * cl], .4), cp([-7, 17.5 + cl], .7), cp([4, 18.6 + cl + .25 * bib], .9), cp([13, 16.8 + cl + .7 * bib], .7)]);
+    // a tail from the back of the crown (the liripipe of an old hood): it hangs down his back and swings with the back panel
+    if (HD.tail > 0) {
+      const L = HD.tail, sw = (fl[1] - CL.fr[1]) * .5, r0 = hh([-20 - .6 * dk - .3 * pk, -13.5 - .3 * dt - .4 * pk]);
+      const tl = [r0, add(r0, [-7 - .05 * L, 5 + .12 * L + sg * .3]), add(r0, [-10 - .08 * L + sw * .5, 8 + .55 * L + sg * .7]), add(r0, [-9 - .08 * L + sw, 8 + L + sg])];
+      stroke(ctx, tl, t => 4.6 - 2.9 * t, T('hoodSh')); stroke(ctx, tl, t => 3.5 - 2.6 * t, T('hood'));
+    }
     fill(hood, T('hood'));
     ctx.save(); ctx.beginPath(); curve(ctx, hood, true); ctx.clip();
-    stroke(ctx, [[13 + bk, tipY - .6], [12.6 + .4 * bk, tipY + 1], [12 - .4 * rm, tipY + 4], [10.2 - .8 * rm, -1], [8.8 - rm, 4], [7.8 - rm, 11], [8.6 - rm, 17]].map(hp), t => .9, T('hoodSh'));      // the rim's fold
-    stroke(ctx, [hp([-5, -23.5 - dt]), hp([-19 - .5 * dk, -12.5]), dn(hp([-23.5 - dk, 3 + .6 * hg]), .8), dn(cp([-17.5, 9 + .5 * hg], .3), .6)], t => 4 * t + 1.2, T('hoodSh'));      // the back of the hood in shade
-    stroke(ctx, [cp([-17, 14.5 + .8 * cl], .4), cp([-7, 18.4 + cl], .7), cp([4, 19.5 + cl], .9), cp([13, 17.7 + cl], .7), cp([20, 13.6 + .9 * cl], .3)], t => 1.5, T('hoodSh'));      // the cape's hem
+    if (HD.roll > 0) {      // a turned-back rim: the hood's edge rolled over, its inside catching a little light
+      const ro = HD.roll, IN = [off(0, -ro), off(1, -ro), off(2, -ro), off(3, -ro), off(4, -ro), off(5, -.8 * ro, -.3 * ro), off(6, -.5 * ro, -.7 * ro), off(7, -.9 * ro, -.5 * ro)];
+      fill(RIM.map(hh).concat(IN.map(hh).reverse()), T('hoodLt')); stroke(ctx, IN.map(hh), t => .8, T('hoodSh'));
+    } else stroke(ctx, [off(7, -1.8, -.6), off(6, -1.8 - .1 * bk), off(5, -2, 1.2), off(4, -1.2, 1), off(3, -.8), off(2, -.8), off(1, -.8)].map(hh), t => .9, T('hoodSh'));      // the rim's fold
+    stroke(ctx, [hh([-5, -23.5 - dt]), hh([-19 - .5 * dk, -12.5]), dn(hh([-23.5 - dk, 3 + .6 * hg]), .8), dn(cp([-17.5, 9 + .5 * hg], .3), .6)], t => 4 * t + 1.2, T('hoodSh'));      // the back of the hood in shade
+    stroke(ctx, [cp([-17, 14.5 + .8 * cl], .4), cp([-7, 18.4 + cl], .7), cp([4, 19.5 + cl + .25 * bib], .9), cp([13, 17.7 + cl + .7 * bib], .7), cp([20, 13.6 + .9 * cl + bib], .3)], t => 1.5, T('hoodSh'));      // the cape's hem
     ctx.restore();
     ctx.restore();
   }
