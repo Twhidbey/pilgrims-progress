@@ -87,7 +87,11 @@ const CR = (() => {
   let ph = '', t = 0, cam = { cx: 0, z: 1, wl: 420 }, wideK = 0, wideTo = 0;
   const Ch = { x: START, anim: 12, sd: null, cf: -1, cfd: 1, hop: 0, hops: 0, lastV: 0, fade: 0, face: 1, tv: null, run: 0, ranim: 0 };
   let bur = null, dawn = 0, gold = 0, goldTo = 0, sun = 0, robe = 0, robeTo = 0, mark = 0, markTo = 0, rollShow = 0, rollGone = 0, shine = 0, shineTo = 0, gone = 0, goneTo = 0;
-  let closeK = 0, topK = 0, topTo = 0, veil = 0, climb = null;
+  let closeK = 0, topK = 0, topTo = 0, veil = 0, climb = null, tearT = -1, looked = false;
+  // his tears (owner, offered instead of eyes in the sky: "Sure!!"): on "He looked, and looked again, till the tears ran
+  // down his cheeks" the camera comes in close, and a few small drops of light run from under his hood and fall,
+  // catching the dawn behind the cross, fading before they reach the ground
+  const TEARS = [0, 70, 150, 210, 290], TEAR_X = 10.5, TEAR_Y = 124;
   let rollFly = null, rollAt = null; const ROLL_FLY = 80;
   let said = {}, hymn = null, silenceT = 0, tombT = 0, leapsLeft = 3, endT = 0, quietPad = 0;
   const frameOf = a => ((Math.floor(a) % CHR.length) + CHR.length) % CHR.length;
@@ -126,7 +130,7 @@ const CR = (() => {
   const sx = x => (x - cam.cx) * cam.z + VW / 2, sy = h => cam.wl - h * cam.z;
   const FOOTY = 418, HY = 322;
   function camTick(snap) {
-    const near = { cx: Ch.x + lerp(250, 110, closeK), z: lerp(.8, 1.25, closeK) };
+    const near = { cx: Ch.x + lerp(250, 130, closeK), z: lerp(.8, 1.45, closeK) };
     if (ph === 'cross' || ph === 'after' || ph === 'shine' || ph === 'leaps' || ph === 'end') { near.cx = CROSS_X - 130; near.z = .86; }
     const open = ph === 'look', fitT = (FOOTY - 30) / (gh(CROSS_X) + CROSS_H - tombSill() + 40);
     const wide = open ? { cx: (START + CROSS_X) / 2 + 420, z: Math.min(VW / (CROSS_X - START + 900), (FOOTY - 40) / (H_TOP + CROSS_H + 40)) } : { cx: CROSS_X - 60, z: Math.min(VW / 1500, fitT) };
@@ -191,6 +195,15 @@ const CR = (() => {
       const f0 = clamp(Math.round(Ch.cf), 0, CLIP.length - 1);
       if (Ch.fade < 1 && STD.length) figure(c, STD[atTime(STD_META, breathT(Ch.sd || 0))], STD_META, x, h, fc, 1 - Ch.fade, tint, rim);
       figure(c, CLIP[f0], CLIP_META, x, h, fc, Ch.fade < 1 ? Ch.fade : 1, tint, rim);
+      if (tearT >= 0) TEARS.forEach(t0 => {
+        const lt = tearT - t0; if (lt < 0 || lt > 110) return;
+        // it gathers, runs a little down the cheek, then falls, quicker and quicker, and fades
+        const run = smooth(0, 50, lt) * 9, fall = lt > 50 ? .012 * (lt - 50) * (lt - 50) : 0;
+        const tx = x + (TEAR_X + .06 * fall) * fc, ty = -h - TEAR_Y + run + fall;
+        const a = smooth(0, 14, lt) * (1 - smooth(70, 110, lt)), r = .85 + .25 * Math.sin(lt * .3);
+        const g = c.createRadialGradient(tx, ty, 0, tx, ty, r * 3.2); g.addColorStop(0, css([255, 238, 200], .8 * a)); g.addColorStop(.35, css([255, 210, 140], .3 * a)); g.addColorStop(1, 'rgba(255,200,130,0)');
+        c.save(); c.globalCompositeOperation = 'lighter'; c.fillStyle = g; c.fillRect(tx - r * 3.4, ty - r * 3.4, r * 6.8, r * 6.8); c.restore();
+      });
       if (mark > .01) { const hx = x + 14 * fc, hy = -h - 138; const g = c.createRadialGradient(hx, hy, 0, hx, hy, 9); g.addColorStop(0, css([255, 244, 214], .8 * mark)); g.addColorStop(1, 'rgba(255,240,200,0)'); c.fillStyle = g; c.fillRect(hx - 10, hy - 10, 20, 20); }
     } else if (Ch.run > 0 && RUNP.ready) {
       TILT = slopeTilt(x) * Ch.run;
@@ -462,7 +475,7 @@ const CR = (() => {
 
   // ---------- the story ----------
   function reset0() {
-    memT = -1; Object.assign(Ch, { x: START, anim: 12, sd: QUIET[0], cf: -1, hop: 0, hops: 0, lastV: 0, fade: 0, hv: 0, face: 1, tv: null, run: 0, ranim: 0 });
+    memT = -1; tearT = -1; looked = false; Object.assign(Ch, { x: START, anim: 12, sd: QUIET[0], cf: -1, hop: 0, hops: 0, lastV: 0, fade: 0, hv: 0, face: 1, tv: null, run: 0, ranim: 0 });
     bur = null; dawn = gold = goldTo = sun = robe = robeTo = mark = markTo = rollShow = rollGone = shine = shineTo = gone = goneTo = 0; wideK = 1; wideTo = 1;
     said = {}; hymn = null; silenceT = 0; tombT = 0; leapsLeft = 3; endT = 0; quietPad = 0; t = 0; rollFly = rollAt = null; closeK = topK = topTo = veil = 0; climb = null;
   }
@@ -524,6 +537,8 @@ const CR = (() => {
     wideK += (wideTo - wideK) * .02;
     if (!climb) topK += (topTo - topK) * .022;
     hymnTick();
+    if (tearT >= 0) tearT++;
+    if (ph === 'gone' || ph === 'shine') closeK += ((ph === 'gone' && tearT >= 0 && tearT < 420 ? 1 : 0) - closeK) * .025;
     // the memories' own clock runs on whatever the phase, so the last one fades even once he is at the cross
     if (memT >= 0 && memT < MEM_END + 400) { memT++; MEMS.forEach((m, i) => { if (memT === MEM0 + i * MEM_GAP) memVoice(m); }); }
     padTick(ph === 'fall' || ph === 'tumble' || ph === 'gone' ? 0 : gold > .1 ? 0 : 1);
@@ -572,7 +587,8 @@ const CR = (() => {
       if (t === 150) { goldTo = 1; wideTo = .35; }
       if (t === 210) hymn = { t: 0, i: 0, b: 0 };
       if (hymn && hymn.t === 9 * BEATT) caption(GLAD);
-      if (hymn && hymn.t === 25 * BEATT) caption(LOOKED);
+      if (hymn && hymn.t === 25 * BEATT) { caption(LOOKED); looked = true; }
+      if (looked && tearT < 0 && !G.capQ.length) tearT = 0;
       if (hymn && hymn.t > 20 * BEATT) wideTo = 0;
       if (hymnDone() && !saying()) { ph = 'shine'; t = 0; shineTo = 1; hymn = null; chime([79, 83, 86], .025); }
     } else if (ph === 'shine') {
@@ -690,5 +706,5 @@ const CR = (() => {
   }
 
   return { on: false, start, update, draw, touch, key, preload, lines: ALL, stop: () => padStop(), _pt: { roll: rollPt, chr: chrPt }, _turning: () => !!Ch.tv,
-    peek: () => ({ ph, t, fly: rollFly ? rollFly.t : -1, x: Math.round(Ch.x), cf: +Ch.cf.toFixed(1), bur: bur ? { st: bur.st, x: Math.round(bur.x) } : null, gold: +gold.toFixed(2), shine: +shine.toFixed(2), leaps: leapsLeft, closeK: +closeK.toFixed(2), topK: +topK.toFixed(2), veil: +veil.toFixed(2) }) };
+    peek: () => ({ ph, t, fly: rollFly ? rollFly.t : -1, x: Math.round(Ch.x), cf: +Ch.cf.toFixed(1), bur: bur ? { st: bur.st, x: Math.round(bur.x) } : null, gold: +gold.toFixed(2), shine: +shine.toFixed(2), leaps: leapsLeft, closeK: +closeK.toFixed(2), topK: +topK.toFixed(2), veil: +veil.toFixed(2), tear: tearT }) };
 })();
