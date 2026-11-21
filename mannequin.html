@@ -8,7 +8,7 @@
 // THE LAB UPDATES ITSELF, as the game does (the owner's phone kept showing an old saved copy: "I don't see new sliders"): it asks for
 // its newest copy, and if that copy's number is higher it reloads once onto ?v=N, keeping the measures in the address.
 // Bump LAB on every push that changes the lab; the number shows at the top of the page.
-const LAB = 26;
+const LAB = 27;
 fetch(location.pathname + '?fresh=' + Date.now(), { cache: 'no-store' }).then(r => r.text()).then(t => {
   const m = /const LAB = (\d+);/.exec(t), now = (/[?&]v=(\d+)/.exec(location.search) || [])[1];
   if (m && +m[1] > LAB && +now !== +m[1]) location.replace(location.pathname + '?v=' + m[1] + location.hash);
@@ -42,7 +42,7 @@ fetch(location.pathname + '?fresh=' + Date.now(), { cache: 'no-store' }).then(r 
 </head>
 <body>
 <h1>The mannequin: a skeleton that walks, and clothes that follow it <span id="labv" style="color:#a59f93;font-size:13px"></span></h1>
-<p>Left: the bare mannequin and its bones (green: the shoulder line and the hip line, which turn against each other as he walks). Middle: Christian's clothes built on it, a dark quiet silhouette. Right: his old picture frames, only to compare the feel. Below: walking at the game's size.</p>
+<p>Left: the bare mannequin and its bones (green: the shoulder line and the hip line, which turn against each other as he walks). Middle: Christian's clothes built on it, a dark quiet silhouette. Right: his old picture frames, only to compare the feel. Below: walking at the game's size. <b>New:</b> "Look" paints him in the manner of his old frames (light washes, a drawn line, ragged hems; the first time round it paints each picture, so it starts slowly), and "Measures" changes between your measures and his painting's proportions.</p>
 <canvas id="c" width="1500" height="700"></canvas>
 <div id="info"></div>
 <div class="bar" id="anims"></div>
@@ -53,6 +53,8 @@ fetch(location.pathname + '?fresh=' + Date.now(), { cache: 'no-store' }).then(r 
   <button id="speed">Speed: 1</button>
   <button id="bones">Bones on him</button>
   <button id="detail">Inside: quiet</button>
+  <button id="look">Look: dark</button>
+  <button id="pm">Measures: yours</button>
   <button id="ground">Ground: grey</button>
 </div>
 <canvas id="w" width="1500" height="300"></canvas>
@@ -75,6 +77,9 @@ fetch(location.pathname + '?fresh=' + Date.now(), { cache: 'no-store' }).then(r 
   }
   const names = Object.keys(MQ.anims), ims = await pack('christian-walk-nb');
   let cur = names[0], f = 0, playing = true, speed = 1, bones = false, gi = 0, wxp = -80, last = performance.now();
+  // the painted look: each picture of the walk is painted once and kept (PC), and made again when a measure changes
+  // (while a measure is being changed he is shown in the painting's flat tones; the washes come back a moment after)
+  let look = /look=paint/.test(location.hash), mine = null, staleAt = 0; const PC = {}, stale = () => { for (const k in PC) { if (Array.isArray(PC[k])) PC[k].forEach(c => { if (c) c.width = c.height = 0; }); delete PC[k]; } staleAt = performance.now(); };
   const GROUNDS = [['grey', '#7d8a96', '#5f6a74'], ['pale', '#d9d4c8', '#b9b2a2'], ['dark', '#2c2a2e', '#1b1a1d'], ['green', '#8a9364', '#5c6540']];
   const $ = id => document.getElementById(id);
   for (const n of names) { const b = document.createElement('button'); b.textContent = MQ.anims[n].label || n; b.dataset.n = n; b.onclick = () => { cur = n; f = 0; marks(); }; $('anims').appendChild(b); }
@@ -87,6 +92,10 @@ fetch(location.pathname + '?fresh=' + Date.now(), { cache: 'no-store' }).then(r 
   $('bones').onclick = e => { bones = !bones; e.target.classList.toggle('on', bones); };
   const DET = [['quiet', 1], ['none', 0], ['more', 2.2]]; let di = 0;
   $('detail').onclick = e => { di = (di + 1) % DET.length; MQ.LOOK.detail = DET[di][1]; e.target.textContent = 'Inside: ' + DET[di][0]; };
+  const lookBtn = () => { $('look').textContent = 'Look: ' + (look ? 'painted' : 'dark'); $('look').classList.toggle('on', look); MQ.LOOK.paint = look ? 1 : 0; }; lookBtn();
+  $('look').onclick = () => { look = !look; lookBtn(); HV = null; show(true); };
+  const pmBtn = () => { $('pm').textContent = 'Measures: ' + (mine ? "his painting's" : 'yours'); $('pm').classList.toggle('on', !!mine); };
+  $('pm').onclick = () => { if (mine) { for (const g in mine) Object.assign(MQ.DIM[g], mine[g]); mine = null; } else { mine = JSON.parse(JSON.stringify(MQ.DIM)); for (const g in MQ.PAINTING) Object.assign(MQ.DIM[g], MQ.PAINTING[g]); } pmBtn(); MQ.refresh(); HV = null; show(true); };
   $('ground').onclick = e => { gi = (gi + 1) % GROUNDS.length; e.target.textContent = 'Ground: ' + GROUNDS[gi][0]; };
   const skeleton = (x, S, ox, oy, Z) => MQ.bones(x, S, ox, oy, 1, Z);
   // ---- his measures, part by part: each slider sets one number of MQ.DIM
@@ -111,7 +120,7 @@ fetch(location.pathname + '?fresh=' + Date.now(), { cache: 'no-store' }).then(r 
     ['sleeve', 'His sleeves', 'body', [['width', 'Width at the cuff', 12, 36, .5], ['drop', 'How much they hang', 0, 2.5, .05], ['len', 'How far over the hand', 0, 16, .5]]],
     ['hands', 'His hands', 'hand', [['size', 'Size', .7, 1.4, .01], ['width', 'Width', .7, 1.4, .01], ['fingers', 'Length of the fingers', .6, 1.4, .01], ['curl', 'How far the fingers curl', 0, 2, .05], ['thumb', 'The thumb', .5, 1.5, .02]],
       [['Open hand', { curl: .3 }], ['Loosely closed', { curl: 1.7 }], ['Big working hands', { size: 1.15, width: 1.15 }]]],
-    ['cape', 'His cape', 'body', [['fall', 'How far it falls over his arm', 0, 44, 1], ['len', 'How low it hangs behind', .5, 1.35, .01], ['full', 'How far it stands out behind', .8, 1.6, .02], ['wrap', 'How far round his side it comes', .2, .8, .01], ['slant', 'Its hem: level, or slanting to a point behind', 0, 1.5, .05]],
+    ['cape', 'His cape', 'body', [['fall', 'How far it falls over his arm', 0, 44, 1], ['len', 'How low it hangs behind', .5, 1.35, .01], ['full', 'How far it stands out behind', .8, 2, .02], ['wrap', 'How far round his side it comes', .2, .8, .01], ['slant', 'Its hem: level, or slanting to a point behind', 0, 1.5, .05], ['sweep', 'Its front edge: straight down, or sweeping back to the tail', 0, 1, .05]],
       [['Short, over the shoulder', { fall: 30, len: .7 }], ['Long and full', { len: 1.2, full: 1.35, wrap: .55 }], ['Level hem', { slant: 0 }]]],
     ['sack', 'His burden', 'body', [['size', 'Size', .6, 1.5, .01], ['high', 'How low on his back it is tied', -.06, .3, .01], ['round', 'How far it stands out', .6, 1.5, .01],
       ['top', 'The bundle on top: its size (0 = none)', 0, 1.6, .02], ['set', 'The bundle on top: back or forward', -14, 12, .5], ['flat', 'The bundle on top: a flat roll or a round ball', .5, 1.6, .02],
@@ -123,6 +132,8 @@ fetch(location.pathname + '?fresh=' + Date.now(), { cache: 'no-store' }).then(r 
   let view = 'head', frozen = false;
   const fmt = (v, st) => (+v).toFixed(st < .01 ? 3 : st < .1 ? 2 : st < 1 ? 1 : 0).replace(/(\.\d*?)0+$/, '$1').replace(/\.$/, '');
   location.hash.replace(/([a-z]+)=([-\d.,]+)/g, (all, g, list) => { const G = GROUPS.find(x => x[0] === g); if (G) list.split(',').forEach((v, i) => { if (G[3][i] && v !== '' && isFinite(+v)) MQ.DIM[g][G[3][i][0]] = +v; }); });
+  // (a link that carries his painting's measures: the button says so, and goes back to the measures the page began with)
+  if (Object.keys(MQ.PAINTING).every(g => Object.keys(MQ.PAINTING[g]).every(k => Math.abs(MQ.DIM[g][k] - MQ.PAINTING[g][k]) < 1e-6))) { mine = JSON.parse(JSON.stringify(DEF)); pmBtn(); }
   // ---- the hood shaped by hand: the points of its edge dragged on the close-up (MQ.HAND.hood: an offset for each named point)
   // two shapes can be drawn by hand: the hood, and the bundle on top of his burden (its points are named u0..u8)
   const HG = ['hood', 'top'], grpOf = n => /^u\d$/.test(n) ? 'top' : 'hood', HANDOF = { hood: 'hood', face: 'hood', sack: 'top' };
@@ -131,13 +142,14 @@ fetch(location.pathname + '?fresh=' + Date.now(), { cache: 'no-store' }).then(r 
   const DEFH = handStr(), DEFG = { hood: handStr('hood'), top: handStr('top') }, UNDO = []; let hand = false, HPTS = [], HOUT = null, HV = null, grab = null;
   { const m = /hand=([\w.,-]+)/.exec(location.hash); if (m) handSet(m[1] === 'none' ? '' : m[1]); }
   function show(write) {
-    const parts = [];
+    const parts = []; stale();
     for (const [g, , , list] of GROUPS) {
       let changed = false;
       for (const [k, , , , st] of list) { const el = $('s-' + g + '-' + k); if (el) { el.value = MQ.DIM[g][k]; $('v-' + g + '-' + k).textContent = fmt(MQ.DIM[g][k], st); } if (Math.abs(MQ.DIM[g][k] - DEF[g][k]) > 1e-9) changed = true; }
       if (changed) parts.push(g + '=' + list.map(([k, , , , st]) => fmt(MQ.DIM[g][k], st)).join(','));
     }
     const hs = handStr(); if (hs !== DEFH) parts.push('hand=' + (hs || 'none'));
+    if (look) parts.push('look=paint');
     $('code').value = parts.length ? parts.join('\n') : 'everything as it is now';
     if (write) history.replaceState(null, '', parts.length ? '#' + parts.join('&') : location.pathname + location.search);
   }
@@ -168,7 +180,7 @@ fetch(location.pathname + '?fresh=' + Date.now(), { cache: 'no-store' }).then(r 
   }
   function drag(p) {
     const dx = (p[0] - grab.last[0]) / HV.Z, dy = (p[1] - grab.last[1]) / HV.Z, ex = grab.ex, ey = grab.ey, det = ex[0] * ey[1] - ey[0] * ex[1]; grab.last = p; if (Math.abs(det) < 1e-6) return;
-    const G = MQ.HAND[grpOf(grab.name)], o = G[grab.name] || (G[grab.name] = [0, 0]);
+    const G = MQ.HAND[grpOf(grab.name)], o = G[grab.name] || (G[grab.name] = [0, 0]); stale();
     o[0] = Math.max(-40, Math.min(40, o[0] + (dx * ey[1] - ey[0] * dy) / det)); o[1] = Math.max(-40, Math.min(40, o[1] + (ex[0] * dy - dx * ex[1]) / det));
   }
   const drop = () => { if (grab) { grab = null; show(true); } };
@@ -208,13 +220,17 @@ fetch(location.pathname + '?fresh=' + Date.now(), { cache: 'no-store' }).then(r 
     ctx.fillStyle = G[1]; ctx.fillRect(0, 0, 1500, 700); ctx.fillStyle = G[2]; ctx.fillRect(0, gy - 6, 1500, 56);
     MQ.body(ctx, S, 250, gy, 1, Z); skeleton(ctx, S, 250, gy, Z);
     MQ.above(ctx, S, 78, 84, 1.7, 3); ctx.fillStyle = '#eef0f2'; ctx.font = '15px Georgia'; ctx.fillText('From above: shoulders (green) and hips (gold).', 14, 172); ctx.fillText('Their turn is drawn three times as large.', 14, 192);
-    MQ.figure(ctx, S, Q, 750, gy, 1, Z); if (bones) skeleton(ctx, S, 750, gy, Z);
+    const PB = MQ.PBOX, pf = z => { if (PC.cur !== cur) { stale(); PC.cur = cur; } const C = PC[z] || (PC[z] = []); return C[fi] || (C[fi] = MQ.paintFrame(MQ.skelAt(cur, fi), MQ.clothAt(cur, fi), z)); };
+    const wet = look && now - staleAt > 350;
+    if (wet) ctx.drawImage(pf(1.5), 750 - (K.ax - PB.x) * Z, gy - (K.ground - PB.y) * Z, PB.w * Z, PB.h * Z); else MQ.figure(ctx, S, Q, 750, gy, 1, Z);
+    if (bones) skeleton(ctx, S, 750, gy, Z);
     const im = ims[(fi + (A.track ? 0 : 7)) % ims.length]; ctx.drawImage(im, 1250 - K.ax * Z, gy - K.ground * Z, im.width * Z, im.height * Z);
     $('info').textContent = (A.label || cur) + ' · frame ' + fi + ' of ' + n;
     wx.fillStyle = G[1]; wx.fillRect(0, 0, 1500, 300); wx.fillStyle = G[2]; wx.fillRect(0, 236, 1500, 64);
     const Kk = 1.04;
     if (playing) wxp += dt * (A.fps || 24) * speed * (A.vpx || 0) * Kk; if (wxp > 1580) wxp = -80;
-    MQ.figure(wx, S, Q, wxp, 240, 1, Kk); if (bones) skeleton(wx, S, wxp, 240, Kk);
+    if (wet) wx.drawImage(pf(1.5), wxp - (K.ax - PB.x) * Kk, 240 - (K.ground - PB.y) * Kk, PB.w * Kk, PB.h * Kk); else MQ.figure(wx, S, Q, wxp, 240, 1, Kk);
+    if (bones) skeleton(wx, S, wxp, 240, Kk);
     closeUp(S, Q, G);
     requestAnimationFrame(frame);
   }

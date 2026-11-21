@@ -50,7 +50,8 @@ const MQ = (() => {
   //           it: top (its size, 0 = none), set (further back or forward), flat (a flat roll or a round ball)
   //   hands:  size, width, fingers (their length), curl (0 = straight; more = further back toward the palm), thumb
   //   cape:   fall (how far it falls over his upper arm), len (how low it hangs behind), full (how far it stands out behind),
-  //           wrap (how far round his side it comes), slant (its hem level, or slanting to a point behind)
+  //           wrap (how far round his side it comes), slant (its hem level, or slanting to a point behind),
+  //           sweep (its front edge straight down, or sweeping back to the tail as in his painted frames)
   //   gait:   step, bob, rock, swagger, arm (swing), bend (the elbow's flexing)
   const HOOD = { beak: 1.6, droop: -2.6, top: 2.3, peak: 0, back: 6.8, hang: 8.2, rim: -2.8, cape: -12, head: .99, bow: .38, tilt: .1, rake: .8, size: .96, tail: 0, roll: 0, bib: 20,
     sharp: .1, hook: -1, thick: 4.6, sweep: .2, cut: 0 };
@@ -60,8 +61,14 @@ const MQ = (() => {
   const FACE = { nose: .75, chin: 1.1, brow: 1.5, tip: -.5, bridge: .3, lips: .65, jaw: .2, forehead: .2 }, SHOE = { toe: .86, point: .35, lift: .4, bulk: .88 }, LEG = { calf: 1.08, ankle: .92, shaft: 2.1 };
   const BUILD = { legs: 1.07, arms: .98, girth: .98, lean: 0 }, ROBE = { hem: -12, flare: 0, full: 1.17 }, SLEEVE = { width: 13, drop: 1.1, len: 0 };
   const SACK = { size: 1.5, high: -.05, round: 1.14, top: .8, set: 6.5, flat: 1.1, back: 7 }, GAIT = { step: 95, bob: 2.7, rock: .032, swagger: .016, arm: .02, bend: .16 };
-  const HANDS = { size: 1, width: 1, fingers: 1, curl: .3, thumb: 1 }, CAPE = { fall: 24, len: 1.04, full: 1.1, wrap: .42, slant: .6 };
+  const HANDS = { size: 1, width: 1, fingers: 1, curl: .3, thumb: 1 }, CAPE = { fall: 24, len: 1.04, full: 1.1, wrap: .42, slant: .6, sweep: 0 };
   const DIM = { hood: HOOD, face: FACE, shoe: SHOE, leg: LEG, build: BUILD, robe: ROBE, sleeve: SLEEVE, hands: HANDS, cape: CAPE, sack: SACK, gait: GAIT };
+  // HIS PAINTING'S MEASURES (a starting point, not his defaults): what differs in his painted frames from the measures chosen one
+  // at a time on the sliders. Measured off the frames: a head about a sixth of his height, a robe down to the ankle and wide at
+  // the hem, wide sleeves over the hand, a pack about as wide as his body tucked close, and the cloak one broad band that sweeps
+  // back from the shoulder to a ragged tail at the knee. Lay them over DIM (Object.assign, part by part) and call refresh().
+  const PAINTING = { hood: { head: 1.22 }, build: { legs: 1 }, robe: { hem: 13, flare: 1.5, full: 1.3 }, sleeve: { width: 22, drop: 1.1, len: 6 },
+    sack: { size: 1.08, round: 1.3, top: .9, set: 4, back: 2, high: -.02 }, cape: { fall: 30, len: .78, full: 1.8, wrap: .62, slant: .35, sweep: .7 } };
   // SHAPED BY HAND: each named point of the hood's outline may carry an offset of its own, [dx, dy] in that point's own frame (his
   // head's, or his neck's), laid on top of what the measures give; so a shape drawn by hand goes with him as he moves. The lab's
   // draggable points set them. Names: r0..r5 the rim from under the jaw up to under the tip, tip, tt the tip's top, cf the front
@@ -382,7 +389,12 @@ const MQ = (() => {
   const leaf = m => t => m * Math.pow(Math.sin(Math.PI * Math.min(1, Math.max(0, t))), .7);      // thin at both ends
   // dark, quiet tones: a silhouette first, with only a trace of form inside it (LOOK.detail 0 = one flat tone)
   const TONE = { robe: .2, robeSh: .165, robeDk: .156, robeLt: .226, flap: .178, hose: .128, hoseFar: .104, shoe: .15, shoeFar: .118, sack: .176, sackSh: .146, sackLt: .2, cape: .16, capeSh: .136, capeLt: .186, strap: .118, hood: .206, hoodSh: .17, hoodLt: .232, face: .262, hand: .25, handFar: .19, sleeve: .222, sleeveFar: .15, belt: .12 };
-  const LOOK = { detail: 1, base: .185 };
+  const LOOK = { detail: 1, base: .185, paint: 0 };
+  // THE PAINTED LOOK (LOOK.paint 1; owner, of the dark flat mannequin beside his painted frames: "something about that original
+  // drawing looks so good"): the painting's own key, light washes with darker drawn folds (its tones run from about .37 to .7),
+  // ragged hems, bolder folds; painted() then lays the washes, the hand-made edge and the drawn line over these flat shapes.
+  const PTONE = { robe: .57, robeSh: .47, robeDk: .36, robeLt: .67, flap: .5, hose: .35, hoseFar: .29, shoe: .61, shoeFar: .39, sack: .545, sackSh: .41, sackLt: .64, cape: .52, capeSh: .355, capeLt: .63, strap: .34, hood: .585, hoodSh: .43, hoodBk: .51, hoodLt: .67, face: .455, hand: .66, handFar: .5, sleeve: .63, sleeveFar: .46, belt: .31 };
+  const hs = i => { const v = Math.sin(i * 127.1 + 31.7) * 43758.5453; return v - Math.floor(v); };
   // his face by its measures: the nose stands out more or less from the line of the face, the brow and the chin likewise
   const skullPts = () => BODY.skull.map((v, i) => {
     let x = v[0];
@@ -456,7 +468,7 @@ const MQ = (() => {
 
   // the clothed figure. (x, y) is the ground under him, face 1 right / -1 left, Kk the size; shade(tone) gives each tone's colour
   function figure(ctx, S, Q, x, y, face, Kk, shade) {
-    shade = shade || grey; const J = joints(S), T = k => shade(LOOK.base + (TONE[k] - LOOK.base) * LOOK.detail);
+    shade = shade || grey; const J = joints(S), PT = LOOK.paint, T = k => shade(PT ? PTONE[k] : LOOK.base + (TONE[k] - LOOK.base) * LOOK.detail), pw = PT ? .7 : 1;
     Q = Q || clothPose(clothNew());
     const f = Q.slice(0, 4), b = Q.slice(4, 8), fl = Q.slice(8, 11), lift = Q[11], by = Q[12], h = J.hip, n = J.neck;
     ctx.save(); ctx.translate(x, y); ctx.scale((face || 1) * Kk, Kk); ctx.translate(-K.ax, -K.ground); ctx.lineJoin = 'round'; ctx.lineCap = 'round';
@@ -510,22 +522,27 @@ const MQ = (() => {
     const yF = hemY - .16 * Math.max(0, f[3] - CL.rf[3]), yB = hemY - .1 * Math.max(0, CL.rb[3] - b[3]);
     const front = [st(.03, 9), st(.14, 15.5), st(.3, 22.5), st(.5, 24), st(.67, 23), st(.78, 19.5), [h[0] + f[0], yr(0)], [h[0] + f[1], yr(1)], [h[0] + f[2], yr(2)], [h[0] + f[3], yF, 1]];
     const back = [[h[0] + b[3], yB, 1], [h[0] + b[2], yr(2)], [h[0] + b[1], yr(1)], [h[0] + b[0], yr(0)], st(.78, -15), st(.66, -17.5), st(.5, -20), st(.3, -22.5), st(.12, -19), st(.03, -11)];
-    const hem = []; for (let i = 1; i < 7; i++) { const u = 1 - i / 7; hem.push([h[0] + lerp(b[3], f[3], u), lerp(yB, yF, u) + 2.2 * Math.sin(Math.PI * u) + .9 * Math.sin(u * 15.7 + 1)]); }
+    const hem = [];
+    if (PT) for (let i = 1; i < 14; i++) { const u = 1 - (i + .5 * (hs(i + 70) - .5)) / 14, tat = i === 4 || i === 10 ? 1 : 0;      // a worn hem: uneven, with a tatter or two hanging from it
+      hem.push([h[0] + lerp(b[3], f[3], u), lerp(yB, yF, u) + 2.2 * Math.sin(Math.PI * u) + 4.4 * (hs(i) - .5) + tat * (3 + 2 * hs(i + 9)), tat || hs(i + 21) > .7 ? 1 : 0]); }
+    else for (let i = 1; i < 7; i++) { const u = 1 - i / 7; hem.push([h[0] + lerp(b[3], f[3], u), lerp(yB, yF, u) + 2.2 * Math.sin(Math.PI * u) + .9 * Math.sin(u * 15.7 + 1)]); }
     const robe = () => { ctx.beginPath(); curve(ctx, front.concat(hem, back), true); };
     ctx.fillStyle = T('robe'); robe(); ctx.fill();
     fill([np([-11, -3.5]), np([-3, -5]), np([8.5, -3]), np([13, 6.5]), np([0, 10]), np([-14, 6.5])], T('robe'));      // the robe's neck, up round the base of his neck
     ctx.save(); robe(); ctx.clip();
-    const edge = (pts, wd, col) => { ctx.strokeStyle = col; ctx.lineWidth = wd; ctx.beginPath(); curve(ctx, pts); ctx.stroke(); };
+    const edge = (pts, wd, col) => { ctx.strokeStyle = col; ctx.beginPath(); curve(ctx, pts);
+      if (PT) { const ga = ctx.globalAlpha; ctx.globalAlpha = ga * .14; for (let k = 10; k > 0; k--) { ctx.lineWidth = wd * (.2 + .16 * k); ctx.stroke(); } ctx.globalAlpha = ga; }      // painted: a soft wash, not a hard band
+      else { ctx.lineWidth = wd; ctx.stroke(); } };
     edge(back, 18, T('robeSh')); edge([front[9]].concat(hem, [back[0]]), 5, T('robeSh')); edge(front.slice(1, 9), 8, T('robeLt'));      // the shaded back, the hem's weight, the lit front
     // pipe folds: cloth gathered under the cord falls in soft tubes; they spread as the skirt opens
     const across = (u, j) => [h[0] + lerp(b[j], f[j], u), yr(j)], wa = st(.79, 0);
-    [[.3, 1.2, 'robeSh'], [.53, 1, 'robeDk'], [.76, .9, 'robeSh']].forEach(([u, wd, tn]) => stroke(ctx, [[wa[0] + lerp(-13, 17, u), wa[1] + 2], across(u, 0), across(u, 1), across(u, 2), [across(u, 3)[0], lerp(yB, yF, u) + 2]], t => wd * Math.min(1, t * 2.4), T(tn)));
+    (PT ? [[.34, 1.25, 'robeDk'], [.66, .8, 'robeSh']] : [[.3, 1.2, 'robeSh'], [.53, 1, 'robeDk'], [.76, .9, 'robeSh']]).forEach(([u, wd, tn]) => stroke(ctx, [[wa[0] + lerp(-13, 17, u), wa[1] + 2], across(u, 0), across(u, 1), across(u, 2), [across(u, 3)[0], lerp(yB, yF, u) + 2]], t => wd * pw * Math.min(1, t * 2.4), T(tn)));
     // tension folds: where a knee pushes the cloth, a fold runs from the knee back to where the cloth is held
     const lead = J.legF.knee[0] > J.legN.knee[0] ? J.legF : J.legN, pull = Math.max(0, Math.min(1, (f[2] - CL.rf[2]) / 14));
-    if (pull > .12) {
+    if (pull > .12 && !PT) {
       const kp = [Math.min(lead.knee[0] + 8, h[0] + f[2] - 4), Math.min(lead.knee[1], yr(3) - 14)], a1 = [h[0] + b[3] + 9, yB - 9], a2 = [h[0] + b[0] + 7, yr(0) - 8];
-      stroke(ctx, [kp, add(mix(kp, a1, .5), [0, 8 * pull]), a1], leaf(1.5 * pull), T('robeDk'));
-      stroke(ctx, [add(kp, [-2, -3]), add(mix(kp, a2, .5), [3, 4 * pull]), a2], leaf(1 * pull), T('robeSh'));
+      stroke(ctx, [kp, add(mix(kp, a1, .5), [0, 8 * pull]), a1], leaf(1.5 * (PT ? 1.2 : 1) * pull), T(PT ? 'robeSh' : 'robeDk'));
+      if (!PT) stroke(ctx, [add(kp, [-2, -3]), add(mix(kp, a2, .5), [3, 4 * pull]), a2], leaf(1 * pull), T('robeSh'));
     }
     ctx.restore();
     // the cord at his waist (a habit is girded with a cord, as a pilgrim is), knotted at his side; its long end hangs
@@ -547,7 +564,7 @@ const MQ = (() => {
     ctx.save(); ctx.beginPath(); curve(ctx, sack, true); ctx.clip();
     fill([[-46, 38], [-37, 56], [-23, 65], [-5, 64], [8, 54], [12, 80], [-48, 80]].map(sp), T('sackSh'));      // its underside in shade
     stroke(ctx, [sp([-3, 5]), sp([-14, 18]), sp([-20, 36])], leaf(1.1), T('sackSh')); stroke(ctx, [sp([0, 6]), sp([-4, 24]), sp([-5, 44])], leaf(.9), T('sackSh'));      // creases where the weight pulls from the tie
-    stroke(ctx, [sp([9, 30]), sp([-6, 36]), sp([-23, 36.5]), sp([-40, 30])], t => .9, T('sackSh'));      // the rope round its girth
+    if (!PT) stroke(ctx, [sp([9, 30]), sp([-6, 36]), sp([-23, 36.5]), sp([-40, 30])], t => .9, T('sackSh'));      // the rope round its girth
     ctx.restore();
     // the sack's tie at its mouth: the bundle sits on it, so it is drawn first and shows only where the bundle leaves it clear
     stroke(ctx, [sp([-11, 3]), sp([-2, 1.5]), sp([5, 2.5])], leaf(1.7), T('strap'));
@@ -577,10 +594,12 @@ const MQ = (() => {
     //     body, drawn after the pack and before the arm (the strip lies over the pack's front edge, as it does in the painting);
     //     capeTop, further on, is the part over the shoulder, drawn over the arm. Its back edge below the pack is the cloth's own
     //     swinging edge (fl: it flies and settles later than the skirt); its hem slants up from the point to its front edge.
-    const cw = CAPE.wrap, cX = d => h[0] + lerp(edgeAt(b, CL.rb, d), edgeAt(f, CL.rf, d), cw), cd = CL.fd[2], tw = o => lerp(-19, 22, cw) * o, cfd = cd * (1 - .3 * CAPE.slant);
+    const cw = CAPE.wrap, cd = CL.fd[2], cfd = cd * (1 - .3 * CAPE.slant), cX = d => h[0] + lerp(edgeAt(b, CL.rb, d), edgeAt(f, CL.rf, d), cw * (1 - CAPE.sweep * Math.max(0, Math.min(1, (d - 10) / (cfd - 10))))), tw = o => lerp(-19, 22, cw) * o;
     const o0 = [h[0] + fl[0], h[1] + CL.fd[0]], o1 = [h[0] + fl[1], h[1] + CL.fd[1]], o2 = [h[0] + fl[2], h[1] + cd, 1], cf = [cX(cfd), h[1] + cfd, 1], c12 = [h[0] + Math.min(b[0] - 2, fl[0] + 3), h[1] + 12];
     const capeBack = [st(.12, -22.5), st(.3, -27.5), st(.5, -27), st(.68, -25), c12, o0, o1], hemPts = [[lerp(o2[0], cf[0], .3), lerp(o2[1], cf[1], .42)], [lerp(o2[0], cf[0], .68), lerp(o2[1], cf[1], .8) + 1]];
-    const capeBody = [np([-11.5, -3])].concat(capeBack, [o2], hemPts, [cf, [cX(cfd * .66), h[1] + cfd * .66], [cX(cfd * .36), h[1] + cfd * .36], [cX(10), h[1] + 10], st(.7, tw(1)), st(.4, tw(.7)), yk(1, 8), np([3, 0])]);
+    const hv = sub(cf, o2), hl = Math.hypot(hv[0], hv[1]) || 1, hq = (t, up) => [o2[0] + hv[0] * t + hv[1] / hl * up, o2[1] + hv[1] * t - hv[0] / hl * up];
+    const tail = PT ? [o2, hq(.16, -.03 * hl), hq(.32, .22 * hl), hq(.47, .06 * hl), [...hq(.6, -.1 * hl), 1], hq(.8, .05 * hl)] : [o2].concat(hemPts);      // painted: its tail hangs in two ragged lobes
+    const capeBody = [np([-11.5, -3])].concat(capeBack, tail, [cf, [cX(cfd * .66), h[1] + cfd * .66], [cX(cfd * .36), h[1] + cfd * .36], [cX(10), h[1] + 10], st(.7, tw(1)), st(.4, tw(.7)), yk(1, 8), np([3, 0])]);
     const capeEdge = d => { const D = CL.fd; return h[0] + (d <= D[0] ? lerp(Math.min(b[0] - 2, fl[0] + 3), fl[0], Math.max(0, (d - 12) / (D[0] - 12))) : d <= D[1] ? lerp(fl[0], fl[1], (d - D[0]) / (D[1] - D[0])) : lerp(fl[1], fl[2], Math.min(1, (d - D[1]) / (D[2] - D[1])))); };
     // its shadow on the skirt, in front of its edge and under its hem (kept on the robe)
     ctx.save(); robe(); ctx.clip();
@@ -589,12 +608,12 @@ const MQ = (() => {
     fill(capeBody, T('cape'));
     ctx.save(); ctx.beginPath(); curve(ctx, capeBody, true); ctx.clip();
     edge(capeBack.concat([[o2[0], o2[1]]]), 9, T('capeSh'));      // its back in shade
-    edge([[o2[0], o2[1]]].concat(hemPts, [[cf[0], cf[1]]]), 3.4, T('capeSh'));      // the hem's weight
+    if (!PT) edge([[o2[0], o2[1]]].concat(hemPts, [[cf[0], cf[1]]]), 3.4, T('capeSh'));      // the hem's weight
     edge([[cX(10), h[1] + 10], [cX(cfd * .36), h[1] + cfd * .36], [cX(cfd * .66), h[1] + cfd * .66], [cf[0], cf[1]]], 3, T('capeLt'));      // its front edge, turned a little to the light
     // long folds running its whole length, from the shoulder down behind the arm to the hem; they open as the cloth swings out behind
     const fold = (u, wd) => { const up = [st(.16, lerp(-22.5, -4, u)), st(.36, lerp(-27.5, -9, u)), st(.6, lerp(-26, -8, u))], dn = [14, cd * .36, cd * .66, lerp(cd, cfd, u) - 3].map(d => [lerp(capeEdge(d), cX(d), u), h[1] + d]);
-      stroke(ctx, up.concat(dn), t => wd * Math.min(1, 6 * t) * (1 - .35 * t), T('capeSh')); };
-    fold(.3, 1.25); fold(.62, 1);
+      stroke(ctx, up.concat(dn), PT ? t => wd * Math.pow(Math.sin(Math.PI * Math.min(1, t * 1.04)), .55) * (.8 + .3 * Math.sin(t * 8 + u * 9)) : t => wd * Math.min(1, 6 * t) * (1 - .35 * t), T('capeSh')); };
+    if (PT) { fold(.3, .9); fold(.7, .55); } else { fold(.3, 1.25); fold(.62, 1); }
     ctx.restore();
 
     // THE STRAP that holds it (owner: "the strap of his bag cuts through his arm": it ran down his chest and back to the sack, hidden
@@ -673,13 +692,79 @@ const MQ = (() => {
       const ro = HD.roll, IN = [off(0, -ro), off(1, -ro), off(2, -ro), off(3, -ro), off(4, -ro), off(5, -.8 * ro, -.3 * ro), off(6, -.5 * ro, -.7 * ro), off(7, -.9 * ro, -.5 * ro)];
       fill(RIM.map(hh).concat(IN.map(hh).reverse()), T('hoodLt')); stroke(ctx, IN.map(hh), t => .8, T('hoodSh'));
     } else stroke(ctx, [off(7, -1.8, -.6), off(6, -1.8 - .1 * bk), off(5, -2, 1.2), off(4, -1.2, 1), off(3, -.8), off(2, -.8), off(1, -.8)].map(hh), t => .9, T('hoodSh'));      // the rim's fold
-    stroke(ctx, [hh(pl([-5, -23.5 - dt], 'c2')), hh(pl([-19 - .5 * dk, -12.5], 'c4')), dn(hh(pl([-23.5 - dk, 3 + .6 * hg], 'b2')), .8), dn(cp(pl([-17.5, 9 + .5 * hg], 'po'), .3), .6)], t => 4 * t + 1.2, T('hoodSh'));      // the back of the hood in shade
+    if (!PT) stroke(ctx, [hh(pl([-5, -23.5 - dt], 'c2')), hh(pl([-19 - .5 * dk, -12.5], 'c4')), dn(hh(pl([-23.5 - dk, 3 + .6 * hg], 'b2')), .8), dn(cp(pl([-17.5, 9 + .5 * hg], 'po'), .3), .6)], t => 4 * t + 1.2, T(PT ? 'hoodBk' : 'hoodSh'));      // the back of the hood in shade
     stroke(ctx, [hoodEdge(0, 1), hoodEdge(1, .9), hoodEdge(2, .9), hoodEdge(3, .9), hoodEdge(4, .6)], t => 1.5, T('hoodSh'));      // the cape's hem
     ctx.restore();
     // drawn up to his neck, the hood lies on his neck and chest, and his near shoulder and arm are nearer to us than it:
     // they are drawn again over it, so the shoulder is clear and the hood's front shows on his chest in front of the arm
     if (up > 0) { ctx.globalAlpha = Math.min(1, up * 2.5); arm(J.armN, false); capeTop(); ctx.globalAlpha = 1; strapOn(Math.min(1, up * 2.5)); }
     ctx.restore();
+  }
+
+  // THE PAINTED FIGURE. figure() gives flat shapes in the painting's key; here they are painted over, pixel by pixel, in the
+  // manner of his watercolour frames: (1) every edge wanders a little, as a line drawn by hand does (the picture is read through
+  // two slow fields of drift); (2) washes: the tone pools lighter and darker in irregular islands with a faint tide-line round
+  // them; (3) pigment gathers along the outline and where one shape meets another, a drawn line that is lost and found;
+  // (4) the paper's grain. THE PAINT GOES WITH THE CLOTH: the fields are read where the cloth has come from, row by row (above
+  // the hip they follow his spine as he rocks and bobs, below it the skirt as it swings), so a wash stays on its cloth and does
+  // not slide over him as he walks; below the knee washes and drift fade, so swinging feet do not swim under still paint.
+  // Made at z pixels a unit; a canvas is returned.
+  const PBOX = { x: -60, y: -60, w: 310, h: 372 }; let PF = null;      // the piece of his own frame that is painted (room for the largest measures)
+  function paintFields() {
+    if (PF) return PF;
+    const W = PBOX.w, H = PBOX.h, rnd = (i, j, q) => { const v = Math.sin(i * 127.1 + j * 311.7 + q * 74.7) * 43758.5453; return v - Math.floor(v); };
+    const vn = (x, y, q) => { const i = Math.floor(x), j = Math.floor(y), u = x - i, v = y - j, a = u * u * (3 - 2 * u), c = v * v * (3 - 2 * v); return lerp(lerp(rnd(i, j, q), rnd(i + 1, j, q), a), lerp(rnd(i, j + 1, q), rnd(i + 1, j + 1, q), a), c); };
+    const mk = (q, oct) => { const A = new Float32Array(W * H); let tw = 0; oct.forEach(o => { tw += o[1]; });
+      for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { let v = 0; oct.forEach((o, k) => { v += o[1] * vn(x / o[0], y / (o[2] || o[0]), q + k); }); A[y * W + x] = v / tw; } return A; };
+    PF = { W, H, wx: mk(1, [[34, 1], [11, .45], [4.2, .2]]), wy: mk(5, [[34, 1], [11, .45], [4.2, .2]]), wash: mk(9, [[30, 1, 64], [13, .6, 26], [5, .2]]), wash2: mk(23, [[11, 1, 19], [4.5, .45, 7]]), lost: mk(14, [[24, 1], [9, .45]]), grain: mk(19, [[1.6, 1], [.8, .6]]) };
+    return PF;
+  }
+  function paintFrame(S, Q, z, o) {
+    o = Object.assign({ drift: 2.3, wash: 1, line: 1, rim: 1, grain: 1 }, o);
+    const F = paintFields(), W = Math.round(PBOX.w * z), H = Math.round(PBOX.h * z), cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+    const cx = cv.getContext('2d', { willReadFrequently: true }), was = LOOK.paint; LOOK.paint = 1;
+    figure(cx, S, Q, (K.ax - PBOX.x) * z, (K.ground - PBOX.y) * z, 1, z); LOOK.paint = was;
+    const im = cx.getImageData(0, 0, W, H), D = im.data, N = W * H, g0 = new Float32Array(N), a0 = new Float32Array(N);
+    for (let i = 0; i < N; i++) { a0[i] = D[i * 4 + 3] / 255; g0[i] = D[i * 4] / 255 * a0[i]; }
+    // where each row of him has moved to, against his rest: sx[row], and sy for all of him (his bob)
+    const J = joints(S), hj = J.hip, nj = J.neck, cq = Q || clothPose(clothNew()), cf_ = cq.slice(0, 4), cb_ = cq.slice(4, 8), sy = hj[1] - K.hip[1], sxr = new Float32Array(PBOX.h + 1);
+    for (let r = 0; r <= PBOX.h; r++) { const yu = r + PBOX.y, d = yu - hj[1];
+      sxr[r] = d <= 0 ? (hj[0] - K.hip[0]) + ((nj[0] - hj[0]) - (K.neck[0] - K.hip[0])) * Math.min(1.3, -d / (hj[1] - nj[1]))
+        : (hj[0] - K.hip[0]) + (edgeAt(cf_, CL.rf, Math.min(d, CL.d[3])) - edgeAt(CL.rf, CL.rf, Math.min(d, CL.d[3])) + edgeAt(cb_, CL.rb, Math.min(d, CL.d[3])) - edgeAt(CL.rb, CL.rb, Math.min(d, CL.d[3]))) / 2; }
+    const shx = y => { const r = Math.max(0, Math.min(PBOX.h - .001, y)), i = r | 0; return sxr[i] + (sxr[i + 1] - sxr[i]) * (r - i); };
+    const fld = (A, x, y) => { x = Math.max(0, Math.min(F.W - 1.001, x)); y = Math.max(0, Math.min(F.H - 1.001, y)); const i = x | 0, j = y | 0, u = x - i, v = y - j, k = j * F.W + i; return (A[k] * (1 - u) + A[k + 1] * u) * (1 - v) + (A[k + F.W] * (1 - u) + A[k + F.W + 1] * u) * v; };
+    // 1. the drift: each pixel is read from a little way off
+    const g = new Float32Array(N), a = new Float32Array(N), knee = (K.ground - 78 - PBOX.y) * z, foot = (K.ground - 20 - PBOX.y) * z;
+    for (let y = 0; y < H; y++) { const low = y < knee ? 1 : Math.max(.3, 1 - .7 * (y - knee) / (foot - knee)), amp = o.drift * z * 2 * low;
+      const ox = shx(y / z);
+      for (let x = 0; x < W; x++) { const fx = x / z - ox, fy = y / z - sy; let sx = x + amp * (fld(F.wx, fx, fy) - .5), sy2 = y + amp * (fld(F.wy, fx, fy) - .5);
+        sx = Math.max(0, Math.min(W - 1.001, sx)); sy2 = Math.max(0, Math.min(H - 1.001, sy2)); const i = sx | 0, j = sy2 | 0, u = sx - i, v = sy2 - j, k = j * W + i, w00 = (1 - u) * (1 - v), w10 = u * (1 - v), w01 = (1 - u) * v, w11 = u * v;
+        a[y * W + x] = a0[k] * w00 + a0[k + 1] * w10 + a0[k + W] * w01 + a0[k + W + 1] * w11; g[y * W + x] = g0[k] * w00 + g0[k + 1] * w10 + g0[k + W] * w01 + g0[k + W + 1] * w11; } }
+    for (let i = 0; i < N; i++) g[i] = a[i] > .004 ? g[i] / a[i] : 0;
+    // how far inside the outline each pixel is: the alpha blurred (two box blurs of about a unit and a half)
+    const blur = (A, r) => { const B = new Float32Array(N), C = new Float32Array(N), n = 2 * r + 1;
+      for (let y = 0; y < H; y++) { let acc = 0; for (let x = -r; x <= r; x++) acc += A[y * W + Math.max(0, Math.min(W - 1, x))]; for (let x = 0; x < W; x++) { B[y * W + x] = acc / n; acc += A[y * W + Math.min(W - 1, x + r + 1)] - A[y * W + Math.max(0, x - r)]; } }
+      for (let x = 0; x < W; x++) { let acc = 0; for (let y = -r; y <= r; y++) acc += B[Math.max(0, Math.min(H - 1, y)) * W + x]; for (let y = 0; y < H; y++) { C[y * W + x] = acc / n; acc += B[Math.min(H - 1, y + r + 1) * W + x] - B[Math.max(0, y - r) * W + x]; } }
+      return C; };
+    const rr = Math.max(1, Math.round(.66 * z)), ab = blur(blur(a, Math.max(1, Math.round(1.1 * z))), Math.max(1, Math.round(.8 * z))), sm = (e0, e1, v) => { const t = Math.max(0, Math.min(1, (v - e0) / (e1 - e0))); return t * t * (3 - 2 * t); };
+    for (let y = 0; y < H; y++) { const ox = shx(y / z), low = y < knee ? 1 : Math.max(.25, 1 - .75 * (y - knee) / (foot - knee)); for (let x = 0; x < W; x++) { const i = y * W + x; if (a[i] < .004) { D[i * 4 + 3] = 0; continue; }
+      const fx = x / z - ox, fy = y / z - sy, m = fld(F.wash, fx, fy), m2 = fld(F.wash2, fx, fy), lf = fld(F.lost, fx, fy); let t = g[i];
+      // 2. the washes: lighter islands, darker pools, a faint tide-line round the islands
+      const isl = sm(.578, .6, m), pool = sm(.415, .392, m); t += o.wash * low * (.075 * isl - .07 * pool - .03 * Math.max(0, 1 - Math.abs(m - .589) / .011) - .05 * (m - .5) + .05 * (m2 - .5));
+      // 3. the drawn line: along the outline, and where one shape meets another (lost in places)
+      const xl = i - Math.min(rr, x), xr = i + Math.min(rr, W - 1 - x), yu = i - W * Math.min(rr, y), yd = i + W * Math.min(rr, H - 1 - y), gx = (g[xr] - g[xl]) * Math.min(a[xr], a[xl]), gy = (g[yd] - g[yu]) * Math.min(a[yd], a[yu]);
+      const edge = Math.max(0, Math.min(1, (Math.hypot(gx, gy) - .022) / .028)), rim = sm(.08, .5, 1 - ab[i]) * a[i];
+      t -= o.line * .2 * edge * sm(.26, .48, lf) + o.rim * .34 * rim * sm(.22, .5, 1 - lf * .9 + .12 * (m - .5));
+      // 4. the paper's grain
+      t += o.grain * .028 * (fld(F.grain, fx, fy) - .5);
+      const v = Math.round(255 * Math.max(0, Math.min(1, t))); D[i * 4] = D[i * 4 + 1] = D[i * 4 + 2] = v; D[i * 4 + 3] = Math.round(255 * Math.min(1, a[i])); } }
+    cx.putImageData(im, 0, 0);
+    return cv;
+  }
+  // the painted figure drawn like figure(): (x, y) the ground under him, face 1 right / -1 left, Kk the size (made at o.z pixels a unit)
+  function painted(ctx, S, Q, x, y, face, Kk, o) {
+    const z = (o && o.z) || Math.max(1, Kk * 2), cv = paintFrame(S, Q, z, o);
+    ctx.save(); ctx.translate(x, y); ctx.scale((face || 1) * Kk / z, Kk / z); ctx.drawImage(cv, -(K.ax - PBOX.x) * z, -(K.ground - PBOX.y) * z); ctx.restore();
   }
 
   // the bare mannequin: the body the clothes are built on (the art schools' lay figure, in profile)
@@ -711,5 +796,5 @@ const MQ = (() => {
     ctx.fillStyle = '#d8d2c6'; ctx.beginPath(); ctx.ellipse(1, 0, 9, 8, 0, 0, 7); ctx.fill(); ctx.beginPath(); ctx.moveTo(9, -3.2); ctx.lineTo(14.5, 0); ctx.lineTo(9, 3.2); ctx.fill();      // his head, the nose to the right
     ctx.restore();
   }
-  return { K, CL, TONE, LOOK, HOOD, DIM, HAND, rec: a => { REC = a || null; }, curve, BODY, load, walk, refresh, figure, body, bones, above, joints, pose, fromTrack, classic, ik, clothNew, clothStep, clothPose, bake, add: add_, skelAt, clothAt, anims: ANIMS };
+  return { K, CL, TONE, LOOK, HOOD, DIM, HAND, rec: a => { REC = a || null; }, curve, BODY, load, walk, refresh, figure, body, bones, above, joints, pose, fromTrack, classic, ik, clothNew, clothStep, clothPose, bake, add: add_, skelAt, clothAt, anims: ANIMS, painted, paintFrame, PBOX, PAINTING };
 })();
