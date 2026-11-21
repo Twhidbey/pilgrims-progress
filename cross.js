@@ -17,7 +17,7 @@
 const CR = (() => {
   const SO = 'The Shining Ones', S1 = 'The first Shining One', S3 = 'The third Shining One';
   // ---------- the land (world units: x along the way, h up from the foot of the slope) ----------
-  const START = 480, WALL_END = 860, TOMB_X = 3080, SLOPE0 = 1180, CREST0 = 4080, CROSS_X = 4260, CREST1 = 4480, FALL1 = 5400, H_TOP = 860;
+  const START = 480, WALL_END = 860, TOMB_X = 3000, SLOPE0 = 1180, CREST0 = 4080, CROSS_X = 4260, CREST1 = 4480, FALL1 = 5400, H_TOP = 860;
   // the hill twice as high but the slope about as gentle as before, so it is longer (owner: "Not necessarily twice as steep - I like the old slope (maybe a tad steeper is ok)")
   // the cross and the hill larger beside him (owner: "cross needs to be bigger, relative to Christian, hill too"): he is about 150 units tall
   const CROSS_H = 340, CROSS_BY = CROSS_H * .74;
@@ -35,9 +35,6 @@ const CR = (() => {
     let h = H_TOP * Math.pow(sm(SLOPE0, CREST0, x), 1.15);
     h += 10 * Math.sin(Math.PI * clamp((x - CREST0 + 200) / 600)) * sm(SLOPE0, CREST0, x);
     h -= (H_TOP - 70) * sm(CREST1, FALL1, x);      // the far side falls to a hollow 70 above the near foot, where the sepulchre is
-    // the hollow in the hillside where the sepulchre is: a level floor a little sunk into the slope
-    const hs = H_TOP * Math.pow(sm(SLOPE0, CREST0, TOMB_X), 1.15) - 22, d = x - TOMB_X, w = d >= 0 ? 1 - sm(140, 620, d) : 1 - sm(160, 760, -d);
-    h = lerp(h, hs, w);
     h += (3 * Math.sin(x * .011) + 1.6 * Math.sin(x * .031 + 1)) * sm(SLOPE0, SLOPE0 + 300, x) * (1 - sm(CREST0 - 100, CREST0, x));
     return h;
   }
@@ -119,7 +116,7 @@ const CR = (() => {
     const near = { cx: Ch.x + lerp(250, 110, closeK), z: lerp(.8, 1.25, closeK) };
     if (ph === 'cross' || ph === 'after' || ph === 'shine' || ph === 'leaps' || ph === 'end') { near.cx = CROSS_X - 130; near.z = .86; }
     const open = ph === 'look', fitT = (FOOTY - 30) / (gh(CROSS_X) + CROSS_H - gh(TOMB_X) + 90);
-    const wide = open ? { cx: (START + CROSS_X) / 2 + 420, z: Math.min(VW / (CROSS_X - START + 900), (FOOTY - 40) / (H_TOP + CROSS_H + 40)) } : { cx: (TOMB_X + CROSS_X) / 2 - 50, z: Math.min(VW / (CROSS_X - TOMB_X + 820), fitT) };
+    const wide = open ? { cx: (START + CROSS_X) / 2 + 420, z: Math.min(VW / (CROSS_X - START + 900), (FOOTY - 40) / (H_TOP + CROSS_H + 40)) } : { cx: TOMB_X + 250, z: Math.min(VW / (2 * (CROSS_X - TOMB_X - 250) + 460), fitT) };
     let tcx = lerp(near.cx, wide.cx, wideK), tz = Math.exp(lerp(Math.log(near.z), Math.log(wide.z), wideK));
     const wh = open ? 40 : gh(TOMB_X) - 90, fh = lerp(gh(Ch.x), wh, wideK);
     let twl = FOOTY + fh * tz + (open ? 28 : 0) * wideK;
@@ -260,8 +257,9 @@ const CR = (() => {
     const r = rgen(23), top = [];
     for (let i = 0; i <= 40; i++) { const u = i / 40, X = -190 + 370 * u;
       // a rounded mass, higher toward the hill (right), its top broken into a few weathered steps
-      const env = Math.sin(Math.PI * Math.pow(u, .9)) * (96 + 40 * u) + 8;
-      top.push([X, -(env + 5 * Math.sin(u * 19 + 1) + 3 * Math.sin(u * 41) + (r() - .5) * 3)]); }
+      const e = Math.sin(Math.PI * u), env = Math.sin(Math.PI * Math.pow(u, .9)) * (96 + 40 * u);
+      // its ends run down into the slope (no upright edge)
+      top.push([X, 6 - (env + Math.sqrt(e) * (6 + 5 * Math.sin(u * 19 + 1) + 3 * Math.sin(u * 41) + (r() - .5) * 3))]); }
     return { top };
   })();
   const TOMB_K = 1.45;
@@ -270,11 +268,14 @@ const CR = (() => {
     c.save(); c.translate(x, -h + 3); c.scale(TOMB_K, TOMB_K);
     // the rock
     const T = TOMB.top;
-    c.beginPath(); c.moveTo(T[0][0] - 20, 60); T.forEach(([px, py]) => c.lineTo(px, py)); c.lineTo(T[T.length - 1][0] + 30, 60); c.closePath();
+    const gl = X => (h - gh(x + X * TOMB_K)) / TOMB_K;      // the ground under the rock, in its own units (the slope rises to the right)
+    // its height is measured from the slope under it, so it sits on the hill
+    c.beginPath(); T.forEach(([px, py]) => c.lineTo(px, gl(px) + py)); for (let X = T[T.length - 1][0]; X >= T[0][0]; X -= 10) c.lineTo(X, gl(X) + 6); c.closePath();
     c.fillStyle = css(col); c.fill();
     c.save(); c.clip();
     // lighter toward the top, darker at the foot
-    let g = c.createLinearGradient(0, -140, 0, 10); g.addColorStop(0, css(mix(col, [150, 140, 150], .07 + .05 * gold))); g.addColorStop(1, css(mix(col, [0, 0, 0], .22))); c.fillStyle = g; c.fillRect(-200, -150, 400, 160);
+    c.rotate(Math.atan2(gl(100) - gl(-100), 200));      // the shading follows the slope it sits on
+    let g = c.createLinearGradient(0, -140, 0, 10); g.addColorStop(0, css(mix(col, [150, 140, 150], .07 + .05 * gold))); g.addColorStop(1, css(mix(col, [0, 0, 0], .22))); c.fillStyle = g; c.fillRect(-260, -220, 520, 300);
     c.restore();
     // the doorway, hewn: a dressed surround a little lighter, a round head, a deep dark within, a worn sill
     const dw = 26, dh = 70;
@@ -284,12 +285,12 @@ const CR = (() => {
     g = c.createLinearGradient(0, -dh, 0, 4); g.addColorStop(0, 'rgb(4,4,6)'); g.addColorStop(.7, 'rgb(9,8,10)'); g.addColorStop(1, css(mix([9, 8, 10], [60, 44, 34], .25 * gold))); c.fillStyle = g; c.fill();
     c.fillStyle = css(mix(col, [190, 176, 170], .12 + .08 * gold)); c.fillRect(-dw - 9, 1, 2 * dw + 18, 4);
     // the great round stone, rolled aside, standing on its edge against the rock
-    const sx0 = -86, sr = 37;
+    const sx0 = -86, sr = 37, sg = gl(sx0) + 3; c.save(); c.translate(0, sg - 3);
     c.fillStyle = css(mix(col, [150, 140, 148], .07 + .04 * gold)); c.beginPath(); c.ellipse(sx0, -sr + 3, sr * .92, sr, 0, 0, 7); c.fill(); c.strokeStyle = css(mix(col, [0, 0, 0], .45)); c.lineWidth = 2; c.stroke();
     c.strokeStyle = css(mix(col, [0, 0, 0], .3)); c.lineWidth = 1.4; c.beginPath(); c.ellipse(sx0 + 3, -sr + 3, sr * .5, sr * .62, 0, 0, 7); c.globalAlpha = .5; c.stroke(); c.globalAlpha = 1;
-    c.fillStyle = css(mix(col, [0, 0, 0], .35)); c.beginPath(); c.ellipse(sx0 + 4, 3, sr * .8, 3, 0, 0, 7); c.fill();
+    c.fillStyle = css(mix(col, [0, 0, 0], .35)); c.beginPath(); c.ellipse(sx0 + 4, 3, sr * .8, 3, 0, 0, 7); c.fill(); c.restore();
     // the dawn's thin edge along the rock's top, toward the light
-    if (gold > .01) { c.globalCompositeOperation = 'lighter'; c.strokeStyle = css([255, 214, 160], .28 * gold); c.lineWidth = 1.2; c.beginPath(); T.forEach(([px, py], i) => i > 6 ? c.lineTo(px, py) : c.moveTo(px, py)); c.stroke(); c.globalCompositeOperation = 'source-over'; }
+    if (gold > .01) { c.globalCompositeOperation = 'lighter'; c.strokeStyle = css([255, 214, 160], .28 * gold); c.lineWidth = 1.2; c.beginPath(); T.forEach(([px, py], i) => i > 6 ? c.lineTo(px, gl(px) + py) : c.moveTo(px, gl(px) + py)); c.stroke(); c.globalCompositeOperation = 'source-over'; }
     c.restore();
   }
   function cross(c) {
@@ -528,7 +529,7 @@ const CR = (() => {
     const c = ctx; c.setTransform(DPR, 0, 0, DPR, 0, 0);
     sky(c); far(c);
     c.setTransform(DPR * cam.z, 0, 0, DPR * cam.z, DPR * (VW / 2 - cam.cx * cam.z), DPR * cam.wl);
-    wall(c); tomb(c); land(c); cross(c);
+    wall(c); land(c); tomb(c); cross(c);
     shining(c);
     drawBurden(c); drawChr(c);
     // the nearest ground, a dark band along the foot of the picture, under the words
