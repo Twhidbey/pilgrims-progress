@@ -28,8 +28,10 @@ const RM = (() => {
   const darkOn = () => { try { return localStorage.getItem('pp-dark') === '1'; } catch (e) { return false; } };
 
   // the two visitors (sprites face LEFT as made; face 1 = turned to face right)
-  const VIS = { C: { n: 'room-christian-p', ax: 191, g: 1357, s: 632 / 1344, who: 'Christian', ph: 0, ct: 1, mul: .78, sat: .9, warm: [1, 1, 1], walk: { n: 'room-christian-walk2', ax: 123.2, g: 371, s: 632 / 365, ct: 1.2, mul: .62, sat: .42, cols: 8, fr: 29, W: 203, H: 374, vpx: 6 } }, I: { n: 'room-interpreter-p', ax: 176.5, g: 1352, s: 635 / 1339, who: I, ph: 1.7, ct: 1, mul: .8, sat: .9, walk: { n: 'room-interpreter-walk3', ax: 98.6, g: 381, s: 635 / 375, ct: 1.15, mul: .66, sat: .45, cols: 8, fr: 28, W: 192, H: 384, vpx: 6 }, say: { n: 'room-interpreter-say-hd', ax: 235.2, g: 935.2, s: 635 / 331 / 2.8, ct: 1.15, mul: .66, sat: .45, cols: 7, fr: 56, W: 398, H: 941, parts: 4, per: 14, off: 1 } } };
-  const BRAVE = { plain: { n: 'room5-brave', ax: 94, g: 519 }, armed: { n: 'room5-brave-armed', ax: 123, g: 536 } };
+  const VIS = { C: { n: 'room-christian-p', ax: 191, g: 1357, s: 632 / 1344, who: 'Christian', ph: 0, ct: 1, mul: .78, sat: .9, warm: [1, 1, 1], walk: { n: 'room-christian-pwalk', ax: 124, g: 369, s: 632 / 365, ct: 1, mul: .78, sat: .9, cols: 8, fr: 30, W: 202, H: 375, vpx: 6 } }, I: { n: 'room-interpreter-p', ax: 176.5, g: 1352, s: 635 / 1339, who: I, ph: 1.7, ct: 1, mul: .8, sat: .9, walk: { n: 'room-interpreter-pwalk', ax: 98, g: 375, s: 635 / 372, ct: 1, mul: .8, sat: .9, cols: 8, fr: 35, W: 186, H: 381, vpx: 4 }, say: { n: 'room-interpreter-say-hd', ax: 235.2, g: 935.2, s: 635 / 331 / 2.8, ct: 1.15, mul: .66, sat: .45, cols: 7, fr: 56, W: 398, H: 941, parts: 4, per: 14, off: 1 } } };
+  const BRAVE = { plain: { n: 'room5-brave', ax: 94, g: 519 }, armed: { n: 'room5-brave-armed', ax: 123, g: 536 },
+    // his arming, one free clip (Modal, after build 367): helmet on, sword drawn, striding right; played once at the video's own pace
+    clip: { n: 'room5-brave-arm', ax: 159.5, g: 426, s: 519 / 423, cols: 8, fr: 65, W: 387, H: 432, vpx: 4 } };
 
   let R = null, t = 0, ph = '', cam = { x: 0, to: 0 }, fade = 1, fadeTo = 0, after = null, toned = {}, startId = 'door', motes = [];
   const u = x => x * S - cam.x, v = y => y * S - (R.FY * S - FLOOR);
@@ -362,7 +364,7 @@ const RM = (() => {
     // 5 THE PALACE AND THE BRAVE MAN (after Rembrandt's Night Watch)
     r5: {
       pic: 'room5', FY: 1262, cam0: 0, tone: [225, 205, 180], k: .58, sat: .45,
-      enter() { this.bv = { a: 0, arm: 0, x: 1650, go: 0, face: -1, done: 0 }; this.gold = 0; this.spark = []; this.said = 0; pic('room5-brave'); pic('room5-brave-armed'); },
+      enter() { this.bv = { a: 0, arm: 0, x: 1650, go: 0, face: -1, done: 0 }; this.gold = 0; this.spark = []; this.said = 0; this.bv.f = 0; pic('room5-brave'); pic('room5-brave-armed'); sheetFrames(BRAVE.clip); },
       run() { const self = this; talk([[C, 'May we go in there?'], [N, 'At the door stood many men who wished to go in, but dared not, for men in armour kept it.', null, () => { self.bv.show = 1; }], [BR, 'Set down my name, Sir.'], [TIP, 'Touch the book.', 'book']], () => { ph = 'write'; t = 0; G.state = 'auto'; scratch(); }); },
       act(sx, sy) { if (G.act === 'book' && (sx == null || near(sx, sy, 1508, 1040, 150))) next(true); if (G.act === 'gold' && (sx == null || sy < v(520))) next(true); },
       upd() {
@@ -371,7 +373,12 @@ const RM = (() => {
         if (G.act === 'book' && G.actT >= 70 && !G.ring) G.ring = ring(1508, 1030); if (G.act === 'gold' && G.actT >= 70 && !G.ring) G.ring = ring(2050, 360);
         cam.to = smooth(1500, 2500, b.x) * (R.PW * S - VW) * (ph === 'won' ? .25 : .45);
         if (ph === 'write' && t === 70) { ph = 'arm'; t = 0; noise(2000, 3, .4, .08); }
-        if (ph === 'arm') { b.arm = Math.min(1, b.arm + .03); if (b.arm > .5) b.face = 1; if (t === 50) { ph = 'fight'; t = 0; talk([[N, 'He drew his sword, put a helmet on his head, cut his way through them all, and pressed on into the palace.']], () => { this.said = 1; }); } }
+        if (ph === 'arm' && sheetFrames(BRAVE.clip)) {
+          // the clip: he turns to the palace, arms himself and strides on; the line is said as he does
+          if (t === 1) talk([[N, 'He drew his sword, put a helmet on his head, cut his way through them all, and pressed on into the palace.']], () => { this.said = 1; });
+          b.clip = 1; b.f = Math.min(BRAVE.clip.fr - 1, b.f + WALK_FPT); b.x += BRAVE.clip.vpx * .68 * BRAVE.clip.s / K * WALK_FPT * smooth(0, 8, b.f);
+          if (b.f >= BRAVE.clip.fr - 1) { b.clip = 0; b.arm = 1; b.face = 1; ph = 'fight'; t = 0; }
+        } else if (ph === 'arm') { b.arm = Math.min(1, b.arm + .03); if (b.arm > .5) b.face = 1; if (t === 50) { ph = 'fight'; t = 0; talk([[N, 'He drew his sword, put a helmet on his head, cut his way through them all, and pressed on into the palace.']], () => { this.said = 1; }); } }
         if (ph === 'fight') {
           const x0 = b.x; b.x = Math.min(2490, b.x + 2.2);
           for (const gx of [1900, 2110, 2280, 2470]) if (x0 < gx && b.x >= gx) { clash(); for (let i = 0; i < 5; i++) this.spark.push({ x: gx + 60, y: 880 + rnd() * 120, vx: 2 + rnd() * 6, vy: -rnd() * 5, l: 18 }); }
@@ -385,8 +392,9 @@ const RM = (() => {
         visitor(c, 'I', 210, 1, .58); visitor(c, 'C', 30, 1, .58);
         const b = this.bv; if (b.a > .01) {
           const bob = ph === 'fight' && b.x < 2490 ? Math.abs(Math.sin(G.t / 7)) * 3 : 0;
-          if (b.arm < 1) fig(c, BRAVE.plain.n, BRAVE.plain, b.x, R.FY, b.face, .68, b.a * (1 - b.arm), [150, 125, 100], BR, 2.3, bob);
-          if (b.arm > 0) fig(c, BRAVE.armed.n, BRAVE.armed, b.x, R.FY, 1, .68, b.a * b.arm, [150, 125, 100], BR, 2.3, bob);
+          if (b.clip) { const q = BRAVE.clip; fig(c, q.n + '#' + Math.floor(b.f), q, b.x, R.FY, -1, .68, b.a, [150, 125, 100], BR, 2.3); }
+          else if (b.arm < 1) fig(c, BRAVE.plain.n, BRAVE.plain, b.x, R.FY, b.face, .68, b.a * (1 - b.arm), [150, 125, 100], BR, 2.3, bob);
+          else if (b.arm > 0) fig(c, BRAVE.armed.n, BRAVE.armed, b.x, R.FY, 1, .68, b.a * b.arm, [150, 125, 100], BR, 2.3, bob);
         }
       },
       under(c) { glow(c, u(2490), v(1000), 140, [255, 210, 130], .16 + .05 * Math.sin(G.t / 30) + .25 * this.gold); for (let x = 1600; x <= 2900; x += 260) glow(c, u(x), v(180), 90, [255, 214, 120], (.1 + .05 * Math.sin(G.t / 25 + x)) * (1 + 2.5 * this.gold)); },
@@ -679,5 +687,5 @@ const RM = (() => {
   const HOLDS = ['round', 'walkout', 'follow'];
   const lines = []; // for the voice tool: every room's lines are written out in full above
   return { on: false, start, update, draw, touch, key, preload, HOLDS, stop: () => ambStop(), darkOn, setDark: on => { try { localStorage.setItem('pp-dark', on ? '1' : '0'); } catch (e) {} }, lines,
-    peek: () => ({ room: R && R.id, ph, t, cam: Math.round(cam.x), fade: +fade.toFixed(2), r3: R && R.id === 'r3' ? { coins: R.coins.length, rags: +R.rags.toFixed(2) } : null }) };
+    peek: () => ({ room: R && R.id, ph, t, cam: Math.round(cam.x), fade: +fade.toFixed(2), r3: R && R.id === 'r3' ? { coins: R.coins.length, rags: +R.rags.toFixed(2) } : null, bv: R && R.bv ? { x: Math.round(R.bv.x), f: +(R.bv.f || 0).toFixed(1), arm: R.bv.arm, clip: R.bv.clip || 0 } : null }) };
 })();
