@@ -282,7 +282,7 @@ const HL = (() => {
   // on (`MIST0`). Among the rocks and at the gate `mono` is 0: those are unchanged.
   let mono = 1;
   // THE PULL AT THE GATE ({62}): Good-will's reaching picture, the pull, the arrows (`ARW`, world units) and the far castle
-  const CASTLE_X = GATE_X - 860, CASTLE_Y = 80, CASTLE_H = 900; let CASTLE = null, castLook = 0, gateT = 0;
+  const CASTLE_X = GATE_X - 900, MT_H = 470, CASTLE_H = 330, CASTLE_Y = -MT_H + CASTLE_H * .3; let CASTLE = null, castLook = 0, gateT = 0;
   let GWRE = null, gwReach = 0, gwReachTo = 0, pullT = -1, pullX0 = 0, GWFX = null; const GWRE_META = { ax: 62, ground: 299 }, ARW = [];
   const MONO_SAT = .62, MONO_TONE = [226, 202, 158], MIST0 = 620;
   let wise = null, evan = null, dark = 0, hope = 0, flash = 0, flashT = 0, veil = 0, veilTo = 0, knocks = 0, knockT = 0, door = 0, doorTo = 0;
@@ -559,14 +559,14 @@ const HL = (() => {
   // pictures the code-drawn hill used (HILL, HW x HH, its foot's left end at HOX, HOY); the fire is laid on with
   // 'lighter', breathing, as strong as the hill burns (`LAVA`, `LAVAB` its soft bloom). The code-drawn seams and the
   // burning edge are no longer drawn once it has loaded. Until then the code-drawn hill stands in.
-  let LAVA = null, LAVAB = null, HILLV = null, ROCKTEX = null, ROCKPAT = null, ROCKA = null;
+  let MTROCK = null, LAVA = null, LAVAB = null, HILLV = null, ROCKTEX = null, ROCKPAT = null, ROCKA = null;
   // how far inside the rock a point is (hill units from its foot's left end, y up negative): 0 outside or within m of the edge, 1 well inside
   const inRock = (x, y, m) => { if (!ROCKA) return 1; let lo = 255; for (const [dx, dy] of [[0, 0], [-m, 0], [m, 0], [0, -m], [-m * .7, -m * .7], [m * .7, -m * .7]]) { const u = Math.round((x + dx + HOX) / 5), v = Math.round((y + dy + HOY) / 5); lo = Math.min(lo, u < 0 || v < 0 || u >= HW / 5 || v >= HH / 5 ? 0 : ROCKA[v * HW / 5 + u]); } return smooth(120, 250, lo); };
   function paintHill(rock, fire) {
     // (build 183, owner: "Gotta increase resolution, no?": the painting was made again at the image model's highest
     // size, 6336 px wide, and kept at 3000 x 1280, twice the hill's own units, so the close-up and the summit stay
     // sharp on a phone; the baked hills take the picture's own size, R times the units)
-    const R = rock.width / HW;
+    const R = rock.width / HW; MTROCK = rock;
     HILL = [[[74, 62, 66], .74], [[22, 20, 26], .58]].map(([col, a]) => { const c = mk(HW * R, HH * R), k = c.getContext('2d'); k.drawImage(rock, 0, 0, HW * R, HH * R);
       k.globalCompositeOperation = 'source-atop'; k.globalAlpha = a; k.fillStyle = css(col); k.fillRect(0, 0, HW * R, HH * R); return c; });
     // the hill far off (build 185): the dark rock seen through the evening's air, its colours taken toward the sky behind
@@ -902,7 +902,7 @@ const HL = (() => {
   function doPull() {
     if (G.act !== 'pull' || pullT >= 0) return; G.ring = null; pullT = 0; pullX0 = C3.x;
     note(62, .035, 3); note(66, .03, 3, .1);
-    for (let i = 0; i < 4; i++) ARW.push({ t: -[4, 16, 30, 46][i], i, sx: CASTLE_X + 120 + 60 * Math.random(), sy: -330 - 80 * Math.random(), tx: C3.x - 64 - 46 * i - 16 * Math.random(), ty: i === 2 ? -1 : -(60 + 90 * Math.random()), stuck: false, q: 0 });
+    for (let i = 0; i < 4; i++) ARW.push({ t: -[4, 16, 30, 46][i], i, sx: CASTLE_X + 40 + 50 * Math.random(), sy: -560 - 60 * Math.random(), tx: C3.x - 64 - 46 * i - 16 * Math.random(), ty: i === 2 ? -1 : -(60 + 90 * Math.random()), stuck: false, q: 0 });
   }
   function takeHand() { if (G.act !== 'ehand') return; note(67, .04, 4); note(71, .035, 4, .12); note(74, .03, 4, .24); mercyTo = 1; next(true); }
   // the wide picture answers a touch (build 237): the sky above the rock = a strike there; the rock = its nearest crack flares
@@ -1701,12 +1701,48 @@ const HL = (() => {
           c.save(); c.beginPath(); c.rect(0, Y(-240), xe, Y(4) - Y(-240)); c.clip();
           rid(-172, 34, .006, 21); c.fillStyle = css([62, 34, 27]); c.fill();
           rid(-150, 26, .008, 24); c.fillStyle = css([46, 25, 20]); c.fill(); c.restore();
-          { const [gx2, gy2] = [X(CASTLE_X), Y(-420)], rr = 520 * z, g = c.createRadialGradient(gx2, gy2, 0, gx2, gy2, rr); g.addColorStop(0, css([120, 60, 40], .38)); g.addColorStop(.5, css([96, 48, 34], .14)); g.addColorStop(1, css([80, 40, 30], 0)); c.fillStyle = g; c.fillRect(gx2 - rr, gy2 - rr, 2 * rr, 2 * rr); }
+          { const [gx2, gy2] = [X(CASTLE_X), Y(-MT_H - 120)], rr = 560 * z, g = c.createRadialGradient(gx2, gy2, 0, gx2, gy2, rr); g.addColorStop(0, css([120, 60, 40], .38)); g.addColorStop(.5, css([96, 48, 34], .14)); g.addColorStop(1, css([80, 40, 30], 0)); c.fillStyle = g; c.fillRect(gx2 - rr, gy2 - rr, 2 * rr, 2 * rr); }
+          // THE MOUNTAIN THAT HOLDS IT (owner: "Build a rock mt to hold castle and make castle smaller"): one dark massif of
+          // the burning hill's own rock, a broad summit under the castle, steep broken faces falling away on both sides in
+          // ledges, its foot lost behind the near rises; the castle's own crag sinks into the summit (`mtTop`, `MT_H`)
+          const mtTop = x => { const d = x - CASTLE_X, a = Math.abs(d), L = d < 0, pl = 170, cl = L ? 120 : 90, sp = L ? 640 : 420;
+            // a broad summit, a sheer cliff below it, then a long broken shoulder down to the plain (the left one longer)
+            let h; if (a < pl) h = 1 - .04 * (a / pl) * (a / pl); else if (a < pl + cl) { const t = (a - pl) / cl; h = .96 - .3 * t * t * (3 - 2 * t); } else { const t = Math.min(1, (a - pl - cl) / sp); h = .66 * (1 - Math.pow(t, .9)) * (1 - .25 * t); }
+            const st = (a / 70) % 1; h -= (a > pl + cl ? .05 : .015) * st * h;
+            return MT_H * h + (nz(x * .02, 31) - .5) * 30 * Math.min(1, h * 3) + (nz(x * .09, 32) - .5) * 9; };
+          const mtPath = () => { c.beginPath(); c.moveTo(X(CASTLE_X - 900), Y(4)); for (let wx = CASTLE_X - 900; wx <= WEND; wx += 4 / z) c.lineTo(X(wx), Y(-Math.max(0, mtTop(wx)))); c.lineTo(X(WEND), Y(4)); c.closePath(); };
+          const drawMt = (front) => { c.save(); c.beginPath(); c.rect(0, 0, X(WEND - 30), Y(2)); c.clip(); mtPath(); c.save(); c.clip();
+            { const g = c.createLinearGradient(0, Y(-MT_H - 40), 0, Y(0)); g.addColorStop(0, css([40, 23, 19])); g.addColorStop(.5, css([28, 16, 13])); g.addColorStop(1, css([16, 9, 7])); c.fillStyle = g; c.fillRect(0, 0, VW, VH); }
+            // the burning hill's own painted rock laid into it (the inner part of `hill-rock.webp`), so its faces are real rock
+            if (MTROCK) { const W2 = MTROCK.width, H2 = MTROCK.height; c.globalCompositeOperation = 'overlay'; c.globalAlpha = .85; c.drawImage(MTROCK, W2 * .22, H2 * .3, W2 * .5, H2 * .62, X(CASTLE_X - 900), Y(-MT_H - 30), 1700 * z, (MT_H + 34) * z); c.globalAlpha = 1; c.globalCompositeOperation = 'source-over'; }
+            else if (ROCKPAT) { const ts = 1.4 * z, tw = ROCKTEX.width * ts; ROCKPAT.setTransform(new DOMMatrix([ts, 0, 0, ts, X(CASTLE_X) % tw, Y(-MT_H)])); c.globalCompositeOperation = 'overlay'; c.globalAlpha = .4; c.fillStyle = ROCKPAT; c.fillRect(0, 0, VW, VH); c.globalAlpha = 1; c.globalCompositeOperation = 'source-over'; }
+            // the side toward the dusk glow (left) a little lighter, the gate's side in shade
+            { const g = c.createLinearGradient(X(CASTLE_X - 700), 0, X(CASTLE_X + 400), 0); g.addColorStop(0, css([110, 60, 44], .16)); g.addColorStop(.5, css([110, 60, 44], 0)); g.addColorStop(1, css([8, 4, 3], .35)); c.fillStyle = g; c.fillRect(0, 0, VW, VH); }
+            // the fire in the castle's crag runs down a few clefts in the summit and dies away
+            if (!front) { const fl = .6 + .4 * Math.sin(G.t / 37); c.globalCompositeOperation = 'lighter'; c.lineCap = 'round';
+              [[-60, 0], [30, 1], [95, 2]].forEach(([dx, i]) => { let x = CASTLE_X + dx, y = -MT_H + 20; c.beginPath(); c.moveTo(X(x), Y(y)); for (let j = 0; j < 14; j++) { x += (nz(j * .7 + i * 5, 40 + i) - .5) * 26; y += 14 + 6 * nz(j * .3, 50 + i); c.lineTo(X(x), Y(y)); }
+                c.strokeStyle = css([200, 80, 30], .16 * fl); c.lineWidth = 4 * z; c.stroke(); c.strokeStyle = css([255, 150, 60], .2 * fl); c.lineWidth = 1.2 * z; c.stroke(); });
+              c.globalCompositeOperation = 'source-over'; }
+            c.restore();
+            // a thin dusk-lit edge along its ridges
+            c.strokeStyle = css([120, 70, 52], .28); c.lineWidth = 1.2 * z; mtPath(); c.stroke();
+            // nearer buttresses at its foot, a shade darker, each lit faintly on its left (the dusk) edge: the mountain has depth
+            if (!front) [[-430, .42, 260, 71], [-90, .3, 200, 72], [250, .36, 210, 73]].forEach(([dx, hk, wd, sd]) => {
+              const bt = x => { const u = (x - CASTLE_X - dx) / wd; if (Math.abs(u) >= 1) return -1; const e = u < 0 ? 1 - Math.pow(-u, 1.6) : 1 - Math.pow(u, .8); return MT_H * hk * e + (nz(x * .03, sd) - .5) * 26 * e + (nz(x * .11, sd + 9) - .5) * 7; };
+              c.beginPath(); c.moveTo(X(CASTLE_X + dx - wd), Y(4)); for (let wx = CASTLE_X + dx - wd; wx <= CASTLE_X + dx + wd; wx += 4 / z) c.lineTo(X(wx), Y(-Math.max(0, bt(wx)))); c.lineTo(X(CASTLE_X + dx + wd), Y(4)); c.closePath();
+              c.save(); c.clip(); { const g = c.createLinearGradient(0, Y(-MT_H * hk), 0, Y(0)); g.addColorStop(0, css([30, 17, 14])); g.addColorStop(1, css([14, 8, 6])); c.fillStyle = g; c.fillRect(0, 0, VW, VH); }
+                if (MTROCK) { const W2 = MTROCK.width, H2 = MTROCK.height; c.globalCompositeOperation = 'overlay'; c.globalAlpha = .7; c.drawImage(MTROCK, W2 * (.3 + .1 * (sd - 71)), H2 * .45, W2 * .25, H2 * .45, X(CASTLE_X + dx - wd), Y(-MT_H * hk - 20), 2 * wd * z, (MT_H * hk + 24) * z); c.globalAlpha = 1; c.globalCompositeOperation = 'source-over'; }
+                { const g = c.createLinearGradient(X(CASTLE_X + dx - wd), 0, X(CASTLE_X + dx - wd * .4), 0); g.addColorStop(0, css([140, 80, 56], .2)); g.addColorStop(1, css([140, 80, 56], 0)); c.fillStyle = g; c.fillRect(0, 0, VW, VH); }
+                c.restore(); });
+            c.restore(); };
+          drawMt(false);
           if (CASTLE) { const k = CASTLE_H / CASTLE.height, w = CASTLE.width * k; c.save(); c.beginPath(); c.rect(0, 0, X(WEND - 30), Y(2)); c.clip(); c.drawImage(CASTLE, X(CASTLE_X - w / 2), Y(CASTLE_Y - CASTLE_H), w * z, CASTLE_H * z);
             // its watch-fires breathe a little
             const fl = .5 + .5 * Math.sin(G.t / 29) * Math.sin(G.t / 47); c.globalCompositeOperation = 'lighter'; const g = c.createRadialGradient(X(CASTLE_X), Y(CASTLE_Y - CASTLE_H * .45), 0, X(CASTLE_X), Y(CASTLE_Y - CASTLE_H * .45), CASTLE_H * .5 * z); g.addColorStop(0, css([150, 60, 26], .07 + .05 * fl)); g.addColorStop(1, css([120, 40, 20], 0)); c.fillStyle = g; c.fillRect(0, 0, X(WEND - 30), VH);
             c.globalCompositeOperation = 'source-over';
-            c.restore(); }
+            c.restore();
+            // the summit's near rocks lie over the castle crag's foot, so it grows out of the mountain
+            c.save(); c.beginPath(); c.moveTo(X(CASTLE_X - 260), Y(4)); for (let wx = CASTLE_X - 260; wx <= CASTLE_X + 260; wx += 3 / z) { const e = Math.max(0, 1 - Math.pow(Math.abs(wx - CASTLE_X) / 260, 4)); c.lineTo(X(wx), Y(-Math.max(0, mtTop(wx)) - 4 * e - 26 * e * nz(wx * .045, 61) - 12 * e * nz(wx * .17, 62))); } c.lineTo(X(CASTLE_X + 260), Y(4)); c.closePath(); c.clip(); drawMt(true); c.restore(); }
           c.save(); c.beginPath(); c.rect(0, Y(-240), xe, Y(4) - Y(-240)); c.clip();
           rid(-150, 34, .02, 22); c.fillStyle = css([36, 20, 16]); c.fill();
           rid(-72, 16, .014, 23); { const g = c.createLinearGradient(0, Y(-80), 0, Y(4)); g.addColorStop(0, css([26, 15, 12])); g.addColorStop(1, css([16, 9, 7])); c.fillStyle = g; } c.fill(); c.restore(); } }
