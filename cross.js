@@ -17,7 +17,7 @@
 const CR = (() => {
   const SO = 'The Shining Ones', S1 = 'The first Shining One', S3 = 'The third Shining One';
   // ---------- the land (world units: x along the way, h up from the foot of the slope) ----------
-  const START = 480, WALL_END = 860, TOMB_X = 3550, SLOPE0 = 1180, CREST0 = 4080, CROSS_X = 4260, CREST1 = 4480, FALL1 = 5400, H_TOP = 860;
+  const START = 480, WALL_END = 860, TOMB_X = 4100, SLOPE0 = 1180, CREST0 = 4080, CROSS_X = 4260, CREST1 = 4480, FALL1 = 5400, H_TOP = 860;
   // the hill twice as high but the slope about as gentle as before, so it is longer (owner: "Not necessarily twice as steep - I like the old slope (maybe a tad steeper is ok)")
   // the cross and the hill larger beside him (owner: "cross needs to be bigger, relative to Christian, hill too"): he is about 150 units tall
   const CROSS_H = 340, CROSS_BY = CROSS_H * .74;
@@ -116,9 +116,9 @@ const CR = (() => {
     const near = { cx: Ch.x + lerp(250, 110, closeK), z: lerp(.8, 1.25, closeK) };
     if (ph === 'cross' || ph === 'after' || ph === 'shine' || ph === 'leaps' || ph === 'end') { near.cx = CROSS_X - 130; near.z = .86; }
     const open = ph === 'look', fitT = (FOOTY - 30) / (gh(CROSS_X) + CROSS_H - tombSill() + 40);
-    const wide = open ? { cx: (START + CROSS_X) / 2 + 420, z: Math.min(VW / (CROSS_X - START + 900), (FOOTY - 40) / (H_TOP + CROSS_H + 40)) } : { cx: TOMB_X + 80, z: Math.min(VW / (2 * (CROSS_X - TOMB_X - 80) + 520), fitT) };
+    const wide = open ? { cx: (START + CROSS_X) / 2 + 420, z: Math.min(VW / (CROSS_X - START + 900), (FOOTY - 40) / (H_TOP + CROSS_H + 40)) } : { cx: CROSS_X - 60, z: Math.min(VW / 1500, fitT) };
     let tcx = lerp(near.cx, wide.cx, wideK), tz = Math.exp(lerp(Math.log(near.z), Math.log(wide.z), wideK));
-    const wh = open ? 40 : tombSill() - 12, fh = lerp(gh(Ch.x), wh, wideK);
+    const wh = open ? 40 : tombSill() - 14, fh = lerp(gh(Ch.x), wh, wideK);
     let twl = FOOTY + fh * tz + (open ? 28 : 0) * wideK;
     // the look from the top after the cut: wide, he and the cross high in the picture, the hill falling away below
     if (topK > .001) { const z2 = .4, wl2 = 250 + gh(Ch.x) * z2; tcx = lerp(tcx, Ch.x - 40, topK); twl = lerp(twl, wl2, topK); tz = Math.exp(lerp(Math.log(tz), Math.log(z2), topK)); }
@@ -169,26 +169,29 @@ const CR = (() => {
   // the burden on its own, rolling back down the slope he climbed
   function drawBurden(c) {
     if (!bur || !BURDEN || bur.a <= 0) return;
-    const K = CHR_K, w = BALL.w * K * bur.k, hh = BALL.h * K * bur.k, h = gh(bur.x) + bur.y;
-    if (bur.st === 'roll') contact(c, bur.x, gh(bur.x), bur.a * .7 * (1 - Math.min(1, bur.y / 40)), 24 * bur.k);
+    const K = CHR_K, w = BALL.w * K * bur.k, hh = BALL.h * K * bur.k, h = bur.H != null ? bur.H : gh(bur.x) + bur.y;
+    
     c.save(); c.translate(bur.x, -h - hh / 2 + 2); c.rotate(bur.r); c.globalAlpha = bur.a;
     const tint = tintNow(), W = BURDEN.width, H = BURDEN.height;
     if (figC.width !== W || figC.height !== H) { figC.width = W; figC.height = H; }
-    const f = figC.getContext('2d'); f.globalCompositeOperation = 'source-over'; f.clearRect(0, 0, W, H); f.drawImage(BURDEN, 0, 0); f.globalCompositeOperation = 'multiply'; f.fillStyle = css(mix(tint, [20, 18, 22], bur.dk)); f.fillRect(0, 0, W, H); f.globalCompositeOperation = 'destination-in'; f.drawImage(BURDEN, 0, 0); f.globalCompositeOperation = 'source-over';
+    const f = figC.getContext('2d'); f.globalCompositeOperation = 'source-over'; f.clearRect(0, 0, W, H); f.drawImage(BURDEN, 0, 0); f.globalCompositeOperation = 'multiply'; f.fillStyle = css(mix(mix(tint, [150, 140, 146], bur.H != null ? .4 : 0), [20, 18, 22], bur.dk));       f.fillRect(0, 0, W, H); f.globalCompositeOperation = 'destination-in'; f.drawImage(BURDEN, 0, 0); f.globalCompositeOperation = 'source-over';
     c.drawImage(figC, -w / 2, -hh / 2, w, hh); c.restore();
   }
   function burdenTick() {
     if (!bur) return;
     if (bur.st === 'roll') {
-      const slope = (gh(bur.x + 4) - gh(bur.x - 4)) / 8;      // > 0 where the ground falls toward the left, back down the hill
-      bur.v = Math.min(5.2, Math.max(.4, bur.v + slope * .12 - .002));
-      bur.x -= bur.v; bur.r -= bur.v / (BALL.h * CHR_K * .5);
-      // it tumbles: now and then it bounces off a hump
-      bur.vy -= .32; bur.y += bur.vy; if (bur.y <= 0) { bur.y = 0; if (bur.vy < -1.2) thump(Math.min(1, -bur.vy / 5)); bur.vy = bur.v > 1.6 && Math.random() < .045 ? 1.6 + Math.random() * 2.2 : 0; }
-      if (bur.x <= TOMB_X + 10) { bur.st = 'in'; bur.t = 0; bur.x0 = bur.x; bur.vy = 0; }
+      // it tumbles down the hill's face toward us, faster and faster, bouncing, to the door at its foot
+      if (bur.x0 == null) { bur.x0 = bur.x; bur.H0 = gh(bur.x); }
+      bur.t++; const T = 230, u = Math.min(1, bur.t / T), f = Math.pow(u, 1.5), n = 6;
+      bur.x = lerp(bur.x0, TOMB_X, sm(0, 1, u));
+      const b = Math.abs(Math.sin(Math.PI * n * f)), bb = 46 * Math.pow(1 - f, 1.2);
+      bur.H = lerp(bur.H0, tombSill() + 6, f) + b * bb;
+      const hop = Math.floor(n * f); if (hop !== bur.hop) { bur.hop = hop; if (bur.t > 4) thump(Math.min(1, .45 + f * .6)); }
+      bur.r -= .045 + .06 * f; bur.k = 1 + .14 * f;
+      if (u >= 1) { bur.st = 'in'; bur.t = 0; bur.x0 = bur.x; }
     } else if (bur.st === 'in') {
-      // into the mouth of the sepulchre: a last tumble down into the dark, then gone
-      bur.t++; bur.x = lerp(bur.x0, TOMB_X, sm(0, 24, bur.t)); bur.r -= .05; bur.vy -= .32; const floor = tombSill() + 6 - gh(bur.x); bur.y = Math.max(floor, bur.y + bur.vy); if (bur.y === floor) bur.k = Math.max(.55, bur.k - .02); bur.dk = sm(14, 40, bur.t); bur.a = 1 - sm(30, 52, bur.t);
+      // into the mouth of the sepulchre, into the dark, then gone
+      bur.t++; bur.H = tombSill() + 6; bur.r -= .02 * (1 - bur.t / 54); bur.k = 1.14 - .5 * sm(0, 44, bur.t); bur.dk = sm(4, 34, bur.t); bur.a = 1 - sm(24, 50, bur.t);
       if (bur.t === 26) { thump(1.3); if (audio()) hiss(70, .6, .12, 1.6); }
       if (bur.t > 54) { bur.st = 'gone'; tombT = t; }
     }
@@ -256,18 +259,19 @@ const CR = (() => {
   // narrow ledge before it, and the great round stone rolled aside on the ledge; the burden rolls down the slope above
   // and drops down the cut face into the door
   const DOOR_W = 38, DOOR_H = 104;
-  const tombSill = () => Math.min(gh(TOMB_X - DOOR_W - 30), gh(TOMB_X + DOOR_W + 30)) - DOOR_H - 34;
+  // at the level of the plain, cut into the foot of the hill just left of the point under the cross (owner: "At bottom of
+  // hill not on slope but on ground level below cross - when zoomed out it should be pretty much below cross (maybe to the
+  // left of the point on the zoomed out ground at the base of the cross)")
+  const tombSill = () => 6;
   const CUT = (() => { const r = rgen(23), L = []; for (let i = 0; i <= 24; i++) L.push((r() - .5) * 7); return L; })();
   function tomb(c) {
     const x = TOMB_X, sill = tombSill(), col = mix(mix([30, 30, 38], [36, 32, 36], dawn), [52, 41, 35], gold);
-    // the cut face: from the ledge up to the slope's surface, ragged at its sides, its top the hill's own outline
-    const x0 = x - 150, x1 = x + 120;
+    // the cut face: a rough hewn patch of rock round the door in the hill's foot, ragged all round, its top a low arch
+    const x0 = x - 160, x1 = x + 130, top = DOOR_H + 70;
     c.beginPath(); c.moveTo(x0 + CUT[0], -sill + 8);
-    for (let i = 0; i <= 12; i++) { const u = i / 12, X = lerp(x0 - 30, x0, Math.pow(u, .6)) + CUT[i]; c.lineTo(X, -lerp(sill - 8, gh(X) - 3, u)); }
-    for (let X = x0; X <= x1; X += 8) c.lineTo(X, -gh(X) + 3);
-    for (let i = 12; i >= 0; i--) { const u = i / 12, X = lerp(x1 + 34, x1, Math.pow(u, .6)) + CUT[12 + i]; c.lineTo(X, -lerp(sill - 8, gh(X) - 3, u)); }
-    c.closePath();
-    let g = c.createLinearGradient(0, -gh(x), 0, -sill + 10); g.addColorStop(0, css(mix(col, [150, 140, 150], .05 + .04 * gold))); g.addColorStop(1, css(mix(col, [150, 140, 150], .1 + .05 * gold))); c.fillStyle = g; c.fill();
+    for (let i = 0; i <= 24; i++) { const u = i / 24, a = Math.PI * (1 - u), X = lerp(x0, x1, u) + CUT[i] * 1.4, Y = sill + 8 + (top - 8) * Math.pow(Math.sin(a), .55); c.lineTo(X, -Y + CUT[(i + 7) % 25]); }
+    c.lineTo(x1 + 6, -sill + 8); c.closePath();
+    let g = c.createLinearGradient(0, -sill - top, 0, -sill + 10); g.addColorStop(0, css(mix(col, [150, 140, 150], .05 + .04 * gold))); g.addColorStop(1, css(mix(col, [150, 140, 150], .1 + .05 * gold))); c.fillStyle = g; c.fill();
     // the ledge before the door, a little lighter on its top
     c.fillStyle = css(mix(col, [0, 0, 0], .25)); c.fillRect(x0 - 26, -sill, x1 - x0 + 56, 10);
     c.fillStyle = css(mix(col, [190, 176, 170], .1 + .08 * gold)); c.fillRect(x0 - 26, -sill - 2, x1 - x0 + 56, 3);
