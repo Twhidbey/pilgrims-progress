@@ -10,7 +10,7 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 **Build 424 (Cross chat): Level 5, he stops short of the cross facing it (no turn); the burden rolls back down the slope into a new sepulchre (a rock outcrop with a hewn doorway and the rolled stone) in a hollow below him to the left. Nothing spent.**
 
-**Build  (Level 4 chat): room 1 drawn in code on a shell every room will share (candle, door in the wall, picture, crown). Stand-ins: the portrait (old painting crop) and his man (silhouette), to be made with the free image model when its allowance resets (about 11 h). Next: the other rooms on the same shell (critics' order: 6, 7, 4, door/leave, 5, 3, 2 last); the passage's doorways made taller (they are lower than the men's heads).**
+**Build 424 (Level 4 chat): room 1 drawn in code on a shell every room will share (candle, door in the wall, picture, crown). Stand-ins: the portrait (old painting crop) and his man (silhouette), to be made with the free image model when its allowance resets (about 11 h). Next: the other rooms on the same shell (critics' order: 6, 7, 4, door/leave, 5, 3, 2 last); the passage's doorways made taller (they are lower than the men's heads).**
 
 ## START HERE (rewritten at build 140, Nov 16 2026)
 
