@@ -229,12 +229,37 @@ const CR = (() => {
     });
   }
   // the land in world units (the transform is set by the caller)
+  // the spur's shading, baked once small and drawn stretched (soft, no grain): soft pools along the line from where he
+  // stands down to the cave, widening toward the foot, a little lighter down its middle and darker at its flanks
+  let SPUR = null;
+  function spur() {
+    if (SPUR) return SPUR;
+    const ax = STOP_X - 40, ay = -gh(STOP_X - 40), bx = TOMB_X, by = 0, X0 = Math.min(ax, bx) - 760, X1 = Math.max(ax, bx) + 760, Y0 = ay - 200, Y1 = 420, k = .2;
+    const cv = document.createElement('canvas'); cv.width = Math.ceil((X1 - X0) * k); cv.height = Math.ceil((Y1 - Y0) * k); const q = cv.getContext('2d');
+    const nx = -(by - ay), ny = bx - ax, nl = Math.hypot(nx, ny);
+    for (let i = 0; i <= 24; i++) { const u = i / 24, px = lerp(ax, bx, u), py = lerp(ay, by, u), R = 70 + 240 * Math.pow(u, 1.3);
+      for (const [o, col, a] of [[0, [128, 124, 138], .017], [-1.15, [4, 3, 6], .024], [1.15, [4, 3, 6], .024]]) {
+        const qx = (px + nx / nl * o * R - X0) * k, qy = (py + ny / nl * o * R - Y0) * k, r = R * k;
+        const g = q.createRadialGradient(qx, qy, 0, qx, qy, r); g.addColorStop(0, css(col, a)); g.addColorStop(1, css(col, 0));
+        q.fillStyle = g; q.fillRect(qx - r, qy - r, 2 * r, 2 * r); } }
+    return (SPUR = { c: cv, x: X0, y: Y0, w: X1 - X0, h: Y1 - Y0 });
+  }
   function land(c) {
     const x0 = cam.cx - VW / 2 / cam.z - 40, x1 = cam.cx + VW / 2 / cam.z + 40, step = Math.max(4, 6 / cam.z);
     const hc = mix(mix([30, 30, 38], [36, 32, 36], dawn), [44, 34, 30], gold);
     c.beginPath(); c.moveTo(x0, 2000);
     for (let x = x0; x <= x1; x += step) c.lineTo(x, -gh(x));
     c.lineTo(x1, 2000); c.closePath(); c.fillStyle = css(hc); c.fill();
+    // a breath of form (owner: "shade hill a slight bit to get sense of its 3d and how pack is rolling down"): the hill a
+    // touch lighter just under its outline, darker toward its foot; and one soft broad spur coming toward us from the
+    // crown where he stands down to the cave, a little lighter down its middle, its flanks a little darker
+    c.save(); c.clip();
+    const lite = mix(hc, [150, 146, 160], .5), dark = mix(hc, [6, 5, 8], .6);
+    let g = c.createLinearGradient(0, -H_TOP, 0, 40);
+    g.addColorStop(0, css(lite, .06)); g.addColorStop(.35, css(lite, 0)); g.addColorStop(.7, css(dark, 0)); g.addColorStop(1, css(dark, .5));
+    c.fillStyle = g; c.fillRect(x0, -H_TOP - 60, x1 - x0, H_TOP + 2100);
+    const S = spur(); c.drawImage(S.c, S.x, S.y, S.w, S.h);
+    c.restore();
     // a thin edge of light along the crown, toward the sun (after dawn)
     if (gold > .01) {
       c.save(); c.lineWidth = 2.4 / cam.z; c.lineCap = 'round';
@@ -263,29 +288,35 @@ const CR = (() => {
   // hill not on slope but on ground level below cross - when zoomed out it should be pretty much below cross (maybe to the
   // left of the point on the zoomed out ground at the base of the cross)")
   const tombSill = () => 6;
-  const CUT = (() => { const r = rgen(23), L = []; for (let i = 0; i <= 24; i++) L.push((r() - .5) * 7); return L; })();
+  // the sepulchre: a cave in the hill's foot (owner: "more like a cave and more integrated into hill side and base (which
+  // is darker color) (very subtle but beautiful)"): an uneven dark mouth with a soft deeper shadow round it, the rock's
+  // brow over it catching a faint light, and the round stone half sunk beside it in the hill's own tone
+  const MOUTH = (() => { const r = rgen(31), P = []; for (let i = 0; i <= 28; i++) { const u = i / 28, a = Math.PI * (1 - u);
+    P.push([Math.cos(a) * (62 + (r() - .5) * 3) * (1 + .12 * Math.pow(1 - Math.sin(a), 2)) + 3 * Math.sin(u * 7), -Math.pow(Math.sin(a), .7) * (DOOR_H - 14) * (1 + .05 * Math.sin(u * 5 + 1))]); } return P; })();
   function tomb(c) {
-    const x = TOMB_X, sill = tombSill(), col = mix(mix([30, 30, 38], [36, 32, 36], dawn), [52, 41, 35], gold);
-    // the cut face: a rough hewn patch of rock round the door in the hill's foot, ragged all round, its top a low arch
-    const x0 = x - 160, x1 = x + 130, top = DOOR_H + 70;
-    c.beginPath(); c.moveTo(x0 + CUT[0], -sill + 8);
-    for (let i = 0; i <= 24; i++) { const u = i / 24, a = Math.PI * (1 - u), X = lerp(x0, x1, u) + CUT[i] * 1.4, Y = sill + 8 + (top - 8) * Math.pow(Math.sin(a), .55); c.lineTo(X, -Y + CUT[(i + 7) % 25]); }
-    c.lineTo(x1 + 6, -sill + 8); c.closePath();
-    let g = c.createLinearGradient(0, -sill - top, 0, -sill + 10); g.addColorStop(0, css(mix(col, [150, 140, 150], .05 + .04 * gold))); g.addColorStop(1, css(mix(col, [150, 140, 150], .1 + .05 * gold))); c.fillStyle = g; c.fill();
-    // the ledge before the door, a little lighter on its top
-    c.fillStyle = css(mix(col, [0, 0, 0], .25)); c.fillRect(x0 - 26, -sill, x1 - x0 + 56, 10);
-    c.fillStyle = css(mix(col, [190, 176, 170], .1 + .08 * gold)); c.fillRect(x0 - 26, -sill - 2, x1 - x0 + 56, 3);
-    // the doorway: a dressed surround, a round head, a deep dark within
-    const dw = DOOR_W, dh = DOOR_H, sx0 = x, sy0 = -sill;
-    c.fillStyle = css(mix(col, [180, 168, 170], .1 + .06 * gold));
-    c.beginPath(); c.moveTo(sx0 - dw - 9, sy0); c.lineTo(sx0 - dw - 9, sy0 - dh + dw); c.arc(sx0, sy0 - dh + dw, dw + 9, Math.PI, 0); c.lineTo(sx0 + dw + 9, sy0); c.closePath(); c.fill();
-    c.beginPath(); c.moveTo(sx0 - dw, sy0); c.lineTo(sx0 - dw, sy0 - dh + dw); c.arc(sx0, sy0 - dh + dw, dw, Math.PI, 0); c.lineTo(sx0 + dw, sy0); c.closePath();
-    g = c.createLinearGradient(0, sy0 - dh, 0, sy0); g.addColorStop(0, 'rgb(4,4,6)'); g.addColorStop(.75, 'rgb(9,8,10)'); g.addColorStop(1, css(mix([9, 8, 10], [60, 44, 34], .25 * gold))); c.fillStyle = g; c.fill();
-    // the great round stone, rolled aside on the ledge
-    const rx = x - 104, rr = 50;
-    c.fillStyle = css(mix(col, [150, 140, 148], .08 + .04 * gold)); c.beginPath(); c.ellipse(rx, sy0 - rr - 2, rr * .9, rr, 0, 0, 7); c.fill(); c.strokeStyle = css(mix(col, [0, 0, 0], .45)); c.lineWidth = 2.6; c.stroke();
-    c.strokeStyle = css(mix(col, [0, 0, 0], .3)); c.lineWidth = 2; c.globalAlpha = .5; c.beginPath(); c.ellipse(rx + 4, sy0 - rr - 2, rr * .5, rr * .62, 0, 0, 7); c.stroke(); c.globalAlpha = 1;
+    const x = TOMB_X, sill = tombSill(), col = mix(mix([30, 30, 38], [36, 32, 36], dawn), [44, 34, 30], gold);
+    c.save(); c.translate(x, -sill + 6);
+    // a soft recess round the mouth, darker than the hill
+    c.save(); c.scale(1.3, .85);
+    let g = c.createRadialGradient(0, -70, 10, 0, -70, 150); g.addColorStop(0, css([6, 5, 8], .5)); g.addColorStop(.5, css([6, 5, 8], .2)); g.addColorStop(1, 'rgba(6,5,8,0)');
+    c.fillStyle = g; c.fillRect(-160, -230, 320, 320); c.restore();
+    // the mouth itself, deepest toward its top
+    c.beginPath(); MOUTH.forEach(([px, py], i) => i ? c.lineTo(px, py) : c.moveTo(px, py)); c.closePath();
+    g = c.createLinearGradient(0, -DOOR_H, 0, 0); g.addColorStop(0, 'rgb(3,3,5)'); g.addColorStop(.8, 'rgb(7,6,8)'); g.addColorStop(1, css(mix([10, 9, 11], [40, 30, 24], .3 * gold))); c.fillStyle = g; c.fill();
+    // the brow of rock over it: its edge catches a little light from the sky, faint
+    c.strokeStyle = css(mix(col, [160, 150, 160], .35 + .2 * gold), .55); c.lineWidth = 1.6; c.lineCap = 'round';
+    c.beginPath(); MOUTH.slice(5, 24).forEach(([px, py], i) => i ? c.lineTo(px, py - 1.5) : c.moveTo(px, py - 1.5)); c.stroke();
+    c.strokeStyle = css(mix(col, [160, 150, 160], .2), .35); c.lineWidth = 1.2;
+    c.beginPath(); c.moveTo(-80, -DOOR_H - 18); c.quadraticCurveTo(-20, -DOOR_H - 34, 46, -DOOR_H - 22); c.stroke();
+    // the great round stone, rolled aside and half sunk at the mouth's left, in the hill's own tone
+    const rx = -104, rr = 46;
+    c.save(); c.beginPath(); c.rect(-200, -300, 400, 300); c.clip();
+    c.fillStyle = css(mix(col, [6, 5, 8], .38)); c.beginPath(); c.ellipse(rx, -rr + 10, rr * .9, rr, 0, 0, 7); c.fill();
+    c.strokeStyle = css(mix(col, [160, 150, 160], .3), .35); c.lineWidth = 1.4; c.beginPath(); c.ellipse(rx, -rr + 10, rr * .9, rr, 0, Math.PI * 1.05, Math.PI * 1.75); c.stroke();
+    c.restore();
+    c.restore();
   }
+
   function cross(c) {
     const x = CROSS_X, h = gh(x), col = mix(mix([20, 20, 27], [22, 20, 24], dawn), [30, 22, 20], gold), H = CROSS_H, T = 14, bw = 186, by = CROSS_BY;
     c.save(); c.translate(x, -h + 4); c.fillStyle = css(col);
