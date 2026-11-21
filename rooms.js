@@ -358,7 +358,7 @@ const RM = (() => {
     door: {
       pic: 'room-door', FY: 1200, cam0: 210, tone: [80, 74, 90], k: .58,
       light(x) { return x < DOOR.x - 100 ? { x: DOOR.x, a: .6 * this.d, col: [230, 140, 70] } : null; },
-      enter() { this.d = 0; this.kn = 0; this.ia = 0; this.cut = 0; this.cw = 1; SEEN_R.clear(); },
+      enter() { this.d = 0; this.kn = 0; this.ia = 0; this.cut = 1; this.cw = 1; SEEN_R.clear(); },
       cutLit(id) { return id === 'door' ? .5 : 0; },
       run() { talk([[N, 'Then he went on till he came to the house of the Interpreter, and knocked over and over.']], () => { this.cw = 0; talk([[TIP, 'Knock on the door.', 'knock']], () => { ph = 'open'; t = 0; G.state = 'auto'; }); }); },
       act(sx, sy) { if (G.act === 'knock' && (sx == null || near(sx, sy, DOOR.x, 950, 150))) { knockS(); if (++this.kn >= 3) next(true); } },
@@ -637,7 +637,7 @@ const RM = (() => {
     leave: {
       pic: 'room-door', FY: 1200, cam0: 210, tone: [100, 94, 112], k: .58,
       light(x) { return x < DOOR.x - 100 ? { x: DOOR.x, a: .55, col: [230, 140, 70] } : null; },
-      enter() { this.x = 1880; this.w = 0; this.fr = 0; this.a = 1; this.cut = 0; this.cw = 1; this.ct = 0; pic(VIS.C.walk.n); },
+      enter() { this.x = 1880; this.w = 0; this.fr = 0; this.a = 1; this.cut = 1; this.cw = 1; this.ct = 0; pic(VIS.C.walk.n); },
       cutLit(id) { return id === 'door' ? .6 : SEEN_R.has(id) ? .45 + .4 * smooth(0, 1, (this.ct - 30 - 25 * ['r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r7'].indexOf(id)) / 60) : 0; },
       run() { talk([[I, 'Have you thought on all these things?'], [C, 'Yes, and they put me in hope and fear.'], [I, 'The Comforter be always with you, good Christian, to guide you in the way that leads to the City.'], [N, 'The highway was fenced on either side with a wall, and that wall was called Salvation.'], [TIP, 'Hold to go on your way.', 'walkout']], () => {}); },
       act() {},
