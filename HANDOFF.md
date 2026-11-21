@@ -198,6 +198,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 **Build 276 (cover chat): the book cover painted in code in the game's own watercolour language (arched window of layered hills under the far light), replacing the leather photograph; no more flicker on opening. See `CLAUDE.md`, "Build 276". Nothing spent.**
 
+**Build 380 (Level 2 edits chat): the fear bulges taken out; on the fears line the whole picture sinks dramatically into the dark while slow low drums beat in heartbeat pairs, then lifts; quiet breaths between the storyteller's lines (ALONE, FEARS, STUCK, Help named). Nothing spent.**
+
 **Build 377 (Level 2 edits chat): the fears rise in place, one after another, each with a deep thud and a darkening, the last and biggest behind him. Nothing spent.**
 
 **Build 376 (Level 2 edits chat): the steps' lights ring soft chord tones, no longer the hymn's last phrase (the hymn is saved for the Cross). Nothing spent.**

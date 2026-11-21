@@ -424,7 +424,7 @@ const SL = (() => {
     C2.rt = 0; C2.handGo = false; C2.tv = null; C2.fy = null; C2.md = null; C2.rq0 = null; C2.q = 0; drops = []; churns = []; fReset(); strings = []; RECS = {}; for (const k in MS) delete MS[k]; C2.D = 0;
     ph = 'plain'; Object.assign(C2, { x: START, y: bankY(START) + 4, face: 1, anim: 12, alpha: 1, sink: 0, reach: 0, stand: 1, sd: QUIET[0], st: 0, faceA: 1, done: 0 });
     pli = { x: START - 80, y: 0, face: 1, anim: 0, alpha: 1, sink: 0, mode: 'follow', px: START - 80, stop: { t: 50, x0: START - 80 - 72.5 * CHR_K } };      // he starts standing (his stop video's breathing part)
-    prints = []; fogH = 1; fogS = 1; help = null; mv = null; lift = null; rings = []; steps = []; gloom = gloomTo = 0; noteI = 0; strain = 0; slipT = 0; fearT = 300; fearsSaid = false; goldT = 0; onwayT = 0; capsSaid = new Set(); nearSaid = true; pliGo = 0; cityT = -1; fearT2 = -1; fearHelpT = 0;
+    prints = []; fogH = 1; fogS = 1; help = null; mv = null; lift = null; rings = []; steps = []; gloom = gloomTo = 0; noteI = 0; strain = 0; slipT = 0; fearT = 300; fearsSaid = false; goldT = 0; onwayT = 0; capsSaid = new Set(); nearSaid = true; pliGo = 0; cityT = -1; fearT2 = -1; fearHelpT = 0; beatT = -1e9; quietT = 0; helpSayT = 0;
     motes = [...Array(LAST.length)].map((_, i) => ({ ox: -30 - Math.random() * 50, oy: -112 - Math.random() * 40, x: START, y: -150, tw: Math.random() * 6, i }));
     // the steps through the bog, hidden until the lights settle on them: low flat stones, no two alike (from the approved still)
     const R = rngS(33); let sx = BANK0 - 6;
@@ -686,7 +686,7 @@ const SL = (() => {
       // barely above water)"): deeper and deeper as he wades (DEEP below where he fell in, by the far bank only his head
       // shows); reaching up for Help's hand he heaves back up to where the grip needs him (see drawChr, 'help')
       C2.y = C_SINK + (SINK + DEEP - C_SINK) * smooth(0, .9, p);
-      if (p > .45 && !fearsSaid) { fearsSaid = true; caption(FEARS); fearT2 = 0; }
+      if (p > .3 && !fearsSaid && quiet(110)) { fearsSaid = true; caption(FEARS); fearT2 = 0; }      // build 380: only after a quiet breath since the last line
       if (--fearT <= 0) { fearT = 260 + Math.random() * 260; sfxS.fear(); }
       if (G.state === 'play' && !want && G.cap <= 0 && !G.capQ.length && G.t % 600 === 300) hint('wade', 'Hold to struggle on.');
       if (want) clearHint('wade');
@@ -698,7 +698,9 @@ const SL = (() => {
       waStep(want ? .2 : .07);
       if (want) { strain++; C2.anim += .5; if (strain % 40 === 1) sfxS.strain(); }
       C2.x = STUCK_X - 4 * Math.max(0, Math.sin(slipT / 50)) * smooth(60, 160, slipT);
-      if (strain > 120 || slipT > 220) { ph = 'help'; C2.x = STUCK_X; talk(STUCK, () => { help = { a: 0, t: 0, w: HWALK.length >= 96 ? 0 : 1e9 }; talk(HELP.slice(0, 1), () => {}); }); }
+      if (!fearsSaid && quiet(110)) { fearsSaid = true; caption(FEARS); fearT2 = 0; }
+      // build 380: the storyteller waits until the drums have played and the dark has begun to lift, then a quiet breath
+      if ((strain > 120 || slipT > 220) && fearsSaid && fearT2 > FEAR_END - 60 && quiet(90)) { ph = 'help'; C2.x = STUCK_X; talk(STUCK, () => { help = { a: 0, t: 0, w: HWALK.length >= 96 ? 0 : 1e9 }; helpSayT = G.t + 75; }); }
     } else if (ph === 'help') {
       if (help && C2.reach < 1) C2.reach = Math.min(1, C2.reach + .05);
       // build 121 (owner: "help should rush in a little fast (like he knows it's [an emergency] - not run but quick nonetheless)
@@ -711,7 +713,8 @@ const SL = (() => {
       // build 287 (owner: "can christian not extend his hand, until it prompts him to take hand?"): he keeps struggling
       // while they talk and only lifts his head and arm once Help says "Give me your hand" (C2.handGo)
       if (help && C2.handGo) C2.rt = Math.min(150, (C2.rt || 0) + .4);
-      if (help && help.w >= HSEQ.length - 1 && !help.said && G.state === 'play') { help.said = true; talk(HELP.slice(1), () => {}); }
+      if (helpSayT && G.t >= helpSayT) { helpSayT = 0; talk(HELP.slice(0, 1), () => {}); }      // build 380: a breath between "could not get out" and "Then a man came"
+      if (help && help.w >= HSEQ.length - 1 && !help.said && !helpSayT && G.state === 'play') { help.said = true; talk(HELP.slice(1), () => {}); }
       if (lift) { lift.t = Math.min(236, lift.t + .4); if (lift.t >= 236) { ph = 'drawn'; C2.done = 0; C2.x = HX + (LIFT_CHR - META.lift.ax) * CHR_K; C2.y = bankY(C2.x) + 4; C2.D = (META.lift.ground - liftWet(LIFT.length - 1).r) * CHR_K; C2.face = 1; C2.faceA = 1; C2.stand = 1; C2.sd = QUIET[0]; } }
     } else if (ph === 'drawn') {
       // the lift's last picture dissolves into the two men standing apart, then he turns to look back
@@ -810,7 +813,8 @@ const SL = (() => {
     // --- THOUGHTS (build 370): what he sees in his mind; each comes, lingers and goes by itself ---
     if (cityT >= 0) cityT++;
     if (fearT2 >= 0) fearT2++;
-    if (fearT2 >= 0) FEARS_AT.forEach((f, i) => { if (fearT2 === f.s) { rings.push({ x: f.x, y: 0, t: 0, k: 1.2 + .4 * f.k }); fPush(f.x, 2.4 * f.k, 30 * f.k); if (audio()) { bowed(29 + (i % 3), .03 + .012 * f.k, 3.2); hiss(140, .6, .04 + .015 * f.k, 2.6, 'lowpass'); } } });      // each fear rises with a deep thud
+    if (saying() || G.state === 'dialog') quietT = G.t;
+    if (fearT2 >= 0 && !fearHelpT) for (const [k, v] of DRUMS) if (fearT2 === k) { beatT = G.t; drum(v); }      // build 380: the drum beats
     // --- the lights he gathered: a slow cloud behind his shoulder; at the end they fly to the steps ---
     for (const mo of motes) {
       mo.tw += .03;
@@ -1180,7 +1184,7 @@ const SL = (() => {
     // but alive looking"): on "Many fears and doubts came over him" dark soft shapes heave up out of the mud round him,
     // each a slow cluster of lobes that swell and turn, now and then two dim eyes opening, and sink again. Drawn before
     // him, never between us and him; cut at the surface
-    FP = 0; if (ph === 'help' && !fearHelpT) fearHelpT = G.t; if (fearT2 >= 0 && (ph === 'wade' || ph === 'stuck' || (ph === 'help' && G.t - fearHelpT < 90))) fears(1);
+    if (help && !fearHelpT && fearT2 >= 0) fearHelpT = G.t; FP = fearDark();
     if (pliIn) { TALKM = talkMove(PL); pliMire(ctx); TALKM = null; }
     if (chrLate > 0) { MREC = 'C'; FIG_WET = { D: C2.D || 0, a: .8 }; TALKM = C2.reach > 0 ? null : talkMove(C); drawChr(ctx, fig, chrLate); TALKM = null; MREC = null; FIG_WET = null; }
     sense();
@@ -1305,7 +1309,8 @@ const SL = (() => {
     // the edges burned in as in a darkroom print, and paper grain
     { const g = ctx.createRadialGradient(VW * .5, VH * .5, VH * .42, VW * .5, VH * .5, VW * .78); g.addColorStop(0, css(DARK, 0)); g.addColorStop(1, css(DARK, .5 + .2 * gloom)); ctx.fillStyle = g; ctx.fillRect(0, 0, VW, VH);
       const t = ctx.createLinearGradient(0, 0, 0, VH * .3); t.addColorStop(0, css(DARK, .28)); t.addColorStop(1, css(DARK, 0)); ctx.fillStyle = t; ctx.fillRect(0, 0, VW, VH * .3); }
-    if (FP > .01) { ctx.setTransform(S, 0, 0, S, 0, 0); ctx.fillStyle = css(DARK, .2 * FP); ctx.fillRect(0, 0, VW, VH); }      // build 377: the picture darkens for a breath as a fear swells
+    if (FP > .01) { ctx.setTransform(S, 0, 0, S, 0, 0); const cx = X(C2.x), cy = Y(-40), g = ctx.createRadialGradient(cx, cy, 30 * z, cx, cy, VW * .7);      // build 380: the whole picture sinks into the dark, a little less round him
+      g.addColorStop(0, css(DARK, .5 * FP)); g.addColorStop(.3, css(DARK, .74 * FP)); g.addColorStop(1, css(DARK, .9 * FP)); ctx.fillStyle = g; ctx.fillRect(0, 0, VW, VH); }
     ctx.globalCompositeOperation = 'multiply'; ctx.globalAlpha = .13; ctx.fillStyle = ctx.createPattern(paper, 'repeat'); ctx.fillRect(0, 0, VW, VH);
     ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1;
     // touches, the ring that shows where to touch, the things he carries
@@ -1337,35 +1342,23 @@ const SL = (() => {
     const soft = (c, r) => { const m = mk(c.width, c.height), q = m.getContext('2d'); for (let i = 0; i < 16; i++) { const a = i * 2.4, d = r * Math.sqrt((i + .5) / 16); q.globalAlpha = 1 / (i + 1); q.drawImage(c, Math.cos(a) * d, Math.sin(a) * d); } return m; };      // a thought has no hard edges: kept small, so it is soft when stretched
     return THK = { city: soft(city, 2.4) };
   }
-  // THE FEARS (build 377, owner: "the bumps rising up should be just from map area and stay in the same place horizontally
-  // just come up - what's a particularly intense way to do this that's not too detailed"): each is fixed to its own place
-  // in the mire (world x, between the banks) and only rises straight up out of the mud and sinks back. The intensity is in
-  // the timing, not in detail: they come ONE AFTER ANOTHER, each a little bigger, the last and biggest just behind him;
-  // each rise lands with a deep low thud and a ring, and the whole picture darkens for a breath as it swells (FP).
-  // x, size, start tick (from the FEARS line)
-  const FEARS_AT = [{ x: -880, k: .9, s: 20 }, { x: -330, k: 1, s: 90 }, { x: -770, k: 1.15, s: 160 }, { x: -470, k: 1.1, s: 230 }, { x: -620, k: 1.5, s: 300 }];
-  let FP = 0, fearHelpT = 0;
-  function fearRise(f) { const u = fearT2 - f.s; return u < 0 ? 0 : smooth(0, 90, u) * (1 - smooth(240, 360, u)) * (ph === 'help' ? Math.max(0, 1 - (G.t - (fearHelpT || G.t)) / 90) : 1); }
-  function fears(A) {
-    const MUDT = tone(.3), TOP = tone(.46); FP = 0;
-    FEARS_AT.forEach((f, n) => {
-      const u = fearT2 - f.s, rise = fearRise(f) * (A > .01 ? 1 : 0); if (rise < .02) return;
-      FP = Math.max(FP, smooth(0, 60, u) * (1 - smooth(60, 220, u)));
-      const t = G.t / 60 + n * 1.7, breathe = 1 + .06 * Math.sin(t * 1.6), x0 = f.x, w = 46 * f.k, k = f.k;
-      const h = w * (.2 + .78 * rise) * breathe, N = 32;
-      const edge = (q, grow) => { const a = Math.PI * q, bump = 1 + .1 * Math.sin(q * 9 + t * 1.3 + n) + .06 * Math.sin(q * 17 - t * 2.1);
-        return [x0 - Math.cos(a) * w * 1.5 * grow, -Math.pow(Math.sin(a), 1.7) * h * bump * grow]; };      // a mound: low spreading flanks, a rounded crown; it never moves sideways
-      for (const [grow, al] of [[1.1, .14], [1.075, .2], [1.05, .28], [1.025, .38], [1, 1]]) {
-        ctx.beginPath(); ctx.moveTo(x0 - w * 1.9 * grow, 2); for (let i = 0; i <= N; i++) { const [x, y] = edge(i / N, grow); ctx.lineTo(x, y); } ctx.lineTo(x0 + w * 1.9 * grow, 2); ctx.closePath();
-        const g = ctx.createLinearGradient(0, -h, 0, 2); g.addColorStop(0, css(TOP, .42 * rise * al)); g.addColorStop(.5, css(MUDT, .52 * rise * al)); g.addColorStop(1, css(MUDT, .62 * rise * al));
-        ctx.fillStyle = g; ctx.fill(); }
-      ctx.strokeStyle = css(tone(.62), .14 * rise); ctx.lineWidth = 1.2; ctx.beginPath();
-      for (let i = 9; i <= N - 9; i++) { const [x, y] = edge(i / N, 1); i === 9 ? ctx.moveTo(x, y + 1.5) : ctx.lineTo(x, y + 1.5); }
-      ctx.stroke();
-      // once it has risen, two dim eyes open near its top, look, and close
-      const blink = Math.sin(t * .5 + n * 2); if (blink > .4 && rise > .7) { const e = smooth(.4, .65, blink) * (1 - smooth(.88, 1, blink)) * rise, ey = -h * .62;
-        ctx.fillStyle = css([230, 220, 194], .45 * e); for (const sd of [-1, 1]) { ctx.beginPath(); ctx.ellipse(x0 + sd * 6 * k, ey, 2.2 * k, 1.3 * k * e + .2, 0, 0, 7); ctx.fill(); } }
-    });
+  // THE FEARS (build 380, owner: "remove bumps but darken whole scene dramatically - that would make it intense, some drum
+  // beats"): no shapes at all. On the FEARS line the whole picture sinks into the dark (FP, up to .66, a little less round
+  // Christian so he still reads), and slow low drum beats come in heartbeat pairs, louder and closer together, the dark
+  // swelling a breath at each; it lifts over about 3 s, and quickly once Help comes (he is the light coming back).
+  // the beats, in ticks from the FEARS line (each [tick, loudness])
+  const DRUMS = [[40, .5], [58, .32], [150, .6], [168, .38], [250, .72], [266, .45], [335, .85], [350, .55], [410, 1], [424, .65], [480, 1.1]];
+  const FEAR_END = 560;      // the dark holds to here, then lifts over 180 ticks
+  let FP = 0, fearHelpT = 0, beatT = -1e9, quietT = 0, helpSayT = 0;
+  function drum(v) {      // a low skin drum, felt more than heard: a pitch falling from about 80 to 40 Hz, a dull thump of noise
+    sweep(82, 40, .7, .13 * v, true); sweep(58, 34, 1, .07 * v); hiss(120, .7, .07 * v, .45, 'lowpass'); hiss(700, .9, .01 * v, .09, 'bandpass');
+  }
+  const quiet = n => !saying() && G.state !== 'dialog' && G.t - quietT > n;      // build 380: so many ticks since anyone last spoke
+  function fearDark() {
+    if (fearT2 < 0) return 0;
+    const u = fearT2, up = smooth(0, 90, u), down = 1 - smooth(FEAR_END, FEAR_END + 180, u), helpK = fearHelpT ? Math.max(0, 1 - (G.t - fearHelpT) / 70) : 1;
+    const beat = Math.exp(-(G.t - beatT) / 22) * .12;      // the dark swells a breath at each beat
+    return clamp(up * down * helpK * (1 + beat));
   }
 
   function glow(c, x, y, r, col, a) { const g = c.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, css(col, a)); g.addColorStop(.35, css(col, a * .45)); g.addColorStop(1, css(col, 0)); c.fillStyle = g; c.fillRect(x - r, y - r, 2 * r, 2 * r); }
