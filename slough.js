@@ -746,7 +746,9 @@ const SL = (() => {
       else if (help && !mv) mv = { t: 40, to: 82 };
       // build 287 (owner: "can christian not extend his hand, until it prompts him to take hand?"): he keeps struggling
       // while they talk and only lifts his head and arm once Help says "Give me your hand" (C2.handGo)
-      if (help && C2.handGo) C2.rt = Math.min(150, (C2.rt || 0) + .4);
+      // build 421 (owner: "Christian doesn't reach for help till help reaches for him"): he begins only once Help's hand is
+      // most of the way out (mv.t 130 of 150), then reaches at the stuck video's own pace
+      if (help && C2.handGo && mv && mv.t >= 130) C2.rt = Math.min(150, (C2.rt || 0) + .4);
       if (helpSayT && G.t >= helpSayT) { helpSayT = 0; talk(HELP.slice(0, 1), () => {}); }      // build 380: a breath between "could not get out" and "Then a man came"
       if (help && help.w >= HSEQ.length - 1 && !help.said && !helpSayT && G.state === 'play') { help.said = true; talk(HELP.slice(1), () => {}); }
       if (lift) { lift.t = Math.min(236, lift.t + .4); if (lift.t >= 236) { ph = 'drawn'; C2.done = 0; C2.x = HX + (LIFT_CHR - META.lift.ax) * CHR_K; C2.y = bankY(C2.x) + 4; C2.D = (META.lift.ground - liftWet(LIFT.length - 1).r) * CHR_K; C2.face = 1; C2.faceA = 1; C2.stand = 1; C2.sd = QUIET[0]; } }
@@ -1482,6 +1484,7 @@ const SL = (() => {
   // the beats, in ticks from the FEARS line (each [tick, loudness])
   const DRUMS = [[40, .5], [58, .32], [150, .6], [168, .38], [250, .72], [266, .45], [335, .85], [350, .55], [410, 1], [424, .65], [480, 1.1]];
   const FEAR_END = 560;      // build 398: the drums are done by here (the dark no longer lifts by the clock: only when Help comes)
+  const HELP_KEEP = .62;
   let FP = 0, preDk = 0, histT = 0, histA = 0, travT = 0, travA = 0, struggleSaid = false, stillSaid = false, fearHelpT = 0, beatT = -1e9, quietT = 0, helpSayT = 0;
   function drum(v) {      // a low skin drum, felt more than heard: a pitch falling from about 80 to 40 Hz, a dull thump of noise
     sweep(82, 40, .7, .13 * v, true); sweep(58, 34, 1, .07 * v); hiss(120, .7, .07 * v, .45, 'lowpass'); hiss(700, .9, .01 * v, .09, 'bandpass');
@@ -1520,7 +1523,7 @@ const SL = (() => {
     // build 406 (owner: "have the darkness come on more and more slowly (like things getting worse)"): a first dimness creeps
     // in as he wades out and deepens with every step across (preDk, up to .4 by the far bank); from the fears line it goes on
     // darkening over about ten seconds, slowly at first and then faster, so things only get worse until Help comes
-    const u = fearT2 < 0 ? 0 : fearT2, up = Math.max(preDk, fearT2 < 0 ? 0 : Math.pow(smooth(0, 600, u), 1.6)), down = 1, helpK = fearHelpT ? Math.pow(1 - clamp((G.t - fearHelpT) / 110), 3) : 1;
+    const u = fearT2 < 0 ? 0 : fearT2, up = Math.max(preDk, fearT2 < 0 ? 0 : Math.pow(smooth(0, 600, u), 1.6)), down = 1, helpK = fearHelpT ? lerp(HELP_KEEP, 1, Math.pow(1 - clamp((G.t - fearHelpT) / 110), 3)) * (mv && C2.handGo ? 1 - smooth(82, 150, mv.t) : 1) : 1;      // build 421 (owner: "lighten darkness a tad when help arrives but keep some darkness till he reaches out"): to HELP_KEEP as he comes, the rest as his hand goes out
     const beat = Math.exp(-(G.t - beatT) / 22) * .12;      // the dark swells a breath at each beat
     return clamp(up * down * helpK * (1 + beat));
   }
