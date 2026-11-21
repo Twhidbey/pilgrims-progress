@@ -204,6 +204,7 @@ const RM = (() => {
   // ROOM 4 DRAWN IN CODE (a trial, after build 373; owner: "going back to computer drawn rooms like other levels"): only with ?drawn.
   // The game's own language: flat side view, each layer one tone, ONE light (the fire, after La Tour), most of the picture dark.
   // Baked once at half the painting's size (3168 x 1344 plate px); the fire, the water and the two men are drawn live in r4.under().
+  const PAINTED = /[?&]painted\b/.test(location.search);
   const DRAWN = /[?&]drawn\b/.test(location.search), D4 = !/[?&]painted\b/.test(location.search);
   const R4D = { caster: { ax: 35, g: 302, s: 2.1, ct: 1.3, mul: .42, sat: .5 }, pourer: { ax: 62, g: 299, s: 2.1, ct: 1.3, mul: .42, sat: .5 }, FIRE: 1810, PART0: 1925, PART1: 2175, SMALL: 2225 };
   function bakeR4() {
@@ -321,7 +322,38 @@ const RM = (() => {
     x.globalCompositeOperation = 'destination-in'; x.drawImage(im, 0, 0);
     pics[out] = cv; return true;
   }
-  if (DRAWN) { const n = 'room2-drawn'; loads[n] = new Promise(r => setTimeout(r, 0)).then(() => (pics[n] = bakeR2())); pic('room2-girl'); pic('room2-sweeper'); }
+  // THE PARLOUR ON THE HOUSE'S SHELL (build 432; owner: "I want painting looks gone ... replace with drawn look across the board"): night, as in every
+  // room; Vermeer's window becomes moonlight: the glass the brightest thing in the house, the plaster glowing cool beside it and dying to the
+  // right, the shade warm umber; the basket and the brass pail on one nail; a low pale band of Delft tiles; the Milkmaid's colours only on the girl.
+  const R2S = { WIN: [380, 360, 720, 900] };
+  function bakeR2s() {
+    const [x0, y0, x1, y1] = R2S.WIN, FY = HOUSE.FY;
+    return bakeShell({ seed: 22, doors: 'LR', skirt: 0, wallC: '#2a2219',
+      lights: [{ x: 600, y: 700, r: 1500, lit: [128, 130, 124], half: [58, 54, 46], sx: 1.25 }],
+      wall(c) {
+        // the window, frontal in the back wall: a deep reveal, the moonlit glass with its leaded diamonds, one mullion and transom, the sill
+        c.fillStyle = '#1e1810'; c.fillRect(x0 - 30, y0 - 30, x1 - x0 + 60, y1 - y0 + 60);
+        let g = c.createLinearGradient(0, y0, 0, y1); g.addColorStop(0, '#dfe7ea'); g.addColorStop(1, '#b9c6cc'); c.fillStyle = g; c.fillRect(x0, y0, x1 - x0, y1 - y0);
+        c.save(); c.beginPath(); c.rect(x0, y0, x1 - x0, y1 - y0); c.clip(); c.strokeStyle = 'rgba(50,56,60,.28)'; c.lineWidth = 2; for (let d = -600; d < 600; d += 38) { c.beginPath(); c.moveTo(x0 + d, y0); c.lineTo(x0 + d + 540, y1); c.stroke(); c.beginPath(); c.moveTo(x1 - d, y0); c.lineTo(x1 - d - 540, y1); c.stroke(); } c.restore();
+        c.fillStyle = '#2a2016'; c.fillRect((x0 + x1) / 2 - 8, y0, 16, y1 - y0); c.fillRect(x0, y0 + (y1 - y0) * .38 - 7, x1 - x0, 14);
+        c.fillStyle = '#4a3a28'; c.fillRect(x0 - 44, y1 + 30, x1 - x0 + 88, 22); c.fillStyle = 'rgba(220,230,236,.45)'; c.fillRect(x0 - 44, y1 + 30, x1 - x0 + 88, 3);
+        // the moon's light lying soft and slanting down the wall from the window (painted small, stretched)
+        const sm = document.createElement('canvas'); sm.width = 64; sm.height = 27; const q = sm.getContext('2d'); const gg = q.createLinearGradient(10, 0, 40, 27); gg.addColorStop(0, 'rgba(220,228,232,.55)'); gg.addColorStop(1, 'rgba(220,228,232,0)'); q.fillStyle = gg; q.beginPath(); q.moveTo(8, 6); q.lineTo(16, 6); q.lineTo(40, 27); q.lineTo(14, 27); q.closePath(); q.fill();
+        c.save(); c.globalCompositeOperation = 'soft-light'; c.drawImage(sm, 0, 0, 3168, 1344); c.restore();
+        // the basket and the brass pail on one nail, filled shapes with only a faint trace, a soft shadow down and right
+        c.save(); c.translate(300, -40);
+        c.fillStyle = '#4c3820'; c.beginPath(); c.moveTo(980, 560); c.quadraticCurveTo(1060, 580, 1140, 560); c.bezierCurveTo(1150, 640, 1110, 700, 1060, 706); c.bezierCurveTo(1010, 700, 972, 640, 980, 560); c.fill();
+        c.strokeStyle = '#4c3820'; c.lineWidth = 9; c.beginPath(); c.moveTo(996, 566); c.bezierCurveTo(1006, 470, 1114, 470, 1124, 566); c.stroke();
+        c.strokeStyle = 'rgba(200,190,160,.18)'; c.lineWidth = 3; for (let y = 590; y < 700; y += 22) { c.beginPath(); c.moveTo(986, y); c.lineTo(1136, y); c.stroke(); }
+        c.fillStyle = '#6a5228'; c.beginPath(); c.moveTo(1160, 560); c.lineTo(1260, 560); c.lineTo(1248, 668); c.quadraticCurveTo(1210, 680, 1172, 668); c.closePath(); c.fill();
+        c.fillStyle = 'rgba(230,226,200,.35)'; c.fillRect(1176, 572, 6, 86); c.fillStyle = '#1a120a'; c.beginPath(); c.arc(1110, 480, 6, 0, 6.2832); c.fill(); c.restore();
+        // the Delft tiles: a low pale band at the wall's foot, a few faint blue marks
+        c.fillStyle = '#8f8a7c'; c.fillRect(0, FY - 48, 3168, 48); c.fillStyle = 'rgba(40,30,20,.5)'; c.fillRect(0, FY - 50, 3168, 3);
+        c.strokeStyle = 'rgba(50,70,120,.35)'; c.lineWidth = 2; for (let x = 24; x < 3168; x += 48) { c.strokeRect(x - 20, FY - 44, 40, 40); } c.strokeStyle = 'rgba(50,70,120,.4)'; for (const x of [300, 1340, 1900, 2460, 2820]) { c.beginPath(); c.arc(x, FY - 24, 9, 0, 6.2832); c.stroke(); }
+        g = c.createLinearGradient(1200, 0, 3168, 0); g.addColorStop(0, 'rgba(20,14,8,0)'); g.addColorStop(1, 'rgba(20,14,8,.5)'); c.fillStyle = g; c.fillRect(1200, FY - 48, 1968, 48);
+      } });
+  }
+  if (!PAINTED) { const n = 'room2-drawn'; loads[n] = new Promise(r => setTimeout(r, 0)).then(() => (pics[n] = DRAWN ? bakeR2() : bakeR2s())); pic('room2-girl'); pic('room2-sweeper'); }
   if (D4) { const n = 'room4-drawn'; loads[n] = new Promise(r => setTimeout(r, 0)).then(() => (pics[n] = bakeR4())); pic('room4-caster'); pic('goodwill-reach'); }
   // a soft flame: stacked teardrops, the core pale gold, the edge amber, swaying and breathing (no hard tongues)
   function flame(c, x, y, h, w, ph, a = 1) {
@@ -342,7 +374,6 @@ const RM = (() => {
   // It is night in every room. Enter by the left door, leave by the right. Plate px (3168 x 1344), baked at half size.
   // Four darks shared by every room: frame #0c0705, beam #150d08, unlit plaster #2c1d13, floor #1d130c.
   // ============================================================
-  const PAINTED = /[?&]painted\b/.test(location.search);
   const HOUSE = { FY: 1250, CEIL: 150, BEAM: 44, SKIRT: 28, LINTEL: 320, END: 110 };
   function lightPool(c, x, y, r, lit, half, a = 1) {
     // the gate's fall-off: full at the light, .4 at 30% of the radius, .12 at 55%, nothing beyond
@@ -433,10 +464,100 @@ const RM = (() => {
       lights: [{ x: 2050, y: 820, r: 1100, lit: [70, 44, 34], half: [40, 24, 18], a: .7 }, { x: 760, y: 900, r: 800, lit: [64, 40, 30], half: [36, 22, 16], a: .6 }] });
   }
   if (!PAINTED) { const n = 'room7-drawn'; loads[n] = new Promise(r => setTimeout(r, 0)).then(() => (pics[n] = bakeR7())); }
+  // ROOM 3, A LITTLE ROOM (build 432; after Chardin's Soap Bubbles): calm umber plaster, a small deep-set window high on the left showing only
+  // the night, a horn lantern on a bracket the one light; the two boys (cut from the old painting) in their chairs, Passion by the lantern.
+  const R3 = { X: 640, LANT: [1180, 520], WIN: [560, 300, 720, 520] };
+  function bakeR3() {
+    return bakeShell({ seed: 33, doors: 'LR', wallC: '#2a1c13',
+      lights: [{ x: R3.LANT[0], y: 620, r: 1500, lit: [128, 96, 68], half: [64, 46, 32], sx: 1.35 }],
+      wall(c) {
+        const [x0, y0, x1, y1] = R3.WIN; c.fillStyle = '#120b07'; c.fillRect(x0 - 26, y0 - 26, x1 - x0 + 52, y1 - y0 + 52);
+        c.fillStyle = '#151a26'; c.fillRect(x0, y0, x1 - x0, y1 - y0); c.save(); c.beginPath(); c.rect(x0, y0, x1 - x0, y1 - y0); c.clip(); c.strokeStyle = 'rgba(10,8,6,.7)'; c.lineWidth = 3; for (let d = -300; d < 300; d += 34) { c.beginPath(); c.moveTo(x0 + d, y0); c.lineTo(x0 + d + 220, y1); c.stroke(); c.beginPath(); c.moveTo(x1 - d, y0); c.lineTo(x1 - d - 220, y1); c.stroke(); } c.restore();
+        c.fillStyle = '#120b07'; c.fillRect((x0 + x1) / 2 - 5, y0, 10, y1 - y0); c.fillStyle = 'rgba(120,90,60,.4)'; c.fillRect(x0 - 26, y1 + 22, x1 - x0 + 52, 4);
+        // the lantern's bracket and the lantern itself (a dark frame round a warm horn pane)
+        const [lx, ly] = R3.LANT; c.fillStyle = '#120b07'; c.fillRect(lx - 4, ly - 120, 8, 60); c.fillRect(lx - 60, ly - 124, 64, 10);
+        c.fillRect(lx - 28, ly - 64, 56, 12); c.fillRect(lx - 24, ly + 40, 48, 12); c.fillStyle = '#d9a35a'; c.fillRect(lx - 20, ly - 52, 40, 92); c.fillStyle = 'rgba(40,24,10,.5)'; c.fillRect(lx - 2, ly - 52, 4, 92);
+      } });
+  }
+  if (!PAINTED) { const n = 'room3-drawn'; loads[n] = new Promise(r => setTimeout(r, 0)).then(() => (pics[n] = bakeR3())); }
+  // ROOM 5, THE GARDEN AND THE PALACE (build 432; the book {82}: "a pleasant place ... a stately palace, beautiful to behold"; after the Night Watch):
+  // the garden behind the house at night, deep blue; the house's back wall and lit back door on the left; the palace pale in the right half, its
+  // door the brightest low thing, the people in gold on its top the brightest high things; the crowd one huddled dark mass; the writer at his
+  // table with a small light; the armed men a dark mass by the door, their lances thin diagonals. Drawn live: the people, the lances, the lights.
+  const R5 = { P0: 1520, P1: 3080, TOP: 300, DOOR: 2490, DW: 230, DH: 560 };
+  function bakeR5() {
+    const W = 1584, H = 672, cv = document.createElement('canvas'); cv.width = W; cv.height = H; const c = cv.getContext('2d'); c.scale(.5, .5);
+    const FY = 1262, r = rngR(55);
+    let g = c.createLinearGradient(0, 0, 0, FY); g.addColorStop(0, '#0a101c'); g.addColorStop(.7, '#16202e'); g.addColorStop(1, '#222c38'); c.fillStyle = g; c.fillRect(0, 0, 3168, 1344);
+    for (let i = 0; i < 90; i++) { c.fillStyle = `rgba(220,224,240,${(.2 + r() * .5).toFixed(2)})`; c.fillRect(r() * 3168, r() * 700, 2.2, 2.2); }
+    // far garden: a long low wall and round dark trees, one tone, softer with the haze
+    c.fillStyle = '#141c24'; c.fillRect(0, FY - 260, 3168, 260); for (let x = 300; x < 1700; x += 180 + r() * 160) { c.beginPath(); c.ellipse(x, FY - 300, 110 + r() * 80, 140 + r() * 70, 0, 0, 6.2832); c.fill(); }
+    // the palace: pale stone in moonlight, a tower at its left, battlements, a few dim warm windows, the great door
+    const { P0, P1, TOP, DOOR, DW, DH } = R5;
+    g = c.createLinearGradient(0, TOP - 240, 0, FY); g.addColorStop(0, '#4a4842'); g.addColorStop(.5, '#3a3732'); g.addColorStop(1, '#2a2723'); c.fillStyle = g;
+    c.fillRect(P0, TOP, P1 - P0, FY - TOP); c.fillRect(P0 - 30, TOP - 190, 250, 190 + 10);
+    for (let x = P0; x < P1; x += 70) c.fillRect(x, TOP - 46, 42, 46); for (let x = P0 - 30; x < P0 + 220; x += 64) c.fillRect(x, TOP - 236, 38, 46);
+    c.fillStyle = 'rgba(20,18,16,.35)'; c.fillRect(P0, TOP + 4, P1 - P0, 14); c.fillRect(P0 - 30, TOP - 186, 250, 10);
+    { const gg = c.createRadialGradient(DOOR, FY - 200, 0, DOOR, FY - 200, 900); gg.addColorStop(0, 'rgba(255,190,110,.18)'); gg.addColorStop(1, 'rgba(255,190,110,0)'); c.save(); c.beginPath(); c.rect(P0, TOP, P1 - P0, FY - TOP); c.clip(); c.fillStyle = gg; c.fillRect(DOOR - 900, FY - 1100, 1800, 1100); c.restore(); }
+    { const gg = c.createLinearGradient(P1 - 500, 0, P1, 0); gg.addColorStop(0, 'rgba(8,8,10,0)'); gg.addColorStop(1, 'rgba(8,8,10,.5)'); c.fillStyle = gg; c.fillRect(P1 - 500, TOP - 50, 500, FY - TOP + 50); }
+    for (const [wx, wy] of [[P0 + 120, TOP + 160], [P0 + 520, TOP + 160], [P0 + 1300, TOP + 160], [P0 + 520, TOP + 470], [P0 + 1300, TOP + 470]]) { c.fillStyle = '#1a1612'; c.fillRect(wx - 34, wy - 70, 68, 140); c.fillStyle = 'rgba(240,190,110,.35)'; c.fillRect(wx - 24, wy - 60, 48, 120); }
+    c.fillStyle = '#2a2622'; c.beginPath(); c.moveTo(DOOR - DW / 2 - 40, FY); c.lineTo(DOOR - DW / 2 - 40, FY - DH + 40); c.arc(DOOR, FY - DH + 40, DW / 2 + 40, Math.PI, 0); c.lineTo(DOOR + DW / 2 + 40, FY); c.fill();
+    g = c.createLinearGradient(0, FY - DH, 0, FY); g.addColorStop(0, '#ffd98a'); g.addColorStop(1, '#f4b860'); c.fillStyle = g; c.beginPath(); c.moveTo(DOOR - DW / 2, FY); c.lineTo(DOOR - DW / 2, FY - DH + DW / 2); c.arc(DOOR, FY - DH + DW / 2, DW / 2, Math.PI, 0); c.lineTo(DOOR + DW / 2, FY); c.fill();
+    // the house's back wall on the left, the lit back door they came out by
+    c.fillStyle = '#1c1511'; c.fillRect(0, 0, 300, FY); c.fillStyle = '#0e0a07'; c.fillRect(126, FY - 680, 148, 680); g = c.createLinearGradient(0, FY - 660, 0, FY); g.addColorStop(0, '#8a5a30'); g.addColorStop(1, '#b07840'); c.fillStyle = g; c.fillRect(142, FY - 660, 116, 660);
+    // the ground: dark grass, the door's light lying flat before it
+    c.fillStyle = '#10150f'; c.fillRect(0, FY, 3168, 1344 - FY);
+    c.save(); c.beginPath(); c.rect(0, FY, 3168, 100); c.clip(); c.translate(DOOR, FY + 10); c.scale(1, .1); g = c.createRadialGradient(0, 0, 0, 0, 0, 900); g.addColorStop(0, 'rgba(255,200,110,.6)'); g.addColorStop(1, 'rgba(255,200,110,0)'); c.fillStyle = g; c.fillRect(-900, -900, 1800, 1800); c.restore();
+    return cv;
+  }
+  if (!PAINTED) { const n = 'room5-drawn'; loads[n] = new Promise(r => setTimeout(r, 0)).then(() => (pics[n] = bakeR5())); }
+  // a standing person as a soft dark silhouette (crowd, writer, guards), height h, at x on the line y; a helmet if armed
+  function sil(c, x, y, h, col, armed, lean = 0) {
+    // a robed or armoured body narrowing to the shoulders, a neck, a small head (an adult is about seven heads tall)
+    const sh = h * .12, hem = h * .1, hd = h * .062; c.fillStyle = col; c.beginPath(); c.moveTo(u(x - hem), v(y)); c.bezierCurveTo(u(x - hem * .9), v(y - h * .4), u(x - sh * 1.05 + lean), v(y - h * .6), u(x - sh + lean), v(y - h * .8));
+    c.quadraticCurveTo(u(x - sh * .6 + lean), v(y - h * .845), u(x - hd * .55 + lean), v(y - h * .85)); c.lineTo(u(x + hd * .55 + lean), v(y - h * .85)); c.quadraticCurveTo(u(x + sh * .6 + lean), v(y - h * .845), u(x + sh + lean), v(y - h * .8));
+    c.bezierCurveTo(u(x + sh * 1.05 + lean), v(y - h * .6), u(x + hem * .9), v(y - h * .4), u(x + hem), v(y)); c.closePath(); c.fill();
+    c.beginPath(); c.ellipse(u(x + lean * 1.1), v(y - h * .9), hd * .85 * S, hd * S, 0, 0, 6.2832); c.fill();
+    if (armed) { c.beginPath(); c.ellipse(u(x + lean * 1.1), v(y - h * .925), hd * 1.25 * S, hd * .75 * S, 0, Math.PI, 0); c.fill(); c.fillRect(u(x + lean * 1.1 - hd * 1.6), v(y - h * .925), hd * 3.2 * S, Math.max(1, hd * .18 * S)); }
+  }
+  // THE DOOR AND LEAVING, drawn (build 432; after Rembrandt's Rest on the Flight into Egypt): night; two layered masses of dark trees on the left
+  // over still water with one tiny far fire mirrored in it; the stone house in the right half, one lit window above, the arched door (DOOR);
+  // leaving, the same picture at the end of night: the low coursed wall called Salvation begins on the right and the first cold grey lies
+  // along the horizon there, so Level 5 (the Cross, before dawn) follows on.
+  const HSE = { X0: 1700, X1: 2860, EAVE: 520, RIDGE: 160, WIN: [2620, 420] };
+  function bakeDoorScene(leaving) {
+    const W = 1584, H = 672, cv = document.createElement('canvas'); cv.width = W; cv.height = H; const c = cv.getContext('2d'); c.scale(.5, .5);
+    const FY = 1200, r = rngR(leaving ? 91 : 90);
+    let g = c.createLinearGradient(0, 0, 0, FY); g.addColorStop(0, '#07090f'); g.addColorStop(1, '#151a24'); c.fillStyle = g; c.fillRect(0, 0, 3168, 1344);
+    if (leaving) { c.save(); c.translate(3168, FY); c.scale(1, .45); g = c.createRadialGradient(0, 0, 0, 0, 0, 1100); g.addColorStop(0, 'rgba(70,78,96,.75)'); g.addColorStop(.5, 'rgba(50,58,76,.3)'); g.addColorStop(1, 'rgba(40,46,60,0)'); c.fillStyle = g; c.fillRect(-1100, -1100, 2200, 1100); c.restore(); }
+    for (let i = 0; i < 70; i++) { c.fillStyle = `rgba(220,224,240,${(.15 + r() * .45).toFixed(2)})`; c.fillRect(r() * 3168, r() * 650, 2, 2); }
+    // the trees: a far mass, paler with the haze, and a near mass, darker, both soft lumpy crowns on short trunks
+    for (const [col, base, n, rr] of [['#141821', FY - 120, 9, 170], ['#0b0d12', FY - 40, 7, 230]]) { c.fillStyle = col;
+      for (let i = 0; i < n; i++) { const x = 60 + i * (1500 / n) + r() * 90, y = base - 260 - r() * 160; for (let k = 0; k < 5; k++) { c.beginPath(); c.ellipse(x + (r() - .5) * rr, y + (r() - .5) * rr * .6, rr * (.5 + r() * .4), rr * (.4 + r() * .3), 0, 0, 6.2832); c.fill(); } c.fillRect(x - 14, y, 28, base - y + 40); } }
+    // still water on the left, the far fire tiny and its broken reflection beneath
+    c.fillStyle = '#0e121a'; c.fillRect(0, FY - 30, 1500, 60); c.fillStyle = 'rgba(255,150,70,.9)'; c.beginPath(); c.ellipse(700, FY - 40, 9, 12, 0, 0, 6.2832); c.fill();
+    for (let k = 0; k < 6; k++) { c.fillStyle = `rgba(255,150,70,${(.5 - k * .07).toFixed(2)})`; c.fillRect(700 - 12 + (k % 2) * 6, FY - 24 + k * 8, 24 - k * 2, 3); }
+    // the house: one plain stone mass with a steep roof and a chimney, the upper window lit, a darker lower one
+    const { X0, X1, EAVE, RIDGE } = HSE; c.fillStyle = '#2a231e'; c.fillRect(X0, EAVE, X1 - X0, FY - EAVE);
+    c.fillStyle = '#16110e'; c.beginPath(); c.moveTo(X0 - 60, EAVE + 10); c.lineTo((X0 + X1) / 2, RIDGE); c.lineTo(X1 + 60, EAVE + 10); c.closePath(); c.fill(); c.fillRect(X0 + 160, RIDGE + 80, 90, 260);
+    g = c.createLinearGradient(X0, 0, X1, 0); g.addColorStop(0, 'rgba(10,8,6,.5)'); g.addColorStop(.6, 'rgba(10,8,6,0)'); c.fillStyle = g; c.fillRect(X0, EAVE, X1 - X0, FY - EAVE);
+    for (let k = 0; k < 28; k++) { const x = X0 + r() * (X1 - X0), y = EAVE + 40 + r() * (FY - EAVE - 80), rr = 60 + r() * 140, gg = c.createRadialGradient(x, y, 0, x, y, rr); gg.addColorStop(0, r() < .5 ? 'rgba(70,58,46,.12)' : 'rgba(6,4,3,.14)'); gg.addColorStop(1, 'rgba(0,0,0,0)'); c.fillStyle = gg; c.fillRect(x - rr, y - rr, 2 * rr, 2 * rr); }
+    const [wx, wy] = HSE.WIN; c.fillStyle = '#120c08'; c.fillRect(wx - 70, wy - 90, 140, 180); c.fillStyle = '#e8a85a'; c.fillRect(wx - 56, wy - 76, 112, 152); c.fillStyle = '#120c08'; c.fillRect(wx - 4, wy - 76, 8, 152); c.fillRect(wx - 56, wy - 6, 112, 8);
+    c.fillStyle = '#100b08'; c.fillRect(1940, 820, 100, 130);
+    // the door's deep arched surround (the door's light itself is drawn live)
+    const dx0 = DOOR.x - DOOR.w / 2 - 34, dx1 = DOOR.x + DOOR.w / 2 + 34, rr = (dx1 - dx0) / 2; c.fillStyle = '#3a302a'; c.beginPath(); c.moveTo(dx0, DOOR.bot); c.lineTo(dx0, DOOR.top + rr); c.arc(dx0 + rr, DOOR.top + rr, rr, Math.PI, 0); c.lineTo(dx1, DOOR.bot); c.fill();
+    c.fillStyle = '#0c0806'; const ir = DOOR.w / 2; c.beginPath(); c.moveTo(DOOR.x - ir, DOOR.bot); c.lineTo(DOOR.x - ir, DOOR.top + ir); c.arc(DOOR.x, DOOR.top + ir, ir, Math.PI, 0); c.lineTo(DOOR.x + ir, DOOR.bot); c.fill();
+    if (leaving) { // the low coursed wall called Salvation, beginning beyond the house and running on out of the picture
+      c.fillStyle = '#1c1a1e'; c.fillRect(2920, FY - 150, 260, 150); c.fillStyle = 'rgba(120,126,140,.35)'; c.fillRect(2920, FY - 150, 260, 5); c.fillStyle = 'rgba(8,8,10,.6)'; for (let y = FY - 110; y < FY; y += 40) c.fillRect(2920, y, 260, 3); }
+    // the path and the ground
+    c.fillStyle = '#0e0d0c'; c.fillRect(0, FY, 3168, 1344 - FY); c.fillStyle = 'rgba(90,80,70,.25)'; c.fillRect(1500, FY, 1668, 3);
+    return cv;
+  }
+  if (!PAINTED) { loads['door-drawn'] = new Promise(r => setTimeout(r, 0)).then(() => (pics['door-drawn'] = bakeDoorScene(false))); loads['leave-drawn'] = new Promise(r => setTimeout(r, 0)).then(() => (pics['leave-drawn'] = bakeDoorScene(true))); }
   if (!PAINTED) { const n = 'room1-drawn'; loads[n] = new Promise(r => setTimeout(r, 0)).then(() => (pics[n] = bakeR1())); }
   const ROOMS = {
     door: {
-      pic: 'room-door', FY: 1200, cam0: 210, tone: [80, 74, 90], k: .58,
+      pic: PAINTED ? 'room-door' : 'door-drawn', shell: PAINTED ? 0 : 1, FY: 1200, cam0: 210, tone: [80, 74, 90], k: .58,
       light(x) { return x < DOOR.x - 100 ? { x: DOOR.x, a: .6 * this.d, col: [230, 140, 70] } : null; },
       enter() { this.d = 0; this.kn = 0; this.ia = 0; this.cut = 1; this.cw = 1; SEEN_R.clear(); },
       cutLit(id) { return id === 'door' ? .5 : 0; },
@@ -448,7 +569,7 @@ const RM = (() => {
         if (ph === 'open') { this.d = Math.min(1, this.d + .012); if (t > 50) this.ia = Math.min(1, this.ia + .02); if (t === 1 && audio()) { tone(98, 'sine', .05, 2.2); noise(300, 3, 1.4, .05); }
           if (t === 150) talk([[C, 'Sir, the man at the gate said that if I called here, you would show me excellent things, to help me on my journey.'], [I, 'Come in. I will show you what will help you.']], () => goTo('r1')); }
       },
-      under(c) { const self = this; doorLight(c, this.d, () => { if (self.ia > .01) visitor(c, 'I', DOOR.x, -1, .58, self.ia); }); glow(c, u(2832), v(380), 120, [255, 190, 110], .1 + .03 * Math.sin(G.t / 40)); glow(c, u(470), v(1000), 70, [255, 160, 80], .2 + .08 * Math.sin(G.t / 7) * Math.sin(G.t / 13)); },
+      under(c) { const self = this; doorLight(c, this.d, () => { if (self.ia > .01) visitor(c, 'I', DOOR.x, -1, .58, self.ia); }); if (PAINTED) { glow(c, u(2832), v(380), 120, [255, 190, 110], .1 + .03 * Math.sin(G.t / 40)); glow(c, u(470), v(1000), 70, [255, 160, 80], .2 + .08 * Math.sin(G.t / 7) * Math.sin(G.t / 13)); } else { glow(c, u(HSE.WIN[0]), v(HSE.WIN[1]), 120, [255, 190, 110], (.12 + .03 * Math.sin(G.t / 40)) * (1 - .5 * this.d)); glow(c, u(700), v(1160), 40, [255, 160, 80], .3 + .1 * Math.sin(G.t / 7) * Math.sin(G.t / 13)); } },
       people(c) { visitor(c, 'C', 1880, 1, .58); },
     },
     // 1 A PRIVATE ROOM, drawn in code (build 424). The book ({72}): "he commanded his man to light the candle ... and bid his man open a door;
@@ -542,15 +663,15 @@ const RM = (() => {
     },
     // 2 THE DUSTY PARLOUR (after Vermeer's Milkmaid): the broom raises the dust; the water lays it
     r2: {
-      pic: DRAWN ? 'room2-drawn' : 'room2-dry', FY: 1262, cam0: 140, tone: [360, 346, 322], noShadow: 1,
+      pic: PAINTED ? 'room2-dry' : 'room2-drawn', shell: PAINTED || DRAWN ? 0 : 1, FY: PAINTED || DRAWN ? 1262 : HOUSE.FY, cam0: 140, tone: PAINTED ? [360, 346, 322] : [210, 206, 200], noShadow: 1,
       // the sweeper and the girl move by free clips laid back into the painting where they move (build 364): SW his sweep (a loop),
       // DM her jug from pouring (frame 0) to held upright (14), shown at 14 until she pours; x, y, W, H in the asset's own pixels, the sheets at .7 (the clip's own resolution)
       SW: { n: 'room2-sweep', x: 1770, y: 375, W: 417, H: 680, sw: 292, sh: 476, cols: 8, fr: 49 }, DM: { n: 'room2-damsel', x: 1261, y: 380, W: 359, H: 675, sw: 251, sh: 472, cols: 8, fr: 15 },
       ov(c, o, f) { const im = pics[o.n]; if (!im) return; f = Math.max(0, Math.min(o.fr - 1, Math.round(f))); c.drawImage(im, (f % o.cols) * o.sw, Math.floor(f / o.cols) * o.sh, o.sw, o.sh, u(o.x / K), v(o.y / K), o.W / K * S, o.H / K * S); },
       under(c) {
-        if (!DRAWN) { this.ov(c, this.DM, this.df); this.ov(c, this.SW, this.sf); return; }
+        if (PAINTED) { this.ov(c, this.DM, this.df); this.ov(c, this.SW, this.sf); return; }
         // the drawn room: the girl (stand-in: his wife's picture) holding the jug, which tips as she pours; the sweeper (stand-in: Help) and his broom
-        const FY = this.FY + 14, G2 = R2D.girl, SW2 = R2D.sweeper, col = [255, 255, 255];
+        const FY = this.FY + (this.shell ? 0 : 14), G2 = R2D.girl, SW2 = R2D.sweeper, col = this.shell ? [186, 186, 198] : [255, 255, 255];
         // the girl: cut straight out of the painting (build 382), so she is the painted Milkmaid herself, her jug already in her hands;
         // the water falls from its spout when the child has touched it
         if (pics['room2-girl']) fig(c, 'room2-girl', G2, R2D.GX, FY + 6, -1, 1, 1, col);
@@ -586,7 +707,7 @@ const RM = (() => {
           if (t === 240) this.dt = 14;
           if (t === 260) this.sweeps = 1;
           const pour = this.df < 1.5 && t < 240;
-          if (pour && t % 3 === 0) for (let k = 0; k < 2; k++) this.wet.push({ x: (DRAWN && this.spout ? this.spout[0] : 1944) + rnd() * 14, y: DRAWN && this.spout ? this.spout[1] : 842, vx: (rnd() - .5) * 1.2, vy: -rnd() * 1.5, l: 0 });
+          if (pour && t % 3 === 0) for (let k = 0; k < 2; k++) this.wet.push({ x: (!PAINTED && this.spout ? this.spout[0] : 1944) + rnd() * 14, y: !PAINTED && this.spout ? this.spout[1] : 842, vx: (rnd() - .5) * 1.2, vy: -rnd() * 1.5, l: 0 });
           if (pour && t % 24 === 0) noise(6000, 1, .4, .025);
           this.haze = Math.max(0, this.haze - .0028);
           for (const d of this.dust) { d.vy += .03; d.vx *= .96; }
@@ -597,9 +718,9 @@ const RM = (() => {
         for (const w of this.wet) { w.vy += .35; w.x += w.vx; w.y += w.vy; w.l++; }
         this.wet = this.wet.filter(w => w.y < 1260);
       },
-      people(c) { visitor(c, 'I', 690, 1, 1, 1, -48); visitor(c, 'C', 470, 1, 1, 1, -48); },
+      people(c) { if (PAINTED) { visitor(c, 'I', 690, 1, 1, 1, -48); visitor(c, 'C', 470, 1, 1, 1, -48); } else { visitor(c, 'C', 820, 1); visitor(c, 'I', 1100, 1); } },
       over(c) {
-        const hz = Math.min(.2, this.haze * .75), LS = R.lshape, im = pics[R.pic];
+        const hz = Math.min(.2, this.haze * .75) * (this.shell ? .35 : 1), LS = R.lshape, im = pics[R.pic];
         if (LS && im) {
           const W2 = im.width / LS.k * S, H2 = im.height / LS.k * S, hc = this.hc || (this.hc = document.createElement('canvas')); hc.width = 160; hc.height = Math.round(160 * im.height / im.width);
           const hx = hc.getContext('2d'); hx.globalCompositeOperation = 'source-over'; hx.fillStyle = css([170, 150, 120], hz); hx.fillRect(0, 0, hc.width, hc.height); hx.globalCompositeOperation = 'destination-in'; hx.drawImage(im, 0, 0, hc.width, hc.height);
@@ -609,8 +730,55 @@ const RM = (() => {
         c.fillStyle = 'rgba(200,215,225,.5)'; for (const w of this.wet) c.fillRect(u(w.x), v(w.y), 1.2, 2.4);
       },
     },
+    // 3 A LITTLE ROOM, drawn on the house's shell (build 432): the boys cut from the old painting stand in their chairs on the drawn floor
+    r3: PAINTED ? null : {
+      pic: 'room3-drawn', shell: 1, FY: HOUSE.FY, tone: [190, 160, 130], k: 1, noShadow: 1,
+      light(x) { return { x: R3.LANT[0], a: .3, col: [255, 200, 130] }; },
+      enter() {
+        this.bag = { show: false, a: 0, tip: 0, empty: 0 }; this.coins = []; this.bubbles = []; this.great = null; this.rags = 0; pic('room3-passion'); pic('room3-patience'); pic('room3-passion-rags');
+      },
+      run() {
+        const self = this;
+        talk([[N, 'In a little room sat two little children. The name of the eldest was Passion, and of the other, Patience.'], [C, 'Why is Passion so discontented?'], [I, 'He must wait for his best things till next year, but he will have all now. Patience is willing to wait.'], [N, 'Then one came to Passion, and brought him a bag of treasure.', null, () => { self.bag.show = true; }], [TIP, 'Touch the bag.', 'bag']], () => { ph = 'pour'; t = 0; G.state = 'auto'; if (audio()) note(79, .03, 1.6); });
+      },
+      act(sx, sy) { if (G.act === 'bag' && (sx == null || near(sx, sy, 1290 + R3.X, 1200, 160))) next(true); },
+      upd() {
+        const B = { x: 1290 + R3.X, y: 1244 }, HP = { x: 1120 + R3.X, y: 1248 }, bag = this.bag;
+        if (bag.show) bag.a = Math.min(1, bag.a + .02);
+        if (G.act === 'bag' && G.actT >= 70 && !G.ring) G.ring = ring(B.x, B.y - 30);
+        if (ph === 'pour') {
+          bag.tip = Math.min(1, bag.tip + .035);
+          if (bag.tip > .6 && t < 120 && t % 2 === 0) for (let k = 0; k < 2; k++) this.coins.push({ x: B.x - 55, y: B.y - 30, vx: -1.6 - rnd() * 6.3, vy: -1.6 - rnd() * 3.7, rest: HP.y - 16 + rnd() * 26, on: false, rot: rnd() * 6, sp: (rnd() - .5) * .5, gl: rnd() * 300, gone: 0, a: 1 });
+          for (const o of this.coins) if (!o.on) { o.vy += .58; o.x += o.vx; o.y += o.vy; o.rot += o.sp; if (o.y >= o.rest) { if (o.vy > 3.7) { o.vy *= -.28; o.vx *= .5; o.y = o.rest; if (rnd() < .35) note(94 + Math.floor(rnd() * 9), .012, .35, 0, false); } else { o.on = true; o.y = o.rest; } } }
+          bag.empty = smooth(20, 130, t);
+          if (t > 260) { ph = 'glad'; t = 0; }
+        }
+        if (ph === 'glad' && t > 70) { ph = 'gone'; t = 0; bag.show = false; this.coins.forEach((o, i) => { o.at = 20 + i * 3 + rnd() * 40; }); }
+        if (ph === 'gone') {
+          for (const o of this.coins) if (!o.gone && t > o.at) { o.gone = 1; if (this.coins.indexOf(o) % 2) continue; this.bubbles.push({ x: o.x, y: o.y - 8, r: 0, R: 10 + rnd() * 12, vx: (rnd() - .5) * 1.3, vy: -.9 - rnd() * 1.45, life: 0, L: 130 + rnd() * 170, ph: rnd() * 7, pop: 0 }); }
+          for (const o of this.coins) if (o.gone) o.a = Math.max(0, o.a - .05);
+          if (t === 260) this.great = { x: HP.x + 50, y: HP.y - 26, r: 0, R: 68, life: 0, L: 320, pop: 0 };
+          bag.a = Math.max(0, bag.a - (t > 150 ? .006 : 0));
+          if (t > 200) this.rags = Math.min(1, this.rags + .0075);
+          if (this.great && this.great.pop > 0 && this.rags >= 1 && t > 560) { ph = 'after'; t = 0; talk([[I, 'So are the men of this world: they must have all their good things now.'], [C, 'Then it is best to wait for things to come.'], [I, 'You say the truth. For the things which are seen are temporal; but the things which are not seen are eternal.']], () => goTo('r4')); }
+        }
+        for (const b of this.bubbles) { b.life++; b.r = Math.min(b.R, b.r + .66); b.x += b.vx + Math.sin(b.life / 30 + b.ph) * .66; b.y += b.vy; if (b.life > b.L && !b.pop) { b.pop = 1; if (rnd() < .4) note(98 + Math.floor(rnd() * 6), .006, .25, 0, false); } if (b.pop) b.pop++; }
+        this.bubbles = this.bubbles.filter(b => b.pop < 14);
+        const g = this.great; if (g) { g.life++; g.r = Math.min(g.R, g.r + .47); if (!g.pop) { g.y -= 1.45 * smooth(0, 60, g.life); g.x += Math.sin(g.life / 70) * .8; if (g.life > g.L) { g.pop = 1; note(91, .02, 1.4); } } else g.pop++; }
+      },
+      under(c) {
+        // the two boys in their chairs (cut from the old painting); Passion in rags fades in over the fine boy
+        const q = smooth(0, 1, this.rags), dr = (n, x, y, w, h, a) => { const im = pics[n]; if (im && a > .01) { c.globalAlpha = a; c.drawImage(im, u(x + R3.X), v(y + 8), w * S, h * S); c.globalAlpha = 1; } };
+        dr('room3-patience', 1692, 604, 361, 640, 1); dr('room3-passion', 774, 690, 425, 552, 1 - q); dr('room3-passion-rags', 781, 650, 342, 590, q);
+        // the horn lantern on its bracket, the room's one light
+        const [lx, ly] = R3.LANT, f = 1 + .04 * Math.sin(G.t / 6) * Math.sin(G.t / 13); glow(c, u(lx), v(ly), 220 * S / .38 * .38, [255, 200, 130], .22 * f); glow(c, u(lx), v(ly), 26, [255, 226, 170], .6 * f);
+      },
+      people(c) { visitor(c, 'C', 480, 1); visitor(c, 'I', 760, 1); },
+      over(c) { drawBag(c, this.bag, R3.X); drawCoins(c, this.coins); for (const b of this.bubbles) bubble(c, u(b.x), v(b.y), b.r * S, b.pop); if (this.great) bubble(c, u(this.great.x), v(this.great.y), this.great.r * S, this.great.pop); },
+    },
+    // 3, the old painted room (kept: ?painted shows it)
     // 3 PASSION AND PATIENCE (after Chardin's Soap Bubbles): the bag, the gold, the bubbles, the rags
-    r3: {
+    r3p: {
       pic: 'room3', ext: 'R', FY: 1235, PW: 2561, cam0: 13, tone: [255, 255, 255], k: 1.3,
       enter() {
         this.bag = { show: false, a: 0, tip: 0, empty: 0 }; this.coins = []; this.bubbles = []; this.great = null; this.rags = 0; pic('room3-rags');
@@ -707,7 +875,7 @@ const RM = (() => {
     },
     // 5 THE PALACE AND THE BRAVE MAN (after Rembrandt's Night Watch)
     r5: {
-      pic: 'room5', FY: 1262, cam0: 0, tone: [225, 205, 180], k: .58, sat: .45,
+      pic: PAINTED ? 'room5' : 'room5-drawn', shell: PAINTED ? 0 : 1, FY: 1262, cam0: 0, tone: PAINTED ? [225, 205, 180] : [150, 140, 140], k: .58, sat: .45,
       enter() { this.bv = { a: 0, arm: 0, x: 1650, go: 0, face: -1, done: 0 }; this.gold = 0; this.spark = []; this.said = 0; this.bv.f = 0; pic('room5-brave'); pic('room5-brave-armed'); sheetFrames(BRAVE.clip); },
       run() { const self = this; talk([[C, 'May we go in there?'], [N, 'At the door stood many men who wished to go in, but dared not, for men in armour kept it.', null, () => { self.bv.show = 1; }], [BR, 'Set down my name, Sir.'], [TIP, 'Touch the book.', 'book']], () => { ph = 'write'; t = 0; G.state = 'auto'; scratch(); }); },
       act(sx, sy) { if (G.act === 'book' && (sx == null || near(sx, sy, 1508, 1040, 150))) next(true); if (G.act === 'gold' && (sx == null || sy < v(520))) next(true); },
@@ -733,7 +901,7 @@ const RM = (() => {
         this.spark = this.spark.filter(s => s.l > 0);
       },
       people(c) {
-        visitor(c, 'I', 210, 1, .58); visitor(c, 'C', 30, 1, .58);
+        if (PAINTED) { visitor(c, 'I', 210, 1, .58); visitor(c, 'C', 30, 1, .58); } else { visitor(c, 'C', 380, 1, .58); visitor(c, 'I', 560, 1, .58); }
         const b = this.bv; if (b.a > .01) {
           const bob = ph === 'fight' && b.x < 2490 ? Math.abs(Math.sin(G.t / 7)) * 3 : 0;
           if (b.clip) { const q = BRAVE.clip; fig(c, q.n + '#' + Math.floor(b.f), q, b.x, R.FY, -1, .68, b.a, [150, 125, 100], BR, 2.3); }
@@ -741,7 +909,22 @@ const RM = (() => {
           else if (b.arm > 0) fig(c, BRAVE.armed.n, BRAVE.armed, b.x, R.FY, 1, .68, b.a * b.arm, [150, 125, 100], BR, 2.3, bob);
         }
       },
-      under(c) { glow(c, u(2490), v(1000), 140, [255, 210, 130], .16 + .05 * Math.sin(G.t / 30) + .25 * this.gold); for (let x = 1600; x <= 2900; x += 260) glow(c, u(x), v(180), 90, [255, 214, 120], (.1 + .05 * Math.sin(G.t / 25 + x)) * (1 + 2.5 * this.gold)); },
+      under(c) {
+        if (PAINTED) { glow(c, u(2490), v(1000), 140, [255, 210, 130], .16 + .05 * Math.sin(G.t / 30) + .25 * this.gold); for (let x = 1600; x <= 2900; x += 260) glow(c, u(x), v(180), 90, [255, 214, 120], (.1 + .05 * Math.sin(G.t / 25 + x)) * (1 + 2.5 * this.gold)); return; }
+        const FY = this.FY, gk = 1 + 2 * this.gold;
+        // the people in gold walking on the top of the palace: soft figures of light, pacing slowly
+        for (let i = 0; i < 6; i++) { const x = R5.P0 + 120 + ((i * 260 + G.t * (.25 + .05 * i) * (i % 2 ? 1 : -1)) % 1300 + 1300) % 1300, y = R5.TOP - 40;
+          c.save(); c.translate(u(x), v(y - 70)); c.scale(.42, 1); glow(c, 0, 0, 60, [255, 214, 130], .35 * gk); c.restore(); glow(c, u(x), v(y - 150), 16, [255, 232, 170], .5 * gk); }
+        glow(c, u(R5.DOOR), v(FY - 220), 110, [255, 200, 120], .1 + .03 * Math.sin(G.t / 30) + .15 * this.gold);
+        // the crowd who would go in but dared not: one huddled dark mass
+        for (let i = 0; i < 9; i++) sil(c, 780 + i * 48 + (i % 2) * 14, FY, 430 + (i * 37 % 60), '#0b0a0d', false, (i % 3 - 1) * 6);
+        // the writer at his table with his book and inkhorn, a small light
+        c.fillStyle = '#0d0b0b'; c.fillRect(u(1420), v(FY - 230), 200 * S, 18 * S); c.fillRect(u(1430), v(FY - 230), 14 * S, 230 * S); c.fillRect(u(1596), v(FY - 230), 14 * S, 230 * S);
+        sil(c, 1380, FY, 360, '#0d0b0b', false, 18); glow(c, u(1508), v(FY - 250), 50, [255, 220, 150], .55);
+        // the armed men keeping the door: a dark mass either side of it, their lances thin dark diagonals across the light, swaying a little
+        for (const [x, h] of [[2090, 470], [2200, 450], [2300, 480], [2690, 470], [2800, 455], [2900, 480]]) { sil(c, x, FY, h, '#09080a', true);
+          const a = .18 * Math.sign(R5.DOOR - x) + .03 * Math.sin(G.t / 50 + x); c.strokeStyle = '#09080a'; c.lineWidth = Math.max(1, 6 * S); c.beginPath(); c.moveTo(u(x + 20), v(FY - 60)); c.lineTo(u(x + 20 + Math.sin(a) * 640), v(FY - 60 - Math.cos(a) * 640)); c.stroke(); }
+      },
       over(c) { c.strokeStyle = 'rgba(255,170,80,.75)'; c.lineWidth = 1.2; for (const s of this.spark) { c.beginPath(); c.moveTo(u(s.x), v(s.y)); c.lineTo(u(s.x - s.vx * 1.6), v(s.y - s.vy * 1.6)); c.stroke(); } if (ph === 'write' || ph === 'arm') glow(c, u(1508), v(1040), 40, [255, 230, 160], .3 * Math.sin(Math.min(1, t / 60) * Math.PI)); },
     },
     // 6 THE CELLAR, drawn on the house's shell (build 427): very dark; a thin shaft from the grating; the man in the iron cage, the bars drawn over him
@@ -861,7 +1044,7 @@ const RM = (() => {
     },
     // LEAVING by the door (book {91}, {92}): he goes on his way
     leave: {
-      pic: 'room-door', FY: 1200, cam0: 210, tone: [100, 94, 112], k: .58,
+      pic: PAINTED ? 'room-door' : 'leave-drawn', shell: PAINTED ? 0 : 1, FY: 1200, cam0: 210, tone: [100, 94, 112], k: .58,
       light(x) { return x < DOOR.x - 100 ? { x: DOOR.x, a: .55, col: [230, 140, 70] } : null; },
       enter() { this.x = 1880; this.w = 0; this.fr = 0; this.a = 1; this.cut = 1; this.cw = 1; this.ct = 0; pic(VIS.C.walk.n); },
       cutLit(id) { return id === 'door' ? .6 : SEEN_R.has(id) ? .45 + .4 * smooth(0, 1, (this.ct - 30 - 25 * ['r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r7'].indexOf(id)) / 60) : 0; },
@@ -880,7 +1063,7 @@ const RM = (() => {
       people(c) { c.globalAlpha = this.a; if (this.w > 0 || this.fr > 0) walkFig(c, 'C', this.x, this.fr, .58); else visitor(c, 'C', this.x, 1, .58); c.globalAlpha = 1; },
     },
   };
-  if (PAINTED) ROOMS.r1 = ROOMS.r1p; delete ROOMS.r1p; if (PAINTED) ROOMS.r6 = ROOMS.r6p; delete ROOMS.r6p; if (PAINTED) ROOMS.r7 = ROOMS.r7p; delete ROOMS.r7p;
+  if (PAINTED) ROOMS.r1 = ROOMS.r1p; delete ROOMS.r1p; if (PAINTED) ROOMS.r6 = ROOMS.r6p; delete ROOMS.r6p; if (PAINTED) ROOMS.r7 = ROOMS.r7p; delete ROOMS.r7p; if (PAINTED) ROOMS.r3 = ROOMS.r3p; delete ROOMS.r3p;
   // FOLLOW THE INTERPRETER (owner, build 267: "Ok to do 1"): between two rooms a dark passage; the child touches once (build 312) to follow
   // the Interpreter's candle ("he took him by the hand, and led him into ..."). Christian walks (his own walk pictures,
   // dark), the Interpreter goes a step ahead with a candle, its light moving along the wall and the floor.
@@ -1089,10 +1272,10 @@ const RM = (() => {
   function rngR(seed) { let s = seed; return () => (s = (s * 16807) % 2147483647) / 2147483647; }
 
   // ---------- Room 3's things ----------
-  function drawBag(c, bag) {
+  function drawBag(c, bag, dx = 0) {
     if (bag.a <= .01) return;
     const k = smooth(0, 1, bag.tip), e = bag.empty;
-    c.save(); c.globalAlpha = bag.a; c.translate(u(1290) + 12, v(1230)); c.rotate(-1.35 * k); c.translate(-12, 0); c.scale(1.6 * (1 - .38 * e), 1.6 * (1 - .12 * e));
+    c.save(); c.globalAlpha = bag.a; c.translate(u(1290 + dx) + 12, v(1230 + (dx ? 14 : 0))); c.rotate(-1.35 * k); c.translate(-12, 0); c.scale(1.6 * (1 - .38 * e), 1.6 * (1 - .12 * e));
     c.fillStyle = 'rgba(12,6,3,.3)'; c.beginPath(); c.ellipse(2, 0, 16, 3, 0, 0, 6.2832); c.fill();
     const g = c.createLinearGradient(-15, 0, 15, 0); g.addColorStop(0, '#6e4b2e'); g.addColorStop(.5, '#4a301c'); g.addColorStop(1, '#24170c');
     c.fillStyle = g; c.beginPath(); c.moveTo(-5, -24); c.bezierCurveTo(-13, -21, -18, -12, -15, -4); c.quadraticCurveTo(-12, .5, 0, .5); c.quadraticCurveTo(12, .5, 15, -4); c.bezierCurveTo(18, -12, 13, -21, 5, -24); c.closePath(); c.fill();
