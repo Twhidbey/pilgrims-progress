@@ -519,7 +519,7 @@ const CR = (() => {
 
   // ---------- the story ----------
   function reset0() {
-    tumbleT = 0; sepT = -1; memT = -1; memS = []; memUntil = 0; tearT = -1; looked = false; Object.assign(Ch, { x: START, anim: 12, sd: QUIET[0], cf: -1, hop: 0, hops: 0, lastV: 0, fade: 0, hv: 0, face: 1, tv: null, run: 0, ranim: 0 });
+    tumbleT = 0; sepT = -1; memT = -1; memS = []; memUntil = 0; memQ = 0; tearT = -1; looked = false; Object.assign(Ch, { x: START, anim: 12, sd: QUIET[0], cf: -1, hop: 0, hops: 0, lastV: 0, fade: 0, hv: 0, face: 1, tv: null, run: 0, ranim: 0 });
     bur = null; dawn = gold = goldTo = sun = robe = robeTo = mark = markTo = rollShow = rollGone = shine = shineTo = gone = goneTo = 0; wideK = 1; wideTo = 1;
     said = {}; hymn = null; silenceT = 0; tombT = 0; leapsLeft = 3; endT = 0; quietPad = 0; t = 0; rollFly = rollAt = null; closeK = topK = topTo = veil = 0; climb = null;
   }
@@ -587,7 +587,11 @@ const CR = (() => {
     if (tearT >= 0) tearT++;
     if (ph === 'gone' || ph === 'shine') closeK += ((ph === 'gone' && tearT >= 0 && tearT < 420 ? 1 : 0) - closeK) * .025;
     // the memories' own clock runs on whatever the phase, so the last one fades even once he is at the cross
-    if (memT >= 0 && memT < memLast() + 420) { memT++; const i = memS.length; if (i < MEMS.length && memT >= MEM0 + i * MEM_GAP && (i === 0 || memT - memS[i - 1] >= MEM_GAP) && !busy()) { memS.push(memT); memVoice(MEMS[i]); } }
+    memQ = busy() ? 0 : memQ + 1;
+    // each memory is tied to a place on the hill (owner, build 466: "tie memories to locations so that they are
+    // sufficiently spaced out and don't overlap with other narrator text"): it comes when he reaches its place, and
+    // only after a second of quiet since the last voice; if a voice is still sounding it waits, and comes a little later
+    if (memT >= 0 && memT < memLast() + 420) { memT++; const i = memS.length; if (i < MEMS.length && Ch.x >= MEM_X[i] && (i === 0 || memT - memS[i - 1] >= MEM_GAP) && memQ >= 60) { memS.push(memT); memVoice(MEMS[i]); } }
     padTick(ph === 'fall' || ph === 'tumble' || ph === 'gone' ? 0 : gold > .1 ? 0 : 1);
 
     if (ph === 'look') {
@@ -704,7 +708,9 @@ const CR = (() => {
     { who: 'Good-will', txt: 'Bear your burden a little longer. At the place of deliverance, it will fall from your back of itself.', from: 1, at: [.4, .2], last: true },
   ];
   const memC = [];
-  let memT = -1, memS = [], memUntil = 0;
+  let memT = -1, memS = [], memUntil = 0, memQ = 0;
+  // where on the hill each memory comes: spread from the foot of the slope to the top
+  const MEM_X = [SLOPE0 + 250, SLOPE0 + 700, SLOPE0 + 1150, SLOPE0 + 1600, SLOPE0 + 2000, WALK_X - 80];
   // THE RULE FOR THIS LEVEL: no line is spoken, and no memory speaks, while any voice is still sounding
   const busy = () => saying() || G.t < memUntil;
   const memLast = () => memS.length === MEMS.length ? memS[MEMS.length - 1] : Infinity;
@@ -796,5 +802,5 @@ const CR = (() => {
   }
 
   return { on: false, start, update, draw, touch, key, preload, lines: ALL, stop: () => padStop(), _pt: { roll: rollPt, chr: chrPt }, _turning: () => !!Ch.tv,
-    peek: () => ({ ph, t, fly: rollFly ? rollFly.t : -1, x: Math.round(Ch.x), cf: +Ch.cf.toFixed(1), bur: bur ? { st: bur.st, x: Math.round(bur.x), a: +bur.a.toFixed(2), t: bur.t, H: Math.round(bur.H || 0), z: +(bur.z || 0).toFixed(1), r: +(bur.r || 0).toFixed(2), sq: +(bur.sq || 0).toFixed(2) } : null, gold: +gold.toFixed(2), shine: +shine.toFixed(2), leaps: leapsLeft, closeK: +closeK.toFixed(2), topK: +topK.toFixed(2), veil: +veil.toFixed(2), tear: tearT, sep: sepT }) };
+    peek: () => ({ ph, t, fly: rollFly ? rollFly.t : -1, x: Math.round(Ch.x), cf: +Ch.cf.toFixed(1), bur: bur ? { st: bur.st, x: Math.round(bur.x), a: +bur.a.toFixed(2), t: bur.t, H: Math.round(bur.H || 0), z: +(bur.z || 0).toFixed(1), r: +(bur.r || 0).toFixed(2), sq: +(bur.sq || 0).toFixed(2) } : null, gold: +gold.toFixed(2), shine: +shine.toFixed(2), leaps: leapsLeft, closeK: +closeK.toFixed(2), topK: +topK.toFixed(2), veil: +veil.toFixed(2), tear: tearT, sep: sepT, mem: memS.length }) };
 })();
