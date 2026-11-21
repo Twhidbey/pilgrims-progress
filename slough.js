@@ -388,7 +388,9 @@ const SL = (() => {
   const m = { D: 50, E: 51, G: 55, A: 57, B: 58, d: 62 };
   const WADE_TUNE = 'D G B G B A G E D D G B G B A d B d B d B G D E G G E D'.split(' ').map(k => m[k]);
   const TURN_TICKS = 50, HTURN_TICKS = 44;      // build 365: Christian's and Help's turns, quick pivots (see A QUICK TURN in update())
-  const LAST = [62, 67, 71, 67, 71, 69, 67];             // "was blind, but now I see", in the major, as Level 1 sings it
+  // build 376 (owner's rule: Amazing Grace is saved to come whole and in tune at the Cross): the lights on the steps no
+  // longer sing the hymn's last phrase; each rings one soft tone of a single rising chord, the gold coming back
+  const LAST = [67, 71, 74, 79, 74, 78, 83];
   const sfxS = {
     wade: () => { hiss(520, .8, .05, .5, 'lowpass'); hiss(1500, 1.5, .012, .3, 'bandpass', .05); },
     fall: () => { hiss(380, .7, .16, 1.2, 'lowpass'); hiss(1800, 1, .05, .7); sweep(90, 45, 1.2, .08); },
