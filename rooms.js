@@ -248,7 +248,7 @@ const RM = (() => {
   // ROOM 2 DRAWN IN CODE (after build 378; owner: "can you draw the parlour"): Vermeer's one light, a tall window on the left,
   // the pale wall lit nearest it and dimming to the right, the floorboards a nearer, darker layer with the window's light lying flat on them,
   // a low band of pale tiles at the wall's foot (the Milkmaid's Delft tiles, the room's one quoted detail besides the stream from the jug)
-  const R2D = { girl: { ax: 43, g: 253, s: 2.2, ct: 1.15, mul: .8, sat: 1 }, sweeper: { ax: 35, g: 302, s: 2.05, ct: 1.15, mul: .72, sat: 1 }, GX: 1716, SX: 2575, WIN: [90, 380, 170, 930] };
+  const R2D = { girl: { ax: 154, g: 618, s: 1, ct: 1, mul: 1, sat: 1, noSh: 1 }, SPOUT: [289 - 154, 237 - 618], sweeper: { ax: 35, g: 302, s: 2.05, ct: 1.15, mul: .72, sat: 1 }, GX: 1716, SX: 2575, WIN: [90, 380, 170, 930] };
   function bakeR2() {
     const W = 1584, H = 672, cv = document.createElement('canvas'); cv.width = W; cv.height = H; const c = cv.getContext('2d'); c.scale(.5, .5);
     const FY = 1262, r = rngR(11), soft = (draw, w, h) => { const a = document.createElement('canvas'); a.width = w; a.height = h; draw(a.getContext('2d'), w, h); return a; };
@@ -341,7 +341,7 @@ const RM = (() => {
     x.globalCompositeOperation = 'destination-in'; x.drawImage(im, 0, 0);
     pics[out] = cv; return true;
   }
-  if (DRAWN) { const n = 'room2-drawn'; loads[n] = new Promise(r => setTimeout(r, 0)).then(() => (pics[n] = bakeR2())); pic('wife'); pic('room4-caster'); }
+  if (DRAWN) { const n = 'room2-drawn'; loads[n] = new Promise(r => setTimeout(r, 0)).then(() => (pics[n] = bakeR2())); pic('room2-girl'); pic('room4-caster'); }
   if (DRAWN) { const n = 'room4-drawn'; loads[n] = new Promise(r => setTimeout(r, 0)).then(() => (pics[n] = bakeR4())); pic('room4-caster'); pic('goodwill-reach'); }
   // a soft flame: stacked teardrops, the core pale gold, the edge amber, swaying and breathing (no hard tongues)
   function flame(c, x, y, h, w, ph, a = 1) {
@@ -399,13 +399,11 @@ const RM = (() => {
         if (!DRAWN) { this.ov(c, this.DM, this.df); this.ov(c, this.SW, this.sf); return; }
         // the drawn room: the girl (stand-in: his wife's picture) holding the jug, which tips as she pours; the sweeper (stand-in: Help) and his broom
         const FY = this.FY + 14, G2 = R2D.girl, SW2 = R2D.sweeper, col = [255, 255, 255];
-        // the girl in the Milkmaid's colours: linen head-cloth, yellow bodice and sleeve, blue apron, red skirt; the sweeper in an olive jerkin and brown breeches
-        const girlOK = colourFig('wife', 'wife-col', [['#a3301c', 0, 0, 131, 260], ['#ece2c8', 0, 0, 80, 80], ['#d6a838', 78, 50, 131, 104], ['#d6a838', 0, 80, 131, 104], ['#c8a088', 72, 8, 98, 50], ['#d8b090', 104, 28, 131, 62], ['#2c4c94', 46, 96, 96, 196], ['#3c2a1c', 0, 238, 131, 260]], false);
+        // the girl: cut straight out of the painting (build 382), so she is the painted Milkmaid herself, her jug already in her hands;
+        // the water falls from its spout when the child has touched it
         const swOK = colourFig('room4-caster', 'sweep-col', [['#5e6030', 0, 0, 69, 302], ['#9a7e68', 0, 0, 69, 46], ['#5a3c22', 0, 150, 69, 235], ['#34261a', 0, 235, 69, 302]], true);
-        if (girlOK) fig(c, 'wife-col', G2, R2D.GX, FY, -1, 1, 1, col);
-        const tip = 1 - this.df / 14, jx = R2D.GX + (108 - G2.ax) * G2.s / K, jy = FY - (253 - 84) * G2.s / K; this.spout = [jx + 34 * Math.cos(tip * 1.2), jy - 4 + 30 * Math.sin(tip * 1.2)];
-        c.save(); c.translate(u(jx), v(jy)); c.rotate(tip * 1.2); c.fillStyle = '#5c3020'; c.beginPath(); c.ellipse(0, 0, 22 * S, 27 * S, 0, 0, 6.2832); c.fill();
-        c.beginPath(); c.moveTo(14 * S, -18 * S); c.lineTo(36 * S, -22 * S); c.lineTo(18 * S, -8 * S); c.closePath(); c.fill(); c.fillStyle = 'rgba(255,220,180,.18)'; c.beginPath(); c.ellipse(-8 * S, -6 * S, 6 * S, 12 * S, 0, 0, 6.2832); c.fill(); c.restore();
+        if (pics['room2-girl']) fig(c, 'room2-girl', G2, R2D.GX, FY + 6, -1, 1, 1, col);
+        this.spout = [R2D.GX + R2D.SPOUT[0] / K, FY + 6 + R2D.SPOUT[1] / K];
         // the broom swings at the foot while he sweeps (the phase of the old clip's loop), and rests leaning when he stops
         const sw = this.sweeps > 0 ? Math.sin(this.sf / this.SW.fr * 6.2832 * 3) : 0, hx = R2D.SX - 30 * SW2.s / K, hy = FY - 125 * SW2.s / K, bx = 2405 + 46 * sw, by = FY - 6;
         c.strokeStyle = '#3a2a1a'; c.lineWidth = Math.max(1, 6 * S); c.beginPath(); c.moveTo(u(hx + 10), v(hy - 70)); c.lineTo(u(bx), v(by - 50)); c.stroke();
