@@ -107,8 +107,26 @@ body.playing #snd,body.opened #snd{display:block}
 body.playing #autoWalk{display:block}
 #build{position:absolute;right:1.2%;bottom:1%;font:max(8px,calc(var(--s,1) * 12px)) Georgia,serif;color:rgba(255,250,235,.7);text-shadow:0 0 3px rgba(0,0,0,.7);pointer-events:none}
 body.talking #build,body.capped #build{visibility:hidden}
-#rot{position:fixed;left:0;right:0;text-align:center;font:15px Georgia,serif;color:#cfc6bb;display:none}
+#rot{position:fixed;left:0;right:0;text-align:center;font:13px Georgia,serif;color:rgba(207,198,187,.6);display:none;bottom:calc(env(safe-area-inset-bottom) + 64px);pointer-events:none}
 body.portrait #rot{display:block}
+/* BUILD 422, HELD UPRIGHT: the words and choices below the picture, the buttons in a row at the foot of the screen,
+   the book on the title as large as the screen allows (its own --u, set in fit()) */
+body.portrait #stage{overflow:visible}
+body.portrait canvas{border-radius:6px}
+body.portrait #dlg,body.portrait #choice{top:calc(100% + 18px);bottom:auto;height:calc(var(--below,200px) - 130px);min-height:70px;background:none!important;padding:0 6%}
+body.portrait #dlg.on{align-items:flex-start}
+body.portrait #dlg .more{bottom:0;right:6%}
+body.portrait #choice.on{flex-direction:column;justify-content:flex-start;gap:14px}
+body.portrait #choice button{font-size:17px;background:rgba(40,40,50,.5)}
+body.portrait #stage:has(#choice.on) #dlg{visibility:hidden}
+body.portrait #snd,body.portrait #autoWalk,body.portrait #pause{position:fixed;top:auto;bottom:calc(env(safe-area-inset-bottom) + 14px);font-size:17px;width:2.5em;height:2.5em}
+body.portrait #snd{right:calc(50% - 4.35em)}body.portrait #pause{right:calc(50% - 1.25em)}body.portrait #autoWalk{right:calc(50% + 1.85em)}
+body.portrait:not(.playing) #snd{right:calc(50% - 1.25em)}
+body.portrait #title{position:fixed;inset:0;justify-content:center;border-radius:0}
+body.portrait .tbook{margin-top:0}
+body.portrait.opened .tbook{transform:translateX(calc(var(--u,1) * -160px))}
+body.portrait:not(.playing) #build{position:fixed;right:12px;bottom:calc(env(safe-area-inset-bottom) + 8px);font-size:11px}
+body.portrait:not(.playing) #rot{display:none}
 </style>
 </head>
 <body>
@@ -165,7 +183,7 @@ body.portrait #rot{display:block}
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
   <button id="autoWalk" aria-label="He walks on by himself"><svg viewBox="0 0 24 24"><path d="M5 6l6 6-6 6M12 6l6 6-6 6"/></svg></button>
-  <div id="build">build 421 · Nov 21 2026</div>
+  <div id="build">build 422 · Nov 21 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -199,7 +217,17 @@ function fit() {
   // (portrait iPhone: the picture is only about 240 tall). A phone held upright gets them a little larger.
   stage.style.setProperty('--u', (sw / VW).toFixed(4));
   stage.style.setProperty('--s', Math.min(1.25, sw / VW * (portrait ? 1.4 : 1.12)).toFixed(3));
-  document.getElementById('rot').style.top = (stage.getBoundingClientRect().bottom + 22) + 'px';
+  // build 422 (owner: "on profile on phone it'd be nice to use more screen"): held upright, the picture sits a little way
+  // down, and the words, the choices and the buttons go in the dark space below it instead of over the picture; the
+  // book on the title gets its own size, as large as the screen allows (--u on #title)
+  const wrapEl = document.getElementById('wrap');
+  if (portrait) {
+    const top = Math.max(44, Math.round((h - sh) * .26));
+    wrapEl.style.paddingTop = top + 'px';
+    stage.style.setProperty('--below', Math.max(120, h - top - sh) + 'px');
+    const ut = Math.min(w * .9 / 320, h * .72 / 448);
+    document.getElementById('title').style.setProperty('--u', ut.toFixed(4));
+  } else { wrapEl.style.paddingTop = ''; document.getElementById('title').style.removeProperty('--u'); }
 }
 addEventListener('resize', fit); fit();
 
@@ -960,12 +988,13 @@ function fitWords(box) {
   // phone held upright (build 138): the picture is only about 220 px high there, and 16 px words filled a third of it; so
   // upright the words are smaller, in proportion to the small picture (never below TXT_MIN_UP)
   const up = document.body.classList.contains('portrait');
-  const want = up ? Math.round(clamp(stage.clientHeight * TXT_K_UP, TXT_MIN_UP, TXT_MIN) * 2) / 2 : Math.round(clamp(stage.clientHeight * TXT_K, TXT_MIN, TXT_MAX));
+  // build 422: upright the words lie below the picture, so they take a size from the screen's width, not the picture's height
+  const want = up ? Math.round(clamp(innerWidth * .044, 14, 19)) : Math.round(clamp(stage.clientHeight * TXT_K, TXT_MIN, TXT_MAX));
   box.style.fontSize = want + 'px';
   { const t = box.querySelector('.t'), r = t && t.getClientRects()[0];
     if (r) { fitC.font = want + 'px Georgia, serif'; const m = fitC.measureText('Mg'), ref = (m.fontBoundingBoxAscent || 0) + (m.fontBoundingBoxDescent || 0);
       if (ref > 4 && r.height > ref * 1.06) box.style.fontSize = (want * ref / r.height).toFixed(1) + 'px'; } }
-  dlg.style.top = '';
+  dlg.style.top = ''; if (up) return;
   const need = box.offsetHeight / .86 / stage.clientHeight * 100; if (need > 17.5) dlg.style.top = (100 - need) + '%';
 }
 const TXT_MIN = 16, TXT_MAX = 21, TXT_K = .036, TXT_MIN_UP = 11, TXT_K_UP = .052;
@@ -2572,6 +2601,6 @@ document.getElementById('on2').onclick = () => SL.on ? go3() : HL.on ? goRoom('d
 <script src="rooms.js?v=393"></script>
 <script src="keepsakes.js?v=390"></script>
 <script src="cross.js?v=414"></script>
-<script src="editor.js?v=390"></script>
+<script src="editor.js?v=422"></script>
 </body>
 </html>

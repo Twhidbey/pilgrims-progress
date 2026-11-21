@@ -15,7 +15,8 @@ const ED = (() => {
   { let taps = [];
     document.getElementById('stage').addEventListener('pointerdown', e => {
       if (typeof G === 'undefined' || G.state !== 'title') return;
-      const r = document.getElementById('stage').getBoundingClientRect();
+      // upright, the title fills the screen and the build number sits at the screen's foot (build 422)
+      const r = document.body.classList.contains('portrait') ? { right: innerWidth, bottom: innerHeight, width: innerWidth, height: innerHeight } : document.getElementById('stage').getBoundingClientRect();
       if (e.clientX < r.right - r.width * .3 || e.clientY < r.bottom - r.height * .2) { taps = []; return; }
       const now = Date.now(); taps = taps.filter(t => now - t < 3000); taps.push(now);
       if (taps.length >= 5) { taps = []; const on = !mem.get(); mem.set(on); const u = new URL(location.href); u.searchParams.delete('edit'); if (on) u.searchParams.set('edit', ''); location.replace(u.pathname + (u.search ? u.search.replace('edit=&', 'edit&').replace(/edit=$/, 'edit') : '')); }
