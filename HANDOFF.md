@@ -76,6 +76,9 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 **Build 456: A SLOWER SUNRISE, A BREATH BEFORE CHRISTIAN SPEAKS (owner: "sun can rise slower and slight delay between burden disappearing and christian speaking").** The sun rises over about 14 s (`sun` +.0012 a tick, was .0028, about 6 s) and the colour comes back about half as fast (`gold` .0032, was .006). Christian's "He hath given me rest by his sorrow ..." (GLAD) now waits for 12 beats of the hymn and at least 2.5 s of unbroken quiet (`qRun`), and LOOKED follows it. Nothing spent.
 
+
+**Build 457: THE SHINING ONES APPEAR (owner: "the shining ones can just appear (not descend)").** They no longer come down from above or rise when they go: each fades in where it stands, one after another, and fades there when they go (`up` 0 in `shining()`). Nothing spent.
+
 ## START HERE (rewritten at build 140, Nov 16 2026)
 
 **Build 420 (vision chat): the castle sits on the summit, its crag faded into the rock** (free). **Build 415 (vision chat): a rock mountain drawn in code holds the castle, the castle a third of its size** (free; see CLAUDE.md build 415). **Build 413 (vision chat): Beelzebub's castle painted** (about 15 cents, the owner said "Paint it"): a huge dark fortress on a crag after John Martin, left of the gate's wall end; the camera stands back on it as he arrives and glances back while the arrows fly. See CLAUDE.md, Level 3, build 413. Still open from this chat: Christian's new coat after the Cross (a free FLUX retry is scheduled; show the still before any clips); which lines at the mountain's foot the owner wants fixed.

@@ -436,10 +436,11 @@ const CR = (() => {
     return (SHF[key] = { w: W, h: Hh, soft: tint(blur(4), [[255, 250, 232], [255, 226, 176]]), wide: tint(blur(5), [[255, 238, 200], [255, 214, 160]]) });
   }
   function shining(c) {
+    // they appear where they stand, one after another, and fade there when they go (owner: "the shining ones can just appear (not descend)")
     const a = shine * (1 - gone); if (a <= .01) return;
     c.save(); c.globalCompositeOperation = 'lighter';
     SH.forEach(([x, H, p], i) => {
-      const k = clamp(shine * 3 - i * .6), up = (1 - sm(0, 1, k)) * 120 + 140 * gone, hh = gh(x) + up, al = a * sm(0, 1, k);
+      const k = clamp(shine * 3 - i * .6), up = 0, hh = gh(x) + up, al = a * sm(0, 1, k);
       if (al < .01) return;
       const br = 1 + .06 * Math.sin(t / 40 + p);
       c.save(); c.translate(x, -hh);
