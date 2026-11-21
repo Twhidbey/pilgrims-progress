@@ -108,6 +108,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 **After build 347 (Level 3 smoke chat): a crisp, dark, single cauliflower column after real eruption photographs was built on the branch `smoke-column` and shown to the owner, who prefers the smoke as it is (build 347). Not merged; see CLAUDE.md, "TRIED AFTER BUILD 347 AND NOT KEPT". Nothing spent.**
 
+**Build 405 (Level 3 art chat): no zoom-out when he leaves the mountain; he keeps running as the mist rises (about 2 s), then the gate. Nothing spent.**
+
 **Build 346 (Level 3 art chat): the four plumes now merge into one continuous mass that spreads under the cloud (after a photograph of Mount St Helens, 1980), with softer, larger billows. Nothing spent.**
 
 **Build 343 (Level 3 art chat): the storm cloud has its own rolling masses lit from below; the plumes' tops softer and no longer reaching too high. Nothing spent.**

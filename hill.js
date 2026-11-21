@@ -982,7 +982,7 @@ const HL = (() => {
       else { C3.kp += st / 1.6; C3.kf = h0 + (h1 - h0) * (1 - Math.cos(C3.kp * Math.PI / (h1 - h0))) / 2; }
     }
     mercy += (mercyTo - mercy) * .012; calm += (calmTo - calm) * .008; if (ph === 'back') mercyTo = Math.min(mercyTo, .55); if (ph === 'mist') mercyTo = 0;      // (idea E) the light lingers where Evangelist stands as Christian hurries off
-    flash *= .93; boltT++; if (boltT === 8 && boltTwice) flash = Math.max(flash, .55); door += (doorTo - door) * .02; cut = clamp(cut + Math.sign(cutTo - cut) * (cutTo ? .022 : .016)); veil = clamp(veil + Math.sign(veilTo - veil) * .018);
+    flash *= .93; boltT++; if (boltT === 8 && boltTwice) flash = Math.max(flash, .55); door += (doorTo - door) * .02; cut = clamp(cut + Math.sign(cutTo - cut) * (cutTo ? .022 : .016)); veil = clamp(veil + Math.sign(veilTo - veil) * (C3.mistRun && veilTo ? .008 : .018));      // (build 405) a slower veil while he runs on into it
     hintT++;
     // (build 212, owner: "when we zoom over to mountain while worldly is talking it still flickers - can we make it solid"): the
     // mountain no longer fades in while the camera pans (half-seen, the ridges and sky showed through it as it slid); it is
@@ -1086,11 +1086,15 @@ const HL = (() => {
       if (go && RUNP.ready) { const st = RUNP_META.vpx * CHR_K; C3.x -= st * .4; C3.ranim += .4; C3.run = clamp(C3.run + .14); C3.sd = QUIET[0]; if (Math.floor(C3.ranim) % 14 === 0 && Math.floor(C3.ranim - .4) % 14 !== 0 && audio()) sfx.step(false, 1.3); }
       else { C3.run = clamp(C3.run - .1); if (go) walk(-1, MAXV); else if (C3.sd == null) walk(-1, 0); }
       if (want) clearHint('haste'); else if (hintT === 150) hint('haste', 'Hold to hurry back.');
-      if (!farewell && C3.x <= PATH0 + 120 && C3.run <= 0 && !saying() && G.cap <= 0) { farewell = 1; G.state = 'auto'; clearHint('haste'); flashT = 60; }
-      if (farewell && ++farewell > 340) { ph = 'mist'; veilTo = 1; }
+      // (build 405, owner: "when Charles leaves mountain out zooms out again... please re[move] this zoom ... just have him running
+      // and as he runs it fades out (don't let him stop running as it fades out)"): no second pull back (`farewell` is no
+      // longer started); near the start of the path, while he runs, the veil of mist comes and he runs on into it by
+      // himself (`C3.mistRun`) until it has covered everything; if he had stopped short of it, the mist comes as before
+      if (C3.x <= PATH0 + 360 && (C3.run > .5 || (C3.x <= PATH0 + 120 && C3.run <= 0 && !saying() && G.cap <= 0))) { C3.mistRun = C3.run > .5; ph = 'mist'; veilTo = 1; G.state = 'auto'; clearHint('haste'); }
     } else if (ph === 'mist') {
       if (farewell) farewell++;
-      if (veil >= 1) { Zw = 0; ph = 'gate'; C3.x = GATE_FROM; C3.face = C3.faceA = 1; C3.sd = QUIET[0]; cam.cx = C3.x + 150; cam.z = 1; cam.wl = 440; dark = 0; hope = 1; evan = null; wise = null; veilTo = 0; G.state = 'play'; hintT = 0; }
+      if (C3.mistRun && RUNP.ready) { const st = RUNP_META.vpx * CHR_K; C3.x -= st * .4; C3.ranim += .4; C3.run = 1; C3.sd = QUIET[0]; if (Math.floor(C3.ranim) % 14 === 0 && Math.floor(C3.ranim - .4) % 14 !== 0 && audio()) sfx.step(false, 1.3); }
+      if (veil >= 1) { C3.mistRun = false; C3.run = 0; Zw = 0; ph = 'gate'; C3.x = GATE_FROM; C3.face = C3.faceA = 1; C3.sd = QUIET[0]; cam.cx = C3.x + 150; cam.z = 1; cam.wl = 440; dark = 0; hope = 1; evan = null; wise = null; veilTo = 0; G.state = 'play'; hintT = 0; }
     } else if (ph === 'gate') {
       let v = want ? MAXV : 0; if (v && C3.x + v >= GATE_STOP) v = 0;
       if (v && saying() && !gateSaid) v = 0;
