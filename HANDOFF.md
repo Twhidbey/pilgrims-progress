@@ -4,6 +4,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 ## START HERE (rewritten at build 140, Nov 16 2026)
 
+**Build 379 (Level 4 editing chat): the parlour drawn in code too, a second trial, only with `?drawn` (`?room=2&drawn`). Nothing spent.**
+
 **Build 378 (Level 4 editing chat): a TRIAL of room 4 drawn in code, only with `?drawn` (`?room=4&drawn`); the painted room is unchanged without it. The owner is weighing drawn rooms for all the house. Nothing spent.**
 
 **Build 373 (Level 4 editing chat): three free Modal clips in the Interpreter's House: Christian's and the Interpreter's walks in the dark painted manner (passages, leaving) and the brave man arming himself in room 5. Nothing spent (Modal credits).**
