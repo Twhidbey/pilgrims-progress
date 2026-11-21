@@ -208,6 +208,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 **Build 276 (cover chat): the book cover painted in code in the game's own watercolour language (arched window of layered hills under the far light), replacing the leather photograph; no more flicker on opening. See `CLAUDE.md`, "Build 276". Nothing spent.**
 
+**Build 388 (Level 2 edits chat): Help appears out of the mist right of the oak, walks a few steps at his own pace and kneels (was a long quick walk in). Nothing spent.**
+
 **Build 387 (Level 2 edits chat): Pliable stands still at the start; his climb out of the bog eased and smoothed; no grey slab of mud against the home bank. Nothing spent.**
 
 **Build 384 (Level 2 edits chat): the fears' darkness as dark mist (round the edges, and a low band far behind him), no circle of light round him. Nothing spent.**

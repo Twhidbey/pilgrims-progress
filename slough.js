@@ -297,6 +297,11 @@ const SL = (() => {
   const HW_OFF = [1106.2, 1097.2, 1084.2, 1072.2, 1059.2, 1046.2, 1033.2, 1020.2, 1007.2, 994.2, 981.2, 968.2, 955.2, 944.7, 930.7, 916.2, 902.7, 890.7, 877.7, 864.7, 851.7, 838.7, 825.2, 812.2, 799.2, 786.2, 773.2, 760.2, 747.2, 733.7, 719.2, 705.7, 693.2, 680.2, 667.2, 654.2, 641.2, 627.2, 614.2, 601.2, 588.2, 575.2, 562.2, 549.2, 535.2, 521.2, 506.7, 493.7, 480.2, 469.7, 456.7, 443.7, 429.7, 414.7, 401.7, 388.7, 375.2, 362.7, 351.2, 338.2, 325.2, 313.2, 301.2, 290.2, 279.2, 269.2, 256.2, 243.2, 231.7, 218.7, 208.2, 196.7, 187.2, 177.2, 167.7, 158.7, 145.7, 132.7, 119.7, 106.7, 93.7, 80.7, 67.7, 54.7, 41.7, 28.7, 24.0, 18.0, 14.0, 11.0, 7.5, 5.0, 3.0, 1.5, 1.0, 0.0];
   // build 120: he comes from further off, out of the mist at the picture's right edge: one full stride of the walk
   // (frames 16..31, which join end to start) is walked three times over before the video's own frames 32..95
+  // build 388 (owner: "can help appear out of the fog and then a very short walk then kneel ... maybe he doesn't walk quite so
+  // fast"): he starts at the video's own first frame (32), about 360 units from where he kneels, in the mist right of the trunk (was three strides more, about 690),
+  // at the edge of the mist bank (moved 180 nearer), fades into sight out of it, and walks at his video's own pace (.2 a
+  // tick, was .3)
+  const HW_START = 48;
   const HW_LOOP = HW_OFF[16] - HW_OFF[32], HSEQ = [...Array(112).keys()].map(i => i < 48 ? [16 + i % 16, HW_OFF[16 + i % 16] + (2 - Math.floor(i / 16)) * HW_LOOP] : [i - 16, HW_OFF[i - 16]]);
   // where the stop video can begin (build 115, measured by shape overlap): for each walk frame, the stop video frame that
   // matches it best and how far ahead (pack px) that frame's figure stands, or null (no good match: walk on a frame or
@@ -710,7 +715,7 @@ const SL = (() => {
       C2.x = STUCK_X - 4 * Math.max(0, Math.sin(slipT / 50)) * smooth(60, 160, slipT);
       if (!fearsSaid && quiet(110)) { fearsSaid = true; caption(FEARS); fearT2 = 0; }
       // build 380: the storyteller waits until the drums have played and the dark has begun to lift, then a quiet breath
-      if ((strain > 120 || slipT > 220) && fearsSaid && fearT2 > FEAR_END - 60 && quiet(90)) { ph = 'help'; C2.x = STUCK_X; talk(STUCK, () => { help = { a: 0, t: 0, w: HWALK.length >= 96 ? 0 : 1e9 }; helpSayT = G.t + 75; }); }
+      if ((strain > 120 || slipT > 220) && fearsSaid && fearT2 > FEAR_END - 60 && quiet(90)) { ph = 'help'; C2.x = STUCK_X; talk(STUCK, () => { help = { a: 0, t: 0, w: HWALK.length >= 96 ? HW_START : 1e9 }; helpSayT = G.t + 75; }); }
     } else if (ph === 'help') {
       if (help && C2.reach < 1) C2.reach = Math.min(1, C2.reach + .05);
       // build 121 (owner: "help should rush in a little fast (like he knows it's [an emergency] - not run but quick nonetheless)
@@ -718,7 +723,7 @@ const SL = (() => {
       // as his video walks (.3 a tick), goes straight down on one knee at the edge (mv to video frame 82: kneeling, his arm
       // still low) and asks his question from there; at "Give me your hand" he holds it out (mv.to 150). Christian sees
       // him coming, lifts his head and has his arm up as Help arrives (C2.rt, his own clock; the two used to share mv).
-      if (help && help.w < HSEQ.length - 1) { help.w += .3; if (help.w >= HSEQ.length - 1) mv = { t: 40, to: 82 }; }
+      if (help && help.w < HSEQ.length - 1) { help.w += .2; if (help.w >= HSEQ.length - 1) mv = { t: 40, to: 82 }; }
       else if (help && !mv) mv = { t: 40, to: 82 };
       // build 287 (owner: "can christian not extend his hand, until it prompts him to take hand?"): he keeps struggling
       // while they talk and only lifts his head and arm once Help says "Give me your hand" (C2.handGo)
@@ -753,7 +758,7 @@ const SL = (() => {
       if (fogH === 1) hiss(260, .5, .05, 3.5, 'lowpass');
       // the mist thins once he has come; it gathers again as he walks back into it, and closes behind Christian at the end
       const to = ph === 'on' ? .28 : help.lv && help.lv.t >= HTURN.length - 1 ? .5 : 0;
-      fogH = to < fogH ? Math.max(to, fogH - .0013) : Math.min(to, fogH + .004); help.a = 1;
+      fogH = to < fogH ? Math.max(to, fogH - .0013) : Math.min(to, fogH + .004); help.a = Math.min(1, help.a + .022);      // build 388: he comes into sight out of the mist (about 3/4 s)
       const lv = help.lv;
       if (lv && !help.gone) {
         if (lv.t < HTURN.length - 1) { lv.p = Math.min(1, (lv.p || 0) + 1 / HTURN_TICKS); lv.t = lv.p >= 1 ? HTURN.length - 1 : lv.p * lv.p * (3 - 2 * lv.p) * (HTURN.length - 1); }      // build 365: a quick pivot (it took nearly seven seconds, walking round), then he goes
@@ -1277,7 +1282,7 @@ const SL = (() => {
     if (fogH > .01) { const a = smooth(0, .45, fogH), by = Y(64);
       if (!fogC || fogC.width !== cv.width || fogC.height !== cv.height) fogC = mk(cv.width, cv.height);
       const f = fogC.getContext('2d'); f.setTransform(S, 0, 0, S, 0, 0); f.globalCompositeOperation = 'source-over'; f.globalAlpha = 1; f.clearRect(0, 0, VW, VH); f.imageSmoothingEnabled = true;
-      f.save(); f.translate(X(HX + 1000), 0); f.scale(-1, 1);
+      f.save(); f.translate(X(HX + 820), 0); f.scale(-1, 1);
       f.globalAlpha = a; f.drawImage(fogBank, 0, by - 470 * z, 800 * z, 470 * z);
       f.globalAlpha = a * .8; f.drawImage(fogBank, (-50 + Math.sin(G.t * .004) * 10) * z, by - 410 * z, 900 * z, 410 * z);
       f.restore(); f.globalAlpha = 1;
@@ -1462,5 +1467,5 @@ const SL = (() => {
   // for testing: SL.peek() tells where the story is
   // grow, ribbons: the tree grower and its painter, for Level 3's oak in leaf (hill.js, bakeOak): keep these exports
   // oakPic: the great oak baked small in one colour, for Level 1's far glimpse of the Slough (index.html, drawFarSlough)
-  return { on: false, show: false, title, start, update, draw, touch, grip, pick, preload, lines: ALL, oakPic: (col, k) => bakeTree(oak(18), col, k), grow: (seed, hero, depth) => oak(seed, hero, depth), ribbons, peek: () => ({ ph, thk: { cityT, fearT2 }, x: C2.x, y: C2.y, mv: mv && mv.t, lift: lift && lift.t, pli: pli && pli.mode, plx: pli && Math.round(pli.x), plStop: !!(pli && pli.stop), cam, mud: { strings: strings.length, hmax: Math.max(...fh), hmin: Math.min(...fh), drops: drops.length, rings: rings.length, recs: Object.fromEntries(Object.entries(RECS).map(([o, r]) => [o, { body: r.body, arms: (r.arms || []).length, act: MS[o] ? MS[o].act : 0, y: r.y, a: r.a }])) }, c2: { wa: C2.wa, D: C2.D, rt: C2.rt, reach: C2.reach, fallT: C2.fallT }, pl: pli && { y: pli.y, ct: pli.ct, wk: pli.wk, wal: pli.wal, fa: pli.fa, wt: pli.wt, x: pli.x, duck: pli.duck, mode: pli.mode, out: pli.out } }) };
+  return { on: false, show: false, title, start, update, draw, touch, grip, pick, preload, lines: ALL, oakPic: (col, k) => bakeTree(oak(18), col, k), grow: (seed, hero, depth) => oak(seed, hero, depth), ribbons, peek: () => ({ ph, hw: help && help.w, thk: { cityT, fearT2 }, x: C2.x, y: C2.y, mv: mv && mv.t, lift: lift && lift.t, pli: pli && pli.mode, plx: pli && Math.round(pli.x), plStop: !!(pli && pli.stop), cam, mud: { strings: strings.length, hmax: Math.max(...fh), hmin: Math.min(...fh), drops: drops.length, rings: rings.length, recs: Object.fromEntries(Object.entries(RECS).map(([o, r]) => [o, { body: r.body, arms: (r.arms || []).length, act: MS[o] ? MS[o].act : 0, y: r.y, a: r.a }])) }, c2: { wa: C2.wa, D: C2.D, rt: C2.rt, reach: C2.reach, fallT: C2.fallT }, pl: pli && { y: pli.y, ct: pli.ct, wk: pli.wk, wal: pli.wal, fa: pli.fa, wt: pli.wt, x: pli.x, duck: pli.duck, mode: pli.mode, out: pli.out } }) };
 })();
