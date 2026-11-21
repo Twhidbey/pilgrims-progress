@@ -4,6 +4,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 ## START HERE (rewritten at build 140, Nov 16 2026)
 
+**Build 381 (Level 4 editing chat): the drawn parlour (`?room=2&drawn`) worked toward the painting: Vermeer's plaster and light, the side wall and window, the wicker basket and brass pail with shadows, Delft tiles, the foot warmer, board grain, and the girl and sweeper in colour. Nothing spent.**
+
 **Build 379 (Level 4 editing chat): the parlour drawn in code too, a second trial, only with `?drawn` (`?room=2&drawn`). Nothing spent.**
 
 **Build 378 (Level 4 editing chat): a TRIAL of room 4 drawn in code, only with `?drawn` (`?room=4&drawn`); the painted room is unchanged without it. The owner is weighing drawn rooms for all the house. Nothing spent.**
