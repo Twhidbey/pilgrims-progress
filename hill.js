@@ -292,7 +292,7 @@ const HL = (() => {
   // (parallax `WROWS`, each a little nearer, darker and taller), and Mr. Worldly Wiseman, "crossing over the field to meet
   // him" ({37}), wades up through them from the near right (`wDepth`: s how near, dy how far down the picture) and steps
   // onto the road at the crossing under the oak. Rows nearer than him are drawn over him, so the wheat hides his legs.
-  const WHEATV = +(new URLSearchParams(location.search).get('wheat')) || 0;
+  const WHEATV = new URLSearchParams(location.search).get('wheat') === '0' ? 0 : 1;      // build 417: on (owner: "like 2 best"); ?wheat=0 hides it for comparing
   // each row: [parallax, its ground (world units below the road line), its height]: the first row's ears come just to his feet
   // on the road, the nearer rows taller, so a man among them is hidden to the knee
   const WROWS = [[1.06, 38, 24], [1.13, 60, 36], [1.21, 86, 46]], WTR1 = MEET + 150;
@@ -304,25 +304,15 @@ const HL = (() => {
     const TONE = [[[106, 97, 84], .78], [[72, 66, 57], .92], [[42, 38, 34], 1]], DK = [36, 34, 40], HT = WROWS.map(r => r[2]);
     const per = (x, k, o) => Math.sin(x * 6.2832 * k / WT_W + o);
     const one = (ri, col, al) => {
-      const R = rng(7100 + ri * 37 + WHEATV * 101), m = mk(WT_W, WT_H), q = m.getContext('2d'), c4 = css(col), h = HT[ri];      // opaque: the row's strength is laid when drawn (overlapping see-through stalks read as bars)
+      const R = rng(7100 + ri * 37 + 202), m = mk(WT_W, WT_H), q = m.getContext('2d'), c4 = css(col), h = HT[ri];      // opaque: the row's strength is laid when drawn (overlapping see-through stalks read as bars)
       const wave = x => 7 * per(x, 3, ri * 2.1) + 4 * per(x, 9, ri);
-      const both = fn => { fn(0); };
       q.lineCap = 'round'; q.fillStyle = q.strokeStyle = c4;
-      if (WHEATV === 1) {
-        q.beginPath(); q.moveTo(0, WT_H); for (let x = 0; x <= WT_W; x += 6) q.lineTo(x, WT_G - h * .7 + wave(x) * .8 + 3 * per(x, 61, ri) + 2 * per(x, 151, ri * 3));      // the crop stands close: only the ears and the last of the stems open against what is behind q.lineTo(WT_W, WT_H); q.closePath(); q.fill();
-        const n = WT_W * 4;
-        for (let i = 0; i < n; i++) {
-          const x = R() * WT_W, g = () => (R() + R() + R() - 1.5) * 2, top = WT_G - h + wave(x) + g() * 3.6, lean = 2.4 * per(x, 5, ri) + g() * 1.1, y0 = WT_G + wave(x) * .5, w = R() < .7 ? .5 : .9, ear = R() < .55;
-          for (const ox of [0, -WT_W, WT_W]) { if (x + ox < -20 || x + ox > WT_W + 20) continue;
-            q.lineWidth = w; q.beginPath(); q.moveTo(x + ox, y0); q.lineTo(x + ox + lean, top); q.stroke();
-            if (ear) { q.beginPath(); q.ellipse(x + ox + lean * 1.05, top - 2, .9 + .25 * ri, 3.6 + .5 * ri, lean * .04, 0, 7); q.fill(); } }
-        }
-      } else {
+      {
         const GAP = 2.4, N = Math.ceil(WT_W / GAP), hs = [], ph = [];
         for (let i = 0; i < N; i++) { const x = i * GAP; ph[i] = R(); hs[i] = h * (.94 + .04 * per(x, 7, ri) + .02 * per(x, 23, ri * 2)) + ph[i] * 2.5; }
         const body = new Path2D(), awns = new Path2D(), ears = new Path2D(), grain = new Path2D();
         body.moveTo(-2, WT_H);
-        for (let i = 0; i <= N; i++) { const j = i % N, x = i * GAP, a = -.08 + .05 * per(x, 4, ri), bx = x + a * hs[j], by = WT_G - hs[j], k = Math.min(1, hs[j] / 30) * 1.1, el = (7 + 7 * ph[j]) * k, sp = (ph[j] - .5) * 5 * k;
+        for (let i = 0; i <= N; i++) { const j = i % N, x = i * GAP, a = -.08 + .05 * per(x, 4, ri), bx = x + a * hs[j], by = WT_G - hs[j] + wave(x) * .4, k = Math.min(1, hs[j] / 30) * 1.1, el = (7 + 7 * ph[j]) * k, sp = (ph[j] - .5) * 5 * k;
           body.lineTo(bx, by);
           awns.moveTo(bx, by + 2); awns.lineTo(bx + a * 2 * el + sp, by - el); awns.moveTo(bx + 1.5, by + 2); awns.lineTo(bx + 1.5 + a * 2 * el - sp * .6, by - el * .7);
           ears.moveTo(bx, by + 4 * k); ears.lineTo(bx + a * 9 * k + sp * .3, by - 3 * k);
