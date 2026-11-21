@@ -4,6 +4,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 ## START HERE (rewritten at build 140, Nov 16 2026)
 
+**Build 408 (vision chat): at Level 3's gate the wall now ends a little way left of the gate, and Beelzebub's castle stands out on Christian's side on a far rise; the arrows fly from it. Nothing spent.**
+
 **Build 404 (vision chat): at Level 3's gate the child takes Good-will's hand, he pulls Christian in, and arrows from Beelzebub's castle (a far dark shape over the wall) fall short into the wall and road; three new lines. About 3 cents. Next in this chat: the free picture of Christian without the burden, in a whole clean coat (FLUX; its free allowance was used up today, retried when it comes back).**
 
 **Build 399 (vision chat): Level 3's opening in Level 2's warm silver key, opening out of Level 2's last mist; the rocks, Evangelist and the gate unchanged. Nothing spent. Waiting on the owner's eyes for how grey; also asked which dialogue fixes they meant at the mountain's foot.**

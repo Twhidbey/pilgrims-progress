@@ -901,7 +901,7 @@ const HL = (() => {
   function doPull() {
     if (G.act !== 'pull' || pullT >= 0) return; G.ring = null; pullT = 0; pullX0 = C3.x;
     note(62, .035, 3); note(66, .03, 3, .1);
-    for (let i = 0; i < 4; i++) ARW.push({ t: -[4, 16, 30, 46][i], i, sx: C3.x - 560 - 90 * i - 140 * Math.random(), sy: -470 - 60 * Math.random(), tx: C3.x - 64 - 46 * i - 16 * Math.random(), ty: i === 2 ? -1 : -(60 + 90 * Math.random()), stuck: false, q: 0 });
+    for (let i = 0; i < 4; i++) ARW.push({ t: -[4, 16, 30, 46][i], i, sx: GATE_X - 650 + 30 * Math.random(), sy: -210 - 30 * Math.random(), tx: C3.x - 64 - 46 * i - 16 * Math.random(), ty: i === 2 ? -1 : -(60 + 90 * Math.random()), stuck: false, q: 0 });
   }
   function takeHand() { if (G.act !== 'ehand') return; note(67, .04, 4); note(71, .035, 4, .12); note(74, .03, 4, .24); mercyTo = 1; next(true); }
   // the wide picture answers a touch (build 237): the sky above the rock = a strike there; the rock = its nearest crack flares
@@ -1679,13 +1679,22 @@ const HL = (() => {
     const notDoor = () => { c.beginPath(); c.rect(0, 0, VW, VH); c.moveTo(gx - r, Y(0)); c.lineTo(gx + r, Y(0)); c.lineTo(gx + r, gy0); c.arc(gx, gy0, r, 0, Math.PI, true); c.closePath(); c.clip('evenodd'); };
     if (gateOn) {
       const x0 = GATE_X - 1300;
+      const WEND = GATE_X - 430, wend = x => { const e = (x - WEND) / 95; if (e <= 0) return 0; if (e >= 1) return 1; return clamp(Math.pow(e, .6) * .95 + .16 * (nz(x * .045, 9) - .5) * (1 - e * .7) + .07 * (nz(x * .16, 11) - .5) * (1 - e) + .05); };
       // (build 216, owner: "Top of wall can be little more rugged matching contours of rocks"): the top is a row of rough
       // cap stones of every width and height, each rounded and chipped, now and then one missing, over the slow swell
       if (!CAP) { CAP = []; const Rc = rngS(93); for (let x = x0 - 20; x < GATE_X + 920;) { const w = 14 + Rc() * 24, gone = Rc() < .05; CAP.push({ x, w, h: gone ? -2 - Rc() * 3 : 1 + Rc() * 4.5, l: Rc(), rr: Rc() }); x += w; } }
       const cap = x => { let lo = 0, hi = CAP.length - 1; while (lo < hi) { const m = (lo + hi + 1) >> 1; if (CAP[m].x <= x) lo = m; else hi = m - 1; } const q = CAP[lo], t = (x - q.x) / q.w, e = Math.max(0, 1 - Math.pow(Math.abs(2 * t - 1 + (q.l - .5) * .5), 3)); return q.h * Math.pow(e, .7) + (q.rr - .5) * 2 * (t - .5); };
-      // BEELZEBUB'S CASTLE ({62}: "a little distance from this gate"), far off over the wall on the left: a dark keep and
-      // two towers on a rise against the dusk, one dim ember of a window; the wall hides its foot
-      { const bx = GATE_X - 590, P = (u, v) => [X(bx + u), Y(-330 - v)];
+      // BEELZEBUB'S CASTLE ({62}: "a little distance from this gate"), out on Christian's own side beyond the wall's end: a
+      // dark keep and towers on a far rise on the horizon against the dusk, one dim ember of a window
+      // the open land beyond the wall's end, at dusk: a hazy far ridge, then darker ground down to the road (it covers the
+      // plain's daytime layers there)
+      { const xe = X(WEND + 60); if (xe > 0) { c.save(); c.beginPath(); c.rect(0, Y(-240), xe, Y(4) - Y(-240)); c.clip();
+          const rid = (y0, amp, f, sd) => { c.beginPath(); c.moveTo(0, Y(4)); for (let sx = 0; sx <= xe + 6; sx += 4) { const wx = cx + (sx - VW / 2) / z; c.lineTo(sx, Y(y0 - amp * nz(wx * f, sd))); } c.lineTo(xe + 6, Y(4)); c.closePath(); };
+          rid(-172, 34, .006, 21); c.fillStyle = css([62, 34, 27]); c.fill();
+          rid(-150, 26, .008, 24); c.fillStyle = css([46, 25, 20]); c.fill();
+          rid(-124, 22, .01, 22); c.fillStyle = css([36, 20, 16]); c.fill();
+          rid(-72, 16, .014, 23); { const g = c.createLinearGradient(0, Y(-80), 0, Y(4)); g.addColorStop(0, css([26, 15, 12])); g.addColorStop(1, css([16, 9, 7])); c.fillStyle = g; } c.fill(); c.restore(); } }
+      { const bx = GATE_X - 650, P = (u, v) => [X(bx + .85 * u), Y(-140 - .85 * v)];
         { const [gx2, gy2] = P(0, 30), rr = 260 * z, g = c.createRadialGradient(gx2, gy2, 0, gx2, gy2, rr); g.addColorStop(0, css([120, 66, 44], .42)); g.addColorStop(.5, css([96, 52, 36], .16)); g.addColorStop(1, css([80, 40, 30], 0)); c.fillStyle = g; c.fillRect(gx2 - rr, gy2 - rr, 2 * rr, 2 * rr); }
         c.fillStyle = css([24, 13, 11]); c.beginPath(); c.moveTo(...P(-230, -40));
         // the rise, then the castle on it: a squat curtain wall between a tall round-topped keep and two thin towers
@@ -1694,13 +1703,18 @@ const HL = (() => {
         for (const [u, v] of pts) c.lineTo(...P(u, v)); c.closePath(); c.fill();
         const fl = .6 + .4 * Math.sin(G.t / 37); c.fillStyle = css([160, 58, 28], .6 * fl); const [wx, wy] = P(1, 60); c.fillRect(wx, wy, 2.2 * z, 3.4 * z); }
       const wtop = x => 330 + (nz(x * .012, 3) - .5) * 26 + (nz(x * .05, 6) - .5) * 12 + cap(x);
-      const wallPath = () => { c.beginPath(); c.moveTo(X(x0), Y(2)); for (let x = x0; x <= GATE_X + 900; x += 3) c.lineTo(X(x), Y(-wtop(x) * smooth(x0, x0 + 500, x))); c.lineTo(X(GATE_X + 900), Y(2)); };
+      // (vision chat, owner: "the castle shooting over wall looks strange - which side is it on?"): the wall ENDS a little way
+      // left of the gate in a broken, stepped end (`WEND`, courses fallen away unevenly), so the open land beyond shows and
+      // the castle stands out there on Christian's own side, as in the book
+      const wallPath = () => { c.beginPath(); c.moveTo(X(WEND), Y(2)); for (let x = WEND; x <= GATE_X + 900; x += 3) c.lineTo(X(x), Y(-wtop(x) * wend(x))); c.lineTo(X(GATE_X + 900), Y(2)); };
       const arch = (rr = r, y1 = gy0) => { c.beginPath(); c.moveTo(gx - rr, Y(1)); c.lineTo(gx - rr, y1); c.arc(gx, y1, rr, Math.PI, 0); c.lineTo(gx + rr, Y(1)); };
       // the stone surround: dressed jamb stones and voussoirs between ri and ro, the door set back in a reveal
       const frameP = () => { c.beginPath(); c.moveTo(gx - ro, Y(0)); c.lineTo(gx - ro, gy0); c.arc(gx, gy0, ro, Math.PI, 0); c.lineTo(gx + ro, Y(0)); c.closePath(); c.moveTo(gx - ri, Y(0)); c.lineTo(gx - ri, gy0); c.arc(gx, gy0, ri, Math.PI, 0); c.lineTo(gx + ri, Y(0)); c.closePath(); c.rect(gx - SW / 2 * z, Y(-SY - SH), SW * z, SH * z); };
       // the far light, behind the wall: only its glow over the top
       { const gy = Y(-330), g = c.createRadialGradient(gx, gy, 0, gx, gy, 340 * z); g.addColorStop(0, css([255, 220, 160], .42 * gateish)); g.addColorStop(.35, css([230, 160, 100], .16 * gateish)); g.addColorStop(1, css([200, 120, 80], 0)); c.fillStyle = g; c.fillRect(gx - 340 * z, gy - 340 * z, 680 * z, 680 * z); }
       wallPath(); c.fillStyle = css([22, 13, 10]); c.fill();
+      // a few fallen stones at the wall's broken end
+      { c.fillStyle = css([19, 11, 9]); for (let i = 0; i < 7; i++) { const u = WEND - 40 + i * 15 + 6 * nz(i * 1.7, 5), w = 7 + 9 * nz(i * 2.3, 6), h = 4 + 6 * nz(i * 3.1, 7); c.beginPath(); c.ellipse(X(u), Y(-h * .45), w * z * .5, h * z * .55, .2 * (nz(i, 8) - .5), 0, 7); c.fill(); } }
       c.save(); wallPath(); c.clip();
       // one soft pool of lantern light, and the open door's light
       const dx0 = GATE_X - 30, lxw = GATE_X - 72, tex = GSTONE ? 1.3 : 1;
