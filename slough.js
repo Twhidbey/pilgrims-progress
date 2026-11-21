@@ -30,28 +30,29 @@ const SL = (() => {
   const OPEN = LEVEL2_OPENING;      // build 368: the storyteller's "went talking over the plain" cut (the picture shows it)      // {25} to {28}
   const NEAR = [];      // build 368: cut (the picture shows the bog coming)
   const FALL = [      // {29}, {30}
-    [N, 'Not looking where they went, they fell into the bog. Its name was Despond.'],
+    [N, 'They fell into the bog. Its name was Despond.'],      // build 391 (owner's choices in level2-cuts.html, round 2): shortened
     [PL, 'Ah, neighbor Christian, where are you now?'],
-    [C, 'Truly, I do not know.'],
-    [PL, 'Is this the happiness you told me of? You can have your fine country all to yourself!', null, () => { if (pli) pli.turn = 1; }],      // he turns from Christian toward his own side
-    [N, 'He struggled out on his own side, and Christian saw him no more.', null, () => { pli.mode = 'climb'; pli.wal = false; pli.turn = 1; }],
+    // build 391: Christian's "Truly, I do not know." cut; Pliable's angrier half only; the storyteller's "He struggled out on
+    // his own side, and Christian saw him no more." cut (shown: he climbs out and walks off into the mist; his climb now
+    // starts as the talk ends, see talk(FALL))
+    [PL, 'You can have your fine country all to yourself!', null, () => { if (pli) pli.turn = 1; }],      // he turns from Christian toward his own side
   ];
   // the choice is ours, not the book's (as in Level 1): going back loses nothing
   const BACK = [
-    [N, 'Christian turned back toward his own house. The mist grew thick and dark.'],
+    // build 391: the storyteller's "Christian turned back toward his own house. The mist grew thick and dark." cut (shown)
     [C, 'No. I must struggle on, toward the gate.', null, () => { gloomTo = 0; }],
   ];
-  const ALONE = [[N, 'So Christian was left alone.']];      // {31}
+  const ALONE = [];      // build 391: "So Christian was left alone." cut (shown: the camera comes in close on him alone)      // {31}
   const FEARS = [[N, 'Many fears and doubts came over him, and settled in that place.']];      // {33}: the fears are sound only, and this one line
-  const STUCK = [[N, 'But at the far side he could not get out, because of the burden on his back.']];      // {31}
+  const STUCK = [[N, 'He could not get out, because of the burden on his back.']];      // {31}
   const HELP = [      // {31}, {32}
     [N, 'Then a man came to him, whose name was Help.'],
     [H, 'Why did you not look for the steps?'],      // build 368: "What are you doing there?" and Christian's answer cut
-    [C, 'Fear followed me so hard that I fled the nearest way, and fell in.'],
+    [C, 'Fear followed me so hard that I fell in.'],
     [H, 'Give me your hand.', 'hand', () => { mv = mv || { t: 0 }; mv.to = 150; C2.handGo = true; }],      // he is already down on his knee: now he holds out his hand
   ];
   const DRAWN = [];      // {32}
-  const STEPS = [[N, 'There were good steps through the middle of the bog, but in the mist they were hard to see.']];      // {35}
+  const STEPS = [];      // build 391: "There were good steps through the middle of the bog, but in the mist they were hard to see." cut (shown: the lights find the stones)      // {35}
   const ONWAY = [[H, 'Go on your way.']];      // {32}: "and bid him go on his way"
   const ALL = [...OPEN, ...NEAR, ...FALL, ...BACK, ...ALONE, ...FEARS, ...STUCK, ...HELP, ...DRAWN, ...STEPS, ...ONWAY];
 
@@ -459,7 +460,7 @@ const SL = (() => {
     G.state = 'wait'; setTimeout(() => { if (SL.on && G.state === 'wait') { G.state = 'play';  } }, 1400);
   }
   // the Pliable talk is said while they walk, a line at a time, at places along the plain
-  const OPEN_AT = [START - 1, -1880, -1640, -1400];      // build 368: the first line is said as the level opens (the storyteller's line before it was cut)
+  const OPEN_AT = [START - 1, -1820];      // build 391: two lines now (Pliable's "let's walk faster" and Christian's "I cannot go fast" cut)      // build 368: the first line is said as the level opens (the storyteller's line before it was cut)
   function choose2() {
     document.getElementById('chHome').textContent = 'Go back, as Pliable did';
     document.getElementById('chOn').textContent = 'Struggle on to the gate';
@@ -681,7 +682,7 @@ const SL = (() => {
     if (['fall', 'pli', 'backtalk'].includes(ph)) { const b = burst(1); waStep(calm ? .06 : .07 + .13 * b); }      // (build 143: the mud's answer comes from his pictures: see sense())
     if (ph === 'fall') {
       if (C2.fallT === 8 || C2.fallT === 14) { rings.push({ x: C2.x, y: 0, t: 0, k: 1.3 }); rings.push({ x: pli.x, y: 0, t: 0, k: 1.1 }); }
-      if (C2.fallT === 120) { ph = 'pli'; heave(-1); talk(FALL, () => { pliGo = 1; }); }
+      if (C2.fallT === 120) { ph = 'pli'; heave(-1); talk(FALL, () => { if (pli) { pli.mode = 'climb'; pli.wal = false; pli.turn = 1; } pliGo = 1; }); }
     } else if (ph === 'pli' && pliGo) {
       // build 368, STORY MOVES (owner: "less game and more intentional story building moves"): (D) the choice waits until
       // Pliable has climbed out and gone into the mist; Christian is seen alone in the bog first (the camera comes in on him)
