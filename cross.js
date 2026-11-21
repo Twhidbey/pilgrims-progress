@@ -85,7 +85,7 @@ const CR = (() => {
   }
 
   // ---------- state ----------
-  let quietG = 0, sepT = -1, ph = '', t = 0, cam = { cx: 0, z: 1, wl: 420 }, wideK = 0, wideTo = 0;
+  let qRun = 0, quietG = 0, sepT = -1, ph = '', t = 0, cam = { cx: 0, z: 1, wl: 420 }, wideK = 0, wideTo = 0;
   const Ch = { x: START, anim: 12, sd: null, cf: -1, cfd: 1, hop: 0, hops: 0, lastV: 0, fade: 0, face: 1, tv: null, run: 0, ranim: 0 };
   let bur = null, dawn = 0, gold = 0, goldTo = 0, sun = 0, robe = 0, robeTo = 0, mark = 0, markTo = 0, rollShow = 0, rollGone = 0, shine = 0, shineTo = 0, gone = 0, goneTo = 0;
   let closeK = 0, topK = 0, topTo = 0, veil = 0, climb = null, tearT = -1, looked = false;
@@ -538,8 +538,9 @@ const CR = (() => {
     // the hop of a leap
     if (Ch.hv || Ch.hop > 0) { Ch.hop += Ch.hv; Ch.hv -= .2; if (Ch.hop <= 0) { Ch.hop = 0; Ch.hv = 0; if (audio()) sfx.step(false, .8); } }
     dawn += ((ph === 'walk' || ph === 'look' ? .55 * sm(SLOPE0 - 400, CREST0, Ch.x) : .7) - dawn) * .01;
-    gold += (goldTo - gold) * .006; robe = Math.min(1, robe + (robeTo > robe ? .01 : 0)); mark += (markTo - mark) * .03; shine += (shineTo - shine) * .012; gone += (goneTo - gone) * .012;
-    if (goldTo > 0) sun = Math.min(1, sun + .0028);
+    gold += (goldTo - gold) * .0032; robe = Math.min(1, robe + (robeTo > robe ? .01 : 0)); mark += (markTo - mark) * .03; shine += (shineTo - shine) * .012; gone += (goneTo - gone) * .012;
+    // the sun rises slowly, about 14 s (owner, build 455: "sun can rise slower")
+    if (goldTo > 0) sun = Math.min(1, sun + .0012);
     wideK += (wideTo - wideK) * .02;
     if (!climb) topK += (topTo - topK) * .022;
     hymnTick();
@@ -596,16 +597,17 @@ const CR = (() => {
       clipHold();
       if (t === 50) caption(TUMBLE);
       burdenTick();
-      if (bur.st === 'gone') { ph = 'gone'; t = 0; quietG = 0; }
+      if (bur.st === 'gone') { ph = 'gone'; t = 0; quietG = qRun = 0; }
     } else if (ph === 'gone') {
       clipHold();
       // a silence; then the light comes up behind the cross, and the colour comes back from it outward
       // the silence is counted only once every voice is done, so the sun and the hymn never come over the words
-      if (!busy()) quietG++;
+      if (!busy()) { quietG++; qRun++; } else qRun = 0;
       if (quietG === 150 && !goldTo) { goldTo = 1; wideTo = .35; }
       if (quietG === 210 && !hymn) hymn = { t: 0, i: 0, b: 0 };
-      if (hymn && hymn.t === 9 * BEATT) caption(GLAD);
-      if (hymn && hymn.t === 25 * BEATT) { caption(LOOKED); looked = true; }
+      // Christian speaks only after a breath of quiet once the burden is gone (owner, build 456)
+      if (hymn && hymn.t >= 12 * BEATT && qRun >= 150 && !said.glad) { said.glad = true; caption(GLAD); }
+      if (said.glad && hymn && hymn.t >= 25 * BEATT && !looked) { caption(LOOKED); looked = true; }
       if (looked && tearT < 0 && !G.capQ.length) tearT = 0;
       if (hymn && hymn.t > 20 * BEATT) wideTo = 0;
       if (hymnDone() && !busy()) { ph = 'shine'; t = 0; shineTo = 1; hymn = null; chime([79, 83, 86], .025); }
