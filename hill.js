@@ -32,8 +32,9 @@ const HL = (() => {
 
   // ---------- the places ----------
   // the gate in section (build 443): the wall's slice is 2 * GSL thick, its passage GPH high, the wall GTOP high
-  const GSL = 40, GPH = 166, GTOP = 330;
+  const GSL = 40, GPH = 166, GTOP = 330, GPL = 380;      // GPL (build 460): the gate's depth scale for its perspective
   const START = 220, MEET = 900, GATE_X = 9000, GATE_FROM = GATE_X - 480, GATE_STOP = GATE_X - 74;
+  const GVP = GATE_X - 150;      // (build 460) the gate's vanishing point, on the land a little left of the wall
   // INTO THE ROCKS (owner, build 185: "i don't like that hill looks initially - it looks fake ... after he decides to go
   // off path, pilgrim goes away from viewer and down the hill descending so his body disappear ... then scene shift to
   // him walking a mountain path rocky ... then when he reaches foot of mountain and narrator speaks we zoom out super
@@ -333,7 +334,7 @@ const HL = (() => {
     WTILES = TONE.map(([col, al], ri) => ({ p: WROWS[ri][0], g: WROWS[ri][1], al, fair: one(ri, col, al), dark: one(ri, mix(col, DK, .6), al) }));
     return WTILES;
   }
-  let wise = null, evan = null, dark = 0, hope = 0, flash = 0, flashT = 0, veil = 0, veilTo = 0, knocks = 0, knockT = 0, door = 0, doorTo = 0;
+  let wise = null, evan = null, dark = 0, hope = 0, flash = 0, flashT = 0, veil = 0, veilTo = 0, knocks = 0, knockT = 0, door = 0, doorTo = 0, shut = 0;
   let greeted = false, saidSeen = false, saidHigh = false, stillT = 0, hasteSaid = false, gateSaid = false, hintT = 0, noteI = 0, noteX = 0, lastFr = 0, hillSeen = false, signSeen = false;
   let OAKT = null, hillBox = [0, 0, 1];
   // the scene shift (`cut`: the picture goes dark, 0 .. 1) and the great pull back at the foot (`Zw`: 0 close .. 1 the
@@ -898,7 +899,7 @@ const HL = (() => {
   function reset0() {
     Object.assign(C3, { x: START, face: 1, faceA: 1, anim: 12, sd: QUIET[0], alpha: 1, run: 0, ranim: RUNP_META.start || 0, weep: false, wt: 0, wa: 0, kf: 0, kp: 0, tv: null, fired: false, saidAt: 0, tapZ: 0 }); FLARES.length = 0;
     mercy = mercyTo = calm = calmTo = 0;
-    mono = 1; castLook = 0; gateT = 0; gwReach = gwReachTo = 0; pullT = -1; GWFX = null; ARW.length = 0; wise = null; evan = null; dark = 0; hope = 0; flash = 0; flashT = 200; veil = 0; veilTo = 0; knocks = 0; knockT = 0; door = 0; doorTo = 0;
+    mono = 1; castLook = 0; gateT = 0; gwReach = gwReachTo = 0; pullT = -1; GWFX = null; ARW.length = 0; wise = null; evan = null; dark = 0; hope = 0; flash = 0; flashT = 200; veil = 0; veilTo = 0; knocks = 0; knockT = 0; door = 0; doorTo = 0; shut = 0;
     reveal = 0; vil = vilTo = 0; pan = panTo = 0; ROCKS.length = 0; DUST.length = 0; PATHR.length = 0; DUSTW.length = 0; fallI = 0; jolt = 0; ROLL.length = 0; rollI = 0; LIZ.length = 0; oakT = 0; GLINTS.length = 0; for (const k in SEEN_G) delete SEEN_G[k]; OBIRD.length = 0; OLEAF.length = 0; HIDDEN.forEach(h => { h.got = 0; h.up = 0; h.y = 0; }); STEAMP.length = 0; farewell = 0; C3.dy = 0; cut = cutTo = 0; Zw = 0; zs = ''; zT = 0;
     saidSeen = saidHigh = hasteSaid = gateSaid = hillSeen = greeted = signSeen = false; stillT = 0; hintT = 0; noteI = 0; noteX = 0;
   }
@@ -1168,8 +1169,11 @@ const HL = (() => {
       // (owner: "At the gate doesn't goodwill pull Christian in as arrows fly ? ... We can't see other side of gate"; chose
       // "pulled into the light"): he is hurried two quick steps in through the doorway (his own walk, at a hurried pace), and
       // as he passes the jambs he is drawn inside the arch, a step further off, so the stone frame takes him (`pullIn` in draw())
-      if (pullT >= 0) { pullT++; const tx = pullX0 + (GATE_X + 30 - pullX0) * smooth(0, 1, Math.min(1, pullT / 46)); { const d = Math.max(0, tx - C3.x); walk(1, d, 2); }      // aimed short: he walks on briskly until his feet come together, which brings him into the doorway
-        if (pullT === 50) gwReachTo = 0; if (pullT === 96) next(true); }
+      if (pullT >= 0) { pullT++; const tx = pullX0 + (GATE_X + 96 - pullX0) * smooth(0, 1, Math.min(1, pullT / 56)); { const d = Math.max(0, tx - C3.x); walk(1, d, 2); }      // aimed short: he walks on briskly until his feet come together, which brings him into the doorway
+        if (pullT === 50) gwReachTo = 0; if (pullT === 96) next(true);
+        // (build 460, owner: "he should go into gate all the way to other side and door clearly shut behind him"): once he is
+        // through, the door swings shut behind him with a heavy thud; the light inside stays
+        if (pullT >= 74 && shut < 1) { shut = Math.min(1, shut + 1 / 40); if (shut >= 1 && audio()) { sweep(90, 50, .3, .3); hiss(400, 2, .12, .12, 'lowpass'); sweep(150, 90, .12, .12, true, .05); } } }
       else walk(1, 0);
       if (G.act === 'knock' && knocks >= 3 && knockT > 50) { RIGHT.forEach((m, i) => note(m, .04, 3, i * .34)); next(true); }
     } else if (ph === 'open') {
@@ -1214,7 +1218,7 @@ const HL = (() => {
     if (ph === 'path') { tx = C3.x + 150; tz = Z_NEAR; }
     if (ph === 'still' || ph === 'come' || ph === 'evan') { tx = ph === 'still' ? FOOT + 150 : FOOT - 40; tz = Z_NEAR; }
     if (ph === 'back' || ph === 'mist') { tx = C3.x - 150; tz = Z_NEAR; }
-    if (ph === 'gate' || ph === 'knock' || ph === 'open') { tx = Math.min(C3.x + 150, GATE_X - 215); tz = lerp(1, .96, smooth(GATE_X - 500, GATE_STOP, C3.x)); if (castLook > .001) { const e = smooth(0, 1, castLook); tx = lerp(tx, CASTLE_X + 140, e); tz = lerp(tz, .5, e); } }
+    if (ph === 'gate' || ph === 'knock' || ph === 'open') { tx = Math.min(C3.x + 150, GATE_X - 215); tz = lerp(1, .96, smooth(GATE_X - 500, GATE_STOP, C3.x)); if (pullT >= 0) tx = lerp(tx, GATE_X - 90, smooth(0, 70, pullT)); if (castLook > .001) { const e = smooth(0, 1, castLook); tx = lerp(tx, CASTLE_X + 140, e); tz = lerp(tz, .5, e); } }
     cam.cx += (tx - cam.cx) * .035; cam.z += (tz - cam.z) * .03; cam.wl = 440 - (1 - cam.z) * 70 + (ph === 'meet' ? 64 * smooth(.84, .58, cam.z) : 0);      // (build 267: looking far off to the village and the hill, the road sinks so it no longer fills a quarter of the picture)
     // the pull back (see 'still'): the scale goes from close to the whole mountain in its logarithm; he slides a little
     // left of the middle; the road comes down so the summit and its cloud fit above
@@ -1740,7 +1744,7 @@ const HL = (() => {
     const gateOn = !rocky && X(GATE_X - 1300) < VW, gx = X(GATE_X), r = GR * z, gy0 = Y(-GH), lnx = X(GATE_X - GSL - 24), lny = Y(-150), flick = .86 + .1 * Math.sin(G.t / 7) + .04 * Math.sin(G.t / 2.3);
     // (build 216, owner: "Doorkeeper maybe should be on right side and door opens on other side (so there's some natural space
     // between two figures)": the hinge is on the LEFT now, the leaf swings in on Christian's side and the opening is on the right)
-    const open = smooth(0, 1, door);
+    const open = smooth(0, 1, door) * (1 - smooth(0, 1, shut));
     // everything but the doorway (so the glow does not wash out Good-will standing in it)
     const notDoor = () => { c.beginPath(); c.rect(0, 0, VW, VH); c.moveTo(gx - r, Y(0)); c.lineTo(gx + r, Y(0)); c.lineTo(gx + r, gy0); c.arc(gx, gy0, r, 0, Math.PI, true); c.closePath(); c.clip('evenodd'); };
     if (gateOn) {
@@ -1814,6 +1818,12 @@ const HL = (() => {
       { c.save(); c.beginPath(); c.rect(sx1, 0, VW - sx1 + 2, yG + 2); c.clip();
         { const g = c.createLinearGradient(0, 0, 0, hor); g.addColorStop(0, css(top)); g.addColorStop(1, css(low)); c.fillStyle = g; c.fillRect(sx1, 0, VW, hor + 2); }
         { const g = c.createLinearGradient(0, hor, 0, yG); g.addColorStop(0, css([58, 32, 22])); g.addColorStop(1, css([20, 11, 8])); c.fillStyle = g; c.fillRect(sx1, hor, VW, yG - hor + 2); }
+        // (build 460, owner: "the right side of wall doesn't continue the landscape ... continue landscape (but keep it lighter)"):
+        // the land inside goes on as the land outside does, in low rises one behind another, paler, in the far light's haze;
+        // a few trees on the nearest, and the narrow way running straight toward the light
+        { const L = [[-150, 26, .004, 81, [104, 64, 46]], [-118, 22, .006, 82, [84, 50, 36]], [-70, 18, .009, 83, [62, 37, 27]], [-30, 12, .013, 84, [44, 26, 19]]];
+          for (const [h0, amp, f, sd, col] of L) { c.beginPath(); c.moveTo(sx1, yG + 2); for (let sx = sx1; sx <= VW + 6; sx += 4) { const wx = cx + (sx - VW / 2) / z; c.lineTo(sx, Y(h0 - amp * nz(wx * f, sd) - amp * .3 * nz(wx * f * 4, sd + 5))); } c.lineTo(VW + 6, yG + 2); c.closePath(); c.fillStyle = css(col); c.fill(); }
+          c.fillStyle = css([40, 24, 18]); for (const [tx2, th2, tw2] of [[GATE_X + 210, 62, 26], [GATE_X + 236, 44, 18], [GATE_X + 560, 70, 30]]) { const bx = X(tx2), by = Y(-30 - 12 * nz(tx2 * .013, 84)); c.fillRect(bx - 1.2 * z, by - th2 * .45 * z, 2.4 * z, th2 * .45 * z + 4 * z); c.beginPath(); c.ellipse(bx, by - th2 * .62 * z, tw2 * .5 * z, th2 * .42 * z, 0, 0, Math.PI * 2); c.fill(); } }
         // the air inside, lit low from within: one soft glow lying along the ground (no edges), behind Good-will
         { const op = smooth(0, 1, door), fx2 = X(GATE_X + 230), R2 = 620 * z; c.beginPath(); c.rect(sx1, 0, VW - sx1 + 2, yG + 2); c.clip(); c.globalCompositeOperation = 'lighter';
           c.translate(fx2, yG); c.scale(1, .5); const g = c.createRadialGradient(0, 0, 0, 0, 0, R2); g.addColorStop(0, css([255, 220, 160], .75 * op)); g.addColorStop(.3, css([236, 156, 92], .36 * op)); g.addColorStop(.7, css([160, 84, 48], .1 * op)); g.addColorStop(1, css([140, 70, 40], 0));
@@ -1823,43 +1833,78 @@ const HL = (() => {
       { const op = smooth(0, 1, door), fx3 = X(GATE_X + 330), R3 = 640 * z, g = c.createRadialGradient(fx3, hor, 0, fx3, hor, R3);
         g.addColorStop(0, css([255, 240, 206], .25 + .6 * op)); g.addColorStop(.12, css([255, 210, 146], .1 + .42 * op)); g.addColorStop(.45, css([220, 130, 76], .03 + .2 * op)); g.addColorStop(1, css([200, 110, 60], 0));
         c.save(); c.beginPath(); c.rect(0, 0, VW, yG + 2); c.clip(); c.globalCompositeOperation = 'lighter'; c.fillStyle = g; c.fillRect(fx3 - R3, hor - R3, 2 * R3, 2 * R3); c.restore(); }
-      // the slice of wall
+      // PERSPECTIVE (build 460; owner: "can we make wall extend in to background and come out at us into foreground" ... "the
+      // door should be displayed with perspective too, no?"): the gate drawn as an architect's cutaway. One vanishing point
+      // on the horizon, fixed on the land a little left of the gate (`GVP`); depth d (units) shrinks toward it by `sOf(d)`.
+      // The wall is cut where the road passes through it (the slice, `sx0`..`sx1`); its outer face runs away from us to the
+      // horizon; toward us only its footprint on the ground is drawn (laid after the road), so it never hides anyone. The
+      // passage is a round-vaulted tunnel (`TD` its half width) and the oak door at its inner end turns in perspective.
+      const VPx = X(GVP), sOf = d => 1 / (1 + d / GPL), Px = (x, q) => VPx + (x - VPx) * q, Py = (y, q) => hor + (y - hor) * q;
+      const TD = 60, sD = sOf(TD), vh = d => GPH - TD + Math.sqrt(Math.max(0, TD * TD - d * d));
+      const hole = xs => { const p = new Path2D(); p.moveTo(xs, yG); for (let k = 0; k <= 12; k++) { const d = TD * Math.sin(k / 12 * Math.PI / 2), q = sOf(d); p.lineTo(Px(xs, q), Py(Y(-vh(d)), q)); } p.lineTo(Px(xs, sD), Py(yG, sD)); p.closePath(); return p; };
+      const lit = open > .01;
+      // the tunnel seen through the cut: its far side wall, the vault curving over, the floor; warm from the inner end when open
+      { const fx0 = Px(sx0, sD), fx1 = Px(sx1, sD), fy = Py(Y(-(GPH - TD)), sD), fb = Py(yG, sD);
+        c.fillStyle = css([12, 8, 6]); c.beginPath(); c.moveTo(sx0, syP); for (let k = 0; k <= 12; k++) { const d = TD * Math.sin(k / 12 * Math.PI / 2), q = sOf(d); c.lineTo(Px(sx0, q), Py(Y(-vh(d)), q)); }
+        c.lineTo(fx1, fy); for (let k = 12; k >= 0; k--) { const d = TD * Math.sin(k / 12 * Math.PI / 2), q = sOf(d); c.lineTo(Px(sx1, q), Py(Y(-vh(d)), q)); } c.closePath(); c.fill();
+        c.fillStyle = css([22, 14, 11]); c.fillRect(fx0, fy, fx1 - fx0, fb - fy + 1);
+        c.fillStyle = css([16, 10, 8]); c.beginPath(); c.moveTo(sx0, yG + 1); c.lineTo(fx0, fb); c.lineTo(fx1, fb); c.lineTo(sx1, yG + 1); c.closePath(); c.fill();
+        // the inner end's opening, where the door hangs: the light from within shows through it once the door opens
+        c.fillStyle = css(mix([10, 6, 5], [255, 214, 150], .85 * smooth(0, 1, door) * (1 - shut))); c.fill(hole(sx1));
+        if (lit) { const g = c.createLinearGradient(sx1, 0, fx0, 0); g.addColorStop(0, css([255, 216, 152], .5 * open)); g.addColorStop(.7, css([200, 120, 60], .12 * open)); g.addColorStop(1, css([200, 120, 60], 0));
+          c.save(); c.globalCompositeOperation = 'lighter'; c.fillStyle = g; c.fillRect(fx0, syP, sx1 - fx0, yG - syP + 2); c.restore(); } }
+      // THE DOOR: hinged at the inner end on the far side of the passage; it swings in, every upright of it turning about the
+      // hinge, laid in thin strips of the photographed oak door, so it is seen in perspective whether shut, opening or open
+      { const a = open * Math.PI / 2, N = 22, cols = [];
+        for (let k = 0; k <= N; k++) { const d0 = TD * k / N, rr = TD - d0, wx = sx1 + rr * Math.sin(a) * z, dp = TD - rr * Math.cos(a), q = sOf(dp); cols.push([Px(wx, q), Py(Y(-vh(d0)), q), Py(yG, q)]); }
+        const W = GDOOR ? GDOOR.width : 1, H = GDOOR ? GDOOR.height : 1, dk = .55 + .25 * Math.sin(a) - .1 * shut;
+        for (let k = 0; k < N; k++) { const [x0, t0, b0] = cols[k], [x1, t1, b1] = cols[k + 1], xl = Math.min(x0, x1), xw = Math.abs(x1 - x0) + .8, t = Math.min(t0, t1), b = Math.max(b0, b1);
+          c.save(); c.beginPath(); c.moveTo(x0, t0); c.lineTo(x1, t1); c.lineTo(x1, b1); c.lineTo(x0, b0); c.closePath(); c.clip();
+          if (GDOOR) c.drawImage(GDOOR, W * (1 - (k + .5) / N) - W / N / 2, 0, W / N, H, xl, t, xw, b - t); else { c.fillStyle = css([46, 30, 20]); c.fillRect(xl, t, xw, b - t); }
+          c.fillStyle = css([10, 7, 5], dk); c.fillRect(xl, t, xw, b - t); c.restore(); }
+        // its edge and its iron straps, a warm touch of the lantern on it while shut
+        c.strokeStyle = css([8, 6, 5], .8); c.lineWidth = 1 * z; c.beginPath(); cols.forEach(([x, t], k) => k ? c.lineTo(x, t) : c.moveTo(x, t)); c.stroke();
+        c.strokeStyle = css([10, 8, 7], .85); c.lineWidth = 1.6 * z; for (const f of [.22, .55, .85]) { c.beginPath(); cols.forEach(([x, t, b], k) => { const y = lerp(Math.max(t, Py(Y(-(GPH - TD)), sD)), b, f); k ? c.lineTo(x, y) : c.moveTo(x, y); }); c.stroke(); }
+        if (open < .99) { c.save(); c.globalCompositeOperation = 'lighter'; c.fillStyle = css([236, 150, 80], .08 * flick * (1 - open)); c.beginPath(); c.moveTo(cols[0][0], cols[0][1]); cols.forEach(([x, t]) => c.lineTo(x, t)); for (let k = N; k >= 0; k--) c.lineTo(cols[k][0], cols[k][2]); c.closePath(); c.fill(); c.restore(); } }
+      // THE OUTER FACE running away from us to the horizon, its doorway cut in it, in thin upright strips of the wall's stone
+      // (each strip scaled to its depth), hazing toward the far end; the lantern's warmth near the gate
+      { const ds = [0, 30, 80, 160, 320, 640, 1000, 1500], top = d => Y(-GTOP - 4 * nz(GATE_X * .01 + d * .02, 61) + 1);
+        const fp = new Path2D(); fp.moveTo(sx0, yG); ds.forEach(d => { const q = sOf(d); fp.lineTo(Px(sx0, q), Py(top(d), q)); }); const qf = sOf(1500); fp.lineTo(Px(sx0, qf), Py(yG, qf)); fp.closePath();
+        fp.addPath(hole(sx0));
+        c.save(); c.clip(fp, 'evenodd');
+        const xF = Px(sx0, qf); c.fillStyle = css([24, 15, 11]); c.fillRect(xF - 2, syT - 20 * z, sx0 - xF + 4, yG - syT + 24 * z);
+        if (GWALL) { const tw = GWALL.width, th = GWALL.height, u2t = tw / 470; c.globalCompositeOperation = 'overlay'; c.globalAlpha = .6;
+          for (let x = sx0; x > xF; x -= 2) { const q = (x - VPx) / (sx0 - VPx), d = GPL * (1 / q - 1), q2 = (x - 2 - VPx) / (sx0 - VPx), d2 = GPL * (1 / Math.max(.01, q2) - 1);
+            const u = (d * u2t) % tw, uw = Math.max(1, Math.min(tw - u, (d2 - d) * u2t)), hT = th / u2t, t = Py(Y(-GTOP - 6), q), b = Py(yG, q), uh = (b - t) / ((GTOP + 6) / hT);
+            for (let yy = b; yy > t - uh; yy -= uh) c.drawImage(GWALL, u, 0, uw, th, x - 2, yy - uh, 2.6, uh); }
+          c.globalAlpha = 1; c.globalCompositeOperation = 'source-over'; }
+        { const g = c.createLinearGradient(sx0, 0, xF, 0); g.addColorStop(0, css(low, 0)); g.addColorStop(.5, css(mix(low, [24, 15, 11], .5), .25)); g.addColorStop(1, css(mix(low, [24, 15, 11], .3), .55)); c.fillStyle = g; c.fillRect(xF - 2, syT - 20 * z, sx0 - xF + 4, yG - syT + 24 * z); }
+        c.globalCompositeOperation = 'lighter'; { const g = c.createRadialGradient(lnx, lny, 0, lnx, lny, 190 * z); g.addColorStop(0, css([236, 150, 80], .3 * flick * (1 - .4 * open))); g.addColorStop(.5, css([200, 100, 50], .1 * flick)); g.addColorStop(1, css([200, 100, 50], 0)); c.fillStyle = g; c.fillRect(lnx - 190 * z, lny - 190 * z, 380 * z, 380 * z); }
+        c.restore();
+        // its top edge, faintly lit by the dusk
+        c.strokeStyle = css([120, 70, 52], .25); c.lineWidth = 1 * z; c.beginPath(); ds.forEach((d, k) => { const q = sOf(d); k ? c.lineTo(Px(sx0, q), Py(top(d), q)) : c.moveTo(Px(sx0, q), Py(top(d), q)); }); c.stroke();
+        // the doorway's dressed edge on the outer face
+        c.strokeStyle = css([214, 130, 70], .22 * flick); c.lineWidth = 1.1 * z; c.stroke(hole(sx0)); }
+      // the slice: the wall cut through, the cut stone a shade lighter (the section), open where the passage runs
       { const sp = new Path2D(); sp.moveTo(sx0, yG); sp.lineTo(sx0, syT + 2 * z);
         for (let i = 0; i <= 10; i++) sp.lineTo(lerp(sx0, sx1, i / 10), Y(-GTOP - 4 * nz(GATE_X * .01 + i * .8, 61) + 1));
-        sp.lineTo(sx1, syT + 2 * z); sp.lineTo(sx1, yG); sp.closePath();
-        c.save(); c.clip(sp);
-        // the cut face: the wall's own stone, a shade lighter than the dusk; the lantern warms its outer side, the light within its inner side
-        c.fillStyle = css([26, 16, 12]); c.fillRect(sx0 - 2, syT - 12, sx1 - sx0 + 4, yG - syT + 14);
+        sp.lineTo(sx1, syT + 2 * z); sp.lineTo(sx1, yG); sp.closePath(); sp.rect(sx0, syP, sx1 - sx0, yG - syP + 1);
+        c.save(); c.clip(sp, 'evenodd');
+        c.fillStyle = css([34, 22, 17]); c.fillRect(sx0 - 2, syT - 12, sx1 - sx0 + 4, yG - syT + 14);
         if (GWALL) { const P = wallPat(c), k = 470 / GWALL.width * z; P.setTransform(new DOMMatrix([k, 0, 0, k, sx0, yG - GWALL.height * k])); c.globalCompositeOperation = 'overlay'; c.globalAlpha = .6; c.fillStyle = P; c.fillRect(sx0 - 2, syT - 12, sx1 - sx0 + 4, yG - syT + 14); c.globalAlpha = 1; }
         c.globalCompositeOperation = 'lighter';
         { const g = c.createRadialGradient(lnx, lny, 0, lnx, lny, 170 * z); g.addColorStop(0, css([236, 150, 80], .26 * flick * (1 - .4 * open))); g.addColorStop(.5, css([200, 100, 50], .14 * flick)); g.addColorStop(1, css([200, 100, 50], 0)); c.fillStyle = g; c.fillRect(sx0 - 2, syT - 12, sx1 - sx0 + 4, yG - syT + 14); }
-        if (open > .01) { const g = c.createLinearGradient(sx1, 0, sx0, 0); g.addColorStop(0, css([255, 214, 150], .3 * open)); g.addColorStop(.4, css([226, 146, 80], .07 * open)); g.addColorStop(1, css([200, 120, 60], 0)); c.fillStyle = g; c.fillRect(sx0 - 2, syT - 12, sx1 - sx0 + 4, yG - syT + 14); }
-        c.globalCompositeOperation = 'source-over';
-        // the passage through it, round-headed (its vault seen cut): the far jamb's face seen through, in shadow
-        const ar = (sx1 - sx0) / 2, pa = new Path2D(); pa.moveTo(sx0 - 2, yG + 2); pa.lineTo(sx0 - 2, syP + ar); pa.ellipse((sx0 + sx1) / 2, syP + ar, ar + 2, ar, 0, Math.PI, 0); pa.lineTo(sx1 + 2, yG + 2); pa.closePath(); c.save(); c.clip(pa);
-        c.fillStyle = css([10, 6, 5], .88); c.fillRect(sx0 - 2, syP, sx1 - sx0 + 4, yG - syP + 2);
-        { const g = c.createLinearGradient(0, syP, 0, syP + 22 * z); g.addColorStop(0, css([0, 0, 0], .55)); g.addColorStop(1, css([0, 0, 0], 0)); c.fillStyle = g; c.fillRect(sx0 - 2, syP, sx1 - sx0 + 4, 22 * z); }
-        if (open > .01) { const g = c.createLinearGradient(sx1, 0, sx0, 0); g.addColorStop(0, css([255, 216, 152], .6 * open)); g.addColorStop(.6, css([220, 140, 80], .2 * open)); g.addColorStop(1, css([200, 120, 60], .06 * open)); c.globalCompositeOperation = 'lighter'; c.fillStyle = g; c.fillRect(sx0 - 2, syP, sx1 - sx0 + 4, yG - syP + 2); c.globalCompositeOperation = 'source-over'; }
+        if (lit) { const g = c.createLinearGradient(sx1, 0, sx0, 0); g.addColorStop(0, css([255, 214, 150], .3 * open)); g.addColorStop(.4, css([226, 146, 80], .07 * open)); g.addColorStop(1, css([200, 120, 60], 0)); c.fillStyle = g; c.fillRect(sx0 - 2, syT - 12, sx1 - sx0 + 4, yG - syT + 14); }
         c.restore();
-        c.restore();
-        // its edges: the outer faintly lit by the lantern, the inner by the light within
         c.lineWidth = 1.2 * z; c.strokeStyle = css([214, 130, 70], .28 * flick); c.beginPath(); c.moveTo(sx0, syT); c.lineTo(sx0, syP); c.stroke();
-        if (open > .01) { c.strokeStyle = css([255, 216, 152], .7 * open); c.beginPath(); c.moveTo(sx1, syT); c.lineTo(sx1, syP); c.stroke(); } }
-      // THE DOOR: hinged at the passage's inner end on its far side; shut, it is seen edge-on, a dark plank across the
-      // passage's end; as it opens it swings in, its face (the photographed oak door) turning toward us, behind whoever stands there
-      { const a = open * Math.PI / 2, lf = 1 - smooth(.55, 1, open), dw = 46 * Math.sin(a) * z * lf, th = 6 * Math.cos(a) * z, hx = sx1;
-        if (dw > .5) { c.save();
-          if (GDOOR) c.drawImage(GDOOR, hx, syP, dw, yG - syP + 1); else { c.fillStyle = css([46, 30, 20]); c.fillRect(hx, syP, dw, yG - syP + 1); }
-          c.fillStyle = css([10, 7, 5], .72); c.fillRect(hx, syP, dw, yG - syP + 1);
-          const g = c.createLinearGradient(hx, 0, hx + dw, 0); g.addColorStop(0, css([255, 214, 150], .1 * open)); g.addColorStop(1, css([255, 214, 150], 0)); c.globalCompositeOperation = 'lighter'; c.fillStyle = g; c.fillRect(hx, syP, dw, yG - syP + 1); c.restore(); }
-        if (th > .3) { c.fillStyle = css(mix([28, 19, 14], [62, 42, 28], .45 * flick)); c.fillRect(hx - th, syP, th, yG - syP + 1); }
-        if (open > .5) { c.fillStyle = css([255, 222, 168], .8 * smooth(.5, 1, open)); c.fillRect(hx - .6 * z, syP + 8 * z, 1.6 * z, yG - syP - 8 * z); } }
+        c.strokeStyle = css([6, 4, 3], .6); c.beginPath(); c.moveTo(sx0, syP); c.lineTo(sx1, syP); c.stroke();
+        if (lit) { c.strokeStyle = css([255, 216, 152], .7 * open); c.beginPath(); c.moveTo(sx1, syT); c.lineTo(sx1, syP); c.stroke(); } }
       // GOOD-WILL, inside, in the light (a dark shape against it); he steps back as he draws Christian in
       if (door > .01) { const gw = smooth(.4, .95, door);
         if (gw > .01 && (GWST || EVS.ready)) {
           if (!GWST && !GWF.length) for (let i = 0; i < EVS_META.frames; i += 4) { const im = solidOf(EVS[i]), w = mk(im.width, im.height), q = w.getContext('2d'); q.drawImage(im, 0, 0); q.clearRect(150, 0, im.width, im.height); GWF.push(w); }
           c.save(); c.translate(VW / 2 - cx * z, wl); c.scale(z, z);
-          const gwBack = pullT >= 0 ? smooth(GATE_X - 60, GATE_X, C3.x) : 0, fx = GATE_X + GSL + 74 + 34 * gwBack;
+          const gwBack = pullT >= 0 ? smooth(GATE_X - 40, GATE_X + 70, C3.x) : 0, fx = GATE_X + GSL + 74 + 64 * gwBack;
           GWFX = fx;
           FK = .9; if (GWRE && gwReach > .5) figure(c, 'gw', GWRE, GWRE_META, fx, -1, [52, 44, 40], gw * .96); else if (GWST) figure(c, 'gw', GWST, GWST_META, fx, -1, [52, 44, 40], gw * .96, breath(3)); else figure(c, 'gw', GWF[Math.floor(G.t / 20) % GWF.length], EVS_META, fx, -1, [52, 44, 40], gw * .96); FK = 1;
           c.restore(); } }
@@ -2015,6 +2060,13 @@ const HL = (() => {
     // (build 443) INSIDE THE GATE: the narrow way along the ground under the far light, and the dark that hides it all until
     // the door opens (a soft edge just inside the wall's slice)
     if (gateOn) { const sx1 = X(GATE_X + GSL), op = smooth(0, 1, door), dk = (1 - op) * .95 * gateish;
+      // (build 460) the wall coming toward us: only its footprint on the ground, the cut stone, widening down out of the picture
+      { const sx0 = X(GATE_X - GSL), VPx = X(GVP), hor = Y(-140), yG = Y(0), Px = (x, q) => VPx + (x - VPx) * q, Py = (y, q) => hor + (y - hor) * q;
+        c.beginPath(); c.moveTo(sx0, yG); c.lineTo(sx1, yG); c.lineTo(Px(sx1, 5), Py(yG, 5)); c.lineTo(Px(sx0, 5), Py(yG, 5)); c.closePath();
+        c.save(); c.clip(); const g = c.createLinearGradient(0, yG, 0, Py(yG, 3)); g.addColorStop(0, css([40, 26, 20])); g.addColorStop(1, css([16, 10, 8])); c.fillStyle = g; c.fillRect(0, yG, VW, VH - yG);
+        if (GWALL) { const P = wallPat(c), k = 470 / GWALL.width * z * 1.6; P.setTransform(new DOMMatrix([k, 0, 0, k, sx0, yG])); c.globalCompositeOperation = 'overlay'; c.globalAlpha = .45; c.fillStyle = P; c.fillRect(0, yG, VW, VH - yG); c.globalAlpha = 1; c.globalCompositeOperation = 'source-over'; }
+        c.restore();
+        c.strokeStyle = css([120, 72, 48], .3 * (1 - .5 * gateish) + .12); c.lineWidth = 1 * z; c.beginPath(); c.moveTo(sx0, yG); c.lineTo(Px(sx0, 5), Py(yG, 5)); c.moveTo(sx1, yG); c.lineTo(Px(sx1, 5), Py(yG, 5)); c.stroke(); }
       if (op > .01) { c.save(); c.beginPath(); c.rect(sx1, 0, VW - sx1 + 2, VH); c.clip(); const g = c.createLinearGradient(sx1, 0, VW, 0); g.addColorStop(0, css([255, 222, 168], .4 * op)); g.addColorStop(.6, css([255, 214, 150], .22 * op)); g.addColorStop(1, css([255, 214, 150], .1 * op));
         c.globalCompositeOperation = 'lighter'; c.fillStyle = g; c.fillRect(sx1, Y(1), VW - sx1 + 2, 5 * z); c.globalAlpha = .4; c.fillRect(sx1, Y(6), VW - sx1 + 2, 3 * z); c.restore(); }
       if (dk > .005) { const g = c.createLinearGradient(sx1, 0, sx1 + 140 * z, 0); g.addColorStop(0, css([5, 3, 2], .2 * dk)); g.addColorStop(1, css([5, 3, 2], dk)); c.fillStyle = g; c.fillRect(sx1, 0, VW - sx1 + 2, VH); } }
