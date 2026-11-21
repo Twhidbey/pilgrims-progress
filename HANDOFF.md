@@ -2,6 +2,8 @@
 
 The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build step; until build 118 it was called `story-lab.html`: read that name below as `index.html`). `style-lab.html` is the art-style test page. `CLAUDE.md` maps the code and records the owner's decisions. Work on **`main`** and push after every change: pushing IS publishing (GitHub Pages, https://twhidbey.github.io/pilgrims-progress/). Bump the build stamp in both pages on every push and tell the owner when it is live (a phone may need `?v=N` on the link). Keep this file and `CLAUDE.md` updated. Public repo: no personal details.
 
+
+**Build 416 (Level 3 chat): the wheat trial.** `?wheat=1` / `?wheat=2` add three rows of wheat in front of Level 3's road and Wiseman wades through them to the meeting; without the switch nothing changes. Waiting on the owner's pick (see CLAUDE.md, Level 3, build 416).
 ## START HERE (rewritten at build 140, Nov 16 2026)
 
 **Build 415 (vision chat): a rock mountain drawn in code holds the castle, the castle a third of its size** (free; see CLAUDE.md build 415). **Build 413 (vision chat): Beelzebub's castle painted** (about 15 cents, the owner said "Paint it"): a huge dark fortress on a crag after John Martin, left of the gate's wall end; the camera stands back on it as he arrives and glances back while the arrows fly. See CLAUDE.md, Level 3, build 413. Still open from this chat: Christian's new coat after the Cross (a free FLUX retry is scheduled; show the still before any clips); which lines at the mountain's foot the owner wants fixed.

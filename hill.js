@@ -285,6 +285,62 @@ const HL = (() => {
   const CASTLE_X = GATE_X - 900, MT_H = 470, CASTLE_H = 330, CASTLE_Y = -MT_H + CASTLE_H * .3; let CASTLE = null, castLook = 0, gateT = 0;
   let GWRE = null, gwReach = 0, gwReachTo = 0, pullT = -1, pullX0 = 0, GWFX = null; const GWRE_META = { ax: 62, ground: 299 }, ARW = [];
   const MONO_SAT = .62, MONO_TONE = [226, 202, 158], MIST0 = 620;
+  // THE WHEAT IN FRONT, A TRIAL (owner: "Worldly wise comes to Christian in a field no?" ... "we could use grass from level
+  // one and he could cross from in front of us to Christian" ... "Maybe try both and see which looks better"). Only with
+  // ?wheat=1 (the storyboard's wheat: loose stalks and ears, haze between the rows) or ?wheat=2 (Level 1's own crop: an
+  // even-topped body with fine awns and nodding ears); without it nothing changes. Three rows lie in front of the road
+  // (parallax `WROWS`, each a little nearer, darker and taller), and Mr. Worldly Wiseman, "crossing over the field to meet
+  // him" ({37}), wades up through them from the near right (`wDepth`: s how near, dy how far down the picture) and steps
+  // onto the road at the crossing under the oak. Rows nearer than him are drawn over him, so the wheat hides his legs.
+  const WHEATV = +(new URLSearchParams(location.search).get('wheat')) || 0;
+  // each row: [parallax, its ground (world units below the road line), its height]: the first row's ears come just to his feet
+  // on the road, the nearer rows taller, so a man among them is hidden to the knee
+  const WROWS = [[1.06, 38, 24], [1.13, 60, 36], [1.21, 86, 46]], WTR1 = MEET + 150;
+  const wGround = sP => { const T = [[1, 12], ...WROWS.map(r => [r[0], r[1]])]; for (let i = 1; i < T.length; i++) if (sP <= T[i][0]) return lerp(T[i - 1][1], T[i][1], (sP - T[i - 1][0]) / (T[i][0] - T[i - 1][0])); return T[T.length - 1][1]; };
+  const wDepth = x => { const d = WHEATV ? smooth(WTR1 - 10, WTR1 + 50, x) : 0; const sP = 1 + .18 * d; return { d, s: sP, dy: wGround(sP) - 12 * sP }; };      // deep among the rows (between the second and the nearest) until his last stride, then up onto the road
+  let WTILES = null; const WT_W = 2048, WT_H = 300, WT_G = 70;      // a tile: world units across, its ground line at WT_G
+  function wheatTiles() {
+    if (WTILES) return WTILES;
+    const TONE = [[[106, 97, 84], .78], [[72, 66, 57], .92], [[42, 38, 34], 1]], DK = [36, 34, 40], HT = WROWS.map(r => r[2]);
+    const per = (x, k, o) => Math.sin(x * 6.2832 * k / WT_W + o);
+    const one = (ri, col, al) => {
+      const R = rng(7100 + ri * 37 + WHEATV * 101), m = mk(WT_W, WT_H), q = m.getContext('2d'), c4 = css(col), h = HT[ri];      // opaque: the row's strength is laid when drawn (overlapping see-through stalks read as bars)
+      const wave = x => 7 * per(x, 3, ri * 2.1) + 4 * per(x, 9, ri);
+      const both = fn => { fn(0); };
+      q.lineCap = 'round'; q.fillStyle = q.strokeStyle = c4;
+      if (WHEATV === 1) {
+        q.beginPath(); q.moveTo(0, WT_H); for (let x = 0; x <= WT_W; x += 6) q.lineTo(x, WT_G - h * .7 + wave(x) * .8 + 3 * per(x, 61, ri) + 2 * per(x, 151, ri * 3));      // the crop stands close: only the ears and the last of the stems open against what is behind q.lineTo(WT_W, WT_H); q.closePath(); q.fill();
+        const n = WT_W * 4;
+        for (let i = 0; i < n; i++) {
+          const x = R() * WT_W, g = () => (R() + R() + R() - 1.5) * 2, top = WT_G - h + wave(x) + g() * 3.6, lean = 2.4 * per(x, 5, ri) + g() * 1.1, y0 = WT_G + wave(x) * .5, w = R() < .7 ? .5 : .9, ear = R() < .55;
+          for (const ox of [0, -WT_W, WT_W]) { if (x + ox < -20 || x + ox > WT_W + 20) continue;
+            q.lineWidth = w; q.beginPath(); q.moveTo(x + ox, y0); q.lineTo(x + ox + lean, top); q.stroke();
+            if (ear) { q.beginPath(); q.ellipse(x + ox + lean * 1.05, top - 2, .9 + .25 * ri, 3.6 + .5 * ri, lean * .04, 0, 7); q.fill(); } }
+        }
+      } else {
+        const GAP = 2.4, N = Math.ceil(WT_W / GAP), hs = [], ph = [];
+        for (let i = 0; i < N; i++) { const x = i * GAP; ph[i] = R(); hs[i] = h * (.94 + .04 * per(x, 7, ri) + .02 * per(x, 23, ri * 2)) + ph[i] * 2.5; }
+        const body = new Path2D(), awns = new Path2D(), ears = new Path2D(), grain = new Path2D();
+        body.moveTo(-2, WT_H);
+        for (let i = 0; i <= N; i++) { const j = i % N, x = i * GAP, a = -.08 + .05 * per(x, 4, ri), bx = x + a * hs[j], by = WT_G - hs[j], k = Math.min(1, hs[j] / 30) * 1.1, el = (7 + 7 * ph[j]) * k, sp = (ph[j] - .5) * 5 * k;
+          body.lineTo(bx, by);
+          awns.moveTo(bx, by + 2); awns.lineTo(bx + a * 2 * el + sp, by - el); awns.moveTo(bx + 1.5, by + 2); awns.lineTo(bx + 1.5 + a * 2 * el - sp * .6, by - el * .7);
+          ears.moveTo(bx, by + 4 * k); ears.lineTo(bx + a * 9 * k + sp * .3, by - 3 * k);
+          if (i % 2) { grain.moveTo(bx, by + 5 * k); grain.lineTo(x + (ph[j] - .5) * 2, WT_G + 8); } }
+        body.lineTo(WT_W + 2, WT_H); body.closePath();
+        q.fill(body); q.lineWidth = .9; q.globalAlpha = .45; q.stroke(awns); q.lineWidth = 2.1; q.globalAlpha = .6; q.stroke(ears); q.globalAlpha = 1;
+        q.strokeStyle = css(mix(col, [20, 18, 16], .4), .3 * al); q.lineWidth = .8; q.stroke(grain);
+      }
+      // a breath of haze along the foot of the row's tops (in front of every row but the nearest), so the rows part
+      if (ri < 2) { const g = q.createLinearGradient(0, WT_G - h * .6, 0, WT_G + 28); g.addColorStop(0, css([206, 196, 178], 0)); g.addColorStop(.45, css([206, 196, 178], .26)); g.addColorStop(1, css([206, 196, 178], 0));
+        q.globalCompositeOperation = 'source-atop'; q.fillStyle = g; q.fillRect(0, WT_G - h, WT_W, h + 30); q.globalCompositeOperation = 'source-over'; }
+      // a breath of softness (the storyboard was painted soft): the tile laid over itself from half size
+      { const h2 = mk(WT_W / 2, WT_H / 2); h2.getContext('2d').drawImage(m, 0, 0, WT_W / 2, WT_H / 2); q.globalAlpha = .55; q.drawImage(h2, 0, 0, WT_W, WT_H); q.globalAlpha = 1; }
+      return m;
+    };
+    WTILES = TONE.map(([col, al], ri) => ({ p: WROWS[ri][0], g: WROWS[ri][1], al, fair: one(ri, col, al), dark: one(ri, mix(col, DK, .6), al) }));
+    return WTILES;
+  }
   let wise = null, evan = null, dark = 0, hope = 0, flash = 0, flashT = 0, veil = 0, veilTo = 0, knocks = 0, knockT = 0, door = 0, doorTo = 0;
   let greeted = false, saidSeen = false, saidHigh = false, stillT = 0, hasteSaid = false, gateSaid = false, hintT = 0, noteI = 0, noteX = 0, lastFr = 0, hillSeen = false, signSeen = false;
   let OAKT = null, hillBox = [0, 0, 1];
@@ -1129,7 +1185,8 @@ const HL = (() => {
     // Mr. Worldly Wiseman crosses the field to meet him, stands, and afterwards goes on his own way
     if (wise) {
       const { M } = wFig(), v = WIS.ready ? WIS_V : 1.25, st = M.vpx * CHR_K;
-      if (wise.mode === 'come') { if (wise.x > MEET + 135) { wise.x -= v; wise.anim = stepAnim(wise.anim, v, st, M); } else { wise.anim = stepAnim(wise.anim, 0, st, M); if (M.rest.includes(Math.floor(wise.anim) % M.frames)) wise.mode = 'stand'; } }
+      if (wise.mode === 'come') { if (wise.x > MEET + 135) { const vw = v * (1 - .45 * wDepth(wise.x).d); wise.x -= vw;      // (wheat trial) slower while wading
+        wise.anim = stepAnim(wise.anim, vw, st, M); } else { wise.anim = stepAnim(wise.anim, 0, st, M); if (M.rest.includes(Math.floor(wise.anim) % M.frames)) wise.mode = 'stand'; } }
       else if (wise.mode === 'stand') wise.st = clamp(wise.st + .05);
       else if (wise.mode === 'go') { wise.st = clamp(wise.st - .06); if (wise.st <= 0) { wise.x -= v; wise.anim = stepAnim(wise.anim, v, st, M); wise.alpha = clamp((wise.x - (MEET - 760)) / 260); if (wise.alpha <= 0) wise = null; } }
     }
@@ -2154,13 +2211,17 @@ const HL = (() => {
       else evFig(c, ex, tintM, 1);
       TALKM = null;
     } else if (evan && EVS.ready) { TALKM = talkMove(E); foot(c, EV_X, evan.a); evFig(c, EV_X, tintM, smooth(.25, 1, evan.a)); TALKM = null; }
-    if (wise && (WIS.ready || OBS.ready)) {
-      const wt = mix([80, 72, 62], [92, 82, 84], dark); TALKM = talkMove(WW); foot(c, wise.x, wise.alpha);
+    const wiseDraw = (c, d) => {
+      const wt = mix(mix([80, 72, 62], [92, 82, 84], dark), [52, 47, 42], .45 * d); TALKM = talkMove(WW); foot(c, wise.x, wise.alpha);
       const { W, M, S, SM } = wFig(), wim = W[Math.floor(wise.anim) % W.length];
       if (S && wise.st > 0) { figure(c, 'wst', S, SM, wise.x, -1, wt, wise.alpha * smooth(0, .6, wise.st), breath(2)); figure(c, 'wis', wim, M, wise.x, -1, wt, wise.alpha * (1 - smooth(.4, 1, wise.st))); }
       else figure(c, 'wis', wim, M, wise.x, -1, wt, wise.alpha);
       TALKM = null;
-    }
+    };
+    // (the wheat trial) while he is out in the field he is drawn later, among the rows of wheat
+    const wiseIn = wise && (WIS.ready || OBS.ready) ? wDepth(wise.x) : null;
+    if (wiseIn && !(wiseIn.d > 0)) wiseDraw(c, 0);
+    const LIGHT0 = [RIM, SUNSH, FIRE, HAZE];
     // in the wide shot he is a tiny dark figure: a faint warm light round him so the eye can find him
     if (Zw > .05) { const g = c.createRadialGradient(C3.x, -60, 0, C3.x, -60, 34 / z); g.addColorStop(0, css([255, 196, 130], .28 * Zw)); g.addColorStop(1, css([255, 170, 110], 0)); c.save(); c.globalCompositeOperation = 'lighter'; c.fillStyle = g; c.fillRect(C3.x - 34 / z, -60 - 34 / z, 68 / z, 68 / z); c.restore(); }
     gateHere = gateish > .5; CHRSH_N = null; c.save(); c.translate(0, C3.dy || 0); drawChr(c, tintM); c.restore(); RIM = null; HAZE = null; SUNSH = 0; FIRE = null; CHRSH = gateHere ? CHRSH_N : null; gateHere = false;
@@ -2170,6 +2231,19 @@ const HL = (() => {
     // drawn over him only once he was below the road line, so for a moment his feet sank into the slope and then were cut
     // off at once; now it covers him from the moment he passes the top)
     if ((ph === 'aside' || ph === 'down') && C3.x > CREST - 2) { c.save(); c.beginPath(); const xc0 = Math.round(X(CREST)); c.moveTo(xc0, VH); c.lineTo(xc0, Y(-crest(CREST))); for (let x = CREST + 10; x <= CREST + 700; x += 10) c.lineTo(X(x), Y(-crest(x))); c.lineTo(VW, Y(0)); c.lineTo(VW, VH); c.clip(); road(); humpDraw(); gravel(); c.restore(); }
+    // THE WHEAT IN FRONT (trial, ?wheat=1|2): three rows nearer than the road, Mr. Worldly Wiseman wading up through them
+    if (WHEATV && mono > .01 && !rocky) {
+      const T = wheatTiles(); let wDone = !(wiseIn && wiseIn.d > 0);
+      const wiseNow = () => { wDone = true; [RIM, SUNSH, FIRE, HAZE] = LIGHT0; c.save(); c.translate(VW / 2 - cx * z, wl); c.scale(z, z); c.translate(cx, wiseIn.dy); c.scale(wiseIn.s, wiseIn.s); c.translate(-cx, 0);
+        wiseDraw(c, wiseIn.d); c.restore(); RIM = null; HAZE = null; SUNSH = 0; FIRE = null; };
+      for (const r of T) {
+        if (!wDone && r.p > wiseIn.s) wiseNow();
+        const sc = z * r.p, oy = wl + z * r.g - WT_G * sc, tw = WT_W * sc; let x0 = (VW / 2 - cx * z * r.p) % tw; if (x0 > 0) x0 -= tw;
+        for (const [im, a] of [[r.fair, 1], [r.dark, dark]]) { if (a < .01) continue; c.globalAlpha = a * mono * r.al; for (let x = x0; x < VW; x += tw) c.drawImage(im, x, oy, tw + .5, WT_H * sc); }
+        c.globalAlpha = 1;
+      }
+      if (!wDone) wiseNow();
+    }
     // the nearest crags, along the bottom of the picture, in front of everyone
     // (build 212, owner: "the layer in front of Christian as he walks toward mountain can be higher in point and fully go in
     // front of him - maybe make nice shapes like the layer behind him"): the nearest crags are the same leaning spurs as the
