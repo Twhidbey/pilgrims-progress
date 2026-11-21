@@ -252,6 +252,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 **Build 276 (cover chat): the book cover painted in code in the game's own watercolour language (arched window of layered hills under the far light), replacing the leather photograph; no more flicker on opening. See `CLAUDE.md`, "Build 276". Nothing spent.**
 
+**Build 417 (Level 2 edits chat): Help tells the slough's history on the far bank (three lines, {34}, {35}) while grey memories show the King's labourers tipping cart-loads that sink and travellers stepping beside the stones; about 5 cents of voices.**
+
 **Build 409 (Level 2 edits chat): two book lines across the slower crossing, "But still he tried to struggle on ..." and "It is the Slough of Despond still."; about 2 cents of voices.**
 
 **Build 406 (Level 2 edits chat): a slower crossing (.58 slowing to .42 a tick) and the dark creeping in while he wades, deepening slowly after the fears line; lifts only at Help. Nothing spent.**

@@ -56,9 +56,17 @@ const SL = (() => {
     [H, 'Give me your hand.', 'hand', () => { mv = mv || { t: 0 }; mv.to = 150; C2.handGo = true; }],      // he is already down on his knee: now he holds out his hand
   ];
   const DRAWN = [];      // {32}
-  const STEPS = [];      // build 391: "There were good steps through the middle of the bog, but in the mist they were hard to see." cut (shown: the lights find the stones)      // {35}
+  // THE SLOUGH'S HISTORY (build 417; owner: "When help explains the history of the slew can we do a flash to the efforts of
+  // the king and other travelers interaction with it"; chose all three lines). In the book Help tells it to the dreamer
+  // ({33} to {35}); here he tells Christian, on the far bank, before "Go on your way", and each line is seen as a pale
+  // memory in the mire: the King's labourers tipping cart-loads that sink, then travellers stepping beside the stones
+  const HIST = [
+    [H, 'It is not the King\'s wish that this place stay so bad. His labourers have worked here for sixteen hundred years.'],      // {34}
+    [H, 'Twenty thousand cart-loads of good teaching have been swallowed up here.'],      // {34}
+  ];
+  const STEPS = [[H, 'The King laid good steps through the midst. But in foul weather men step beside them, and sink.']];      // {35}; build 391 cut the storyteller's version (shown: the lights find the stones)
   const ONWAY = [[H, 'Go on your way.']];      // {32}: "and bid him go on his way"
-  const ALL = [...OPEN, ...NEAR, ...FALL, ...BACK, ...ALONE, ...STRUGGLE, ...FEARS, ...STILL, ...STUCK, ...HELP, ...DRAWN, ...STEPS, ...ONWAY];
+  const ALL = [...OPEN, ...NEAR, ...FALL, ...BACK, ...ALONE, ...STRUGGLE, ...FEARS, ...STILL, ...STUCK, ...HELP, ...DRAWN, ...HIST, ...STEPS, ...ONWAY];
 
   // one patch of mud seen edge-on: a long flat shape with a wavy top and bottom (build 293's far mud, used near and far)
   function wavy(c, sx, gy, w, hUp, hDn, s) {
@@ -444,7 +452,7 @@ const SL = (() => {
     C2.rt = 0; C2.handGo = false; C2.tv = null; C2.fy = null; C2.md = null; C2.rq0 = null; C2.q = 0; drops = []; churns = []; fReset(); strings = []; RECS = {}; for (const k in MS) delete MS[k]; C2.D = 0;
     ph = 'plain'; Object.assign(C2, { x: START, y: bankY(START) + 4, face: 1, anim: 12, alpha: 1, sink: 0, reach: 0, stand: 1, sd: QUIET[0], st: 0, faceA: 1, done: 0 });
     pli = { x: START - 80, y: 0, face: 1, anim: 0, alpha: 1, sink: 0, mode: 'follow', px: START - 80, stop: { t: 50, x0: START - 80 - 72.5 * CHR_K, cx: START } };      // he starts standing (his stop video's breathing part)
-    prints = []; fogH = 1; fogS = 1; help = null; mv = null; lift = null; rings = []; steps = []; gloom = gloomTo = 0; noteI = 0; strain = 0; slipT = 0; fearT = 300; fearsSaid = false; struggleSaid = false; stillSaid = false; goldT = 0; onwayT = 0; capsSaid = new Set(); nearSaid = true; pliGo = 0; cityT = -1; fearT2 = -1; fearHelpT = 0; preDk = 0; beatT = -1e9; quietT = 0; helpSayT = 0;
+    prints = []; fogH = 1; fogS = 1; help = null; mv = null; lift = null; rings = []; steps = []; gloom = gloomTo = 0; noteI = 0; strain = 0; slipT = 0; fearT = 300; fearsSaid = false; histT = 0; histA = 0; travT = 0; travA = 0; struggleSaid = false; stillSaid = false; goldT = 0; onwayT = 0; capsSaid = new Set(); nearSaid = true; pliGo = 0; cityT = -1; fearT2 = -1; fearHelpT = 0; preDk = 0; beatT = -1e9; quietT = 0; helpSayT = 0;
     motes = [...Array(LAST.length)].map((_, i) => ({ ox: -30 - Math.random() * 50, oy: -112 - Math.random() * 40, x: START, y: -150, tw: Math.random() * 6, i }));
     // the steps through the bog, hidden until the lights settle on them: low flat stones, no two alike (from the approved still)
     const R = rngS(33); let sx = BANK0 - 6;
@@ -625,7 +633,7 @@ const SL = (() => {
     fStep();
     // (5) how high the mud has reached on him, above his feet (it stays when he rises, and dries off very slowly)
     if (['fall', 'pli', 'back', 'backtalk', 'wade', 'stuck', 'help'].includes(ph) && !lift) C2.D = Math.max(C2.D || 0, C2.y);
-    else if (ph === 'drawn' || ph === 'look' || ph === 'onway' || ph === 'on') C2.D = Math.max(48, (C2.D || 0) - .008);
+    else if (ph === 'drawn' || ph === 'hist' || ph === 'look' || ph === 'onway' || ph === 'on') C2.D = Math.max(48, (C2.D || 0) - .008);
     // A QUICK TURN (build 365, owner: "it'd be nice for help turning to be a quick turn and go instead of drawn out slow turn
     // with feet walking look ... much prefer a pivot on one foot or something quick ... christian also turns slow"): his
     // turn video is played through in TURN_TICKS ticks (under a second), eased in and out, instead of at its own speed
@@ -747,15 +755,19 @@ const SL = (() => {
       C2.done = Math.min(1, C2.done + .03);
       // BUILD 106, the book's order ({32} then {35}): Help bids him go on his way first; only then is the dreamer told of
       // the steps, so he looks back and the lights settle on them after "Go on your way" (it was the other way round)
-      if (C2.done >= 1 && ph === 'drawn' && G.state === 'play' && !saying()) { ph = 'onway'; talk(ONWAY, () => { turnC(-1, 1.5); ph = 'look'; goldT = 0; if (help && HTURN.length && HWALK.length) help.lv = { t: 0, w: 0, d: 0 }; }); }
+      // build 417: Help tells of the slough's history first (a memory of the labourers in the mire), then Christian looks back
+      // as the lights find the steps (Help's line of the steps), then "Go on your way", and Help goes
+      if (C2.done >= 1 && ph === 'drawn' && G.state === 'play' && !saying()) { ph = 'hist'; histT = 0; talk(HIST, () => { turnC(-1, 1.5); ph = 'look'; goldT = 0; }); }
     } else if (ph === 'look') {
       if (!C2.tv) goldT++;
       // the lights leave him one by one and settle on the steps, each a note of the last phrase
       motes.forEach((mo, i) => { if (!mo.to && goldT > 60 + i * 55) { mo.to = steps[i]; } });
       if (goldT === 60) caption(STEPS);
-      if (goldT > 60 + LAST.length * 55 + 160 && !saying() && G.state === 'play') { turnC(1, 1.5); ph = 'on'; hint('walk2', 'Hold to go on your way.'); }
+      if (goldT > 60 + LAST.length * 55 + 160 && !saying() && G.state === 'play') { turnC(1, 1.5); ph = 'onway'; talk(ONWAY, () => { ph = 'on'; hint('walk2', 'Hold to go on your way.'); if (help && HTURN.length && HWALK.length) help.lv = { t: 0, w: 0, d: 0 }; }); }
     }
     if (ph === 'on' && want) clearHint('walk2');
+    histA += ((ph === 'hist' ? 1 : 0) - histA) * .02; travA += ((ph === 'look' && goldT > 50 && goldT < 520 ? 1 : 0) - travA) * .02;
+    if (histA > .005 || ph === 'hist') histT++; if (ph === 'look') travT = goldT;
     // MIST THAT HIDES (owner, build 106: "help appears out of nowhere. it would be nice if there were mist there hiding him
     // and it blows away - justifying why you can't see him. for that matter mist over the stones would justify why
     // christian can't see them and falls in"). A bank of mist lies on the far bank, where Help will stand; when Help comes
@@ -878,6 +890,7 @@ const SL = (() => {
     // draw back to the whole oak
     else if (ph === 'help' && !help) t = { cx: -290, z: .9, wl: 365 };
     else if (ph === 'help' || ph === 'drawn') t = { cx: -240, z: .6, wl: 392 };
+    else if (ph === 'hist') t = { cx: -520, z: .62, wl: 400 };      // build 417: back far enough to see the home bank, where the labourers come
     else if (ph === 'look' && goldT > 40) t = { cx: -480, z: .62, wl: 400 };      // build 368 (C): the camera draws back from bank to bank while the lights find the steps
     else t = { cx: Math.max(-330, C2.x + 120), z: .66, wl: 425 };
     const e = ph === 'plain' ? .06 : .02;
@@ -886,8 +899,8 @@ const SL = (() => {
     if (ph === 'plain') { const mi = PLAIN_MIST(C2.x); L = { mist: mi, veil: .5 * smooth(-1300, FALL_X, C2.x), gold: PLAIN_GOLD(C2.x), disc: lerp(1, .3, mi), sky: lerp(0, 1, mi) }; }
     else if (ph === 'fall' || ph === 'pli' || ph === 'back' || ph === 'backtalk') L = { mist: 1, veil: .5, gold: 0, disc: .55, sky: 1 };      // build 395: less veil (the oak stays in the picture), a brighter far light
     else if (ph === 'wade' || ph === 'stuck' || ph === 'help') L = { mist: lerp(1, .3, p), veil: lerp(.5, 0, smooth(.3, 1, p)), gold: .1 * p, disc: lerp(.55, 1, p), sky: lerp(1, .5, p) };
-    else if (ph === 'drawn') L = { mist: .3, veil: 0, gold: .1, disc: 1, sky: .5 };
-    else L = { mist: .25, veil: 0, gold: ph === 'look' ? lerp(.1, 1, smooth(60, 60 + LAST.length * 55 + 120, goldT)) : ph === 'onway' ? .1 : 1, disc: 1, sky: .4 };
+    else if (ph === 'drawn' || ph === 'hist') L = { mist: .3, veil: 0, gold: .1, disc: 1, sky: .5 };
+    else L = { mist: .25, veil: 0, gold: ph === 'look' ? lerp(.1, 1, smooth(60, 60 + LAST.length * 55 + 120, goldT)) : 1, disc: 1, sky: .4 };
     for (const k in L) look[k] += (L[k] - look[k]) * .03;
     // --- sound: no rain here; a dark hum in the mist, a warm one in the gold, the burden's creak while he strains ---
     if (AC && G.t % 8 === 0) {
@@ -1017,7 +1030,7 @@ const SL = (() => {
     // Help: he comes out of the mist on the far bank, steps to the edge, kneels and holds out his hand
     TALKM = null;
     const vt = mv ? mv.t : 0, lt = lift ? lift.t : -1, mixIn = lift ? clamp(lt / 3.2) : 0, talkH = talkMove(H), talkC = talkMove(C);
-    if (ph === 'drawn' || ph === 'look' || ph === 'onway' || ph === 'on') {
+    if (ph === 'drawn' || ph === 'hist' || ph === 'look' || ph === 'onway' || ph === 'on') {
       const d = ph === 'drawn' ? C2.done : 1;
       FIG_WET = liftWet(LIFT.length - 1); if (d < 1) figure(n, 'lift', LIFT[LIFT.length - 1], META.lift, HX, HY(), 1, fig, true, 1 - d); FIG_WET = null;
       const hx0 = HX + (LIFT_HELP - META.lift.ax) * CHR_K, lv = help && help.lv;
@@ -1064,6 +1077,7 @@ const SL = (() => {
       if (st.sub) { const u = st.sub, ux = st.x + u.dx; n.beginPath(); n.moveTo(ux - u.w, 2); n.quadraticCurveTo(ux - u.w * .3, -u.h * 1.3, ux + u.w * .2, -u.h); n.quadraticCurveTo(ux + u.w, -u.h * .6, ux + u.w, 2); n.closePath(); n.fill(); }
       const sg = c * (.5 + .25 * (1 - smooth(.6, 1, st.lit || 0)));
       n.save(); n.globalAlpha = 1; n.globalCompositeOperation = 'lighter'; n.translate(st.x, top * .7); n.scale(1, .2); glow(n, 0, 0, st.w * 2.2, mix(GOLD, LIGHT, .25), .5 * sg); n.restore(); n.globalAlpha = 1; }
+    if (histA > .01 || travA > .01) memories(n);
     for (const mo of motes) { if (!mo.to && ph !== 'look') continue; const a = (.55 + .3 * Math.sin(mo.tw * 1.7)) * (ph === 'look' ? smooth(0, 50, goldT) : 1); const fl = mo.to ? 1 - .55 * smooth(.15, 1, mo.to.lit || 0) : 1; mote(n, mo.x, mo.y, mo.to ? 3 * (.5 + .5 * fl) : 1.8, mo.to ? fl : a); }      // build 396: a settled light melts into its stone
     // BEHIND THE PEOPLE, NOT ACROSS THEM (build 128, owner: "you don't think white mist between mud and the character looks
     // strange?"): the thin mist over the water and the low mist round the two in the bog were drawn over the figures, so a
@@ -1078,7 +1092,7 @@ const SL = (() => {
         if (x + r < 0 || x - r > VW) continue;
         ctx.globalAlpha = Math.min(1, a * k); ctx.drawImage(puff, x - r, y - r * e, 2 * r, 2 * r * e); }
       ctx.globalAlpha = 1; };
-    for (const st of steps) { const c = st.lit || 0; bank(st.x - 70 + c * 90, st.x + 70 + c * 90, 12, 10, 120, (1 - smooth(0, 1, c)) * (.55 + .3 * look.mist) * (ph === 'look' || ph === 'on' ? 1 : fogS), 6, 11 + st.i, true); }
+    for (const st of steps) { const c = st.lit || 0; bank(st.x - 70 + c * 90, st.x + 70 + c * 90, 12, 10, 120, (1 - smooth(0, 1, c)) * (.55 + .3 * look.mist) * (ph === 'look' || ph === 'onway' || ph === 'on' ? 1 : fogS), 6, 11 + st.i, true); }
     // RIPPLES GO ROUND THEM (build 130, owner: "how do we make circles go around them?"). Each ripple was drawn whole, on top
     // of everything, in front of the body, so it lay before him like a hoop on the ground. Now its FAR half is drawn
     // here, before the near picture (the body hides its middle), and its NEAR half later, in front of him: the ripple
@@ -1379,6 +1393,46 @@ const SL = (() => {
     if (SL.on) drawItems();
   }
   const wob = noise2(9);
+  // MEMORIES OF THE SLOUGH (build 417): pale wavering ghosts in the mire, drawn in world units on the near picture (n).
+  // Each is a figure's own picture made one pale tone, kept at half size (so it is soft when stretched) and laid twice,
+  // the second fainter and a little off, as the city in the sky is: a thought, not a scene
+  const GH = new Map(), MEM = [104, 98, 94];      // a dim grey, as far people in the mist (pale ghosts did not read against the pale mist)
+  function ghostOf(im) { let g = GH.get(im); if (g) return g; im = solidOf(im);
+    const h = mk(Math.max(1, im.width >> 1), Math.max(1, im.height >> 1)), q = h.getContext('2d'); q.drawImage(im, 0, 0, h.width, h.height);
+    q.globalCompositeOperation = 'source-in'; q.fillStyle = css(MEM); q.fillRect(0, 0, h.width, h.height); GH.set(im, h); return h; }
+  function ghost(n, im, meta, x, y, face, a, sink = 0) {
+    if (!im || a <= .01) return; const g = ghostOf(solidOf(im));
+    n.save(); n.beginPath(); n.rect(x - 400, -2000, 800, 2001); n.clip();      // nothing below the surface shows
+    n.translate(x + 2 * Math.sin(G.t / 37 + x), y + sink); n.scale(face * CHR_K, CHR_K);
+    n.globalAlpha = a; n.drawImage(g, -meta.ax, -meta.ground, g.width * 2, g.height * 2);
+    n.globalAlpha = a * .35; n.drawImage(g, -meta.ax + 5 * Math.sin(G.t / 29), -meta.ground - 3, g.width * 2.04, g.height * 2.04); n.restore(); n.globalAlpha = 1; }
+  function cart(n, x, y, tip, a) {      // a two-wheeled hand-cart, side on, its load heaped; tipping forward about its wheel
+    if (a <= .01) return; n.save(); n.globalAlpha = a; n.translate(x, y - 9); n.rotate(tip); n.fillStyle = css(MEM);
+    n.beginPath(); n.moveTo(-30, -26); n.lineTo(24, -26); n.lineTo(19, -6); n.lineTo(-25, -6); n.closePath(); n.fill();
+    n.beginPath(); n.ellipse(0, -26, 26, 9 * (1 - smooth(.2, .9, tip / .9)), 0, Math.PI, 0); n.fill();      // the load, gone as it tips
+    n.fillRect(-46, -25, 18, 3); n.lineWidth = 2; n.strokeStyle = css(MEM); n.beginPath(); n.arc(0, 0, 9, 0, 7); n.stroke(); n.restore(); n.globalAlpha = 1; }
+  function memories(n) {
+    // (1) THE KING'S LABOURERS: one after another a labourer comes along the home bank behind his cart, tips its load into
+    // the mire at the edge, and the load sinks away with a slow ring; they keep coming as the words go on
+    if (histA > .01 && HWALK.length >= 32) for (let i = 0; i < 4; i++) {
+      const t = histT - i * 170; if (t < 0) continue; const T = t % 680, k = Math.floor(t / 680), lane = (i * 37 + k * 23) % 22;
+      const stop = HOME0 - 46 + lane, edge = stop + 52, x0 = stop - 280, walk = smooth(0, 260, T), x = lerp(x0, stop, walk), tip = .95 * smooth(270, 330, T) * (1 - smooth(470, 560, T));
+      const a = histA * .62 * smooth(0, 40, T) * (1 - smooth(560, 660, T)), stepping = T < 262;
+      ghost(n, HWALK[16 + Math.floor(stepping ? T * .2 : 0) % 16], META.hwalk, x, bankY(x) + 4, -1, a);
+      cart(n, x + 44, bankY(x + 44) + 2, tip, a);
+      const s = T - 300; if (s > 0 && s < 360) { const lx = edge + 40, d = Math.min(1, s / 300);      // the load in the mire, sinking
+        n.save(); n.globalAlpha = histA * .55 * (1 - d); n.fillStyle = css(MEM); n.beginPath(); n.ellipse(lx, 3 + 18 * d * d, 22 * (1 - .4 * d), 8 * (1 - d), 0, Math.PI, 0); n.fill();
+        n.strokeStyle = css(MEM); n.lineWidth = 1.2; n.globalAlpha = histA * .4 * (1 - d); n.beginPath(); n.ellipse(lx, 2, 20 + 70 * d, 3 + 7 * d, 0, 0, 7); n.stroke(); n.restore(); n.globalAlpha = 1; }
+    }
+    // (2) TRAVELLERS WHO STEPPED BESIDE: as Help speaks of the steps, pale travellers wade out beside the line of stones,
+    // miss them, and sink, while the lights find the stones
+    if (travA > .01 && CHR.length && PLI.length) {
+      const W = [[CHR, CHR_META, 0, -700, 1], [PLI, PLI_META, 90, -780, 1], [CHR, CHR_META, 180, -620, 1]];      // among the stones
+      for (const [fr, meta, d0, x0, f] of W) { const t = travT - 50 - d0; if (t < 0) continue;
+        const x = x0 + Math.min(t, 200) * .55, sink = 16 + 64 * smooth(150, 330, t), a = travA * .6 * smooth(0, 30, t) * (1 - smooth(260, 340, t));
+        ghost(n, fr[Math.floor(t * .25) % fr.length], meta, x, 6, f, a, sink); }
+    }
+  }
   // THOUGHTS, baked once, small (so they are soft when stretched), every edge fading into a vignette like a memory
   let THK = null, VEILC = null, nearDk = 0, MCOV = null, ndT = null;
   function thoughts() {
@@ -1408,7 +1462,7 @@ const SL = (() => {
   // the beats, in ticks from the FEARS line (each [tick, loudness])
   const DRUMS = [[40, .5], [58, .32], [150, .6], [168, .38], [250, .72], [266, .45], [335, .85], [350, .55], [410, 1], [424, .65], [480, 1.1]];
   const FEAR_END = 560;      // build 398: the drums are done by here (the dark no longer lifts by the clock: only when Help comes)
-  let FP = 0, preDk = 0, struggleSaid = false, stillSaid = false, fearHelpT = 0, beatT = -1e9, quietT = 0, helpSayT = 0;
+  let FP = 0, preDk = 0, histT = 0, histA = 0, travT = 0, travA = 0, struggleSaid = false, stillSaid = false, fearHelpT = 0, beatT = -1e9, quietT = 0, helpSayT = 0;
   function drum(v) {      // a low skin drum, felt more than heard: a pitch falling from about 80 to 40 Hz, a dull thump of noise
     sweep(82, 40, .7, .13 * v, true); sweep(58, 34, 1, .07 * v); hiss(120, .7, .07 * v, .45, 'lowpass'); hiss(700, .9, .01 * v, .09, 'bandpass');
   }
@@ -1465,7 +1519,7 @@ const SL = (() => {
       if (ta >= 1) return; alpha *= 1 - smooth(.5, 1, ta);
     }
     let blendIm = null, blendK = 0;
-    const inWater = C2.y > 2 && ph !== 'look' && ph !== 'onway' && ph !== 'on' && ph !== 'drawn';
+    const inWater = C2.y > 2 && ph !== 'look' && ph !== 'onway' && ph !== 'on' && ph !== 'drawn' && ph !== 'hist';
     let walkIm = CHR[((Math.floor(C2.anim) % CHR.length) + CHR.length) % CHR.length], walkM = CHR_META;
     // in the mire he heaves and struggles (one video loop) instead of walking
     // build 141: his floundering picture ends at the waist, so it only comes in once he has sunk nearly that far (it came
@@ -1515,5 +1569,5 @@ const SL = (() => {
   // for testing: SL.peek() tells where the story is
   // grow, ribbons: the tree grower and its painter, for Level 3's oak in leaf (hill.js, bakeOak): keep these exports
   // oakPic: the great oak baked small in one colour, for Level 1's far glimpse of the Slough (index.html, drawFarSlough)
-  return { on: false, show: false, title, start, update, draw, touch, grip, pick, preload, lines: ALL, oakPic: (col, k) => bakeTree(oak(18), col, k), grow: (seed, hero, depth) => oak(seed, hero, depth), ribbons, peek: () => ({ ph, nd: nearDk, hw: help && help.w, thk: { cityT, fearT2 }, x: C2.x, y: C2.y, mv: mv && mv.t, lift: lift && lift.t, pli: pli && pli.mode, plx: pli && Math.round(pli.x), plStop: !!(pli && pli.stop), cam, mud: { strings: strings.length, hmax: Math.max(...fh), hmin: Math.min(...fh), drops: drops.length, rings: rings.length, recs: Object.fromEntries(Object.entries(RECS).map(([o, r]) => [o, { body: r.body, arms: (r.arms || []).length, act: MS[o] ? MS[o].act : 0, y: r.y, a: r.a }])) }, c2: { wa: C2.wa, D: C2.D, rt: C2.rt, reach: C2.reach, fallT: C2.fallT }, pl: pli && { y: pli.y, ct: pli.ct, wk: pli.wk, wal: pli.wal, fa: pli.fa, wt: pli.wt, x: pli.x, duck: pli.duck, mode: pli.mode, out: pli.out } }) };
+  return { on: false, show: false, title, start, update, draw, touch, grip, pick, preload, lines: ALL, oakPic: (col, k) => bakeTree(oak(18), col, k), grow: (seed, hero, depth) => oak(seed, hero, depth), ribbons, peek: () => ({ ph, nd: nearDk, hw: help && help.w, thk: { cityT, fearT2 }, mem: { histT, histA, travT, travA }, x: C2.x, y: C2.y, mv: mv && mv.t, lift: lift && lift.t, pli: pli && pli.mode, plx: pli && Math.round(pli.x), plStop: !!(pli && pli.stop), cam, mud: { strings: strings.length, hmax: Math.max(...fh), hmin: Math.min(...fh), drops: drops.length, rings: rings.length, recs: Object.fromEntries(Object.entries(RECS).map(([o, r]) => [o, { body: r.body, arms: (r.arms || []).length, act: MS[o] ? MS[o].act : 0, y: r.y, a: r.a }])) }, c2: { wa: C2.wa, D: C2.D, rt: C2.rt, reach: C2.reach, fallT: C2.fallT }, pl: pli && { y: pli.y, ct: pli.ct, wk: pli.wk, wal: pli.wal, fa: pli.fa, wt: pli.wt, x: pli.x, duck: pli.duck, mode: pli.mode, out: pli.out } }) };
 })();
