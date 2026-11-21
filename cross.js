@@ -67,6 +67,7 @@ const CR = (() => {
   function preload() {
     if (loaded) return; loaded = true;
     loadPack('christian-cross', CLIP).catch(() => {});
+    RUNP.ready || loadPack('christian-run-plain', RUNP).catch(() => {});
     loadImg('cross-burden.webp').then(im => { BURDEN = im; }).catch(() => {});
     // the burning hill's own painted rock (Level 3), made a grey tile as hill.js makes it, laid over the hill in 'overlay'
     loadImg('hill-rock.webp').then(rock => { const sx = 720, sy = 540, w = 780, h = 600, t = document.createElement('canvas'); t.width = w; t.height = h; const q = t.getContext('2d'); q.drawImage(rock, sx, sy, w, h, 0, 0, w, h);
@@ -78,7 +79,7 @@ const CR = (() => {
 
   // ---------- state ----------
   let ph = '', t = 0, cam = { cx: 0, z: 1, wl: 420 }, wideK = 0, wideTo = 0;
-  const Ch = { x: START, anim: 12, sd: null, cf: -1, cfd: 1, hop: 0, hops: 0, lastV: 0, fade: 0, face: 1, tv: null };
+  const Ch = { x: START, anim: 12, sd: null, cf: -1, cfd: 1, hop: 0, hops: 0, lastV: 0, fade: 0, face: 1, tv: null, run: 0, ranim: 0 };
   let bur = null, dawn = 0, gold = 0, goldTo = 0, sun = 0, robe = 0, robeTo = 0, mark = 0, markTo = 0, rollShow = 0, rollGone = 0, shine = 0, shineTo = 0, gone = 0, goneTo = 0;
   let closeK = 0, topK = 0, topTo = 0, veil = 0, climb = null;
   let rollFly = null, rollAt = null; const ROLL_FLY = 80;
@@ -141,6 +142,18 @@ const CR = (() => {
     if (v && fr1 !== fr0 && CHR_META.rest.includes(fr1) && audio()) sfx.step(false, ph === 'walk' ? 1.4 : .9);
     return v;
   }
+  // the book: "Up this way did burdened Christian run, but not without great difficulty" ({92}): up the highway and the
+  // slope he runs, in his plain run at its video's own pace; after the climb he walks the last steps to the cross
+  function run(go) {
+    if (!RUNP.ready) return walk(go ? MAXV * .9 : 0);
+    if (go) {
+      const st = RUNP_META.vpx * CHR_K * .4; Ch.x += st; Ch.lastV = st; Ch.ranim += .4; Ch.run = Math.min(1, Ch.run + .14); Ch.sd = null;
+      if (Math.floor(Ch.ranim) % 14 === 0 && Math.floor(Ch.ranim - .4) % 14 !== 0 && audio()) sfx.step(false, 1.3);
+      return st;
+    }
+    Ch.lastV = 0; Ch.run = Math.max(0, Ch.run - .14); if (Ch.sd == null) Ch.sd = QUIET[0];
+    return 0;
+  }
   const tintNow = () => {
     const pre = [58, 58, 72], dw = [70, 62, 66], gd = [96, 78, 64], robeC = [150, 128, 100];
     let c = mix(pre, dw, dawn); c = mix(c, gd, gold); return mix(c, robeC, robe * .6);
@@ -169,6 +182,9 @@ const CR = (() => {
       if (Ch.fade < 1 && STD.length) figure(c, STD[atTime(STD_META, breathT(Ch.sd || 0))], STD_META, x, h, fc, 1 - Ch.fade, tint, rim);
       figure(c, CLIP[f0], CLIP_META, x, h, fc, Ch.fade < 1 ? Ch.fade : 1, tint, rim);
       if (mark > .01) { const hx = x + 14 * fc, hy = -h - 138; const g = c.createRadialGradient(hx, hy, 0, hx, hy, 9); g.addColorStop(0, css([255, 244, 214], .8 * mark)); g.addColorStop(1, 'rgba(255,240,200,0)'); c.fillStyle = g; c.fillRect(hx - 10, hy - 10, 20, 20); }
+    } else if (Ch.run > 0 && RUNP.ready) {
+      if (Ch.run < 1 && STD.length) figure(c, STD[atTime(STD_META, breathT(Ch.sd || 0))], STD_META, x, h, 1, 1 - Ch.run, tint, rim);
+      figure(c, RUNP[((Math.floor(Ch.ranim) % RUNP.length) + RUNP.length) % RUNP.length], RUNP_META, x, h, 1, Ch.run < 1 ? Ch.run : 1, tint, rim);
     } else if (Ch.sd != null && STD.length) figure(c, STD[atTime(STD_META, breathT(Ch.sd))], STD_META, x, h, fc, 1, tint, rim);
     else figure(c, CHR[frameOf(Ch.anim)], CHR_META, x, h, 1, 1, tint, rim);
   }
@@ -434,7 +450,7 @@ const CR = (() => {
 
   // ---------- the story ----------
   function reset0() {
-    Object.assign(Ch, { x: START, anim: 12, sd: QUIET[0], cf: -1, hop: 0, hops: 0, lastV: 0, fade: 0, hv: 0, face: 1, tv: null });
+    Object.assign(Ch, { x: START, anim: 12, sd: QUIET[0], cf: -1, hop: 0, hops: 0, lastV: 0, fade: 0, hv: 0, face: 1, tv: null, run: 0, ranim: 0 });
     bur = null; dawn = gold = goldTo = sun = robe = robeTo = mark = markTo = rollShow = rollGone = shine = shineTo = gone = goneTo = 0; wideK = 1; wideTo = 1;
     said = {}; hymn = null; silenceT = 0; tombT = 0; leapsLeft = 3; endT = 0; quietPad = 0; t = 0; rollFly = rollAt = null; closeK = topK = topTo = veil = 0; climb = null;
   }
@@ -511,9 +527,8 @@ const CR = (() => {
       closeK += ((Ch.x > CLOSE0 && Ch.x < CUT_X + 200 ? 1 : 0) - closeK) * .03;
       if (topTo && topK > .9 && !saying() && G.t - (said.topT || 0) > 150) topTo = 0;
       if (!said.cut && Ch.x >= CUT_X) { said.cut = true; climb = { t: 0 }; G.state = 'auto'; return camTick(false); }
-      let v = want ? MAXV * .9 : 0;
-      if (Ch.x + v > STOP_X) v = Math.max(0, STOP_X - Ch.x);
-      walk(v);
+      if (!said.cut) run(want);
+      else { let v = want ? MAXV * .9 : 0; if (Ch.x + v > STOP_X) v = Math.max(0, STOP_X - Ch.x); walk(v); }
       if (Ch.x >= STOP_X - .5 && Ch.sd != null && !saying()) { ph = 'cross'; G.state = 'auto'; t = 0; }
     } else if (ph === 'cross') {
       // he stands before the cross; the standing picture gives way to the clip and the burden loosens by itself and falls behind him
@@ -560,8 +575,8 @@ const CR = (() => {
   // near the top, the camera is wide from the top, and the picture comes up again; the child walks the last steps
   function climbTick() {
     const k = climb; k.t++; k.snap = false;
-    if (k.t <= 50) { walk(MAXV * .9); veil = .86 * smooth(0, 50, k.t); return; }
-    if (k.t === 51) { Ch.x = SKIP_TO; Ch.sd = 0; Ch.anim = 12; closeK = 0; topK = topTo = 1; k.snap = true; said.ascend = true; return; }
+    if (k.t <= 50) { run(true); veil = .86 * smooth(0, 50, k.t); return; }
+    if (k.t === 51) { Ch.x = SKIP_TO; Ch.sd = 0; Ch.run = 0; Ch.anim = 12; closeK = 0; topK = topTo = 1; k.snap = true; said.ascend = true; return; }
     if (k.t === 70) { caption(ASCEND); said.topT = G.t; }
     veil = .86 * (1 - smooth(52, 120, k.t));
     if (k.t >= 120) { veil = 0; climb = null; G.state = 'play'; G.calm = G.t; }
