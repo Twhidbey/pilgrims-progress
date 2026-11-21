@@ -12,6 +12,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 **Build 397 (vision chat): THE WHY PUT BACK, and the owner's rulings.** Twelve lines in Levels 1, 2, 3 and 5 reworded or added so the game says why (the city will be destroyed; he cannot get the burden off himself; no man was rid of it by Legality; Good-will's promise that it will fall of itself, said in Level 3's doorway; the sight of the cross eases him; his song "Blest cross!"). New voice for Good-will: "A grave, gentle old English man in his seventies, the keeper of a gate: slow, warm and very kind, a low quiet voice with a little age in it, welcoming and steady, like a grandfather reassuring a tired traveller. Plain speech, no theatrical flourish." (`voice_zpixol5qpz8t`). Spent about 15 cents. The owner's eight rulings (Christian after the Cross from free clips, Level 4 code-drawn and steered, dark parts level by level, Ignorance kept quietly, sixteen levels, a walking tune after the Cross) are in CLAUDE.md, "THE OWNER'S RULINGS FROM THE VISION CHAT".
 
+**Build 412 (Cross chat): the plain cross's edges very slightly uneven, a hand-hewn hint; the dawn's gold edge follows them. Nothing spent.**
+
 **Build 411 (Cross chat): the plain cross again (the owner preferred its simplicity); build 410's timber and stones taken out. Nothing spent.**
 
 **Build 410 (Cross chat): the cross drawn as hewn timber (tapered, adzed, grain, splits, a pegged lap joint, wedged in a cairn), the dawn's gold edge on its outer outline only. Nothing spent.**

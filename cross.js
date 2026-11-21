@@ -259,10 +259,24 @@ const CR = (() => {
   function cross(c) {
     const x = CROSS_X, h = gh(x), col = mix(mix([20, 20, 27], [22, 20, 24], dawn), [30, 22, 20], gold), H = CROSS_H, T = 14, bw = 186, by = CROSS_BY;
     c.save(); c.translate(x, -h + 4); c.fillStyle = css(col);
-    const r = rgen(5);
-    c.beginPath(); for (let i = 0; i <= 10; i++) c.lineTo(-T / 2 + (r() - .5) * 1.2, -H * i / 10); for (let i = 10; i >= 0; i--) c.lineTo(T / 2 + (r() - .5) * 1.2, -H * i / 10); c.closePath(); c.fill();
-    c.beginPath(); c.moveTo(-bw / 2, -by - T / 2); c.lineTo(bw / 2, -by - T / 2 + 1); c.lineTo(bw / 2, -by + T / 2); c.lineTo(-bw / 2, -by + T / 2 - 1); c.closePath(); c.fill();
-    if (gold > .01) { c.globalCompositeOperation = 'lighter'; c.strokeStyle = css([255, 220, 160], .35 * gold); c.lineWidth = 1.2; c.strokeRect(-T / 2, -H, T, H); c.globalCompositeOperation = 'source-over'; }
+    // edges very slightly uneven, as a hand-hewn beam's are (owner: "ever slight variation to the straight edges to make it
+    // look slightly (very slightly) more wooden"): a slow wander along each edge, a fine roughness, a hair of taper, ends
+    // sawn a touch out of true; still two plain dark bars
+    const r = rgen(5), wav = (s, u) => .45 * Math.sin(u * 7.3 + s) + .3 * Math.sin(u * 17.1 + s * 2.3) + (r() - .5) * .35;
+    const UL = [], UR = [];
+    for (let i = 0; i <= 40; i++) { const u = i / 40; UL.push([-T / 2 * (1 - .07 * u) + wav(1, u), -H * u - (i === 40 ? .8 : 0)]); }
+    for (let i = 0; i <= 40; i++) { const u = i / 40; UR.push([T / 2 * (1 - .07 * u) + wav(4, u), -H * u + (i === 40 ? .6 : 0)]); }
+    c.beginPath(); UL.forEach(([px, py]) => c.lineTo(px, py)); for (let i = 40; i >= 0; i--) c.lineTo(UR[i][0], UR[i][1]); c.closePath(); c.fill();
+    c.beginPath();
+    for (let i = 0; i <= 30; i++) { const u = i / 30; c.lineTo(-bw / 2 + bw * u + (i === 0 ? .6 : i === 30 ? -.4 : 0), -by - T / 2 + u + wav(7, u)); }
+    for (let i = 30; i >= 0; i--) { const u = i / 30; c.lineTo(-bw / 2 + bw * u + (i === 0 ? -.5 : i === 30 ? .7 : 0), -by + T / 2 + u - 1 + wav(9, u)); }
+    c.closePath(); c.fill();
+    // the low sun behind it: a thin gold edge down the upright's own sides and over its top, not across the beam
+    if (gold > .01) {
+      c.globalCompositeOperation = 'lighter'; c.strokeStyle = css([255, 220, 160], .35 * gold); c.lineWidth = 1.2; c.beginPath();
+      for (const side of [UL, UR]) { let pen = false; side.forEach(([px, py]) => { const inBeam = py < -by + T / 2 + 1 && py > -by - T / 2 - 1; if (inBeam || py > -2) { pen = false; return; } pen ? c.lineTo(px, py) : c.moveTo(px, py); pen = true; }); }
+      c.moveTo(UL[40][0], UL[40][1]); c.lineTo(UR[40][0], UR[40][1]); c.stroke(); c.globalCompositeOperation = 'source-over';
+    }
     c.restore();
   }
   // the three Shining Ones: tall soft figures of light ("their faces shone as the light"), drawn with light, not paint
