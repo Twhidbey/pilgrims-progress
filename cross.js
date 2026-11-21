@@ -86,7 +86,7 @@ const CR = (() => {
   }
 
   // ---------- state ----------
-  let pauseKey = null, qRun = 0, quietG = 0, sepT = -1, ph = '', t = 0, cam = { cx: 0, z: 1, wl: 420 }, wideK = 0, wideTo = 0;
+  let tumbleT = 0, pauseKey = null, qRun = 0, quietG = 0, sepT = -1, ph = '', t = 0, cam = { cx: 0, z: 1, wl: 420 }, wideK = 0, wideTo = 0;
   const Ch = { x: START, anim: 12, sd: null, cf: -1, cfd: 1, hop: 0, hops: 0, lastV: 0, fade: 0, face: 1, tv: null, run: 0, ranim: 0 };
   let bur = null, dawn = 0, gold = 0, goldTo = 0, sun = 0, robe = 0, robeTo = 0, mark = 0, markTo = 0, rollShow = 0, rollGone = 0, shine = 0, shineTo = 0, gone = 0, goneTo = 0;
   let closeK = 0, topK = 0, topTo = 0, veil = 0, climb = null, tearT = -1, looked = false;
@@ -217,35 +217,58 @@ const CR = (() => {
   }
   // the burden on its own, rolling back down the slope he climbed
   function drawBurden(c) {
-    if (!bur || !BURDEN || bur.a <= 0) return;
+    if (!bur || !BURDEN) return;
+    // dust thrown up at the mouth as it goes in
+    if (bur.dust) for (const d of bur.dust) { if (d.a <= 0) continue; const g = c.createRadialGradient(d.x, -d.y, 0, d.x, -d.y, d.r); g.addColorStop(0, css(mix([70, 64, 66], [150, 124, 110], gold), .1 * d.a)); g.addColorStop(1, 'rgba(120,110,112,0)'); c.fillStyle = g; c.fillRect(d.x - d.r, -d.y - d.r, d.r * 2, d.r * 2); }
+    if (bur.a <= 0) return;
     const K = CHR_K, w = BALL.w * K * bur.k, hh = BALL.h * K * bur.k, h = bur.H != null ? bur.H : gh(bur.x) + bur.y;
-    
+    // a soft light round it as it falls, so it can be followed down the dark hill (owner, build 460)
+    const gl = (bur.gl || 0) * bur.a;
+    if (gl > .01) { const cx = bur.x, cy = -h - hh / 2, R = 70 * bur.k, g = c.createRadialGradient(cx, cy, 0, cx, cy, R);
+      g.addColorStop(0, css([255, 232, 196], .3 * gl)); g.addColorStop(.4, css([250, 214, 170], .12 * gl)); g.addColorStop(1, 'rgba(250,210,170,0)');
+      c.save(); c.globalCompositeOperation = 'screen'; c.fillStyle = g; c.fillRect(cx - R, cy - R, R * 2, R * 2); c.restore(); }
     c.save(); c.translate(bur.x, -h - hh / 2 + 2); c.rotate(bur.r); c.globalAlpha = bur.a;
     const tint = tintNow(), W = BURDEN.width, H = BURDEN.height;
     if (figC.width !== W || figC.height !== H) { figC.width = W; figC.height = H; }
-    const f = figC.getContext('2d'); f.globalCompositeOperation = 'source-over'; f.clearRect(0, 0, W, H); f.drawImage(BURDEN, 0, 0); f.globalCompositeOperation = 'multiply'; f.fillStyle = css(mix(mix(tint, [150, 140, 146], bur.H != null ? .4 : 0), [20, 18, 22], bur.dk));       f.fillRect(0, 0, W, H); f.globalCompositeOperation = 'destination-in'; f.drawImage(BURDEN, 0, 0); f.globalCompositeOperation = 'source-over';
+    const f = figC.getContext('2d'); f.globalCompositeOperation = 'source-over'; f.clearRect(0, 0, W, H); f.drawImage(BURDEN, 0, 0); f.globalCompositeOperation = 'multiply'; f.fillStyle = css(mix(mix(tint, [176, 164, 162], bur.H != null ? .5 * (1 - bur.dk) + .2 * gl : 0), [8, 7, 10], bur.dk));       f.fillRect(0, 0, W, H); f.globalCompositeOperation = 'destination-in'; f.drawImage(BURDEN, 0, 0); f.globalCompositeOperation = 'source-over';
     c.drawImage(figC, -w / 2, -hh / 2, w, hh); c.restore();
   }
+  // the tumble (owner, build 460: "more natural maybe extra little bounce in between each turn around point"): it
+  // zig-zags down the hill's face toward us, each leg one big hop then a little one, turning only after the big one's
+  // little follower lands; it spins more in the air, grows as it comes nearer, a soft light round it
   function burdenTick() {
     if (!bur) return;
+    if (bur.dust) for (const d of bur.dust) { d.x += d.vx; d.y += d.vy; d.vx *= .97; d.vy *= .97; d.r += .35; d.a -= .006; }
     if (bur.st === 'roll') {
-      // it tumbles down the hill's face toward us, faster and faster, bouncing, to the door at its foot
-      if (bur.x0 == null) { bur.x0 = bur.x; bur.H0 = gh(bur.x); }
-      // slower (owner, build 453: "the tumbling of burden can take time"), so the storyteller's words keep pace with it
-      bur.t++; const T = 470, u = Math.min(1, bur.t / T), f = Math.pow(u, 1.35), n = 8;
-      // it zig-zags down the face, turning at each bounce, and grows as it comes nearer, so the hill has depth
-      const p = n * f, hp = Math.floor(p), s = p - hp, tri = hp % 2 ? 1 - 2 * s : 2 * s - 1, env = sm(0, .12, f) * (1 - sm(.8, 1, f));
-      bur.zx = 150 * (1 - .3 * f) * env * tri; bur.x = lerp(bur.x0, TOMB_X, sm(0, 1, u)) + bur.zx;
-      const b = Math.abs(Math.sin(Math.PI * n * f)), bb = 46 * Math.pow(1 - f, 1.2);
-      bur.H = lerp(bur.H0, tombSill() + 6, f) + b * bb;
-      const hop = Math.floor(n * f); if (hop !== bur.hop) { bur.hop = hop; if (bur.t > 4) thump(Math.min(1, .45 + f * .6)); }
-      bur.r -= (.045 + .06 * f) * (hp % 2 ? -1 : 1); bur.k = 1 + .3 * f;
-      if (u >= 1) { bur.st = 'in'; bur.t = 0; bur.x0 = bur.x; }
+      if (bur.x0 == null) { bur.x0 = bur.x; bur.H0 = gh(bur.x); bur.gl = 0; }
+      bur.t++; bur.gl = Math.min(1, bur.gl + .02);
+      const T = 470, u = Math.min(1, bur.t / T), f = Math.pow(u, 1.25), n = 7;
+      // n legs; each leg two hops: a big one (most of the leg) and a little one
+      const L = n * f, leg = Math.min(n - 1, Math.floor(L)), s = L - leg;
+      const dir = leg % 2 ? 1 : -1, env = sm(0, .1, f) * (1 - sm(.82, 1, f));
+      // across: it travels from one side to the other during the big hop, then hardly at all in the little one
+      const acr = sm(0, .72, s) * 2 - 1;
+      bur.zx = 140 * (1 - .3 * f) * env * acr * dir; bur.x = lerp(bur.x0, TOMB_X, sm(0, 1, u)) + bur.zx;
+      const decay = Math.pow(1 - f, 1.1), big = 50 * decay, small = 15 * decay;
+      let hop, which; if (s < .72) { const q = s / .72; hop = big * 4 * q * (1 - q); which = 0; } else { const q = (s - .72) / .28; hop = small * 4 * q * (1 - q); which = 1; }
+      bur.H = lerp(bur.H0, tombSill() + 6, f) + hop;
+      const id = leg * 2 + which; if (id !== bur.hop) { if (bur.t > 4) thump(which ? .35 + f * .3 : Math.min(1, .5 + f * .55)); bur.hop = id; }
+      // spin: quick in the big hop's air, slow in the little one, turning with each leg
+      bur.r -= (which ? .03 : .085 + .05 * f) * dir; bur.k = 1 + .3 * f;
+      if (u >= 1) { bur.st = 'in'; bur.t = 0; bur.x0 = bur.x; bur.v = .9; bur.dust = []; }
     } else if (bur.st === 'in') {
-      // into the mouth of the sepulchre, into the dark, then gone
-      bur.t++; bur.H = tombSill() + 6; bur.r -= .02 * (1 - bur.t / 54); bur.k = 1.3 - .6 * sm(0, 44, bur.t); bur.dk = sm(4, 34, bur.t); bur.a = 1 - sm(24, 50, bur.t);
-      if (bur.t === 26) { thump(1.3); if (audio()) hiss(70, .6, .12, 1.6); }
-      if (bur.t > 54) { bur.st = 'gone'; tombT = t; }
+      // the sepulchre: it rolls slowly up to the mouth, rocks on the lip, tips over into the dark, a dull fall inside, dust
+      bur.t++; const tt = bur.t, sill = tombSill() + 6;
+      if (tt <= 50) { bur.v *= .955; bur.x += bur.v * .35; bur.r -= bur.v * .03; bur.H = sill; }
+      else if (tt <= 96 || bur.hold) { if (tt === 96) bur.hold = !(tumbleT && G.t - tumbleT > 330); else if (bur.hold && ((tumbleT && G.t - tumbleT > 330) || tt > 700)) { bur.hold = false; bur.t = 96; } const q = tt - 50; bur.r += .09 * Math.sin(q * .26) * Math.exp(-q * .045) * .6; bur.H = sill + .8 * Math.abs(Math.sin(q * .26)) * Math.exp(-q * .05); if (q === 1) thump(.3); }
+      else {
+        // over it goes, back into the dark: smaller as it goes deeper, darker, rising a little in the mouth (further in)
+        const q = sm(96, 170, tt); bur.r -= .035 * (1 - q); bur.k = 1.3 - .58 * q; bur.H = sill + 24 * q; bur.x = bur.x0 + 10 + 6 * q; bur.dk = sm(100, 150, tt); bur.gl = 1 - sm(96, 140, tt);
+        if (tt === 150) { thump(1.25); if (audio()) hiss(70, .6, .12, 1.6);
+          for (let i = 0; i < 9; i++) bur.dust.push({ x: TOMB_X + (Math.random() - .5) * 90, y: sill + 4 + Math.random() * 14, vx: (Math.random() - .5) * 1.1, vy: .15 + Math.random() * .35, r: 14 + Math.random() * 14, a: .8 + Math.random() * .2 }); }
+        bur.a = 1 - sm(156, 184, tt);
+      }
+      if (tt > 310) { bur.st = 'gone'; tombT = t; }
     }
   }
 
@@ -481,7 +504,7 @@ const CR = (() => {
 
   // ---------- the story ----------
   function reset0() {
-    sepT = -1; memT = -1; memS = []; memUntil = 0; tearT = -1; looked = false; Object.assign(Ch, { x: START, anim: 12, sd: QUIET[0], cf: -1, hop: 0, hops: 0, lastV: 0, fade: 0, hv: 0, face: 1, tv: null, run: 0, ranim: 0 });
+    tumbleT = 0; sepT = -1; memT = -1; memS = []; memUntil = 0; tearT = -1; looked = false; Object.assign(Ch, { x: START, anim: 12, sd: QUIET[0], cf: -1, hop: 0, hops: 0, lastV: 0, fade: 0, hv: 0, face: 1, tv: null, run: 0, ranim: 0 });
     bur = null; dawn = gold = goldTo = sun = robe = robeTo = mark = markTo = rollShow = rollGone = shine = shineTo = gone = goneTo = 0; wideK = 1; wideTo = 1;
     said = {}; hymn = null; silenceT = 0; tombT = 0; leapsLeft = 3; endT = 0; quietPad = 0; t = 0; rollFly = rollAt = null; closeK = topK = topTo = veil = 0; climb = null;
   }
@@ -598,6 +621,8 @@ const CR = (() => {
       // he stands tall, lighter, his head lifted (the clip's frames 41 to 70, played on, then back and forth)
       clipHold();
       if (t === 50) caption(TUMBLE);
+      // when the storyteller begins the tumble line: the burden waits on the cave's lip until he is well into it
+      if (t > 50 && !tumbleT && !G.capQ.length && saying()) tumbleT = G.t;
       burdenTick();
       if (bur.st === 'gone') { ph = 'gone'; t = 0; quietG = qRun = 0; }
     } else if (ph === 'gone') {
@@ -756,5 +781,5 @@ const CR = (() => {
   }
 
   return { on: false, start, update, draw, touch, key, preload, lines: ALL, stop: () => padStop(), _pt: { roll: rollPt, chr: chrPt }, _turning: () => !!Ch.tv,
-    peek: () => ({ ph, t, fly: rollFly ? rollFly.t : -1, x: Math.round(Ch.x), cf: +Ch.cf.toFixed(1), bur: bur ? { st: bur.st, x: Math.round(bur.x) } : null, gold: +gold.toFixed(2), shine: +shine.toFixed(2), leaps: leapsLeft, closeK: +closeK.toFixed(2), topK: +topK.toFixed(2), veil: +veil.toFixed(2), tear: tearT, sep: sepT }) };
+    peek: () => ({ ph, t, fly: rollFly ? rollFly.t : -1, x: Math.round(Ch.x), cf: +Ch.cf.toFixed(1), bur: bur ? { st: bur.st, x: Math.round(bur.x), a: +bur.a.toFixed(2), t: bur.t } : null, gold: +gold.toFixed(2), shine: +shine.toFixed(2), leaps: leapsLeft, closeK: +closeK.toFixed(2), topK: +topK.toFixed(2), veil: +veil.toFixed(2), tear: tearT, sep: sepT }) };
 })();
