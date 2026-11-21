@@ -92,6 +92,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 
 **Build 462 (Level 3 gate chat):** the gate in perspective as a cutaway: the wall's outer face runs off to the horizon, its footprint comes toward us, the vaulted passage and the oak door in perspective; Christian walks all the way through and the door shuts behind him; the land goes on inside. Nothing spent.
+
+**Build 463 (Level 3 gate chat):** the gate's vanishing point lowered so the wall's far foot meets the line between the two land colours. Nothing spent.
 ## START HERE (rewritten at build 140, Nov 16 2026)
 
 **Build 420 (vision chat): the castle sits on the summit, its crag faded into the rock** (free). **Build 415 (vision chat): a rock mountain drawn in code holds the castle, the castle a third of its size** (free; see CLAUDE.md build 415). **Build 413 (vision chat): Beelzebub's castle painted** (about 15 cents, the owner said "Paint it"): a huge dark fortress on a crag after John Martin, left of the gate's wall end; the camera stands back on it as he arrives and glances back while the arrows fly. See CLAUDE.md, Level 3, build 413. Still open from this chat: Christian's new coat after the Cross (a free FLUX retry is scheduled; show the still before any clips); which lines at the mountain's foot the owner wants fixed.

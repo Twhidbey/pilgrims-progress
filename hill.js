@@ -35,6 +35,10 @@ const HL = (() => {
   const GSL = 40, GPH = 166, GTOP = 330, GPL = 380;      // GPL (build 460): the gate's depth scale for its perspective
   const START = 220, MEET = 900, GATE_X = 9000, GATE_FROM = GATE_X - 480, GATE_STOP = GATE_X - 74;
   const GVP = GATE_X - 150;      // (build 460) the gate's vanishing point, on the land a little left of the wall
+  // (build 463, owner: "make vanishing point a little lower so the corner of the base of the wall in the distance hits the
+  // line of transition between the two colors of landscape"): its height is worked out so the wall's far foot (1500 units
+  // off) lands on the top of the nearest dusk rise there (`rid(-72, 16, .014, 23)` in the castle block)
+  const GEND = 1500, gvy = () => { const q = 1 / (1 + GEND / GPL), wx = GVP + (GATE_X - GSL - GVP) * q; return -(72 + 16 * nz(wx * .014, 23)) / (1 - q); };
   // INTO THE ROCKS (owner, build 185: "i don't like that hill looks initially - it looks fake ... after he decides to go
   // off path, pilgrim goes away from viewer and down the hill descending so his body disappear ... then scene shift to
   // him walking a mountain path rocky ... then when he reaches foot of mountain and narrator speaks we zoom out super
@@ -1839,7 +1843,7 @@ const HL = (() => {
       // The wall is cut where the road passes through it (the slice, `sx0`..`sx1`); its outer face runs away from us to the
       // horizon; toward us only its footprint on the ground is drawn (laid after the road), so it never hides anyone. The
       // passage is a round-vaulted tunnel (`TD` its half width) and the oak door at its inner end turns in perspective.
-      const VPx = X(GVP), sOf = d => 1 / (1 + d / GPL), Px = (x, q) => VPx + (x - VPx) * q, Py = (y, q) => hor + (y - hor) * q;
+      const VPx = X(GVP), VPy = Y(gvy()), sOf = d => 1 / (1 + d / GPL), Px = (x, q) => VPx + (x - VPx) * q, Py = (y, q) => VPy + (y - VPy) * q;
       const TD = 60, sD = sOf(TD), vh = d => GPH - TD + Math.sqrt(Math.max(0, TD * TD - d * d));
       const hole = xs => { const p = new Path2D(); p.moveTo(xs, yG); for (let k = 0; k <= 12; k++) { const d = TD * Math.sin(k / 12 * Math.PI / 2), q = sOf(d); p.lineTo(Px(xs, q), Py(Y(-vh(d)), q)); } p.lineTo(Px(xs, sD), Py(yG, sD)); p.closePath(); return p; };
       const lit = open > .01;
@@ -1868,8 +1872,8 @@ const HL = (() => {
         if (open < .99) { c.save(); c.globalCompositeOperation = 'lighter'; c.fillStyle = css([236, 150, 80], .08 * flick * (1 - open)); c.beginPath(); c.moveTo(cols[0][0], cols[0][1]); cols.forEach(([x, t]) => c.lineTo(x, t)); for (let k = N; k >= 0; k--) c.lineTo(cols[k][0], cols[k][2]); c.closePath(); c.fill(); c.restore(); } }
       // THE OUTER FACE running away from us to the horizon, its doorway cut in it, in thin upright strips of the wall's stone
       // (each strip scaled to its depth), hazing toward the far end; the lantern's warmth near the gate
-      { const ds = [0, 30, 80, 160, 320, 640, 1000, 1500], top = d => Y(-GTOP - 4 * nz(GATE_X * .01 + d * .02, 61) + 1);
-        const fp = new Path2D(); fp.moveTo(sx0, yG); ds.forEach(d => { const q = sOf(d); fp.lineTo(Px(sx0, q), Py(top(d), q)); }); const qf = sOf(1500); fp.lineTo(Px(sx0, qf), Py(yG, qf)); fp.closePath();
+      { const ds = [0, 30, 80, 160, 320, 640, 1000, GEND], top = d => Y(-GTOP - 4 * nz(GATE_X * .01 + d * .02, 61) + 1);
+        const fp = new Path2D(); fp.moveTo(sx0, yG); ds.forEach(d => { const q = sOf(d); fp.lineTo(Px(sx0, q), Py(top(d), q)); }); const qf = sOf(GEND); fp.lineTo(Px(sx0, qf), Py(yG, qf)); fp.closePath();
         fp.addPath(hole(sx0));
         c.save(); c.clip(fp, 'evenodd');
         const xF = Px(sx0, qf); c.fillStyle = css([24, 15, 11]); c.fillRect(xF - 2, syT - 20 * z, sx0 - xF + 4, yG - syT + 24 * z);
@@ -2061,7 +2065,7 @@ const HL = (() => {
     // the door opens (a soft edge just inside the wall's slice)
     if (gateOn) { const sx1 = X(GATE_X + GSL), op = smooth(0, 1, door), dk = (1 - op) * .95 * gateish;
       // (build 460) the wall coming toward us: only its footprint on the ground, the cut stone, widening down out of the picture
-      { const sx0 = X(GATE_X - GSL), VPx = X(GVP), hor = Y(-140), yG = Y(0), Px = (x, q) => VPx + (x - VPx) * q, Py = (y, q) => hor + (y - hor) * q;
+      { const sx0 = X(GATE_X - GSL), VPx = X(GVP), VPy = Y(gvy()), yG = Y(0), Px = (x, q) => VPx + (x - VPx) * q, Py = (y, q) => VPy + (y - VPy) * q;
         c.beginPath(); c.moveTo(sx0, yG); c.lineTo(sx1, yG); c.lineTo(Px(sx1, 5), Py(yG, 5)); c.lineTo(Px(sx0, 5), Py(yG, 5)); c.closePath();
         c.save(); c.clip(); const g = c.createLinearGradient(0, yG, 0, Py(yG, 3)); g.addColorStop(0, css([40, 26, 20])); g.addColorStop(1, css([16, 10, 8])); c.fillStyle = g; c.fillRect(0, yG, VW, VH - yG);
         if (GWALL) { const P = wallPat(c), k = 470 / GWALL.width * z * 1.6; P.setTransform(new DOMMatrix([k, 0, 0, k, sx0, yG])); c.globalCompositeOperation = 'overlay'; c.globalAlpha = .45; c.fillStyle = P; c.fillRect(0, yG, VW, VH - yG); c.globalAlpha = 1; c.globalCompositeOperation = 'source-over'; }
