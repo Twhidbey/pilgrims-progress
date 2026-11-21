@@ -251,12 +251,12 @@ const CR = (() => {
     const nz = (x, sd) => { const i = Math.floor(x), f = x - i; return hs(i, 9, sd) + (hs(i + 1, 9, sd) - hs(i, 9, sd)) * f * f * (3 - 2 * f); };
     const crag = (L, sd, seg) => { const i = Math.floor(L / seg); let H = .34 + .3 * nz(L * .0011, sd + 5);
       for (let j = i - 4; j <= i + 1; j++) { const xc = (j + .15 + .7 * hs(j, 0, sd)) * seg, h = (.42 + .5 * hs(j, 2, sd)) * (hs(j, 3, sd) < .14 ? 1.25 : 1), w = seg * (1.8 + 2.2 * hs(j, 1, sd)) * (.55 + .9 * h), u = (L - xc) / w;
-        if (u < -.12 || u > 1) continue;
-        const ld = .4 + .3 * hs(j, 4, sd), br = .14 + .14 * hs(j, 5, sd), f = u < 0 ? Math.pow(smooth(-.12, 0, u), .6) : u < br ? 1 - .1 * (u / br) * (u / br) : .9 * Math.pow(1 - (u - br) / (1 - br), 1.2) - .07 * smooth(ld - .03, ld + .03, u) * (1 - u);
+        if (u < -.3 || u > 1) continue;
+        const ld = .4 + .3 * hs(j, 4, sd), br = .14 + .14 * hs(j, 5, sd), f = u < 0 ? smooth(-.3, 0, u) : u < br ? 1 - .1 * (u / br) * (u / br) : .9 * Math.pow(1 - (u - br) / (1 - br), 1.2) - .07 * smooth(ld - .03, ld + .03, u) * (1 - u);
         H = Math.max(H, h * f); }
-      return H + (nz(L * .022, sd) - .5) * .05 + (nz(L * .06, sd + 2) - .5) * .035 + (nz(L * .2, sd + 4) - .5) * .012; };
+      return H + (nz(L * .012, sd) - .5) * .04 + (nz(L * .04, sd + 2) - .5) * .012; };
     // rows of rock: how far below the hill's outline each one's foot lies, how tall its spurs stand, their width, its shade
-    const ROWS = [[150, 170, 70, .09], [380, 260, 95, .1], [620, 300, 120, .11], [880, 320, 150, .12]];
+    const ROWS = [[150, 130, 140, .09], [380, 200, 190, .1], [620, 230, 240, .11], [880, 250, 300, .12]];
     ROWS.forEach(([D, Hh, seg, a], n) => {
       q.beginPath(); q.moveTo(X0, Y1);
       for (let x = X0; x <= X1; x += 4) q.lineTo(x, -(gh(x) - D) - Hh * crag(x + n * 977, 11 + n * 7, seg));
