@@ -43,14 +43,14 @@ Free unless marked. Full lists: `3-...md` section (f) and `4-...md` section 3.
 1. **Level 3, the greeting:** "To that little gate ahead. I cannot get this burden off myself." (`{39}`) Same length; sets up Legality, Good-will and the Cross. The single most valuable line change.
 2. **Level 3, Evangelist:** "No man was ever rid of his burden by Mr. Legality." (`{57}`)
 3. **Until the gate scene is built,** give Good-will's promise somewhere at the end of Level 3: "Bear your burden a little longer. At the place of deliverance it will fall from your back of itself." (`{68}`) This is the promise the Cross keeps.
-4. **Level 5 (no voices yet, so free to change):** say why the cross eases him ("that the sight of the cross should ease him of his burden", `{94}`); plain versions of the four old-worded storyteller lines; after the leaps, Bunyan's couplet "Blest cross! blest sepulchre! blest rather be / The Man that there was put to shame for me!"
+4. **Level 5 (voiced in build 394, after this review; a cent a line to redo):** say why the cross eases him ("that the sight of the cross should ease him of his burden", `{94}`); plain versions of the four old-worded storyteller lines; after the leaps, Bunyan's couplet "Blest cross! blest sepulchre! blest rather be / The Man that there was put to shame for me!"
 5. **Level 1:** "this book tells me our city will be destroyed" (`{11}`); at his door, "He had told them of the danger, but they would not believe him" (`{11}`, `{18}`): it mends the hardest picture in the game for a parent and child, the children crying at a father who runs; "the city gate", so it is not taken for the wicket-gate.
 6. **Level 2:** "the Slough of Despond" in full; Pliable's "Is this the happiness you told me of?"
 7. **"Knock, and it shall be opened unto you"** spoken again at the gate (on the owner's keep list; cut in build 366).
 8. **Room 1:** the painted grave person looks at us, but the line says "his eyes lifted up to heaven": change the line or the picture.
 
 ### More artistic
-1. **Level 5:** tomb above the words; a hewn cross with a slight lean, not a stick; the dotted rim fixed; Shining Ones as three tall persons of light, each stepping forward for his gift; mist in the hollows lifting with the sun; green into the hill and blue into the sky after the sunrise, so it is the most coloured moment so far.
+1. **Level 5:** tomb above the words; a hewn cross with a slight lean, not a stick; the dotted rim fixed (check against build 394 and later); Shining Ones as three tall persons of light, each stepping forward for his gift; mist in the hollows lifting with the sun; green into the hill and blue into the sky after the sunrise, so it is the most coloured moment so far.
 2. **Level 3:** lift the two men off the dark rock at the mountain's foot (a paler mist behind, as on the path), so the kneel and Evangelist's hand can be seen on a phone.
 3. **Level 1:** rebuild the city-gate finale on the wicket-gate's model: light pouring low and flat through the arch, the two men dark against it, the camera closer.
 4. **Level 2:** three seams (a pale column in the mire, a hard edge under the home bank, the fears' dark reading as a lit window).
@@ -62,7 +62,7 @@ Free unless marked. Full lists: `3-...md` section (f) and `4-...md` section 3.
 2. **Level 4:** one continuous walk through the house behind the Interpreter's candle; drop or silence the seven read-aloud verses (or keep one); one plain line of meaning per room; the fire room's going-round as a real discovery; the palace's pressing-in as a hold the child does.
 3. **Build the gate scene** between 3 and 4 (Good-will, the pull, the narrow way): the hinge the child now falls through, and the far light back at Level 4's start.
 4. **Take out the "touch the cloud, or the fire" toy at Sinai** (it makes the mountain a plaything just as Christian quakes) or keep it very short. Owner's call.
-5. **Voices for Level 5** (about 30 cents: ask first).
+5. ~~Voices for Level 5~~ (done in build 394, by the Cross chat, after this review).
 
 ---
 
