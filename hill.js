@@ -269,6 +269,13 @@ const HL = (() => {
   function sweet(k) { const M = k ? [67, 71, 74, 79, 76, 74] : [72, 76, 79, 76]; M.forEach((m, i) => note(m, .028 + .008 * k, 2.4, i * .42)); if (k) [55, 59, 62].forEach(m => note(m, .02, 4.5, .1)); }
   // the burden groans: two heavy creaks of the pack
   function groan() { if (!audio()) return; sfx.step(false, 2.6); setTimeout(() => HL.on && sfx.step(false, 2.2), 520); }
+  // ONE KEY WITH LEVEL 2 (vision chat, owner: "Level 3 can [be] more monochromatic ... the opening needs work with color - it should
+  // follow level 2 - right now the color transition is too sharp"): on the plain and the way out to the hill the whole
+  // picture is drawn in Level 2's warm silver key, colour held down to a breath (`mono`, eased by the game clock in
+  // update(); laid in draw() before the glints), and the level opens out of Level 2's last mist, which thins as he walks
+  // on (`MIST0`). Among the rocks and at the gate `mono` is 0: those are unchanged.
+  let mono = 1;
+  const MONO_SAT = .62, MONO_TONE = [226, 202, 158], MIST0 = 620;
   let wise = null, evan = null, dark = 0, hope = 0, flash = 0, flashT = 0, veil = 0, veilTo = 0, knocks = 0, knockT = 0, door = 0, doorTo = 0;
   let greeted = false, saidSeen = false, saidHigh = false, stillT = 0, hasteSaid = false, gateSaid = false, hintT = 0, noteI = 0, noteX = 0, lastFr = 0, hillSeen = false, signSeen = false;
   let OAKT = null, hillBox = [0, 0, 1];
@@ -826,7 +833,7 @@ const HL = (() => {
   function reset0() {
     Object.assign(C3, { x: START, face: 1, faceA: 1, anim: 12, sd: QUIET[0], alpha: 1, run: 0, ranim: RUNP_META.start || 0, weep: false, wt: 0, wa: 0, kf: 0, kp: 0, tv: null, fired: false, saidAt: 0, tapZ: 0 }); FLARES.length = 0;
     mercy = mercyTo = calm = calmTo = 0;
-    wise = null; evan = null; dark = 0; hope = 0; flash = 0; flashT = 200; veil = 0; veilTo = 0; knocks = 0; knockT = 0; door = 0; doorTo = 0;
+    mono = 1; wise = null; evan = null; dark = 0; hope = 0; flash = 0; flashT = 200; veil = 0; veilTo = 0; knocks = 0; knockT = 0; door = 0; doorTo = 0;
     reveal = 0; vil = vilTo = 0; pan = panTo = 0; ROCKS.length = 0; DUST.length = 0; PATHR.length = 0; DUSTW.length = 0; fallI = 0; jolt = 0; ROLL.length = 0; rollI = 0; LIZ.length = 0; oakT = 0; GLINTS.length = 0; for (const k in SEEN_G) delete SEEN_G[k]; OBIRD.length = 0; OLEAF.length = 0; HIDDEN.forEach(h => { h.got = 0; h.up = 0; h.y = 0; }); STEAMP.length = 0; farewell = 0; C3.dy = 0; cut = cutTo = 0; Zw = 0; zs = ''; zT = 0;
     saidSeen = saidHigh = hasteSaid = gateSaid = hillSeen = greeted = signSeen = false; stillT = 0; hintT = 0; noteI = 0; noteX = 0;
   }
@@ -846,6 +853,7 @@ const HL = (() => {
     if (at === 'hill') { ph = 'path'; C3.x = PATH0; saidSeen = true; hillSeen = true; dark = .55; }
     if (at === 'evangelist') { ph = 'still'; C3.x = FOOT; saidSeen = saidHigh = true; dark = 1; stillT = 1e4; zs = 'done'; }
     if (at === 'gate') { ph = 'gate'; C3.x = GATE_FROM; saidSeen = true; hope = 1; }
+    if (ph !== 'plain') mono = 0;      // skip links into the rocks or the gate start out of the silver key
     if (at) { cam.cx = C3.x + 150; reveal = 1; if (at !== 'gate') { cam.z = Z_NEAR; cam.wl = 440 - (1 - Z_NEAR) * 70; } }
     G.state = 'wait'; setTimeout(() => { if (HL.on && G.state === 'wait') { G.state = ph === 'still' ? 'auto' : 'play'; } }, 1400);
   }
@@ -944,6 +952,7 @@ const HL = (() => {
   function update() {
     if (ph === 'title') { G.t % 14 || embers.push({ x: 20 + Math.random() * 70, y: 10 - Math.random() * 40, vx: -.25 - Math.random() * .5, vy: -.5 - Math.random() * .7, r: .8 + Math.random() * 1.3, h: Math.random(), t: 0, life: 140 + Math.random() * 160 }); for (const e of embers) { e.t++; e.x += e.vx; e.y += e.vy; } for (let i = embers.length - 1; i >= 0; i--) if (embers[i].t >= embers[i].life) embers.splice(i, 1); flashT--; if (flashT < 0) { fire(.5 + Math.random() * .4); flashT = 300 + Math.random() * 500; } flash *= .9; return; }
     const want = G.state === 'play' && (keys.r || held());
+    { const plainish = ph === 'plain' || ph === 'meet' || ph === 'aside' || ph === 'down'; mono += ((plainish ? 1 : 0) - mono) * (plainish ? .02 : .2); }
     if (C3.sd != null) C3.sd += .4;
     C3.faceA = clamp(C3.faceA + (C3.face - C3.faceA) * .06, -1, 1);
     if (C3.tv) { C3.tv.t += C3.tv.d * TURN_META.step * C3.tv.k; if (C3.tv.t >= TURN.length - 1 || C3.tv.t <= 0) { C3.face = C3.faceA = C3.tv.d; C3.tv = null; } }
@@ -2024,6 +2033,10 @@ const HL = (() => {
       { c.save(); c.translate(mx, 5); c.scale(1, .1); const g = c.createRadialGradient(0, 0, 0, 0, 0, 210); g.addColorStop(0, css([255, 196, 126], .5 * mercy)); g.addColorStop(1, css([255, 180, 110], 0)); c.fillStyle = g; c.fillRect(-210, -210, 420, 420); c.restore(); }
       { const g = c.createRadialGradient(mx, -84, 0, mx, -84, 170); g.addColorStop(0, css([255, 206, 150], .2 * mercy)); g.addColorStop(1, css([255, 190, 130], 0)); c.fillStyle = g; c.fillRect(mx - 170, -254, 340, 340); }
       c.restore(); }
+    // ONE KEY WITH LEVEL 2: Level 2's last mist still lies over the plain as the level opens and thins as he walks out of
+    // it; laid before the figures, so it is behind and beside them, never between us and him (a picture rule)
+    { const mist = mono * (1 - smooth(START, START + MIST0, C3.x)) * (1 - dark);
+      if (mist > .005) { c.save(); c.setTransform(S, 0, 0, S, 0, 0); const g = c.createLinearGradient(0, 0, 0, VH); g.addColorStop(0, css([240, 228, 200], .26 * mist)); g.addColorStop(.5, css([244, 232, 204], .66 * mist)); g.addColorStop(.82, css([232, 220, 196], .5 * mist)); g.addColorStop(1, css([214, 202, 182], .2 * mist)); c.fillStyle = g; c.fillRect(0, 0, VW, VH); c.restore(); } }
     if (evan && evan.x != null && EVW.ready) {
       // walking in out of the haze, then his standing frames dissolve in over the walk frame
       const ex = evan.x, fa = smooth(EV_X - EV_FROM, EV_X - EV_FROM + 220, ex), st = evan.st; TALKM = talkMove(E); foot(c, ex, fa);
@@ -2076,6 +2089,12 @@ const HL = (() => {
       if (k > .02) { const g = c.createRadialGradient(gx, sy, 0, gx, sy, sw * .9); g.addColorStop(0, css([255, 226, 170], .45 * k)); g.addColorStop(1, css([255, 200, 140], 0)); c.save(); c.globalCompositeOperation = 'lighter'; c.fillStyle = g; c.fillRect(gx - sw, sy - sw, 2 * sw, 2 * sw); c.restore(); } }
     // the smoke Evangelist comes out of
     if (evan && evan.a < 1) { const ex = X(EV_X - 30), ey = Y(-90), a = Math.sin(Math.PI * clamp(evan.a * 1.1)) * .8 + (1 - evan.a) * .0; c.globalAlpha = a; for (let i = 0; i < 3; i++) c.drawImage(SMOKE, ex - (200 + i * 40) * z + 30 * Math.sin(G.t / 90 + i), ey - (110 - i * 30) * z, 400 * z, 200 * z); c.globalAlpha = 1; }
+    // ONE KEY WITH LEVEL 2: the colour held down to Level 2's warm silver-gold (the mist is laid before the figures, below);
+    // the flash and the dark of the turning aside still show through
+    if (mono > .005) {
+      c.save(); c.globalCompositeOperation = 'saturation'; c.fillStyle = css([128, 128, 128], MONO_SAT * mono); c.fillRect(0, 0, VW, VH);
+      c.globalCompositeOperation = 'color'; c.fillStyle = css(MONO_TONE, .34 * mono); c.fillRect(0, 0, VW, VH); c.restore();
+    }
     // (7) the glints: a soft four-pointed sparkle that grows and fades in a second
     for (const g of GLINTS) { const [gx, gy] = g.pos(), u = g.t / 60, k = Math.sin(Math.PI * u), r = 16 * k + 3; c.save(); c.globalCompositeOperation = 'lighter'; c.translate(gx, gy); c.rotate(u * .6);
       c.fillStyle = css([255, 244, 214], .75 * k); for (const a of [0, Math.PI / 2]) { c.save(); c.rotate(a); c.beginPath(); c.moveTo(-r, 0); c.quadraticCurveTo(0, -1.2, r, 0); c.quadraticCurveTo(0, 1.2, -r, 0); c.fill(); c.restore(); }
