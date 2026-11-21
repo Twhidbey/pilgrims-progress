@@ -6,7 +6,7 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 **Build 416 (Level 3 chat): the wheat trial.** `?wheat=1` / `?wheat=2` add three rows of wheat in front of Level 3's road and Wiseman wades through them to the meeting; without the switch nothing changes. Waiting on the owner's pick (see CLAUDE.md, Level 3, build 416).
 
 **Build 419 (Level 3 chat):** the wheat in front of Level 3's road is kept, Level 1's kind with a gentle rise and fall along its top; Wiseman wades through it to the meeting. `?wheat=0` hides it.
-**Build 120 (Level 4 chat): no flicker between the house cutaway and the door's painting at the start of Level 4. Next: every room redrawn in code, room 1 first, after three critic subagents (design, story and beauty, play).**
+**Build 423 (Level 4 chat): no flicker between the house cutaway and the door's painting at the start of Level 4. Next: every room redrawn in code, room 1 first, after three critic subagents (design, story and beauty, play).**
 
 ## START HERE (rewritten at build 140, Nov 16 2026)
 
