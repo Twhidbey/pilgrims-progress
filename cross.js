@@ -17,13 +17,15 @@
 const CR = (() => {
   const SO = 'The Shining Ones', S1 = 'The first Shining One', S3 = 'The third Shining One';
   // ---------- the land (world units: x along the way, h up from the foot of the slope) ----------
-  const START = 120, WALL_END = 860, TOMB_X = 1010, SLOPE0 = 1180, CREST0 = 2860, CROSS_X = 3040, CREST1 = 3260, FALL1 = 3760, H_TOP = 240;
-  const STOP_X = CROSS_X - 112;      // where he stands when the burden falls: just short of the cross, facing it
+  const START = 120, WALL_END = 860, TOMB_X = 3840, SLOPE0 = 1180, CREST0 = 2860, CROSS_X = 3040, CREST1 = 3260, FALL1 = 3760, H_TOP = 240;
+  const STOP_X = CROSS_X + 112;      // where he stands when the burden falls: just past the cross, turned round to face it,
+  // so the burden falls off behind him down the far slope into the sepulchre in the hollow (owner: "Why not on other side like in initial sketch?" ... "Yes!")
   const sm = (a, b, x) => smooth(a, b, x);
   function gh(x) {
     let h = H_TOP * Math.pow(sm(SLOPE0, CREST0, x), 1.15);
     h += 10 * Math.sin(Math.PI * clamp((x - CREST0 + 200) / 600)) * sm(SLOPE0, CREST0, x);
-    h -= (H_TOP + 60) * sm(CREST1, FALL1, x);
+    h -= (H_TOP - 70) * sm(CREST1, FALL1, x);      // the far side falls to a hollow 70 above the near foot, where the sepulchre is
+    h += 26 * sm(TOMB_X + 260, TOMB_X + 900, x);
     h += (3 * Math.sin(x * .011) + 1.6 * Math.sin(x * .031 + 1)) * sm(SLOPE0, SLOPE0 + 300, x) * (1 - sm(CREST0 - 100, CREST0, x));
     return h;
   }
@@ -60,7 +62,7 @@ const CR = (() => {
 
   // ---------- state ----------
   let ph = '', t = 0, cam = { cx: 0, z: 1, wl: 420 }, wideK = 0, wideTo = 0;
-  const Ch = { x: START, anim: 12, sd: null, cf: -1, cfd: 1, hop: 0, hops: 0, lastV: 0, fade: 0 };
+  const Ch = { x: START, anim: 12, sd: null, cf: -1, cfd: 1, hop: 0, hops: 0, lastV: 0, fade: 0, face: 1, tv: null };
   let bur = null, dawn = 0, gold = 0, goldTo = 0, sun = 0, robe = 0, robeTo = 0, mark = 0, markTo = 0, rollShow = 0, rollGone = 0, shine = 0, shineTo = 0, gone = 0, goneTo = 0;
   let said = {}, hymn = null, silenceT = 0, tombT = 0, leapsLeft = 3, endT = 0, quietPad = 0;
   const frameOf = a => ((Math.floor(a) % CHR.length) + CHR.length) % CHR.length;
@@ -101,9 +103,9 @@ const CR = (() => {
   function camTick(snap) {
     const near = { cx: Ch.x + 250, z: .8 };
     if (ph === 'cross' || ph === 'after' || ph === 'shine' || ph === 'leaps' || ph === 'end') { near.cx = CROSS_X + 60; near.z = .86; }
-    const wide = { cx: (TOMB_X + CROSS_X) / 2 + 40, z: VW / 2500 };
+    const open = ph === 'look', wide = open ? { cx: (START + CROSS_X) / 2 + 420, z: VW / 3500 } : { cx: (TOMB_X + CROSS_X) / 2 - 40, z: VW / 1900 };
     const tcx = lerp(near.cx, wide.cx, wideK), tz = Math.exp(lerp(Math.log(near.z), Math.log(wide.z), wideK));
-    const fh = lerp(gh(Ch.x), lerp(gh(TOMB_X), gh(CROSS_X), .2), wideK), twl = FOOTY + fh * tz + 28 * wideK;
+    const wh = open ? 40 : gh(TOMB_X) + 20, fh = lerp(gh(Ch.x), wh, wideK), twl = FOOTY + fh * tz + (open ? 28 : 0) * wideK;
     const e = snap ? 1 : .045; cam.cx += (tcx - cam.cx) * e; cam.z += (tz - cam.z) * e; cam.wl += (twl - cam.wl) * e;
   }
 
@@ -138,13 +140,14 @@ const CR = (() => {
   function drawChr(c) {
     const tint = tintNow(), rim = gold * (1 - wideK), x = Ch.x, h = gh(x) + Ch.hop;
     contact(c, x, gh(x), 1 - Math.min(1, Ch.hop / 40) * .6);
-    const useClip = Ch.cf >= 0 && CLIP.ready;
+    const useClip = Ch.cf >= 0 && CLIP.ready, fc = Ch.face;
+    if (Ch.tv && TURN.length) { const f0 = clamp(Math.round(Ch.tv.t), 0, TURN.length - 1); figure(c, TURN[f0], TURN_META, x, h, 1, 1, tint, rim); return; }
     if (useClip) {
       const f0 = clamp(Math.round(Ch.cf), 0, CLIP.length - 1);
-      if (Ch.fade < 1 && STD.length) figure(c, STD[atTime(STD_META, breathT(Ch.sd || 0))], STD_META, x, h, 1, 1 - Ch.fade, tint, rim);
-      figure(c, CLIP[f0], CLIP_META, x, h, 1, Ch.fade < 1 ? Ch.fade : 1, tint, rim);
-      if (mark > .01) { const hx = x + 14, hy = -h - 138; const g = c.createRadialGradient(hx, hy, 0, hx, hy, 9); g.addColorStop(0, css([255, 244, 214], .8 * mark)); g.addColorStop(1, 'rgba(255,240,200,0)'); c.fillStyle = g; c.fillRect(hx - 10, hy - 10, 20, 20); }
-    } else if (Ch.sd != null && STD.length) figure(c, STD[atTime(STD_META, breathT(Ch.sd))], STD_META, x, h, 1, 1, tint, rim);
+      if (Ch.fade < 1 && STD.length) figure(c, STD[atTime(STD_META, breathT(Ch.sd || 0))], STD_META, x, h, fc, 1 - Ch.fade, tint, rim);
+      figure(c, CLIP[f0], CLIP_META, x, h, fc, Ch.fade < 1 ? Ch.fade : 1, tint, rim);
+      if (mark > .01) { const hx = x + 14 * fc, hy = -h - 138; const g = c.createRadialGradient(hx, hy, 0, hx, hy, 9); g.addColorStop(0, css([255, 244, 214], .8 * mark)); g.addColorStop(1, 'rgba(255,240,200,0)'); c.fillStyle = g; c.fillRect(hx - 10, hy - 10, 20, 20); }
+    } else if (Ch.sd != null && STD.length) figure(c, STD[atTime(STD_META, breathT(Ch.sd))], STD_META, x, h, fc, 1, tint, rim);
     else figure(c, CHR[frameOf(Ch.anim)], CHR_META, x, h, 1, 1, tint, rim);
   }
   // the burden on its own, rolling back down the slope he climbed
@@ -161,15 +164,15 @@ const CR = (() => {
   function burdenTick() {
     if (!bur) return;
     if (bur.st === 'roll') {
-      const slope = (gh(bur.x + 4) - gh(bur.x - 4)) / 8;      // > 0 where the ground falls toward the left
+      const slope = (gh(bur.x - 4) - gh(bur.x + 4)) / 8;      // > 0 where the ground falls toward the right
       bur.v = Math.min(5.2, Math.max(.4, bur.v + slope * .12 - .002));
-      bur.x -= bur.v; bur.r -= bur.v / (BALL.h * CHR_K * .5);
+      bur.x += bur.v; bur.r += bur.v / (BALL.h * CHR_K * .5);
       // it tumbles: now and then it bounces off a hump
       bur.vy -= .32; bur.y += bur.vy; if (bur.y <= 0) { bur.y = 0; if (bur.vy < -1.2) thump(Math.min(1, -bur.vy / 5)); bur.vy = bur.v > 1.6 && Math.random() < .045 ? 1.6 + Math.random() * 2.2 : 0; }
-      if (bur.x <= TOMB_X + 52) { bur.st = 'in'; bur.t = 0; }
+      if (bur.x >= TOMB_X - 52) { bur.st = 'in'; bur.t = 0; }
     } else if (bur.st === 'in') {
       // into the mouth of the sepulchre: a last tumble down into the dark, then gone
-      bur.t++; bur.x -= Math.max(.5, bur.v * (1 - bur.t / 40)); bur.r -= .05; bur.k = 1 - .35 * sm(0, 40, bur.t); bur.dk = sm(0, 30, bur.t); bur.y = -10 * sm(0, 40, bur.t); bur.a = 1 - sm(24, 46, bur.t);
+      bur.t++; bur.x += Math.max(.5, bur.v * (1 - bur.t / 40)); bur.r += .05; bur.k = 1 - .35 * sm(0, 40, bur.t); bur.dk = sm(0, 30, bur.t); bur.y = -10 * sm(0, 40, bur.t); bur.a = 1 - sm(24, 46, bur.t);
       if (bur.t === 30) { thump(1.3); if (audio()) hiss(70, .6, .12, 1.6); }
       if (bur.t > 48) { bur.st = 'gone'; tombT = t; }
     }
@@ -233,7 +236,7 @@ const CR = (() => {
   }
   function tomb(c) {
     const x = TOMB_X, h = gh(x), col = mix(mix([28, 28, 36], [34, 30, 34], dawn), [48, 38, 33], gold);
-    c.save(); c.translate(x, -h);
+    c.save(); c.translate(x, -h); c.scale(-1, 1);
     c.beginPath(); c.moveTo(-58, 5); c.lineTo(-52, -22); c.lineTo(-30, -44); c.lineTo(8, -54); c.lineTo(40, -48); c.lineTo(62, -30); c.lineTo(78, -6); c.lineTo(84, 5); c.closePath(); c.fillStyle = css(col); c.fill();
     // its mouth, opening toward the slope
     c.beginPath(); c.moveTo(40, 5); c.lineTo(42, -16); c.quadraticCurveTo(52, -32, 64, -18); c.lineTo(66, 5); c.closePath(); c.fillStyle = 'rgb(8,7,8)'; c.fill();
@@ -249,7 +252,7 @@ const CR = (() => {
     c.restore();
   }
   // the three Shining Ones: tall soft figures of light ("their faces shone as the light"), drawn with light, not paint
-  const SH = [[CROSS_X + 104, 176, 0], [CROSS_X + 158, 186, 1.7], [CROSS_X + 212, 172, 3.1]];
+  const SH = [[CROSS_X - 212, 172, 3.1], [CROSS_X - 158, 186, 1.7], [CROSS_X - 104, 176, 0]];
   function shining(c) {
     const a = shine * (1 - gone); if (a <= .01) return;
     c.save(); c.globalCompositeOperation = 'lighter';
@@ -268,17 +271,17 @@ const CR = (() => {
     c.restore();
     // the sealed roll in the third one's hands, waiting for a touch
     if (rollShow > .01 && rollGone < 1) {
-      const [x, H] = SH[2], rx = x - 22, ry = -gh(x) - H * .52 + Math.sin(t / 30) * 2, a2 = rollShow * (1 - rollGone);
+      const [x, H] = SH[2], rx = x + 22, ry = -gh(x) - H * .52 + Math.sin(t / 30) * 2, a2 = rollShow * (1 - rollGone);
       c.save(); c.translate(rx, ry); c.globalAlpha = a2; { const g = c.createRadialGradient(0, 0, 0, 0, 0, 26); g.addColorStop(0, 'rgba(255,240,200,.5)'); g.addColorStop(1, 'rgba(255,240,200,0)'); c.fillStyle = g; c.fillRect(-26, -26, 52, 52); } c.scale(1.6, 1.6); c.fillStyle = 'rgb(236,222,190)'; c.fillRect(-9, -3.5, 18, 7); c.fillStyle = 'rgb(214,198,160)'; c.fillRect(-11, -4.5, 3, 9); c.fillRect(8, -4.5, 3, 9);
       c.fillStyle = 'rgb(150,24,26)'; c.beginPath(); c.arc(0, 4, 3, 0, 6.29); c.fill(); c.restore();
     }
   }
-  const rollPt = () => { const [x, H] = SH[2]; return [sx(x - 22), sy(gh(x) + H * .52)]; };
+  const rollPt = () => { const [x, H] = SH[2]; return [sx(x + 22), sy(gh(x) + H * .52)]; };
   const chrPt = () => [sx(Ch.x), sy(gh(Ch.x) + 80)];
 
   // ---------- the story ----------
   function reset0() {
-    Object.assign(Ch, { x: START, anim: 12, sd: QUIET[0], cf: -1, hop: 0, hops: 0, lastV: 0, fade: 0, hv: 0 });
+    Object.assign(Ch, { x: START, anim: 12, sd: QUIET[0], cf: -1, hop: 0, hops: 0, lastV: 0, fade: 0, hv: 0, face: 1, tv: null });
     bur = null; dawn = gold = goldTo = sun = robe = robeTo = mark = markTo = rollShow = rollGone = shine = shineTo = gone = goneTo = 0; wideK = 1; wideTo = 1;
     said = {}; hymn = null; silenceT = 0; tombT = 0; leapsLeft = 3; endT = 0; quietPad = 0; t = 0;
   }
@@ -350,21 +353,24 @@ const CR = (() => {
       let v = want ? MAXV * .9 : 0;
       if (Ch.x + v > STOP_X) v = Math.max(0, STOP_X - Ch.x);
       walk(v);
-      if (Ch.x >= STOP_X - .5 && Ch.sd != null && !saying()) { ph = 'cross'; G.state = 'auto'; Ch.cf = 0; Ch.fade = 0; t = 0; }
+      if (Ch.x >= STOP_X - .5 && Ch.sd != null && !saying()) { ph = 'cross'; G.state = 'auto'; t = 0; Ch.tv = TURN.length ? { t: TURN.length - 1 } : null; if (!Ch.tv) Ch.face = -1; }
     } else if (ph === 'cross') {
-      // he stands at the cross; the standing picture gives way to the clip, and the burden loosens by itself
+      // he has walked up past the cross; he turns round to face it (his turn played back, quickly, eased), then the
+      // standing picture gives way to the clip, mirrored, and the burden loosens by itself and falls behind him
+      if (Ch.tv) { Ch.tv.t -= (TURN.length - 1) / 70 * (.35 + .65 * Math.sin(Math.PI * clamp(Ch.tv.t / (TURN.length - 1)))); if (Ch.tv.t <= 0) { Ch.tv = null; Ch.face = -1; Ch.cf = 0; Ch.fade = 0; t = 0; } return camTick(false); }
+      if (Ch.cf < 0) { Ch.cf = 0; Ch.fade = 0; }
       Ch.fade = Math.min(1, Ch.fade + .05);
       if (t === 40) { caption(LOOSED); if (audio()) { hiss(300, 3, .03, 1.2); } }
       if (Ch.fade >= 1 && t > 50) Ch.cf = Math.min(SWAP, Ch.cf + 16 / 60);
       if (Ch.cf >= SWAP) {
         ph = 'tumble'; t = 0; thump(1.1);
-        bur = { st: 'roll', x: STOP_X + (BALL.ax - CLIP_META.ax) * CHR_K, y: 0, vy: 0, v: .9, r: 0, k: 1, a: 1, dk: 0, t: 0 };
+        bur = { st: 'roll', x: STOP_X - (BALL.ax - CLIP_META.ax) * CHR_K, y: 0, vy: 0, v: .9, r: 0, k: 1, a: 1, dk: 0, t: 0 };
         wideTo = 1;
       }
     } else if (ph === 'tumble') {
       // he stands tall, lighter, his head lifted (the clip's frames 41 to 70, played on, then back and forth)
       clipHold();
-      if (t === 120) caption(TUMBLE);
+      if (t === 50) caption(TUMBLE);
       burdenTick();
       if (bur.st === 'gone') { ph = 'gone'; t = 0; }
     } else if (ph === 'gone') {
@@ -416,6 +422,6 @@ const CR = (() => {
     drawItems();
   }
 
-  return { on: false, start, update, draw, touch, key, preload, lines: ALL, stop: () => padStop(), _pt: { roll: rollPt, chr: chrPt },
+  return { on: false, start, update, draw, touch, key, preload, lines: ALL, stop: () => padStop(), _pt: { roll: rollPt, chr: chrPt }, _turning: () => !!Ch.tv,
     peek: () => ({ ph, t, x: Math.round(Ch.x), cf: +Ch.cf.toFixed(1), bur: bur ? { st: bur.st, x: Math.round(bur.x) } : null, gold: +gold.toFixed(2), shine: +shine.toFixed(2), leaps: leapsLeft }) };
 })();
