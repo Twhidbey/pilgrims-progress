@@ -115,10 +115,10 @@ const CR = (() => {
   function camTick(snap) {
     const near = { cx: Ch.x + lerp(250, 110, closeK), z: lerp(.8, 1.25, closeK) };
     if (ph === 'cross' || ph === 'after' || ph === 'shine' || ph === 'leaps' || ph === 'end') { near.cx = CROSS_X - 130; near.z = .86; }
-    const open = ph === 'look', fitT = (FOOTY - 30) / (gh(CROSS_X) + CROSS_H - gh(TOMB_X) + 90);
+    const open = ph === 'look', fitT = (FOOTY - 30) / (gh(CROSS_X) + CROSS_H - tombSill() + 60);
     const wide = open ? { cx: (START + CROSS_X) / 2 + 420, z: Math.min(VW / (CROSS_X - START + 900), (FOOTY - 40) / (H_TOP + CROSS_H + 40)) } : { cx: TOMB_X + 250, z: Math.min(VW / (2 * (CROSS_X - TOMB_X - 250) + 460), fitT) };
     let tcx = lerp(near.cx, wide.cx, wideK), tz = Math.exp(lerp(Math.log(near.z), Math.log(wide.z), wideK));
-    const wh = open ? 40 : gh(TOMB_X) - 90, fh = lerp(gh(Ch.x), wh, wideK);
+    const wh = open ? 40 : tombSill() - 60, fh = lerp(gh(Ch.x), wh, wideK);
     let twl = FOOTY + fh * tz + (open ? 28 : 0) * wideK;
     // the look from the top after the cut: wide, he and the cross high in the picture, the hill falling away below
     if (topK > .001) { const z2 = .4, wl2 = 250 + gh(Ch.x) * z2; tcx = lerp(tcx, Ch.x - 40, topK); twl = lerp(twl, wl2, topK); tz = Math.exp(lerp(Math.log(tz), Math.log(z2), topK)); }
@@ -170,7 +170,7 @@ const CR = (() => {
   function drawBurden(c) {
     if (!bur || !BURDEN || bur.a <= 0) return;
     const K = CHR_K, w = BALL.w * K * bur.k, hh = BALL.h * K * bur.k, h = gh(bur.x) + bur.y;
-    contact(c, bur.x, gh(bur.x), bur.a * .7 * (1 - Math.min(1, bur.y / 40)), 24 * bur.k);
+    if (bur.st === 'roll') contact(c, bur.x, gh(bur.x), bur.a * .7 * (1 - Math.min(1, bur.y / 40)), 24 * bur.k);
     c.save(); c.translate(bur.x, -h - hh / 2 + 2); c.rotate(bur.r); c.globalAlpha = bur.a;
     const tint = tintNow(), W = BURDEN.width, H = BURDEN.height;
     if (figC.width !== W || figC.height !== H) { figC.width = W; figC.height = H; }
@@ -185,12 +185,12 @@ const CR = (() => {
       bur.x -= bur.v; bur.r -= bur.v / (BALL.h * CHR_K * .5);
       // it tumbles: now and then it bounces off a hump
       bur.vy -= .32; bur.y += bur.vy; if (bur.y <= 0) { bur.y = 0; if (bur.vy < -1.2) thump(Math.min(1, -bur.vy / 5)); bur.vy = bur.v > 1.6 && Math.random() < .045 ? 1.6 + Math.random() * 2.2 : 0; }
-      if (bur.x <= TOMB_X + 8) { bur.st = 'in'; bur.t = 0; bur.x0 = bur.x; }
+      if (bur.x <= TOMB_X + 10) { bur.st = 'in'; bur.t = 0; bur.x0 = bur.x; bur.vy = 0; }
     } else if (bur.st === 'in') {
       // into the mouth of the sepulchre: a last tumble down into the dark, then gone
-      bur.t++; bur.x = lerp(bur.x0, TOMB_X, sm(0, 30, bur.t)); bur.r -= .04 * (1 - bur.t / 48); bur.k = 1 - .45 * sm(0, 40, bur.t); bur.dk = sm(0, 26, bur.t); bur.y = 4 * sm(0, 40, bur.t); bur.a = 1 - sm(22, 46, bur.t);
-      if (bur.t === 30) { thump(1.3); if (audio()) hiss(70, .6, .12, 1.6); }
-      if (bur.t > 48) { bur.st = 'gone'; tombT = t; }
+      bur.t++; bur.x = lerp(bur.x0, TOMB_X, sm(0, 24, bur.t)); bur.r -= .05; bur.vy -= .32; const floor = tombSill() + 6 - gh(bur.x); bur.y = Math.max(floor, bur.y + bur.vy); if (bur.y === floor) bur.k = Math.max(.55, bur.k - .02); bur.dk = sm(14, 40, bur.t); bur.a = 1 - sm(30, 52, bur.t);
+      if (bur.t === 26) { thump(1.3); if (audio()) hiss(70, .6, .12, 1.6); }
+      if (bur.t > 54) { bur.st = 'gone'; tombT = t; }
     }
   }
 
@@ -250,48 +250,37 @@ const CR = (() => {
     // the coping catches a little of the sky
     c.fillStyle = css(mix(col, [200, 190, 190], .08 + .12 * gold)); c.fillRect(-600, -WH - 3, WALL_END + 600, 2);
   }
-  // the sepulchre: a low outcrop of rock in the hollow, a doorway hewn into its face (seen straight on, as the game sees
-  // everything), dark within, and the round stone that closed it rolled aside to the left; one dark tone like the land,
-  // a breath lighter so it reads against the slope, a thin warm edge on the side toward the dawn
-  const TOMB = (() => {
-    const r = rgen(23), top = [];
-    for (let i = 0; i <= 40; i++) { const u = i / 40, X = -190 + 370 * u;
-      // a rounded mass, higher toward the hill (right), its top broken into a few weathered steps
-      const e = Math.sin(Math.PI * u), env = Math.sin(Math.PI * Math.pow(u, .9)) * (96 + 40 * u);
-      // its ends run down into the slope (no upright edge)
-      top.push([X, 6 - (env + Math.sqrt(e) * (6 + 5 * Math.sin(u * 19 + 1) + 3 * Math.sin(u * 41) + (r() - .5) * 3))]); }
-    return { top };
-  })();
-  const TOMB_K = 1.45;
+  // the sepulchre, cut into the body of the hill (owner: "down on the ground like in the body of hill"): in the flat side
+  // view the dark mass under the slope's outline is the hill's face toward us, and the tomb is hewn into it, below the
+  // surface: a rough cut face a breath lighter than the hill, a round-headed doorway dark within, a worn sill and a
+  // narrow ledge before it, and the great round stone rolled aside on the ledge; the burden rolls down the slope above
+  // and drops down the cut face into the door
+  const DOOR_W = 38, DOOR_H = 104;
+  const tombSill = () => Math.min(gh(TOMB_X - DOOR_W - 30), gh(TOMB_X + DOOR_W + 30)) - DOOR_H - 34;
+  const CUT = (() => { const r = rgen(23), L = []; for (let i = 0; i <= 24; i++) L.push((r() - .5) * 7); return L; })();
   function tomb(c) {
-    const x = TOMB_X, h = gh(x), col = mix(mix([30, 30, 38], [36, 32, 36], dawn), [52, 41, 35], gold);
-    c.save(); c.translate(x, -h + 3); c.scale(TOMB_K, TOMB_K);
-    // the rock
-    const T = TOMB.top;
-    const gl = X => (h - gh(x + X * TOMB_K)) / TOMB_K;      // the ground under the rock, in its own units (the slope rises to the right)
-    // its height is measured from the slope under it, so it sits on the hill
-    c.beginPath(); T.forEach(([px, py]) => c.lineTo(px, gl(px) + py)); for (let X = T[T.length - 1][0]; X >= T[0][0]; X -= 10) c.lineTo(X, gl(X) + 6); c.closePath();
-    c.fillStyle = css(col); c.fill();
-    c.save(); c.clip();
-    // lighter toward the top, darker at the foot
-    c.rotate(Math.atan2(gl(100) - gl(-100), 200));      // the shading follows the slope it sits on
-    let g = c.createLinearGradient(0, -140, 0, 10); g.addColorStop(0, css(mix(col, [150, 140, 150], .07 + .05 * gold))); g.addColorStop(1, css(mix(col, [0, 0, 0], .22))); c.fillStyle = g; c.fillRect(-260, -220, 520, 300);
-    c.restore();
-    // the doorway, hewn: a dressed surround a little lighter, a round head, a deep dark within, a worn sill
-    const dw = 26, dh = 70;
-    c.fillStyle = css(mix(col, [180, 168, 170], .09 + .06 * gold));
-    c.beginPath(); c.moveTo(-dw - 7, 4); c.lineTo(-dw - 7, -dh + dw); c.arc(0, -dh + dw, dw + 7, Math.PI, 0); c.lineTo(dw + 7, 4); c.closePath(); c.fill();
-    c.beginPath(); c.moveTo(-dw, 4); c.lineTo(-dw, -dh + dw); c.arc(0, -dh + dw, dw, Math.PI, 0); c.lineTo(dw, 4); c.closePath();
-    g = c.createLinearGradient(0, -dh, 0, 4); g.addColorStop(0, 'rgb(4,4,6)'); g.addColorStop(.7, 'rgb(9,8,10)'); g.addColorStop(1, css(mix([9, 8, 10], [60, 44, 34], .25 * gold))); c.fillStyle = g; c.fill();
-    c.fillStyle = css(mix(col, [190, 176, 170], .12 + .08 * gold)); c.fillRect(-dw - 9, 1, 2 * dw + 18, 4);
-    // the great round stone, rolled aside, standing on its edge against the rock
-    const sx0 = -86, sr = 37, sg = gl(sx0) + 3; c.save(); c.translate(0, sg - 3);
-    c.fillStyle = css(mix(col, [150, 140, 148], .07 + .04 * gold)); c.beginPath(); c.ellipse(sx0, -sr + 3, sr * .92, sr, 0, 0, 7); c.fill(); c.strokeStyle = css(mix(col, [0, 0, 0], .45)); c.lineWidth = 2; c.stroke();
-    c.strokeStyle = css(mix(col, [0, 0, 0], .3)); c.lineWidth = 1.4; c.beginPath(); c.ellipse(sx0 + 3, -sr + 3, sr * .5, sr * .62, 0, 0, 7); c.globalAlpha = .5; c.stroke(); c.globalAlpha = 1;
-    c.fillStyle = css(mix(col, [0, 0, 0], .35)); c.beginPath(); c.ellipse(sx0 + 4, 3, sr * .8, 3, 0, 0, 7); c.fill(); c.restore();
-    // the dawn's thin edge along the rock's top, toward the light
-    if (gold > .01) { c.globalCompositeOperation = 'lighter'; c.strokeStyle = css([255, 214, 160], .28 * gold); c.lineWidth = 1.2; c.beginPath(); T.forEach(([px, py], i) => i > 6 ? c.lineTo(px, gl(px) + py) : c.moveTo(px, gl(px) + py)); c.stroke(); c.globalCompositeOperation = 'source-over'; }
-    c.restore();
+    const x = TOMB_X, sill = tombSill(), col = mix(mix([30, 30, 38], [36, 32, 36], dawn), [52, 41, 35], gold);
+    // the cut face: from the ledge up to the slope's surface, ragged at its sides, its top the hill's own outline
+    const x0 = x - 150, x1 = x + 120;
+    c.beginPath(); c.moveTo(x0 + CUT[0], -sill + 8);
+    for (let i = 0; i <= 12; i++) { const u = i / 12, X = lerp(x0 - 30, x0, Math.pow(u, .6)) + CUT[i]; c.lineTo(X, -lerp(sill - 8, gh(X) - 3, u)); }
+    for (let X = x0; X <= x1; X += 8) c.lineTo(X, -gh(X) + 3);
+    for (let i = 12; i >= 0; i--) { const u = i / 12, X = lerp(x1 + 34, x1, Math.pow(u, .6)) + CUT[12 + i]; c.lineTo(X, -lerp(sill - 8, gh(X) - 3, u)); }
+    c.closePath();
+    let g = c.createLinearGradient(0, -gh(x), 0, -sill + 10); g.addColorStop(0, css(mix(col, [150, 140, 150], .05 + .04 * gold))); g.addColorStop(1, css(mix(col, [150, 140, 150], .1 + .05 * gold))); c.fillStyle = g; c.fill();
+    // the ledge before the door, a little lighter on its top
+    c.fillStyle = css(mix(col, [0, 0, 0], .25)); c.fillRect(x0 - 26, -sill, x1 - x0 + 56, 10);
+    c.fillStyle = css(mix(col, [190, 176, 170], .1 + .08 * gold)); c.fillRect(x0 - 26, -sill - 2, x1 - x0 + 56, 3);
+    // the doorway: a dressed surround, a round head, a deep dark within
+    const dw = DOOR_W, dh = DOOR_H, sx0 = x, sy0 = -sill;
+    c.fillStyle = css(mix(col, [180, 168, 170], .1 + .06 * gold));
+    c.beginPath(); c.moveTo(sx0 - dw - 9, sy0); c.lineTo(sx0 - dw - 9, sy0 - dh + dw); c.arc(sx0, sy0 - dh + dw, dw + 9, Math.PI, 0); c.lineTo(sx0 + dw + 9, sy0); c.closePath(); c.fill();
+    c.beginPath(); c.moveTo(sx0 - dw, sy0); c.lineTo(sx0 - dw, sy0 - dh + dw); c.arc(sx0, sy0 - dh + dw, dw, Math.PI, 0); c.lineTo(sx0 + dw, sy0); c.closePath();
+    g = c.createLinearGradient(0, sy0 - dh, 0, sy0); g.addColorStop(0, 'rgb(4,4,6)'); g.addColorStop(.75, 'rgb(9,8,10)'); g.addColorStop(1, css(mix([9, 8, 10], [60, 44, 34], .25 * gold))); c.fillStyle = g; c.fill();
+    // the great round stone, rolled aside on the ledge
+    const rx = x - 104, rr = 50;
+    c.fillStyle = css(mix(col, [150, 140, 148], .08 + .04 * gold)); c.beginPath(); c.ellipse(rx, sy0 - rr - 2, rr * .9, rr, 0, 0, 7); c.fill(); c.strokeStyle = css(mix(col, [0, 0, 0], .45)); c.lineWidth = 2.6; c.stroke();
+    c.strokeStyle = css(mix(col, [0, 0, 0], .3)); c.lineWidth = 2; c.globalAlpha = .5; c.beginPath(); c.ellipse(rx + 4, sy0 - rr - 2, rr * .5, rr * .62, 0, 0, 7); c.stroke(); c.globalAlpha = 1;
   }
   function cross(c) {
     const x = CROSS_X, h = gh(x), col = mix(mix([20, 20, 27], [22, 20, 24], dawn), [30, 22, 20], gold), H = CROSS_H, T = 14, bw = 186, by = CROSS_BY;
