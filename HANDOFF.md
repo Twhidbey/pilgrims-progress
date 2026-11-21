@@ -10,6 +10,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 **Build 424 (Cross chat): Level 5, he stops short of the cross facing it (no turn); the burden rolls back down the slope into a new sepulchre (a rock outcrop with a hewn doorway and the rolled stone) in a hollow below him to the left. Nothing spent.**
 
+**Build  (Level 4 chat): room 1 drawn in code on a shell every room will share (candle, door in the wall, picture, crown). Stand-ins: the portrait (old painting crop) and his man (silhouette), to be made with the free image model when its allowance resets (about 11 h). Next: the other rooms on the same shell (critics' order: 6, 7, 4, door/leave, 5, 3, 2 last); the passage's doorways made taller (they are lower than the men's heads).**
+
 ## START HERE (rewritten at build 140, Nov 16 2026)
 
 **Build 420 (vision chat): the castle sits on the summit, its crag faded into the rock** (free). **Build 415 (vision chat): a rock mountain drawn in code holds the castle, the castle a third of its size** (free; see CLAUDE.md build 415). **Build 413 (vision chat): Beelzebub's castle painted** (about 15 cents, the owner said "Paint it"): a huge dark fortress on a crag after John Martin, left of the gate's wall end; the camera stands back on it as he arrives and glances back while the arrows fly. See CLAUDE.md, Level 3, build 413. Still open from this chat: Christian's new coat after the Cross (a free FLUX retry is scheduled; show the still before any clips); which lines at the mountain's foot the owner wants fixed.

@@ -354,6 +354,75 @@ const RM = (() => {
       c.globalCompositeOperation = 'lighter'; c.fill(); c.globalCompositeOperation = 'source-over';
     }
   }
+  // ============================================================
+  // THE HOUSE DRAWN IN CODE (build 424; owner: "can you start to redo each room"). One shell for every room, so a beam,
+  // a skirting board or a doorway in one room is the same in the next (a design critic's rule: no room draws its own wall).
+  // The house is seen as a SECTION, flat: the back wall frontal, the two end walls cut edge-on at the picture's sides
+  // (near-black, open below the lintel where there is a door), the beam one band under the ceiling, the floor one tone.
+  // It is night in every room. Enter by the left door, leave by the right. Plate px (3168 x 1344), baked at half size.
+  // Four darks shared by every room: frame #0c0705, beam #150d08, unlit plaster #2c1d13, floor #1d130c.
+  // ============================================================
+  const PAINTED = /[?&]painted\b/.test(location.search);
+  const HOUSE = { FY: 1250, CEIL: 150, BEAM: 44, SKIRT: 28, LINTEL: 320, END: 110 };
+  function lightPool(c, x, y, r, lit, half, a = 1) {
+    // the gate's fall-off: full at the light, .4 at 30% of the radius, .12 at 55%, nothing beyond
+    const g = c.createRadialGradient(x, y, 0, x, y, r);
+    g.addColorStop(0, css(lit, a)); g.addColorStop(.3, css(lit, .55 * a)); g.addColorStop(.42, css(half, .5 * a)); g.addColorStop(.55, css(half, .22 * a)); g.addColorStop(1, css(half, 0));
+    c.fillStyle = g; c.fillRect(x - r, y - r, 2 * r, 2 * r);
+  }
+  function bakeShell(o) {
+    const W = 1584, H = 672, cv = document.createElement('canvas'); cv.width = W; cv.height = H; const c = cv.getContext('2d'); c.scale(.5, .5);
+    const { FY, CEIL, BEAM, SKIRT, LINTEL, END } = HOUSE, r = rngR(o.seed || 7), soft = (draw, w, h) => { const a = document.createElement('canvas'); a.width = w; a.height = h; draw(a.getContext('2d'), w, h); return a; };
+    // the back wall: unlit plaster, then the room's one light as a soft pool on it
+    c.fillStyle = '#2c1d13'; c.fillRect(0, 0, 3168, 1344);
+    c.save(); c.beginPath(); c.rect(0, 0, 3168, FY); c.clip();
+    for (const L of o.lights || []) { c.save(); c.translate(L.x, L.y); c.scale(L.sx || 1.25, 1); c.translate(-L.x, -L.y); lightPool(c, L.x, L.y, L.r, L.lit, L.half, L.a || 1); c.restore(); }
+    // plaster grain at three sizes, the same strength in every room (soft-light, so the light still rules); no cracks, no stains with edges
+    for (const [nw, cnt, rmax, al] of [[40, 70, 6, .03], [120, 420, 5, .022], [420, 3800, 2.2, .03]]) {
+      const nh = Math.round(nw * 1344 / 3168), t = soft((x, w, h) => { for (let i = 0; i < cnt; i++) { x.fillStyle = r() < .5 ? `rgba(40,26,14,${al + r() * al})` : `rgba(255,232,200,${al + r() * al})`; x.beginPath(); x.arc(r() * w, r() * h, .6 + r() * rmax, 0, 6.2832); x.fill(); } }, nw, nh);
+      c.save(); c.globalCompositeOperation = 'soft-light'; c.drawImage(t, 0, 0, 3168, 1344); c.restore();
+    }
+    c.restore();
+    o.wall && o.wall(c, r);
+    // the ceiling and its one beam (a thin warm arris on its underside only where the light reaches)
+    c.fillStyle = '#100906'; c.fillRect(0, 0, 3168, CEIL);
+    c.fillStyle = '#150d08'; c.fillRect(0, CEIL, 3168, BEAM);
+    for (const L of o.lights || []) { const g = c.createLinearGradient(L.x - L.r * .7, 0, L.x + L.r * .7, 0); g.addColorStop(0, css(L.lit, 0)); g.addColorStop(.5, css(L.lit, .35 * (L.a || 1))); g.addColorStop(1, css(L.lit, 0)); c.fillStyle = g; c.fillRect(L.x - L.r * .7, CEIL + BEAM - 3, L.r * 1.4, 3); }
+    let g = c.createLinearGradient(0, CEIL + BEAM, 0, CEIL + BEAM + 60); g.addColorStop(0, 'rgba(12,7,4,.45)'); g.addColorStop(1, 'rgba(12,7,4,0)'); c.fillStyle = g; c.fillRect(0, CEIL + BEAM, 3168, 60);
+    // the skirting board, and the floor: one tone, a thin lighter top edge, two faint level seams; the light lies on it flat
+    c.fillStyle = '#1a110b'; c.fillRect(0, FY - SKIRT, 3168, SKIRT);
+    c.fillStyle = '#1d130c'; c.fillRect(0, FY, 3168, 1344 - FY);
+    c.fillStyle = 'rgba(120,84,52,.22)'; c.fillRect(0, FY, 3168, 3);
+        for (const L of o.lights || []) { c.save(); c.beginPath(); c.rect(0, FY - SKIRT, 3168, 1344); c.clip(); c.translate(L.x, FY + 20); c.scale(1, .12); lightPool(c, 0, 0, L.r * 1.1, L.lit, L.half, .8 * (L.a || 1)); c.restore(); }
+    // the end walls, cut edge-on: near-black, open below the lintel where there is a door (the passage's dark showing through)
+    for (const [side, x0] of [['L', 0], ['R', 3168 - END]]) {
+      c.fillStyle = '#0c0705'; c.fillRect(x0, 0, END, 1344);
+      if (o.doors && o.doors.includes(side)) { c.fillStyle = '#070403'; c.fillRect(x0, LINTEL, END, 1344 - LINTEL); c.fillStyle = '#3a2616'; c.fillRect(side === 'L' ? x0 + END - 6 : x0, LINTEL, 6, FY - LINTEL); c.fillRect(x0, LINTEL - 6, END, 6); }
+    }
+    o.near && o.near(c, r);
+    return cv;
+  }
+  // ROOM 1, A PRIVATE ROOM ({72}): dark but for his man's taper; he lights the candle on its stand; he opens a door in the wall,
+  // and there hangs the picture of the grave person, a crown of gold over his head. After Rembrandt: one candle in a great dark.
+  const R1 = { CAN: [1290, 818], SERV: 1140, NICHE: [1500, 300, 2240, 1040], PIC: [1560, 360, 2180, 980], CROWN: [1879, 431] };
+  function bakeR1() {
+    const [nx0, ny0, nx1, ny1] = R1.NICHE;
+    return bakeShell({ seed: 21, doors: 'LR', lights: [{ x: R1.CAN[0] + 120, y: 760, r: 1150, lit: [112, 78, 44], half: [58, 39, 25], sx: 1.15 }],
+      wall(c) {
+        // the deep recess in the wall where the picture hangs, behind its two doors (the doors are drawn live: they open)
+        c.fillStyle = '#120a06'; c.fillRect(nx0 - 6, ny0 - 6, nx1 - nx0 + 12, ny1 - ny0 + 12);
+        let g = c.createLinearGradient(nx0, 0, nx0 + 40, 0); g.addColorStop(0, 'rgba(0,0,0,.5)'); g.addColorStop(1, 'rgba(0,0,0,0)'); c.fillStyle = g; c.fillRect(nx0 - 6, ny0 - 6, 50, ny1 - ny0 + 12);
+      },
+      near(c) {
+        // the candle stand: a tall turned wooden stand on three feet, one dark tone, lit a little on the side toward the room
+        const [cx, cy] = R1.CAN, FY = HOUSE.FY; c.fillStyle = '#150c07';
+        c.fillRect(cx - 9, cy + 18, 18, FY - cy - 40);
+        for (const [y, w] of [[cy + 12, 54], [cy + 30, 30], [cy + 170, 26], [cy + 300, 30], [FY - 40, 40]]) { c.beginPath(); c.ellipse(cx, y, w / 2, 9, 0, 0, 6.2832); c.fill(); }
+        c.beginPath(); c.moveTo(cx - 70, FY); c.lineTo(cx - 10, FY - 46); c.lineTo(cx + 10, FY - 46); c.lineTo(cx + 70, FY); c.lineTo(cx + 52, FY); c.lineTo(cx, FY - 26); c.lineTo(cx - 52, FY); c.closePath(); c.fill();
+        c.fillStyle = 'rgba(200,140,80,.3)'; c.fillRect(cx - 27, cy + 9, 54, 2);
+      } });
+  }
+  if (!PAINTED) { const n = 'room1-drawn'; loads[n] = new Promise(r => setTimeout(r, 0)).then(() => (pics[n] = bakeR1())); }
   const ROOMS = {
     door: {
       pic: 'room-door', FY: 1200, cam0: 210, tone: [80, 74, 90], k: .58,
@@ -371,8 +440,78 @@ const RM = (() => {
       under(c) { const self = this; doorLight(c, this.d, () => { if (self.ia > .01) visitor(c, 'I', DOOR.x, -1, .58, self.ia); }); glow(c, u(2832), v(380), 120, [255, 190, 110], .1 + .03 * Math.sin(G.t / 40)); glow(c, u(470), v(1000), 70, [255, 160, 80], .2 + .08 * Math.sin(G.t / 7) * Math.sin(G.t / 13)); },
       people(c) { visitor(c, 'C', 1880, 1, .58); },
     },
-    // 1 THE PICTURE (after Rembrandt's Apostle Paul): the room dark but for the servant's taper; he lights the candle
-    r1: {
+    // 1 A PRIVATE ROOM, drawn in code (build 424). The book ({72}): "he commanded his man to light the candle ... and bid his man open a door;
+    // the which when he had done, Christian saw the picture of a very grave person hang up against the wall". Three touches, each a story move:
+    // the candle (his man lights it), the door in the wall (his man opens it), the crown (it shines as the Interpreter tells what it means).
+    r1: PAINTED ? null : {
+      pic: 'room1-drawn', FY: HOUSE.FY, tone: [150, 128, 108], toneC: [118, 100, 86], k: 1,
+      light() { return { x: R1.CAN[0], a: .55 * smooth(.2, 1, this.lit) * (1 + .05 * Math.sin(G.t / 5)), col: [255, 190, 120] }; },
+      enter() { this.lit = 0; this.door = 0; this.crown = 0; this.serv = 0; this.vz = VZ; this.vx = 0; pic('room1-portrait'); pic('room4-caster'); },
+      run() { talk([[TIP, 'Touch the candle.', 'candle']], () => { ph = 'light'; t = 0; G.state = 'auto'; }); },
+      act(sx, sy) {
+        if (G.act === 'candle' && (sx == null || near(sx, sy, R1.CAN[0], R1.CAN[1], 170))) { next(true); if (audio()) { noise(2500, 2, .4, .06); note(72, .03, 2); } }
+        if (G.act === 'opendoor' && (sx == null || near(sx, sy, 1870, 670, 300))) { next(true); if (audio()) { tone(140, 'sawtooth', .025, .9, 0, 400); noise(700, 6, .6, .03); } }
+        if (G.act === 'crown' && (sx == null || near(sx, sy, R1.CROWN[0], R1.CROWN[1], 170))) { next(true); this.crown = 1; if (audio()) { note(88, .025, 2.4); note(95, .018, 2.4, .12); } }
+      },
+      upd() {
+        if (G.act === 'candle' && G.actT >= 70 && !G.ring) G.ring = ring(R1.CAN[0], R1.CAN[1]);
+        if (G.act === 'opendoor' && G.actT >= 70 && !G.ring) G.ring = ring(1870, 670);
+        if (G.act === 'crown' && G.actT >= 70 && !G.ring) G.ring = ring(R1.CROWN[0], R1.CROWN[1]);
+        if (ph === 'light') { this.lit = Math.min(1, this.lit + .006);
+          if (t === 190) talk([[TIP, 'Touch the door in the wall.', 'opendoor']], () => { ph = 'open'; t = 0; G.state = 'auto'; }); }
+        if (ph === 'open') { this.door = Math.min(1, this.door + .009); this.serv = Math.min(1, this.serv + .01);
+          if (t === 170) talk([[C, 'What does this mean?'], [I, 'His eyes are lifted up to heaven, the best of books is in his hand, and the world is behind his back. A crown of gold hangs over his head.'], [TIP, 'Touch the crown.', 'crown']], () => { ph = 'crown'; t = 0; G.state = 'auto'; }); }
+        if (ph === 'crown' && t === 70) talk([[I, 'He is the only man the Lord has sent to be your guide in hard places. Take good heed, lest you meet some who pretend to lead you right, but their way goes down to death.']], () => goTo('r2'));
+        this.crown *= .995;
+        // the view eases in a little on the picture once the door is open (VZ .64 -> .76, centred toward it)
+        { const q = smooth(0, 1, this.door); this.vz = VZ + .12 * q; this.vx = -(R1.PIC[0] + R1.PIC[2] - 3168) / 2 * S * this.vz * q * .8; }
+      },
+      under(c) {
+        const [px0, py0, px1, py1] = R1.PIC, [nx0, ny0, nx1, ny1] = R1.NICHE, im = pics['room1-portrait'], L = smooth(0, 1, this.lit);
+        // the picture in its frame, deep in the recess: lit from below and the side by the candle (darker toward its far edge and top)
+        const q = smooth(0, 1, this.door);
+        if (im) { c.drawImage(im, u(px0), v(py0), (px1 - px0) * S, (py1 - py0) * S);
+          const g = c.createLinearGradient(u(px0), 0, u(px1), 0); g.addColorStop(0, 'rgba(10,6,4,0)'); g.addColorStop(1, 'rgba(10,6,4,.22)'); c.fillStyle = g; c.fillRect(u(px0), v(py0), (px1 - px0) * S, (py1 - py0) * S);
+          c.save(); c.beginPath(); c.rect(u(px0), v(py0), (px1 - px0) * S, (py1 - py0) * S); c.clip(); glow(c, u(px0 + 120), v(py1 - 80), 520 * S, [255, 196, 120], .16 * q); c.restore(); }
+        // the frame: a dark moulding, a lighter inner step, a worn gold line only on the candle side (left and foot)
+        c.strokeStyle = '#2a1a0d'; c.lineWidth = 34 * S; c.strokeRect(u(px0 - 17), v(py0 - 17), (px1 - px0 + 34) * S, (py1 - py0 + 34) * S);
+        c.strokeStyle = '#4a3018'; c.lineWidth = 10 * S; c.strokeRect(u(px0 - 5), v(py0 - 5), (px1 - px0 + 10) * S, (py1 - py0 + 10) * S);
+        c.strokeStyle = 'rgba(214,160,80,.45)'; c.lineWidth = Math.max(1, 3 * S); c.beginPath(); c.moveTo(u(px0 - 1), v(py0 - 1)); c.lineTo(u(px0 - 1), v(py1 + 1)); c.lineTo(u(px1 + 1), v(py1 + 1)); c.stroke();
+        // the crown shines when the child touches it, and once more as the Interpreter speaks of it
+        glow(c, u(R1.CROWN[0]), v(R1.CROWN[1]), 80, [255, 214, 120], (.2 + .08 * Math.sin(G.t / 20) + .5 * this.crown) * smooth(.6, 1, this.door));
+        // the two doors of the recess: oak planks with iron straps; they swing toward us on their hinges at the outer edges
+        const half = (nx1 - nx0) / 2, dg = c.createLinearGradient(u(nx0), 0, u(nx1), 0); dg.addColorStop(0, '#3a2614'); dg.addColorStop(1, '#2a1a0e');
+        for (const side of [-1, 1]) {
+          const hx = side < 0 ? nx0 : nx1, w = half * Math.cos(q * 1.52), x0 = side < 0 ? hx : hx - w;
+          if (w < 2) continue;
+          c.fillStyle = q > .9 ? '#0e0805' : dg; c.fillRect(u(x0), v(ny0), w * S, (ny1 - ny0) * S);
+          c.strokeStyle = 'rgba(10,6,3,.55)'; c.lineWidth = Math.max(.8, 3 * S); for (let k = 1; k < 4; k++) { const xx = x0 + w * k / 4; c.beginPath(); c.moveTo(u(xx), v(ny0)); c.lineTo(u(xx), v(ny1)); c.stroke(); }
+          c.fillStyle = '#0d0805'; for (const y of [ny0 + 110, ny1 - 130]) c.fillRect(u(x0), v(y), w * S, 16 * S);
+          c.fillStyle = 'rgba(0,0,0,' + (.5 * q).toFixed(3) + ')'; c.fillRect(u(x0), v(ny0), w * S, (ny1 - ny0) * S);
+          // an iron ring handle on each leaf at the meeting edge
+          if (q < .3) { c.strokeStyle = '#0d0805'; c.lineWidth = 5 * S; c.beginPath(); c.arc(u(side < 0 ? x0 + w - 30 : x0 + 30), v((ny0 + ny1) / 2 + 14), 14 * S, 0, 6.2832); c.stroke(); }
+        }
+        // the candle in its pricket: a pale stub, the flame (the taper's tiny flame before it is lit)
+        const [cx, cy] = R1.CAN; c.fillStyle = '#d9cbb0'; c.fillRect(u(cx - 9), v(cy - 52), 18 * S, 52 * S);
+        const fl = 1 + .08 * Math.sin(G.t / 4.7) * Math.sin(G.t / 11);
+        if (L > .01) { glow(c, u(cx), v(cy - 74), 260 * S * fl, [255, 190, 110], .18 * L); glow(c, u(cx), v(cy - 74), 90 * fl * L, [255, 200, 120], .5 * L); c.fillStyle = `rgba(255,236,190,${(.95 * L).toFixed(3)})`; c.beginPath(); c.ellipse(u(cx), v(cy - 72), 7 * S * fl, 20 * S * fl, 0, 0, 6.2832); c.fill(); c.fillStyle = `rgba(255,246,220,${L.toFixed(3)})`; c.beginPath(); c.ellipse(u(cx), v(cy - 68), 3 * S, 10 * S, 0, 0, 6.2832); c.fill(); }
+        if (this.lit < .02) { glow(c, u(cx - 14), v(cy + 6), 40, [255, 190, 110], .6); }
+        // his man: a dark figure with a taper, beside the stand; he steps back into the dark once the door is open (a stand-in until his own picture is made)
+        if (pics['room4-caster']) {
+          const sx = R1.SERV + 270 * smooth(0, 1, this.serv), a = 1;
+          fig(c, 'room4-caster', { ax: 35, g: 302, s: 2.1, ct: 1.2, mul: .34, sat: .4 }, sx, R.FY, 1, 1, a, [70, 52, 40]);
+          if (this.lit < .02) { const hx = sx + 39, hy = R.FY - 333; c.strokeStyle = 'rgba(200,170,120,.55)'; c.lineWidth = Math.max(.8, 3 * S); c.beginPath(); c.moveTo(u(hx), v(hy)); c.lineTo(u(R1.CAN[0] - 14), v(R1.CAN[1] + 14)); c.stroke(); }
+        }
+      },
+      people(c) { visitor(c, 'C', 520, 1); visitor(c, 'I', 800, 1); },
+      over(c) {
+        const L = smooth(0, 1, this.lit), fl = 1 + .05 * Math.sin(G.t / 5) * Math.sin(G.t / 11), [cx, cy] = R1.CAN;
+        // before the candle the room is nearly black but for the taper; as it catches, the dark lifts from the stand outward
+        darkWith(c, [[u(cx - 14), v(cy + 6), 120, .9], [u(cx), v(cy - 60), (80 + 1500 * L) * fl * S / .38 * .38, Math.min(1, L * 2.5)]], .93 - .7 * L);
+      },
+    },
+    // 1 THE PICTURE, the old painted room (kept: ?painted shows it)
+    r1p: {
       pic: 'room1', FY: 1262, cam0: 244, tone: [205, 185, 165], k: 1.48,
       light() { return { x: 1478, a: .32 * smooth(.3, 1, this.lit) * (1 + .05 * Math.sin(G.t / 5)), col: [255, 196, 130] }; },
       enter() { this.lit = 0; },
@@ -654,6 +793,7 @@ const RM = (() => {
       people(c) { c.globalAlpha = this.a; if (this.w > 0 || this.fr > 0) walkFig(c, 'C', this.x, this.fr, .58); else visitor(c, 'C', this.x, 1, .58); c.globalAlpha = 1; },
     },
   };
+  if (PAINTED) ROOMS.r1 = ROOMS.r1p; delete ROOMS.r1p;
   // FOLLOW THE INTERPRETER (owner, build 267: "Ok to do 1"): between two rooms a dark passage; the child touches once (build 312) to follow
   // the Interpreter's candle ("he took him by the hand, and led him into ..."). Christian walks (his own walk pictures,
   // dark), the Interpreter goes a step ahead with a candle, its light moving along the wall and the floor.
