@@ -184,7 +184,7 @@ body.portrait:not(.playing) #rot{display:none}
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
   <button id="autoWalk" aria-label="He walks on by himself"><svg viewBox="0 0 24 24"><path d="M5 6l6 6-6 6M12 6l6 6-6 6"/></svg></button>
-  <div id="build">build 466 · Nov 21 2026</div>
+  <div id="build">build 467 · Nov 21 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -2605,6 +2605,15 @@ document.getElementById('on2').onclick = () => SL.on ? go3() : HL.on ? goRoom('d
   reset();
   document.getElementById('sub').textContent = 'Touch the book to open it';
   document.body.classList.add('bookready');
+  // (build 466, owner: "when you give link to location, why does it still take me to home screen - can we jump to game
+  // instead?"): a link that names a place (level=, at=, room=) needs only one touch anywhere (phones allow sound only after
+  // a touch): the book opens and the level begins at once. Not for the automated tests (they open the book themselves).
+  if (/[?&](level|at|room)=/.test(location.search) && !navigator.webdriver) {
+    document.getElementById('sub').textContent = 'Touch to begin';
+    window.addEventListener('pointerup', function jump(e) { window.removeEventListener('pointerup', jump, true); e.stopPropagation();
+      const room = new URLSearchParams(location.search).has('room'); openBook(); tpShow(false);
+      if (!room) { const n = +new URLSearchParams(location.search).get('level') || LV, b = document.querySelector('.lv[data-lv="' + n + '"]'); if (b) b.onclick(); } }, true);
+  }
   requestAnimationFrame(t => { lastT = t; loop(t); });
   // the weeping (second opening line) is no longer waited for before "Open the book": a third less to fetch first.
   // If it is not ready by its line he simply stands (WEEP.ready is checked there).
@@ -2615,7 +2624,7 @@ document.getElementById('on2').onclick = () => SL.on ? go3() : HL.on ? goRoom('d
 })();
 </script>
 <script src="slough.js?v=453"></script>
-<script src="hill.js?v=465"></script>
+<script src="hill.js?v=467"></script>
 <script src="rooms.js?v=446"></script>
 <script src="keepsakes.js?v=390"></script>
 <script src="cross.js?v=466"></script>

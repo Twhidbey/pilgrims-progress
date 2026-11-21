@@ -768,14 +768,15 @@ const HL = (() => {
       const rc = tintC._rim || (tintC._rim = mk(8, 8)); if (rc.width !== W || rc.height !== H) { rc.width = W; rc.height = H; }
       const r = rc.getContext('2d'); r.globalCompositeOperation = 'source-over'; r.clearRect(0, 0, W, H); r.drawImage(im, 0, 0);
       const ul = Math.hypot(1, .4), ux = dir / ul, uy = -.4 / ul;
-      const ro2 = RIM.gold ? 4.6 : 2.6; r.globalCompositeOperation = 'destination-out'; r.drawImage(im, -ro2 * ux, -ro2 * uy);
+      // (build 466, owner: "the light outline on christian doesn't seem realistic"): the gold edge a hair, not a band
+      const ro2 = RIM.gold ? 1.8 : 2.6; r.globalCompositeOperation = 'destination-out'; r.drawImage(im, -ro2 * ux, -ro2 * uy);
       const tc = tintC._thin || (tintC._thin = mk(8, 8)); if (tc.width !== W || tc.height !== H) { tc.width = W; tc.height = H; }
       const t = tc.getContext('2d'); t.globalCompositeOperation = 'source-over'; t.clearRect(0, 0, W, H); t.drawImage(im, 0, 0);
       t.globalCompositeOperation = 'destination-out'; for (const [ax, ay] of [[2.2, 0], [-2.2, 0], [0, 2.2], [0, -2.2]]) t.drawImage(im, ax, ay);
       r.globalCompositeOperation = 'source-over'; r.globalAlpha = .4; r.drawImage(tc, 0, 0); r.globalAlpha = 1;
-      r.globalCompositeOperation = 'source-in'; if (RIM.gold) { const g = r.createLinearGradient(0, 0, 0, H); g.addColorStop(0, 'rgb(255,226,160)'); g.addColorStop(.6, 'rgba(255,206,130,.9)'); g.addColorStop(1, 'rgba(255,190,110,.6)'); r.fillStyle = g; } else { const g = r.createLinearGradient(0, H * .04, 0, H); g.addColorStop(0, 'rgb(255,248,232)'); g.addColorStop(.3, 'rgba(255,242,218,.85)'); g.addColorStop(.62, 'rgba(255,236,206,.42)'); g.addColorStop(1, 'rgba(250,228,196,.12)'); r.fillStyle = g; } r.fillRect(0, 0, W, H); r.globalCompositeOperation = 'source-over';
+      r.globalCompositeOperation = 'source-in'; if (RIM.gold) { const g = r.createLinearGradient(0, 0, 0, H); g.addColorStop(0, 'rgba(255,222,170,.9)'); g.addColorStop(.55, 'rgba(240,186,128,.55)'); g.addColorStop(1, 'rgba(220,160,110,.15)'); r.fillStyle = g; } else { const g = r.createLinearGradient(0, H * .04, 0, H); g.addColorStop(0, 'rgb(255,248,232)'); g.addColorStop(.3, 'rgba(255,242,218,.85)'); g.addColorStop(.62, 'rgba(255,236,206,.42)'); g.addColorStop(1, 'rgba(250,228,196,.12)'); r.fillStyle = g; } r.fillRect(0, 0, W, H); r.globalCompositeOperation = 'source-over';
       const bc = tintC._bloom || (tintC._bloom = mk(8, 8)); bc.width = Math.ceil(W / 4); bc.height = Math.ceil(H / 4); const b = bc.getContext('2d'); b.clearRect(0, 0, bc.width, bc.height); b.drawImage(rc, 0, 0, bc.width, bc.height);
-      f.globalCompositeOperation = 'source-over'; f.globalAlpha = Math.min(1, (RIM.gold ? .95 : .3) * rimK); f.drawImage(rc, 0, 0); f.globalAlpha = 1;
+      f.globalCompositeOperation = 'source-over'; f.globalAlpha = Math.min(1, (RIM.gold ? .6 : .3) * rimK); f.drawImage(rc, 0, 0); f.globalAlpha = 1;
       if (RIM.gold) RIM.bloom = bc;
       else { const P = 36, S = 6, hc = tintC._halo || (tintC._halo = mk(8, 8)), hw = Math.ceil((W + 2 * P) / S), hh = Math.ceil((H + 2 * P) / S); if (hc.width !== hw || hc.height !== hh) { hc.width = hw; hc.height = hh; }
         const h = hc.getContext('2d'); h.globalCompositeOperation = 'source-over'; h.clearRect(0, 0, hw, hh); h.globalAlpha = .16;
@@ -816,7 +817,7 @@ const HL = (() => {
       c.drawImage(H0.c, -meta.ax - H0.P, -meta.ground - H0.P, im.width + 2 * H0.P, im.height + 2 * H0.P); c.restore(); RIM.halo = null; }
     c.save(); c.globalAlpha = alpha; c.translate(x, FY); if (TALKM) c.transform(1, 0, TALKM.sh, 1, 0, 0);
     c.scale(face * CHR_K * FK, CHR_K * FK * sy * (TALKM ? TALKM.sy : 1)); c.drawImage(fc, -meta.ax, -meta.ground);
-    if (RIM && RIM.bloom && rimK > .02) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = alpha * (RIM.gold ? .9 : .5) * rimK; c.drawImage(RIM.bloom, -meta.ax, -meta.ground, im.width, im.height); c.globalCompositeOperation = 'source-over'; RIM.bloom = null; }
+    if (RIM && RIM.bloom && rimK > .02) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = alpha * (RIM.gold ? .16 : .5) * rimK; c.drawImage(RIM.bloom, -meta.ax, -meta.ground, im.width, im.height); c.globalCompositeOperation = 'source-over'; RIM.bloom = null; }
     c.restore();
   }
   // build 281 (owner: "both christian and worldly can be shifted down slightly so their shadows don't extend past ground"):
