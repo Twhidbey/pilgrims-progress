@@ -241,19 +241,24 @@ const CR = (() => {
     const cv = document.createElement('canvas'); cv.width = Math.ceil((X1 - X0) * k); cv.height = Math.ceil((Y1 - Y0) * k); const q = cv.getContext('2d');
     q.scale(k, k); q.translate(-X0, -Y0);
     const r = rgen(77), bands = []; let d = 26 + r() * 20;
-    while (d < H_TOP + 200) { bands.push({ d, a: (r() - .5) * .09, p: [r() * 6.3, r() * 6.3, r() * 6.3], amp: 6 + r() * 14, lit: r() < .55 }); d += 34 + r() * 70; }
+    // bands of every thickness, some smooth and some rough, some leaning a little, each its own shade
+    while (d < H_TOP + 200) { const rough = .4 + r() * 1.5;
+      bands.push({ d, a: (r() - .5) * .12, p: [r() * 6.3, r() * 6.3, r() * 6.3], amp: 4 + r() * 26, rough, tilt: (r() - .5) * .025, lit: r() < .75 }); d += 18 + Math.pow(r(), 1.6) * 120; }
     // value noise on cells of 26 and 9 units, so each edge breaks in small steps and chips, as rock does
     const VN = (x, c, seed) => { const i = Math.floor(x / c), f = x / c - i, h = n => { const t = Math.sin((n + seed * 101) * 127.1) * 43758.5; return t - Math.floor(t) - .5; }; return h(i) + (h(i + 1) - h(i)) * (f * f * (3 - 2 * f)); };
-    const yAt = (b, x) => -(gh(x) - b.d) + b.amp * (.6 * Math.sin(x * .004 + b.p[0]) + .3 * Math.sin(x * .011 + b.p[1]) + .1 * Math.sin(x * .037 + b.p[2])) + 9 * VN(x, 26, b.d) + 4 * VN(x, 9, b.d + 3);
+    const yAt = (b, x) => -(gh(x) - b.d) + b.amp * (.6 * Math.sin(x * .004 + b.p[0]) + .3 * Math.sin(x * .011 + b.p[1]) + .1 * Math.sin(x * .037 + b.p[2])) + b.rough * (9 * VN(x, 26, b.d) + 4 * VN(x, 9, b.d + 3) + 2 * VN(x, 4, b.d + 7)) + b.tilt * (x - 3000);
     for (let i = 0; i < bands.length; i++) {
       const b = bands[i], n = bands[i + 1];
       q.beginPath(); for (let x = X0; x <= X1; x += 4) q.lineTo(x, yAt(b, x));
       if (n) for (let x = X1; x >= X0; x -= 4) q.lineTo(x, yAt(n, x)); else { q.lineTo(X1, Y1); q.lineTo(X0, Y1); }
       q.closePath(); q.fillStyle = b.a > 0 ? css([170, 164, 176], b.a) : css([0, 0, 0], -b.a * 1.3); q.fill();
+      // its foot in a little shadow under the next layer's lip: the shade laid along the next edge, fading upward
+      if (n) { q.save(); q.clip(); q.lineWidth = 7; q.strokeStyle = css([0, 0, 0], .05); q.beginPath(); for (let x = X0; x <= X1; x += 6) q.lineTo(x, yAt(n, x) - 3); q.stroke();
+        q.lineWidth = 3; q.strokeStyle = css([0, 0, 0], .05); q.beginPath(); for (let x = X0; x <= X1; x += 6) q.lineTo(x, yAt(n, x) - 1.5); q.stroke(); q.restore(); }
       // the ledge: a dark seam with a faint lit lip above it, broken along its length
-      q.lineWidth = 2.2; for (let x = X0; x < X1; x += 90 + r() * 160) { const L = 60 + r() * 260; if (r() < .35) continue;
-        q.strokeStyle = css([0, 0, 0], .08); q.beginPath(); for (let u = x; u <= x + L; u += 4) q.lineTo(u, yAt(b, u) + 1.5); q.stroke();
-        if (b.lit) { q.strokeStyle = css([190, 182, 196], .04); q.beginPath(); for (let u = x; u <= x + L; u += 4) q.lineTo(u, yAt(b, u) - 1.2); q.stroke(); } }
+      q.lineWidth = 2; for (let x = X0; x < X1; x += 60 + r() * 120) { const L = 90 + r() * 320; if (r() < .2) continue;
+        q.strokeStyle = css([0, 0, 0], .12); q.beginPath(); for (let u = x; u <= x + L; u += 4) q.lineTo(u, yAt(b, u) + 1.5); q.stroke();
+        if (b.lit) { q.strokeStyle = css([190, 182, 196], .06); q.beginPath(); for (let u = x; u <= x + L; u += 4) q.lineTo(u, yAt(b, u) - 1.2); q.stroke(); } }
       // joints across the band and a few blocks a shade off its tone, so it reads as broken rock, not a stripe
       if (n) for (let x = X0 + r() * 120; x < X1; x += 70 + r() * 220) { const y1 = yAt(b, x), y2 = yAt(n, x + (r() - .5) * 20); if (y2 - y1 < 14) continue;
         q.strokeStyle = css([0, 0, 0], .05 + r() * .05); q.lineWidth = 1.4; q.beginPath(); q.moveTo(x, y1 + 2); q.lineTo(x + (r() - .5) * 18, lerp(y1, y2, .5) + (r() - .5) * 6); q.lineTo(x + (r() - .5) * 26, y2 - 2); q.stroke();
