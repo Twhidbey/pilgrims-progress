@@ -284,7 +284,7 @@ const HL = (() => {
   // on (`MIST0`). Among the rocks and at the gate `mono` is 0: those are unchanged.
   let mono = 1;
   // THE PULL AT THE GATE ({62}): Good-will's reaching picture, the pull, the arrows (`ARW`, world units) and the far castle
-  const CASTLE_X = GATE_X - 900, MT_H = 470, CASTLE_H = 330, CASTLE_Y = -MT_H + CASTLE_H * .22; let CASTLE = null, castLook = 0, gateT = 0;
+  const CASTLE_X = GATE_X - 900, MT_H = 470, CASTLE_H = 240, CASTLE_Y = -MT_H + CASTLE_H * .3; let CASTLE = null, castLook = 0, gateT = 0;
   let GWRE = null, gwReach = 0, gwReachTo = 0, pullT = -1, pullX0 = 0, GWFX = null; const GWRE_META = { ax: 62, ground: 299 }, ARW = [];
   const MONO_SAT = .62, MONO_TONE = [226, 202, 158], MIST0 = 620;
   // THE WHEAT IN FRONT, A TRIAL (owner: "Worldly wise comes to Christian in a field no?" ... "we could use grass from level
@@ -638,10 +638,13 @@ const HL = (() => {
   }
   function preload() {
     loadOak(); if (!VILP) loadImg('village-far.webp').then(im => { if (im) VILP = im; }).catch(() => {});
-    if (!loading) loading = Promise.all([Promise.all([loadImg('hill-rock.webp'), loadImg('hill-fire.webp')]).then(([r, f]) => { if (r) { build(); paintHill(r, f); } }), loadPack('wiseman', WIS).catch(() => {}), loadImg('gate-door.webp').then(im => { if (im) GDOOR = soften(im, 4, .7, false, .22); }), loadImg('goodwill-stand.webp').then(im => { if (im) GWST = im; }), loadImg('goodwill-reach.webp').then(im => { if (im) GWRE = im; }), loadImg('castle.webp').then(im => { if (im) { const c2 = mk(im.width, im.height), q = c2.getContext('2d'); q.drawImage(im, 0, 0); q.globalCompositeOperation = 'multiply'; q.fillStyle = 'rgb(176,150,140)'; q.fillRect(0, 0, im.width, im.height); q.globalCompositeOperation = 'destination-in'; q.drawImage(im, 0, 0);
+    if (!loading) loading = Promise.all([Promise.all([loadImg('hill-rock.webp'), loadImg('hill-fire.webp')]).then(([r, f]) => { if (r) { build(); paintHill(r, f); } }), loadPack('wiseman', WIS).catch(() => {}), loadImg('gate-door.webp').then(im => { if (im) GDOOR = soften(im, 4, .7, false, .22); }), loadImg('goodwill-stand.webp').then(im => { if (im) GWST = im; }), loadImg('goodwill-reach.webp').then(im => { if (im) GWRE = im; }), loadImg('castle.webp').then(im => { if (im) { const c2 = mk(im.width, im.height), q = c2.getContext('2d'); q.setTransform(-1, 0, 0, 1, im.width, 0); q.drawImage(im, 0, 0); q.globalCompositeOperation = 'multiply'; q.fillStyle = 'rgb(120,100,94)'; q.fillRect(0, 0, im.width, im.height); q.globalCompositeOperation = 'destination-in'; q.drawImage(im, 0, 0); q.setTransform(1, 0, 0, 1, 0, 0);
+              // (build 456, owner: "mirror castle horiz so it faces the gate more ... integrate it into mountain more ... less pronounced"):
+              // mirrored, darker, and its lower part sinks into the mountain's own rock tone
+              q.globalCompositeOperation = 'source-atop'; { const g = q.createLinearGradient(0, im.height * .38, 0, im.height * .86); g.addColorStop(0, 'rgba(30,17,14,0)'); g.addColorStop(.6, 'rgba(30,17,14,.6)'); g.addColorStop(1, 'rgba(30,17,14,.92)'); q.fillStyle = g; q.fillRect(0, 0, im.width, im.height); }
               // its crag's foot fades into the mountain's summit along a broken line, not a straight one (build 416)
               q.globalCompositeOperation = 'destination-out'; const H0 = im.height;
-              for (let x = 0; x < im.width; x += 3) { const top = H0 * (.84 + .025 * Math.sin(x * .013 + 1.1) + .015 * Math.sin(x * .047 + 2.3) + .01 * Math.sin(x * .13)), len = H0 * .1;
+              for (let x = 0; x < im.width; x += 3) { const top = H0 * (.76 + .025 * Math.sin(x * .013 + 1.1) + .015 * Math.sin(x * .047 + 2.3) + .01 * Math.sin(x * .13)), len = H0 * .14;
                 const g = q.createLinearGradient(0, top, 0, top + len); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(.6, 'rgba(0,0,0,.75)'); g.addColorStop(1, 'rgba(0,0,0,1)'); q.fillStyle = g; q.fillRect(x, top, 3, H0 - top); }
               q.globalCompositeOperation = 'source-over'; CASTLE = c2; } }), loadImg('gate-wall.webp').then(im => { if (im) GWALL = soften(im, 4, .7, true, .22); }), loadImg('gate-stone.webp').then(im => { if (im) GSTONE = im; }), loadPack('evangelist-walk', EVW).catch(() => {}), EVA.ready || loadPack('evangelist', EVA).catch(() => {}), loadImg('wiseman-stand.webp').then(im => { if (im) WIS_ST = im; }), OBS.ready || loadPack('obstinate', OBS).catch(() => {}), EVS.ready || loadPack('evangelist-stand', EVS).catch(() => {}), RUNP.ready || loadPack('christian-run-plain', RUNP).catch(() => {}),
       WEEP.ready || loadPack('christian-weep', WEEP).catch(() => {}), KNEEL.ready || loadPack('christian-kneel', KNEEL).catch(() => {}), TURN.ready || loadPack('christian-turn', TURN).then(() => bookLoaded('TURN')).catch(() => {}),
@@ -955,7 +958,7 @@ const HL = (() => {
   function doPull() {
     if (G.act !== 'pull' || pullT >= 0) return; G.ring = null; pullT = 0; pullX0 = C3.x;
     note(62, .035, 3); note(66, .03, 3, .1);
-    for (let i = 0; i < 4; i++) ARW.push({ t: -[22, 32, 44, 58][i], i, sx: CASTLE_X + 40 + 50 * Math.random(), sy: -560 - 60 * Math.random(), tx: i === 0 ? C3.x + 6 : i === 3 ? C3.x - 70 : GATE_X - GSL - 1, ty: i === 0 || i === 3 ? -1 : -(GPH + 24 + 40 * (i - 1) + 18 * Math.random()), stuck: false, q: 0 });      // they land just after he is taken in, where he stood
+    for (let i = 0; i < 4; i++) ARW.push({ t: -[22, 32, 44, 58][i], i, sx: CASTLE_X + 40 + 50 * Math.random(), sy: -480 - 40 * Math.random(), tx: i === 0 ? C3.x + 6 : i === 3 ? C3.x - 70 : GATE_X - GSL - 1, ty: i === 0 || i === 3 ? -1 : -(GPH + 24 + 40 * (i - 1) + 18 * Math.random()), stuck: false, q: 0 });      // they land just after he is taken in, where he stood
   }
   function takeHand() { if (G.act !== 'ehand') return; note(67, .04, 4); note(71, .035, 4, .12); note(74, .03, 4, .24); mercyTo = 1; next(true); }
   // the wide picture answers a touch (build 237): the sky above the rock = a strike there; the rock = its nearest crack flares
@@ -1777,11 +1780,6 @@ const HL = (() => {
             else if (ROCKPAT) { const ts = 1.4 * z, tw = ROCKTEX.width * ts; ROCKPAT.setTransform(new DOMMatrix([ts, 0, 0, ts, X(CASTLE_X) % tw, Y(-MT_H)])); c.globalCompositeOperation = 'overlay'; c.globalAlpha = .4; c.fillStyle = ROCKPAT; c.fillRect(0, 0, VW, VH); c.globalAlpha = 1; c.globalCompositeOperation = 'source-over'; }
             // the side toward the dusk glow (left) a little lighter, the gate's side in shade
             { const g = c.createLinearGradient(X(CASTLE_X - 700), 0, X(CASTLE_X + 400), 0); g.addColorStop(0, css([110, 60, 44], .16)); g.addColorStop(.5, css([110, 60, 44], 0)); g.addColorStop(1, css([8, 4, 3], .35)); c.fillStyle = g; c.fillRect(0, 0, VW, VH); }
-            // the fire in the castle's crag runs down a few clefts in the summit and dies away
-            if (!front) { const fl = .6 + .4 * Math.sin(G.t / 37); c.globalCompositeOperation = 'lighter'; c.lineCap = 'round';
-              [[-60, 0], [30, 1], [95, 2]].forEach(([dx, i]) => { let x = CASTLE_X + dx, y = -MT_H + 20; c.beginPath(); c.moveTo(X(x), Y(y)); for (let j = 0; j < 14; j++) { x += (nz(j * .7 + i * 5, 40 + i) - .5) * 26; y += 14 + 6 * nz(j * .3, 50 + i); c.lineTo(X(x), Y(y)); }
-                c.strokeStyle = css([200, 80, 30], .16 * fl); c.lineWidth = 4 * z; c.stroke(); c.strokeStyle = css([255, 150, 60], .2 * fl); c.lineWidth = 1.2 * z; c.stroke(); });
-              c.globalCompositeOperation = 'source-over'; }
             c.restore();
             // a thin dusk-lit edge along its ridges
             c.strokeStyle = css([120, 70, 52], .28); c.lineWidth = 1.2 * z; mtPath(); c.stroke();
@@ -1797,7 +1795,7 @@ const HL = (() => {
           drawMt(false);
           if (CASTLE) { const k = CASTLE_H / CASTLE.height, w = CASTLE.width * k; c.save(); c.beginPath(); c.rect(0, 0, X(WEND - 30), Y(2)); c.clip(); c.drawImage(CASTLE, X(CASTLE_X - w / 2), Y(CASTLE_Y - CASTLE_H), w * z, CASTLE_H * z);
             // its watch-fires breathe a little
-            const fl = .5 + .5 * Math.sin(G.t / 29) * Math.sin(G.t / 47); c.globalCompositeOperation = 'lighter'; const g = c.createRadialGradient(X(CASTLE_X), Y(CASTLE_Y - CASTLE_H * .45), 0, X(CASTLE_X), Y(CASTLE_Y - CASTLE_H * .45), CASTLE_H * .5 * z); g.addColorStop(0, css([150, 60, 26], .07 + .05 * fl)); g.addColorStop(1, css([120, 40, 20], 0)); c.fillStyle = g; c.fillRect(0, 0, X(WEND - 30), VH);
+            const fl = .5 + .5 * Math.sin(G.t / 29) * Math.sin(G.t / 47); c.globalCompositeOperation = 'lighter'; const g = c.createRadialGradient(X(CASTLE_X), Y(CASTLE_Y - CASTLE_H * .45), 0, X(CASTLE_X), Y(CASTLE_Y - CASTLE_H * .45), CASTLE_H * .5 * z); g.addColorStop(0, css([150, 60, 26], .04 + .03 * fl)); g.addColorStop(1, css([120, 40, 20], 0)); c.fillStyle = g; c.fillRect(0, 0, X(WEND - 30), VH);
             c.globalCompositeOperation = 'source-over';
             c.restore();
             // (build 416) the crag's foot is faded into the summit in the picture itself, so no rock is laid over it
