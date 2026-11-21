@@ -214,7 +214,7 @@ const RM = (() => {
     return bakeShell({ seed: 44, doors: 'LR', lights: [{ x: F, y: 1120, r: 1500, lit: [184, 98, 42], half: [90, 40, 20], sx: 1.2 }, { x: R4D.SMALL + 160, y: 1150, r: 700, lit: [150, 84, 40], half: [70, 34, 18], sx: 1.1, a: .8 }],
       near(c) {
         // the chimney breast, floor to ceiling, and a short hood over the hearth on the fire's side
-        c.fillStyle = '#0c0705'; c.fillRect(P0, 0, P1 - P0, FY + 6);
+        c.fillStyle = '#0c0705'; c.fillRect(P0, EX.y0, P1 - P0, FY + 6 - EX.y0);
         let g = c.createLinearGradient(P0, 0, P0 + 46, 0); g.addColorStop(0, 'rgba(236,140,64,.5)'); g.addColorStop(.3, 'rgba(160,80,36,.22)'); g.addColorStop(1, 'rgba(160,80,36,0)');
         c.save(); c.beginPath(); c.rect(P0, 420, 46, FY - 420); c.clip(); c.fillStyle = g; c.fillRect(P0, 420, 46, FY - 420); c.restore();
         g = c.createLinearGradient(0, 380, 0, 900); g.addColorStop(0, 'rgba(12,7,5,1)'); g.addColorStop(1, 'rgba(12,7,5,0)'); c.fillStyle = g; c.fillRect(P0, 380, 50, 520);
@@ -348,9 +348,9 @@ const RM = (() => {
         c.fillStyle = '#6a5228'; c.beginPath(); c.moveTo(1160, 560); c.lineTo(1260, 560); c.lineTo(1248, 668); c.quadraticCurveTo(1210, 680, 1172, 668); c.closePath(); c.fill();
         c.fillStyle = 'rgba(230,226,200,.35)'; c.fillRect(1176, 572, 6, 86); c.fillStyle = '#1a120a'; c.beginPath(); c.arc(1110, 480, 6, 0, 6.2832); c.fill(); c.restore();
         // the Delft tiles: a low pale band at the wall's foot, a few faint blue marks
-        c.fillStyle = '#8f8a7c'; c.fillRect(0, FY - 48, 3168, 48); c.fillStyle = 'rgba(40,30,20,.5)'; c.fillRect(0, FY - 50, 3168, 3);
-        c.strokeStyle = 'rgba(50,70,120,.35)'; c.lineWidth = 2; for (let x = 24; x < 3168; x += 48) { c.strokeRect(x - 20, FY - 44, 40, 40); } c.strokeStyle = 'rgba(50,70,120,.4)'; for (const x of [300, 1340, 1900, 2460, 2820]) { c.beginPath(); c.arc(x, FY - 24, 9, 0, 6.2832); c.stroke(); }
-        g = c.createLinearGradient(1200, 0, 3168, 0); g.addColorStop(0, 'rgba(20,14,8,0)'); g.addColorStop(1, 'rgba(20,14,8,.5)'); c.fillStyle = g; c.fillRect(1200, FY - 48, 1968, 48);
+        c.fillStyle = '#8f8a7c'; c.fillRect(EX.x0, FY - 48, EX.x1 - EX.x0, 48); c.fillStyle = 'rgba(40,30,20,.5)'; c.fillRect(EX.x0, FY - 50, EX.x1 - EX.x0, 3);
+        c.strokeStyle = 'rgba(50,70,120,.35)'; c.lineWidth = 2; for (let x = EX.x0 + 24; x < EX.x1; x += 48) { c.strokeRect(x - 20, FY - 44, 40, 40); } c.strokeStyle = 'rgba(50,70,120,.4)'; for (const x of [300, 1340, 1900, 2460, 2820]) { c.beginPath(); c.arc(x, FY - 24, 9, 0, 6.2832); c.stroke(); }
+        g = c.createLinearGradient(1200, 0, EX.x1, 0); g.addColorStop(0, 'rgba(20,14,8,0)'); g.addColorStop(1, 'rgba(20,14,8,.5)'); c.fillStyle = g; c.fillRect(1200, FY - 48, EX.x1 - 1200, 48);
       } });
   }
   if (!PAINTED) { const n = 'room2-drawn'; loads[n] = new Promise(r => setTimeout(r, 0)).then(() => (pics[n] = DRAWN ? bakeR2() : bakeR2s())); pic('room2-girl'); pic('room2-sweeper'); }
@@ -374,41 +374,70 @@ const RM = (() => {
   // It is night in every room. Enter by the left door, leave by the right. Plate px (3168 x 1344), baked at half size.
   // Four darks shared by every room: frame #0c0705, beam #150d08, unlit plaster #2c1d13, floor #1d130c.
   // ============================================================
-  const HOUSE = { FY: 1250, CEIL: 150, BEAM: 44, SKIRT: 28, LINTEL: 320, END: 110 };
+  const HOUSE = { FY: 1250, CEIL: -300, BEAM: 44, SKIRT: 28, LINTEL: 320, END: 110 };
   function lightPool(c, x, y, r, lit, half, a = 1) {
     // the gate's fall-off: full at the light, .4 at 30% of the radius, .12 at 55%, nothing beyond
     const g = c.createRadialGradient(x, y, 0, x, y, r);
     g.addColorStop(0, css(lit, a)); g.addColorStop(.3, css(lit, .55 * a)); g.addColorStop(.42, css(half, .5 * a)); g.addColorStop(.55, css(half, .22 * a)); g.addColorStop(1, css(half, 0));
     c.fillStyle = g; c.fillRect(x - r, y - r, 2 * r, 2 * r);
   }
+  // HIGHER ROOMS (build 440; owner: "the characters are too big on screen - either enlarge room height (think arched or vaulted ceilings) or zoom
+  // out", then "Let's do it"): every drawn room is baked on a canvas wider and much taller than the old plate (EX, in plate px; the old plate's
+  // coordinates are unchanged), the view drawn back so the room still fills the width, and the space above the people is a great dark under a
+  // ceiling shaped for the room: 'beams' (a high beamed ceiling), 'vault' (a stone barrel vault, the cellar), 'rafters' (an open roof, upstairs).
+  const EX = { x0: -360, x1: 3528, y0: -700, y1: 1344 };
+  function mkBake() {
+    const cv = document.createElement('canvas'); cv.width = (EX.x1 - EX.x0) / 2; cv.height = (EX.y1 - EX.y0) / 2; cv.ex = true;
+    const c = cv.getContext('2d'); c.scale(.5, .5); c.translate(-EX.x0, -EX.y0); return [cv, c];
+  }
   function bakeShell(o) {
-    const W = 1584, H = 672, cv = document.createElement('canvas'); cv.width = W; cv.height = H; const c = cv.getContext('2d'); c.scale(.5, .5);
-    const { FY, BEAM, LINTEL, END } = HOUSE, CEIL = o.ceil || HOUSE.CEIL, SKIRT = o.skirt === 0 ? 0 : HOUSE.SKIRT, r = rngR(o.seed || 7), soft = (draw, w, h) => { const a = document.createElement('canvas'); a.width = w; a.height = h; draw(a.getContext('2d'), w, h); return a; };
+    const [cv, c] = mkBake(), X0 = EX.x0, XW = EX.x1 - EX.x0, Y0 = EX.y0, YH = EX.y1 - EX.y0;
+    const { FY, BEAM, LINTEL, END } = HOUSE, CEIL = o.ceil != null ? o.ceil : HOUSE.CEIL, SKIRT = o.skirt === 0 ? 0 : HOUSE.SKIRT, r = rngR(o.seed || 7), soft = (draw, w, h) => { const a = document.createElement('canvas'); a.width = w; a.height = h; draw(a.getContext('2d'), w, h); return a; };
     // the back wall: unlit plaster, then the room's one light as a soft pool on it
-    c.fillStyle = o.wallC || '#2c1d13'; c.fillRect(0, 0, 3168, 1344);
-    c.save(); c.beginPath(); c.rect(0, 0, 3168, FY); c.clip();
+    c.fillStyle = o.wallC || '#2c1d13'; c.fillRect(X0, Y0, XW, YH);
+    c.save(); c.beginPath(); c.rect(X0, Y0, XW, FY - Y0); c.clip();
     for (const L of o.lights || []) { c.save(); c.translate(L.x, L.y); c.scale(L.sx || 1.25, 1); c.translate(-L.x, -L.y); lightPool(c, L.x, L.y, L.r, L.lit, L.half, L.a || 1); c.restore(); }
     // plaster grain at three sizes, the same strength in every room (soft-light, so the light still rules); no cracks, no stains with edges
-    for (const [nw, cnt, rmax, al] of [[40, 70, 6, .03], [120, 420, 5, .022], [420, 3800, 2.2, .03]]) {
-      const nh = Math.round(nw * 1344 / 3168), t = soft((x, w, h) => { for (let i = 0; i < cnt; i++) { x.fillStyle = r() < .5 ? `rgba(40,26,14,${al + r() * al})` : `rgba(255,232,200,${al + r() * al})`; x.beginPath(); x.arc(r() * w, r() * h, .6 + r() * rmax, 0, 6.2832); x.fill(); } }, nw, nh);
-      c.save(); c.globalCompositeOperation = 'soft-light'; c.drawImage(t, 0, 0, 3168, 1344); c.restore();
+    for (const [nw, cnt, rmax, al] of [[48, 90, 6, .03], [150, 600, 5, .022], [520, 5600, 2.2, .03]]) {
+      const nh = Math.round(nw * YH / XW), t = soft((x, w, h) => { for (let i = 0; i < cnt; i++) { x.fillStyle = r() < .5 ? `rgba(40,26,14,${al + r() * al})` : `rgba(255,232,200,${al + r() * al})`; x.beginPath(); x.arc(r() * w, r() * h, .6 + r() * rmax, 0, 6.2832); x.fill(); } }, nw, nh);
+      c.save(); c.globalCompositeOperation = 'soft-light'; c.drawImage(t, X0, Y0, XW, YH); c.restore();
     }
     c.restore();
     o.wall && o.wall(c, r);
-    // the ceiling and its one beam (a thin warm arris on its underside only where the light reaches)
-    c.fillStyle = '#100906'; c.fillRect(0, 0, 3168, CEIL);
-    c.fillStyle = o.beamC || '#150d08'; c.fillRect(0, CEIL, 3168, BEAM);
-    for (const L of o.lights || []) { const g = c.createLinearGradient(L.x - L.r * .7, 0, L.x + L.r * .7, 0); g.addColorStop(0, css(L.lit, 0)); g.addColorStop(.5, css(L.lit, .35 * (L.a || 1))); g.addColorStop(1, css(L.lit, 0)); c.fillStyle = g; c.fillRect(L.x - L.r * .7, CEIL + BEAM - 3, L.r * 1.4, 3); }
-    let g = c.createLinearGradient(0, CEIL + BEAM, 0, CEIL + BEAM + 60); g.addColorStop(0, 'rgba(12,7,4,.45)'); g.addColorStop(1, 'rgba(12,7,4,0)'); c.fillStyle = g; c.fillRect(0, CEIL + BEAM, 3168, 60);
-    // the skirting board, and the floor: one tone, a thin lighter top edge, two faint level seams; the light lies on it flat
-    if (SKIRT) { c.fillStyle = '#1a110b'; c.fillRect(0, FY - SKIRT, 3168, SKIRT); }
-    c.fillStyle = o.floorC || '#1d130c'; c.fillRect(0, FY, 3168, 1344 - FY);
-    c.fillStyle = 'rgba(120,84,52,.22)'; c.fillRect(0, FY, 3168, 3);
-        for (const L of o.lights || []) { c.save(); c.beginPath(); c.rect(0, FY - SKIRT, 3168, 1344); c.clip(); c.translate(L.x, FY + 20); c.scale(1, .12); lightPool(c, 0, 0, L.r * 1.1, L.lit, L.half, .8 * (L.a || 1)); c.restore(); }
-    // the end walls, cut edge-on: near-black, open below the lintel where there is a door (the passage's dark showing through)
-    for (const [side, x0] of [['L', 0], ['R', 3168 - END]]) {
-      c.fillStyle = '#0c0705'; c.fillRect(x0, 0, END, 1344);
-      if (o.doors && o.doors.includes(side)) { c.fillStyle = '#070403'; c.fillRect(x0, LINTEL, END, 1344 - LINTEL); c.fillStyle = '#3a2616'; c.fillRect(side === 'L' ? x0 + END - 6 : x0, LINTEL, 6, FY - LINTEL); c.fillRect(x0, LINTEL - 6, END, 6); }
+    // THE CEILING, high above them, falling into the dark (a beam's warm arris only where the light reaches)
+    const dk = '#0d0805', bm = o.beamC || '#150d08', roof = o.roof || 'beams';
+    if (roof === 'vault') {
+      // a stone barrel vault springing from the walls at SPR and rising to its crown at CEIL, the stone above it lost in the dark
+      const SPR = o.spring || CEIL + 520, cx = (X0 + EX.x1) / 2, rx = XW / 2 + 40;
+      c.fillStyle = dk; c.beginPath(); c.moveTo(X0, Y0); c.lineTo(X0, SPR); c.ellipse(cx, SPR, rx, SPR - CEIL, 0, Math.PI, 0); c.lineTo(EX.x1, Y0); c.closePath(); c.fill();
+      c.strokeStyle = 'rgba(110,92,70,.22)'; c.lineWidth = 5; c.beginPath(); c.ellipse(cx, SPR, rx, SPR - CEIL, 0, Math.PI, 0); c.stroke();
+      // a faint line of voussoir joints along the arch's face
+      c.strokeStyle = 'rgba(6,4,3,.4)'; c.lineWidth = 3; for (let k = 1; k < 26; k++) { const t = Math.PI + Math.PI * k / 26, x = cx + rx * Math.cos(t), y = SPR + (SPR - CEIL) * Math.sin(t); c.beginPath(); c.moveTo(x, y); c.lineTo(cx + (rx + 60) * Math.cos(t), SPR + (SPR - CEIL + 60) * Math.sin(t)); c.stroke(); }
+    } else if (roof === 'rafters') {
+      // an open timber roof: the wall-plate at CEIL, a tie-beam across, rafters rising to the ridge in the dark, braces in each bay
+      const RID = Y0 + 40; c.fillStyle = dk; c.fillRect(X0, Y0, XW, CEIL - Y0);
+      c.fillStyle = bm; c.fillRect(X0, CEIL, XW, BEAM); c.fillRect(X0, CEIL - 260, XW, 30);
+      c.strokeStyle = bm; c.lineWidth = 26; for (let x = X0 + 200; x < EX.x1; x += 620) { c.beginPath(); c.moveTo(x, CEIL); c.lineTo(x + 300, RID); c.stroke(); c.beginPath(); c.moveTo(x + 600, CEIL); c.lineTo(x + 300, RID); c.stroke(); c.lineWidth = 16; c.beginPath(); c.moveTo(x + 300, CEIL - 260); c.lineTo(x + 300, RID); c.stroke(); c.lineWidth = 26; }
+    } else {
+      // a high beamed ceiling: the joists' underside a dark band, a great beam under it, beam ends every bay
+      c.fillStyle = dk; c.fillRect(X0, Y0, XW, CEIL - Y0);
+      c.fillStyle = bm; c.fillRect(X0, CEIL, XW, BEAM);
+      for (let x = X0 + 140; x < EX.x1; x += 300) c.fillRect(x, CEIL - 70, 46, 70);
+    }
+    for (const L of o.lights || []) { const g = c.createLinearGradient(L.x - L.r * .7, 0, L.x + L.r * .7, 0); g.addColorStop(0, css(L.lit, 0)); g.addColorStop(.5, css(L.lit, .3 * (L.a || 1))); g.addColorStop(1, css(L.lit, 0)); c.fillStyle = g; if (roof !== 'vault') c.fillRect(L.x - L.r * .7, CEIL + BEAM - 3, L.r * 1.4, 3); }
+    // the wall darkens upward into the high ceiling's dark (so the light stays a pool low round the people)
+    let g = c.createLinearGradient(0, CEIL, 0, CEIL + 700); g.addColorStop(0, 'rgba(10,6,4,.65)'); g.addColorStop(1, 'rgba(10,6,4,0)'); c.fillStyle = g;
+    if (roof === 'vault') { c.save(); const SPR = o.spring || CEIL + 520, cx = (X0 + EX.x1) / 2, rx = XW / 2 + 40; c.beginPath(); c.moveTo(X0, FY); c.lineTo(X0, SPR); c.ellipse(cx, SPR, rx, SPR - CEIL, 0, Math.PI, 0); c.lineTo(EX.x1, FY); c.closePath(); c.clip(); c.fillRect(X0, CEIL, XW, 700); c.restore(); }
+    else c.fillRect(X0, CEIL + BEAM, XW, 700);
+    // the skirting board, and the floor: one tone, a thin lighter top edge; the light lies on it flat
+    if (SKIRT) { c.fillStyle = '#1a110b'; c.fillRect(X0, FY - SKIRT, XW, SKIRT); }
+    c.fillStyle = o.floorC || '#1d130c'; c.fillRect(X0, FY, XW, EX.y1 - FY);
+    c.fillStyle = 'rgba(120,84,52,.22)'; c.fillRect(X0, FY, XW, 3);
+    for (const L of o.lights || []) { c.save(); c.beginPath(); c.rect(X0, FY - SKIRT, XW, EX.y1); c.clip(); c.translate(L.x, FY + 20); c.scale(1, .12); lightPool(c, 0, 0, L.r * 1.1, L.lit, L.half, .8 * (L.a || 1)); c.restore(); }
+    // the end walls, cut edge-on, at the picture's sides: near-black, open below the lintel where there is a door
+    for (const [side, x0] of [['L', X0], ['R', EX.x1 - END]]) {
+      c.fillStyle = '#0c0705'; c.fillRect(x0, Y0, END, YH);
+      if (o.doors && o.doors.includes(side)) { c.fillStyle = '#070403'; c.fillRect(x0, LINTEL, END, EX.y1 - LINTEL); c.fillStyle = '#3a2616'; c.fillRect(side === 'L' ? x0 + END - 6 : x0, LINTEL, 6, FY - LINTEL); c.fillRect(x0, LINTEL - 6, END, 6); }
     }
     o.near && o.near(c, r);
     return cv;
@@ -438,7 +467,7 @@ const RM = (() => {
   // on the floor a little short of the cage, so the man sits just outside the light. The cage and the man are drawn live (the cage shakes).
   const R6 = { GR: [520, 330], LAND: 1430, CAGE: [1700, 560, 2200], MAN: [1750, 600, 2250, 1262] };
   function bakeR6() {
-    return bakeShell({ seed: 66, doors: 'L', ceil: 290, skirt: 0, wallC: '#1b1612', beamC: '#120e0b', floorC: '#15110e',
+    return bakeShell({ seed: 66, doors: 'L', roof: 'vault', ceil: -260, spring: 240, skirt: 0, wallC: '#1b1612', beamC: '#120e0b', floorC: '#15110e',
       lights: [{ x: R6.LAND, y: 1150, r: 900, lit: [70, 62, 50], half: [36, 30, 24], sx: 1.4, a: .9 }, { x: 1950, y: 760, r: 700, lit: [60, 46, 30], half: [30, 24, 18], a: .7 }],
       wall(c, r) {
         // rough stone: a few broad soft patches a shade lighter or darker (no courses, no tiles)
@@ -451,7 +480,7 @@ const RM = (() => {
         const nx = 360, FY = HOUSE.FY; c.fillStyle = '#0c0907';
         for (let k = 0; k < 10; k++) { const y = FY - 40 - k * 92, left = k % 2 === 0, w = 230 - (k % 4 === 1 || k % 4 === 3 ? 120 : 0), x0 = left ? nx - w : nx;
           c.fillStyle = '#0d0a08'; c.fillRect(x0, y, w, 26); c.fillRect(x0 + (left ? 0 : w - 18), y + 26, 18, 66); c.fillStyle = 'rgba(120,96,66,.35)'; c.fillRect(x0, y, w, 3); }
-        c.fillStyle = '#0a0806'; c.fillRect(nx - 14, 290, 28, FY - 290);
+        c.fillStyle = '#0a0806'; c.fillRect(nx - 14, -200, 28, FY + 200);
       } });
   }
   if (!PAINTED) { const n = 'room6-drawn'; loads[n] = new Promise(r => setTimeout(r, 0)).then(() => (pics[n] = bakeR6())); }
@@ -460,7 +489,7 @@ const RM = (() => {
   // only by light (after Belshazzar's Feast: the light on the wall, no hand, no writing); the door to the stair on the right.
   const R7 = { BED: [200, 331, 1450, 1281], MAN: [760, 700], WALL: [1600, 2500], GOLD: [2050, 420] };
   function bakeR7() {
-    return bakeShell({ seed: 77, doors: 'R', ceil: 210, wallC: '#24140f', floorC: '#1d120b',
+    return bakeShell({ seed: 77, doors: 'R', roof: 'rafters', ceil: 120, wallC: '#24140f', floorC: '#1d120b',
       lights: [{ x: 2050, y: 820, r: 1100, lit: [70, 44, 34], half: [40, 24, 18], a: .7 }, { x: 760, y: 900, r: 800, lit: [64, 40, 30], half: [36, 22, 16], a: .6 }] });
   }
   if (!PAINTED) { const n = 'room7-drawn'; loads[n] = new Promise(r => setTimeout(r, 0)).then(() => (pics[n] = bakeR7())); }
@@ -486,12 +515,12 @@ const RM = (() => {
   // table with a small light; the armed men a dark mass by the door, their lances thin diagonals. Drawn live: the people, the lances, the lights.
   const R5 = { P0: 1520, P1: 3080, TOP: 300, DOOR: 2490, DW: 230, DH: 560 };
   function bakeR5() {
-    const W = 1584, H = 672, cv = document.createElement('canvas'); cv.width = W; cv.height = H; const c = cv.getContext('2d'); c.scale(.5, .5);
+    const [cv, c] = mkBake();
     const FY = 1262, r = rngR(55);
-    let g = c.createLinearGradient(0, 0, 0, FY); g.addColorStop(0, '#0a101c'); g.addColorStop(.7, '#16202e'); g.addColorStop(1, '#222c38'); c.fillStyle = g; c.fillRect(0, 0, 3168, 1344);
-    for (let i = 0; i < 90; i++) { c.fillStyle = `rgba(220,224,240,${(.2 + r() * .5).toFixed(2)})`; c.fillRect(r() * 3168, r() * 700, 2.2, 2.2); }
+    let g = c.createLinearGradient(0, EX.y0, 0, FY); g.addColorStop(0, '#070b14'); g.addColorStop(.7, '#16202e'); g.addColorStop(1, '#222c38'); c.fillStyle = g; c.fillRect(EX.x0, EX.y0, EX.x1 - EX.x0, EX.y1 - EX.y0);
+    for (let i = 0; i < 160; i++) { c.fillStyle = `rgba(220,224,240,${(.2 + r() * .5).toFixed(2)})`; c.fillRect(EX.x0 + r() * (EX.x1 - EX.x0), EX.y0 + r() * 1300, 2.2, 2.2); }
     // far garden: a long low wall and round dark trees, one tone, softer with the haze
-    c.fillStyle = '#141c24'; c.fillRect(0, FY - 260, 3168, 260); for (let x = 300; x < 1700; x += 180 + r() * 160) { c.beginPath(); c.ellipse(x, FY - 300, 110 + r() * 80, 140 + r() * 70, 0, 0, 6.2832); c.fill(); }
+    c.fillStyle = '#141c24'; c.fillRect(EX.x0, FY - 260, EX.x1 - EX.x0, 260); for (let x = 300; x < 1700; x += 180 + r() * 160) { c.beginPath(); c.ellipse(x, FY - 300, 110 + r() * 80, 140 + r() * 70, 0, 0, 6.2832); c.fill(); }
     // the palace: pale stone in moonlight, a tower at its left, battlements, a few dim warm windows, the great door
     const { P0, P1, TOP, DOOR, DW, DH } = R5;
     g = c.createLinearGradient(0, TOP - 240, 0, FY); g.addColorStop(0, '#4a4842'); g.addColorStop(.5, '#3a3732'); g.addColorStop(1, '#2a2723'); c.fillStyle = g;
@@ -504,9 +533,9 @@ const RM = (() => {
     c.fillStyle = '#2a2622'; c.beginPath(); c.moveTo(DOOR - DW / 2 - 40, FY); c.lineTo(DOOR - DW / 2 - 40, FY - DH + 40); c.arc(DOOR, FY - DH + 40, DW / 2 + 40, Math.PI, 0); c.lineTo(DOOR + DW / 2 + 40, FY); c.fill();
     g = c.createLinearGradient(0, FY - DH, 0, FY); g.addColorStop(0, '#ffd98a'); g.addColorStop(1, '#f4b860'); c.fillStyle = g; c.beginPath(); c.moveTo(DOOR - DW / 2, FY); c.lineTo(DOOR - DW / 2, FY - DH + DW / 2); c.arc(DOOR, FY - DH + DW / 2, DW / 2, Math.PI, 0); c.lineTo(DOOR + DW / 2, FY); c.fill();
     // the house's back wall on the left, the lit back door they came out by
-    c.fillStyle = '#1c1511'; c.fillRect(0, 0, 300, FY); c.fillStyle = '#0e0a07'; c.fillRect(126, FY - 680, 148, 680); g = c.createLinearGradient(0, FY - 660, 0, FY); g.addColorStop(0, '#8a5a30'); g.addColorStop(1, '#b07840'); c.fillStyle = g; c.fillRect(142, FY - 660, 116, 660);
+    c.fillStyle = '#1c1511'; c.fillRect(EX.x0, EX.y0, 300 - EX.x0, FY - EX.y0); c.fillStyle = '#0e0a07'; c.fillRect(126, FY - 680, 148, 680); g = c.createLinearGradient(0, FY - 660, 0, FY); g.addColorStop(0, '#8a5a30'); g.addColorStop(1, '#b07840'); c.fillStyle = g; c.fillRect(142, FY - 660, 116, 660);
     // the ground: dark grass, the door's light lying flat before it
-    c.fillStyle = '#10150f'; c.fillRect(0, FY, 3168, 1344 - FY);
+    c.fillStyle = '#10150f'; c.fillRect(EX.x0, FY, EX.x1 - EX.x0, EX.y1 - FY);
     c.save(); c.beginPath(); c.rect(0, FY, 3168, 100); c.clip(); c.translate(DOOR, FY + 10); c.scale(1, .1); g = c.createRadialGradient(0, 0, 0, 0, 0, 900); g.addColorStop(0, 'rgba(255,200,110,.6)'); g.addColorStop(1, 'rgba(255,200,110,0)'); c.fillStyle = g; c.fillRect(-900, -900, 1800, 1800); c.restore();
     return cv;
   }
@@ -526,26 +555,28 @@ const RM = (() => {
   // along the horizon there, so Level 5 (the Cross, before dawn) follows on.
   const HSE = { X0: 1680, WIN: [2620, 300] };
   function bakeDoorScene(leaving) {
-    const W = 1584, H = 672, cv = document.createElement('canvas'); cv.width = W; cv.height = H; const c = cv.getContext('2d'); c.scale(.5, .5);
+    const [cv, c] = mkBake();
     const FY = 1200, r = rngR(leaving ? 91 : 90);
-    let g = c.createLinearGradient(0, 0, 0, FY); g.addColorStop(0, '#07090f'); g.addColorStop(1, '#151a24'); c.fillStyle = g; c.fillRect(0, 0, 3168, 1344);
-    if (leaving) { c.save(); c.translate(3168, FY); c.scale(1, .45); g = c.createRadialGradient(0, 0, 0, 0, 0, 1100); g.addColorStop(0, 'rgba(70,78,96,.75)'); g.addColorStop(.5, 'rgba(50,58,76,.3)'); g.addColorStop(1, 'rgba(40,46,60,0)'); c.fillStyle = g; c.fillRect(-1100, -1100, 2200, 1100); c.restore(); }
-    for (let i = 0; i < 70; i++) { c.fillStyle = `rgba(220,224,240,${(.15 + r() * .45).toFixed(2)})`; c.fillRect(r() * 3168, r() * 650, 2, 2); }
+    let g = c.createLinearGradient(0, EX.y0, 0, FY); g.addColorStop(0, '#05070c'); g.addColorStop(1, '#151a24'); c.fillStyle = g; c.fillRect(EX.x0, EX.y0, EX.x1 - EX.x0, EX.y1 - EX.y0);
+    if (leaving) { c.save(); c.translate(EX.x1, FY); c.scale(1, .45); g = c.createRadialGradient(0, 0, 0, 0, 0, 1100); g.addColorStop(0, 'rgba(70,78,96,.75)'); g.addColorStop(.5, 'rgba(50,58,76,.3)'); g.addColorStop(1, 'rgba(40,46,60,0)'); c.fillStyle = g; c.fillRect(-1100, -1100, 2200, 1100); c.restore(); }
+    for (let i = 0; i < 120; i++) { c.fillStyle = `rgba(220,224,240,${(.15 + r() * .45).toFixed(2)})`; c.fillRect(EX.x0 + r() * 1900, EX.y0 + r() * 1300, 2, 2); }
     // the trees: a far mass, paler with the haze, and a near mass, darker, both soft lumpy crowns on short trunks
     for (const [col, base, n, rr] of [['#141821', FY - 120, 9, 170], ['#0b0d12', FY - 40, 7, 230]]) { c.fillStyle = col;
       for (let i = 0; i < n; i++) { const x = 60 + i * (1500 / n) + r() * 90, y = base - 260 - r() * 160; for (let k = 0; k < 5; k++) { c.beginPath(); c.ellipse(x + (r() - .5) * rr, y + (r() - .5) * rr * .6, rr * (.5 + r() * .4), rr * (.4 + r() * .3), 0, 0, 6.2832); c.fill(); } c.fillRect(x - 14, y, 28, base - y + 40); } }
     // still water on the left, the far fire tiny and its broken reflection beneath
-    c.fillStyle = '#0e121a'; c.fillRect(0, FY - 30, 1500, 60); c.fillStyle = 'rgba(255,150,70,.9)'; c.beginPath(); c.ellipse(700, FY - 40, 9, 12, 0, 0, 6.2832); c.fill();
+    c.fillStyle = '#0e121a'; c.fillRect(EX.x0, FY - 30, 1500 - EX.x0, 60); c.fillStyle = 'rgba(255,150,70,.9)'; c.beginPath(); c.ellipse(700, FY - 40, 9, 12, 0, 0, 6.2832); c.fill();
     for (let k = 0; k < 6; k++) { c.fillStyle = `rgba(255,150,70,${(.5 - k * .07).toFixed(2)})`; c.fillRect(700 - 12 + (k % 2) * 6, FY - 24 + k * 8, 24 - k * 2, 3); }
     // the house AT THE SAME SIZE AS ITS ROOMS (owner, build 436: "House on outside should have same size as house on inside"): inside, a floor is
     // 1100 high for a man 800 tall; out here a man is .58 of that, so a floor is about 640: the ground floor's ceiling at FY - 640 (a string course),
     // the upper floor above it running off the top of the picture, and the front running on off the right, as the five ground-floor rooms
     // and the stair need; the bedchamber's window lit upstairs, the parlour's tall window below, the cellar's grating at the wall's foot
-    const { X0 } = HSE, X1 = 3168, ST = FY - 640; c.fillStyle = '#2a231e'; c.fillRect(X0, 0, X1 - X0, FY);
+    const { X0 } = HSE, X1 = EX.x1, ST = FY - 640; c.fillStyle = '#2a231e'; c.fillRect(X0, EX.y0, X1 - X0, FY - EX.y0);
     c.fillStyle = 'rgba(12,9,7,.55)'; c.fillRect(X0, ST - 10, X1 - X0, 22); c.fillStyle = 'rgba(90,78,64,.25)'; c.fillRect(X0, ST - 10, X1 - X0, 3);
-    g = c.createLinearGradient(X0, 0, X0 + 700, 0); g.addColorStop(0, 'rgba(10,8,6,.55)'); g.addColorStop(1, 'rgba(10,8,6,0)'); c.fillStyle = g; c.fillRect(X0, 0, 700, FY);
-    c.fillStyle = 'rgba(40,46,60,.35)'; c.fillRect(X0, 0, 10, FY);
-    for (let k = 0; k < 40; k++) { const x = X0 + r() * (X1 - X0), y = r() * FY, rr = 60 + r() * 160, gg = c.createRadialGradient(x, y, 0, x, y, rr); gg.addColorStop(0, r() < .5 ? 'rgba(70,58,46,.12)' : 'rgba(6,4,3,.14)'); gg.addColorStop(1, 'rgba(0,0,0,0)'); c.fillStyle = gg; c.fillRect(x - rr, y - rr, 2 * rr, 2 * rr); }
+    g = c.createLinearGradient(X0, 0, X0 + 700, 0); g.addColorStop(0, 'rgba(10,8,6,.55)'); g.addColorStop(1, 'rgba(10,8,6,0)'); c.fillStyle = g; c.fillRect(X0, EX.y0, 700, FY - EX.y0);
+    c.fillStyle = 'rgba(40,46,60,.35)'; c.fillRect(X0, EX.y0, 10, FY - EX.y0);
+    // the upper floor's string course and windows above (the roof is out of sight above the picture)
+    c.fillStyle = 'rgba(12,9,7,.55)'; c.fillRect(X0, ST - 650, X1 - X0, 22);
+    for (let k = 0; k < 40; k++) { const x = X0 + r() * (X1 - X0), y = EX.y0 + r() * (FY - EX.y0), rr = 60 + r() * 160, gg = c.createRadialGradient(x, y, 0, x, y, rr); gg.addColorStop(0, r() < .5 ? 'rgba(70,58,46,.12)' : 'rgba(6,4,3,.14)'); gg.addColorStop(1, 'rgba(0,0,0,0)'); c.fillStyle = gg; c.fillRect(x - rr, y - rr, 2 * rr, 2 * rr); }
     const win = (x, y, w, h, lit) => { c.fillStyle = '#120c08'; c.fillRect(x - w / 2 - 16, y - h / 2 - 16, w + 32, h + 32); c.fillStyle = lit ? '#e8a85a' : '#151820'; c.fillRect(x - w / 2, y - h / 2, w, h); c.fillStyle = '#120c08'; c.fillRect(x - 4, y - h / 2, 8, h); c.fillRect(x - w / 2, y - h * .1, w, 8); };
     const [wx, wy] = HSE.WIN; win(wx, wy, 130, 200, true); win(1880, wy, 130, 200, false); win(2900, 820, 150, 300, false);
     c.fillStyle = '#0c0806'; c.fillRect(2620, FY - 70, 140, 50); c.fillStyle = '#2a231e'; for (let k = 0; k < 4; k++) c.fillRect(2632 + k * 34, FY - 70, 8, 50);
@@ -553,9 +584,9 @@ const RM = (() => {
     const dx0 = DOOR.x - DOOR.w / 2 - 34, dx1 = DOOR.x + DOOR.w / 2 + 34, rr = (dx1 - dx0) / 2; c.fillStyle = '#3a302a'; c.beginPath(); c.moveTo(dx0, DOOR.bot); c.lineTo(dx0, DOOR.top + rr); c.arc(dx0 + rr, DOOR.top + rr, rr, Math.PI, 0); c.lineTo(dx1, DOOR.bot); c.fill();
     c.fillStyle = '#0c0806'; const ir = DOOR.w / 2; c.beginPath(); c.moveTo(DOOR.x - ir, DOOR.bot); c.lineTo(DOOR.x - ir, DOOR.top + ir); c.arc(DOOR.x, DOOR.top + ir, ir, Math.PI, 0); c.lineTo(DOOR.x + ir, DOOR.bot); c.fill();
     if (leaving) { // the low coursed wall called Salvation, beginning by the house and running on out of the picture beside the way
-      c.fillStyle = '#1c1a1e'; c.fillRect(2760, FY - 150, 420, 150); c.fillStyle = 'rgba(120,126,140,.35)'; c.fillRect(2760, FY - 150, 420, 5); c.fillStyle = 'rgba(8,8,10,.6)'; for (let y = FY - 110; y < FY; y += 40) c.fillRect(2760, y, 420, 3); }
+      c.fillStyle = '#1c1a1e'; c.fillRect(2760, FY - 150, EX.x1 - 2760, 150); c.fillStyle = 'rgba(120,126,140,.35)'; c.fillRect(2760, FY - 150, EX.x1 - 2760, 5); c.fillStyle = 'rgba(8,8,10,.6)'; for (let y = FY - 110; y < FY; y += 40) c.fillRect(2760, y, EX.x1 - 2760, 3); }
     // the path and the ground
-    c.fillStyle = '#0e0d0c'; c.fillRect(0, FY, 3168, 1344 - FY); c.fillStyle = 'rgba(90,80,70,.25)'; c.fillRect(1500, FY, 1668, 3);
+    c.fillStyle = '#0e0d0c'; c.fillRect(EX.x0, FY, EX.x1 - EX.x0, EX.y1 - FY); c.fillStyle = 'rgba(90,80,70,.25)'; c.fillRect(1500, FY, EX.x1 - 1500, 3);
     return cv;
   }
   if (!PAINTED) { loads['door-drawn'] = new Promise(r => setTimeout(r, 0)).then(() => (pics['door-drawn'] = bakeDoorScene(false))); loads['leave-drawn'] = new Promise(r => setTimeout(r, 0)).then(() => (pics['leave-drawn'] = bakeDoorScene(true))); }
@@ -601,7 +632,7 @@ const RM = (() => {
         if (ph === 'crown' && t === 70) talk([[I, 'He is the only man the Lord has sent to be your guide in hard places. Take good heed, lest you meet some who pretend to lead you right, but their way goes down to death.']], () => goTo('r2'));
         this.crown *= .995;
         // the view eases in a little on the picture once the door is open (VZ .64 -> .76, centred toward it)
-        { const q = smooth(0, 1, this.door); this.zin = 1 + .22 * q; this.vx = -(R1.PIC[0] + R1.PIC[2] - 3168) / 2 * S * (VW / (3168 * S)) * this.zin * q * .85; }
+        { const q = smooth(0, 1, this.door); this.zin = 1 + .3 * q; this.vx = -(R1.PIC[0] + R1.PIC[2] - 3168) / 2 * S * (VW / ((EX.x1 - EX.x0) * S)) * this.zin * q * .85; }
       },
       under(c) {
         const [px0, py0, px1, py1] = R1.PIC, [nx0, ny0, nx1, ny1] = R1.NICHE, im = pics['room1-portrait'], L = smooth(0, 1, this.lit);
@@ -730,7 +761,7 @@ const RM = (() => {
           const W2 = im.width / LS.k * S, H2 = im.height / LS.k * S, hc = this.hc || (this.hc = document.createElement('canvas')); hc.width = 160; hc.height = Math.round(160 * im.height / im.width);
           const hx = hc.getContext('2d'); hx.globalCompositeOperation = 'source-over'; hx.fillStyle = css([170, 150, 120], hz); hx.fillRect(0, 0, hc.width, hc.height); hx.globalCompositeOperation = 'destination-in'; hx.drawImage(im, 0, 0, hc.width, hc.height);
           c.restore(); c.drawImage(hc, u((LS.bx - LS.ox) / LS.k), v((LS.by - LS.oy) / LS.k), W2, H2); c.save();
-        } else { c.fillStyle = css([170, 150, 120], hz); c.fillRect(u(0), v(0), (R.PW || 3168) * S, PH * S); }
+        } else { c.fillStyle = css([170, 150, 120], hz); if (this.shell) c.fillRect(u(EX.x0), v(EX.y0), (EX.x1 - EX.x0) * S, (EX.y1 - EX.y0) * S); else c.fillRect(u(0), v(0), (R.PW || 3168) * S, PH * S); }
         for (const d of this.dust) { const a = Math.min(1, d.a * (.45 + this.haze)); const r = d.s * S * 3; const g = c.createRadialGradient(u(d.x), v(d.y), 0, u(d.x), v(d.y), r); g.addColorStop(0, css([206, 188, 160], a * .7)); g.addColorStop(1, css([196, 178, 150], 0)); c.fillStyle = g; c.fillRect(u(d.x) - r, v(d.y) - r, 2 * r, 2 * r); }
         c.fillStyle = 'rgba(200,215,225,.5)'; for (const w of this.wet) c.fillRect(u(w.x), v(w.y), 1.2, 2.4);
       },
@@ -874,7 +905,7 @@ const RM = (() => {
         for (const s of this.steam) { const g = c.createRadialGradient(u(s.x), v(s.y), 0, u(s.x), v(s.y), s.s * S); g.addColorStop(0, css([220, 210, 205], s.a * (D4 ? .14 : .35))); g.addColorStop(1, css([220, 210, 205], 0)); c.fillStyle = g; c.fillRect(u(s.x) - s.s * S, v(s.y) - s.s * S, 2 * s.s * S, 2 * s.s * S); }
         // the dark behind the wall, lifting as they go round
         const hx = u(2168), hide = (D4 ? .82 : 1) * (1 - smooth(0, .8, this.rv));
-        if (hide > .01) { const g = c.createLinearGradient(hx - 20, 0, hx + 60, 0); g.addColorStop(0, 'rgba(8,4,3,0)'); g.addColorStop(1, css([8, 4, 3], hide)); c.fillStyle = g; c.fillRect(hx - 20, v(0), u(3168) - hx + 20, PH * S); }
+        if (hide > .01) { const g = c.createLinearGradient(hx - 20, 0, hx + 60, 0); g.addColorStop(0, 'rgba(8,4,3,0)'); g.addColorStop(1, css([8, 4, 3], hide)); c.fillStyle = g; const yA = D4 ? v(EX.y0) : v(0), xB = D4 ? u(EX.x1) : u(3168); c.fillRect(hx - 20, yA, xB - hx + 20, (D4 ? EX.y1 - EX.y0 : PH) * S); }
         if (this.rv > .3) { c.fillStyle = css([255, 200, 90], .9); for (const o of this.oil) { c.beginPath(); c.arc(u(o.x), v(o.y), 1.3, 0, 6.2832); c.fill(); } glow(c, u(2190), v(1090), 60 * f, [255, 170, 80], .3 * smooth(.3, 1, this.rv)); }
       },
     },
@@ -1379,7 +1410,7 @@ const RM = (() => {
   function setView() {
     // a room drawn on the house's shell fills the picture's width (critics, build 427: "fill the screen; answer claustrophobic by drawing more room"),
     // its floor line a little above the words; zin eases in on a thing, vx moves the view sideways
-    if (R && R.shell && R.id !== 'pass') { const Z = VW / (R.PW * S) * (R.zin || 1); VIEW.Z = Z; VIEW.ox = (VW - R.PW * S * Z) / 2 + (R.vx || 0); VIEW.oy = VH * .86 - 440 * Z; return; }
+    if (R && R.shell && R.id !== 'pass') { const XW = (EX.x1 - EX.x0) * S, Z = VW / XW * (R.zin || 1); VIEW.Z = Z; VIEW.ox = (VW - XW * Z) / 2 - EX.x0 * S * Z + (R.vx || 0); VIEW.oy = VH * .86 - 440 * Z - (R.FY - 1250) * 0; return; }
     const vz = (R && R.vz) || VZ, Z = R && R.id === 'pass' ? 1 : vz * Math.min(1, 1204 / (R.PW * S)), top = 440 - R.FY * S;
     VIEW.Z = Z; VIEW.ox = R && R.id === 'pass' ? 0 : (VW - R.PW * S * Z) / 2 + (R.vx || 0); VIEW.oy = R && R.id === 'pass' ? 0 : 14 + PH * S * (Z / vz * .8 - Z) / 2 - top * Z + (R.vy || 0);
   }
@@ -1422,7 +1453,7 @@ const RM = (() => {
     c.setTransform(DPR * VIEW.Z, 0, 0, DPR * VIEW.Z, DPR * VIEW.ox, DPR * VIEW.oy);
     if (R && R.id === 'pass') R.draw(c);
     else if (im) {
-      const w = R.PW * S, h = PH * S, x0 = u(0), y0 = v(0);
+      const ex = im.ex, w = ex ? (EX.x1 - EX.x0) * S : R.PW * S, h = ex ? (EX.y1 - EX.y0) * S : PH * S, x0 = ex ? u(EX.x0) : u(0), y0 = ex ? v(EX.y0) : v(0);
       const LS = R.lshape; if (LS) c.drawImage(im, u((LS.bx - LS.ox) / LS.k), v((LS.by - LS.oy) / LS.k), im.width / LS.k * S, im.height / LS.k * S);
       c.save(); c.beginPath(); c.rect(x0, y0, w, h); c.clip();
       if (!LS) c.drawImage(im, x0, y0, w, h);
