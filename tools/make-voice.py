@@ -24,8 +24,10 @@ VOICES = {'N': 'voice_zqnt5xdln1kq', 'C': 'voice_xp9kua42jfe2', 'E': 'voice_x361
           'H': 'voice_njlpqcyvcd0a',      # Help (Level 2), designed in build 91 from the description in HANDOFF.md (build 87)
           'WW': 'voice_5pb813zhf90w',     # Mr. Worldly Wiseman (Level 3), designed in build 143 (description in HANDOFF.md)
           # Level 4, the Interpreter's House (rooms.js), designed overnight after build 261 (descriptions in HANDOFF.md)
-          'I': 'voice_jjn83osdk67i', 'MAN': 'voice_bxeyrj0cbj0h', 'DRM': 'voice_m1731k2m6r6k', 'BR': 'voice_3r4cxjhyemkr', 'VO': 'voice_57t9upkd6uye'}
-WHO = {'N': '', 'C': 'Christian', 'E': 'Evangelist', 'O': 'Obstinate', 'PL': 'Pliable', 'W': 'His wife', 'H': 'Help', 'WW': 'Mr. Worldly Wiseman', 'I': 'The Interpreter', 'MAN': 'The man in the cage', 'DRM': 'The trembling man', 'BR': 'The brave man', 'VO': 'Voices from the palace'}
+          'I': 'voice_jjn83osdk67i', 'MAN': 'voice_bxeyrj0cbj0h', 'DRM': 'voice_m1731k2m6r6k', 'BR': 'voice_3r4cxjhyemkr', 'VO': 'voice_57t9upkd6uye',
+          # Level 5, the Cross (cross.js): one voice for the three Shining Ones, designed after build 393 (description in HANDOFF.md)
+          'SO': 'voice_s9z08ntibwpx', 'S1': 'voice_s9z08ntibwpx', 'S3': 'voice_s9z08ntibwpx'}
+WHO = {'N': '', 'C': 'Christian', 'E': 'Evangelist', 'O': 'Obstinate', 'PL': 'Pliable', 'W': 'His wife', 'H': 'Help', 'WW': 'Mr. Worldly Wiseman', 'I': 'The Interpreter', 'MAN': 'The man in the cage', 'DRM': 'The trembling man', 'BR': 'The brave man', 'VO': 'Voices from the palace', 'SO': 'The Shining Ones', 'S1': 'The first Shining One', 'S3': 'The third Shining One'}
 KEY = os.environ.get('GEMINI_API_KEY', '')
 # HOW A LINE IS SAID (build 125, owner: "are him and Christian voices stressed as they sink ?? Seems like they would be more
 # desperate"): a line listed here is recorded with these tags in square brackets in front of it. The speech model acts
@@ -50,6 +52,8 @@ STYLE = {
     "I saw many caught up into the clouds, but I was left behind. I was not ready.": "[trembling, close to tears, hushed]",
     "Come in, come in; Eternal glory thou shalt win.": "[joyful, gentle, calling from far above]",
     "Set down my name, Sir.": "[firm, brave, steady]",
+    # Level 5, the Cross
+    "He hath given me rest by his sorrow, and life by his death.": "[with a merry heart, quiet wonder, joyful, close to tears]",
 }
 
 def call(path, body):
@@ -89,9 +93,9 @@ def record(code, text, dest):
 
 def main():
     redo = sys.argv[sys.argv.index('--redo') + 1] if '--redo' in sys.argv else ''
-    src = ''.join(open(os.path.join(ROOT, f), encoding='utf-8').read() for f in ('index.html', 'slough.js', 'hill.js', 'rooms.js'))
+    src = ''.join(open(os.path.join(ROOT, f), encoding='utf-8').read() for f in ('index.html', 'slough.js', 'hill.js', 'rooms.js', 'cross.js'))
     lines = []
-    for code, text in re.findall(r"\[(N|C|E|O|PL|WW|W|H|I|MAN|DRM|BR|VO), '((?:[^'\\]|\\.)*)'", src):
+    for code, text in re.findall(r"\[(N|C|E|O|PL|WW|W|H|I|MAN|DRM|BR|VO|SO|S1|S3), '((?:[^'\\]|\\.)*)'", src):
         text = text.replace("\\'", "'")
         if (code, text) not in lines: lines.append((code, text))
     os.makedirs(OUT, exist_ok=True)
