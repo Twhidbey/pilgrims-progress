@@ -17,13 +17,13 @@
 const CR = (() => {
   const SO = 'The Shining Ones', S1 = 'The first Shining One', S3 = 'The third Shining One';
   // ---------- the land (world units: x along the way, h up from the foot of the slope) ----------
-  const START = 480, WALL_END = 860, TOMB_X = 3840, SLOPE0 = 1180, CREST0 = 2860, CROSS_X = 3040, CREST1 = 3260, FALL1 = 3760, H_TOP = 430;
+  const START = 480, WALL_END = 860, TOMB_X = 4080, SLOPE0 = 1180, CREST0 = 2860, CROSS_X = 3040, CREST1 = 3260, FALL1 = 4000, H_TOP = 860;
   // the cross and the hill larger beside him (owner: "cross needs to be bigger, relative to Christian, hill too"): he is about 150 units tall
   const CROSS_H = 340, CROSS_BY = CROSS_H * .74;
   // THE CLIMB TOLD BY A CUT (owner: "zoom in on Christian climbing and then fade slightly then unfade and zoom out and he's at top"):
   // past CLOSE0 the camera comes in close on him climbing; at CUT_X the picture dips softly toward dark, he is set near the top
   // (SKIP_TO), and it comes up again on a wide look down the hill from the top; then the camera comes back down to him
-  const CLOSE0 = SLOPE0 + 40, CUT_X = SLOPE0 + 380, SKIP_TO = CROSS_X - 300;
+  const CLOSE0 = SLOPE0 + 40, CUT_X = SLOPE0 + 300, SKIP_TO = CROSS_X - 300;
   const STOP_X = CROSS_X + 112;      // where he stands when the burden falls: just past the cross, turned round to face it,
   // so the burden falls off behind him down the far slope into the sepulchre in the hollow (owner: "Why not on other side like in initial sketch?" ... "Yes!")
   const sm = (a, b, x) => smooth(a, b, x);
@@ -111,9 +111,10 @@ const CR = (() => {
   function camTick(snap) {
     const near = { cx: Ch.x + lerp(250, 110, closeK), z: lerp(.8, 1.25, closeK) };
     if (ph === 'cross' || ph === 'after' || ph === 'shine' || ph === 'leaps' || ph === 'end') { near.cx = CROSS_X + 60; near.z = .86; }
-    const open = ph === 'look', wide = open ? { cx: (START + CROSS_X) / 2 + 420, z: VW / 3500 } : { cx: (TOMB_X + CROSS_X) / 2 - 40, z: VW / 1900 };
+    const open = ph === 'look', fitT = (FOOTY - 30) / (gh(CROSS_X) + CROSS_H - gh(TOMB_X) + 90);
+    const wide = open ? { cx: (START + CROSS_X) / 2 + 420, z: Math.min(VW / 3500, (FOOTY - 40) / (H_TOP + CROSS_H + 40)) } : { cx: (TOMB_X + CROSS_X) / 2 - 40, z: Math.min(VW / 1900, fitT) };
     let tcx = lerp(near.cx, wide.cx, wideK), tz = Math.exp(lerp(Math.log(near.z), Math.log(wide.z), wideK));
-    const wh = open ? 40 : gh(TOMB_X) + 20, fh = lerp(gh(Ch.x), wh, wideK);
+    const wh = open ? 40 : gh(TOMB_X) - 90, fh = lerp(gh(Ch.x), wh, wideK);
     let twl = FOOTY + fh * tz + (open ? 28 : 0) * wideK;
     // the look from the top after the cut: wide, he and the cross high in the picture, the hill falling away below
     if (topK > .001) { const z2 = .4, wl2 = 250 + gh(Ch.x) * z2; tcx = lerp(tcx, Ch.x - 40, topK); twl = lerp(twl, wl2, topK); tz = Math.exp(lerp(Math.log(tz), Math.log(z2), topK)); }
