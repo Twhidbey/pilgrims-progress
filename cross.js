@@ -63,11 +63,17 @@ const CR = (() => {
 
   // ---------- pictures ----------
   const CLIP = [], CLIP_META = { ax: 182.5, ground: 299, frames: 81 }, SWAP = 41, BALL = { ax: 31, w: 99, h: 118 };
-  let BURDEN = null, loaded = false;
+  let BURDEN = null, RTEX = null, RPAT = null, loaded = false;
   function preload() {
     if (loaded) return; loaded = true;
     loadPack('christian-cross', CLIP).catch(() => {});
     loadImg('cross-burden.webp').then(im => { BURDEN = im; }).catch(() => {});
+    // the burning hill's own painted rock (Level 3), made a grey tile as hill.js makes it, laid over the hill in 'overlay'
+    loadImg('hill-rock.webp').then(rock => { const sx = 720, sy = 540, w = 780, h = 600, t = document.createElement('canvas'); t.width = w; t.height = h; const q = t.getContext('2d'); q.drawImage(rock, sx, sy, w, h, 0, 0, w, h);
+      const d = q.getImageData(0, 0, w, h), D = d.data; let m = 0; for (let i = 0; i < D.length; i += 4) m += D[i] * .3 + D[i + 1] * .59 + D[i + 2] * .11; m /= D.length / 4;
+      for (let i = 0; i < D.length; i += 4) { const v = clamp(128 + (D[i] * .3 + D[i + 1] * .59 + D[i + 2] * .11 - m) * 1.15, 0, 255); D[i] = D[i + 1] = D[i + 2] = v; D[i + 3] = 255; } q.putImageData(d, 0, 0);
+      const T = document.createElement('canvas'); T.width = 2 * w; T.height = 2 * h; const r = T.getContext('2d'); r.drawImage(t, 0, 0); r.save(); r.translate(2 * w, 0); r.scale(-1, 1); r.drawImage(t, 0, 0); r.restore(); r.save(); r.translate(0, 2 * h); r.scale(1, -1); r.drawImage(T, 0, 0, 2 * w, h, 0, 0, 2 * w, h); r.restore();
+      RTEX = T; }).catch(() => {});
   }
 
   // ---------- state ----------
@@ -229,45 +235,33 @@ const CR = (() => {
     });
   }
   // the land in world units (the transform is set by the caller)
-  // the hill's rock (owner: "maybe give the hill more rock texture (with layers of different shades - subtle but
-  // beautiful)"): baked once at half the world's size and drawn stretched, clipped to the land: bands of rock lying under
-  // the hill's outline, each a shade lighter or darker than the next, their edges wandering, a faint lit ledge along the
-  // top of some and a dark seam under it, and a fine grain over all; all in light and dark alpha, so it takes the hill's
-  // own colour as the dawn comes
+  // the hill's rock, as Level 3's crags are drawn (owner: "don't like that it looks like strata - should be gradient - light
+  // to dark... I like the rock shape of the scenery around Christian in mt scene in level three"): no layers; the hill goes
+  // from a little lighter under its outline to dark at its foot, and within it rise rock masses made as Level 3's crags
+  // are (`crag`: rows of overlapping spurs, each a small breaking wave, a steep face on the left, a rounded brow, a long
+  // fall to the right), each row set deeper in the hill and a shade darker than the one before, so the rock grows
+  // darker as it comes down; baked once small and drawn stretched (soft), in dark alpha so it takes the hill's colour
   let ROCK = null;
   function rockTex() {
     if (ROCK) return ROCK;
-    const X0 = START - 700, X1 = FALL1 + 900, Y0 = -H_TOP - 40, Y1 = 700, k = .5;
+    const X0 = START - 700, X1 = FALL1 + 900, Y0 = -H_TOP - 40, Y1 = 700, k = .4;
     const cv = document.createElement('canvas'); cv.width = Math.ceil((X1 - X0) * k); cv.height = Math.ceil((Y1 - Y0) * k); const q = cv.getContext('2d');
     q.scale(k, k); q.translate(-X0, -Y0);
-    const r = rgen(77), bands = []; let d = 26 + r() * 20;
-    // bands of every thickness, some smooth and some rough, some leaning a little, each its own shade
-    while (d < H_TOP + 200) { const rough = .4 + r() * 1.5;
-      bands.push({ d, a: (r() - .5) * .12, p: [r() * 6.3, r() * 6.3, r() * 6.3], amp: 4 + r() * 26, rough, tilt: (r() - .5) * .025, lit: r() < .75 }); d += 18 + Math.pow(r(), 1.6) * 120; }
-    // value noise on cells of 26 and 9 units, so each edge breaks in small steps and chips, as rock does
-    const VN = (x, c, seed) => { const i = Math.floor(x / c), f = x / c - i, h = n => { const t = Math.sin((n + seed * 101) * 127.1) * 43758.5; return t - Math.floor(t) - .5; }; return h(i) + (h(i + 1) - h(i)) * (f * f * (3 - 2 * f)); };
-    const yAt = (b, x) => -(gh(x) - b.d) + b.amp * (.6 * Math.sin(x * .004 + b.p[0]) + .3 * Math.sin(x * .011 + b.p[1]) + .1 * Math.sin(x * .037 + b.p[2])) + b.rough * (9 * VN(x, 26, b.d) + 4 * VN(x, 9, b.d + 3) + 2 * VN(x, 4, b.d + 7)) + b.tilt * (x - 3000);
-    for (let i = 0; i < bands.length; i++) {
-      const b = bands[i], n = bands[i + 1];
-      q.beginPath(); for (let x = X0; x <= X1; x += 4) q.lineTo(x, yAt(b, x));
-      if (n) for (let x = X1; x >= X0; x -= 4) q.lineTo(x, yAt(n, x)); else { q.lineTo(X1, Y1); q.lineTo(X0, Y1); }
-      q.closePath(); q.fillStyle = b.a > 0 ? css([170, 164, 176], b.a) : css([0, 0, 0], -b.a * 1.3); q.fill();
-      // its foot in a little shadow under the next layer's lip: the shade laid along the next edge, fading upward
-      if (n) { q.save(); q.clip(); q.lineWidth = 7; q.strokeStyle = css([0, 0, 0], .05); q.beginPath(); for (let x = X0; x <= X1; x += 6) q.lineTo(x, yAt(n, x) - 3); q.stroke();
-        q.lineWidth = 3; q.strokeStyle = css([0, 0, 0], .05); q.beginPath(); for (let x = X0; x <= X1; x += 6) q.lineTo(x, yAt(n, x) - 1.5); q.stroke(); q.restore(); }
-      // the ledge: a dark seam with a faint lit lip above it, broken along its length
-      q.lineWidth = 2; for (let x = X0; x < X1; x += 60 + r() * 120) { const L = 90 + r() * 320; if (r() < .2) continue;
-        q.strokeStyle = css([0, 0, 0], .12); q.beginPath(); for (let u = x; u <= x + L; u += 4) q.lineTo(u, yAt(b, u) + 1.5); q.stroke();
-        if (b.lit) { q.strokeStyle = css([190, 182, 196], .06); q.beginPath(); for (let u = x; u <= x + L; u += 4) q.lineTo(u, yAt(b, u) - 1.2); q.stroke(); } }
-      // joints across the band and a few blocks a shade off its tone, so it reads as broken rock, not a stripe
-      if (n) for (let x = X0 + r() * 120; x < X1; x += 70 + r() * 220) { const y1 = yAt(b, x), y2 = yAt(n, x + (r() - .5) * 20); if (y2 - y1 < 14) continue;
-        q.strokeStyle = css([0, 0, 0], .05 + r() * .05); q.lineWidth = 1.4; q.beginPath(); q.moveTo(x, y1 + 2); q.lineTo(x + (r() - .5) * 18, lerp(y1, y2, .5) + (r() - .5) * 6); q.lineTo(x + (r() - .5) * 26, y2 - 2); q.stroke();
-        if (r() < .4) { const w = 30 + r() * 80, yy = lerp(y1, y2, .2 + r() * .5), hh = Math.min(26, (y2 - y1) * .5);
-          q.fillStyle = css([0, 0, 0], .03); q.beginPath(); q.moveTo(x + 4, yy); q.lineTo(x + w * .5, yy - 3 - r() * 4); q.lineTo(x + w, yy + 2); q.lineTo(x + w - 6, yy + hh); q.lineTo(x + 8, yy + hh - 2); q.closePath(); q.fill(); } }
-    }
-    // a fine grain of rock
-    for (let i = 0; i < 26000; i++) { const x = X0 + r() * (X1 - X0), y = Y0 + r() * (Y1 - Y0), w = 2 + r() * 6;
-      q.fillStyle = r() < .5 ? css([0, 0, 0], .05 + r() * .05) : css([180, 172, 186], .025 + r() * .03); q.fillRect(x, y, w, 1.6 + r() * 2); }
+    const hs = (j, n, sd) => { const v = Math.sin(j * 127.1 + sd * 311.7 + n * 74.7) * 43758.5453; return v - Math.floor(v); };
+    const nz = (x, sd) => { const i = Math.floor(x), f = x - i; return hs(i, 9, sd) + (hs(i + 1, 9, sd) - hs(i, 9, sd)) * f * f * (3 - 2 * f); };
+    const crag = (L, sd, seg) => { const i = Math.floor(L / seg); let H = .34 + .3 * nz(L * .0011, sd + 5);
+      for (let j = i - 4; j <= i + 1; j++) { const xc = (j + .15 + .7 * hs(j, 0, sd)) * seg, h = (.42 + .5 * hs(j, 2, sd)) * (hs(j, 3, sd) < .14 ? 1.25 : 1), w = seg * (1.8 + 2.2 * hs(j, 1, sd)) * (.55 + .9 * h), u = (L - xc) / w;
+        if (u < -.12 || u > 1) continue;
+        const ld = .4 + .3 * hs(j, 4, sd), br = .14 + .14 * hs(j, 5, sd), f = u < 0 ? Math.pow(smooth(-.12, 0, u), .6) : u < br ? 1 - .1 * (u / br) * (u / br) : .9 * Math.pow(1 - (u - br) / (1 - br), 1.2) - .07 * smooth(ld - .03, ld + .03, u) * (1 - u);
+        H = Math.max(H, h * f); }
+      return H + (nz(L * .022, sd) - .5) * .05 + (nz(L * .06, sd + 2) - .5) * .035 + (nz(L * .2, sd + 4) - .5) * .012; };
+    // rows of rock: how far below the hill's outline each one's foot lies, how tall its spurs stand, their width, its shade
+    const ROWS = [[150, 170, 70, .09], [380, 260, 95, .1], [620, 300, 120, .11], [880, 320, 150, .12]];
+    ROWS.forEach(([D, Hh, seg, a], n) => {
+      q.beginPath(); q.moveTo(X0, Y1);
+      for (let x = X0; x <= X1; x += 4) q.lineTo(x, -(gh(x) - D) - Hh * crag(x + n * 977, 11 + n * 7, seg));
+      q.lineTo(X1, Y1); q.closePath(); q.fillStyle = css([0, 0, 0], a); q.fill();
+    });
     return (ROCK = { c: cv, x: X0, y: Y0, w: X1 - X0, h: Y1 - Y0 });
   }
   function land(c) {
@@ -281,9 +275,12 @@ const CR = (() => {
     c.save(); c.clip();
     const lite = mix(hc, [150, 146, 160], .5), dark = mix(hc, [6, 5, 8], .6);
     let g = c.createLinearGradient(0, -H_TOP, 0, 40);
-    g.addColorStop(0, css(lite, .06)); g.addColorStop(.35, css(lite, 0)); g.addColorStop(.7, css(dark, 0)); g.addColorStop(1, css(dark, .5));
+    g.addColorStop(0, css(lite, .1)); g.addColorStop(.3, css(lite, .03)); g.addColorStop(.6, css(dark, .05)); g.addColorStop(1, css(dark, .5));
     c.fillStyle = g; c.fillRect(x0, -H_TOP - 60, x1 - x0, H_TOP + 2100);
     const R = rockTex(); c.drawImage(R.c, R.x, R.y, R.w, R.h);
+    // the painted rock's grain over it all, as on Level 3's crags
+    if (RTEX) { if (!RPAT) RPAT = c.createPattern(RTEX, 'repeat'); const ts = 2.4; RPAT.setTransform(new DOMMatrix([ts, 0, 0, ts, 300, -H_TOP - 200]));
+      c.globalCompositeOperation = "overlay"; c.globalAlpha = .2; c.fillStyle = RPAT; c.fillRect(x0, -H_TOP - 60, x1 - x0, H_TOP + 2100); c.globalAlpha = 1; c.globalCompositeOperation = 'source-over'; }
     c.restore();
     // a thin edge of light along the crown, toward the sun (after dawn)
     if (gold > .01) {
