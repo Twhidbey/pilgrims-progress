@@ -524,7 +524,7 @@ const RM = (() => {
   // over still water with one tiny far fire mirrored in it; the stone house in the right half, one lit window above, the arched door (DOOR);
   // leaving, the same picture at the end of night: the low coursed wall called Salvation begins on the right and the first cold grey lies
   // along the horizon there, so Level 5 (the Cross, before dawn) follows on.
-  const HSE = { X0: 1700, X1: 2860, EAVE: 520, RIDGE: 160, WIN: [2620, 420] };
+  const HSE = { X0: 1680, WIN: [2620, 300] };
   function bakeDoorScene(leaving) {
     const W = 1584, H = 672, cv = document.createElement('canvas'); cv.width = W; cv.height = H; const c = cv.getContext('2d'); c.scale(.5, .5);
     const FY = 1200, r = rngR(leaving ? 91 : 90);
@@ -537,18 +537,23 @@ const RM = (() => {
     // still water on the left, the far fire tiny and its broken reflection beneath
     c.fillStyle = '#0e121a'; c.fillRect(0, FY - 30, 1500, 60); c.fillStyle = 'rgba(255,150,70,.9)'; c.beginPath(); c.ellipse(700, FY - 40, 9, 12, 0, 0, 6.2832); c.fill();
     for (let k = 0; k < 6; k++) { c.fillStyle = `rgba(255,150,70,${(.5 - k * .07).toFixed(2)})`; c.fillRect(700 - 12 + (k % 2) * 6, FY - 24 + k * 8, 24 - k * 2, 3); }
-    // the house: one plain stone mass with a steep roof and a chimney, the upper window lit, a darker lower one
-    const { X0, X1, EAVE, RIDGE } = HSE; c.fillStyle = '#2a231e'; c.fillRect(X0, EAVE, X1 - X0, FY - EAVE);
-    c.fillStyle = '#16110e'; c.beginPath(); c.moveTo(X0 - 60, EAVE + 10); c.lineTo((X0 + X1) / 2, RIDGE); c.lineTo(X1 + 60, EAVE + 10); c.closePath(); c.fill(); c.fillRect(X0 + 160, RIDGE + 80, 90, 260);
-    g = c.createLinearGradient(X0, 0, X1, 0); g.addColorStop(0, 'rgba(10,8,6,.5)'); g.addColorStop(.6, 'rgba(10,8,6,0)'); c.fillStyle = g; c.fillRect(X0, EAVE, X1 - X0, FY - EAVE);
-    for (let k = 0; k < 28; k++) { const x = X0 + r() * (X1 - X0), y = EAVE + 40 + r() * (FY - EAVE - 80), rr = 60 + r() * 140, gg = c.createRadialGradient(x, y, 0, x, y, rr); gg.addColorStop(0, r() < .5 ? 'rgba(70,58,46,.12)' : 'rgba(6,4,3,.14)'); gg.addColorStop(1, 'rgba(0,0,0,0)'); c.fillStyle = gg; c.fillRect(x - rr, y - rr, 2 * rr, 2 * rr); }
-    const [wx, wy] = HSE.WIN; c.fillStyle = '#120c08'; c.fillRect(wx - 70, wy - 90, 140, 180); c.fillStyle = '#e8a85a'; c.fillRect(wx - 56, wy - 76, 112, 152); c.fillStyle = '#120c08'; c.fillRect(wx - 4, wy - 76, 8, 152); c.fillRect(wx - 56, wy - 6, 112, 8);
-    c.fillStyle = '#100b08'; c.fillRect(1940, 820, 100, 130);
+    // the house AT THE SAME SIZE AS ITS ROOMS (owner, build 436: "House on outside should have same size as house on inside"): inside, a floor is
+    // 1100 high for a man 800 tall; out here a man is .58 of that, so a floor is about 640: the ground floor's ceiling at FY - 640 (a string course),
+    // the upper floor above it running off the top of the picture, and the front running on off the right, as the five ground-floor rooms
+    // and the stair need; the bedchamber's window lit upstairs, the parlour's tall window below, the cellar's grating at the wall's foot
+    const { X0 } = HSE, X1 = 3168, ST = FY - 640; c.fillStyle = '#2a231e'; c.fillRect(X0, 0, X1 - X0, FY);
+    c.fillStyle = 'rgba(12,9,7,.55)'; c.fillRect(X0, ST - 10, X1 - X0, 22); c.fillStyle = 'rgba(90,78,64,.25)'; c.fillRect(X0, ST - 10, X1 - X0, 3);
+    g = c.createLinearGradient(X0, 0, X0 + 700, 0); g.addColorStop(0, 'rgba(10,8,6,.55)'); g.addColorStop(1, 'rgba(10,8,6,0)'); c.fillStyle = g; c.fillRect(X0, 0, 700, FY);
+    c.fillStyle = 'rgba(40,46,60,.35)'; c.fillRect(X0, 0, 10, FY);
+    for (let k = 0; k < 40; k++) { const x = X0 + r() * (X1 - X0), y = r() * FY, rr = 60 + r() * 160, gg = c.createRadialGradient(x, y, 0, x, y, rr); gg.addColorStop(0, r() < .5 ? 'rgba(70,58,46,.12)' : 'rgba(6,4,3,.14)'); gg.addColorStop(1, 'rgba(0,0,0,0)'); c.fillStyle = gg; c.fillRect(x - rr, y - rr, 2 * rr, 2 * rr); }
+    const win = (x, y, w, h, lit) => { c.fillStyle = '#120c08'; c.fillRect(x - w / 2 - 16, y - h / 2 - 16, w + 32, h + 32); c.fillStyle = lit ? '#e8a85a' : '#151820'; c.fillRect(x - w / 2, y - h / 2, w, h); c.fillStyle = '#120c08'; c.fillRect(x - 4, y - h / 2, 8, h); c.fillRect(x - w / 2, y - h * .1, w, 8); };
+    const [wx, wy] = HSE.WIN; win(wx, wy, 130, 200, true); win(1880, wy, 130, 200, false); win(2900, 820, 150, 300, false);
+    c.fillStyle = '#0c0806'; c.fillRect(2620, FY - 70, 140, 50); c.fillStyle = '#2a231e'; for (let k = 0; k < 4; k++) c.fillRect(2632 + k * 34, FY - 70, 8, 50);
     // the door's deep arched surround (the door's light itself is drawn live)
     const dx0 = DOOR.x - DOOR.w / 2 - 34, dx1 = DOOR.x + DOOR.w / 2 + 34, rr = (dx1 - dx0) / 2; c.fillStyle = '#3a302a'; c.beginPath(); c.moveTo(dx0, DOOR.bot); c.lineTo(dx0, DOOR.top + rr); c.arc(dx0 + rr, DOOR.top + rr, rr, Math.PI, 0); c.lineTo(dx1, DOOR.bot); c.fill();
     c.fillStyle = '#0c0806'; const ir = DOOR.w / 2; c.beginPath(); c.moveTo(DOOR.x - ir, DOOR.bot); c.lineTo(DOOR.x - ir, DOOR.top + ir); c.arc(DOOR.x, DOOR.top + ir, ir, Math.PI, 0); c.lineTo(DOOR.x + ir, DOOR.bot); c.fill();
-    if (leaving) { // the low coursed wall called Salvation, beginning beyond the house and running on out of the picture
-      c.fillStyle = '#1c1a1e'; c.fillRect(2920, FY - 150, 260, 150); c.fillStyle = 'rgba(120,126,140,.35)'; c.fillRect(2920, FY - 150, 260, 5); c.fillStyle = 'rgba(8,8,10,.6)'; for (let y = FY - 110; y < FY; y += 40) c.fillRect(2920, y, 260, 3); }
+    if (leaving) { // the low coursed wall called Salvation, beginning by the house and running on out of the picture beside the way
+      c.fillStyle = '#1c1a1e'; c.fillRect(2760, FY - 150, 420, 150); c.fillStyle = 'rgba(120,126,140,.35)'; c.fillRect(2760, FY - 150, 420, 5); c.fillStyle = 'rgba(8,8,10,.6)'; for (let y = FY - 110; y < FY; y += 40) c.fillRect(2760, y, 420, 3); }
     // the path and the ground
     c.fillStyle = '#0e0d0c'; c.fillRect(0, FY, 3168, 1344 - FY); c.fillStyle = 'rgba(90,80,70,.25)'; c.fillRect(1500, FY, 1668, 3);
     return cv;
