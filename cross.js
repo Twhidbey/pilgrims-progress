@@ -30,6 +30,7 @@ const CR = (() => {
   // then burden can roll down and down"): it falls off behind him and rolls back down the slope he climbed, into the
   // sepulchre in a hollow of the hillside below ("a little below, in the bottom, a sepulchre", {93})
   const STOP_X = CROSS_X - 300;
+  const WALK_X = STOP_X - 380;
   const sm = (a, b, x) => smooth(a, b, x);
   function gh(x) {
     let h = H_TOP * Math.pow(sm(SLOPE0, CREST0, x), 1.15);
@@ -84,7 +85,7 @@ const CR = (() => {
   }
 
   // ---------- state ----------
-  let ph = '', t = 0, cam = { cx: 0, z: 1, wl: 420 }, wideK = 0, wideTo = 0;
+  let sepT = -1, ph = '', t = 0, cam = { cx: 0, z: 1, wl: 420 }, wideK = 0, wideTo = 0;
   const Ch = { x: START, anim: 12, sd: null, cf: -1, cfd: 1, hop: 0, hops: 0, lastV: 0, fade: 0, face: 1, tv: null, run: 0, ranim: 0 };
   let bur = null, dawn = 0, gold = 0, goldTo = 0, sun = 0, robe = 0, robeTo = 0, mark = 0, markTo = 0, rollShow = 0, rollGone = 0, shine = 0, shineTo = 0, gone = 0, goneTo = 0;
   let closeK = 0, topK = 0, topTo = 0, veil = 0, climb = null, tearT = -1, looked = false;
@@ -477,7 +478,7 @@ const CR = (() => {
 
   // ---------- the story ----------
   function reset0() {
-    memT = -1; memS = []; memUntil = 0; tearT = -1; looked = false; Object.assign(Ch, { x: START, anim: 12, sd: QUIET[0], cf: -1, hop: 0, hops: 0, lastV: 0, fade: 0, hv: 0, face: 1, tv: null, run: 0, ranim: 0 });
+    sepT = -1; memT = -1; memS = []; memUntil = 0; tearT = -1; looked = false; Object.assign(Ch, { x: START, anim: 12, sd: QUIET[0], cf: -1, hop: 0, hops: 0, lastV: 0, fade: 0, hv: 0, face: 1, tv: null, run: 0, ranim: 0 });
     bur = null; dawn = gold = goldTo = sun = robe = robeTo = mark = markTo = rollShow = rollGone = shine = shineTo = gone = goneTo = 0; wideK = 1; wideTo = 1;
     said = {}; hymn = null; silenceT = 0; tombT = 0; leapsLeft = 3; endT = 0; quietPad = 0; t = 0; rollFly = rollAt = null; closeK = topK = topTo = veil = 0; climb = null;
   }
@@ -560,14 +561,24 @@ const CR = (() => {
       // (too much overlapping dialogue at cross)"): once the storyteller's first line is said and he is on the slope;
       // Good-will's promise last, just before he comes to the cross
       if (memT < 0 && Ch.x > SLOPE0 && said.open && !busy()) memT = 0;
-      const memDone = memT >= memLast() + 300;
-      if (!said.ascend && memDone && Ch.x > CREST0 - 900 && !busy()) { said.ascend = true; caption(ASCEND); }
+      // after the last memory, about three seconds of quiet before the storyteller speaks (owner, build 452)
+      const memDone = memT >= memLast() + 300 && G.t >= memUntil + 180;
+      if (!said.ascend && memDone && Ch.x > CREST0 - 900 && !busy()) { said.ascend = true; caption(ASCEND); sepT = 0; }
+      // "and a little below, a sepulchre": the camera draws back and down to show it, then comes back up to him (owner,
+      // build 452); he stands still while it looks
+      if (sepT >= 0) { sepT++; if (sepT === 150) wideTo = 1; if (sepT === 430) wideTo = 0; }
+      const sepLook = sepT >= 150 && (sepT < 430 || wideK > .08);
       closeK += (0 - closeK) * .03;
       if (topTo && topK > .9 && !busy() && G.t - (said.topT || 0) > 150) topTo = 0;
       // no cut any more (owner: "Since he's running you can probably not cut to top of hill"): he runs all the way up
       // to the cross, the book's "He ran thus till he came at a place somewhat ascending"
-      if (want && Ch.x < STOP_X - .5) { run(true); if (Ch.x > STOP_X) Ch.x = STOP_X; } else run(false);
-      if (Ch.x >= STOP_X - .5 && Ch.sd != null && Ch.run <= 0 && said.ascend && !busy()) { ph = 'cross'; G.state = 'auto'; t = 0; }
+      // once he is up on the top near the cross he walks (owner, build 452: "once he's at the top with the cross he can walk")
+      const onTop = Ch.x >= WALK_X;
+      if (want && !sepLook && Ch.x < STOP_X - .5) {
+        if (!onTop) run(true); else if (Ch.run > 0) run(false); else walk(MAXV * .9);
+        if (Ch.x > STOP_X) Ch.x = STOP_X;
+      } else { run(false); if (Ch.run <= 0 && Ch.sd == null) walk(0); }
+      if (Ch.x >= STOP_X - .5 && Ch.sd != null && Ch.run <= 0 && said.ascend && !sepLook && !busy()) { ph = 'cross'; G.state = 'auto'; t = 0; }
     } else if (ph === 'cross') {
       // he stands before the cross; the standing picture gives way to the clip and the burden loosens by itself and falls behind him
       if (Ch.cf < 0) { Ch.cf = 0; Ch.fade = 0; }
@@ -658,7 +669,7 @@ const CR = (() => {
   function memPic(i) {
     if (memC[i]) return memC[i];
     // drawn at 300 x 200 but baked at three times that, so it stays sharp on a phone
-    const W = 300, H = 200, Z = 3, WZ = W * Z, HZ = H * Z, cv = mk(WZ, HZ), q = cv.getContext('2d'); q.scale(Z, Z);
+    const W = 300, H = 200, Z = 4, WZ = W * Z, HZ = H * Z, cv = mk(WZ, HZ), q = cv.getContext('2d'); q.scale(Z, Z);
     const glow = (x, y, r, a) => { const g = q.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, `rgba(255,236,200,${a})`); g.addColorStop(1, 'rgba(255,236,200,0)'); q.fillStyle = g; q.fillRect(0, 0, W, H); };
     const fl = mk(WZ, HZ), fq = fl.getContext('2d'); fq.scale(Z, Z);
     const fig = (im, meta, x, h, flip, k = .5) => { if (!im) return false; const K = k * (h / 300); fq.save(); fq.translate(x, 178); fq.scale(flip ? -K : K, K); fq.drawImage(im, -meta.ax, -meta.ground); fq.restore(); return true; };
@@ -676,8 +687,11 @@ const CR = (() => {
     q.setTransform(1, 0, 0, 1, 0, 0); q.drawImage(fl, 0, 0);
     q.globalCompositeOperation = 'color'; q.fillStyle = 'rgb(150,112,80)'; q.fillRect(0, 0, WZ, HZ);
     // a soft breath over it (a little, so the figures stay crisp)
-    const sm = mk(WZ / 6, HZ / 6), sq = sm.getContext('2d'); sq.drawImage(cv, 0, 0, WZ / 6, HZ / 6);
-    q.globalCompositeOperation = 'source-over'; q.globalAlpha = .3; q.drawImage(sm, 0, 0, WZ, HZ); q.globalAlpha = 1;
+    // a smooth blur: halved three times and doubled back step by step (one big stretch showed blocks)
+    let bl = cv; const steps = [];
+    for (let d = 2; d <= 8; d *= 2) { const n = mk(WZ / d, HZ / d); n.getContext('2d').drawImage(bl, 0, 0, WZ / d, HZ / d); steps.push(n); bl = n; }
+    for (let j = steps.length - 2; j >= 0; j--) { const n = mk(steps[j].width, steps[j].height); n.getContext('2d').drawImage(bl, 0, 0, n.width, n.height); bl = n; }
+    q.globalCompositeOperation = 'source-over'; q.globalAlpha = .42; q.drawImage(bl, 0, 0, WZ, HZ); q.globalAlpha = 1;
     // faded at every edge over a long soft stretch, so it melts into the sky
     q.globalCompositeOperation = 'destination-in'; q.save(); q.translate(WZ / 2, HZ / 2); q.scale(1, H / W); const v = q.createRadialGradient(0, 0, 0, 0, 0, WZ / 2); [[0, 1], [.25, .92], [.45, .66], [.65, .3], [.82, .09], [1, 0]].forEach(([o, a]) => v.addColorStop(o, `rgba(0,0,0,${a})`)); q.fillStyle = v; q.fillRect(-WZ / 2, -WZ / 2, WZ, WZ); q.restore();
     q.globalCompositeOperation = 'source-over';
@@ -716,5 +730,5 @@ const CR = (() => {
   }
 
   return { on: false, start, update, draw, touch, key, preload, lines: ALL, stop: () => padStop(), _pt: { roll: rollPt, chr: chrPt }, _turning: () => !!Ch.tv,
-    peek: () => ({ ph, t, fly: rollFly ? rollFly.t : -1, x: Math.round(Ch.x), cf: +Ch.cf.toFixed(1), bur: bur ? { st: bur.st, x: Math.round(bur.x) } : null, gold: +gold.toFixed(2), shine: +shine.toFixed(2), leaps: leapsLeft, closeK: +closeK.toFixed(2), topK: +topK.toFixed(2), veil: +veil.toFixed(2), tear: tearT }) };
+    peek: () => ({ ph, t, fly: rollFly ? rollFly.t : -1, x: Math.round(Ch.x), cf: +Ch.cf.toFixed(1), bur: bur ? { st: bur.st, x: Math.round(bur.x) } : null, gold: +gold.toFixed(2), shine: +shine.toFixed(2), leaps: leapsLeft, closeK: +closeK.toFixed(2), topK: +topK.toFixed(2), veil: +veil.toFixed(2), tear: tearT, sep: sepT }) };
 })();
