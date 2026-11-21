@@ -85,7 +85,7 @@ const CR = (() => {
   }
 
   // ---------- state ----------
-  let sepT = -1, ph = '', t = 0, cam = { cx: 0, z: 1, wl: 420 }, wideK = 0, wideTo = 0;
+  let quietG = 0, sepT = -1, ph = '', t = 0, cam = { cx: 0, z: 1, wl: 420 }, wideK = 0, wideTo = 0;
   const Ch = { x: START, anim: 12, sd: null, cf: -1, cfd: 1, hop: 0, hops: 0, lastV: 0, fade: 0, face: 1, tv: null, run: 0, ranim: 0 };
   let bur = null, dawn = 0, gold = 0, goldTo = 0, sun = 0, robe = 0, robeTo = 0, mark = 0, markTo = 0, rollShow = 0, rollGone = 0, shine = 0, shineTo = 0, gone = 0, goneTo = 0;
   let closeK = 0, topK = 0, topTo = 0, veil = 0, climb = null, tearT = -1, looked = false;
@@ -230,7 +230,8 @@ const CR = (() => {
     if (bur.st === 'roll') {
       // it tumbles down the hill's face toward us, faster and faster, bouncing, to the door at its foot
       if (bur.x0 == null) { bur.x0 = bur.x; bur.H0 = gh(bur.x); }
-      bur.t++; const T = 230, u = Math.min(1, bur.t / T), f = Math.pow(u, 1.5), n = 6;
+      // slower (owner, build 453: "the tumbling of burden can take time"), so the storyteller's words keep pace with it
+      bur.t++; const T = 470, u = Math.min(1, bur.t / T), f = Math.pow(u, 1.35), n = 8;
       // it zig-zags down the face, turning at each bounce, and grows as it comes nearer, so the hill has depth
       const p = n * f, hp = Math.floor(p), s = p - hp, tri = hp % 2 ? 1 - 2 * s : 2 * s - 1, env = sm(0, .12, f) * (1 - sm(.8, 1, f));
       bur.zx = 150 * (1 - .3 * f) * env * tri; bur.x = lerp(bur.x0, TOMB_X, sm(0, 1, u)) + bur.zx;
@@ -483,7 +484,7 @@ const CR = (() => {
     said = {}; hymn = null; silenceT = 0; tombT = 0; leapsLeft = 3; endT = 0; quietPad = 0; t = 0; rollFly = rollAt = null; closeK = topK = topTo = veil = 0; climb = null;
   }
   function start() {
-    CR.on = true; SL.on = SL.show = false; HL.on = HL.show = false; RM.on = false; RM.stop(); preload();
+    CR.on = true; SL.on = SL.show = false; HL.on = HL.show = false; RM.on = false; RM.stop(); preload(); MEMS.forEach(m => vox(m.who, m.txt));
     document.getElementById('title').style.display = 'none';
     document.getElementById('endc').className = 'card';
     document.body.classList.add('playing', 'slough'); G.opening = null; hush();
@@ -595,12 +596,14 @@ const CR = (() => {
       clipHold();
       if (t === 50) caption(TUMBLE);
       burdenTick();
-      if (bur.st === 'gone') { ph = 'gone'; t = 0; }
+      if (bur.st === 'gone') { ph = 'gone'; t = 0; quietG = 0; }
     } else if (ph === 'gone') {
       clipHold();
       // a silence; then the light comes up behind the cross, and the colour comes back from it outward
-      if (t === 150) { goldTo = 1; wideTo = .35; }
-      if (t === 210) hymn = { t: 0, i: 0, b: 0 };
+      // the silence is counted only once every voice is done, so the sun and the hymn never come over the words
+      if (!busy()) quietG++;
+      if (quietG === 150 && !goldTo) { goldTo = 1; wideTo = .35; }
+      if (quietG === 210 && !hymn) hymn = { t: 0, i: 0, b: 0 };
       if (hymn && hymn.t === 9 * BEATT) caption(GLAD);
       if (hymn && hymn.t === 25 * BEATT) { caption(LOOKED); looked = true; }
       if (looked && tearT < 0 && !G.capQ.length) tearT = 0;
@@ -652,7 +655,7 @@ const CR = (() => {
     { who: W, txt: 'Come back! Come home to us!', at: [.3, .3] },
     { who: 'Help', txt: 'Give me your hand.', at: [.62, .26] },
     { who: E, txt: 'God-speed.', at: [.16, .4] },
-    { who: 'Good-will', txt: 'Bear your burden a little longer. At the place of deliverance, it will fall from your back of itself.', at: [.4, .2], last: true },
+    { who: 'Good-will', txt: 'Bear your burden a little longer. At the place of deliverance, it will fall from your back of itself.', from: 1, at: [.4, .2], last: true },
   ];
   const memC = [];
   let memT = -1, memS = [], memUntil = 0;
@@ -660,9 +663,26 @@ const CR = (() => {
   const busy = () => saying() || G.t < memUntil;
   const memLast = () => memS.length === MEMS.length ? memS[MEMS.length - 1] : Infinity;
 
+  // where the second sentence begins in a recording: the end of the longest quiet stretch after the first second
+  function memCut(buf) {
+    if (buf.memCut != null) return buf.memCut;
+    const d = buf.getChannelData(0), R = buf.sampleRate, win = Math.round(R * .02), n = Math.floor(d.length / win), e = [];
+    let mx = 0; for (let i = 0; i < n; i++) { let q = 0; for (let j = i * win; j < (i + 1) * win; j++) q += d[j] * d[j]; e.push(Math.sqrt(q / win)); mx = Math.max(mx, e[i]); }
+    let best = 0, bestEnd = 0, run = 0; const lo = mx * .04, a = Math.round(.8 / .02), b = n - Math.round(1 / .02);
+    for (let i = a; i < b; i++) { if (e[i] < lo) { run++; if (run > best) { best = run; bestEnd = i + 1; } } else run = 0; }
+    return (buf.memCut = best >= 6 ? Math.max(0, bestEnd * .02 - .06) : 0);
+  }
   function memVoice(m) {
     if (!audio()) return;
-    memUntil = G.t + 120; voxBuf(vox(m.who, m.txt)).then(buf => { if (!buf || !AC) { memUntil = 0; return; } memUntil = G.t + Math.ceil(buf.duration * 60) + 20; const s = AC.createBufferSource(), g = AC.createGain(); g.gain.value = m.last ? .85 : .6; s.buffer = buf; s.connect(g); g.connect(VOICEG); s.start(); }).catch(() => { memUntil = 0; });
+    // a voice that comes late (slow to load on a phone) is not played at all, so it can never sound over the next one;
+    // while it loads nothing else may speak (build 453)
+    const t0 = G.t; memUntil = G.t + 600;
+    voxBuf(vox(m.who, m.txt)).then(buf => {
+      if (!buf || !AC || !CR.on || G.t - t0 > 90) { if (memUntil === t0 + 600) memUntil = 0; return; }
+      const off = m.from ? memCut(buf) : 0, dur = buf.duration - off;
+      memUntil = G.t + Math.ceil(dur * 60) + 20;
+      const s = AC.createBufferSource(), g = AC.createGain(); g.gain.value = m.last ? .85 : .6; s.buffer = buf; s.connect(g); g.connect(VOICEG); s.start(0, off);
+    }).catch(() => { memUntil = 0; });
     hiss(700, .7, .018, 1.1); note(m.last ? 55 : 50, .02, 2.2, 0, true);
   }
   // one memory painted once: dark figures against a soft warm light, then blurred a little and faded at every edge
