@@ -282,6 +282,7 @@ const HL = (() => {
   // on (`MIST0`). Among the rocks and at the gate `mono` is 0: those are unchanged.
   let mono = 1;
   // THE PULL AT THE GATE ({62}): Good-will's reaching picture, the pull, the arrows (`ARW`, world units) and the far castle
+  const CASTLE_X = GATE_X - 860, CASTLE_Y = 80, CASTLE_H = 900; let CASTLE = null, castLook = 0, gateT = 0;
   let GWRE = null, gwReach = 0, gwReachTo = 0, pullT = -1, pullX0 = 0, GWFX = null; const GWRE_META = { ax: 62, ground: 299 }, ARW = [];
   const MONO_SAT = .62, MONO_TONE = [226, 202, 158], MIST0 = 620;
   let wise = null, evan = null, dark = 0, hope = 0, flash = 0, flashT = 0, veil = 0, veilTo = 0, knocks = 0, knockT = 0, door = 0, doorTo = 0;
@@ -589,7 +590,7 @@ const HL = (() => {
   }
   function preload() {
     loadOak(); if (!VILP) loadImg('village-far.webp').then(im => { if (im) VILP = im; }).catch(() => {});
-    if (!loading) loading = Promise.all([Promise.all([loadImg('hill-rock.webp'), loadImg('hill-fire.webp')]).then(([r, f]) => { if (r) { build(); paintHill(r, f); } }), loadPack('wiseman', WIS).catch(() => {}), loadImg('gate-door.webp').then(im => { if (im) GDOOR = soften(im, 4, .7, false, .22); }), loadImg('goodwill-stand.webp').then(im => { if (im) GWST = im; }), loadImg('goodwill-reach.webp').then(im => { if (im) GWRE = im; }), loadImg('gate-wall.webp').then(im => { if (im) GWALL = soften(im, 4, .7, true, .22); }), loadImg('gate-stone.webp').then(im => { if (im) GSTONE = im; }), loadPack('evangelist-walk', EVW).catch(() => {}), EVA.ready || loadPack('evangelist', EVA).catch(() => {}), loadImg('wiseman-stand.webp').then(im => { if (im) WIS_ST = im; }), OBS.ready || loadPack('obstinate', OBS).catch(() => {}), EVS.ready || loadPack('evangelist-stand', EVS).catch(() => {}), RUNP.ready || loadPack('christian-run-plain', RUNP).catch(() => {}),
+    if (!loading) loading = Promise.all([Promise.all([loadImg('hill-rock.webp'), loadImg('hill-fire.webp')]).then(([r, f]) => { if (r) { build(); paintHill(r, f); } }), loadPack('wiseman', WIS).catch(() => {}), loadImg('gate-door.webp').then(im => { if (im) GDOOR = soften(im, 4, .7, false, .22); }), loadImg('goodwill-stand.webp').then(im => { if (im) GWST = im; }), loadImg('goodwill-reach.webp').then(im => { if (im) GWRE = im; }), loadImg('castle.webp').then(im => { if (im) { const c2 = mk(im.width, im.height), q = c2.getContext('2d'); q.drawImage(im, 0, 0); q.globalCompositeOperation = 'multiply'; q.fillStyle = 'rgb(176,150,140)'; q.fillRect(0, 0, im.width, im.height); q.globalCompositeOperation = 'destination-in'; q.drawImage(im, 0, 0); CASTLE = c2; } }), loadImg('gate-wall.webp').then(im => { if (im) GWALL = soften(im, 4, .7, true, .22); }), loadImg('gate-stone.webp').then(im => { if (im) GSTONE = im; }), loadPack('evangelist-walk', EVW).catch(() => {}), EVA.ready || loadPack('evangelist', EVA).catch(() => {}), loadImg('wiseman-stand.webp').then(im => { if (im) WIS_ST = im; }), OBS.ready || loadPack('obstinate', OBS).catch(() => {}), EVS.ready || loadPack('evangelist-stand', EVS).catch(() => {}), RUNP.ready || loadPack('christian-run-plain', RUNP).catch(() => {}),
       WEEP.ready || loadPack('christian-weep', WEEP).catch(() => {}), KNEEL.ready || loadPack('christian-kneel', KNEEL).catch(() => {}), TURN.ready || loadPack('christian-turn', TURN).then(() => bookLoaded('TURN')).catch(() => {}),
       OBS_ST ? 0 : loadImg('obstinate-stand.webp').then(im => { if (im && !OBS_ST) OBS_ST = im; }),
       loadImg('tree-a.webp').then(im => { if (!im) return; const c = mk(im.width, im.height), k = c.getContext('2d'); k.drawImage(im, 0, 0); k.globalCompositeOperation = 'source-in'; k.fillStyle = '#fff'; k.fillRect(0, 0, c.width, c.height); OAKT = c; })]).catch(() => {});
@@ -841,7 +842,7 @@ const HL = (() => {
   function reset0() {
     Object.assign(C3, { x: START, face: 1, faceA: 1, anim: 12, sd: QUIET[0], alpha: 1, run: 0, ranim: RUNP_META.start || 0, weep: false, wt: 0, wa: 0, kf: 0, kp: 0, tv: null, fired: false, saidAt: 0, tapZ: 0 }); FLARES.length = 0;
     mercy = mercyTo = calm = calmTo = 0;
-    mono = 1; gwReach = gwReachTo = 0; pullT = -1; GWFX = null; ARW.length = 0; wise = null; evan = null; dark = 0; hope = 0; flash = 0; flashT = 200; veil = 0; veilTo = 0; knocks = 0; knockT = 0; door = 0; doorTo = 0;
+    mono = 1; castLook = 0; gateT = 0; gwReach = gwReachTo = 0; pullT = -1; GWFX = null; ARW.length = 0; wise = null; evan = null; dark = 0; hope = 0; flash = 0; flashT = 200; veil = 0; veilTo = 0; knocks = 0; knockT = 0; door = 0; doorTo = 0;
     reveal = 0; vil = vilTo = 0; pan = panTo = 0; ROCKS.length = 0; DUST.length = 0; PATHR.length = 0; DUSTW.length = 0; fallI = 0; jolt = 0; ROLL.length = 0; rollI = 0; LIZ.length = 0; oakT = 0; GLINTS.length = 0; for (const k in SEEN_G) delete SEEN_G[k]; OBIRD.length = 0; OLEAF.length = 0; HIDDEN.forEach(h => { h.got = 0; h.up = 0; h.y = 0; }); STEAMP.length = 0; farewell = 0; C3.dy = 0; cut = cutTo = 0; Zw = 0; zs = ''; zT = 0;
     saidSeen = saidHigh = hasteSaid = gateSaid = hillSeen = greeted = signSeen = false; stillT = 0; hintT = 0; noteI = 0; noteX = 0;
   }
@@ -901,7 +902,7 @@ const HL = (() => {
   function doPull() {
     if (G.act !== 'pull' || pullT >= 0) return; G.ring = null; pullT = 0; pullX0 = C3.x;
     note(62, .035, 3); note(66, .03, 3, .1);
-    for (let i = 0; i < 4; i++) ARW.push({ t: -[4, 16, 30, 46][i], i, sx: GATE_X - 650 + 30 * Math.random(), sy: -210 - 30 * Math.random(), tx: C3.x - 64 - 46 * i - 16 * Math.random(), ty: i === 2 ? -1 : -(60 + 90 * Math.random()), stuck: false, q: 0 });
+    for (let i = 0; i < 4; i++) ARW.push({ t: -[4, 16, 30, 46][i], i, sx: CASTLE_X + 120 + 60 * Math.random(), sy: -330 - 80 * Math.random(), tx: C3.x - 64 - 46 * i - 16 * Math.random(), ty: i === 2 ? -1 : -(60 + 90 * Math.random()), stuck: false, q: 0 });
   }
   function takeHand() { if (G.act !== 'ehand') return; note(67, .04, 4); note(71, .035, 4, .12); note(74, .03, 4, .24); mercyTo = 1; next(true); }
   // the wide picture answers a touch (build 237): the sky above the rock = a strike there; the rock = its nearest crack flares
@@ -968,6 +969,9 @@ const HL = (() => {
   function update() {
     if (ph === 'title') { G.t % 14 || embers.push({ x: 20 + Math.random() * 70, y: 10 - Math.random() * 40, vx: -.25 - Math.random() * .5, vy: -.5 - Math.random() * .7, r: .8 + Math.random() * 1.3, h: Math.random(), t: 0, life: 140 + Math.random() * 160 }); for (const e of embers) { e.t++; e.x += e.vx; e.y += e.vy; } for (let i = embers.length - 1; i >= 0; i--) if (embers[i].t >= embers[i].life) embers.splice(i, 1); flashT--; if (flashT < 0) { fire(.5 + Math.random() * .4); flashT = 300 + Math.random() * 500; } flash *= .9; return; }
     const want = G.state === 'play' && (keys.r || held());
+    // THE CASTLE SEEN: the camera stands back on it as he comes out of the mist toward the gate, then comes to the gate;
+    // when the arrows fly it glances back at it (`castLook`, eased by the game clock)
+    { if (ph === 'gate' || ph === 'knock' || ph === 'open') gateT++; else gateT = 0; const want = gateT > 20 && gateT < 260 ? 1 : pullT > 4 && pullT < 84 ? .55 : 0; castLook += (want - castLook) * .022; }
     { const plainish = ph === 'plain' || ph === 'meet' || ph === 'aside' || ph === 'down'; mono += ((plainish ? 1 : 0) - mono) * (plainish ? .02 : .2); }
     if (C3.sd != null) C3.sd += .4;
     C3.faceA = clamp(C3.faceA + (C3.face - C3.faceA) * .06, -1, 1);
@@ -1148,7 +1152,7 @@ const HL = (() => {
     if (ph === 'path') { tx = C3.x + 150; tz = Z_NEAR; }
     if (ph === 'still' || ph === 'come' || ph === 'evan') { tx = ph === 'still' ? FOOT + 150 : FOOT - 40; tz = Z_NEAR; }
     if (ph === 'back' || ph === 'mist') { tx = C3.x - 150; tz = Z_NEAR; }
-    if (ph === 'gate' || ph === 'knock' || ph === 'open') { tx = Math.min(C3.x + 150, GATE_X - 215); tz = lerp(1, .96, smooth(GATE_X - 500, GATE_STOP, C3.x)); }
+    if (ph === 'gate' || ph === 'knock' || ph === 'open') { tx = Math.min(C3.x + 150, GATE_X - 215); tz = lerp(1, .96, smooth(GATE_X - 500, GATE_STOP, C3.x)); if (castLook > .001) { const e = smooth(0, 1, castLook); tx = lerp(tx, CASTLE_X + 140, e); tz = lerp(tz, .5, e); } }
     cam.cx += (tx - cam.cx) * .035; cam.z += (tz - cam.z) * .03; cam.wl = 440 - (1 - cam.z) * 70 + (ph === 'meet' ? 64 * smooth(.84, .58, cam.z) : 0);      // (build 267: looking far off to the village and the hill, the road sinks so it no longer fills a quarter of the picture)
     // the pull back (see 'still'): the scale goes from close to the whole mountain in its logarithm; he slides a little
     // left of the middle; the road comes down so the summit and its cloud fit above
@@ -1684,24 +1688,28 @@ const HL = (() => {
       // cap stones of every width and height, each rounded and chipped, now and then one missing, over the slow swell
       if (!CAP) { CAP = []; const Rc = rngS(93); for (let x = x0 - 20; x < GATE_X + 920;) { const w = 14 + Rc() * 24, gone = Rc() < .05; CAP.push({ x, w, h: gone ? -2 - Rc() * 3 : 1 + Rc() * 4.5, l: Rc(), rr: Rc() }); x += w; } }
       const cap = x => { let lo = 0, hi = CAP.length - 1; while (lo < hi) { const m = (lo + hi + 1) >> 1; if (CAP[m].x <= x) lo = m; else hi = m - 1; } const q = CAP[lo], t = (x - q.x) / q.w, e = Math.max(0, 1 - Math.pow(Math.abs(2 * t - 1 + (q.l - .5) * .5), 3)); return q.h * Math.pow(e, .7) + (q.rr - .5) * 2 * (t - .5); };
-      // BEELZEBUB'S CASTLE ({62}: "a little distance from this gate"), out on Christian's own side beyond the wall's end: a
-      // dark keep and towers on a far rise on the horizon against the dusk, one dim ember of a window
-      // the open land beyond the wall's end, at dusk: a hazy far ridge, then darker ground down to the road (it covers the
-      // plain's daytime layers there)
-      { const xe = X(WEND + 60); if (xe > 0) { c.save(); c.beginPath(); c.rect(0, Y(-240), xe, Y(4) - Y(-240)); c.clip();
+      // BEELZEBUB'S CASTLE ({62}: "a little distance from this gate"), out on Christian's own side beyond the wall's end
+      // (vision chat, owner: "The castle should be epic" ... "Paint it"): one painting after John Martin's Pandemonium, in
+      // the burning mountain's own manner (`assets/castle.webp`, `CASTLE`), a vast fortress on a crag, too big to fit: its
+      // foot lost behind the near dusk rises and a haze, its right edge kept left of the wall's end (seen over the wall it
+      // would read as inside); the camera shows it whole as he comes to the gate and glances back at it when the arrows fly
+      { const xe = X(WEND + 60); if (xe > 0) {
           const rid = (y0, amp, f, sd) => { c.beginPath(); c.moveTo(0, Y(4)); for (let sx = 0; sx <= xe + 6; sx += 4) { const wx = cx + (sx - VW / 2) / z; c.lineTo(sx, Y(y0 - amp * nz(wx * f, sd))); } c.lineTo(xe + 6, Y(4)); c.closePath(); };
+          // the far mountain of the plain (Sinai, long behind him) would show pale here when the camera stands back:
+          // the dusk sky is laid again over the open land's sky first
+          { const g = c.createLinearGradient(0, 0, 0, hor), fairK = (1 - dark) * (1 - gateish); g.addColorStop(0, css(top)); g.addColorStop(.58, css(mix(mix(top, low, .62), [240, 208, 186], .5 * fairK))); g.addColorStop(1, css(low)); c.fillStyle = g; const fe = 160 * z, x0f = Math.max(0, xe - fe); c.fillRect(0, 0, x0f, hor + 2); for (let i = 0; i < 16; i++) { c.globalAlpha = 1 - (i + .5) / 16; c.fillRect(x0f + fe * i / 16, 0, fe / 16 + .5, hor + 2); } c.globalAlpha = 1; }
+          c.save(); c.beginPath(); c.rect(0, Y(-240), xe, Y(4) - Y(-240)); c.clip();
           rid(-172, 34, .006, 21); c.fillStyle = css([62, 34, 27]); c.fill();
-          rid(-150, 26, .008, 24); c.fillStyle = css([46, 25, 20]); c.fill();
-          rid(-124, 22, .01, 22); c.fillStyle = css([36, 20, 16]); c.fill();
+          rid(-150, 26, .008, 24); c.fillStyle = css([46, 25, 20]); c.fill(); c.restore();
+          { const [gx2, gy2] = [X(CASTLE_X), Y(-420)], rr = 520 * z, g = c.createRadialGradient(gx2, gy2, 0, gx2, gy2, rr); g.addColorStop(0, css([120, 60, 40], .38)); g.addColorStop(.5, css([96, 48, 34], .14)); g.addColorStop(1, css([80, 40, 30], 0)); c.fillStyle = g; c.fillRect(gx2 - rr, gy2 - rr, 2 * rr, 2 * rr); }
+          if (CASTLE) { const k = CASTLE_H / CASTLE.height, w = CASTLE.width * k; c.save(); c.beginPath(); c.rect(0, 0, X(WEND - 30), Y(2)); c.clip(); c.drawImage(CASTLE, X(CASTLE_X - w / 2), Y(CASTLE_Y - CASTLE_H), w * z, CASTLE_H * z);
+            // its watch-fires breathe a little
+            const fl = .5 + .5 * Math.sin(G.t / 29) * Math.sin(G.t / 47); c.globalCompositeOperation = 'lighter'; const g = c.createRadialGradient(X(CASTLE_X), Y(CASTLE_Y - CASTLE_H * .45), 0, X(CASTLE_X), Y(CASTLE_Y - CASTLE_H * .45), CASTLE_H * .5 * z); g.addColorStop(0, css([150, 60, 26], .07 + .05 * fl)); g.addColorStop(1, css([120, 40, 20], 0)); c.fillStyle = g; c.fillRect(0, 0, X(WEND - 30), VH);
+            c.globalCompositeOperation = 'source-over';
+            c.restore(); }
+          c.save(); c.beginPath(); c.rect(0, Y(-240), xe, Y(4) - Y(-240)); c.clip();
+          rid(-150, 34, .02, 22); c.fillStyle = css([36, 20, 16]); c.fill();
           rid(-72, 16, .014, 23); { const g = c.createLinearGradient(0, Y(-80), 0, Y(4)); g.addColorStop(0, css([26, 15, 12])); g.addColorStop(1, css([16, 9, 7])); c.fillStyle = g; } c.fill(); c.restore(); } }
-      { const bx = GATE_X - 650, P = (u, v) => [X(bx + .85 * u), Y(-140 - .85 * v)];
-        { const [gx2, gy2] = P(0, 30), rr = 260 * z, g = c.createRadialGradient(gx2, gy2, 0, gx2, gy2, rr); g.addColorStop(0, css([120, 66, 44], .42)); g.addColorStop(.5, css([96, 52, 36], .16)); g.addColorStop(1, css([80, 40, 30], 0)); c.fillStyle = g; c.fillRect(gx2 - rr, gy2 - rr, 2 * rr, 2 * rr); }
-        c.fillStyle = css([24, 13, 11]); c.beginPath(); c.moveTo(...P(-230, -40));
-        // the rise, then the castle on it: a squat curtain wall between a tall round-topped keep and two thin towers
-        const pts = [[-150, 6], [-70, 22], [-58, 22], [-58, 58], [-54, 58], [-54, 62], [-49, 62], [-49, 58], [-44, 58], [-44, 30], [-20, 30], [-20, 34], [-16, 34], [-16, 30], [-8, 30],
-          [-8, 74], [-4, 74], [-4, 78], [1, 78], [1, 74], [6, 74], [6, 78], [11, 78], [11, 74], [14, 74], [14, 32], [30, 32], [30, 50], [33, 50], [33, 54], [38, 54], [38, 50], [41, 50], [41, 24], [70, 22], [160, 4], [240, -40]];
-        for (const [u, v] of pts) c.lineTo(...P(u, v)); c.closePath(); c.fill();
-        const fl = .6 + .4 * Math.sin(G.t / 37); c.fillStyle = css([160, 58, 28], .6 * fl); const [wx, wy] = P(1, 60); c.fillRect(wx, wy, 2.2 * z, 3.4 * z); }
       const wtop = x => 330 + (nz(x * .012, 3) - .5) * 26 + (nz(x * .05, 6) - .5) * 12 + cap(x);
       // (vision chat, owner: "the castle shooting over wall looks strange - which side is it on?"): the wall ENDS a little way
       // left of the gate in a broken, stepped end (`WEND`, courses fallen away unevenly), so the open land beyond shows and
@@ -2172,5 +2180,5 @@ const HL = (() => {
   }
 
   // for testing: HL.peek() tells where the story is
-  return { on: false, show: false, hillPics: () => HILL, title, start, update, draw, touch, key, preload, lines: ALL, pt: k => k === 'pull' ? gwHandPt() : k === 'hill' ? hillPt() : k === 'hand' ? handPt() : k === 'sign' ? signPt() : k === 'oak' ? (OAKBOX ? [OAKBOX[0] + OAKBOX[2] * .3, OAKBOX[1] + OAKBOX[3] * .45] : null) : k === 'hid' ? (h => h ? [(h.x - cam.cx) * cam.z + VW / 2, cam.wl + h.y * cam.z] : null)(HIDDEN.find(h => !h.got)) : gatePt(), peek: () => ({ pull: pullT, ph, x: Math.round(C3.x), eggs: { roll: ROLL.map(r => [Math.round(r.x), Math.round(r.y), r.b]), liz: LIZ.map(L => L.st), hid: HIDDEN.map(h => h.got), birds: OBIRD.length, bird: OBIRD.map(b => [Math.round(b.x), Math.round(b.y), b.t]) }, stones: PATHR.map(r => [Math.round(r.x), Math.round(r.y), r.b]), vil: +vil.toFixed(2), reveal: +reveal.toFixed(2), stillT, zs, zT, Zw: +Zw.toFixed(2), farewell, kf: +(C3.kf || 0).toFixed(1), stand: C3.sd != null, wx: wise && Math.round(wise.x), ex: evan && evan.x != null ? Math.round(evan.x) : null, dark: +dark.toFixed(2), wise: wise && wise.mode, evan: evan && +evan.a.toFixed(2), knocks, cam: { ...cam }, hb: hillBox.map(v => Math.round(v * 100) / 100), boltT, bolt: bolt && bolt.map(l => [l[0], l[l.length - 1]].map(p => p.map(Math.round))) }) };
+  return { on: false, show: false, hillPics: () => HILL, title, start, update, draw, touch, key, preload, lines: ALL, pt: k => k === 'pull' ? gwHandPt() : k === 'hill' ? hillPt() : k === 'hand' ? handPt() : k === 'sign' ? signPt() : k === 'oak' ? (OAKBOX ? [OAKBOX[0] + OAKBOX[2] * .3, OAKBOX[1] + OAKBOX[3] * .45] : null) : k === 'hid' ? (h => h ? [(h.x - cam.cx) * cam.z + VW / 2, cam.wl + h.y * cam.z] : null)(HIDDEN.find(h => !h.got)) : gatePt(), peek: () => ({ pull: pullT, castLook: +castLook.toFixed(2), gateT, ph, x: Math.round(C3.x), eggs: { roll: ROLL.map(r => [Math.round(r.x), Math.round(r.y), r.b]), liz: LIZ.map(L => L.st), hid: HIDDEN.map(h => h.got), birds: OBIRD.length, bird: OBIRD.map(b => [Math.round(b.x), Math.round(b.y), b.t]) }, stones: PATHR.map(r => [Math.round(r.x), Math.round(r.y), r.b]), vil: +vil.toFixed(2), reveal: +reveal.toFixed(2), stillT, zs, zT, Zw: +Zw.toFixed(2), farewell, kf: +(C3.kf || 0).toFixed(1), stand: C3.sd != null, wx: wise && Math.round(wise.x), ex: evan && evan.x != null ? Math.round(evan.x) : null, dark: +dark.toFixed(2), wise: wise && wise.mode, evan: evan && +evan.a.toFixed(2), knocks, cam: { ...cam }, hb: hillBox.map(v => Math.round(v * 100) / 100), boltT, bolt: bolt && bolt.map(l => [l[0], l[l.length - 1]].map(p => p.map(Math.round))) }) };
 })();
