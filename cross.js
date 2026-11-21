@@ -64,10 +64,16 @@ const CR = (() => {
   // ---------- pictures ----------
   const CLIP = [], CLIP_META = { ax: 182.5, ground: 299, frames: 81 }, SWAP = 41, BALL = { ax: 31, w: 99, h: 118 };
   let BURDEN = null, RTEX = null, RPAT = null, loaded = false;
+  const MLIFT = [], MIM = {};
   function preload() {
     if (loaded) return; loaded = true;
     loadPack('christian-cross', CLIP).catch(() => {});
     RUNP.ready || loadPack('christian-run-plain', RUNP).catch(() => {});
+    // the memories after the burden falls: pictures the child has already seen
+    EVA.ready || loadPack('evangelist', EVA).catch(() => {});
+    KNEEL.ready || loadPack('christian-kneel', KNEEL).catch(() => {});
+    loadPack('lift', MLIFT).catch(() => {});
+    ['wife', 'goodwill-reach'].forEach(n => loadImg(n + '.webp').then(im => { MIM[n] = im; }).catch(() => {}));
     loadImg('cross-burden.webp').then(im => { BURDEN = im; }).catch(() => {});
     // the burning hill's own painted rock (Level 3), made a grey tile as hill.js makes it, laid over the hill in 'overlay'
     loadImg('hill-rock.webp').then(rock => { const sx = 720, sy = 540, w = 780, h = 600, t = document.createElement('canvas'); t.width = w; t.height = h; const q = t.getContext('2d'); q.drawImage(rock, sx, sy, w, h, 0, 0, w, h);
@@ -450,7 +456,7 @@ const CR = (() => {
 
   // ---------- the story ----------
   function reset0() {
-    Object.assign(Ch, { x: START, anim: 12, sd: QUIET[0], cf: -1, hop: 0, hops: 0, lastV: 0, fade: 0, hv: 0, face: 1, tv: null, run: 0, ranim: 0 });
+    memT = -1; Object.assign(Ch, { x: START, anim: 12, sd: QUIET[0], cf: -1, hop: 0, hops: 0, lastV: 0, fade: 0, hv: 0, face: 1, tv: null, run: 0, ranim: 0 });
     bur = null; dawn = gold = goldTo = sun = robe = robeTo = mark = markTo = rollShow = rollGone = shine = shineTo = gone = goneTo = 0; wideK = 1; wideTo = 1;
     said = {}; hymn = null; silenceT = 0; tombT = 0; leapsLeft = 3; endT = 0; quietPad = 0; t = 0; rollFly = rollAt = null; closeK = topK = topTo = veil = 0; climb = null;
   }
@@ -550,8 +556,11 @@ const CR = (() => {
     } else if (ph === 'gone') {
       clipHold();
       // a silence; then the light comes up behind the cross, and the colour comes back from it outward
-      if (t === 150) { goldTo = 1; wideTo = .35; }
-      if (t === 210) hymn = { t: 0, i: 0, b: 0 };
+      // his life remembered in the sky, one memory after another, nearly overlapping; the sun rises during the last,
+      // Good-will's promise, and the hymn begins once it is said
+      if (t >= 20) { memT = t - 20; MEMS.forEach((m, i) => { if (memT === MEM0 + i * MEM_GAP) memVoice(m); }); }
+      if (t === 20 + MEM0 + 5 * MEM_GAP + 150) { goldTo = 1; wideTo = .35; }
+      if (t === 20 + MEM_END) hymn = { t: 0, i: 0, b: 0 };
       if (hymn && hymn.t === 9 * BEATT) caption(GLAD);
       if (hymn && hymn.t === 25 * BEATT) caption(LOOKED);
       if (hymn && hymn.t > 20 * BEATT) wideTo = 0;
@@ -590,9 +599,72 @@ const CR = (() => {
     if (Ch.cf >= 70) { Ch.cf = 70; Ch.cfd = -1; } if (Ch.cf <= 52) { Ch.cf = 52; Ch.cfd = 1; }
   }
 
+  // ---------- HIS LIFE REMEMBERED (owner: "in the sky is full of flash back images of his life - like his mind thinking of
+  // the providence of God"; "6 memories but quickly almost overlapping in frequency and punch"). In the silence after the
+  // burden falls, before the sun: "He looked therefore, and looked again" ({94}) shown as what he sees in his mind. Each
+  // is a picture the child has played, soft, warm and faded at its edges, with its own voice: Evangelist and the light,
+  // the run ("Life! Life!"), his wife at the door, Help's hand, Evangelist's God-speed, and last Good-will's promise,
+  // heard as it comes true. Ours, not the book's.
+  const MEM_GAP = 62, MEM0 = 24, MEMS = [
+    { who: E, txt: 'Do you see that shining light?', at: [.22, .2] },
+    { who: C, txt: 'Life! Life! Eternal life!', at: [.74, .17] },
+    { who: W, txt: 'Come back! Come home to us!', at: [.33, .14] },
+    { who: 'Help', txt: 'Give me your hand.', at: [.86, .3] },
+    { who: E, txt: 'God-speed.', at: [.14, .32] },
+    { who: 'Good-will', txt: 'Bear your burden a little longer. At the place of deliverance, it will fall from your back of itself.', at: [.27, .22], last: true },
+  ];
+  const memC = [];
+  let memT = -1;
+  const MEM_END = MEM0 + 5 * MEM_GAP + 330;
+  function memVoice(m) {
+    if (!audio()) return;
+    voxBuf(vox(m.who, m.txt)).then(buf => { if (!buf || !AC) return; const s = AC.createBufferSource(), g = AC.createGain(); g.gain.value = m.last ? .85 : .6; s.buffer = buf; s.connect(g); g.connect(VOICEG); s.start(); }).catch(() => {});
+    hiss(700, .7, .018, 1.1); note(m.last ? 55 : 50, .02, 2.2, 0, true);
+  }
+  // one memory painted once: dark figures against a soft warm light, then blurred a little and faded at every edge
+  function memPic(i) {
+    if (memC[i]) return memC[i];
+    const W = 300, H = 200, cv = mk(W, H), q = cv.getContext('2d');
+    const glow = (x, y, r, a) => { const g = q.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, `rgba(255,236,200,${a})`); g.addColorStop(1, 'rgba(255,236,200,0)'); q.fillStyle = g; q.fillRect(0, 0, W, H); };
+    const fl = mk(W, H), fq = fl.getContext('2d');
+    const fig = (im, meta, x, h, flip, k = .5) => { if (!im) return false; const K = k * (h / 300); fq.save(); fq.translate(x, 178); fq.scale(flip ? -K : K, K); fq.drawImage(im, -meta.ax, -meta.ground); fq.restore(); return true; };
+    glow(W / 2, H * .55, 170, .55);
+    let ok = true;
+    if (i === 0) { glow(250, 70, 40, .9); ok = fig(EVA[EVA.length - 1], EVA_META, 120, 300); }
+    else if (i === 1) { const f = RUNP[6]; ok = fig(f, RUNP_META, 150, 300); }
+    else if (i === 2) { q.fillStyle = 'rgba(255,220,160,.85)'; q.beginPath(); q.moveTo(115, 180); q.lineTo(115, 60); q.quadraticCurveTo(150, 34, 185, 60); q.lineTo(185, 180); q.fill(); ok = fig(MIM.wife, { ax: MIM.wife ? MIM.wife.width / 2 : 0, ground: MIM.wife ? MIM.wife.height : 0 }, 150, 260 * (MIM.wife ? 300 / MIM.wife.height : 1)); }
+    else if (i === 3) { ok = fig(MLIFT[0], { ax: 300, ground: 330 }, 150, 300, false, .42); fq.fillStyle = 'rgba(40,34,32,.9)'; fq.fillRect(0, 150, W, 50); }
+    else if (i === 4) { ok = fig(KNEEL[70], KNEEL_META, 120, 300) && fig(EVA[50], EVA_META, 200, 300, true); }
+    else { glow(210, 110, 90, .9); ok = fig(STD[0], STD_META, 110, 300) && fig(MIM['goodwill-reach'], { ax: 62, ground: 299 }, 200, 300, true); }
+    if (!ok) return null;
+    // the figures dark and warm against the light, as a memory
+    fq.globalCompositeOperation = 'source-atop'; fq.fillStyle = 'rgba(58,40,30,.82)'; fq.fillRect(0, 0, W, H);
+    q.drawImage(fl, 0, 0);
+    q.globalCompositeOperation = 'color'; q.fillStyle = 'rgb(150,112,80)'; q.fillRect(0, 0, W, H);
+    const sm = mk(W / 3, H / 3), sq = sm.getContext('2d'); sq.drawImage(cv, 0, 0, W / 3, H / 3);
+    q.globalCompositeOperation = 'source-over'; q.globalAlpha = .55; q.drawImage(sm, 0, 0, W, H); q.globalAlpha = 1;
+    q.globalCompositeOperation = 'destination-in'; q.save(); q.translate(W / 2, H / 2); q.scale(1, H / W); const v = q.createRadialGradient(0, 0, 0, 0, 0, W / 2); v.addColorStop(0, 'rgba(0,0,0,1)'); v.addColorStop(.45, 'rgba(0,0,0,.9)'); v.addColorStop(1, 'rgba(0,0,0,0)'); q.fillStyle = v; q.fillRect(-W / 2, -W / 2, W, W); q.restore();
+    q.globalCompositeOperation = 'source-over';
+    return (memC[i] = cv);
+  }
+  function memories(c) {
+    if (memT < 0) return;
+    MEMS.forEach((m, i) => {
+      const t0 = MEM0 + i * MEM_GAP, lt = memT - t0, life = m.last ? 380 : 150;
+      if (lt < 0 || lt > life) return;
+      const im = memPic(i); if (!im) return;
+      const a = smooth(0, 12, lt) * (1 - smooth(life - (m.last ? 140 : 70), life, lt)), k = 1.12 - .12 * smooth(0, 30, lt) + .03 * lt / life;
+      const w = VW * .32 * k, h = w * im.height / im.width, x = VW * m.at[0] + Math.sin(lt / 90 + i) * 6, y = VH * m.at[1] - lt * .05;
+      c.save(); c.globalAlpha = .82 * a; c.drawImage(im, x - w / 2, y - h / 2, w, h);
+      // the punch as it comes: a brief brightening
+      if (lt < 20) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = .35 * (1 - lt / 20); c.drawImage(im, x - w / 2, y - h / 2, w, h); }
+      c.restore();
+    });
+  }
+
   function draw() {
     const c = ctx; c.setTransform(DPR, 0, 0, DPR, 0, 0);
-    sky(c); far(c);
+    sky(c); far(c); memories(c);
     c.setTransform(DPR * cam.z, 0, 0, DPR * cam.z, DPR * (VW / 2 - cam.cx * cam.z), DPR * cam.wl);
     wall(c); land(c); tomb(c); cross(c);
     shining(c);
