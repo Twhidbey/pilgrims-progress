@@ -17,3 +17,5 @@
 - 2026-11-20 16:12 UTC christian-p-walk: done on modal, 65 frames, 100 s, about $0.08
 - 2026-11-20 16:14 UTC interp-p-walk: done on modal, 65 frames, 91 s, about $0.07
 - 2026-11-20 16:15 UTC christian-oil-look: done on modal, 49 frames, 72 s, about $0.06
+- 2026-11-21 15:22 UTC interp-nod: done on modal, 49 frames, 110 s, about $0.09
+- 2026-11-21 15:23 UTC christian-oil-turn: done on modal, 49 frames, 64 s, about $0.05

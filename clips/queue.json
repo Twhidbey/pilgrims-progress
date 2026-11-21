@@ -299,7 +299,11 @@
    },
    "seconds": 3,
    "prompt": "The old man with folded hands stands still, breathing quietly, and slowly nods his head once or twice, kindly, as if listening and agreeing.",
-   "status": "todo"
+   "status": "done",
+   "via": "modal",
+   "made": "2026-11-21 15:22 UTC",
+   "frames": 49,
+   "secs": 111
   },
   {
    "id": "christian-oil-turn",
@@ -313,7 +317,11 @@
    },
    "seconds": 3,
    "prompt": "The pilgrim with the great bundle on his back slowly turns round on the spot, from facing right to facing left, his feet stepping round in place.",
-   "status": "todo"
+   "status": "done",
+   "via": "modal",
+   "made": "2026-11-21 15:23 UTC",
+   "frames": 49,
+   "secs": 65
   }
  ]
 }
