@@ -44,6 +44,10 @@ const SL = (() => {
   ];
   const ALONE = [];      // build 391: "So Christian was left alone." cut (shown: the camera comes in close on him alone)      // {31}
   const FEARS = [[N, 'Many fears and doubts came over him, and settled in that place.']];      // {33}: the fears are sound only, and this one line
+  // build 409 (owner chose two book lines to fill the slower crossing): {31} said early in the wading, {34} near the far bank
+  // as the dark grows (in the book Help says it to the dreamer; the storyteller's here)
+  const STRUGGLE = [[N, 'But still he tried to struggle on, toward the side nearest the gate.']];      // {31}
+  const STILL = [[N, 'It is the Slough of Despond still.']];      // {34}
   const STUCK = [[N, 'He could not get out, because of the burden on his back.']];      // {31}
   const HELP = [      // {31}, {32}
     [N, 'Then a man came to him, whose name was Help.'],
@@ -54,7 +58,7 @@ const SL = (() => {
   const DRAWN = [];      // {32}
   const STEPS = [];      // build 391: "There were good steps through the middle of the bog, but in the mist they were hard to see." cut (shown: the lights find the stones)      // {35}
   const ONWAY = [[H, 'Go on your way.']];      // {32}: "and bid him go on his way"
-  const ALL = [...OPEN, ...NEAR, ...FALL, ...BACK, ...ALONE, ...FEARS, ...STUCK, ...HELP, ...DRAWN, ...STEPS, ...ONWAY];
+  const ALL = [...OPEN, ...NEAR, ...FALL, ...BACK, ...ALONE, ...STRUGGLE, ...FEARS, ...STILL, ...STUCK, ...HELP, ...DRAWN, ...STEPS, ...ONWAY];
 
   // one patch of mud seen edge-on: a long flat shape with a wavy top and bottom (build 293's far mud, used near and far)
   function wavy(c, sx, gy, w, hUp, hDn, s) {
@@ -440,7 +444,7 @@ const SL = (() => {
     C2.rt = 0; C2.handGo = false; C2.tv = null; C2.fy = null; C2.md = null; C2.rq0 = null; C2.q = 0; drops = []; churns = []; fReset(); strings = []; RECS = {}; for (const k in MS) delete MS[k]; C2.D = 0;
     ph = 'plain'; Object.assign(C2, { x: START, y: bankY(START) + 4, face: 1, anim: 12, alpha: 1, sink: 0, reach: 0, stand: 1, sd: QUIET[0], st: 0, faceA: 1, done: 0 });
     pli = { x: START - 80, y: 0, face: 1, anim: 0, alpha: 1, sink: 0, mode: 'follow', px: START - 80, stop: { t: 50, x0: START - 80 - 72.5 * CHR_K, cx: START } };      // he starts standing (his stop video's breathing part)
-    prints = []; fogH = 1; fogS = 1; help = null; mv = null; lift = null; rings = []; steps = []; gloom = gloomTo = 0; noteI = 0; strain = 0; slipT = 0; fearT = 300; fearsSaid = false; goldT = 0; onwayT = 0; capsSaid = new Set(); nearSaid = true; pliGo = 0; cityT = -1; fearT2 = -1; fearHelpT = 0; preDk = 0; beatT = -1e9; quietT = 0; helpSayT = 0;
+    prints = []; fogH = 1; fogS = 1; help = null; mv = null; lift = null; rings = []; steps = []; gloom = gloomTo = 0; noteI = 0; strain = 0; slipT = 0; fearT = 300; fearsSaid = false; struggleSaid = false; stillSaid = false; goldT = 0; onwayT = 0; capsSaid = new Set(); nearSaid = true; pliGo = 0; cityT = -1; fearT2 = -1; fearHelpT = 0; preDk = 0; beatT = -1e9; quietT = 0; helpSayT = 0;
     motes = [...Array(LAST.length)].map((_, i) => ({ ox: -30 - Math.random() * 50, oy: -112 - Math.random() * 40, x: START, y: -150, tw: Math.random() * 6, i }));
     // the steps through the bog, hidden until the lights settle on them: low flat stones, no two alike (from the approved still)
     const R = rngS(33); let sx = BANK0 - 6;
@@ -705,7 +709,9 @@ const SL = (() => {
       // barely above water)"): deeper and deeper as he wades (DEEP below where he fell in, by the far bank only his head
       // shows); reaching up for Help's hand he heaves back up to where the grip needs him (see drawChr, 'help')
       C2.y = C_SINK + (SINK + DEEP - C_SINK) * smooth(0, .9, p);
-      if (p > .3 && !fearsSaid && quiet(110)) { fearsSaid = true; caption(FEARS); fearT2 = 0; }      // build 380: only after a quiet breath since the last line
+      if (p > .1 && !struggleSaid && quiet(90)) { struggleSaid = true; caption(STRUGGLE); }      // build 409
+      if (p > .38 && struggleSaid && !fearsSaid && quiet(110)) { fearsSaid = true; caption(FEARS); fearT2 = 0; }      // build 380: only after a quiet breath since the last line
+      if (p > .78 && fearsSaid && !stillSaid && fearT2 > 300 && quiet(110)) { stillSaid = true; caption(STILL); }      // build 409: as the dark grows
       if (--fearT <= 0) { fearT = 260 + Math.random() * 260; sfxS.fear(); }
       if (G.state === 'play' && !want && G.cap <= 0 && !G.capQ.length && G.t % 600 === 300) hint('wade', 'Hold to struggle on.');
       if (want) clearHint('wade');
@@ -717,9 +723,10 @@ const SL = (() => {
       waStep(want ? .2 : .07);
       if (want) { strain++; C2.anim += .5; if (strain % 40 === 1) sfxS.strain(); }
       C2.x = STUCK_X - 4 * Math.max(0, Math.sin(slipT / 50)) * smooth(60, 160, slipT);
-      if (!fearsSaid && quiet(110)) { fearsSaid = true; caption(FEARS); fearT2 = 0; }
+      if (!fearsSaid && quiet(110)) { fearsSaid = true; struggleSaid = true; caption(FEARS); fearT2 = 0; }
+      if (fearsSaid && !stillSaid && fearT2 > 300 && quiet(110)) { stillSaid = true; caption(STILL); }      // build 409
       // build 380: the storyteller waits until the drums have played and the dark has begun to lift, then a quiet breath
-      if ((strain > 120 || slipT > 220) && fearsSaid && fearT2 > FEAR_END - 60 && quiet(90)) { ph = 'help'; C2.x = STUCK_X; talk(STUCK, () => { help = { a: 0, t: 0, w: HWALK.length >= 96 ? HW_START : 1e9 }; helpSayT = G.t + 75; }); }
+      if ((strain > 120 || slipT > 220) && fearsSaid && stillSaid && fearT2 > FEAR_END - 60 && quiet(90)) { ph = 'help'; C2.x = STUCK_X; talk(STUCK, () => { help = { a: 0, t: 0, w: HWALK.length >= 96 ? HW_START : 1e9 }; helpSayT = G.t + 75; }); }
     } else if (ph === 'help') {
       if (help && C2.reach < 1) C2.reach = Math.min(1, C2.reach + .05);
       // build 121 (owner: "help should rush in a little fast (like he knows it's [an emergency] - not run but quick nonetheless)
@@ -1401,7 +1408,7 @@ const SL = (() => {
   // the beats, in ticks from the FEARS line (each [tick, loudness])
   const DRUMS = [[40, .5], [58, .32], [150, .6], [168, .38], [250, .72], [266, .45], [335, .85], [350, .55], [410, 1], [424, .65], [480, 1.1]];
   const FEAR_END = 560;      // build 398: the drums are done by here (the dark no longer lifts by the clock: only when Help comes)
-  let FP = 0, preDk = 0, fearHelpT = 0, beatT = -1e9, quietT = 0, helpSayT = 0;
+  let FP = 0, preDk = 0, struggleSaid = false, stillSaid = false, fearHelpT = 0, beatT = -1e9, quietT = 0, helpSayT = 0;
   function drum(v) {      // a low skin drum, felt more than heard: a pitch falling from about 80 to 40 Hz, a dull thump of noise
     sweep(82, 40, .7, .13 * v, true); sweep(58, 34, 1, .07 * v); hiss(120, .7, .07 * v, .45, 'lowpass'); hiss(700, .9, .01 * v, .09, 'bandpass');
   }
