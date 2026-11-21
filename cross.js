@@ -266,6 +266,28 @@ const CR = (() => {
   }
   // the three Shining Ones: tall soft figures of light ("their faces shone as the light"), drawn with light, not paint
   const SH = [[CROSS_X - 212, 172, 3.1], [CROSS_X - 158, 186, 1.7], [CROSS_X - 104, 176, 0]];
+  // a human shape of light, baked once: head, shoulders, a long robe to the ground, arms at the sides (the third holds
+  // one arm out, the roll in his hand); drawn white, then blurred by shrinking and enlarging (no ctx.filter on iPhone)
+  const SHF = {};
+  function shineFig(reach) {
+    const key = reach ? 'r' : 'n'; if (SHF[key]) return SHF[key];
+    const W = 160, Hh = 400, s = mk(W, Hh), q = s.getContext('2d'), cx = 70;
+    q.fillStyle = '#fff';
+    q.beginPath(); q.ellipse(cx, 52, 17, 21, 0, 0, 7); q.fill();
+    q.beginPath(); q.moveTo(cx - 9, 66); q.lineTo(cx + 9, 66); q.lineTo(cx + 11, 84); q.lineTo(cx - 11, 84); q.fill();
+    q.beginPath(); q.moveTo(cx - 28, 96); q.quadraticCurveTo(cx, 78, cx + 28, 96); q.lineTo(cx + 30, 200); q.quadraticCurveTo(cx + 34, 300, cx + 42, 396);
+    q.lineTo(cx - 42, 396); q.quadraticCurveTo(cx - 34, 300, cx - 30, 200); q.closePath(); q.fill();
+    q.lineCap = 'round'; q.strokeStyle = '#fff'; q.lineWidth = 12;
+    q.beginPath(); q.moveTo(cx - 32, 100); q.quadraticCurveTo(cx - 48, 160, cx - 44, 214); q.stroke();
+    q.beginPath(); q.moveTo(cx + 32, 100);
+    if (reach) q.quadraticCurveTo(cx + 54, 160, cx + 82, 192); else q.quadraticCurveTo(cx + 48, 160, cx + 44, 214);
+    q.stroke();
+    // blur by halving the picture several times and doubling it back step by step (smooth, no blocks)
+    const blur = n => { let src = s, w = W, h = Hh; const st = []; for (let k = 0; k < n; k++) { w = Math.ceil(w / 2); h = Math.ceil(h / 2); const a = mk(w, h); a.getContext('2d').drawImage(src, 0, 0, w, h); src = a; st.push([w, h]); } for (let k = n - 2; k >= -1; k--) { const [w2, h2] = k >= 0 ? st[k] : [W, Hh]; const b = mk(w2, h2); b.getContext('2d').drawImage(src, 0, 0, w2, h2); src = b; } return src; };
+    const tint = (im, col) => { const o = mk(W, Hh), x = o.getContext('2d'); x.drawImage(im, 0, 0); x.globalCompositeOperation = 'source-in'; const g = x.createLinearGradient(0, 0, 0, Hh); g.addColorStop(0, css(col[0])); g.addColorStop(1, css(col[1])); x.fillStyle = g; x.fillRect(0, 0, W, Hh);
+      x.globalCompositeOperation = 'destination-in'; const f = x.createLinearGradient(0, 0, 0, Hh); f.addColorStop(0, 'rgba(0,0,0,1)'); f.addColorStop(.55, 'rgba(0,0,0,.8)'); f.addColorStop(1, 'rgba(0,0,0,.12)'); x.fillStyle = f; x.fillRect(0, 0, W, Hh); return o; };
+    return (SHF[key] = { w: W, h: Hh, soft: tint(blur(4), [[255, 250, 232], [255, 226, 176]]), wide: tint(blur(5), [[255, 238, 200], [255, 214, 160]]) });
+  }
   function shining(c) {
     const a = shine * (1 - gone); if (a <= .01) return;
     c.save(); c.globalCompositeOperation = 'lighter';
@@ -274,9 +296,12 @@ const CR = (() => {
       if (al < .01) return;
       const br = 1 + .06 * Math.sin(t / 40 + p);
       c.save(); c.translate(x, -hh);
+      // a soft wide glow, then the figure itself: a very diffuse human shape of light (owner: "The shining ones need very diffuse human shape")
       let g = c.createRadialGradient(0, -H * .5, 0, 0, -H * .5, H * .9); g.addColorStop(0, css([255, 236, 196], .1 * al)); g.addColorStop(1, 'rgba(255,230,190,0)'); c.fillStyle = g; c.fillRect(-H, -H * 1.45, H * 2, H * 1.6);
-      c.save(); c.scale(H * .1 * br, H * .5); g = c.createRadialGradient(0, -.95, 0, 0, -.95, 1); g.addColorStop(0, css([255, 248, 226], .32 * al)); g.addColorStop(.7, css([255, 232, 190], .1 * al)); g.addColorStop(1, 'rgba(255,230,190,0)'); c.fillStyle = g; c.fillRect(-1, -2, 2, 2.1); c.restore();
-      const hy = -H * .9; g = c.createRadialGradient(0, hy, 0, 0, hy, 11); g.addColorStop(0, css([255, 254, 244], .7 * al)); g.addColorStop(.5, css([255, 246, 220], .3 * al)); g.addColorStop(1, 'rgba(255,240,210,0)'); c.fillStyle = g; c.fillRect(-14, hy - 14, 28, 28);
+      const F = shineFig(i === 2), w = H * F.w / F.h * br;
+      c.globalCompositeOperation = 'screen'; c.globalAlpha = .7 * al; c.drawImage(F.wide, -w / 2, -H * 1.04, w, H * 1.08);
+      c.globalAlpha = .6 * al; c.drawImage(F.soft, -w / 2, -H * 1.04, w, H * 1.08);
+      c.globalAlpha = 1; c.globalCompositeOperation = 'lighter';
       c.restore();
     });
     // the change of raiment: light wraps him for a moment
