@@ -204,46 +204,26 @@ const RM = (() => {
   // ROOM 4 DRAWN IN CODE (a trial, after build 373; owner: "going back to computer drawn rooms like other levels"): only with ?drawn.
   // The game's own language: flat side view, each layer one tone, ONE light (the fire, after La Tour), most of the picture dark.
   // Baked once at half the painting's size (3168 x 1344 plate px); the fire, the water and the two men are drawn live in r4.under().
-  const DRAWN = /[?&]drawn\b/.test(location.search);
-  const R4D = { caster: { ax: 35, g: 302, s: 2.1, ct: 1.3, mul: .42, sat: .5 }, pourer: { ax: 62, g: 299, s: 2.1, ct: 1.3, mul: .42, sat: .5 }, FIRE: 1810, PART0: 1925, PART1: 2175, SMALL: 2212 };
+  const DRAWN = /[?&]drawn\b/.test(location.search), D4 = !/[?&]painted\b/.test(location.search);
+  const R4D = { caster: { ax: 35, g: 302, s: 2.1, ct: 1.3, mul: .42, sat: .5 }, pourer: { ax: 62, g: 299, s: 2.1, ct: 1.3, mul: .42, sat: .5 }, FIRE: 1810, PART0: 1925, PART1: 2175, SMALL: 2225 };
   function bakeR4() {
-    const W = 1584, H = 672, cv = document.createElement('canvas'); cv.width = W; cv.height = H; const c = cv.getContext('2d'); c.scale(.5, .5);
-    const FY = 1240, F = R4D.FIRE;
-    // the back wall: a dark warm plaster, lit in one soft pool by the fire low on the floor
-    c.fillStyle = '#2a170f'; c.fillRect(0, 0, 3168, 1344);
-    const pool = (x, y, r, stops) => { const g = c.createRadialGradient(x, y, 0, x, y, r); stops.forEach(([o, col, a]) => g.addColorStop(o, css(col, a))); c.fillStyle = g; c.fillRect(x - r, y - r, 2 * r, 2 * r); };
-    c.save(); c.translate(F, 1150); c.scale(1.35, 1); c.translate(-F, -1150);
-    pool(F, 1150, 1250, [[0, [214, 132, 66], 1], [.18, [168, 96, 48], .9], [.45, [96, 52, 28], .7], [.75, [52, 28, 17], .45], [1, [42, 23, 15], 0]]);
-    c.restore();
-    // behind the partition: its own small low light from the hidden fire
-    pool(R4D.SMALL, 1170, 620, [[0, [190, 112, 58], .85], [.35, [110, 60, 32], .6], [1, [42, 23, 15], 0]]);
-    // plaster: a few broad soft stains, no cracks, no tiles (painted small and stretched up, so soft)
-    const n = document.createElement('canvas'); n.width = 64; n.height = 28; const nx = n.getContext('2d');
-    for (let i = 0; i < 160; i++) { nx.fillStyle = css(rnd() < .5 ? [0, 0, 0] : [255, 220, 180], .02 + rnd() * .025); nx.beginPath(); nx.arc(rnd() * 64, rnd() * 28, 1 + rnd() * 4, 0, 6.2832); nx.fill(); }
-    c.save(); c.globalCompositeOperation = 'soft-light'; c.imageSmoothingEnabled = true; c.drawImage(n, 0, 0, 3168, 1344); c.restore();
-    // the ceiling: one dark band with a soft lower edge, four beam ends hanging from it
-    let g = c.createLinearGradient(0, 0, 0, 230); g.addColorStop(0, '#0e0705'); g.addColorStop(.62, '#140a07'); g.addColorStop(1, 'rgba(20,10,7,0)'); c.fillStyle = g; c.fillRect(0, 0, 3168, 230);
-    // where the wall meets the floor, a soft dark seam (varied along its length, never one straight level line)
-    // one shape (strips side by side showed as a comb): its top wanders, then it is softened by laying it five times, each a little higher and fainter
-    for (let k = 0; k < 5; k++) { c.beginPath(); c.moveTo(0, FY); for (let x = 0; x <= 3168; x += 16) c.lineTo(x, FY - (10 + 8 * Math.sin(x / 210) + 5 * Math.sin(x / 57)) - k * 9); c.lineTo(3168, FY); c.closePath(); c.fillStyle = 'rgba(14,7,5,.12)'; c.fill(); }
-    // the floor: a nearer layer, darker, with a low flat pool of firelight (never a shape coming down at us)
-    g = c.createLinearGradient(0, FY, 0, 1344); g.addColorStop(0, '#24130c'); g.addColorStop(1, '#140a06'); c.fillStyle = g; c.fillRect(0, FY, 3168, 104);
-    c.save(); c.beginPath(); c.rect(0, FY, 3168, 104); c.clip(); c.translate(F, FY + 6); c.scale(1, .1); c.translate(-F, -(FY + 6));
-    pool(F, FY + 6, 900, [[0, [226, 140, 70], .75], [.3, [150, 82, 40], .45], [1, [60, 32, 18], 0]]);
-    c.translate(R4D.SMALL, FY + 6); c.scale(1, 1); c.translate(-R4D.SMALL, -(FY + 6));
-    pool(R4D.SMALL, FY + 6, 380, [[0, [200, 120, 60], .55], [1, [60, 32, 18], 0]]); c.restore();
-    // the partition: the nearest thing in the room, one near-black tone, its face toward the fire touched with warm light
-    const P0 = R4D.PART0, P1 = R4D.PART1;
-    c.fillStyle = '#170c08'; c.fillRect(P0, 0, P1 - P0, FY + 12);
-    g = c.createLinearGradient(P0, 0, P0 + 46, 0); g.addColorStop(0, 'rgba(236,140,64,.55)'); g.addColorStop(.25, 'rgba(160,80,36,.28)'); g.addColorStop(1, 'rgba(160,80,36,0)');
-    c.save(); c.beginPath(); c.rect(P0, 300, 46, FY - 288); c.clip(); const v0 = c.createLinearGradient(0, 300, 0, FY); c.fillStyle = g; c.fillRect(P0, 300, 46, FY - 300); c.restore();
-    // the light on its face fades upward, strongest low where the fire is
-    g = c.createLinearGradient(0, 260, 0, 900); g.addColorStop(0, 'rgba(23,12,8,1)'); g.addColorStop(1, 'rgba(23,12,8,0)'); c.fillStyle = g; c.fillRect(P0, 260, 50, 640);
-    // the logs of both fires, dark against their own light
-    c.fillStyle = '#120805';
-    for (const [x, w, a] of [[F - 120, 230, -.06], [F - 60, 200, .1], [F - 150, 120, .02]]) { c.save(); c.translate(x + w / 2, FY - 6); c.rotate(a); c.beginPath(); c.ellipse(0, 0, w / 2, 13, 0, 0, 6.2832); c.fill(); c.restore(); }
-    for (const [x, w, a] of [[R4D.SMALL - 40, 90, -.05], [R4D.SMALL - 10, 70, .12]]) { c.save(); c.translate(x + w / 2, FY - 4); c.rotate(a); c.beginPath(); c.ellipse(0, 0, w / 2, 8, 0, 0, 6.2832); c.fill(); c.restore(); }
-    return cv;
+    // on the house's shell (build 425): the fire low on the floor at FIRE is the one light; the chimney breast between PART0 and PART1 is
+    // the wall they go round (the end walls' own near-black, its face toward the fire warmed); behind it the small hidden fire's own low light
+    const F = R4D.FIRE, P0 = R4D.PART0, P1 = R4D.PART1, FY = HOUSE.FY;
+    return bakeShell({ seed: 44, doors: 'LR', lights: [{ x: F, y: 1120, r: 1500, lit: [184, 98, 42], half: [90, 40, 20], sx: 1.2 }, { x: R4D.SMALL + 160, y: 1150, r: 700, lit: [150, 84, 40], half: [70, 34, 18], sx: 1.1, a: .8 }],
+      near(c) {
+        // the chimney breast, floor to ceiling, and a short hood over the hearth on the fire's side
+        c.fillStyle = '#0c0705'; c.fillRect(P0, 0, P1 - P0, FY + 6);
+        let g = c.createLinearGradient(P0, 0, P0 + 46, 0); g.addColorStop(0, 'rgba(236,140,64,.5)'); g.addColorStop(.3, 'rgba(160,80,36,.22)'); g.addColorStop(1, 'rgba(160,80,36,0)');
+        c.save(); c.beginPath(); c.rect(P0, 420, 46, FY - 420); c.clip(); c.fillStyle = g; c.fillRect(P0, 420, 46, FY - 420); c.restore();
+        g = c.createLinearGradient(0, 380, 0, 900); g.addColorStop(0, 'rgba(12,7,5,1)'); g.addColorStop(1, 'rgba(12,7,5,0)'); c.fillStyle = g; c.fillRect(P0, 380, 50, 520);
+        // the hearth: a low stone step under the fire, its top edge lit
+        c.fillStyle = '#1c110a'; c.fillRect(F - 300, FY - 22, 600, 26); c.fillStyle = 'rgba(240,150,70,.4)'; c.fillRect(F - 300, FY - 22, 600, 3);
+        // the logs of both fires, dark against their own light
+        c.fillStyle = '#120805';
+        for (const [x, w, a] of [[F - 120, 230, -.06], [F - 60, 200, .1], [F - 150, 120, .02]]) { c.save(); c.translate(x + w / 2, FY - 28); c.rotate(a); c.beginPath(); c.ellipse(0, 0, w / 2, 13, 0, 0, 6.2832); c.fill(); c.restore(); }
+        for (const [x, w, a] of [[R4D.SMALL + 20, 90, -.05], [R4D.SMALL + 50, 70, .12]]) { c.save(); c.translate(x + w / 2, FY - 8); c.rotate(a); c.beginPath(); c.ellipse(0, 0, w / 2, 8, 0, 0, 6.2832); c.fill(); c.restore(); }
+      } });
   }
   // ROOM 2 DRAWN IN CODE (after build 378; owner: "can you draw the parlour"): Vermeer's one light, a tall window on the left,
   // the pale wall lit nearest it and dimming to the right, the floorboards a nearer, darker layer with the window's light lying flat on them,
@@ -342,7 +322,7 @@ const RM = (() => {
     pics[out] = cv; return true;
   }
   if (DRAWN) { const n = 'room2-drawn'; loads[n] = new Promise(r => setTimeout(r, 0)).then(() => (pics[n] = bakeR2())); pic('room2-girl'); pic('room2-sweeper'); }
-  if (DRAWN) { const n = 'room4-drawn'; loads[n] = new Promise(r => setTimeout(r, 0)).then(() => (pics[n] = bakeR4())); pic('room4-caster'); pic('goodwill-reach'); }
+  if (D4) { const n = 'room4-drawn'; loads[n] = new Promise(r => setTimeout(r, 0)).then(() => (pics[n] = bakeR4())); pic('room4-caster'); pic('goodwill-reach'); }
   // a soft flame: stacked teardrops, the core pale gold, the edge amber, swaying and breathing (no hard tongues)
   function flame(c, x, y, h, w, ph, a = 1) {
     for (const [k, col, al] of [[1, [235, 110, 40], .32], [.78, [250, 160, 60], .45], [.52, [255, 210, 120], .6], [.3, [255, 240, 200], .7]]) {
@@ -639,26 +619,28 @@ const RM = (() => {
     },
     // 4 THE FIRE FED WITH OIL (after La Tour's St Joseph the Carpenter): round the back of the wall
     r4: {
-      pic: DRAWN ? 'room4-drawn' : 'room4', FY: 1240, cam0: 0, tone: [150, 100, 80],
+      pic: D4 ? 'room4-drawn' : 'room4', FY: D4 ? HOUSE.FY : 1240, cam0: 0, tone: [150, 100, 80],
       light(x) { const f = .8 + .13 * Math.sin(G.t / 4.3) * Math.sin(G.t / 9.1) + .07 * Math.sin(G.t / 2.1); return x < 1900 ? { x: 1810, a: .75 * f, col: [240, 120, 50] } : { x: 2187, a: .3 * f * smooth(.4, 1, this.rv), col: [255, 160, 80] }; },
-      enter() { this.rv = 0; this.steam = []; this.oil = []; this.water = []; this.cast = 0; },
+      enter() { this.rv = 0; this.steam = []; this.oil = []; this.water = []; this.cast = 0; this.grow = 0; this.dip = 0; },
       // drawn room only: the fire, the man casting water and the man pouring oil behind the wall, all live
       under(c) {
-        if (!DRAWN) return;
+        if (!D4) return;
         const FY = this.FY, F = R4D.FIRE, cs = pics['room4-caster'], po = pics['goodwill-reach'];
         // the man casting water, dark against the firelit wall; his bucket swings up at each cast
         const cx = 1330, q = Math.max(0, Math.sin(Math.min(1, this.cast) * Math.PI));
-        if (cs) fig(c, 'room4-caster', R4D.caster, cx, FY, -1, 1, 1, [70, 48, 40]);
+        if (cs) fig(c, 'room4-caster', R4D.caster, cx, FY, 1, 1, 1, [70, 48, 40]);
         const bx = cx + 70 + 40 * q, by = 985 - 70 * q; c.save(); c.translate(u(bx), v(by)); c.rotate(-.2 - 1.1 * q); c.fillStyle = '#1a0e09';
         c.beginPath(); c.moveTo(-36 * S, -44 * S); c.lineTo(36 * S, -44 * S); c.lineTo(28 * S, 40 * S); c.lineTo(-28 * S, 40 * S); c.closePath(); c.fill();
         c.strokeStyle = 'rgba(220,130,60,.5)'; c.lineWidth = 1.2; c.beginPath(); c.moveTo(36 * S, -44 * S); c.lineTo(28 * S, 40 * S); c.stroke(); c.restore();
         for (const w of this.water) { c.fillStyle = css([210, 220, 228], .55 * w.a); c.beginPath(); c.arc(u(w.x), v(w.y), Math.max(.8, 3 * S), 0, 6.2832); c.fill(); }
         // the fire: a soft heart and a few flames, higher and hotter in spite of the water
-        for (const [dx, h, w, ph] of [[-95, 320, 130, 0], [0, 480, 170, 1.7], [85, 380, 140, 3.1], [-30, 240, 240, 4.4], [40, 200, 200, 2.6]]) flame(c, F + dx, FY - 14, h, w, ph);
+        // it shrinks a moment where the water strikes, then rises higher than before (the book: "yet did the fire burn higher and hotter")
+        const gk = (1.05 + .4 * this.grow) * (1 - .28 * this.dip);
+        for (const [dx, h, w, ph] of [[-95, 320, 130, 0], [0, 480, 170, 1.7], [85, 380, 140, 3.1], [-30, 240, 240, 4.4], [40, 200, 200, 2.6]]) flame(c, F + dx, FY - 24, h * gk, w * (.9 + .15 * this.grow), ph);
         // behind the wall: the man pouring oil and the small fire it feeds (the dark in over() hides them until they go round)
         flame(c, R4D.SMALL, FY - 8, 120, 60, 2.2, .9); flame(c, R4D.SMALL + 20, FY - 8, 80, 50, 5.1, .8);
-        if (po) fig(c, 'goodwill-reach', R4D.pourer, 2420, FY, 1, 1, 1, [64, 44, 40]);
-        const jx = 2200, jy = 905; c.fillStyle = '#1a0e09'; c.beginPath(); c.ellipse(u(jx), v(jy), 15 * S, 20 * S, -.6, 0, 6.2832); c.fill();
+        if (po) fig(c, 'goodwill-reach', R4D.pourer, 2440, FY, 1, 1, 1, [64, 44, 40]);
+        const jx = 2215, jy = 905; c.fillStyle = '#1a0e09'; c.beginPath(); c.ellipse(u(jx), v(jy), 15 * S, 20 * S, -.6, 0, 6.2832); c.fill();
       },
       run() { talk([[N, 'A fire burned against a wall, and one stood by it, always casting water upon it. Yet the fire burned higher and hotter.'], [I, 'This fire is the work of grace in the heart. He who casts water on it is the Devil. Come, and see why it burns on.'], [TIP, 'Hold to go round the back of the wall.', 'round']], () => {}); },
       act() {},
@@ -666,8 +648,10 @@ const RM = (() => {
         if (G.act === 'round') { if (G.actT >= 60 && !hold() && !G.ring) G.ring = ring(2172, 1000); if (hold()) { G.ring = null; this.rv = Math.min(1, this.rv + .0055); } if (this.rv >= 1) { next(true); G.state = 'auto'; ph = 'saw'; t = 0; } }
         cam.to = this.rv * (R.PW * S - VW);
         if (ph === 'saw' && t === 60) talk([[I, 'This is Christ, who with the oil of his grace keeps the work going in the heart. He stands behind the wall, for it is hard for the tempted to see it.']], () => goTo('r5'));
-        if (DRAWN) {
-          this.cast += 1 / 70; if (this.cast >= 3.2) this.cast = 0;
+        if (D4) {
+          const c0 = this.cast; this.cast += 1 / 70; if (this.cast >= 3.2) this.cast = 0;
+          if (c0 < .95 && this.cast >= .95) { this.dip = 1; noise(3000, 1, .6, .05); noise(500, 2, .5, .04); }
+          if (this.dip > 0) { this.dip = Math.max(0, this.dip - .02); if (this.dip < .5) this.grow = Math.min(1, this.grow + .004); }
           if (this.cast > .35 && this.cast < .7) for (let i = 0; i < 6; i++) this.water.push({ x: 1450 + rnd() * 24, y: 880 + rnd() * 20, vx: 4.6 + rnd() * 2, vy: -4 - rnd() * 1.6, a: 1 });
           for (const w of this.water) { w.vy += .16; w.x += w.vx; w.y += w.vy; if (w.x > R4D.FIRE - 90) w.a *= .82; }
           this.water = this.water.filter(w => w.a > .05 && w.y < this.FY);
@@ -675,17 +659,17 @@ const RM = (() => {
         if (G.t % 5 === 0) this.steam.push({ x: 1760 + rnd() * 80, y: 800 + rnd() * 60, vy: -.8 - rnd(), a: .5, s: 20 + rnd() * 30 });
         for (const s of this.steam) { s.y += s.vy; s.x -= .3; s.a *= .985; s.s += .5; }
         this.steam = this.steam.filter(s => s.a > .03);
-        if (this.rv > .3 && G.t % 7 === 0) this.oil.push(DRAWN ? { x: 2190, y: 915, vy: 1 } : { x: 2217, y: 880, vy: 1 });
+        if (this.rv > .3 && G.t % 7 === 0) this.oil.push(D4 ? { x: 2215, y: 918, vy: 1 } : { x: 2217, y: 880, vy: 1 });
         for (const o of this.oil) { o.vy += .3; o.y += o.vy; o.x -= .4; }
         this.oil = this.oil.filter(o => o.y < 1080);
       },
-      people(c) { const q = smooth(0, .5, this.rv), r = smooth(.6, 1, this.rv); visitor(c, 'I', 330, 1, 1, 1 - q); visitor(c, 'C', 40, 1, 1, 1 - q); if (r > 0) { visitor(c, 'I', 2700, -1, 1, r); visitor(c, 'C', 2930, -1, 1, r); } },
+      people(c) { const q = smooth(0, .5, this.rv), r = smooth(.6, 1, this.rv); visitor(c, 'I', D4 ? 680 : 330, 1, 1, 1 - q); visitor(c, 'C', D4 ? 400 : 40, 1, 1, 1 - q); if (r > 0) { visitor(c, 'I', 2700, -1, 1, r); visitor(c, 'C', 2930, -1, 1, r); } },
       over(c) {
         const f = .75 + .15 * Math.sin(G.t / 4.3) * Math.sin(G.t / 9.1) + .1 * Math.sin(G.t / 2.1);
-        glow(c, u(1810), v(1000), 260 * f, [255, 140, 60], .32 * f); glow(c, u(1810), v(1080), 90, [255, 220, 140], .25 * f);
-        for (const s of this.steam) { const g = c.createRadialGradient(u(s.x), v(s.y), 0, u(s.x), v(s.y), s.s * S); g.addColorStop(0, css([220, 210, 205], s.a * (DRAWN ? .14 : .35))); g.addColorStop(1, css([220, 210, 205], 0)); c.fillStyle = g; c.fillRect(u(s.x) - s.s * S, v(s.y) - s.s * S, 2 * s.s * S, 2 * s.s * S); }
+        const gw = D4 ? .8 + .3 * this.grow - .25 * this.dip : 1; glow(c, u(1810), v(1000), 260 * f * gw, [255, 140, 60], .32 * f * gw); glow(c, u(1810), v(1080), 90, [255, 220, 140], .25 * f);
+        for (const s of this.steam) { const g = c.createRadialGradient(u(s.x), v(s.y), 0, u(s.x), v(s.y), s.s * S); g.addColorStop(0, css([220, 210, 205], s.a * (D4 ? .14 : .35))); g.addColorStop(1, css([220, 210, 205], 0)); c.fillStyle = g; c.fillRect(u(s.x) - s.s * S, v(s.y) - s.s * S, 2 * s.s * S, 2 * s.s * S); }
         // the dark behind the wall, lifting as they go round
-        const hx = u(2168), hide = 1 - smooth(0, .8, this.rv);
+        const hx = u(2168), hide = (D4 ? .82 : 1) * (1 - smooth(0, .8, this.rv));
         if (hide > .01) { const g = c.createLinearGradient(hx - 20, 0, hx + 60, 0); g.addColorStop(0, 'rgba(8,4,3,0)'); g.addColorStop(1, css([8, 4, 3], hide)); c.fillStyle = g; c.fillRect(hx - 20, v(0), u(3168) - hx + 20, PH * S); }
         if (this.rv > .3) { c.fillStyle = css([255, 200, 90], .9); for (const o of this.oil) { c.beginPath(); c.arc(u(o.x), v(o.y), 1.3, 0, 6.2832); c.fill(); } glow(c, u(2190), v(1090), 60 * f, [255, 170, 80], .3 * smooth(.3, 1, this.rv)); }
       },
