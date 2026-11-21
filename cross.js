@@ -230,15 +230,17 @@ const CR = (() => {
       // it tumbles down the hill's face toward us, faster and faster, bouncing, to the door at its foot
       if (bur.x0 == null) { bur.x0 = bur.x; bur.H0 = gh(bur.x); }
       bur.t++; const T = 230, u = Math.min(1, bur.t / T), f = Math.pow(u, 1.5), n = 6;
-      bur.x = lerp(bur.x0, TOMB_X, sm(0, 1, u));
+      // it zig-zags down the face, turning at each bounce, and grows as it comes nearer, so the hill has depth
+      const p = n * f, hp = Math.floor(p), s = p - hp, tri = hp % 2 ? 1 - 2 * s : 2 * s - 1, env = sm(0, .12, f) * (1 - sm(.8, 1, f));
+      bur.zx = 150 * (1 - .3 * f) * env * tri; bur.x = lerp(bur.x0, TOMB_X, sm(0, 1, u)) + bur.zx;
       const b = Math.abs(Math.sin(Math.PI * n * f)), bb = 46 * Math.pow(1 - f, 1.2);
       bur.H = lerp(bur.H0, tombSill() + 6, f) + b * bb;
       const hop = Math.floor(n * f); if (hop !== bur.hop) { bur.hop = hop; if (bur.t > 4) thump(Math.min(1, .45 + f * .6)); }
-      bur.r -= .045 + .06 * f; bur.k = 1 + .14 * f;
+      bur.r -= (.045 + .06 * f) * (hp % 2 ? -1 : 1); bur.k = 1 + .3 * f;
       if (u >= 1) { bur.st = 'in'; bur.t = 0; bur.x0 = bur.x; }
     } else if (bur.st === 'in') {
       // into the mouth of the sepulchre, into the dark, then gone
-      bur.t++; bur.H = tombSill() + 6; bur.r -= .02 * (1 - bur.t / 54); bur.k = 1.14 - .5 * sm(0, 44, bur.t); bur.dk = sm(4, 34, bur.t); bur.a = 1 - sm(24, 50, bur.t);
+      bur.t++; bur.H = tombSill() + 6; bur.r -= .02 * (1 - bur.t / 54); bur.k = 1.3 - .6 * sm(0, 44, bur.t); bur.dk = sm(4, 34, bur.t); bur.a = 1 - sm(24, 50, bur.t);
       if (bur.t === 26) { thump(1.3); if (audio()) hiss(70, .6, .12, 1.6); }
       if (bur.t > 54) { bur.st = 'gone'; tombT = t; }
     }
@@ -475,7 +477,7 @@ const CR = (() => {
 
   // ---------- the story ----------
   function reset0() {
-    memT = -1; tearT = -1; looked = false; Object.assign(Ch, { x: START, anim: 12, sd: QUIET[0], cf: -1, hop: 0, hops: 0, lastV: 0, fade: 0, hv: 0, face: 1, tv: null, run: 0, ranim: 0 });
+    memT = -1; memS = []; memUntil = 0; tearT = -1; looked = false; Object.assign(Ch, { x: START, anim: 12, sd: QUIET[0], cf: -1, hop: 0, hops: 0, lastV: 0, fade: 0, hv: 0, face: 1, tv: null, run: 0, ranim: 0 });
     bur = null; dawn = gold = goldTo = sun = robe = robeTo = mark = markTo = rollShow = rollGone = shine = shineTo = gone = goneTo = 0; wideK = 1; wideTo = 1;
     said = {}; hymn = null; silenceT = 0; tombT = 0; leapsLeft = 3; endT = 0; quietPad = 0; t = 0; rollFly = rollAt = null; closeK = topK = topTo = veil = 0; climb = null;
   }
@@ -488,7 +490,7 @@ const CR = (() => {
     downs.clear(); keys.r = keys.push = false;
     reset0(); ph = 'look';
     const at = new URLSearchParams(location.search).get('at');
-    if (at === 'cross') { ph = 'walk'; Ch.x = STOP_X - 260; Ch.sd = null; wideK = wideTo = 0; said.open = said.ascend = said.cut = true; dawn = .6; memT = MEM_END; }
+    if (at === 'cross') { ph = 'walk'; Ch.x = STOP_X - 260; Ch.sd = null; wideK = wideTo = 0; said.open = said.ascend = said.cut = true; dawn = .6; memT = 2000; memS = MEMS.map(() => 0); }
     camTick(true);
     if (audio()) { AC.resume(); if (rainG) rainG.gain.setTargetAtTime(0, AC.currentTime, .8); padStart(); }
     G.state = 'wait';
@@ -540,7 +542,7 @@ const CR = (() => {
     if (tearT >= 0) tearT++;
     if (ph === 'gone' || ph === 'shine') closeK += ((ph === 'gone' && tearT >= 0 && tearT < 420 ? 1 : 0) - closeK) * .025;
     // the memories' own clock runs on whatever the phase, so the last one fades even once he is at the cross
-    if (memT >= 0 && memT < MEM_END + 400) { memT++; MEMS.forEach((m, i) => { if (memT === MEM0 + i * MEM_GAP) memVoice(m); }); }
+    if (memT >= 0 && memT < memLast() + 420) { memT++; const i = memS.length; if (i < MEMS.length && memT >= MEM0 + i * MEM_GAP && (i === 0 || memT - memS[i - 1] >= MEM_GAP) && !busy()) { memS.push(memT); memVoice(MEMS[i]); } }
     padTick(ph === 'fall' || ph === 'tumble' || ph === 'gone' ? 0 : gold > .1 ? 0 : 1);
 
     if (ph === 'look') {
@@ -555,15 +557,15 @@ const CR = (() => {
       // his life remembered in the sky as he runs up the hill (owner: "the memories maybe happen as he runs up the hill
       // (too much overlapping dialogue at cross)"): once the storyteller's first line is said and he is on the slope;
       // Good-will's promise last, just before he comes to the cross
-      if (memT < 0 && Ch.x > SLOPE0 && said.open && !saying()) memT = 0;
-      const memDone = memT >= MEM_END - 40;
-      if (!said.ascend && memDone && Ch.x > CREST0 - 900 && !saying()) { said.ascend = true; caption(ASCEND); }
+      if (memT < 0 && Ch.x > SLOPE0 && said.open && !busy()) memT = 0;
+      const memDone = memT >= memLast() + 300;
+      if (!said.ascend && memDone && Ch.x > CREST0 - 900 && !busy()) { said.ascend = true; caption(ASCEND); }
       closeK += (0 - closeK) * .03;
-      if (topTo && topK > .9 && !saying() && G.t - (said.topT || 0) > 150) topTo = 0;
+      if (topTo && topK > .9 && !busy() && G.t - (said.topT || 0) > 150) topTo = 0;
       // no cut any more (owner: "Since he's running you can probably not cut to top of hill"): he runs all the way up
       // to the cross, the book's "He ran thus till he came at a place somewhat ascending"
       if (want && Ch.x < STOP_X - .5) { run(true); if (Ch.x > STOP_X) Ch.x = STOP_X; } else run(false);
-      if (Ch.x >= STOP_X - .5 && Ch.sd != null && Ch.run <= 0 && said.ascend && !saying()) { ph = 'cross'; G.state = 'auto'; t = 0; }
+      if (Ch.x >= STOP_X - .5 && Ch.sd != null && Ch.run <= 0 && said.ascend && !busy()) { ph = 'cross'; G.state = 'auto'; t = 0; }
     } else if (ph === 'cross') {
       // he stands before the cross; the standing picture gives way to the clip and the burden loosens by itself and falls behind him
       if (Ch.cf < 0) { Ch.cf = 0; Ch.fade = 0; }
@@ -590,7 +592,7 @@ const CR = (() => {
       if (hymn && hymn.t === 25 * BEATT) { caption(LOOKED); looked = true; }
       if (looked && tearT < 0 && !G.capQ.length) tearT = 0;
       if (hymn && hymn.t > 20 * BEATT) wideTo = 0;
-      if (hymnDone() && !saying()) { ph = 'shine'; t = 0; shineTo = 1; hymn = null; chime([79, 83, 86], .025); }
+      if (hymnDone() && !busy()) { ph = 'shine'; t = 0; shineTo = 1; hymn = null; chime([79, 83, 86], .025); }
     } else if (ph === 'shine') {
       clipHold();
       if (t === 150) talk(SHINE, () => { ph = 'leaps'; t = 0; });
@@ -640,21 +642,25 @@ const CR = (() => {
     { who: 'Good-will', txt: 'Bear your burden a little longer. At the place of deliverance, it will fall from your back of itself.', at: [.4, .2], last: true },
   ];
   const memC = [];
-  let memT = -1;
-  const MEM_END = MEM0 + 5 * MEM_GAP + 330;
+  let memT = -1, memS = [], memUntil = 0;
+  // THE RULE FOR THIS LEVEL: no line is spoken, and no memory speaks, while any voice is still sounding
+  const busy = () => saying() || G.t < memUntil;
+  const memLast = () => memS.length === MEMS.length ? memS[MEMS.length - 1] : Infinity;
+
   function memVoice(m) {
     if (!audio()) return;
-    voxBuf(vox(m.who, m.txt)).then(buf => { if (!buf || !AC) return; const s = AC.createBufferSource(), g = AC.createGain(); g.gain.value = m.last ? .85 : .6; s.buffer = buf; s.connect(g); g.connect(VOICEG); s.start(); }).catch(() => {});
+    memUntil = G.t + 120; voxBuf(vox(m.who, m.txt)).then(buf => { if (!buf || !AC) { memUntil = 0; return; } memUntil = G.t + Math.ceil(buf.duration * 60) + 20; const s = AC.createBufferSource(), g = AC.createGain(); g.gain.value = m.last ? .85 : .6; s.buffer = buf; s.connect(g); g.connect(VOICEG); s.start(); }).catch(() => { memUntil = 0; });
     hiss(700, .7, .018, 1.1); note(m.last ? 55 : 50, .02, 2.2, 0, true);
   }
   // one memory painted once: dark figures against a soft warm light, then blurred a little and faded at every edge
   function memPic(i) {
     if (memC[i]) return memC[i];
-    const W = 300, H = 200, cv = mk(W, H), q = cv.getContext('2d');
+    // drawn at 300 x 200 but baked at three times that, so it stays sharp on a phone
+    const W = 300, H = 200, Z = 3, WZ = W * Z, HZ = H * Z, cv = mk(WZ, HZ), q = cv.getContext('2d'); q.scale(Z, Z);
     const glow = (x, y, r, a) => { const g = q.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, `rgba(255,236,200,${a})`); g.addColorStop(1, 'rgba(255,236,200,0)'); q.fillStyle = g; q.fillRect(0, 0, W, H); };
-    const fl = mk(W, H), fq = fl.getContext('2d');
+    const fl = mk(WZ, HZ), fq = fl.getContext('2d'); fq.scale(Z, Z);
     const fig = (im, meta, x, h, flip, k = .5) => { if (!im) return false; const K = k * (h / 300); fq.save(); fq.translate(x, 178); fq.scale(flip ? -K : K, K); fq.drawImage(im, -meta.ax, -meta.ground); fq.restore(); return true; };
-    glow(W / 2, H * .55, 170, .55);
+    glow(W / 2, H * .55, 170, .4);
     let ok = true;
     if (i === 0) { glow(250, 70, 40, .9); ok = fig(EVA[EVA.length - 1], EVA_META, 120, 300); }
     else if (i === 1) { const f = RUNP[6]; ok = fig(f, RUNP_META, 150, 300); }
@@ -665,25 +671,27 @@ const CR = (() => {
     if (!ok) return null;
     // the figures dark and warm against the light, as a memory
     fq.globalCompositeOperation = 'source-atop'; fq.fillStyle = 'rgba(58,40,30,.82)'; fq.fillRect(0, 0, W, H);
-    q.drawImage(fl, 0, 0);
-    q.globalCompositeOperation = 'color'; q.fillStyle = 'rgb(150,112,80)'; q.fillRect(0, 0, W, H);
-    const sm = mk(W / 3, H / 3), sq = sm.getContext('2d'); sq.drawImage(cv, 0, 0, W / 3, H / 3);
-    q.globalCompositeOperation = 'source-over'; q.globalAlpha = .55; q.drawImage(sm, 0, 0, W, H); q.globalAlpha = 1;
-    q.globalCompositeOperation = 'destination-in'; q.save(); q.translate(W / 2, H / 2); q.scale(1, H / W); const v = q.createRadialGradient(0, 0, 0, 0, 0, W / 2); v.addColorStop(0, 'rgba(0,0,0,1)'); v.addColorStop(.45, 'rgba(0,0,0,.9)'); v.addColorStop(1, 'rgba(0,0,0,0)'); q.fillStyle = v; q.fillRect(-W / 2, -W / 2, W, W); q.restore();
+    q.setTransform(1, 0, 0, 1, 0, 0); q.drawImage(fl, 0, 0);
+    q.globalCompositeOperation = 'color'; q.fillStyle = 'rgb(150,112,80)'; q.fillRect(0, 0, WZ, HZ);
+    // a soft breath over it (a little, so the figures stay crisp)
+    const sm = mk(WZ / 6, HZ / 6), sq = sm.getContext('2d'); sq.drawImage(cv, 0, 0, WZ / 6, HZ / 6);
+    q.globalCompositeOperation = 'source-over'; q.globalAlpha = .3; q.drawImage(sm, 0, 0, WZ, HZ); q.globalAlpha = 1;
+    // faded at every edge over a long soft stretch, so it melts into the sky
+    q.globalCompositeOperation = 'destination-in'; q.save(); q.translate(WZ / 2, HZ / 2); q.scale(1, H / W); const v = q.createRadialGradient(0, 0, 0, 0, 0, WZ / 2); [[0, 1], [.25, .92], [.45, .66], [.65, .3], [.82, .09], [1, 0]].forEach(([o, a]) => v.addColorStop(o, `rgba(0,0,0,${a})`)); q.fillStyle = v; q.fillRect(-WZ / 2, -WZ / 2, WZ, WZ); q.restore();
     q.globalCompositeOperation = 'source-over';
     return (memC[i] = cv);
   }
   function memories(c) {
     if (memT < 0) return;
     MEMS.forEach((m, i) => {
-      const t0 = MEM0 + i * MEM_GAP, lt = memT - t0, life = m.last ? 380 : 150;
+      if (memS[i] == null) return; const t0 = memS[i], lt = memT - t0, life = m.last ? 380 : 150;
       if (lt < 0 || lt > life) return;
       const im = memPic(i); if (!im) return;
       const a = smooth(0, 12, lt) * (1 - smooth(life - (m.last ? 140 : 70), life, lt)), k = 1.12 - .12 * smooth(0, 30, lt) + .03 * lt / life;
-      const w = VW * .32 * k, h = w * im.height / im.width, x = VW * m.at[0] + Math.sin(lt / 90 + i) * 6, y = VH * m.at[1] - lt * .05;
-      c.save(); c.globalAlpha = .82 * a; c.drawImage(im, x - w / 2, y - h / 2, w, h);
+      const w = VW * .36 * k, h = w * im.height / im.width, x = VW * m.at[0] + Math.sin(lt / 90 + i) * 6, y = VH * m.at[1] - lt * .05;
+      c.save(); c.globalAlpha = .74 * a; c.drawImage(im, x - w / 2, y - h / 2, w, h);
       // the punch as it comes: a brief brightening
-      if (lt < 20) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = .35 * (1 - lt / 20); c.drawImage(im, x - w / 2, y - h / 2, w, h); }
+      if (lt < 20) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = .25 * (1 - lt / 20); c.drawImage(im, x - w / 2, y - h / 2, w, h); }
       c.restore();
     });
   }
