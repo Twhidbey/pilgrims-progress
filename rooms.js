@@ -673,7 +673,7 @@ const RM = (() => {
         if (po) fig(c, 'goodwill-reach', R4D.pourer, 2440, FY, 1, 1, 1, [64, 44, 40]);
         const jx = 2215, jy = 905; c.fillStyle = '#1a0e09'; c.beginPath(); c.ellipse(u(jx), v(jy), 15 * S, 20 * S, -.6, 0, 6.2832); c.fill();
       },
-      run() { talk([[N, 'A fire burned against a wall, and one stood by it, always casting water upon it. Yet the fire burned higher and hotter.'], [I, 'This fire is the work of grace in the heart. He who casts water on it is the Devil. Come, and see why it burns on.'], [TIP, 'Hold to go round the back of the wall.', 'round']], () => {}); },
+      run() { talk([[I, 'This fire is the work of grace in the heart. He who casts water on it is the Devil. Come, and see why it burns on.'], [TIP, 'Hold to go round the back of the wall.', 'round']], () => {}); },
       act() {},
       upd() {
         if (G.act === 'round') { if (G.actT >= 60 && !hold() && !G.ring) G.ring = ring(2172, 1000); if (hold()) { G.ring = null; this.rv = Math.min(1, this.rv + .0055); } if (this.rv >= 1) { next(true); G.state = 'auto'; ph = 'saw'; t = 0; } }
@@ -898,7 +898,7 @@ const RM = (() => {
       if (K === 'hall' || K === 'out' || K === 'up' || K === 'down') {
         // a beam along the ceiling, and the doorway they came through on the left
         c.fillStyle = 'rgba(12,7,4,.8)'; c.fillRect(u(0), v(FY - 820), W2 * S, 36 * S);
-        c.fillStyle = '#120a06'; c.fillRect(u(90), v((K === 'down' ? FY - this.RISE : FY) - 560), 190 * S, 560 * S);
+        c.fillStyle = '#120a06'; c.fillRect(u(90), v((K === 'down' ? FY - this.RISE : FY) - 763), 210 * S, 763 * S);
       }
       if (K === 'up' || K === 'down') {
         // the stair: a flight of wooden steps in side view, a handrail with turned balusters, the landing beyond
@@ -914,13 +914,13 @@ const RM = (() => {
         c.strokeStyle = '#3a2614'; c.lineWidth = Math.max(1.5, 9 * S); c.beginPath(); c.moveTo(u(x0 - 60), v((up ? FY : top) - 300)); c.lineTo(u(x1 + 60), v((up ? top : FY) - 300)); c.stroke();
         c.lineWidth = Math.max(1, 5 * S); for (let i = 0; i <= n; i += 2) { const xa = x0 + (x1 - x0) * i / n, yb = up ? FY - this.RISE * i / n : top + this.RISE * i / n; c.beginPath(); c.moveTo(u(xa), v(yb)); c.lineTo(u(xa), v(yb - 300)); c.stroke(); }
         // the doorway at the end: the bedchamber's door upstairs, the cellar's low arch below
-        c.fillStyle = '#0c0705'; if (up) c.fillRect(u(2150), v(top - 600), 210 * S, 600 * S); else { c.beginPath(); c.moveTo(u(2140), v(FY)); c.lineTo(u(2140), v(FY - 420)); c.arc(u(2250), v(FY - 420), 110 * S, Math.PI, 0); c.lineTo(u(2360), v(FY)); c.closePath(); c.fill(); }
+        c.fillStyle = '#0c0705'; if (up) c.fillRect(u(2150), v(top - 763), 220 * S, 763 * S); else { c.beginPath(); c.moveTo(u(2140), v(FY)); c.lineTo(u(2140), v(FY - 600)); c.arc(u(2255), v(FY - 600), 115 * S, Math.PI, 0); c.lineTo(u(2370), v(FY)); c.closePath(); c.fill(); }
       }
       if (K === 'hall') {
         // the next room's doorway on the right, its door ajar, a little of its light on the boards
-        c.fillStyle = '#0d0805'; c.fillRect(u(2140), v(FY - 600), 230 * S, 600 * S);
-        const g = c.createLinearGradient(u(2140), 0, u(2370), 0); g.addColorStop(0, 'rgba(255,190,110,0)'); g.addColorStop(1, 'rgba(255,190,110,.22)'); c.fillStyle = g; c.fillRect(u(2140), v(FY - 600), 230 * S, 600 * S);
-        c.fillStyle = '#3a2416'; c.beginPath(); c.moveTo(u(2140), v(FY - 600)); c.lineTo(u(2210), v(FY - 570)); c.lineTo(u(2210), v(FY + 10)); c.lineTo(u(2140), v(FY)); c.closePath(); c.fill();
+        c.fillStyle = '#0d0805'; c.fillRect(u(2140), v(FY - 763), 230 * S, 763 * S);
+        const g = c.createLinearGradient(u(2140), 0, u(2370), 0); g.addColorStop(0, 'rgba(255,190,110,0)'); g.addColorStop(1, 'rgba(255,190,110,.22)'); c.fillStyle = g; c.fillRect(u(2140), v(FY - 763), 230 * S, 763 * S);
+        c.fillStyle = '#3a2416'; c.beginPath(); c.moveTo(u(2140), v(FY - 763)); c.lineTo(u(2210), v(FY - 733)); c.lineTo(u(2210), v(FY + 10)); c.lineTo(u(2140), v(FY)); c.closePath(); c.fill();
       }
       if (sky) {
         // out of doors at night: the sky, the garden wall, the dark shrubs; the house's back wall on the left (and its lit windows when going round)
@@ -929,7 +929,7 @@ const RM = (() => {
         const r = rngR(4); c.fillStyle = 'rgba(230,230,255,.6)'; for (let i = 0; i < 40; i++) { const sx = x0 + r() * (W2 - x0), sy = r() * 600; c.fillRect(u(sx), v(sy), 1.2, 1.2); }
         c.fillStyle = '#121812'; c.fillRect(u(x0), v(FY - 150), (W2 - x0) * S, 150 * S);
         for (let x = x0 + 60; x < W2; x += 260 + r() * 200) { c.beginPath(); c.ellipse(u(x), v(FY - 120), (70 + r() * 60) * S, (90 + r() * 50) * S, 0, 0, 6.2832); c.fill(); }
-        if (K === 'out') { c.fillStyle = '#0c0705'; c.fillRect(u(1460), v(FY - 600), 110 * S, 600 * S); c.fillStyle = '#2c1d13'; c.fillRect(u(1440), v(FY - 640), 20 * S, 640 * S); }
+        if (K === 'out') { c.fillStyle = '#0c0705'; c.fillRect(u(1460), v(FY - 763), 110 * S, 763 * S); c.fillStyle = '#2c1d13'; c.fillRect(u(1440), v(FY - 800), 20 * S, 800 * S); }
         if (K === 'round') { c.fillStyle = '#1a120c'; c.fillRect(u(0), v(FY - 900), 1200 * S, 900 * S); for (const wx of [240, 700]) { c.fillStyle = 'rgba(255,190,110,.55)'; c.fillRect(u(wx), v(FY - 560), 120 * S, 170 * S); }
           c.fillStyle = '#20140c'; c.fillRect(u(2200), v(FY - 340), 26 * S, 340 * S); c.fillRect(u(2380), v(FY - 340), 26 * S, 340 * S); }
       }
@@ -941,6 +941,7 @@ const RM = (() => {
     act() { if (G.act === 'follow') this.start(); },
     // a verse in each passage (build 312, owner: "a verse for each transition"), King James text, checked word for word
     // against es-kjv and bible-kjv; shown quietly and read by the storyteller (build 315). Keyed by the room he goes to.
+    READ: ['r2', 'r5', 'leave'],
     VERSES: {
       r2: [[N, 'Thy word is a lamp unto my feet, and a light unto my path.'], 'Psalm 119:105'],
       r3: [[N, 'But where sin abounded, grace did much more abound.'], 'Romans 5:20'],
@@ -956,7 +957,7 @@ const RM = (() => {
       if (vs) {
         const txt = vs[0][1]; words('', txt + ' \u2014 ' + vs[1], 'cap hint'); document.body.classList.add('capped'); this.need = 60 + txt.length * 2.6;
         // the storyteller reads it (build 315); they arrive only once it has been said
-        say(N, txt); voxBuf(vox(N, txt)).then(b => { if (b && this.go && !this.left) this.need = Math.max(this.need, Math.ceil(b.duration * 60) + 30); });
+        if (this.READ.includes(this.to)) { say(N, txt); voxBuf(vox(N, txt)).then(b => { if (b && this.go && !this.left) this.need = Math.max(this.need, Math.ceil(b.duration * 60) + 30); }); }
       }
     },
     x() { return 380 + this.p * 700; },

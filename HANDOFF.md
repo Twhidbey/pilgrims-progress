@@ -24,6 +24,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 **Build 430 (Level 4 chat): drawn rooms fill the screen; rooms 6 (cellar) and 7 (bedchamber, the dream as light on the wall) drawn on the shell. Next: the door and leaving, room 5, the speech trims, the passage's doorways.**
 
+**Build 431 (Level 4 chat): passage doorways taller than the men; room 4's storyteller line cut; verses read aloud only in three passages.**
+
 ## START HERE (rewritten at build 140, Nov 16 2026)
 
 **Build 420 (vision chat): the castle sits on the summit, its crag faded into the rock** (free). **Build 415 (vision chat): a rock mountain drawn in code holds the castle, the castle a third of its size** (free; see CLAUDE.md build 415). **Build 413 (vision chat): Beelzebub's castle painted** (about 15 cents, the owner said "Paint it"): a huge dark fortress on a crag after John Martin, left of the gate's wall end; the camera stands back on it as he arrives and glances back while the arrows fly. See CLAUDE.md, Level 3, build 413. Still open from this chat: Christian's new coat after the Cross (a free FLUX retry is scheduled; show the still before any clips); which lines at the mountain's foot the owner wants fixed.
