@@ -164,7 +164,7 @@ body.portrait #rot{display:block}
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
   <button id="autoWalk" aria-label="He walks on by himself"><svg viewBox="0 0 24 24"><path d="M5 6l6 6-6 6M12 6l6 6-6 6"/></svg></button>
-  <div id="build">build 367 · Nov 20 2026</div>
+  <div id="build">build 368 · Nov 21 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -1000,7 +1000,7 @@ function next(force) {
 // ---------- the voices: one small recording per line, in assets/voice (made by tools/make-voice.py) ----------
 // A line's file is named by a sum of who says it and the words, so the words on screen and the recording always belong together.
 // A line with no recording is simply silent.
-const VOX = new Map(), VOICE_V = 8;       // bump VOICE_V when recordings change, so phones fetch the new ones
+const VOX = new Map(), VOICE_V = 9;       // bump VOICE_V when recordings change, so phones fetch the new ones
 let voxSrc = null, sayN = 0;
 function voiceName(who, txt) { let h = 0x811c9dc5; const t = who + '|' + txt; for (let i = 0; i < t.length; i++) h = Math.imul(h ^ t.charCodeAt(i), 0x01000193) >>> 0; return h.toString(16).padStart(8, '0'); }
 function vox(who, txt) {
@@ -1118,10 +1118,10 @@ const PART = [       // {21} to {24}
 // (assets/voice: Pliable 79435d33 and 8b9d84ab, Christian 6de755c6 and e7e8bfd6). Level 2 should open with them, said
 // while the two walk, and move this list (and the voice tool's reading of it) to wherever Level 2 lives.
 const LEVEL2_OPENING = [
-  [PL, 'Come, neighbor Christian, tell me more of the place where we are going.'],
-  [C, 'There shall be no more crying, nor sorrow. And we shall be given garments that make us shine like the sun.'],
+  [PL, 'Tell me more of the place where we are going.'],
+  [C, 'There shall be no more crying, nor sorrow. We shall shine like the sun.'],
   [PL, 'I\'m glad to hear it! Come on, let\'s walk faster!'],
-  [C, 'I cannot go as fast as I would like, because of this burden on my back.'],
+  [C, 'I cannot go fast, because of this burden on my back.'],
 ];
 const GATEWORDS = [
   [N, 'At the edge of the city stood a great gate. It was shut.'],
@@ -2560,7 +2560,7 @@ document.getElementById('on2').onclick = () => SL.on ? go3() : HL.on ? goRoom('d
   for (const [who, txt] of INTRO) vox(who, txt);          // the first words, ready before Begin is pressed
 })();
 </script>
-<script src="slough.js?v=365"></script>
+<script src="slough.js?v=368"></script>
 <script src="hill.js?v=367"></script>
 <script src="rooms.js?v=364"></script>
 <script src="keepsakes.js?v=309"></script>

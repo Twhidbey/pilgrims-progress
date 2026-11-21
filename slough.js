@@ -27,33 +27,31 @@ const SL = (() => {
   }
 
   // ---------- the words: Bunyan's, shortened and made plain ----------
-  const OPEN = [[N, 'Then Christian and Pliable went talking over the plain.']].concat(LEVEL2_OPENING);      // {25} to {28}
-  const NEAR = [[N, 'Just as they ended this talk, they drew near to a very miry bog in the middle of the plain.']];      // {29}
+  const OPEN = LEVEL2_OPENING;      // build 368: the storyteller's "went talking over the plain" cut (the picture shows it)      // {25} to {28}
+  const NEAR = [];      // build 368: cut (the picture shows the bog coming)
   const FALL = [      // {29}, {30}
-    [N, 'Not looking where they went, they both fell suddenly into the bog. Its name was Despond.'],
+    [N, 'Not looking where they went, they fell into the bog. Its name was Despond.'],
     [PL, 'Ah, neighbor Christian, where are you now?'],
     [C, 'Truly, I do not know.'],
-    [PL, 'Is this the happiness you told me of? If I ever get out, you can have your fine country all to yourself!', null, () => { if (pli) pli.turn = 1; }],      // he turns from Christian toward his own side
-    [N, 'He struggled out on the side nearest his own house, and away he went. Christian saw him no more.', null, () => { pli.mode = 'climb'; pli.wal = false; pli.turn = 1; }],
+    [PL, 'Is this the happiness you told me of? You can have your fine country all to yourself!', null, () => { if (pli) pli.turn = 1; }],      // he turns from Christian toward his own side
+    [N, 'He struggled out on his own side, and Christian saw him no more.', null, () => { pli.mode = 'climb'; pli.wal = false; pli.turn = 1; }],
   ];
   // the choice is ours, not the book's (as in Level 1): going back loses nothing
   const BACK = [
     [N, 'Christian turned back toward his own house. The mist grew thick and dark.'],
     [C, 'No. I must struggle on, toward the gate.', null, () => { gloomTo = 0; }],
   ];
-  const ALONE = [[N, 'So Christian was left to struggle in the Slough of Despond alone.']];      // {31}
+  const ALONE = [[N, 'So Christian was left alone.']];      // {31}
   const FEARS = [[N, 'Many fears and doubts came over him, and settled in that place.']];      // {33}: the fears are sound only, and this one line
-  const STUCK = [[N, 'He came to the far side. But he could not get out, because of the burden upon his back.']];      // {31}
+  const STUCK = [[N, 'But at the far side he could not get out, because of the burden on his back.']];      // {31}
   const HELP = [      // {31}, {32}
     [N, 'Then a man came to him, whose name was Help.'],
-    [H, 'What are you doing there?'],
-    [C, 'Sir, a man called Evangelist sent me this way to the gate, and I fell in here.'],
-    [H, 'But why did you not look for the steps?'],
+    [H, 'Why did you not look for the steps?'],      // build 368: "What are you doing there?" and Christian's answer cut
     [C, 'Fear followed me so hard that I fled the nearest way, and fell in.'],
     [H, 'Give me your hand.', 'hand', () => { mv = mv || { t: 0 }; mv.to = 150; C2.handGo = true; }],      // he is already down on his knee: now he holds out his hand
   ];
   const DRAWN = [];      // {32}
-  const STEPS = [[N, 'There were good, strong steps through the very middle of the bog. But in the mist, they were hard to see.']];      // {35}
+  const STEPS = [[N, 'There were good steps through the middle of the bog, but in the mist they were hard to see.']];      // {35}
   const ONWAY = [[H, 'Go on your way.']];      // {32}: "and bid him go on his way"
   const ALL = [...OPEN, ...NEAR, ...FALL, ...BACK, ...ALONE, ...FEARS, ...STUCK, ...HELP, ...DRAWN, ...STEPS, ...ONWAY];
 
@@ -92,7 +90,9 @@ const SL = (() => {
   // steps after he stood up his feet were in the air beyond the land's end. The bank now has that short face, standing
   // where the video's bank stood, at its full height by HOME0 + 15
   const hum = x => x > BANK0 ? smooth(BANK0 + 230, BANK0 + 480, x) * (4 + 16 * bankN(x * .0045, 9)) : smooth(HOME0 - 160, HOME0 - 380, x) * (3 + 12 * bankN(x * .0045, 3));
-  const START = -2750, FALL_X = -760, PLI_FALL = -840, END_X = 660;
+  const START = -2100, FALL_X = -760, PLI_FALL = -840, END_X = 470;      // build 368 (owner: "you can shorten walking path too"): START was -2750, END_X 660
+  // the plain's light follows how far he has come (gold at the start, mist by the bog); shared by the walk and the skip link
+  const PLAIN_GOLD = x => 1 - smooth(-1900, -1150, x), PLAIN_MIST = x => smooth(-1850, -1000, x);
   const WADE0 = FALL_X + 70;      // build 119: falling, Christian pitches on this much further, so the two are not on top of each other in the mire
   // Help kneels at the edge of the far bank; Christian must come to where his hand meets Help's (measured in slough-lab.html)
   const HX = BANK0 + 34, GRASP = { dx: -(82 - 15 + 129), dy: 283 - 55 };
@@ -400,7 +400,7 @@ const SL = (() => {
   // ---------- state ----------
   let ph = 'plain', cam = { cx: 0, z: 1, wl: 440 }, look = { mist: 0, veil: 0, gold: 1, disc: 1, sky: 0 };
   let pli = null, help = null, mv = null, lift = null, rings = [], motes = [], steps = [], gloom = 0, gloomTo = 0, noteI = 0, lastFoot = 0;
-  let prints = [], fogH = 1, fogS = 1, strain = 0, slipT = 0, fearT = 0, fearsSaid = false, goldT = 0, onwayT = 0, capsSaid = new Set(), nearSaid = false;
+  let prints = [], fogH = 1, fogS = 1, strain = 0, slipT = 0, fearT = 0, fearsSaid = false, goldT = 0, onwayT = 0, capsSaid = new Set(), nearSaid = true, pliGo = 0;
   const C2 = { x: START, y: 0, face: 1, anim: 12, alpha: 1, sink: 0, reach: 0, stand: 0, st: 0 };
 
   // the picture behind the title page when Level 2 is the child's level (build 119): the oak over the bog, nobody in it
@@ -422,7 +422,7 @@ const SL = (() => {
     C2.rt = 0; C2.handGo = false; C2.tv = null; C2.fy = null; C2.md = null; C2.rq0 = null; C2.q = 0; drops = []; churns = []; fReset(); strings = []; RECS = {}; for (const k in MS) delete MS[k]; C2.D = 0;
     ph = 'plain'; Object.assign(C2, { x: START, y: bankY(START) + 4, face: 1, anim: 12, alpha: 1, sink: 0, reach: 0, stand: 1, sd: QUIET[0], st: 0, faceA: 1, done: 0 });
     pli = { x: START - 80, y: 0, face: 1, anim: 0, alpha: 1, sink: 0, mode: 'follow', px: START - 80, stop: { t: 50, x0: START - 80 - 72.5 * CHR_K } };      // he starts standing (his stop video's breathing part)
-    prints = []; fogH = 1; fogS = 1; help = null; mv = null; lift = null; rings = []; steps = []; gloom = gloomTo = 0; noteI = 0; strain = 0; slipT = 0; fearT = 300; fearsSaid = false; goldT = 0; onwayT = 0; capsSaid = new Set(); nearSaid = false;
+    prints = []; fogH = 1; fogS = 1; help = null; mv = null; lift = null; rings = []; steps = []; gloom = gloomTo = 0; noteI = 0; strain = 0; slipT = 0; fearT = 300; fearsSaid = false; goldT = 0; onwayT = 0; capsSaid = new Set(); nearSaid = true; pliGo = 0;
     motes = [...Array(LAST.length)].map((_, i) => ({ ox: -30 - Math.random() * 50, oy: -112 - Math.random() * 40, x: START, y: -150, tw: Math.random() * 6, i }));
     // the steps through the bog, hidden until the lights settle on them: low flat stones, no two alike (from the approved still)
     const R = rngS(33); let sx = BANK0 - 6;
@@ -435,16 +435,16 @@ const SL = (() => {
     if (AT2) {
       C2.x = AT2; C2.y = bankY(AT2) + 4; pli.x = pli.px = AT2 - 80; pli.stop = { t: 50, x0: AT2 - 80 - 72.5 * CHR_K };
       capsSaid = new Set(OPEN_AT.map((_, i) => i)); nearSaid = true;
-      const f = smooth(-1350, FALL_X, AT2), mi = smooth(-2050, -1000, AT2);
+      const f = smooth(-1350, FALL_X, AT2), mi = PLAIN_MIST(AT2);
       Object.assign(cam, { cx: lerp(AT2 + 150, -470, f), z: lerp(1, .8, f), wl: lerp(440, 392, f) });
-      Object.assign(look, { mist: mi, veil: .84 * smooth(-1300, FALL_X, AT2), gold: 1 - smooth(-2150, -1150, AT2), disc: lerp(1, .3, mi), sky: mi });
+      Object.assign(look, { mist: mi, veil: .84 * smooth(-1300, FALL_X, AT2), gold: PLAIN_GOLD(AT2), disc: lerp(1, .3, mi), sky: mi });
     }
-    G.state = 'wait'; setTimeout(() => { if (SL.on && G.state === 'wait') { G.state = 'play'; if (!AT2) caption(OPEN.slice(0, 1)); } }, 1400);
+    G.state = 'wait'; setTimeout(() => { if (SL.on && G.state === 'wait') { G.state = 'play';  } }, 1400);
   }
   // the Pliable talk is said while they walk, a line at a time, at places along the plain
-  const OPEN_AT = [-2500, -2280, -2000, -1760];
+  const OPEN_AT = [START - 1, -1880, -1640, -1400];      // build 368: the first line is said as the level opens (the storyteller's line before it was cut)
   function choose2() {
-    document.getElementById('chHome').textContent = 'Go back with Pliable';
+    document.getElementById('chHome').textContent = 'Go back, as Pliable did';
     document.getElementById('chOn').textContent = 'Struggle on to the gate';
     choose();
   }
@@ -564,7 +564,10 @@ const SL = (() => {
   // bursts and dropped to a fifth in an instant. Now it never runs faster than its own 12 pictures a second (.2 a tick),
   // and its speed eases from one pace to the next (waStep); each picture melts into the next (see drawChr).
   function waStep(to) { C2.waV = lerp(C2.waV ?? .1, to, .05); C2.wa = (C2.wa || 0) + C2.waV; }
-  function wadeOn() { ph = 'wade'; G.state = 'play'; caption(ALONE); }
+  function wadeOn() { ph = 'wade'; G.state = 'play'; if (!C2.tv) heave(1); caption(ALONE); }
+  // (E, build 368) a heave round in the mire, as Pliable's (build 140): he faces Pliable in the quarrel, and back toward the
+  // far bank when he struggles on; the picture swaps under a splash (there are no frames of him turning in the mud)
+  function heave(d) { if (C2.face === d) return; C2.face = C2.faceA = d; splash(C2.x, 12, 1.3); rings.push({ x: C2.x, y: 0, t: 0, k: 1.2 }); if (audio()) sfxS.wade(); }
   // CHRISTIAN REALLY TURNS (build 120, owner: "christian turns and looks a couple times and i don't like the flip back and
   // forth without body moving, could we use turns from other levels"): Level 1's turning video (TURN, left to right),
   // played backwards to turn him to the left. C2.tv = its clock; d = the way he will face; k = how fast (twice as fast in
@@ -661,7 +664,11 @@ const SL = (() => {
     if (['fall', 'pli', 'backtalk'].includes(ph)) { const b = burst(1); waStep(calm ? .06 : .07 + .13 * b); }      // (build 143: the mud's answer comes from his pictures: see sense())
     if (ph === 'fall') {
       if (C2.fallT === 8 || C2.fallT === 14) { rings.push({ x: C2.x, y: 0, t: 0, k: 1.3 }); rings.push({ x: pli.x, y: 0, t: 0, k: 1.1 }); }
-      if (C2.fallT === 120) { ph = 'pli'; talk(FALL, choose2); }
+      if (C2.fallT === 120) { ph = 'pli'; heave(-1); talk(FALL, () => { pliGo = 1; }); }
+    } else if (ph === 'pli' && pliGo) {
+      // build 368, STORY MOVES (owner: "less game and more intentional story building moves"): (D) the choice waits until
+      // Pliable has climbed out and gone into the mist; Christian is seen alone in the bog first (the camera comes in on him)
+      pliGo++; if ((!pli || pli.alpha < .25 || pliGo > 900) && G.state === 'play' && !saying()) { pliGo = 0; choose2(); }
     } else if (ph === 'back') {
       waStep(.2);
       if (!C2.tv) { C2.x -= .3; C2.anim += .3 / CHR_STEP * 2.6; C2.face = -1; footfall(); }
@@ -669,7 +676,7 @@ const SL = (() => {
     } else if (ph === 'wade') {
       // build 120 (owner: "can we make christian move across possibly happen quicker? it's a bit of a slog"): he makes more
       // ground with each heave (.55 a tick, was .32: about 14 s of holding, was 24); the tune still has a note for each footfall
-      const v = want && !C2.tv ? .55 : 0, p = clamp((C2.x - WADE0) / (STUCK_X - WADE0));      // (build 183: DEEP 8, was 22: more of him shows at the far bank, head, shoulders and chest; owner: "show a bit more of Christian at the far bank")
+      const v = want && !C2.tv ? .9 : 0, p = clamp((C2.x - WADE0) / (STUCK_X - WADE0));      // (build 183: DEEP 8, was 22: more of him shows at the far bank, head, shoulders and chest; owner: "show a bit more of Christian at the far bank")
       C2.x = Math.min(STUCK_X, C2.x + v); if (!C2.tv) C2.face = 1;
       waStep(v ? .2 : .08);
       if (v) { C2.anim += v / CHR_STEP * 3; footfall(); } else C2.anim = stepAnim(C2.anim, 0, CHR_STEP, CHR_META);
@@ -689,7 +696,7 @@ const SL = (() => {
       waStep(want ? .2 : .07);
       if (want) { strain++; C2.anim += .5; if (strain % 40 === 1) sfxS.strain(); }
       C2.x = STUCK_X - 4 * Math.max(0, Math.sin(slipT / 50)) * smooth(60, 160, slipT);
-      if (strain > 230 || slipT > 420) { ph = 'help'; C2.x = STUCK_X; talk(STUCK, () => { help = { a: 0, t: 0, w: HWALK.length >= 96 ? 0 : 1e9 }; talk(HELP.slice(0, 1), () => {}); }); }
+      if (strain > 120 || slipT > 220) { ph = 'help'; C2.x = STUCK_X; talk(STUCK, () => { help = { a: 0, t: 0, w: HWALK.length >= 96 ? 0 : 1e9 }; talk(HELP.slice(0, 1), () => {}); }); }
     } else if (ph === 'help') {
       if (help && C2.reach < 1) C2.reach = Math.min(1, C2.reach + .05);
       // build 121 (owner: "help should rush in a little fast (like he knows it's [an emergency] - not run but quick nonetheless)
@@ -820,6 +827,7 @@ const SL = (() => {
     // the camera pushes in slowly as they fall (the plain's .8 eases to 1.05), the two men about a fifth of the picture's
     // height, their home bank at the left edge, the oak's long limb reaching in over them; the water line is higher so
     // a band of mud lies between them and the words
+    else if (ph === 'pli' && (!pli || pli.alpha < .6 || pli.out)) t = { cx: C2.x + 40, z: 1.2, wl: 320 };      // build 368 (D): he is left alone
     else if (['fall', 'pli', 'back', 'backtalk'].includes(ph)) t = { cx: -740, z: 1.05, wl: 330 };
     // build 114: the oak is bigger, so at the far bank the camera draws back a little more and the water line sits lower,
     // so the whole crown is in the picture (the top of the screen must be above about 640 units over the water: wl / z)
@@ -830,11 +838,12 @@ const SL = (() => {
     // draw back to the whole oak
     else if (ph === 'help' && !help) t = { cx: -290, z: .9, wl: 365 };
     else if (ph === 'help' || ph === 'drawn') t = { cx: -240, z: .6, wl: 392 };
+    else if (ph === 'look' && goldT > 40) t = { cx: -480, z: .62, wl: 400 };      // build 368 (C): the camera draws back from bank to bank while the lights find the steps
     else t = { cx: Math.max(-330, C2.x + 120), z: .66, wl: 425 };
     const e = ph === 'plain' ? .06 : .02;
     cam.cx += (t.cx - cam.cx) * e; cam.z += (t.z - cam.z) * e; cam.wl += (t.wl - cam.wl) * e;
     let L;
-    if (ph === 'plain') { const mi = smooth(-2050, -1000, C2.x); L = { mist: mi, veil: .84 * smooth(-1300, FALL_X, C2.x), gold: 1 - smooth(-2150, -1150, C2.x), disc: lerp(1, .3, mi), sky: lerp(0, 1, mi) }; }
+    if (ph === 'plain') { const mi = PLAIN_MIST(C2.x); L = { mist: mi, veil: .84 * smooth(-1300, FALL_X, C2.x), gold: PLAIN_GOLD(C2.x), disc: lerp(1, .3, mi), sky: lerp(0, 1, mi) }; }
     else if (ph === 'fall' || ph === 'pli' || ph === 'back' || ph === 'backtalk') L = { mist: 1, veil: .84, gold: 0, disc: .3, sky: 1 };
     else if (ph === 'wade' || ph === 'stuck' || ph === 'help') L = { mist: lerp(1, .3, p), veil: lerp(.84, 0, smooth(.3, 1, p)), gold: .1 * p, disc: lerp(.3, 1, p), sky: lerp(1, .5, p) };
     else if (ph === 'drawn') L = { mist: .3, veil: 0, gold: .1, disc: 1, sky: .5 };

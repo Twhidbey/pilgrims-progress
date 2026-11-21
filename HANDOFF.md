@@ -192,6 +192,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 **Build 276 (cover chat): the book cover painted in code in the game's own watercolour language (arched window of layered hills under the far light), replacing the leather photograph; no more flicker on opening. See `CLAUDE.md`, "Build 276". Nothing spent.**
 
+**Build 368 (Level 2 edits chat): the owner's choices from `level2-cuts.html` are in: four lines cut, ten reworded and re-recorded (about 10 cents, approved), shorter walks on the plain and at the end, a quicker crossing, and three story moves (Christian faces Pliable in the quarrel; Pliable is seen going into the mist before the choice; the camera draws back over the lit steps). See `CLAUDE.md`, "Build 368". `level2-cuts.html` can be deleted once the owner says so. Spent: about 10 cents.**
+
 **Level 2 edits chat, after build 365: `level2-cuts.html`, a chooser for Level 2's lines (https://twhidbey.github.io/pilgrims-progress/level2-cuts.html): my proposals take the main way's speech from 1:57 to 1:26 (four lines cut, ten reworded: about 10 cents of new recordings, on the owner's yes); nine ideas to keep the child engaged, A to E ticked. Waiting on the owner's choices. Nothing spent.**
 
 **Build 365 (Level 2 edits chat): Help's and Christian's turns in the Slough are quick pivots (under a second, eased); the stepping stones are drawn again, each light settling on its stone. See `CLAUDE.md`, "Build 365". Nothing spent.**
