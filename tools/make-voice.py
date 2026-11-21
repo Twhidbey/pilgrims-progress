@@ -26,8 +26,10 @@ VOICES = {'N': 'voice_zqnt5xdln1kq', 'C': 'voice_xp9kua42jfe2', 'E': 'voice_x361
           # Level 4, the Interpreter's House (rooms.js), designed overnight after build 261 (descriptions in HANDOFF.md)
           'I': 'voice_jjn83osdk67i', 'MAN': 'voice_bxeyrj0cbj0h', 'DRM': 'voice_m1731k2m6r6k', 'BR': 'voice_3r4cxjhyemkr', 'VO': 'voice_57t9upkd6uye',
           # Level 5, the Cross (cross.js): one voice for the three Shining Ones, designed after build 393 (description in HANDOFF.md)
-          'SO': 'voice_s9z08ntibwpx', 'S1': 'voice_s9z08ntibwpx', 'S3': 'voice_s9z08ntibwpx'}
-WHO = {'N': '', 'C': 'Christian', 'E': 'Evangelist', 'O': 'Obstinate', 'PL': 'Pliable', 'W': 'His wife', 'H': 'Help', 'WW': 'Mr. Worldly Wiseman', 'I': 'The Interpreter', 'MAN': 'The man in the cage', 'DRM': 'The trembling man', 'BR': 'The brave man', 'VO': 'Voices from the palace', 'SO': 'The Shining Ones', 'S1': 'The first Shining One', 'S3': 'The third Shining One'}
+          'SO': 'voice_s9z08ntibwpx', 'S1': 'voice_s9z08ntibwpx', 'S3': 'voice_s9z08ntibwpx',
+          # Good-will at the wicket-gate (hill.js now; Level 4's gate scene later), designed in the vision chat (description in HANDOFF.md)
+          'GW': 'voice_zpixol5qpz8t'}
+WHO = {'N': '', 'C': 'Christian', 'E': 'Evangelist', 'O': 'Obstinate', 'PL': 'Pliable', 'W': 'His wife', 'H': 'Help', 'WW': 'Mr. Worldly Wiseman', 'I': 'The Interpreter', 'MAN': 'The man in the cage', 'DRM': 'The trembling man', 'BR': 'The brave man', 'VO': 'Voices from the palace', 'SO': 'The Shining Ones', 'S1': 'The first Shining One', 'S3': 'The third Shining One', 'GW': 'Good-will'}
 KEY = os.environ.get('GEMINI_API_KEY', '')
 # HOW A LINE IS SAID (build 125, owner: "are him and Christian voices stressed as they sink ?? Seems like they would be more
 # desperate"): a line listed here is recorded with these tags in square brackets in front of it. The speech model acts
@@ -43,6 +45,10 @@ STYLE = {
     "Fear followed me so hard that I fled the nearest way, and fell in.": "[exhausted, ashamed, out of breath]",
     # Level 3 (build 143): under the burning hill and before Evangelist
     "Woe is me, for I am undone!": "[crying out, broken, in tears]",
+    "Is this the happiness you told me of? You can have your fine country to yourself!": "[angry, frightened, breathless, almost shouting]",
+    "To that little gate ahead. I cannot get this burden off myself.": "[weary, burdened, sincere]",
+    "Bear your burden a little longer. At the place of deliverance, it will fall from your back of itself.": "[gentle, kind, slow, reassuring]",
+    "Blest cross! Blest sepulchre! Blest rather be the Man that there was put to shame for me!": "[singing softly, joyful, in wonder, close to tears]",
     "Sir, is there hope? May I go back to the gate? I am sorry I listened to him. May I be forgiven?": "[trembling, pleading, close to tears]",
     "May I come in? Will he open to me, sorry as I am?": "[hopeful, humble, a little out of breath]",
     # Level 4, the Interpreter's House (after build 261)
@@ -95,7 +101,7 @@ def main():
     redo = sys.argv[sys.argv.index('--redo') + 1] if '--redo' in sys.argv else ''
     src = ''.join(open(os.path.join(ROOT, f), encoding='utf-8').read() for f in ('index.html', 'slough.js', 'hill.js', 'rooms.js', 'cross.js'))
     lines = []
-    for code, text in re.findall(r"\[(N|C|E|O|PL|WW|W|H|I|MAN|DRM|BR|VO|SO|S1|S3), '((?:[^'\\]|\\.)*)'", src):
+    for code, text in re.findall(r"\[(N|C|E|O|PL|WW|GW|W|H|I|MAN|DRM|BR|VO|SO|S1|S3), '((?:[^'\\]|\\.)*)'", src):
         text = text.replace("\\'", "'")
         if (code, text) not in lines: lines.append((code, text))
     os.makedirs(OUT, exist_ok=True)

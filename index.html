@@ -165,7 +165,7 @@ body.portrait #rot{display:block}
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
   <button id="autoWalk" aria-label="He walks on by himself"><svg viewBox="0 0 24 24"><path d="M5 6l6 6-6 6M12 6l6 6-6 6"/></svg></button>
-  <div id="build">build 396 · Nov 21 2026</div>
+  <div id="build">build 397 · Nov 21 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -1002,7 +1002,7 @@ function next(force) {
 // ---------- the voices: one small recording per line, in assets/voice (made by tools/make-voice.py) ----------
 // A line's file is named by a sum of who says it and the words, so the words on screen and the recording always belong together.
 // A line with no recording is simply silent.
-const VOX = new Map(), VOICE_V = 11;       // bump VOICE_V when recordings change, so phones fetch the new ones
+const VOX = new Map(), VOICE_V = 12;       // bump VOICE_V when recordings change, so phones fetch the new ones
 let voxSrc = null, sayN = 0;
 function voiceName(who, txt) { let h = 0x811c9dc5; const t = who + '|' + txt; for (let i = 0; i < t.length; i++) h = Math.imul(h ^ t.charCodeAt(i), 0x01000193) >>> 0; return h.toString(16).padStart(8, '0'); }
 function vox(who, txt) {
@@ -1069,7 +1069,7 @@ const INTRO = [      // {10}
 const FIELDS = [[N, 'He walked alone in the fields, reading his book and praying.']];
 const EVAN = [       // {13} to {17}
   [E, 'Why do you cry?'],
-  [C, 'Sir, this book tells me I am in great danger. And this burden on my back will sink me.'],
+  [C, 'Sir, this book tells me our city will be destroyed, and this burden on my back will sink me.'],      // vision chat: the why put back ({11}: "our city will be burned with fire from heaven")
   // (cut in build 74 to shorten the talk, the owner asked: Evangelist's "why do you stand still?" and "Because I do not know where to go.", {16})
   [N, 'Then Evangelist gave him a roll. On it was written: Flee from the wrath to come.', 0, () => { G.roll = { t: 0, x: G.evan.x - G.cam + 30, y: GY - 92 }; note(79, .035, 2.4); }],
   [C, 'Where must I flee?'],
@@ -1085,7 +1085,7 @@ const RUNS = [[N, 'So I saw in my dream that the man began to run.', 'quick']]; 
 // the book (fingers in his ears, "Life! Life! Eternal life!", he does not look behind him: FAMILY_RUN); let go by the
 // house and he stops, turns his back to us and stands with his family framed in the lit door, until the child holds to
 // run on (FAMILY: the owner's picture of build 45).
-const DOOR_WORDS = [[N, 'He had not run far from his own door when his wife and children saw him.', 'quick']];      // said as the door flies open
+const DOOR_WORDS = [[N, 'He had told his wife and children of the danger, but they would not believe him. Now they saw him run.', 'quick']];      // vision chat: {11}, {18}      // said as the door flies open
 const FAMILY_RUN = [[W, 'Come back! Come home to us!', 'quick']];
 const FAMILY = [
   [W, 'Come back! Come home to us!', 0, () => { P.wantBack = true; }],      // he turns to look: his back to us, his family framed in the lit door
@@ -1124,7 +1124,7 @@ const LEVEL2_OPENING = [
   [C, 'There shall be no more crying, nor sorrow. We shall shine like the sun.'],
 ];
 const GATEWORDS = [
-  [N, 'At the edge of the city stood a great gate. It was shut.'],
+  [N, 'At the edge of the city stood the city gate. It was shut.'],      // vision chat: "the city gate", so it is not taken for the wicket-gate
   [TIP, isTouch ? 'Hold the gate to push it open.' : 'Hold the gate (or the space bar) to push it open.', 'gate'],      // build 108: a side message, not the storyteller
 ];
 const END = [[N, 'Christian and Pliable left the city behind. The shining light was ahead of them.']];
@@ -2567,11 +2567,11 @@ document.getElementById('on2').onclick = () => SL.on ? go3() : HL.on ? goRoom('d
   for (const [who, txt] of INTRO) vox(who, txt);          // the first words, ready before Begin is pressed
 })();
 </script>
-<script src="slough.js?v=396"></script>
-<script src="hill.js?v=375"></script>
+<script src="slough.js?v=397"></script>
+<script src="hill.js?v=397"></script>
 <script src="rooms.js?v=393"></script>
 <script src="keepsakes.js?v=390"></script>
-<script src="cross.js?v=392"></script>
+<script src="cross.js?v=397"></script>
 <script src="editor.js?v=390"></script>
 </body>
 </html>

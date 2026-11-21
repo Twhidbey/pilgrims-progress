@@ -104,7 +104,11 @@ Full plan: `5-levels-6-onward.md`. Recommended: **sixteen levels** (merge the Fl
 
 ---
 
-## Decisions for the owner (in order of how much they block)
+## The owner's rulings (clicked in the app, after build 393)
+
+Put back the why: **done, build 397**. Good-will's promise: **said by Good-will at Level 3's gate**. Christian after the Cross: **free clips from new pictures**. Level 4: **code-drawn, Christian steered**. Dark parts: **level by level**. Ignorance: **kept, quietly**. Levels: **sixteen, with the interval**. Music: **a walking tune; the hymn whole at the end**. Still open: the quick line fixes beyond the why, and the two additions (Faithful at the gate, the family line).
+
+## Decisions for the owner (as first asked)
 
 1. **Christian after the Cross:** how he is drawn without the burden, in a new coat, and later armed (paint out free / free clips / the mannequin). Blocks Level 5's finish and every later level.
 2. **Level 4's look:** code-drawn rooms with the steered Christian (recommended), or the oil paintings kept.

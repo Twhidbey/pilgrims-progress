@@ -30,12 +30,12 @@ const SL = (() => {
   const OPEN = LEVEL2_OPENING;      // build 368: the storyteller's "went talking over the plain" cut (the picture shows it)      // {25} to {28}
   const NEAR = [];      // build 368: cut (the picture shows the bog coming)
   const FALL = [      // {29}, {30}
-    [N, 'They fell into the bog. Its name was Despond.'],      // build 391 (owner's choices in level2-cuts.html, round 2): shortened
+    [N, 'They fell into the bog. Its name was the Slough of Despond.'],      // build 391 (owner's choices in level2-cuts.html, round 2): shortened
     [PL, 'Ah, neighbor Christian, where are you now?'],
     // build 391: Christian's "Truly, I do not know." cut; Pliable's angrier half only; the storyteller's "He struggled out on
     // his own side, and Christian saw him no more." cut (shown: he climbs out and walks off into the mist; his climb now
     // starts as the talk ends, see talk(FALL))
-    [PL, 'You can have your fine country all to yourself!', null, () => { if (pli) pli.turn = 1; }],      // he turns from Christian toward his own side
+    [PL, 'Is this the happiness you told me of? You can have your fine country to yourself!', null, () => { if (pli) pli.turn = 1; }],      // he turns from Christian toward his own side
   ];
   // the choice is ours, not the book's (as in Level 1): going back loses nothing
   const BACK = [

@@ -35,7 +35,7 @@ const CR = (() => {
   const LOOSED = [[N, 'Just as Christian came up with the cross, his burden loosed from off his shoulders, and fell from off his back.']];      // {93}
   const TUMBLE = [[N, 'It began to tumble, and so continued, till it came to the mouth of the sepulchre, where it fell in, and I saw it no more.']];      // {93}
   const GLAD = [[C, 'He hath given me rest by his sorrow, and life by his death.']];      // {94}
-  const LOOKED = [[N, 'He stood still to look and wonder. He looked, and looked again, till the tears ran down his cheeks.']];      // {94}
+  const LOOKED = [[N, 'He stood still to wonder, that the sight of the cross should ease him of his burden.'], [N, 'He looked, and looked again, till the tears ran down his cheeks.']];      // {94}
   const SHINE = [      // {94}
     [SO, 'Peace be unto thee.'],
     [S1, 'Thy sins be forgiven thee.'],
@@ -48,6 +48,7 @@ const CR = (() => {
   const LEAPS = [
     [N, 'Then Christian gave three leaps for joy, and went on singing.'],
     [TIP, 'Touch Christian to leap for joy.', 'leap'],
+    [C, 'Blest cross! Blest sepulchre! Blest rather be the Man that there was put to shame for me!'],      // vision chat: his song ({94})
   ];
   const ALL = [...OPEN, ...ASCEND, ...LOOSED, ...TUMBLE, ...GLAD, ...LOOKED, ...SHINE, ...LEAPS];
 

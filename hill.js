@@ -19,7 +19,7 @@
 // hill and the village behind it by PH of the camera's movement, the far ridge by a tenth.
 // ============================================================
 const HL = (() => {
-  const WW = 'Mr. Worldly Wiseman';
+  const WW = 'Mr. Worldly Wiseman', GW = 'Good-will';
   function rngS(seed) { let s = seed >>> 0 || 1; return () => { s = s + 0x6D2B79F5 | 0; let t = Math.imul(s ^ s >>> 15, 1 | s); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
   function noise2(seed) {
     const h = (i, j) => { const v = Math.sin(i * 127.1 + j * 311.7 + seed) * 43758.5453; return v - Math.floor(v); };
@@ -62,7 +62,7 @@ const HL = (() => {
   // while he walks); the talk at the crossing begins with "Who sent you this way?"
   const GREET = [      // {38}
     [WW, 'How now, good fellow! Where are you going, with such a burden?'],
-    [C, 'To that little gate ahead, to be rid of my burden.'],
+    [C, 'To that little gate ahead. I cannot get this burden off myself.'],      // vision chat: {39} "get it off myself, I cannot"
   ];
   const WISE = [      // {39} to {45}
     // THE WORLD ACTS OUT WHAT HE SAYS (owner, build 177: "the conversation with worldly wise lacks punch or interest
@@ -87,7 +87,7 @@ const HL = (() => {
     [TIP, 'Touch Evangelist\'s hand.', 'ehand', () => { evan.gTo = 1; }],
     [E, 'All manner of sin shall be forgiven unto men. Be not faithless, but believing.'],
     // he revives and stands (the kneel played backward) as Evangelist speaks on
-    [E, 'That man was Worldly Wiseman. Mr. Legality cannot free you.', 0, () => { C3.weep = false; evan.gTo = 0; }],
+    [E, 'That man was Worldly Wiseman. No man was ever rid of his burden by Mr. Legality.', 0, () => { C3.weep = false; evan.gTo = 0; }],
     [C, 'Sir, is there hope? May I go back to the gate?'],      // {59}
     [E, 'Your sin is very great. Yet the man at the gate will receive you, for he has goodwill for men.', 0, () => { calmTo = 1; }],
     // "gave him one smile, and bid him God-speed": he lifts his hand a little as he says it; the light lingers where he stands
@@ -96,9 +96,12 @@ const HL = (() => {
   const HASTE = [];      // {59}: shown (he runs, stones fall behind him, the far light comes back)
   const ATGATE = [];      // the sign over the gate glints; a touch opens it close up
   const KNOCK = [      // {60}
+    [C, 'Knock, and it shall be opened unto you.'],      // vision chat: he reads the stone over the gate ({59}; on the owner's keep list)
     [TIP, 'Knock on the gate.', 'knock'],
     [C, 'May I come in? Will he open to me, sorry as I am?'],
     [N, 'At last there came a grave person to the gate, named Good-will.', 0, () => { doorTo = 1; sfx.chord(); }],
+    // vision chat: Good-will's promise ({68}), the set-up the Cross keeps, said in the doorway until Level 4's gate scene is built
+    [GW, 'Bear your burden a little longer. At the place of deliverance, it will fall from your back of itself.'],
   ];
   const ALL = [...SEEN, ...GREET, ...WISE, ...TURNED, ...HIGH, ...STOOD, ...COMING, ...EVANW, ...HASTE, ...ATGATE, ...KNOCK];
 
