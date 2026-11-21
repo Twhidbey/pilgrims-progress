@@ -164,7 +164,7 @@ body.portrait #rot{display:block}
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
   <button id="autoWalk" aria-label="He walks on by himself"><svg viewBox="0 0 24 24"><path d="M5 6l6 6-6 6M12 6l6 6-6 6"/></svg></button>
-  <div id="build">build 384 · Nov 21 2026</div>
+  <div id="build">build 385 · Nov 21 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -860,7 +860,8 @@ const RAIN_VOL = .032;                    // how loud the rain is (was .05; owne
 function ambience() {
   if (!AC || G.t % 8) return;
   const now = AC.currentTime, w = warm((P.x - G.cam) / VW);
-  rainG.gain.setTargetAtTime(RAIN_VOL * (1 - w) * LOOK.rain / .6 + RAIN_VOL * .7 * G.gloom, now, .4);
+  // build 385 (owner: "when you open book, let's not make it raining since that's level 1"): no rain on the title and contents
+  rainG.gain.setTargetAtTime(G.state === 'title' ? 0 : RAIN_VOL * (1 - w) * LOOK.rain / .6 + RAIN_VOL * .7 * G.gloom, now, G.state === 'title' ? .1 : .4);
   padG.gain.setTargetAtTime(.055, now, .8);
   warmG.gain.setTargetAtTime(.05 * w + .04 * G.gateOpen, now, .8);
   gloomG.gain.setTargetAtTime(.06 * G.gloom, now, .5);
@@ -1622,7 +1623,7 @@ function effects() {
 }
 // ---------- the opening: a few quiet notes on the title page ----------
 // A browser may not make any sound until the screen has been touched, so the title asks for one touch ("Open the book").
-// Then, while the title is up: single soft notes, far apart, over the rain and the low hum. No tune at all
+// Then, while the title is up: single soft notes, far apart, over the low hum (no rain on the title since build 385). No tune at all
 // (owner: the hymn should be discovered on the road, not given away here). The notes are the hum's own G and D with
 // the darker B flat and F, so the rainy city sounds a little sad and the hymn's brighter notes arrive as something new.
 const OPEN_NOTES = [55, 58, 62, 65, 67, 70, 74];
