@@ -233,29 +233,38 @@ const CR = (() => {
     const f = figC.getContext('2d'); f.globalCompositeOperation = 'source-over'; f.clearRect(0, 0, W, H); f.drawImage(BURDEN, 0, 0); f.globalCompositeOperation = 'multiply'; f.fillStyle = css(mix(mix(tint, [176, 164, 162], bur.H != null ? .5 * (1 - bur.dk) + .2 * gl : 0), [8, 7, 10], bur.dk));       f.fillRect(0, 0, W, H); f.globalCompositeOperation = 'destination-in'; f.drawImage(BURDEN, 0, 0); f.globalCompositeOperation = 'source-over';
     c.drawImage(figC, -w / 2, -hh / 2, w, hh); c.restore();
   }
-  // the tumble (owner, build 460: "more natural maybe extra little bounce in between each turn around point"): it
-  // zig-zags down the hill's face toward us, each leg one big hop then a little one, turning only after the big one's
-  // little follower lands; it spins more in the air, grows as it comes nearer, a soft light round it
+  // the tumble, by simple physics (owner: "need a natural fall - think about physics of fall, it's not too important the
+  // path it takes so long as it is natural"): it runs down the hill's face toward us, gathering speed under gravity with a
+  // little friction; the rough face kicks it up now and then (more often and higher the faster it goes); in the air it
+  // falls under gravity and bounces back a part of its speed; each bounce knocks it a little sideways and changes its
+  // spin; it is drawn larger as it comes nearer. A seeded random, so it falls the same way each time
   function burdenTick() {
     if (!bur) return;
     if (bur.dust) for (const d of bur.dust) { d.x += d.vx; d.y += d.vy; d.vx *= .97; d.vy *= .97; d.r += .35; d.a -= .006; }
     if (bur.st === 'roll') {
-      if (bur.x0 == null) { bur.x0 = bur.x; bur.H0 = gh(bur.x); bur.gl = 0; }
+      if (bur.x0 == null) { Object.assign(bur, { x0: bur.x, H0: gh(bur.x), gl: 0, s: 0, vs: .45, z: 0, vz: 2.2, vx: .5, dx: 0, w: -.05, rnd: rgen(77) }); }
+      const R = bur.rnd, L = bur.H0 - tombSill() - 6, g = .16;
       bur.t++; bur.gl = Math.min(1, bur.gl + .02);
-      const T = 470, u = Math.min(1, bur.t / T), f = Math.pow(u, 1.25), n = 7;
-      // n legs; each leg two hops: a big one (most of the leg) and a little one
-      const L = n * f, leg = Math.min(n - 1, Math.floor(L)), s = L - leg;
-      const dir = leg % 2 ? 1 : -1, env = sm(0, .1, f) * (1 - sm(.82, 1, f));
-      // across: it travels from one side to the other during the big hop, then hardly at all in the little one
-      const acr = sm(0, .72, s) * 2 - 1;
-      bur.zx = 140 * (1 - .3 * f) * env * acr * dir; bur.x = lerp(bur.x0, TOMB_X, sm(0, 1, u)) + bur.zx;
-      const decay = Math.pow(1 - f, 1.1), big = 50 * decay, small = 15 * decay;
-      let hop, which; if (s < .72) { const q = s / .72; hop = big * 4 * q * (1 - q); which = 0; } else { const q = (s - .72) / .28; hop = small * 4 * q * (1 - q); which = 1; }
-      bur.H = lerp(bur.H0, tombSill() + 6, f) + hop;
-      const id = leg * 2 + which; if (id !== bur.hop) { if (bur.t > 4) thump(which ? .35 + f * .3 : Math.min(1, .5 + f * .55)); bur.hop = id; }
-      // spin: quick in the big hop's air, slow in the little one, turning with each leg
-      bur.r -= (which ? .03 : .085 + .05 * f) * dir; bur.k = 1 + .3 * f;
-      if (u >= 1) { bur.st = 'in'; bur.t = 0; bur.x0 = bur.x; bur.v = .9; bur.dust = []; }
+      // along the face: gravity less friction, a little slower while in the air
+      // the face eases off at its foot, so it comes to the mouth slower
+      const q0 = bur.s / L, ease = sm(.82, 1, q0);
+      bur.vs = Math.max(.5, Math.min(2.4, bur.vs + (bur.z > 0 ? .004 : .011) - .03 * ease) * .998); bur.s = Math.min(L, bur.s + bur.vs);
+      // up and down: a fall under gravity, a bounce that keeps part of its speed
+      bur.vz -= g; bur.z += bur.vz;
+      if (bur.z <= 0) {
+        bur.z = 0;
+        if (bur.vz < -1.1) { const hit = -bur.vz; bur.vz = hit * (.38 + .12 * R()); thump(Math.min(1.1, .25 + hit * .14)); bur.vx += (R() - .5) * .5 * hit; bur.w += (R() - .5) * .07 * hit; }
+        else bur.vz = 0;
+        // the rough face: a bump throws it up again now and then
+        if (bur.vz === 0 && R() < (.012 + .018 * bur.vs) * (1 - ease)) bur.vz = .8 + bur.vs * (.8 + 1.6 * R());
+      }
+      // sideways: drifts, slowed by the ground; drawn toward the mouth as it nears the foot
+      const q = bur.s / L; bur.vx *= bur.z > 0 ? .995 : .97; bur.vx -= bur.dx * .0015; bur.dx += bur.vx;
+      bur.x = lerp(bur.x0, TOMB_X, sm(0, 1, q)) + bur.dx * (1 - sm(.8, 1, q));
+      // spin: on the ground it rolls with its speed, in the air it keeps what the last bounce gave it
+      const roll = -(.012 + .018 * bur.vs) * (bur.vx >= 0 ? 1 : -1); bur.w += ((bur.z > 0 ? bur.w : roll) - bur.w) * .08; bur.r += bur.w;
+      bur.H = lerp(bur.H0, tombSill() + 6, q) + bur.z; bur.k = 1 + .3 * q;
+      if (bur.s >= L && bur.z <= 0) { bur.st = 'in'; bur.t = 0; bur.x0 = bur.x; bur.v = Math.min(1.2, bur.vs * .5); bur.dust = []; }
     } else if (bur.st === 'in') {
       // the sepulchre: it rolls slowly up to the mouth, rocks on the lip, tips over into the dark, a dull fall inside, dust
       bur.t++; const tt = bur.t, sill = tombSill() + 6;
@@ -781,5 +790,5 @@ const CR = (() => {
   }
 
   return { on: false, start, update, draw, touch, key, preload, lines: ALL, stop: () => padStop(), _pt: { roll: rollPt, chr: chrPt }, _turning: () => !!Ch.tv,
-    peek: () => ({ ph, t, fly: rollFly ? rollFly.t : -1, x: Math.round(Ch.x), cf: +Ch.cf.toFixed(1), bur: bur ? { st: bur.st, x: Math.round(bur.x), a: +bur.a.toFixed(2), t: bur.t } : null, gold: +gold.toFixed(2), shine: +shine.toFixed(2), leaps: leapsLeft, closeK: +closeK.toFixed(2), topK: +topK.toFixed(2), veil: +veil.toFixed(2), tear: tearT, sep: sepT }) };
+    peek: () => ({ ph, t, fly: rollFly ? rollFly.t : -1, x: Math.round(Ch.x), cf: +Ch.cf.toFixed(1), bur: bur ? { st: bur.st, x: Math.round(bur.x), a: +bur.a.toFixed(2), t: bur.t, H: Math.round(bur.H || 0), z: +(bur.z || 0).toFixed(1), r: +(bur.r || 0).toFixed(2) } : null, gold: +gold.toFixed(2), shine: +shine.toFixed(2), leaps: leapsLeft, closeK: +closeK.toFixed(2), topK: +topK.toFixed(2), veil: +veil.toFixed(2), tear: tearT, sep: sepT }) };
 })();
