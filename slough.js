@@ -331,6 +331,16 @@ const SL = (() => {
     for (let i = 0; i < d.length; i += 4) { sx += d[i + 3] * ((i / 4) % w + .5); sa += d[i + 3]; }
     return plCenC[f] = sa ? sx / sa * im.width / w : META.climb.c0;
   }
+  // build 385: the top of Pliable in a frame of his climbing video (pack pixels), so that while one picture is shown he can
+  // be slid smoothly toward the next one's height: the clip rises up to 7 px between pictures as he stands up out of the mud
+  const plTopC = {};
+  function plTop(f) {
+    if (plTopC[f] != null) return plTopC[f];
+    const im = PLIC[f], w = 128, h = Math.round(128 * im.height / im.width), c = mk(w, h), k = c.getContext('2d'); k.drawImage(im, 0, 0, w, h);
+    const d = k.getImageData(0, 0, w, h).data; let top = h;
+    for (let y = 0; y < h && top === h; y++) for (let x = 0; x < w; x++) if (d[(y * w + x) * 4 + 3] > 120) { top = y; break; }
+    return plTopC[f] = top * im.height / h;
+  }
   // one tinted figure, feet at world (x, y); nothing below the water line when `cut` (each figure has its own small canvas)
   const tintC = {}; let FIG_DIP = 0;
   // the last row of a picture that has body in it (some packs keep a few blank rows at the bottom); found once per picture
@@ -423,7 +433,7 @@ const SL = (() => {
     G.calm = 0;
     C2.rt = 0; C2.handGo = false; C2.tv = null; C2.fy = null; C2.md = null; C2.rq0 = null; C2.q = 0; drops = []; churns = []; fReset(); strings = []; RECS = {}; for (const k in MS) delete MS[k]; C2.D = 0;
     ph = 'plain'; Object.assign(C2, { x: START, y: bankY(START) + 4, face: 1, anim: 12, alpha: 1, sink: 0, reach: 0, stand: 1, sd: QUIET[0], st: 0, faceA: 1, done: 0 });
-    pli = { x: START - 80, y: 0, face: 1, anim: 0, alpha: 1, sink: 0, mode: 'follow', px: START - 80, stop: { t: 50, x0: START - 80 - 72.5 * CHR_K } };      // he starts standing (his stop video's breathing part)
+    pli = { x: START - 80, y: 0, face: 1, anim: 0, alpha: 1, sink: 0, mode: 'follow', px: START - 80, stop: { t: 50, x0: START - 80 - 72.5 * CHR_K, cx: START } };      // he starts standing (his stop video's breathing part)
     prints = []; fogH = 1; fogS = 1; help = null; mv = null; lift = null; rings = []; steps = []; gloom = gloomTo = 0; noteI = 0; strain = 0; slipT = 0; fearT = 300; fearsSaid = false; goldT = 0; onwayT = 0; capsSaid = new Set(); nearSaid = true; pliGo = 0; cityT = -1; fearT2 = -1; fearHelpT = 0; beatT = -1e9; quietT = 0; helpSayT = 0;
     motes = [...Array(LAST.length)].map((_, i) => ({ ox: -30 - Math.random() * 50, oy: -112 - Math.random() * 40, x: START, y: -150, tw: Math.random() * 6, i }));
     // the steps through the bog, hidden until the lights settle on them: low flat stones, no two alike (from the approved still)
@@ -760,12 +770,13 @@ const SL = (() => {
         // Christian stands, Pliable walks on to walk frame 0 (where the video begins) and the video brings him to a stop, then
         // he breathes; when Christian walks again, his standing frame dissolves quickly into his walk, from where he stood
         const halt = C2.sd != null && PSTOP.length > 0;
-        if (pli.stop && !halt) { const t = pli.stop.t; pli.x = pli.stop.x0 + stopOff(t); pli.leave = { f: Math.min(Math.floor(t), PSTOP.length - 1), x: pli.stop.x0, a: 1 }; pli.stop = null; pli.anim = 0; }
+        if (pli.stop && !halt && C2.x > (pli.stop.cx ?? -1e9) + .5) {      // build 385: he leaves his stand only once Christian has really moved (at the start he walked into his stop again while Christian stood)
+          const t = pli.stop.t; pli.x = pli.stop.x0 + stopOff(t); pli.leave = { f: Math.min(Math.floor(t), PSTOP.length - 1), x: pli.stop.x0, a: 1 }; pli.stop = null; pli.anim = 0; }
         if (pli.stop) { pli.stop.t += .2; pli.y = bankY(pli.x) + 4 + MUDDY(pli.x); pli.st = 0; }
         else {
         const tx = C2.x - 80 - (halt ? 30 : 0), fNow = ((Math.floor(pli.anim) % PLI_META.frames) + PLI_META.frames) % PLI_META.frames;
         let v = clamp(tx - pli.x, 0, MAXV * 1.05);
-        if (halt && v < .05) { const e = STOP_ENTRY[fNow]; if (e) pli.stop = { t: e[0], x0: pli.x - e[1] * CHR_K }; else v = MAXV; }      // into the stop video at the frame that matches his step (or a step on to one that does)
+        if (halt && v < .05) { const e = STOP_ENTRY[fNow]; if (e) pli.stop = { t: e[0], x0: pli.x - e[1] * CHR_K, cx: C2.x }; else v = MAXV; }      // into the stop video at the frame that matches his step (or a step on to one that does)
         if (!pli.stop) { pli.x += v; pli.anim = stepAnim(pli.anim, v, PLI_STEP, PLI_META); }
         pli.y = bankY(pli.x) + 4 + MUDDY(pli.x); pli.face = 1;
         }
@@ -788,7 +799,7 @@ const SL = (() => {
           pli.dy0 = ((pli.sy ?? pli.y) - (PLI_META.ground - 5) * CHR_K) - (M.sink - (M.ground - M.top0) * CHR_K); pli.wk = Math.min(1, pli.wk + .11);
         } else if (pli.dxo > .5) {      // build 121: he is well out in the slough: he struggles back toward his own side first
           pli.dxo = Math.max(0, pli.dxo - 1); pli.wtV = lerp(pli.wtV ?? .2, .14, .05); pli.wt = (pli.wt || 0) + pli.wtV; pong();
-        } else { pli.ct = Math.min(last, (pli.ct || 0) + .34); }      // build 371 (owner: "make pliable get out faster ... struggle once then rise out"): the climb .34 a tick (was .2), the struggle back 1 (was .32)
+        } else { const p0 = (pli.ct || 0) / last, tgt = p0 > .58 && p0 < .92 ? .24 : .34; pli.cv = lerp(pli.cv ?? .06, tgt, .05); pli.ct = Math.min(last, (pli.ct || 0) + pli.cv); }      // build 385: the climb eases in from the struggle and slows as he stands up out of the mud (owner: "pliable exiting bog looks jerky")      // build 371 (owner: "make pliable get out faster ... struggle once then rise out"): the climb .34 a tick (was .2), the struggle back 1 (was .32)
         // BUILD 140: HIS TURN IN THE MUD IS A HEAVE ROUND, not a slow dissolve between mirrored pictures (there are no
         // frames of him turning). He ducks into the mud with a splash; the picture swaps over a few ticks at the bottom of
         // the duck, under the splash; he comes up facing the other way. tq: 0 to 1 over about half a second.
@@ -798,11 +809,12 @@ const SL = (() => {
             if (q0 < .42 && pli.tq >= .42) { const sx = pli.x + (M.ax - M.c0) * CHR_K; splash(sx, 12, 1.3); rings.push({ x: sx, y: 0, t: 0, k: 1.2 }); if (audio()) sfxS.wade(); } }
           pli.fa = lerp(pli.from, tgt, smooth(.4, .6, pli.tq)); pli.duck = 16 * Math.sin(Math.PI * pli.tq); }
         const p = pli.ct / last, fade = 1 - smooth(0, .25, (pli.ct - pli.c0) / Math.max(1, last - pli.c0));
-        pli.face = -1; pli.x = HOME0 + pli.dxo; const up = smooth(.68, .85, p); pli.y = (1 - up) * M.sink + up * (bankY(endX) + 4 + M.top * CHR_K) + pli.dy0 * fade + pli.duck; if (up < .05) pli.maxY = Math.max(pli.maxY || 0, pli.y);
+        pli.face = -1; pli.x = HOME0 + pli.dxo; const up = smooth(.6, .93, p); pli.y = (1 - up) * M.sink + up * (bankY(endX) + 4 + M.top * CHR_K) + pli.dy0 * fade + pli.duck; if (up < .05) pli.maxY = Math.max(pli.maxY || 0, pli.y);
         if (pli.ct >= last) { pli.out = true; pli.x = endX; pli.y = bankY(endX) + 4; pli.anim = 0; }
       } else if (pli.mode === 'climb') {
         // struggling back to the bank next to his own house, then out and away into the mist
-        pli.face = -1; const v = pli.x > HOME0 + 10 ? .55 : 1.55;      /* build 125: once out he hurries away (half as fast again as a walk) and the mist takes him sooner */ pli.x -= v; pli.anim += v / PLI_STEP * (pli.x > HOME0 ? 2.2 : 1);
+        pli.face = -1; pli.ov = Math.min(pli.x > HOME0 + 10 ? .55 : 1.55, (pli.ov || 0) + .025); const v = pli.ov;      // build 385: he sets off from standing, not at full pace at once
+              /* build 125: once out he hurries away (half as fast again as a walk) and the mist takes him sooner */ pli.x -= v; pli.anim += v / PLI_STEP * (pli.x > HOME0 ? 2.2 : 1);
         if (pli.x > HOME0) pli.y = PLI_SINK * clamp((pli.x - HOME0) / (PLI_FALL - HOME0)) + (1 - clamp((pli.x - HOME0) / (PLI_FALL - HOME0))) * (bankY(HOME0 - 30) + 4);
         else pli.y = bankY(pli.x) + 4;
         if (pli.x < PLI_FALL - 20 && pli.x > HOME0 + 30 && G.t % 30 === 0) rings.push({ x: pli.x, y: 0, t: 0, k: .9 });
@@ -962,9 +974,10 @@ const SL = (() => {
         if (wk < 1) figure(n, 'pli0', PLI[pli.wf || 0], PLI_META, pli.wx, pli.sy, 1, fig, true, pli.alpha * (1 - smooth(.5, 1, wk)));
         MREC = 'P'; FIG_WET = { D: pli.maxY || 0, a: .78 }; FIG_DIP = 60 * (1 - smooth(.6, .8, (pli.ct || 0) / 119));
         // build 183: each picture of his climbing video melts into the next (12 a second, each held five ticks, was steppy)
+        const f0 = Math.floor(pli.ct || 0), f1 = Math.min(PLIC.length - 1, f0 + 1), slide = pli.wal ? 0 : ((pli.ct || 0) - f0) * (plTop(f1) - plTop(f0)) * CHR_K;      // build 385: slid toward the next picture's height (smooth rising)
         const pc = pli.ct || 0, im2 = PLIC[Math.min(PLIC.length - 1, Math.floor(pc) + 1)], bk = 0 * pc;      // build 212: no melting of one picture into the next (two poses laid over each other read as a pale, see-through double outline)
-        if (fl < .99) { const a2 = pli.alpha * smooth(0, .5, wk) * (1 - smooth(.5, 1, fl)); figure(n, 'pli2', im, META.climb, pli.x + cw, pli.y, 1, fig, true, a2); if (bk > .03) figure(n, 'pli2b', im2, META.climb, pli.x + cw, pli.y, 1, fig, true, a2 * bk); }
-        if (fl > .01) { const a1 = pli.alpha * smooth(0, .5, wk) * smooth(0, .5, fl); figure(n, 'pli', im, META.climb, pli.x, pli.y, -1, fig, true, a1); if (bk > .03) figure(n, 'plib', im2, META.climb, pli.x, pli.y, -1, fig, true, a1 * bk); }
+        if (fl < .99) { const a2 = pli.alpha * smooth(0, .5, wk) * (1 - smooth(.5, 1, fl)); figure(n, 'pli2', im, META.climb, pli.x + cw, pli.y + slide, 1, fig, true, a2); if (bk > .03) figure(n, 'pli2b', im2, META.climb, pli.x + cw, pli.y, 1, fig, true, a2 * bk); }
+        if (fl > .01) { const a1 = pli.alpha * smooth(0, .5, wk) * smooth(0, .5, fl); figure(n, 'pli', im, META.climb, pli.x, pli.y + slide, -1, fig, true, a1); if (bk > .03) figure(n, 'plib', im2, META.climb, pli.x, pli.y, -1, fig, true, a1 * bk); }
         FIG_DIP = 0; MREC = null; FIG_WET = null;
     };
     TALKM = talkMove(PL);
@@ -1205,7 +1218,7 @@ const SL = (() => {
       if (xb > xa) {
         const N = Math.ceil((xb - xa) / st) + 1, tops = new Float32Array(N), al = new Uint8ClampedArray(N * 4); let any = false;
         for (let k = 0; k < N; k++) { const x = xa + k * st, [c, p] = coll(x), h = fAt(x); tops[k] = -(h + c);
-          const a = clamp(p * .95 + Math.abs(h) * .22) * Math.max(1 - .75 * wetAt(x), p * .9); al[k * 4 + 3] = 255 * a; if (a > .02) any = true; }
+          const a = clamp(p * .95 + Math.abs(h) * .22) * Math.max(1 - .75 * wetAt(x), p * .9) * smooth(HOME0 + 12, HOME0 + 70, x) * (1 - smooth(BANK0 - 60, BANK0 - 4, x)); /* build 385: fades out against each bank (a flat slab with a hard edge stood against the home bank) */ al[k * 4 + 3] = 255 * a; if (a > .02) any = true; }
         if (any) {
           const BH = Math.ceil(80 * S); if (!bandC || bandC.width !== cv.width || bandC.height !== BH) bandC = mk(cv.width, BH);      // a strip round the surface only
           if (!profC || profC.width !== N) { profC = mk(N, 1); }
