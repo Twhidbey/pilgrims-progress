@@ -890,7 +890,7 @@ const SL = (() => {
     // draw back to the whole oak
     else if (ph === 'help' && !help) t = { cx: -290, z: .9, wl: 365 };
     else if (ph === 'help' || ph === 'drawn') t = { cx: -240, z: .6, wl: 392 };
-    else if (ph === 'hist') t = { cx: -520, z: .62, wl: 400 };      // build 417: back far enough to see the home bank, where the labourers come
+    else if (ph === 'hist') t = { cx: -560, z: .6, wl: 400 };      // its left edge stays right of where the mire begins      // build 417: back far enough to see the home bank, where the labourers come
     else if (ph === 'look' && goldT > 40) t = { cx: -480, z: .62, wl: 400 };      // build 368 (C): the camera draws back from bank to bank while the lights find the steps
     else t = { cx: Math.max(-330, C2.x + 120), z: .66, wl: 425 };
     const e = ph === 'plain' ? .06 : .02;
@@ -1406,23 +1406,43 @@ const SL = (() => {
     n.translate(x + 2 * Math.sin(G.t / 37 + x), y + sink); n.scale(face * CHR_K, CHR_K);
     n.globalAlpha = a; n.drawImage(g, -meta.ax, -meta.ground, g.width * 2, g.height * 2);
     n.globalAlpha = a * .35; n.drawImage(g, -meta.ax + 5 * Math.sin(G.t / 29), -meta.ground - 3, g.width * 2.04, g.height * 2.04); n.restore(); n.globalAlpha = 1; }
-  function cart(n, x, y, tip, a) {      // a two-wheeled hand-cart, side on, its load heaped; tipping forward about its wheel
-    if (a <= .01) return; n.save(); n.globalAlpha = a; n.translate(x, y - 9); n.rotate(tip); n.fillStyle = css(MEM);
-    n.beginPath(); n.moveTo(-30, -26); n.lineTo(24, -26); n.lineTo(19, -6); n.lineTo(-25, -6); n.closePath(); n.fill();
-    n.beginPath(); n.ellipse(0, -26, 26, 9 * (1 - smooth(.2, .9, tip / .9)), 0, Math.PI, 0); n.fill();      // the load, gone as it tips
-    n.fillRect(-46, -25, 18, 3); n.lineWidth = 2; n.strokeStyle = css(MEM); n.beginPath(); n.arc(0, 0, 9, 0, 7); n.stroke(); n.restore(); n.globalAlpha = 1; }
+  // build 418 (owner: "Need giant carts to fill slough"): GREAT WAGONS, taller than the men, each one silhouette (one path,
+  // filled once, so no part shows darker through another): a deep box of planks heaped high, two great wheels, a long
+  // shaft; it tips forward about its front wheel. x is the front wheel, y the ground under it
+  function cart(n, x, y, tip, a, heap) {
+    if (a <= .01) return; const L = 260, H = 92, R = 50;
+    n.save(); n.globalAlpha = a; n.fillStyle = css(MEM); n.translate(x, y - R); n.rotate(tip); n.beginPath();
+    n.moveTo(-L, -H - 6); n.lineTo(30, -H - 6); n.lineTo(22, 4); n.lineTo(-L + 8, 4); n.closePath();      // the box
+    if (heap > .02) { const hh = 40 * heap; n.moveTo(-L + 6, -H - 4); for (let u = 0; u <= 1.001; u += .05) n.lineTo(lerp(-L + 6, 26, u), -H - 4 - hh * Math.pow(Math.sin(Math.PI * u), .6) * (.92 + .08 * Math.sin(u * 9))); n.closePath(); }      // the load, heaped over the sides
+    n.moveTo(-L, -20); n.lineTo(-L - 120, -2); n.lineTo(-L - 120, 4); n.lineTo(-L, -12); n.closePath();      // the shaft, behind
+    n.moveTo(R, 0); n.arc(0, 0, R, 0, 7); n.moveTo(-L + 70 + R, 0); n.arc(-L + 70, 0, R, 0, 7);      // the wheels
+    n.fill(); n.globalAlpha = a * .5; n.strokeStyle = css(mix(MEM, LIGHT, .35)); n.lineWidth = 2;      // a few plank lines and spokes, faintly lighter
+    n.beginPath(); for (const yy of [-H * .66, -H * .33]) { n.moveTo(-L + 6, yy); n.lineTo(26, yy); }
+    for (const cx of [0, -L + 70]) for (let k = 0; k < 6; k++) { const q = k * Math.PI / 3 + (cx ? 0 : .3); n.moveTo(cx, 0); n.lineTo(cx + Math.cos(q) * R * .82, Math.sin(q) * R * .82); }
+    n.stroke(); n.restore(); n.globalAlpha = 1; }
   function memories(n) {
-    // (1) THE KING'S LABOURERS: one after another a labourer comes along the home bank behind his cart, tips its load into
-    // the mire at the edge, and the load sinks away with a slow ring; they keep coming as the words go on
-    if (histA > .01 && HWALK.length >= 32) for (let i = 0; i < 4; i++) {
-      const t = histT - i * 170; if (t < 0) continue; const T = t % 680, k = Math.floor(t / 680), lane = (i * 37 + k * 23) % 22;
-      const stop = HOME0 - 46 + lane, edge = stop + 52, x0 = stop - 280, walk = smooth(0, 260, T), x = lerp(x0, stop, walk), tip = .95 * smooth(270, 330, T) * (1 - smooth(470, 560, T));
-      const a = histA * .62 * smooth(0, 40, T) * (1 - smooth(560, 660, T)), stepping = T < 262;
-      ghost(n, HWALK[16 + Math.floor(stepping ? T * .2 : 0) % 16], META.hwalk, x, bankY(x) + 4, -1, a);
-      cart(n, x + 44, bankY(x + 44) + 2, tip, a);
-      const s = T - 300; if (s > 0 && s < 360) { const lx = edge + 40, d = Math.min(1, s / 300);      // the load in the mire, sinking
-        n.save(); n.globalAlpha = histA * .55 * (1 - d); n.fillStyle = css(MEM); n.beginPath(); n.ellipse(lx, 3 + 18 * d * d, 22 * (1 - .4 * d), 8 * (1 - d), 0, Math.PI, 0); n.fill();
-        n.strokeStyle = css(MEM); n.lineWidth = 1.2; n.globalAlpha = histA * .4 * (1 - d); n.beginPath(); n.ellipse(lx, 2, 20 + 70 * d, 3 + 7 * d, 0, 0, 7); n.stroke(); n.restore(); n.globalAlpha = 1; }
+    // (1) THE KING'S LABOURERS (build 418): a steady line of great wagons comes along the home bank, each pushed by a team of
+    // three labourers, to the very edge; it tips, and its load pours down into the slough in a long fall of clods; the heap
+    // spreads out across the mire and slowly sinks away, and the next wagon is already coming. The slough swallows it all
+    if (histA > .01 && HWALK.length >= 32) {
+      const P = 420, F = 1000;      // a wagon every five seconds; each lives about sixteen
+      for (let i = Math.max(0, Math.floor((histT - F) / P)); i * P <= histT; i++) {
+        const T = histT - i * P, lane = (i * 29) % 26, edge = HOME0 + 34 + lane, x0 = edge - 560, walk = smooth(0, 300, T);
+        const x = lerp(x0, edge - 14, walk), tip = .5 * smooth(320, 420, T) * (1 - smooth(600, 680, T)), pour = clamp((T - 360) / 240);
+        const a = histA * .66 * smooth(0, 50, T) * (1 - smooth(660, 760, T)), stepping = T < 300, gy = bankY(Math.min(x, HOME0 - 4)) + 4;
+        cart(n, x, gy, tip, a, 1 - smooth(.15, .95, pour));
+        for (let m = 0; m < 3; m++) { const mx = x - 60 - m * 62; ghost(n, HWALK[16 + Math.floor((stepping ? T * .2 : 0) + m * 5) % 16], META.hwalk, mx, bankY(mx) + 4, -1, a * (1 - .1 * m)); }      // the team walks alongside, nearer than the wagon
+        // the fall: a stream of earth from the tipped front lip down into the mire, and clods tumbling in it
+        if (pour > 0 && pour < 1) { const c = Math.cos(tip), sn = Math.sin(tip), lx0 = x + 30 * c + (92 + 6) * sn, ly0 = gy - 50 + 30 * sn - (92 + 6) * c, fl = Math.min(1, pour * 5) * Math.min(1, (1 - pour) * 3), bw = 30 * fl;
+          n.save(); n.fillStyle = css(MEM); n.globalAlpha = histA * .5 * fl; n.beginPath(); n.moveTo(lx0 - 6, ly0); n.quadraticCurveTo(lx0 + 30, ly0 + 10, lx0 + 46 + bw, 4); n.lineTo(lx0 + 20 - bw * .3, 4); n.quadraticCurveTo(lx0 + 8, ly0 + 40, lx0 - 10, ly0 + 6); n.closePath(); n.fill();
+          for (let j = 0; j < 16; j++) { const u = ((T * 1.1 + j * 31) % 60) / 60, px = lx0 + 4 + 44 * u + (j % 4) * 5, py = ly0 + (4 - ly0) * u * u;
+            n.globalAlpha = histA * .55 * fl; n.beginPath(); n.ellipse(px, py, 6 + (j % 3) * 3, 4 + (j % 2) * 2, j, 0, 7); n.fill(); }
+          n.restore(); n.globalAlpha = 1; }
+        // the heap in the mire: it grows as the load pours, spreads, and sinks away
+        const g = smooth(0, 1, pour), sk = smooth(560, 940, T); if (g > .01 && sk < 1) { const hx = x + 120, w = (150 + 170 * sk) * g, h = 64 * g * (1 - sk) * (1 - sk);
+          n.save(); n.globalAlpha = histA * .6 * (1 - sk); n.fillStyle = css(MEM); n.beginPath(); n.moveTo(hx - w, 3); n.bezierCurveTo(hx - w * .5, 3 - h * .9, hx - w * .15, 3 - h, hx, 3 - h); n.bezierCurveTo(hx + w * .2, 3 - h, hx + w * .55, 3 - h * .7, hx + w, 3); n.closePath(); n.fill();
+          n.strokeStyle = css(MEM); n.lineWidth = 1.4; n.globalAlpha = histA * .35 * sk * (1 - sk) * 4; n.beginPath(); n.ellipse(hx, 3, w * 1.2, 5 + 8 * sk, 0, 0, 7); n.stroke(); n.restore(); n.globalAlpha = 1; }
+      }
     }
     // (2) TRAVELLERS WHO STEPPED BESIDE: as Help speaks of the steps, pale travellers wade out beside the line of stones,
     // miss them, and sink, while the lights find the stones
