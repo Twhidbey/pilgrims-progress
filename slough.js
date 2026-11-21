@@ -91,9 +91,9 @@ const SL = (() => {
   // steps after he stood up his feet were in the air beyond the land's end. The bank now has that short face, standing
   // where the video's bank stood, at its full height by HOME0 + 15
   const hum = x => x > BANK0 ? smooth(BANK0 + 230, BANK0 + 480, x) * (4 + 16 * bankN(x * .0045, 9)) : smooth(HOME0 - 160, HOME0 - 380, x) * (3 + 12 * bankN(x * .0045, 3));
-  const START = -2100, FALL_X = -760, PLI_FALL = -840, END_X = 470;      // build 368 (owner: "you can shorten walking path too"): START was -2750, END_X 660
+  const START = -1740, FALL_X = -760, PLI_FALL = -840, END_X = 470;      // build 368 (owner: "you can shorten walking path too"): START was -2750, END_X 660
   // the plain's light follows how far he has come (gold at the start, mist by the bog); shared by the walk and the skip link
-  const PLAIN_GOLD = x => 1 - smooth(-1900, -1150, x), PLAIN_MIST = x => smooth(-1850, -1000, x);
+  const PLAIN_GOLD = x => 1 - smooth(-1640, -1100, x), PLAIN_MIST = x => smooth(-1560, -1000, x);      // build 396: the plain a third shorter (START was -2100)
   const WADE0 = FALL_X + 70;      // build 119: falling, Christian pitches on this much further, so the two are not on top of each other in the mire
   // Help kneels at the edge of the far bank; Christian must come to where his hand meets Help's (measured in slough-lab.html)
   const HX = BANK0 + 34, GRASP = { dx: -(82 - 15 + 129), dy: 283 - 55 };
@@ -444,7 +444,10 @@ const SL = (() => {
     motes = [...Array(LAST.length)].map((_, i) => ({ ox: -30 - Math.random() * 50, oy: -112 - Math.random() * 40, x: START, y: -150, tw: Math.random() * 6, i }));
     // the steps through the bog, hidden until the lights settle on them: low flat stones, no two alike (from the approved still)
     const R = rngS(33); let sx = BANK0 - 6;
-    LAST.forEach((nt, i) => { const w = 20 + R() * 20, h = 4 + R() * 4, lean = (R() - .5) * 10; sx -= w + 34 + R() * 34; steps.push({ x: sx, w, h, lean, nt, lit: 0, i }); sx -= w; });
+    // build 396: uneven (a neat row of even ovals, each with a light on top, read as runway lights): widths, heights and
+    // gaps all differ, a top with two low humps, and now and then a small stone lying beside the big one
+    LAST.forEach((nt, i) => { const w = 12 + R() * 30, h = 3 + R() * 6, lean = (R() - .5) * 14, hump = .3 + R() * .4, sub = R() < .5 ? { dx: (R() < .5 ? -1 : 1) * (w + 4 + R() * 8), w: 5 + R() * 8, h: 1.5 + R() * 2.5 } : null;
+      sx -= w + 18 + R() * 70; steps.push({ x: sx, w, h, lean, hump, sub, nt, lit: 0, i }); sx -= w; });
     Object.assign(cam, { cx: START + 150, z: 1, wl: 440 });
     if (audio()) { AC.resume(); for (const [who, txt] of ALL) vox(who, txt); }
     // SKIP-AHEAD LINK (build 122, owner: "can you give me link to entrance into water"): ?level=2&at=bog starts the two on the
@@ -455,12 +458,12 @@ const SL = (() => {
       capsSaid = new Set(OPEN_AT.map((_, i) => i)); nearSaid = true;
       const f = smooth(-1350, FALL_X, AT2), mi = PLAIN_MIST(AT2);
       Object.assign(cam, { cx: lerp(AT2 + 150, -470, f), z: lerp(1, .8, f), wl: lerp(440, 392, f) });
-      Object.assign(look, { mist: mi, veil: .84 * smooth(-1300, FALL_X, AT2), gold: PLAIN_GOLD(AT2), disc: lerp(1, .3, mi), sky: mi });
+      Object.assign(look, { mist: mi, veil: .5 * smooth(-1300, FALL_X, AT2), gold: PLAIN_GOLD(AT2), disc: lerp(1, .3, mi), sky: mi });
     }
     G.state = 'wait'; setTimeout(() => { if (SL.on && G.state === 'wait') { G.state = 'play';  } }, 1400);
   }
   // the Pliable talk is said while they walk, a line at a time, at places along the plain
-  const OPEN_AT = [START - 1, -1820];      // build 391: two lines now (Pliable's "let's walk faster" and Christian's "I cannot go fast" cut)      // build 368: the first line is said as the level opens (the storyteller's line before it was cut)
+  const OPEN_AT = [START - 1, -1590];      // build 391: two lines now (Pliable's "let's walk faster" and Christian's "I cannot go fast" cut)      // build 368: the first line is said as the level opens (the storyteller's line before it was cut)
   function choose2() {
     document.getElementById('chHome').textContent = 'Go back, as Pliable did';
     document.getElementById('chOn').textContent = 'Struggle on to the gate';
@@ -871,7 +874,7 @@ const SL = (() => {
     const e = ph === 'plain' ? .06 : .02;
     cam.cx += (t.cx - cam.cx) * e; cam.z += (t.z - cam.z) * e; cam.wl += (t.wl - cam.wl) * e;
     let L;
-    if (ph === 'plain') { const mi = PLAIN_MIST(C2.x); L = { mist: mi, veil: .84 * smooth(-1300, FALL_X, C2.x), gold: PLAIN_GOLD(C2.x), disc: lerp(1, .3, mi), sky: lerp(0, 1, mi) }; }
+    if (ph === 'plain') { const mi = PLAIN_MIST(C2.x); L = { mist: mi, veil: .5 * smooth(-1300, FALL_X, C2.x), gold: PLAIN_GOLD(C2.x), disc: lerp(1, .3, mi), sky: lerp(0, 1, mi) }; }
     else if (ph === 'fall' || ph === 'pli' || ph === 'back' || ph === 'backtalk') L = { mist: 1, veil: .5, gold: 0, disc: .55, sky: 1 };      // build 395: less veil (the oak stays in the picture), a brighter far light
     else if (ph === 'wade' || ph === 'stuck' || ph === 'help') L = { mist: lerp(1, .3, p), veil: lerp(.5, 0, smooth(.3, 1, p)), gold: .1 * p, disc: lerp(.55, 1, p), sky: lerp(1, .5, p) };
     else if (ph === 'drawn') L = { mist: .3, veil: 0, gold: .1, disc: 1, sky: .5 };
@@ -1043,12 +1046,16 @@ const SL = (() => {
     // ({35}) the King's labourers laid "good and substantial steps ... through the very midst of this slough", hard to see
     // in foul weather; Christian, fleeing in fear, never looked for them ({33}). So: low flat stones lying in a line across
     // the slough, hidden until his lights find them; each light settles on its stone and leaves a warm edge on its top
+    // build 396: each stone an uneven low shape (two humps), a small one beside it now and then, and its light a soft flat
+    // warmth lying on it, not a bright line and dot
     for (const st of steps) { const c = smooth(0, .6, st.lit || 0); if (c < .01) continue;
-      const x0s = st.x - st.w, x1s = st.x + st.w, top = -st.h, k = st.lean * .04;
+      const x0s = st.x - st.w, x1s = st.x + st.w, top = -st.h, k = st.lean * .04, hm = st.hump ?? .5, xm = lerp(x0s, x1s, hm);
       n.globalAlpha = c; n.fillStyle = css(mix(land, tone(.42), .22)); n.beginPath(); n.moveTo(x0s, 2);
-      n.bezierCurveTo(x0s + 1, top * .4, x0s + st.w * .35, top - k, st.x, top - k * .3); n.bezierCurveTo(x1s - st.w * .35, top + k, x1s - 1, top * .4, x1s, 2); n.closePath(); n.fill();
-      n.globalAlpha = c * (.35 + .4 * (1 - smooth(.6, 1, st.lit || 0))); n.strokeStyle = css(mix(GOLD, LIGHT, .4)); n.lineWidth = 1.1; n.beginPath(); n.moveTo(x0s + st.w * .25, top * .82); n.quadraticCurveTo(st.x, top - k * .3 - .6, x1s - st.w * .25, top * .82); n.stroke(); n.globalAlpha = 1; }
-    for (const mo of motes) { if (!mo.to && ph !== 'look') continue; const a = (.55 + .3 * Math.sin(mo.tw * 1.7)) * (ph === 'look' ? smooth(0, 50, goldT) : 1); mote(n, mo.x, mo.y, mo.to ? 3 : 1.8, mo.to ? 1 : a); }
+      n.bezierCurveTo(x0s + 1, top * .5, lerp(x0s, xm, .5), top - k, xm, top * .82); n.bezierCurveTo(lerp(xm, x1s, .35), top * .7 + k, lerp(xm, x1s, .7), top * 1.05, x1s - 1, top * .35); n.lineTo(x1s, 2); n.closePath(); n.fill();
+      if (st.sub) { const u = st.sub, ux = st.x + u.dx; n.beginPath(); n.moveTo(ux - u.w, 2); n.quadraticCurveTo(ux - u.w * .3, -u.h * 1.3, ux + u.w * .2, -u.h); n.quadraticCurveTo(ux + u.w, -u.h * .6, ux + u.w, 2); n.closePath(); n.fill(); }
+      const sg = c * (.5 + .25 * (1 - smooth(.6, 1, st.lit || 0)));
+      n.save(); n.globalAlpha = 1; n.globalCompositeOperation = 'lighter'; n.translate(st.x, top * .7); n.scale(1, .2); glow(n, 0, 0, st.w * 2.2, mix(GOLD, LIGHT, .25), .5 * sg); n.restore(); n.globalAlpha = 1; }
+    for (const mo of motes) { if (!mo.to && ph !== 'look') continue; const a = (.55 + .3 * Math.sin(mo.tw * 1.7)) * (ph === 'look' ? smooth(0, 50, goldT) : 1); const fl = mo.to ? 1 - .55 * smooth(.15, 1, mo.to.lit || 0) : 1; mote(n, mo.x, mo.y, mo.to ? 3 * (.5 + .5 * fl) : 1.8, mo.to ? fl : a); }      // build 396: a settled light melts into its stone
     // BEHIND THE PEOPLE, NOT ACROSS THEM (build 128, owner: "you don't think white mist between mud and the character looks
     // strange?"): the thin mist over the water and the low mist round the two in the bog were drawn over the figures, so a
     // white band lay between each body and the dark mud it stands in. Both are now laid BEFORE the near picture: the
@@ -1133,9 +1140,18 @@ const SL = (() => {
         for (const c of churns) { const a = Math.min(1, c.a * 2.2), mx = X(c.x); if (mx < -200 || mx > VW + 200) continue;
           mc.save(); mc.translate(mx, wl); mc.scale(105 * z, 95 * z); const q = mc.createRadialGradient(0, 0, 0, 0, 0, 1); q.addColorStop(0, 'rgba(255,255,255,' + a + ')'); q.addColorStop(.6, 'rgba(255,255,255,' + a * .85 + ')'); q.addColorStop(1, 'rgba(255,255,255,0)');
           mc.fillStyle = q; mc.fillRect(-1, 0, 2, 1); mc.restore(); }
+        // build 396: CALMER MUD. In the bog the gaps between the rows of mud showed as many small pale dashes (water); now they are
+        // mostly filled over the middle and near mire (the still water under the oak is kept), and the old pools' dark wet rims
+        // and patches (mudDk) lie on it as broad dark wet ground
+        if (nearDk > .01) { if (!MCOV) MCOV = mk(96, 54); const m = MCOV.getContext('2d'), sx = 96 / VW, sy = 54 / VH; m.globalCompositeOperation = 'source-over'; m.clearRect(0, 0, 96, 54);
+          const gx = m.createLinearGradient(X(-440) * sx, 0, X(-180) * sx, 0); gx.addColorStop(0, 'rgba(255,255,255,1)'); gx.addColorStop(1, 'rgba(255,255,255,0)'); m.fillStyle = gx; m.fillRect(0, 0, 96, 54);
+          const gy = m.createLinearGradient(0, wl * sy, 0, 54); gy.addColorStop(0, 'rgba(0,0,0,' + (.55 * nearDk) + ')'); gy.addColorStop(1, 'rgba(0,0,0,' + (.92 * nearDk) + ')');
+          m.globalCompositeOperation = 'destination-in'; m.fillStyle = gy; m.fillRect(0, 0, 96, 54); m.globalCompositeOperation = 'source-over';
+          mc.save(); mc.beginPath(); mc.rect(0, wl + 1, VW, VH); mc.clip(); mc.drawImage(MCOV, 0, 0, VW, VH); mc.restore(); }
         mc.globalCompositeOperation = 'source-in'; const q = mc.createLinearGradient(0, hor, 0, VH); q.addColorStop(0, css(tone(.64))); q.addColorStop(.3, css(tone(lerp(.5, .56, look.mist)))); q.addColorStop(1, css(tone(lerp(.3, .38, look.mist))));      // build 202: the mire a clear step darker than the sky (it was nearly the sky's own pale, and read as mist or water): heavy earth under a bright horizon, the pools bright in it
         mc.fillStyle = q; mc.fillRect(0, wl, VW, VH - wl);
         mc.globalCompositeOperation = 'source-atop'; mc.drawImage(mudLt, X(MUD_X0), wl + 1, MUD_W * z, MUD_H * z);      // build 257
+        if (nearDk > .01) { mc.globalAlpha = .85 * nearDk; mc.drawImage(mudDk, X(MUD_X0), wl + 1, MUD_W * z, MUD_H * z); mc.globalAlpha = 1; }
         mc.globalCompositeOperation = 'source-over'; }
       ctx.drawImage(mudC, 0, 0, VW, VH);
       for (let sx = Math.floor(wx0 / bw) * bw; sx < VW; sx += bw) {
@@ -1196,7 +1212,7 @@ const SL = (() => {
     }
     // build 395: THE NEAR MIRE DARKER AND WETTER (the mud was one mid grey from the horizon to the words): a deep wash
     // from a little below the water line down to the foot of the picture, laid before the figures in the mire
-    { nearDk += ((['fall', 'pli', 'back', 'backtalk', 'wade', 'stuck', 'help'].includes(ph) ? 1 : 0) - nearDk) * .02;
+    { const dT = Math.max(0, Math.min(120, G.t - (ndT ?? G.t))); ndT = G.t; nearDk += ((['fall', 'pli', 'back', 'backtalk', 'wade', 'stuck', 'help'].includes(ph) ? 1 : 0) - nearDk) * (1 - Math.pow(.98, dT));
       if (nearDk > .01) { const g = ctx.createLinearGradient(0, wl + 20 * z, 0, VH); g.addColorStop(0, css(DARK, 0)); g.addColorStop(.45, css(DARK, .28 * nearDk)); g.addColorStop(1, css(DARK, .58 * nearDk)); ctx.fillStyle = g; ctx.fillRect(0, wl + 20 * z, VW, VH); } }
     // --- THE MIRE, IN FRONT OF THE MIRROR (build 143): the churned mud, the far half of every ring, the figures in the mire,
     // then the mud surface that answers them (see "THE MUD ANSWERS THE FIGURES"), the strings, the drops, and the near
@@ -1355,7 +1371,7 @@ const SL = (() => {
   }
   const wob = noise2(9);
   // THOUGHTS, baked once, small (so they are soft when stretched), every edge fading into a vignette like a memory
-  let THK = null, VEILC = null, nearDk = 0;
+  let THK = null, VEILC = null, nearDk = 0, MCOV = null, ndT = null;
   function thoughts() {
     if (THK) return THK;
     const vign = (c, cx, cy, r) => { const g = c.getContext('2d'); g.globalCompositeOperation = 'destination-in'; const v = g.createRadialGradient(cx, cy, 0, cx, cy, r);
@@ -1393,6 +1409,11 @@ const SL = (() => {
   // is soft when stretched): two ragged frames of dark mist, thickest in the corners and along the top, and one long low
   // band of dark mist that wraps sideways, laid flat across the mire behind him.
   let DMIST = null;
+  // build 396: the dark mist's blobs showed as streaky bands once stretched to the picture: each bake is blurred by
+  // shrinking it and drawing it back up twice
+  function soft4(c) { const W = c.width, H = c.height, t = mk(Math.max(1, W >> 2), Math.max(1, H >> 2)), q = t.getContext('2d'), o = c.getContext('2d');
+    for (let i = 0; i < 2; i++) { q.clearRect(0, 0, t.width, t.height); q.imageSmoothingEnabled = true; q.drawImage(c, 0, 0, t.width, t.height); o.clearRect(0, 0, W, H); o.imageSmoothingEnabled = true; o.drawImage(t, 0, 0, W, H); }
+    return c; }
   function darkMist() {
     if (DMIST) return DMIST;
     const blob = (q, x, y, r, a) => { const g = q.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, css(DARK, a)); g.addColorStop(.5, css(DARK, a * .55)); g.addColorStop(1, css(DARK, 0)); q.fillStyle = g; q.fillRect(x - r, y - r, 2 * r, 2 * r); };
@@ -1402,12 +1423,12 @@ const SL = (() => {
         let x = side === 0 ? u * W : side === 1 ? W - inset * 70 : side === 2 ? u * W : inset * 70, y = side === 0 ? inset * 60 : side === 1 ? u * H : H - inset * 40, rad = 14 + rnd() * 38;
         const corner = Math.max(Math.abs(x / W - .5) * 2, Math.abs(y / H - .5) * 2);
         blob(q, x, y, rad * (.7 + .6 * corner), (.16 + .14 * rnd()) * (.55 + .45 * corner) * (side === 2 ? .7 : 1)); }
-      return c; };
+      return soft4(c); };
     const band = (() => { const W = 480, H = 48, c = mk(W, H), q = c.getContext('2d'); let r = 7;
       const rnd = () => (r = (r * 16807) % 2147483647) / 2147483647;
       for (let i = 0; i < 90; i++) { const x = rnd() * W, y = H * (.45 + .3 * (rnd() - .5)), rad = 10 + rnd() * 22, a = .18 + .14 * rnd();
         for (const dx of [-W, 0, W]) { q.save(); q.translate(x + dx, y); q.scale(2.6, .55); blob(q, 0, 0, rad, a); q.restore(); } }
-      return c; })();
+      return soft4(c); })();
     return (DMIST = { f: [frame(11), frame(97)], band });
   }
   function fearDark() {
@@ -1481,5 +1502,5 @@ const SL = (() => {
   // for testing: SL.peek() tells where the story is
   // grow, ribbons: the tree grower and its painter, for Level 3's oak in leaf (hill.js, bakeOak): keep these exports
   // oakPic: the great oak baked small in one colour, for Level 1's far glimpse of the Slough (index.html, drawFarSlough)
-  return { on: false, show: false, title, start, update, draw, touch, grip, pick, preload, lines: ALL, oakPic: (col, k) => bakeTree(oak(18), col, k), grow: (seed, hero, depth) => oak(seed, hero, depth), ribbons, peek: () => ({ ph, hw: help && help.w, thk: { cityT, fearT2 }, x: C2.x, y: C2.y, mv: mv && mv.t, lift: lift && lift.t, pli: pli && pli.mode, plx: pli && Math.round(pli.x), plStop: !!(pli && pli.stop), cam, mud: { strings: strings.length, hmax: Math.max(...fh), hmin: Math.min(...fh), drops: drops.length, rings: rings.length, recs: Object.fromEntries(Object.entries(RECS).map(([o, r]) => [o, { body: r.body, arms: (r.arms || []).length, act: MS[o] ? MS[o].act : 0, y: r.y, a: r.a }])) }, c2: { wa: C2.wa, D: C2.D, rt: C2.rt, reach: C2.reach, fallT: C2.fallT }, pl: pli && { y: pli.y, ct: pli.ct, wk: pli.wk, wal: pli.wal, fa: pli.fa, wt: pli.wt, x: pli.x, duck: pli.duck, mode: pli.mode, out: pli.out } }) };
+  return { on: false, show: false, title, start, update, draw, touch, grip, pick, preload, lines: ALL, oakPic: (col, k) => bakeTree(oak(18), col, k), grow: (seed, hero, depth) => oak(seed, hero, depth), ribbons, peek: () => ({ ph, nd: nearDk, hw: help && help.w, thk: { cityT, fearT2 }, x: C2.x, y: C2.y, mv: mv && mv.t, lift: lift && lift.t, pli: pli && pli.mode, plx: pli && Math.round(pli.x), plStop: !!(pli && pli.stop), cam, mud: { strings: strings.length, hmax: Math.max(...fh), hmin: Math.min(...fh), drops: drops.length, rings: rings.length, recs: Object.fromEntries(Object.entries(RECS).map(([o, r]) => [o, { body: r.body, arms: (r.arms || []).length, act: MS[o] ? MS[o].act : 0, y: r.y, a: r.a }])) }, c2: { wa: C2.wa, D: C2.D, rt: C2.rt, reach: C2.reach, fallT: C2.fallT }, pl: pli && { y: pli.y, ct: pli.ct, wk: pli.wk, wal: pli.wal, fa: pli.fa, wt: pli.wt, x: pli.x, duck: pli.duck, mode: pli.mode, out: pli.out } }) };
 })();
