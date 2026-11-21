@@ -53,7 +53,7 @@ const SL = (() => {
     [N, 'Then a man came to him, whose name was Help.'],
     [H, 'Why did you not look for the steps?'],      // build 368: "What are you doing there?" and Christian's answer cut
     [C, 'Fear followed me so hard that I fell in.'],
-    [H, 'Give me your hand.', 'hand', () => { mv = mv || { t: 0 }; mv.to = 150; C2.handGo = true; }],      // he is already down on his knee: now he holds out his hand
+    [H, 'Give me your hand.', 'hand', () => { mv = mv || { t: 0 }; mv.to = 150; C2.handGo = true; C2.handT = G.t; }],      // he is already down on his knee: now he holds out his hand
   ];
   const DRAWN = [];      // {32}
   // THE SLOUGH'S HISTORY (build 417; owner: "When help explains the history of the slew can we do a flash to the efforts of
@@ -360,7 +360,7 @@ const SL = (() => {
     return plTopC[f] = top * im.height / h;
   }
   // one tinted figure, feet at world (x, y); nothing below the water line when `cut` (each figure has its own small canvas)
-  const tintC = {}; let FIG_DIP = 0;
+  const tintC = {}; let FIG_DIP = 0, HEADM = null;
   // the last row of a picture that has body in it (some packs keep a few blank rows at the bottom); found once per picture
   const lastRows = new WeakMap();
   function lastRow(im, fc) { let r = lastRows.get(im); if (r !== undefined) return r; r = { r: im.height - 1, x0: 0, x1: 0 };
@@ -391,7 +391,15 @@ const SL = (() => {
     c.save(); c.globalAlpha = alpha;
     if (cut) { c.beginPath(); c.rect(-1e5, -1e5, 2e5, 1e5); c.clip(); }
     c.translate(x, y); if (TALKM) c.transform(1, 0, TALKM.sh, 1, 0, 0);      // build 118: whoever is speaking leans a hair with his own voice (talkMove in index.html)
-    c.scale(face * CHR_K, CHR_K * (TALKM ? TALKM.sy : 1)); c.drawImage(fc, -meta.ax, -meta.ground);
+    c.scale(face * CHR_K, CHR_K * (TALKM ? TALKM.sy : 1));
+    if (!HEADM || meta !== META.stuck) c.drawImage(fc, -meta.ax, -meta.ground);
+    else {
+      // build 451: the stuck video's calm frames: hood and head (right of x 76, above y 86) turn by HEADM.a about the neck
+      // (98, 88); the body is drawn with a few rows of overlap under the head, so no gap opens at the neck
+      const X = -meta.ax, Y = -meta.ground, hx = X + 76, hy = Y + 86, px = X + 98, py = Y + 88;
+      c.save(); c.beginPath(); c.rect(X - 2, hy - 6, im.width + 4, im.height); c.rect(X - 2, Y - 2, hx - X + 2, hy - Y + 4); c.clip(); c.drawImage(fc, X, Y); c.restore();
+      c.save(); c.translate(px, py); c.rotate(HEADM.a); c.translate(-px, -py); c.beginPath(); c.rect(hx, Y - 2, X + im.width - hx + 2, hy - Y + 2); c.clip(); c.drawImage(fc, X, Y); c.restore();
+    }
     // build 141 (owner: "a flickering blank space between Christian and mud shortly after they enter"): the wading and
     // climbing pictures end at their own video's mud line (the waist). Whenever he stands higher than that (still sinking
     // after the fall, or heaving up), the picture ended above the surface and blank paper showed under him. The body's
@@ -449,7 +457,7 @@ const SL = (() => {
     // the last words ended; a finger only walks him if it went down after that) still held Level 1's clock, thousands
     // of ticks ahead, so no finger counted until the clock caught up. Keys were never affected, so the tests passed.
     G.calm = 0;
-    C2.rt = 0; C2.handGo = false; C2.tv = null; C2.fy = null; C2.md = null; C2.rq0 = null; C2.q = 0; drops = []; churns = []; fReset(); strings = []; RECS = {}; for (const k in MS) delete MS[k]; C2.D = 0;
+    C2.rt = 0; C2.handGo = false; C2.tv = null; C2.fy = null; C2.md = null; C2.rq0 = null; C2.q = 0; C2.hf = null; C2.hb = 0; C2.reachGo = false; C2.handT = 0; drops = []; churns = []; fReset(); strings = []; RECS = {}; for (const k in MS) delete MS[k]; C2.D = 0;
     ph = 'plain'; Object.assign(C2, { x: START, y: bankY(START) + 4, face: 1, anim: 12, alpha: 1, sink: 0, reach: 0, stand: 1, sd: QUIET[0], st: 0, faceA: 1, done: 0 });
     pli = { x: START - 80, y: 0, face: 1, anim: 0, alpha: 1, sink: 0, mode: 'follow', px: START - 80, stop: { t: 50, x0: START - 80 - 72.5 * CHR_K, cx: START } };      // he starts standing (his stop video's breathing part)
     prints = []; fogH = 1; fogS = 1; help = null; mv = null; lift = null; rings = []; steps = []; gloom = gloomTo = 0; noteI = 0; strain = 0; slipT = 0; fearT = 300; fearsSaid = false; histT = 0; histA = 0; travT = 0; travA = 0; struggleSaid = false; stillSaid = false; goldT = 0; onwayT = 0; capsSaid = new Set(); nearSaid = true; pliGo = 0; cityT = -1; fearT2 = -1; fearHelpT = 0; preDk = 0; beatT = -1e9; quietT = 0; helpSayT = 0;
@@ -616,13 +624,23 @@ const SL = (() => {
   }
   // a touch: on the water it makes rings; in the act, Help's hand takes his
   const handPt = () => [HX - 82 * CHR_K, HY() - 55 * CHR_K];
+  // build 451 (owner: "he shouldn't reach out his hand till after help says and then it can just be the animation (the
+  // still arm/hand seems a little long)"): Help's hand can be taken once it is out and "Give me your hand" has been said
+  // (his recording over); only then does Christian reach, the stuck video playing on at its own pace, and the lift
+  // follows the moment his hand is up: no held still pose with the arm out
+  const helpSaid = () => !(SPK && SPK.who === H && AC && (AC.currentTime - SPK.t0) * 20 < SPK.env.length + 2) && G.t - (C2.handT || 0) > 40;
+  const handReady = () => !!(mv && mv.t >= 150 && C2.handGo && helpSaid() && !C2.reachGo && !lift);
   function touch(sx, sy) {
     const wx = (sx - VW / 2) / cam.z + cam.cx, wy = (sy - cam.wl) / cam.z;
-    if (G.act === 'hand') { const [hx, hy] = handPt(); if (mv && mv.t >= 150 && (C2.rt || 0) >= 150 && Math.hypot(wx - hx, wy - hy) * cam.z < 120) grip(); else G.actT = Math.max(G.actT, 60); return; }
+    if (G.act === 'hand') { const [hx, hy] = handPt(); if (handReady() && Math.hypot(wx - hx, wy - hy) * cam.z < 120) grip(); else G.actT = Math.max(G.actT, 60); return; }
     if (wy > 0 && wx > WATER_L) { rings.push({ x: wx, y: Math.max(0, wy), t: 0, k: .7 }); sfxS.wade(); }
   }
   function grip() {
-    if (G.act !== 'hand' || lift || !mv || mv.t < 150 || (C2.rt || 0) < 150) return;
+    if (G.act !== 'hand' || !handReady()) return;
+    C2.reachGo = true; C2.rq0 = C2.hf ?? null; G.ring = null; dMore.textContent = '';
+  }
+  function liftGo() {
+    if (lift) return;
     lift = { t: 0 }; sfxS.grip(); splash(C2.x + 10, 12, 1.4, true); G.ring = null; next(true); caption(DRAWN);
   }
 
@@ -748,7 +766,19 @@ const SL = (() => {
       // while they talk and only lifts his head and arm once Help says "Give me your hand" (C2.handGo)
       // build 421 (owner: "Christian doesn't reach for help till help reaches for him"): he begins only once Help's hand is
       // most of the way out (mv.t 130 of 150), then reaches at the stuck video's own pace
-      if (help && C2.handGo && mv && mv.t >= 130) C2.rt = Math.min(150, (C2.rt || 0) + .4);
+      // build 451: while Help comes and talks he rises out of his heaving (the stuck video plays on, forward, at its own
+      // pace, to frame 66: chest-deep, upright, his arms down, looking toward Help) and holds there, the body easing
+      // between 66 and 72 as he breathes (C2.hf, C2.hb; his head moves too, see drawChr); once the child takes Help's
+      // hand (C2.reachGo) the video plays on to REACH_F and the lift begins as his hand is up
+      if (help) {
+        if (C2.hf == null) C2.hf = Math.min(58, C2.q || 6);
+        if (!C2.reachGo) { if (C2.hf < 66) { C2.hf = Math.min(66, C2.hf + .2); C2.hb = 0; } else { C2.hb++; C2.hf = 69 - 3 * Math.cos(C2.hb * Math.PI * 2 / 360); } }
+        else if (!lift) {
+          if (C2.rq0 == null) C2.rq0 = C2.hf;
+          C2.hf = Math.min(REACH_F, C2.hf + .2); C2.rt = Math.min(150, (C2.rt || 0) + .9);
+          if (STUCKP.ready ? C2.hf >= REACH_F : C2.rt >= 150) liftGo();
+        }
+      }
       if (helpSayT && G.t >= helpSayT) { helpSayT = 0; talk(HELP.slice(0, 1), () => {}); }      // build 380: a breath between "could not get out" and "Then a man came"
       if (help && help.w >= HSEQ.length - 1 && !help.said && !helpSayT && G.state === 'play') { help.said = true; talk(HELP.slice(1), () => {}); }
       if (lift) { lift.t = Math.min(236, lift.t + .4); if (lift.t >= 236) { ph = 'drawn'; C2.done = 0; C2.x = HX + (LIFT_CHR - META.lift.ax) * CHR_K; C2.y = bankY(C2.x) + 4; C2.D = (META.lift.ground - liftWet(LIFT.length - 1).r) * CHR_K; C2.face = 1; C2.faceA = 1; C2.stand = 1; C2.sd = QUIET[0]; } }
@@ -792,7 +822,7 @@ const SL = (() => {
     }
     fogS = ph === 'look' ? 1 - smooth(60, 60 + LAST.length * 55 + 120, goldT) : ph === 'on' ? Math.max(0, fogS - .01) : fogS;
     if (mv) mv.t = Math.min(mv.to ?? 150, mv.t + .4);
-    if (G.act === 'hand') { G.actT++; if (mv && mv.t >= 150 && (C2.rt || 0) >= 150 && !G.ring && G.actT > 20) { dMore.textContent = 'take his hand ✦'; const [hx, hy] = handPt(); G.ring = () => [(hx - cam.cx) * cam.z + VW / 2, cam.wl + hy * cam.z]; } }
+    if (G.act === 'hand') { G.actT++; if (handReady() && !G.ring && G.actT > 20) { dMore.textContent = 'take his hand ✦'; const [hx, hy] = handPt(); G.ring = () => [(hx - cam.cx) * cam.z + VW / 2, cam.wl + hy * cam.z]; } }
     // --- Pliable ---
     if (pli) {
       if (pli.mode === 'follow') {
@@ -1561,10 +1591,14 @@ const SL = (() => {
     // once he sees Help coming (C2.rt), the stuck video simply plays on from the picture he is in (C2.rq0) to its own
     // high-arm frame REACH_F, slower than or at its own speed, at the far bank's depth, drifting a step toward Help; then it
     // holds there breathing. REACH_F at REACH_X is where the lift's first picture has him, hand in Help's hand.
-    if (ph === 'help' && STUCKP.ready && (C2.rt || 0) > 0) {
-      if (C2.rq0 == null) C2.rq0 = C2.q || 6;
-      const r = smooth(0, 150, C2.rt), e = r * r * (3 - 2 * r), f = r < 1 ? lerp(C2.rq0, REACH_F, e) : REACH_F + 1.6 * Math.sin(G.t / 45);
-      FIG_DIP = 46; figure(n, 'reach', STUCKP[Math.round(f)], META.stuck, lerp(C2.x, REACH_X, e), 64 + (C2.md ?? MD_FAR), 1, fig, true, alpha); FIG_DIP = 0;
+    if (ph === 'help' && STUCKP.ready && C2.hf != null) {
+      const r0 = C2.reachGo && C2.rq0 != null ? C2.rq0 : null, e = r0 == null ? 0 : smooth(r0, REACH_F, C2.hf), f = Math.round(clamp(C2.hf, 0, REACH_F));
+      // HIS HEAD BREATHES AND TALKS (build 451, owner: "while he's waiting for help and also talking with help can we make
+      // his head move a little to suggest he's breathing and then later talking"): in the calm frames (62 to 80) his hood
+      // and head turn a hair about the neck: lifting as he breathes in, and with the rise and fall of his own voice
+      const hk = smooth(62, 66, C2.hf) * (r0 == null ? 1 : 1 - smooth(r0, r0 + 5, C2.hf)), tm = talkMove(C);
+      if (hk > 0 && f >= 62 && f <= 80) HEADM = { a: hk * (-.022 * Math.sin(C2.hb * Math.PI * 2 / 360 - .6) + (tm ? -(tm.sy - 1) * 3.2 + tm.sh * 1.4 : 0)) };
+      FIG_DIP = 46; figure(n, 'reach', STUCKP[f], META.stuck, lerp(C2.x, REACH_X, e), 64 + (C2.md ?? MD_FAR), 1, fig, true, alpha); FIG_DIP = 0; HEADM = null;
       return;
     }
     if (ph === 'help' && !STUCKP.ready && C2.reach > 0) {
@@ -1592,5 +1626,5 @@ const SL = (() => {
   // for testing: SL.peek() tells where the story is
   // grow, ribbons: the tree grower and its painter, for Level 3's oak in leaf (hill.js, bakeOak): keep these exports
   // oakPic: the great oak baked small in one colour, for Level 1's far glimpse of the Slough (index.html, drawFarSlough)
-  return { on: false, show: false, title, start, update, draw, touch, grip, pick, preload, lines: ALL, oakPic: (col, k) => bakeTree(oak(18), col, k), grow: (seed, hero, depth) => oak(seed, hero, depth), ribbons, peek: () => ({ ph, nd: nearDk, hw: help && help.w, thk: { cityT, fearT2 }, mem: { histT, histA, travT, travA }, x: C2.x, y: C2.y, mv: mv && mv.t, lift: lift && lift.t, pli: pli && pli.mode, plx: pli && Math.round(pli.x), plStop: !!(pli && pli.stop), cam, mud: { strings: strings.length, hmax: Math.max(...fh), hmin: Math.min(...fh), drops: drops.length, rings: rings.length, recs: Object.fromEntries(Object.entries(RECS).map(([o, r]) => [o, { body: r.body, arms: (r.arms || []).length, act: MS[o] ? MS[o].act : 0, y: r.y, a: r.a }])) }, c2: { wa: C2.wa, D: C2.D, rt: C2.rt, reach: C2.reach, fallT: C2.fallT }, pl: pli && { y: pli.y, ct: pli.ct, wk: pli.wk, wal: pli.wal, fa: pli.fa, wt: pli.wt, x: pli.x, duck: pli.duck, mode: pli.mode, out: pli.out } }) };
+  return { on: false, show: false, title, start, update, draw, touch, grip, pick, preload, lines: ALL, oakPic: (col, k) => bakeTree(oak(18), col, k), grow: (seed, hero, depth) => oak(seed, hero, depth), ribbons, peek: () => ({ ph, nd: nearDk, hw: help && help.w, thk: { cityT, fearT2 }, mem: { histT, histA, travT, travA }, x: C2.x, y: C2.y, mv: mv && mv.t, lift: lift && lift.t, pli: pli && pli.mode, plx: pli && Math.round(pli.x), plStop: !!(pli && pli.stop), cam, mud: { strings: strings.length, hmax: Math.max(...fh), hmin: Math.min(...fh), drops: drops.length, rings: rings.length, recs: Object.fromEntries(Object.entries(RECS).map(([o, r]) => [o, { body: r.body, arms: (r.arms || []).length, act: MS[o] ? MS[o].act : 0, y: r.y, a: r.a }])) }, c2: { wa: C2.wa, D: C2.D, rt: C2.rt, hf: C2.hf, reachGo: C2.reachGo, reach: C2.reach, fallT: C2.fallT }, pl: pli && { y: pli.y, ct: pli.ct, wk: pli.wk, wal: pli.wal, fa: pli.fa, wt: pli.wt, x: pli.x, duck: pli.duck, mode: pli.mode, out: pli.out } }) };
 })();

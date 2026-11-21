@@ -850,3 +850,5 @@ The owner asked what follows the Slough of Despond, what that level should hold,
 ## Loose ends
 - No `assets/` folder is in the repo (images are only base64 inside `index.html`). Upload it if the originals should be kept here.
 - `README.md` is only a title.
+
+**Build 453 (Level 2 chat): in the slough Christian rises and waits upright, breathing, his head moving a little (and with his voice), while Help comes and talks; he reaches only when the child takes Help's hand after "Give me your hand" has been said, and the lift follows at once (no held arm). Nothing spent.**
