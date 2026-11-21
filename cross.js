@@ -165,6 +165,10 @@ const CR = (() => {
     let c = mix(pre, dw, dawn); c = mix(c, gd, gold); return mix(c, robeC, robe * .6);
   };
   const figC = mk(8, 8);
+  // running up the slope he leans a little back with the ground, so his feet land on it (owner: "tilt him ever so
+  // slightly back so his feet land right as he runs up hill"): a part of the ground's own angle, about his feet
+  let TILT = 0;
+  const slopeTilt = x => -.6 * Math.atan((gh(x + 12) - gh(x - 12)) / 24);
   function figure(c, im, meta, x, h, face, alpha, tint, rim) {
     if (!im || alpha <= .004) return;
     im = solidOf(im);
@@ -174,7 +178,7 @@ const CR = (() => {
     if (rim > .01) { const g = f.createLinearGradient(face > 0 ? 0 : W, 0, face > 0 ? W : 0, 0); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(.6, 'rgba(0,0,0,0)'); g.addColorStop(1, css([255, 210, 150], .35 * rim)); f.globalCompositeOperation = 'source-atop'; f.fillStyle = g; f.fillRect(0, 0, W, H); }
     f.globalCompositeOperation = 'destination-in'; f.drawImage(im, 0, 0); f.globalCompositeOperation = 'source-over';
     const K = CHR_K;
-    c.save(); c.translate(x, -h + 3); c.scale(face, 1); c.globalAlpha = alpha;
+    c.save(); c.translate(x, -h + 3); if (TILT) c.rotate(TILT); c.scale(face, 1); c.globalAlpha = alpha;
     c.drawImage(figC, -meta.ax * K, -meta.ground * K, W * K, H * K); c.restore();
   }
   function contact(c, x, h, a = 1, rx = 34) { const g = c.createRadialGradient(0, 0, 0, 0, 0, 1); g.addColorStop(0, 'rgba(6,6,12,.5)'); g.addColorStop(.6, 'rgba(6,6,12,.24)'); g.addColorStop(1, 'rgba(6,6,12,0)'); c.save(); c.translate(x, -h + 3); c.scale(rx, 5); c.globalAlpha = a; c.fillStyle = g; c.fillRect(-1, -1, 2, 2); c.restore(); }
@@ -189,8 +193,10 @@ const CR = (() => {
       figure(c, CLIP[f0], CLIP_META, x, h, fc, Ch.fade < 1 ? Ch.fade : 1, tint, rim);
       if (mark > .01) { const hx = x + 14 * fc, hy = -h - 138; const g = c.createRadialGradient(hx, hy, 0, hx, hy, 9); g.addColorStop(0, css([255, 244, 214], .8 * mark)); g.addColorStop(1, 'rgba(255,240,200,0)'); c.fillStyle = g; c.fillRect(hx - 10, hy - 10, 20, 20); }
     } else if (Ch.run > 0 && RUNP.ready) {
+      TILT = slopeTilt(x) * Ch.run;
       if (Ch.run < 1 && STD.length) figure(c, STD[atTime(STD_META, breathT(Ch.sd || 0))], STD_META, x, h, 1, 1 - Ch.run, tint, rim);
       figure(c, RUNP[((Math.floor(Ch.ranim) % RUNP.length) + RUNP.length) % RUNP.length], RUNP_META, x, h, 1, Ch.run < 1 ? Ch.run : 1, tint, rim);
+      TILT = 0;
     } else if (Ch.sd != null && STD.length) figure(c, STD[atTime(STD_META, breathT(Ch.sd))], STD_META, x, h, fc, 1, tint, rim);
     else figure(c, CHR[frameOf(Ch.anim)], CHR_META, x, h, 1, 1, tint, rim);
   }
@@ -530,12 +536,12 @@ const CR = (() => {
       if (!said.open) { said.open = true; caption(OPEN); }
       if (climb) { climbTick(); return camTick(climb && climb.snap); }
       if (!said.ascend && Ch.x > CREST0 - 900 && !saying()) { said.ascend = true; caption(ASCEND); }
-      closeK += ((Ch.x > CLOSE0 && Ch.x < CUT_X + 200 ? 1 : 0) - closeK) * .03;
+      closeK += (0 - closeK) * .03;
       if (topTo && topK > .9 && !saying() && G.t - (said.topT || 0) > 150) topTo = 0;
-      if (!said.cut && Ch.x >= CUT_X) { said.cut = true; climb = { t: 0 }; G.state = 'auto'; return camTick(false); }
-      if (!said.cut) run(want);
-      else { let v = want ? MAXV * .9 : 0; if (Ch.x + v > STOP_X) v = Math.max(0, STOP_X - Ch.x); walk(v); }
-      if (Ch.x >= STOP_X - .5 && Ch.sd != null && !saying()) { ph = 'cross'; G.state = 'auto'; t = 0; }
+      // no cut any more (owner: "Since he's running you can probably not cut to top of hill"): he runs all the way up
+      // to the cross, the book's "He ran thus till he came at a place somewhat ascending"
+      if (want && Ch.x < STOP_X - .5) { run(true); if (Ch.x > STOP_X) Ch.x = STOP_X; } else run(false);
+      if (Ch.x >= STOP_X - .5 && Ch.sd != null && Ch.run <= 0 && !saying()) { ph = 'cross'; G.state = 'auto'; t = 0; }
     } else if (ph === 'cross') {
       // he stands before the cross; the standing picture gives way to the clip and the burden loosens by itself and falls behind him
       if (Ch.cf < 0) { Ch.cf = 0; Ch.fade = 0; }
