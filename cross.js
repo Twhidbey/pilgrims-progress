@@ -47,6 +47,7 @@ const CR = (() => {
   const GLAD = [[C, 'He hath given me rest by his sorrow, and life by his death.']];      // {94}
   const LOOKED = [[N, 'He stood still to wonder, that the sight of the cross should ease him of his burden.'], [N, 'He looked, and looked again, till the tears ran down his cheeks.']];      // {94}
   const SHINE = [      // {94}
+    [N, 'As he stood looking and weeping, three Shining Ones came to him.'],
     [SO, 'Peace be unto thee.'],
     [S1, 'Thy sins be forgiven thee.'],
     [N, 'The second took off his rags, and clothed him with new clothes.', 0, () => { robeTo = 1; chime([74, 79, 83], .03); }],
@@ -85,7 +86,7 @@ const CR = (() => {
   }
 
   // ---------- state ----------
-  let qRun = 0, quietG = 0, sepT = -1, ph = '', t = 0, cam = { cx: 0, z: 1, wl: 420 }, wideK = 0, wideTo = 0;
+  let pauseKey = null, qRun = 0, quietG = 0, sepT = -1, ph = '', t = 0, cam = { cx: 0, z: 1, wl: 420 }, wideK = 0, wideTo = 0;
   const Ch = { x: START, anim: 12, sd: null, cf: -1, cfd: 1, hop: 0, hops: 0, lastV: 0, fade: 0, face: 1, tv: null, run: 0, ranim: 0 };
   let bur = null, dawn = 0, gold = 0, goldTo = 0, sun = 0, robe = 0, robeTo = 0, mark = 0, markTo = 0, rollShow = 0, rollGone = 0, shine = 0, shineTo = 0, gone = 0, goneTo = 0;
   let closeK = 0, topK = 0, topTo = 0, veil = 0, climb = null, tearT = -1, looked = false;
@@ -623,6 +624,8 @@ const CR = (() => {
       if (t === 30) { [67, 71, 74, 79].forEach((m, i) => note(m, .04, 3.6, i * .3)); }
       if (t > 200 && G.state !== 'end') finish();
     }
+    // a breath of quiet between one speaker and the next in a talk, so each voice is heard as its own person (owner, build 458)
+    if (G.state === 'dialog' && G.autoT > 0 && G.guardKey !== pauseKey) { pauseKey = G.guardKey; G.autoT += 45; }
     if (G.act === 'roll' && !rollFly && !G.ring && G.actT >= 90) G.ring = rollPt;
     if (G.act === 'leap' && !G.ring && G.actT >= 90) G.ring = chrPt;
     camTick(false);
