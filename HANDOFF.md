@@ -150,6 +150,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 **Build 310 (Level 2 chat):** owner: "mud still acts little water - needs more viscosity". In mud (by `wetAt`; open water unchanged): a ring is one slow, thick, dull swell that eases to a stop close to where it began (no second ring, hardly any sheen); the surface swell travels half as fast, is damped more and settles more slowly (`fStep`); drops fewer again (60% skipped), lower and slower, and they leave rings only where there is water. Stills cannot show motion: the owner's eyes decide. Nothing spent.
 
+**Build 445 (cover chat):** upright, the open book shows the 1678 title page first (about 3.6 s), then glides to the contents; a touch or swipe moves between them. Nothing spent.
+
 **Build 422 (cover chat): held upright the whole screen is used: the book fills it (the open book shows the contents page large), and in a level the picture sits higher up with the words, choices and buttons in the space below it. Sideways unchanged. Nothing spent.**
 
 **Build 385 (cover chat): no rain sound on the title and contents; it starts with Level 1. Nothing spent.**
