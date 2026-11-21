@@ -236,6 +236,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 **Build 276 (cover chat): the book cover painted in code in the game's own watercolour language (arched window of layered hills under the far light), replacing the leather photograph; no more flicker on opening. See `CLAUDE.md`, "Build 276". Nothing spent.**
 
+**Build 406 (Level 2 edits chat): a slower crossing (.58 slowing to .42 a tick) and the dark creeping in while he wades, deepening slowly after the fears line; lifts only at Help. Nothing spent.**
+
 **Build 398 (Level 2 edits chat): the fears' darkness gathers slowly (about 6 s) and lifts only when Help comes out of the mist (quickly at first, gone in about 2 s). Nothing spent.**
 
 **Build 396 (Level 2 edits chat): the mire's look, second pass (D to G): calmer near mud with broad dark wet ground instead of pale dashes, the dark mist blurred smooth, the steps as uneven stones with soft settled lights, the plain a third shorter. Nothing spent.**

@@ -440,7 +440,7 @@ const SL = (() => {
     C2.rt = 0; C2.handGo = false; C2.tv = null; C2.fy = null; C2.md = null; C2.rq0 = null; C2.q = 0; drops = []; churns = []; fReset(); strings = []; RECS = {}; for (const k in MS) delete MS[k]; C2.D = 0;
     ph = 'plain'; Object.assign(C2, { x: START, y: bankY(START) + 4, face: 1, anim: 12, alpha: 1, sink: 0, reach: 0, stand: 1, sd: QUIET[0], st: 0, faceA: 1, done: 0 });
     pli = { x: START - 80, y: 0, face: 1, anim: 0, alpha: 1, sink: 0, mode: 'follow', px: START - 80, stop: { t: 50, x0: START - 80 - 72.5 * CHR_K, cx: START } };      // he starts standing (his stop video's breathing part)
-    prints = []; fogH = 1; fogS = 1; help = null; mv = null; lift = null; rings = []; steps = []; gloom = gloomTo = 0; noteI = 0; strain = 0; slipT = 0; fearT = 300; fearsSaid = false; goldT = 0; onwayT = 0; capsSaid = new Set(); nearSaid = true; pliGo = 0; cityT = -1; fearT2 = -1; fearHelpT = 0; beatT = -1e9; quietT = 0; helpSayT = 0;
+    prints = []; fogH = 1; fogS = 1; help = null; mv = null; lift = null; rings = []; steps = []; gloom = gloomTo = 0; noteI = 0; strain = 0; slipT = 0; fearT = 300; fearsSaid = false; goldT = 0; onwayT = 0; capsSaid = new Set(); nearSaid = true; pliGo = 0; cityT = -1; fearT2 = -1; fearHelpT = 0; preDk = 0; beatT = -1e9; quietT = 0; helpSayT = 0;
     motes = [...Array(LAST.length)].map((_, i) => ({ ox: -30 - Math.random() * 50, oy: -112 - Math.random() * 40, x: START, y: -150, tw: Math.random() * 6, i }));
     // the steps through the bog, hidden until the lights settle on them: low flat stones, no two alike (from the approved still)
     const R = rngS(33); let sx = BANK0 - 6;
@@ -697,7 +697,7 @@ const SL = (() => {
     } else if (ph === 'wade') {
       // build 120 (owner: "can we make christian move across possibly happen quicker? it's a bit of a slog"): he makes more
       // ground with each heave (.55 a tick, was .32: about 14 s of holding, was 24); the tune still has a note for each footfall
-      const v = want && !C2.tv ? .7 : 0, p = clamp((C2.x - WADE0) / (STUCK_X - WADE0));      // (build 183: DEEP 8, was 22: more of him shows at the far bank, head, shoulders and chest; owner: "show a bit more of Christian at the far bank")
+      const p = clamp((C2.x - WADE0) / (STUCK_X - WADE0)), v = want && !C2.tv ? lerp(.58, .42, smooth(0, 1, p)) : 0;      // build 406 (owner: "draw out his movement across slough a tad"): .58 a tick slowing to .42 by the far bank (was .7 all the way), as the going gets heavier      // (build 183: DEEP 8, was 22: more of him shows at the far bank, head, shoulders and chest; owner: "show a bit more of Christian at the far bank")
       C2.x = Math.min(STUCK_X, C2.x + v); if (!C2.tv) C2.face = 1;
       waStep(v ? .2 : .08);
       if (v) { C2.anim += v / CHR_STEP * 3; footfall(); } else C2.anim = stepAnim(C2.anim, 0, CHR_STEP, CHR_META);
@@ -834,6 +834,7 @@ const SL = (() => {
     // --- THOUGHTS (build 370): what he sees in his mind; each comes, lingers and goes by itself ---
     if (cityT >= 0) cityT++;
     if (fearT2 >= 0) fearT2++;
+    { const pw = clamp((C2.x - WADE0) / (STUCK_X - WADE0)), tgt = ph === 'wade' || ph === 'stuck' ? .4 * Math.pow(pw, 1.4) : ph === 'help' ? preDk : 0; preDk += (tgt - preDk) * .03; }
     if (help && !fearHelpT && fearT2 >= 0) fearHelpT = G.t;      // build 398: noted in the update (it was in the drawing, so it waited for a picture to be drawn)
     if (saying() || G.state === 'dialog') quietT = G.t;
     if (fearT2 >= 0 && !fearHelpT) for (const [k, v] of DRUMS) if (fearT2 === k) { beatT = G.t; drum(v); }      // build 380: the drum beats
@@ -1400,7 +1401,7 @@ const SL = (() => {
   // the beats, in ticks from the FEARS line (each [tick, loudness])
   const DRUMS = [[40, .5], [58, .32], [150, .6], [168, .38], [250, .72], [266, .45], [335, .85], [350, .55], [410, 1], [424, .65], [480, 1.1]];
   const FEAR_END = 560;      // build 398: the drums are done by here (the dark no longer lifts by the clock: only when Help comes)
-  let FP = 0, fearHelpT = 0, beatT = -1e9, quietT = 0, helpSayT = 0;
+  let FP = 0, preDk = 0, fearHelpT = 0, beatT = -1e9, quietT = 0, helpSayT = 0;
   function drum(v) {      // a low skin drum, felt more than heard: a pitch falling from about 80 to 40 Hz, a dull thump of noise
     sweep(82, 40, .7, .13 * v, true); sweep(58, 34, 1, .07 * v); hiss(120, .7, .07 * v, .45, 'lowpass'); hiss(700, .9, .01 * v, .09, 'bandpass');
   }
@@ -1433,10 +1434,12 @@ const SL = (() => {
     return (DMIST = { f: [frame(11), frame(97)], band });
   }
   function fearDark() {
-    if (fearT2 < 0) return 0;
     // build 398 (owner: "The darkness should come on slowly and leave only when help arrives"): it gathers over about six
     // seconds, holds however long he struggles, and lifts only as Help comes out of the mist (quickly at first, so he is seen stepping out of it, gone in about two seconds)
-    const u = fearT2, up = smooth(0, 360, u), down = 1, helpK = fearHelpT ? Math.pow(1 - clamp((G.t - fearHelpT) / 110), 3) : 1;
+    // build 406 (owner: "have the darkness come on more and more slowly (like things getting worse)"): a first dimness creeps
+    // in as he wades out and deepens with every step across (preDk, up to .4 by the far bank); from the fears line it goes on
+    // darkening over about ten seconds, slowly at first and then faster, so things only get worse until Help comes
+    const u = fearT2 < 0 ? 0 : fearT2, up = Math.max(preDk, fearT2 < 0 ? 0 : Math.pow(smooth(0, 600, u), 1.6)), down = 1, helpK = fearHelpT ? Math.pow(1 - clamp((G.t - fearHelpT) / 110), 3) : 1;
     const beat = Math.exp(-(G.t - beatT) / 22) * .12;      // the dark swells a breath at each beat
     return clamp(up * down * helpK * (1 + beat));
   }
