@@ -17,22 +17,27 @@
 const CR = (() => {
   const SO = 'The Shining Ones', S1 = 'The first Shining One', S3 = 'The third Shining One';
   // ---------- the land (world units: x along the way, h up from the foot of the slope) ----------
-  const START = 480, WALL_END = 860, TOMB_X = 5480, SLOPE0 = 1180, CREST0 = 4080, CROSS_X = 4260, CREST1 = 4480, FALL1 = 5400, H_TOP = 860;
+  const START = 480, WALL_END = 860, TOMB_X = 3080, SLOPE0 = 1180, CREST0 = 4080, CROSS_X = 4260, CREST1 = 4480, FALL1 = 5400, H_TOP = 860;
   // the hill twice as high but the slope about as gentle as before, so it is longer (owner: "Not necessarily twice as steep - I like the old slope (maybe a tad steeper is ok)")
   // the cross and the hill larger beside him (owner: "cross needs to be bigger, relative to Christian, hill too"): he is about 150 units tall
   const CROSS_H = 340, CROSS_BY = CROSS_H * .74;
   // THE CLIMB TOLD BY A CUT (owner: "zoom in on Christian climbing and then fade slightly then unfade and zoom out and he's at top"):
   // past CLOSE0 the camera comes in close on him climbing; at CUT_X the picture dips softly toward dark, he is set near the top
   // (SKIP_TO), and it comes up again on a wide look down the hill from the top; then the camera comes back down to him
-  const CLOSE0 = SLOPE0 + 40, CUT_X = SLOPE0 + 300, SKIP_TO = CROSS_X - 300;
-  const STOP_X = CROSS_X + 112;      // where he stands when the burden falls: just past the cross, turned round to face it,
-  // so the burden falls off behind him down the far slope into the sepulchre in the hollow (owner: "Why not on other side like in initial sketch?" ... "Yes!")
+  const CLOSE0 = SLOPE0 + 40, CUT_X = SLOPE0 + 300, SKIP_TO = CROSS_X - 640;
+  // where he stands when the burden falls: just short of the cross, facing it, as he came up (owner: "I'm not sure about
+  // switching his orientation, walking past cross is strange, maybe sepulcher can be below him and a little to the left and
+  // then burden can roll down and down"): it falls off behind him and rolls back down the slope he climbed, into the
+  // sepulchre in a hollow of the hillside below ("a little below, in the bottom, a sepulchre", {93})
+  const STOP_X = CROSS_X - 300;
   const sm = (a, b, x) => smooth(a, b, x);
   function gh(x) {
     let h = H_TOP * Math.pow(sm(SLOPE0, CREST0, x), 1.15);
     h += 10 * Math.sin(Math.PI * clamp((x - CREST0 + 200) / 600)) * sm(SLOPE0, CREST0, x);
     h -= (H_TOP - 70) * sm(CREST1, FALL1, x);      // the far side falls to a hollow 70 above the near foot, where the sepulchre is
-    h += 26 * sm(TOMB_X + 260, TOMB_X + 900, x);
+    // the hollow in the hillside where the sepulchre is: a level floor a little sunk into the slope
+    const hs = H_TOP * Math.pow(sm(SLOPE0, CREST0, TOMB_X), 1.15) - 22, d = x - TOMB_X, w = d >= 0 ? 1 - sm(140, 620, d) : 1 - sm(160, 760, -d);
+    h = lerp(h, hs, w);
     h += (3 * Math.sin(x * .011) + 1.6 * Math.sin(x * .031 + 1)) * sm(SLOPE0, SLOPE0 + 300, x) * (1 - sm(CREST0 - 100, CREST0, x));
     return h;
   }
@@ -112,9 +117,9 @@ const CR = (() => {
   const FOOTY = 418, HY = 322;
   function camTick(snap) {
     const near = { cx: Ch.x + lerp(250, 110, closeK), z: lerp(.8, 1.25, closeK) };
-    if (ph === 'cross' || ph === 'after' || ph === 'shine' || ph === 'leaps' || ph === 'end') { near.cx = CROSS_X + 60; near.z = .86; }
+    if (ph === 'cross' || ph === 'after' || ph === 'shine' || ph === 'leaps' || ph === 'end') { near.cx = CROSS_X - 130; near.z = .86; }
     const open = ph === 'look', fitT = (FOOTY - 30) / (gh(CROSS_X) + CROSS_H - gh(TOMB_X) + 90);
-    const wide = open ? { cx: (START + CROSS_X) / 2 + 420, z: Math.min(VW / (CROSS_X - START + 900), (FOOTY - 40) / (H_TOP + CROSS_H + 40)) } : { cx: (TOMB_X + CROSS_X) / 2 - 40, z: Math.min(VW / 1900, fitT) };
+    const wide = open ? { cx: (START + CROSS_X) / 2 + 420, z: Math.min(VW / (CROSS_X - START + 900), (FOOTY - 40) / (H_TOP + CROSS_H + 40)) } : { cx: (TOMB_X + CROSS_X) / 2 - 50, z: Math.min(VW / (CROSS_X - TOMB_X + 820), fitT) };
     let tcx = lerp(near.cx, wide.cx, wideK), tz = Math.exp(lerp(Math.log(near.z), Math.log(wide.z), wideK));
     const wh = open ? 40 : gh(TOMB_X) - 90, fh = lerp(gh(Ch.x), wh, wideK);
     let twl = FOOTY + fh * tz + (open ? 28 : 0) * wideK;
@@ -178,15 +183,15 @@ const CR = (() => {
   function burdenTick() {
     if (!bur) return;
     if (bur.st === 'roll') {
-      const slope = (gh(bur.x - 4) - gh(bur.x + 4)) / 8;      // > 0 where the ground falls toward the right
+      const slope = (gh(bur.x + 4) - gh(bur.x - 4)) / 8;      // > 0 where the ground falls toward the left, back down the hill
       bur.v = Math.min(5.2, Math.max(.4, bur.v + slope * .12 - .002));
-      bur.x += bur.v; bur.r += bur.v / (BALL.h * CHR_K * .5);
+      bur.x -= bur.v; bur.r -= bur.v / (BALL.h * CHR_K * .5);
       // it tumbles: now and then it bounces off a hump
       bur.vy -= .32; bur.y += bur.vy; if (bur.y <= 0) { bur.y = 0; if (bur.vy < -1.2) thump(Math.min(1, -bur.vy / 5)); bur.vy = bur.v > 1.6 && Math.random() < .045 ? 1.6 + Math.random() * 2.2 : 0; }
-      if (bur.x >= TOMB_X - 52) { bur.st = 'in'; bur.t = 0; }
+      if (bur.x <= TOMB_X + 8) { bur.st = 'in'; bur.t = 0; bur.x0 = bur.x; }
     } else if (bur.st === 'in') {
       // into the mouth of the sepulchre: a last tumble down into the dark, then gone
-      bur.t++; bur.x += Math.max(.5, bur.v * (1 - bur.t / 40)); bur.r += .05; bur.k = 1 - .35 * sm(0, 40, bur.t); bur.dk = sm(0, 30, bur.t); bur.y = -10 * sm(0, 40, bur.t); bur.a = 1 - sm(24, 46, bur.t);
+      bur.t++; bur.x = lerp(bur.x0, TOMB_X, sm(0, 30, bur.t)); bur.r -= .04 * (1 - bur.t / 48); bur.k = 1 - .45 * sm(0, 40, bur.t); bur.dk = sm(0, 26, bur.t); bur.y = 4 * sm(0, 40, bur.t); bur.a = 1 - sm(22, 46, bur.t);
       if (bur.t === 30) { thump(1.3); if (audio()) hiss(70, .6, .12, 1.6); }
       if (bur.t > 48) { bur.st = 'gone'; tombT = t; }
     }
@@ -248,12 +253,43 @@ const CR = (() => {
     // the coping catches a little of the sky
     c.fillStyle = css(mix(col, [200, 190, 190], .08 + .12 * gold)); c.fillRect(-600, -WH - 3, WALL_END + 600, 2);
   }
+  // the sepulchre: a low outcrop of rock in the hollow, a doorway hewn into its face (seen straight on, as the game sees
+  // everything), dark within, and the round stone that closed it rolled aside to the left; one dark tone like the land,
+  // a breath lighter so it reads against the slope, a thin warm edge on the side toward the dawn
+  const TOMB = (() => {
+    const r = rgen(23), top = [];
+    for (let i = 0; i <= 40; i++) { const u = i / 40, X = -190 + 370 * u;
+      // a rounded mass, higher toward the hill (right), its top broken into a few weathered steps
+      const env = Math.sin(Math.PI * Math.pow(u, .9)) * (96 + 40 * u) + 8;
+      top.push([X, -(env + 5 * Math.sin(u * 19 + 1) + 3 * Math.sin(u * 41) + (r() - .5) * 3)]); }
+    return { top };
+  })();
+  const TOMB_K = 1.45;
   function tomb(c) {
-    const x = TOMB_X, h = gh(x), col = mix(mix([28, 28, 36], [34, 30, 34], dawn), [48, 38, 33], gold);
-    c.save(); c.translate(x, -h); c.scale(-1, 1);
-    c.beginPath(); c.moveTo(-58, 5); c.lineTo(-52, -22); c.lineTo(-30, -44); c.lineTo(8, -54); c.lineTo(40, -48); c.lineTo(62, -30); c.lineTo(78, -6); c.lineTo(84, 5); c.closePath(); c.fillStyle = css(col); c.fill();
-    // its mouth, opening toward the slope
-    c.beginPath(); c.moveTo(40, 5); c.lineTo(42, -16); c.quadraticCurveTo(52, -32, 64, -18); c.lineTo(66, 5); c.closePath(); c.fillStyle = 'rgb(8,7,8)'; c.fill();
+    const x = TOMB_X, h = gh(x), col = mix(mix([30, 30, 38], [36, 32, 36], dawn), [52, 41, 35], gold);
+    c.save(); c.translate(x, -h + 3); c.scale(TOMB_K, TOMB_K);
+    // the rock
+    const T = TOMB.top;
+    c.beginPath(); c.moveTo(T[0][0] - 20, 60); T.forEach(([px, py]) => c.lineTo(px, py)); c.lineTo(T[T.length - 1][0] + 30, 60); c.closePath();
+    c.fillStyle = css(col); c.fill();
+    c.save(); c.clip();
+    // lighter toward the top, darker at the foot
+    let g = c.createLinearGradient(0, -140, 0, 10); g.addColorStop(0, css(mix(col, [150, 140, 150], .07 + .05 * gold))); g.addColorStop(1, css(mix(col, [0, 0, 0], .22))); c.fillStyle = g; c.fillRect(-200, -150, 400, 160);
+    c.restore();
+    // the doorway, hewn: a dressed surround a little lighter, a round head, a deep dark within, a worn sill
+    const dw = 26, dh = 70;
+    c.fillStyle = css(mix(col, [180, 168, 170], .09 + .06 * gold));
+    c.beginPath(); c.moveTo(-dw - 7, 4); c.lineTo(-dw - 7, -dh + dw); c.arc(0, -dh + dw, dw + 7, Math.PI, 0); c.lineTo(dw + 7, 4); c.closePath(); c.fill();
+    c.beginPath(); c.moveTo(-dw, 4); c.lineTo(-dw, -dh + dw); c.arc(0, -dh + dw, dw, Math.PI, 0); c.lineTo(dw, 4); c.closePath();
+    g = c.createLinearGradient(0, -dh, 0, 4); g.addColorStop(0, 'rgb(4,4,6)'); g.addColorStop(.7, 'rgb(9,8,10)'); g.addColorStop(1, css(mix([9, 8, 10], [60, 44, 34], .25 * gold))); c.fillStyle = g; c.fill();
+    c.fillStyle = css(mix(col, [190, 176, 170], .12 + .08 * gold)); c.fillRect(-dw - 9, 1, 2 * dw + 18, 4);
+    // the great round stone, rolled aside, standing on its edge against the rock
+    const sx0 = -86, sr = 37;
+    c.fillStyle = css(mix(col, [150, 140, 148], .07 + .04 * gold)); c.beginPath(); c.ellipse(sx0, -sr + 3, sr * .92, sr, 0, 0, 7); c.fill(); c.strokeStyle = css(mix(col, [0, 0, 0], .45)); c.lineWidth = 2; c.stroke();
+    c.strokeStyle = css(mix(col, [0, 0, 0], .3)); c.lineWidth = 1.4; c.beginPath(); c.ellipse(sx0 + 3, -sr + 3, sr * .5, sr * .62, 0, 0, 7); c.globalAlpha = .5; c.stroke(); c.globalAlpha = 1;
+    c.fillStyle = css(mix(col, [0, 0, 0], .35)); c.beginPath(); c.ellipse(sx0 + 4, 3, sr * .8, 3, 0, 0, 7); c.fill();
+    // the dawn's thin edge along the rock's top, toward the light
+    if (gold > .01) { c.globalCompositeOperation = 'lighter'; c.strokeStyle = css([255, 214, 160], .28 * gold); c.lineWidth = 1.2; c.beginPath(); T.forEach(([px, py], i) => i > 6 ? c.lineTo(px, py) : c.moveTo(px, py)); c.stroke(); c.globalCompositeOperation = 'source-over'; }
     c.restore();
   }
   function cross(c) {
@@ -280,7 +316,7 @@ const CR = (() => {
     c.restore();
   }
   // the three Shining Ones: tall soft figures of light ("their faces shone as the light"), drawn with light, not paint
-  const SH = [[CROSS_X - 212, 172, 3.1], [CROSS_X - 158, 186, 1.7], [CROSS_X - 104, 176, 0]];
+  const SH = [[CROSS_X - 92, 172, 3.1], [CROSS_X - 146, 186, 1.7], [CROSS_X - 204, 176, 0]];
   // a human shape of light, baked once: head, shoulders, a long robe to the ground, arms at the sides (the third holds
   // one arm out, the roll in his hand); drawn white, then blurred by shrinking and enlarging (no ctx.filter on iPhone)
   const SHF = {};
@@ -313,7 +349,7 @@ const CR = (() => {
       c.save(); c.translate(x, -hh);
       // a soft wide glow, then the figure itself: a very diffuse human shape of light (owner: "The shining ones need very diffuse human shape")
       let g = c.createRadialGradient(0, -H * .5, 0, 0, -H * .5, H * .9); g.addColorStop(0, css([255, 236, 196], .1 * al)); g.addColorStop(1, 'rgba(255,230,190,0)'); c.fillStyle = g; c.fillRect(-H, -H * 1.45, H * 2, H * 1.6);
-      const F = shineFig(i === 2), w = H * F.w / F.h * br;
+      const F = shineFig(i === 2), w = H * F.w / F.h * br; if (i === 2) c.scale(-1, 1);
       c.globalCompositeOperation = 'screen'; c.globalAlpha = .7 * al; c.drawImage(F.wide, -w / 2, -H * 1.04, w, H * 1.08);
       c.globalAlpha = .6 * al; c.drawImage(F.soft, -w / 2, -H * 1.04, w, H * 1.08);
       c.globalAlpha = 1; c.globalCompositeOperation = 'lighter';
@@ -326,8 +362,8 @@ const CR = (() => {
     // scroll be glowing too and be diffuse until it's handed to Christian"); touched, it is carried to him, its glow
     // drawing in and its shape coming clear as it reaches his hands, then it goes into the tray
     if (rollShow > .01 && rollGone < 1) {
-      const [x, H] = SH[2], hx = x + 22, hy = -gh(x) - H * .52 + Math.sin(t / 30) * 2;
-      const u = rollFly ? smooth(0, 1, rollFly.t / ROLL_FLY) : 0, cxr = Ch.x - 24, cyr = -gh(Ch.x) - 72;
+      const [x, H] = SH[2], hx = x - 22, hy = -gh(x) - H * .52 + Math.sin(t / 30) * 2;
+      const u = rollFly ? smooth(0, 1, rollFly.t / ROLL_FLY) : 0, cxr = Ch.x + 24, cyr = -gh(Ch.x) - 72;
       const rx = lerp(hx, cxr, u), ry = lerp(hy, cyr, u) - Math.sin(Math.PI * u) * 26, a2 = rollShow * (1 - rollGone), sh = smooth(.45, 1, u), df = 1 - sh;
       c.save(); c.translate(rx, ry);
       c.globalCompositeOperation = 'screen';
@@ -342,7 +378,7 @@ const CR = (() => {
       rollAt = [rx, ry];
     }
   }
-  const rollPt = () => { const [x, H] = SH[2]; return [sx(x + 22), sy(gh(x) + H * .52)]; };
+  const rollPt = () => { const [x, H] = SH[2]; return [sx(x - 22), sy(gh(x) + H * .52)]; };
   const chrPt = () => [sx(Ch.x), sy(gh(Ch.x) + 80)];
 
   // ---------- the story ----------
@@ -427,18 +463,16 @@ const CR = (() => {
       let v = want ? MAXV * .9 : 0;
       if (Ch.x + v > STOP_X) v = Math.max(0, STOP_X - Ch.x);
       walk(v);
-      if (Ch.x >= STOP_X - .5 && Ch.sd != null && !saying()) { ph = 'cross'; G.state = 'auto'; t = 0; Ch.tv = TURN.length ? { t: TURN.length - 1 } : null; if (!Ch.tv) Ch.face = -1; }
+      if (Ch.x >= STOP_X - .5 && Ch.sd != null && !saying()) { ph = 'cross'; G.state = 'auto'; t = 0; }
     } else if (ph === 'cross') {
-      // he has walked up past the cross; he turns round to face it (his turn played back, quickly, eased), then the
-      // standing picture gives way to the clip, mirrored, and the burden loosens by itself and falls behind him
-      if (Ch.tv) { Ch.tv.t -= (TURN.length - 1) / 70 * (.35 + .65 * Math.sin(Math.PI * clamp(Ch.tv.t / (TURN.length - 1)))); if (Ch.tv.t <= 0) { Ch.tv = null; Ch.face = -1; Ch.cf = 0; Ch.fade = 0; t = 0; } return camTick(false); }
+      // he stands before the cross; the standing picture gives way to the clip and the burden loosens by itself and falls behind him
       if (Ch.cf < 0) { Ch.cf = 0; Ch.fade = 0; }
       Ch.fade = Math.min(1, Ch.fade + .05);
       if (t === 40) { caption(LOOSED); if (audio()) { hiss(300, 3, .03, 1.2); } }
       if (Ch.fade >= 1 && t > 50) Ch.cf = Math.min(SWAP, Ch.cf + 16 / 60);
       if (Ch.cf >= SWAP) {
         ph = 'tumble'; t = 0; thump(1.1);
-        bur = { st: 'roll', x: STOP_X - (BALL.ax - CLIP_META.ax) * CHR_K, y: 0, vy: 0, v: .9, r: 0, k: 1, a: 1, dk: 0, t: 0 };
+        bur = { st: 'roll', x: STOP_X + (BALL.ax - CLIP_META.ax) * CHR_K, y: 0, vy: 0, v: .9, r: 0, k: 1, a: 1, dk: 0, t: 0 };
         wideTo = 1;
       }
     } else if (ph === 'tumble') {

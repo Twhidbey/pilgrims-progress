@@ -8,6 +8,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 **Build 419 (Level 3 chat):** the wheat in front of Level 3's road is kept, Level 1's kind with a gentle rise and fall along its top; Wiseman wades through it to the meeting. `?wheat=0` hides it.
 **Build 423 (Level 4 chat): no flicker between the house cutaway and the door's painting at the start of Level 4. Next: every room redrawn in code, room 1 first, after three critic subagents (design, story and beauty, play).**
 
+**Build 424 (Cross chat): Level 5, he stops short of the cross facing it (no turn); the burden rolls back down the slope into a new sepulchre (a rock outcrop with a hewn doorway and the rolled stone) in a hollow below him to the left. Nothing spent.**
+
 ## START HERE (rewritten at build 140, Nov 16 2026)
 
 **Build 420 (vision chat): the castle sits on the summit, its crag faded into the rock** (free). **Build 415 (vision chat): a rock mountain drawn in code holds the castle, the castle a third of its size** (free; see CLAUDE.md build 415). **Build 413 (vision chat): Beelzebub's castle painted** (about 15 cents, the owner said "Paint it"): a huge dark fortress on a crag after John Martin, left of the gate's wall end; the camera stands back on it as he arrives and glances back while the arrows fly. See CLAUDE.md, Level 3, build 413. Still open from this chat: Christian's new coat after the Cross (a free FLUX retry is scheduled; show the still before any clips); which lines at the mountain's foot the owner wants fixed.
