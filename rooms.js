@@ -354,7 +354,7 @@ const RM = (() => {
       } });
   }
   if (!PAINTED) { const n = 'room2-drawn'; loads[n] = new Promise(r => setTimeout(r, 0)).then(() => (pics[n] = DRAWN ? bakeR2() : bakeR2s())); pic('room2-girl'); pic('room2-sweeper'); }
-  if (D4) { const n = 'room4-drawn'; loads[n] = new Promise(r => setTimeout(r, 0)).then(() => (pics[n] = bakeR4())); pic('room4-caster'); pic('goodwill-reach'); }
+  if (D4) { const n = 'room4-drawn'; loads[n] = new Promise(r => setTimeout(r, 0)).then(() => (pics[n] = bakeR4())); pic('room4-caster2'); pic('room4-pourer'); }
   // a soft flame: stacked teardrops, the core pale gold, the edge amber, swaying and breathing (no hard tongues)
   function flame(c, x, y, h, w, ph, a = 1) {
     for (const [k, col, al] of [[1, [235, 110, 40], .32], [.78, [250, 160, 60], .45], [.52, [255, 210, 120], .6], [.3, [255, 240, 200], .7]]) {
@@ -444,7 +444,7 @@ const RM = (() => {
   }
   // ROOM 1, A PRIVATE ROOM ({72}): dark but for his man's taper; he lights the candle on its stand; he opens a door in the wall,
   // and there hangs the picture of the grave person, a crown of gold over his head. After Rembrandt: one candle in a great dark.
-  const R1 = { CAN: [1290, 818], SERV: 1140, NICHE: [1500, 300, 2240, 1040], PIC: [1560, 360, 2180, 980], CROWN: [1879, 431] };
+  const R1 = { CAN: [1290, 818], SERV: 1090, NICHE: [1576, 300, 2164, 1040], PIC: [1636, 360, 2104, 980], CROWN: [1899, 415] };
   function bakeR1() {
     const [nx0, ny0, nx1, ny1] = R1.NICHE;
     return bakeShell({ seed: 21, doors: 'LR', lights: [{ x: R1.CAN[0] + 120, y: 760, r: 1150, lit: [112, 78, 44], half: [58, 39, 25], sx: 1.15 }],
@@ -487,7 +487,19 @@ const RM = (() => {
   // ROOM 7, THE BEDCHAMBER UPSTAIRS (build 427; the book {89}: "a chamber, where there was one rising out of bed"): wine-brown plaster, the
   // bed on the left (a dark crop of the old painting stands in for the man and his bed), the bare wall in the middle the dream's stage, lit
   // only by light (after Belshazzar's Feast: the light on the wall, no hand, no writing); the door to the stair on the right.
-  const R7 = { BED: [200, 331, 1450, 1281], MAN: [760, 700], WALL: [1600, 2500], GOLD: [2050, 420] };
+  function drawBed7(c, FY) {
+    // a four-poster in the dark: a canopy, wine curtains drawn back and gathered at the posts, a dark coverlet thrown back (soft shapes, one quiet tone each)
+    const x0 = 180, x1 = 760, top = 400, bed = 970, fill = (col, f) => { c.fillStyle = col; c.beginPath(); f(); c.fill(); };
+    fill('#160909', () => { c.moveTo(u(x0 - 40), v(top - 50)); c.lineTo(u(x1 + 40), v(top - 50)); c.lineTo(u(x1 + 30), v(top + 20)); c.quadraticCurveTo(u((x0 + x1) / 2), v(top + 60), u(x0 - 30), v(top + 20)); });
+    fill('#140a08', () => { c.moveTo(u(x0 + 6), v(bed - 150)); c.quadraticCurveTo(u(x0 + 60), v(bed - 220), u(x0 + 150), v(bed - 170)); c.lineTo(u(x0 + 150), v(bed + 20)); c.lineTo(u(x0 + 6), v(bed + 20)); });
+    fill('#3a2a26', () => { c.ellipse(u(x0 + 110), v(bed - 30), 80 * S, 30 * S, -.12, 0, 6.2832); });
+    fill('#2e1210', () => { c.moveTo(u(x0 + 10), v(bed + 4)); c.quadraticCurveTo(u(x0 + 200), v(bed - 46), u(x0 + 330), v(bed - 6)); c.quadraticCurveTo(u(x0 + 420), v(bed + 26), u(x1 - 10), v(bed - 10)); c.lineTo(u(x1 + 6), v(bed + 150)); c.quadraticCurveTo(u((x0 + x1) / 2), v(bed + 175), u(x0 + 4), v(bed + 150)); });
+    fill('#3c1a16', () => { c.moveTo(u(x0 + 330), v(bed - 6)); c.quadraticCurveTo(u(x0 + 400), v(bed - 40), u(x0 + 470), v(bed - 20)); c.quadraticCurveTo(u(x0 + 420), v(bed + 26), u(x0 + 330), v(bed - 6)); });
+    fill('#0f0706', () => { c.rect(u(x0 + 10), v(bed + 150), (x1 - x0 - 10) * S, (FY - bed - 150) * S); });
+    fill('#0e0605', () => { for (const x of [x0, x1]) c.rect(u(x - 13), v(top - 50), 26 * S, (FY - top + 50) * S); });
+    for (const [x, d] of [[x0, 1], [x1, -1]]) fill('#1c0b0a', () => { c.moveTo(u(x), v(top + 10)); c.quadraticCurveTo(u(x + d * 120), v(top + 200), u(x + d * 30), v(top + 380)); c.quadraticCurveTo(u(x + d * 70), v(FY - 300), u(x + d * 50), v(FY - 10)); c.lineTo(u(x + d * 8), v(FY - 10)); c.lineTo(u(x + d * 8), v(top + 10)); });
+  }
+  const R7 = { BED: [200, 331, 1450, 1281], MAN: [960, 840], WALL: [1600, 2500], GOLD: [2050, 420] };
   function bakeR7() {
     return bakeShell({ seed: 77, doors: 'R', roof: 'rafters', ceil: 120, wallC: '#24140f', floorC: '#1d120b',
       lights: [{ x: 2050, y: 820, r: 1100, lit: [70, 44, 34], half: [40, 24, 18], a: .7 }, { x: 760, y: 900, r: 800, lit: [64, 40, 30], half: [36, 22, 16], a: .6 }] });
@@ -614,7 +626,7 @@ const RM = (() => {
     r1: PAINTED ? null : {
       pic: 'room1-drawn', shell: 1, FY: HOUSE.FY, tone: [150, 128, 108], toneC: [118, 100, 86], k: 1,
       light() { return { x: R1.CAN[0], a: .55 * smooth(.2, 1, this.lit) * (1 + .05 * Math.sin(G.t / 5)), col: [255, 190, 120] }; },
-      enter() { this.lit = 0; this.door = 0; this.crown = 0; this.serv = 0; this.zin = 1; this.vx = 0; pic('room1-portrait'); pic('room4-caster'); },
+      enter() { this.lit = 0; this.door = 0; this.crown = 0; this.serv = 0; this.zin = 1; this.vx = 0; pic('room1-portrait2'); pic('room1-servant'); },
       run() { talk([[TIP, 'Touch the candle.', 'candle']], () => { ph = 'light'; t = 0; G.state = 'auto'; }); },
       act(sx, sy) {
         if (G.act === 'candle' && (sx == null || near(sx, sy, R1.CAN[0], R1.CAN[1], 170))) { next(true); if (audio()) { noise(2500, 2, .4, .06); note(72, .03, 2); } }
@@ -635,7 +647,7 @@ const RM = (() => {
         { const q = smooth(0, 1, this.door); this.zin = 1 + .3 * q; this.vx = -(R1.PIC[0] + R1.PIC[2] - 3168) / 2 * S * (VW / ((EX.x1 - EX.x0) * S)) * this.zin * q * .85; }
       },
       under(c) {
-        const [px0, py0, px1, py1] = R1.PIC, [nx0, ny0, nx1, ny1] = R1.NICHE, im = pics['room1-portrait'], L = smooth(0, 1, this.lit);
+        const [px0, py0, px1, py1] = R1.PIC, [nx0, ny0, nx1, ny1] = R1.NICHE, im = pics['room1-portrait2'], L = smooth(0, 1, this.lit);
         // the picture in its frame, deep in the recess: lit from below and the side by the candle (darker toward its far edge and top)
         const q = smooth(0, 1, this.door);
         if (im) { c.drawImage(im, u(px0), v(py0), (px1 - px0) * S, (py1 - py0) * S);
@@ -663,19 +675,19 @@ const RM = (() => {
         const [cx, cy] = R1.CAN; c.fillStyle = '#d9cbb0'; c.fillRect(u(cx - 9), v(cy - 52), 18 * S, 52 * S);
         const fl = 1 + .08 * Math.sin(G.t / 4.7) * Math.sin(G.t / 11);
         if (L > .01) { glow(c, u(cx), v(cy - 74), 260 * S * fl, [255, 190, 110], .18 * L); glow(c, u(cx), v(cy - 74), 90 * fl * L, [255, 200, 120], .5 * L); c.fillStyle = `rgba(255,236,190,${(.95 * L).toFixed(3)})`; c.beginPath(); c.ellipse(u(cx), v(cy - 72), 7 * S * fl, 20 * S * fl, 0, 0, 6.2832); c.fill(); c.fillStyle = `rgba(255,246,220,${L.toFixed(3)})`; c.beginPath(); c.ellipse(u(cx), v(cy - 68), 3 * S, 10 * S, 0, 0, 6.2832); c.fill(); }
-        if (this.lit < .02) { glow(c, u(cx - 14), v(cy + 6), 40, [255, 190, 110], .6); }
-        // his man: a dark figure with a taper, beside the stand; he steps back into the dark once the door is open (a stand-in until his own picture is made)
-        if (pics['room4-caster']) {
-          const sx = R1.SERV + 270 * smooth(0, 1, this.serv), a = 1;
-          fig(c, 'room4-caster', { ax: 35, g: 302, s: 2.1, ct: 1.2, mul: .34, sat: .4 }, sx, R.FY, 1, 1, a, [70, 52, 40]);
-          if (this.lit < .02) { const hx = sx + 39, hy = R.FY - 333; c.strokeStyle = 'rgba(200,170,120,.55)'; c.lineWidth = Math.max(.8, 3 * S); c.beginPath(); c.moveTo(u(hx), v(hy)); c.lineTo(u(R1.CAN[0] - 14), v(R1.CAN[1] + 14)); c.stroke(); }
+        if (this.lit < .02) { const [tx, ty] = this.tip || [cx - 14, cy + 6]; glow(c, u(tx), v(ty), 40, [255, 190, 110], .6); glow(c, u(tx), v(ty), 8, [255, 236, 190], .9); }
+        // his man, holding up his taper; he steps back into the dark once the door is open (his own figure, toned dark, build 442)
+        if (pics['room1-servant']) {
+          const sx = R1.SERV + 270 * smooth(0, 1, this.serv);
+          this.tip = [sx + 187, R.FY - 617];
+          fig(c, 'room1-servant', { ax: 85, g: 780, s: .8, ct: 1, mul: 1, sat: 1, noSh: 1 }, sx, R.FY, -1, 1, 1, [150, 136, 124]);
         }
       },
       people(c) { visitor(c, 'C', 520, 1); visitor(c, 'I', 800, 1); },
       over(c) {
         const L = smooth(0, 1, this.lit), fl = 1 + .05 * Math.sin(G.t / 5) * Math.sin(G.t / 11), [cx, cy] = R1.CAN;
         // before the candle the room is nearly black but for the taper; as it catches, the dark lifts from the stand outward
-        darkWith(c, [[u(cx - 14), v(cy + 6), 120, .9], [u(cx), v(cy - 60), (80 + 1500 * L) * fl * S / .38 * .38, Math.min(1, L * 2.5)]], .93 - .7 * L);
+        darkWith(c, [[u((this.tip || [cx - 14])[0]), v((this.tip || [0, cy + 6])[1]), 120, .9], [u(cx), v(cy - 60), (80 + 1500 * L) * fl * S / .38 * .38, Math.min(1, L * 2.5)]], .93 - .7 * L);
       },
     },
     // 1 THE PICTURE, the old painted room (kept: ?painted shows it)
@@ -771,7 +783,7 @@ const RM = (() => {
       pic: 'room3-drawn', shell: 1, FY: HOUSE.FY, tone: [190, 160, 130], k: 1, noShadow: 1,
       light(x) { return { x: R3.LANT[0], a: .3, col: [255, 200, 130] }; },
       enter() {
-        this.bag = { show: false, a: 0, tip: 0, empty: 0 }; this.coins = []; this.bubbles = []; this.great = null; this.rags = 0; pic('room3-passion'); pic('room3-patience'); pic('room3-passion-rags');
+        this.bag = { show: false, a: 0, tip: 0, empty: 0 }; this.coins = []; this.bubbles = []; this.great = null; this.rags = 0; pic('room3-passion2'); pic('room3-patience2'); pic('room3-rags2');
       },
       run() {
         const self = this;
@@ -803,9 +815,9 @@ const RM = (() => {
         const g = this.great; if (g) { g.life++; g.r = Math.min(g.R, g.r + .47); if (!g.pop) { g.y -= 1.45 * smooth(0, 60, g.life); g.x += Math.sin(g.life / 70) * .8; if (g.life > g.L) { g.pop = 1; note(91, .02, 1.4); } } else g.pop++; }
       },
       under(c) {
-        // the two boys in their chairs (cut from the old painting); Passion in rags fades in over the fine boy
+        // the two boys in their chairs (their own figures, toned dark into the game's figure look, faces a plain wash); Passion in rags fades in over the fine boy
         const q = smooth(0, 1, this.rags), dr = (n, x, y, w, h, a) => { const im = pics[n]; if (im && a > .01) { c.globalAlpha = a; c.drawImage(im, u(x + R3.X), v(y + 8), w * S, h * S); c.globalAlpha = 1; } };
-        dr('room3-patience', 1692, 604, 361, 640, 1); dr('room3-passion', 774, 690, 425, 552, 1 - q); dr('room3-passion-rags', 781, 650, 342, 590, q);
+        dr('room3-patience2', 1736, 712, 273, 530, 1); dr('room3-passion2', 783, 690, 406, 552, 1 - q); dr('room3-rags2', 783, 716, 356, 526, q);
         // the horn lantern on its bracket, the room's one light
         const [lx, ly] = R3.LANT, f = 1 + .04 * Math.sin(G.t / 6) * Math.sin(G.t / 13); glow(c, u(lx), v(ly), 220 * S / .38 * .38, [255, 200, 130], .22 * f); glow(c, u(lx), v(ly), 26, [255, 226, 170], .6 * f);
       },
@@ -860,13 +872,10 @@ const RM = (() => {
       // drawn room only: the fire, the man casting water and the man pouring oil behind the wall, all live
       under(c) {
         if (!D4) return;
-        const FY = this.FY, F = R4D.FIRE, cs = pics['room4-caster'], po = pics['goodwill-reach'];
+        const FY = this.FY, F = R4D.FIRE, cs = pics['room4-caster2'], po = pics['room4-pourer'];
         // the man casting water, dark against the firelit wall; his bucket swings up at each cast
-        const cx = 1330, q = Math.max(0, Math.sin(Math.min(1, this.cast) * Math.PI));
-        if (cs) fig(c, 'room4-caster', R4D.caster, cx, FY, 1, 1, 1, [70, 48, 40]);
-        const bx = cx + 70 + 40 * q, by = 985 - 70 * q; c.save(); c.translate(u(bx), v(by)); c.rotate(-.2 - 1.1 * q); c.fillStyle = '#1a0e09';
-        c.beginPath(); c.moveTo(-36 * S, -44 * S); c.lineTo(36 * S, -44 * S); c.lineTo(28 * S, 40 * S); c.lineTo(-28 * S, 40 * S); c.closePath(); c.fill();
-        c.strokeStyle = 'rgba(220,130,60,.5)'; c.lineWidth = 1.2; c.beginPath(); c.moveTo(36 * S, -44 * S); c.lineTo(28 * S, 40 * S); c.stroke(); c.restore();
+        const cx = 1150;
+        if (cs) fig(c, 'room4-caster2', { ax: 150, g: 781, s: .8, ct: 1, mul: 1, sat: 1, noSh: 1 }, cx, FY, -1, 1, 1, [165, 146, 132]);
         for (const w of this.water) { c.fillStyle = css([210, 220, 228], .55 * w.a); c.beginPath(); c.arc(u(w.x), v(w.y), Math.max(.8, 3 * S), 0, 6.2832); c.fill(); }
         // the fire: a soft heart and a few flames, higher and hotter in spite of the water
         // it shrinks a moment where the water strikes, then rises higher than before (the book: "yet did the fire burn higher and hotter")
@@ -874,8 +883,7 @@ const RM = (() => {
         for (const [dx, h, w, ph] of [[-95, 320, 130, 0], [0, 480, 170, 1.7], [85, 380, 140, 3.1], [-30, 240, 240, 4.4], [40, 200, 200, 2.6]]) flame(c, F + dx, FY - 24, h * gk, w * (.9 + .15 * this.grow), ph);
         // behind the wall: the man pouring oil and the small fire it feeds (the dark in over() hides them until they go round)
         flame(c, R4D.SMALL, FY - 8, 120, 60, 2.2, .9); flame(c, R4D.SMALL + 20, FY - 8, 80, 50, 5.1, .8);
-        if (po) fig(c, 'goodwill-reach', R4D.pourer, 2440, FY, 1, 1, 1, [64, 44, 40]);
-        const jx = 2215, jy = 905; c.fillStyle = '#1a0e09'; c.beginPath(); c.ellipse(u(jx), v(jy), 15 * S, 20 * S, -.6, 0, 6.2832); c.fill();
+        if (po) fig(c, 'room4-pourer', { ax: 157, g: 790, s: .8, ct: 1, mul: 1, sat: 1, noSh: 1 }, 2382, FY, -1, 1, 1, [255, 255, 255]);
       },
       run() { talk([[I, 'This fire is the work of grace in the heart. He who casts water on it is the Devil. Come, and see why it burns on.'], [TIP, 'Hold to go round the back of the wall.', 'round']], () => {}); },
       act() {},
@@ -887,16 +895,16 @@ const RM = (() => {
           const c0 = this.cast; this.cast += 1 / 70; if (this.cast >= 3.2) this.cast = 0;
           if (c0 < .95 && this.cast >= .95) { this.dip = 1; noise(3000, 1, .6, .05); noise(500, 2, .5, .04); }
           if (this.dip > 0) { this.dip = Math.max(0, this.dip - .02); if (this.dip < .5) this.grow = Math.min(1, this.grow + .004); }
-          if (this.cast > .35 && this.cast < .7) for (let i = 0; i < 6; i++) this.water.push({ x: 1450 + rnd() * 24, y: 880 + rnd() * 20, vx: 4.6 + rnd() * 2, vy: -4 - rnd() * 1.6, a: 1 });
+          if (this.cast > .35 && this.cast < .7) for (let i = 0; i < 6; i++) this.water.push({ x: 1478 + rnd() * 20, y: 826 + rnd() * 16, vx: 4.6 + rnd() * 2, vy: -4 - rnd() * 1.6, a: 1 });
           for (const w of this.water) { w.vy += .16; w.x += w.vx; w.y += w.vy; if (w.x > R4D.FIRE - 90) w.a *= .82; }
           this.water = this.water.filter(w => w.a > .05 && w.y < this.FY);
         }
         if (G.t % 5 === 0) this.steam.push({ x: 1760 + rnd() * 80, y: 800 + rnd() * 60, vy: -.8 - rnd(), a: .5, s: 20 + rnd() * 30 });
         for (const s of this.steam) { s.y += s.vy; s.x -= .3; s.a *= .985; s.s += .5; }
         this.steam = this.steam.filter(s => s.a > .03);
-        if (this.rv > .3 && G.t % 7 === 0) this.oil.push(D4 ? { x: 2215, y: 918, vy: 1 } : { x: 2217, y: 880, vy: 1 });
+        if (this.rv > .3 && G.t % 7 === 0) this.oil.push(D4 ? { x: 2226, y: 786, vy: 1 } : { x: 2217, y: 880, vy: 1 });
         for (const o of this.oil) { o.vy += .3; o.y += o.vy; o.x -= .4; }
-        this.oil = this.oil.filter(o => o.y < 1080);
+        this.oil = this.oil.filter(o => o.y < (D4 ? 1200 : 1080));
       },
       people(c) { const q = smooth(0, .5, this.rv), r = smooth(.6, 1, this.rv); visitor(c, 'I', D4 ? 680 : 330, 1, 1, 1 - q); visitor(c, 'C', D4 ? 400 : 40, 1, 1, 1 - q); if (r > 0) { visitor(c, 'I', 2700, -1, 1, r); visitor(c, 'C', 2930, -1, 1, r); } },
       over(c) {
@@ -967,7 +975,7 @@ const RM = (() => {
     r6: PAINTED ? null : {
       pic: 'room6-drawn', shell: 1, FY: HOUSE.FY, tone: [120, 110, 100], k: 1, noShadow: 1,
       light(x) { return { x: R6.LAND, a: .12, col: [200, 200, 210] }; },
-      enter() { this.shk = 0; this.motes = Array.from({ length: 26 }, () => ({ q: rnd(), o: rnd() * 7, s: .6 + rnd() * 1.4 })); pic('room6-man'); },
+      enter() { this.shk = 0; this.motes = Array.from({ length: 26 }, () => ({ q: rnd(), o: rnd() * 7, s: .6 + rnd() * 1.4 })); pic('room6-caged'); },
       run() { talk([[C, 'Now let me go on my way.'], [I, 'Stay, till I have shown you a little more.'], [TIP, 'Touch the cage.', 'cage']], () => { creak(); this.shk = .6; ph = 'cage'; t = 0; G.state = 'auto'; }); },
       act(sx, sy) { if ((G.act === 'cage' || G.act === 'cage2') && (sx == null || near(sx, sy, 1950, 900, 240))) next(true); },
       upd() {
@@ -985,8 +993,8 @@ const RM = (() => {
         for (let k = 0; k < 5; k++) { const w0 = 50 + k * 22, w1 = 120 + k * 60; c.fillStyle = 'rgba(120,124,134,' + (.035 - k * .005).toFixed(3) + ')'; c.beginPath(); c.moveTo(u(gx - w0), v(gy + 40)); c.lineTo(u(gx + w0), v(gy + 40)); c.lineTo(u(L + w1), v(FY)); c.lineTo(u(L - w1), v(FY)); c.closePath(); c.fill(); }
         for (const m of this.motes) { const q = (m.q + G.t / 4000) % 1, mx = gx + (L - gx) * q + 40 * Math.sin(G.t / 90 + m.o), my = gy + 40 + (FY - gy - 40) * q; c.fillStyle = 'rgba(200,200,210,' + (.25 * Math.sin(q * Math.PI)).toFixed(3) + ')'; c.beginPath(); c.arc(u(mx), v(my), m.s, 0, 6.2832); c.fill(); }
         c.restore();
-        // the man, seated, head bowed, hands folded: a soft crop of the old painting, nearly dark (a stand-in until his own figure is made)
-        const im = pics['room6-man'], [mx0, my0, mx1, my1] = R6.MAN; if (im) { c.globalAlpha = .9; c.drawImage(im, u(mx0), v(my0), (mx1 - mx0) * S, (my1 - my0) * S); c.globalAlpha = 1; c.fillStyle = 'rgba(14,10,8,.35)'; }
+        // the man on a stool, head bowed, hands folded (his own figure, toned dark, build 442)
+        if (pics['room6-caged']) fig(c, 'room6-caged', { ax: 153, g: 535, s: .8, ct: 1, mul: 1, sat: 1, noSh: 1 }, 1950, FY, -1, 1, 1, [255, 242, 228]);
         // the iron cage over him: a frame and bars, the bars' left edges barely caught by the faint light; it shakes when touched
         c.save(); c.translate(dx * S, 0); c.fillStyle = '#0b0908';
         c.fillRect(u(x0 - 10), v(y0 - 14), (x1 - x0 + 20) * S, 22 * S); c.fillRect(u(x0 - 10), v(FY - 18), (x1 - x0 + 20) * S, 20 * S);
@@ -1020,7 +1028,7 @@ const RM = (() => {
     r7: PAINTED ? null : {
       pic: 'room7-drawn', shell: 1, FY: HOUSE.FY, tone: [130, 110, 100], k: 1, noShadow: 1,
       enter() { this.blk = 0; this.fl = 0; this.lt = .2; this.lv = .2; this.sh = .35; this.cur = 0; this.up = []; this.upOn = 0; this.left = 0;
-        this.clouds = Array.from({ length: 30 }, (_, i) => ({ x: 1500 + rnd() * 1100, y: 380 + rnd() * 400, r: 90 + rnd() * 160, v: (i % 2 ? 1 : -1) * (.15 + rnd() * .25) })); pic('room7-bed'); },
+        this.clouds = Array.from({ length: 30 }, (_, i) => ({ x: 1500 + rnd() * 1100, y: 380 + rnd() * 400, r: 90 + rnd() * 160, v: (i % 2 ? 1 : -1) * (.15 + rnd() * .25) })); pic('room7-rising'); },
       run() { talk([[C, 'Why does this man tremble so?'], [TIP, 'Touch the man.', 'man']], () => { ph = 'tell'; t = 0; G.state = 'auto'; this.sh = 1; }); },
       act(sx, sy) { if (G.act === 'man' && (sx == null || near(sx, sy, R7.MAN[0], R7.MAN[1], 240))) next(true); },
       upd() {
@@ -1038,9 +1046,10 @@ const RM = (() => {
         this.up = this.up.filter(q => q.a > .02);
       },
       under(c) {
-        // the man trembles: the bed's picture laid a hair off, back and forth
-        const im = pics['room7-bed'], [bx0, by0, bx1, by1] = R7.BED, a = this.sh * (.6 + .4 * Math.sin(G.t / 9)), dx = Math.sin(G.t * 1.9) * 1.2 * a, dy = Math.sin(G.t * 2.7) * .6 * a;
-        if (im) c.drawImage(im, u(bx0) + dx, v(by0) + dy, (bx1 - bx0) * S, (by1 - by0) * S);
+        // the bed he has risen from, drawn in code (a four-poster in the dark, its curtains drawn back), and the man beside it pulling on his coat, trembling
+        drawBed7(c, this.FY);
+        { const a = this.sh * (.6 + .4 * Math.sin(G.t / 9)), dx = Math.sin(G.t * 1.9) * 1.2 * a / S, dy = Math.sin(G.t * 2.7) * .6 * a / S;
+          if (pics['room7-rising']) fig(c, 'room7-rising', { ax: 167, g: 773, s: .8, ct: 1, mul: 1, sat: 1, noSh: 1 }, 960 + dx, this.FY + dy, -1, 1, 1, [175, 160, 150]); }
         // THE DREAM ON THE WALL: black sky, two layers of cloud sliding against each other, lightning inside them, one gold light, the lights rising
         const k = this.cur, [w0, w1] = R7.WALL; if (k < .01 && this.lv < .3) return;
         const cx = (w0 + w1) / 2, cy = 640, RX = 820, RY = 430;
