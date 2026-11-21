@@ -564,7 +564,7 @@ const RM = (() => {
     door: {
       pic: PAINTED ? 'room-door' : 'door-drawn', shell: PAINTED ? 0 : 1, FY: 1200, cam0: 210, tone: [80, 74, 90], k: .58,
       light(x) { return x < DOOR.x - 100 ? { x: DOOR.x, a: .6 * this.d, col: [230, 140, 70] } : null; },
-      enter() { this.d = 0; this.kn = 0; this.ia = 0; this.cut = 1; this.cw = 1; SEEN_R.clear(); },
+      enter() { this.d = 0; this.kn = 0; this.ia = 0; this.cut = 0; this.cw = 0; SEEN_R.clear(); },
       cutLit(id) { return id === 'door' ? .5 : 0; },
       run() { talk([[N, 'Then he went on till he came to the house of the Interpreter, and knocked over and over.']], () => { this.cw = 0; talk([[TIP, 'Knock on the door.', 'knock']], () => { ph = 'open'; t = 0; G.state = 'auto'; }); }); },
       act(sx, sy) { if (G.act === 'knock' && (sx == null || near(sx, sy, DOOR.x, 950, 150))) { knockS(); if (++this.kn >= 3) next(true); } },
