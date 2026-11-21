@@ -256,13 +256,83 @@ const CR = (() => {
     c.beginPath(); c.moveTo(40, 5); c.lineTo(42, -16); c.quadraticCurveTo(52, -32, 64, -18); c.lineTo(66, 5); c.closePath(); c.fillStyle = 'rgb(8,7,8)'; c.fill();
     c.restore();
   }
+  // THE CROSS, HEWN TIMBER (owner: "Can you make cross more realistic"): a heavy upright tapering a little to its top, a
+  // beam lapped into it and pinned with two pegs, edges left rough by the adze, the ends sawn a little out of true, long
+  // grain and a few drying splits, its foot wedged in a low cairn of stones and packed earth. One dark tone like every
+  // near thing in the game; the grain and the joint are only a breath lighter or darker inside it (baked once, `CRB`),
+  // and at dawn the low sun behind it lays a thin gold edge round its outline.
+  const CT = 22, CT2 = 17, CBW = 190, CBT = 19, CRS = 3;
+  let CRB = null;
+  function crossShape(q, ow) {
+    const H = CROSS_H, by = CROSS_BY, r = rgen(11);
+    q.beginPath();
+    // the upright: rough adzed facets down each side, tapering from CT at the foot to CT2 at the top, its top sawn on a slant
+    const L = [], R = [];
+    for (let i = 0; i <= 24; i++) { const u = i / 24, w = lerp(CT, CT2, u) / 2; L.push([-w + (r() - .5) * 1.4, -H * u]); R.push([w + (r() - .5) * 1.4, -H * u]); }
+    L[24][1] = -H + 1.5; R[24][1] = -H - 1.5;
+    q.moveTo(L[0][0], -3.5); L.forEach(([x, y]) => q.lineTo(x, y)); for (let i = 24; i >= 0; i--) q.lineTo(R[i][0], R[i][1]); q.lineTo(R[0][0], -3.5); q.closePath();
+    // the beam: slightly thinner at its ends, a hair lower on the left, each end sawn a little out of true
+    const sag = 1.6, bt = CBT / 2;
+    q.moveTo(-CBW / 2 - .8, -by - bt + sag + 1.2);
+    for (let i = 1; i <= 20; i++) { const u = i / 20, x = -CBW / 2 + CBW * u; q.lineTo(x + (r() - .5) * .8, -by - bt * (1 - .1 * Math.abs(u * 2 - 1)) + sag * (1 - u) + (r() - .5) * 1.1); }
+    q.lineTo(CBW / 2 + 1.2, -by + bt - .6);
+    for (let i = 19; i >= 0; i--) { const u = i / 20, x = -CBW / 2 + CBW * u; q.lineTo(x + (r() - .5) * .8, -by + bt * (1 - .1 * Math.abs(u * 2 - 1)) + sag * (1 - u) + (r() - .5) * 1.1); }
+    q.closePath();
+  }
+  function bakeCross() {
+    const H = CROSS_H, by = CROSS_BY, W = (CBW + 80) * CRS, Hh = (H + 40) * CRS, cv = mk(W, Hh), q = cv.getContext('2d');
+    q.setTransform(CRS, 0, 0, CRS, W / 2, (H + 14) * CRS);
+    q.save(); crossShape(q); q.clip();
+    const r = rgen(23);
+    // long grain down the upright and along the beam: fine wandering lines, a few darker, a few a breath lighter
+    for (let k = 0; k < 26; k++) {
+      const x0 = (r() - .5) * CT * .9, dark = r() < .8; q.strokeStyle = dark ? `rgba(0,0,0,${.12 + r() * .16})` : `rgba(255,236,210,${.02 + r() * .03})`; q.lineWidth = .35 + r() * .5;
+      q.beginPath(); let x = x0; const y0 = -r() * H * .3, y1 = y0 - H * (.4 + r() * .7); for (let y = y0; y > y1; y -= 6) { x += (r() - .5) * .5; q.lineTo(x, y); } q.stroke();
+    }
+    for (let k = 0; k < 16; k++) {
+      const y0 = -by + (r() - .5) * CBT * .8, dark = r() < .7; q.strokeStyle = dark ? `rgba(0,0,0,${.18 + r() * .22})` : `rgba(255,236,210,${.04 + r() * .05})`; q.lineWidth = .35 + r() * .5;
+      q.beginPath(); let y = y0; const xa = -CBW / 2 + r() * CBW * .4, xb = xa + CBW * (.3 + r() * .6); for (let x = xa; x < xb; x += 6) { y += (r() - .5) * .4; q.lineTo(x, y); } q.stroke();
+    }
+    // drying splits: two long dark checks in the upright, one in the beam, each opening a little in its middle
+    const split = (pts, w) => { q.fillStyle = 'rgba(0,0,0,.55)'; q.beginPath(); pts.forEach(([x, y], i) => { const k = Math.sin(Math.PI * i / (pts.length - 1)) * w; i ? q.lineTo(x - k, y) : q.moveTo(x, y); }); for (let i = pts.length - 1; i >= 0; i--) { const [x, y] = pts[i], k = Math.sin(Math.PI * i / (pts.length - 1)) * w; q.lineTo(x + k, y); } q.fill(); };
+    for (const [x0, ya, yb] of [[-3, -.06, -.42], [4, -.5, -.68]]) { const pts = []; let x = x0; for (let y = ya * H; y > yb * H; y -= 5) { x += (r() - .5) * .45; pts.push([x, y]); } split(pts, .9); }
+    { const pts = []; let y = -by + 2; for (let x = CBW * .12; x < CBW * .42; x += 5) { y += (r() - .5) * .35; pts.push([x, y]); } split(pts, .7); }
+    // the lap joint: the beam's two edges cut into the upright, a shadow under the beam, two pegs
+    q.fillStyle = 'rgba(0,0,0,.42)'; q.fillRect(-CT2 / 2 - 2, -by + CBT / 2 - .2, CT2 + 4, 3.2);
+    q.strokeStyle = 'rgba(0,0,0,.5)'; q.lineWidth = .7; q.beginPath(); q.moveTo(-CT / 2, -by - CBT / 2); q.lineTo(CT / 2, -by - CBT / 2); q.moveTo(-CT / 2, -by + CBT / 2); q.lineTo(CT / 2, -by + CBT / 2); q.stroke();
+    for (const py of [-by - CBT * .22, -by + CBT * .22]) { q.fillStyle = 'rgba(0,0,0,.5)'; q.beginPath(); q.arc(.6, py, 2, 0, 7); q.fill(); q.fillStyle = 'rgba(255,236,210,.08)'; q.beginPath(); q.arc(.1, py - .5, 1.3, 0, 7); q.fill(); }
+    // a knot or two, and the adze's broad facets as faint lighter and darker bands down the upright
+    for (const [kx, ky] of [[3, -H * .3], [-4, -H * .82]]) { q.fillStyle = 'rgba(0,0,0,.4)'; q.beginPath(); q.ellipse(kx, ky, 2.2, 3.4, 0, 0, 7); q.fill(); q.strokeStyle = 'rgba(0,0,0,.25)'; q.lineWidth = .5; q.beginPath(); q.ellipse(kx, ky, 3.6, 6, 0, 0, 7); q.stroke(); }
+    for (let k = 0; k < 9; k++) { const y = -H * (k + r() * .8) / 9; q.fillStyle = r() < .5 ? 'rgba(0,0,0,.08)' : 'rgba(255,236,210,.025)'; q.fillRect(-CT / 2, y, CT, -H / 9 * (.5 + r() * .5)); }
+    // weathering: darker toward the foot, where rain splashes and the earth is packed against it
+    const gd = q.createLinearGradient(0, -H * .3, 0, 8); gd.addColorStop(0, 'rgba(0,0,0,0)'); gd.addColorStop(1, 'rgba(0,0,0,.35)'); q.fillStyle = gd; q.fillRect(-CT, -H * .3, CT * 2, H * .3 + 10);
+    q.restore();
+    // the outer edge alone, for the dawn's gold rim: the shape less itself shrunk (shifted in eight directions and
+    // intersected), so the joint and the buried foot get no line
+    const A = mk(W, Hh), a = A.getContext('2d'); a.setTransform(CRS, 0, 0, CRS, W / 2, (H + 14) * CRS); a.fillStyle = '#fff'; crossShape(a); a.fill();
+    a.setTransform(1, 0, 0, 1, 0, 0); a.clearRect(0, (H + 14 - 1.5) * CRS, W, Hh);
+    const E = mk(W, Hh), e = E.getContext('2d'); e.drawImage(A, 0, 0); e.globalCompositeOperation = 'destination-in';
+    const d = 1.6 * CRS; for (let k = 0; k < 8; k++) e.drawImage(A, Math.cos(k * Math.PI / 4) * d, Math.sin(k * Math.PI / 4) * d);
+    a.globalCompositeOperation = 'destination-out'; a.drawImage(E, 0, 0);
+    a.globalCompositeOperation = 'source-in'; a.fillStyle = 'rgb(255,214,150)'; a.fillRect(0, 0, W, Hh);
+    CRB = { cv, W, Hh, rim: A };
+  }
   function cross(c) {
-    const x = CROSS_X, h = gh(x), col = mix(mix([20, 20, 27], [22, 20, 24], dawn), [30, 22, 20], gold), H = CROSS_H, T = 14, bw = 186, by = CROSS_BY;
-    c.save(); c.translate(x, -h + 4); c.fillStyle = css(col);
-    const r = rgen(5);
-    c.beginPath(); for (let i = 0; i <= 10; i++) c.lineTo(-T / 2 + (r() - .5) * 1.2, -H * i / 10); for (let i = 10; i >= 0; i--) c.lineTo(T / 2 + (r() - .5) * 1.2, -H * i / 10); c.closePath(); c.fill();
-    c.beginPath(); c.moveTo(-bw / 2, -by - T / 2); c.lineTo(bw / 2, -by - T / 2 + 1); c.lineTo(bw / 2, -by + T / 2); c.lineTo(-bw / 2, -by + T / 2 - 1); c.closePath(); c.fill();
-    if (gold > .01) { c.globalCompositeOperation = 'lighter'; c.strokeStyle = css([255, 220, 160], .35 * gold); c.lineWidth = 1.2; c.strokeRect(-T / 2, -H, T, H); c.globalCompositeOperation = 'source-over'; }
+    const x = CROSS_X, h = gh(x), col = mix(mix([20, 20, 27], [22, 20, 24], dawn), [30, 22, 20], gold), H = CROSS_H;
+    if (!CRB) bakeCross();
+    c.save(); c.translate(x, -h + 4);
+    // its foot: a low cairn of wedging stones and packed earth, in the slope's own dark
+    const r = rgen(41), cairn = mix(col, [12, 11, 14], .25);
+    c.fillStyle = css(cairn); c.beginPath(); c.moveTo(-36, -3.2); c.quadraticCurveTo(-24, -12, 0, -15); c.quadraticCurveTo(24, -12, 38, -3.2); c.closePath(); c.fill();
+    c.fillStyle = css(col); crossShape(c); c.fill();
+    c.drawImage(CRB.cv, -CRB.W / 2 / CRS, -(H + 14), CRB.W / CRS, CRB.Hh / CRS);
+    for (const [sx0, sy0, sw, sh] of [[-27, -6, 10, 6], [-16, -9, 9, 7], [13, -9, 11, 7], [24, -6, 9, 5], [-5, -6, 8, 5], [5, -11, 7, 5]]) {
+      const s1 = mix(cairn, [40, 36, 40], .18 + r() * .14); c.fillStyle = css(s1);
+      c.beginPath(); c.ellipse(sx0, sy0, sw / 2, sh / 2, (r() - .5) * .5, 0, 7); c.fill();
+      c.fillStyle = css(mix(s1, [255, 220, 170], .12 * gold + .05)); c.beginPath(); c.ellipse(sx0 - sw * .1, sy0 - sh * .2, sw * .32, sh * .18, 0, 0, 7); c.fill();
+    }
+    // the low sun behind it: a thin gold edge round its outline at dawn
+    if (gold > .01) { c.save(); c.globalCompositeOperation = 'lighter'; c.globalAlpha = .6 * gold; c.drawImage(CRB.rim, -CRB.W / 2 / CRS, -(H + 14), CRB.W / CRS, CRB.Hh / CRS); c.restore(); }
     c.restore();
   }
   // the three Shining Ones: tall soft figures of light ("their faces shone as the light"), drawn with light, not paint
