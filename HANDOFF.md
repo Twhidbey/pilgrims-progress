@@ -4,6 +4,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 ## START HERE (rewritten at build 140, Nov 16 2026)
 
+**Build 389 (Level 4 editing chat): the Interpreter's House made one house: the passages between rooms are its real corridors, the cellar and great stairs and the back door to the garden, with a small cutaway of the house in the corner. Next: the cutaway at the door, rooms redrawn in code to match. Nothing spent.**
+
 **Build 386 (Level 4 editing chat): the drawn parlour (`?room=2&drawn`) has a new sweeper, made free with FLUX Kontext (the owner's HF token now saved for that host too): a bearded servant bent to his broom with both hands. Nothing spent.**
 
 **Build 383 (Level 4 editing chat): in the drawn parlour (`?room=2&drawn`) the girl is cut straight from the painting. The new sweeper waits on the owner's choice (free with the HF token saved for the FLUX host, or about 15 cents). Nothing spent.**

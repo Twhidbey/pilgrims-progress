@@ -161,9 +161,9 @@ const RM = (() => {
   // and the floor speed (plate px a tick) at which his planted foot stays put at the video's own pace
   const WALK_FPT = 16 / 60;
   function walkSpeed(key, k) { const w = VIS[key].walk; return w.vpx * k * w.s / K * WALK_FPT; }
-  function walkFig(c, key, x, f, k, a = 1, col = R.tone) {
+  function walkFig(c, key, x, f, k, a = 1, col = R.tone, y = R.FY) {
     const w = VIS[key].walk; if (!sheetFrames(w)) { if (key === 'C') walker(c, x, Math.floor(f) % Math.max(1, CHR.length), k); return; }
-    const i = ((Math.floor(f) % w.fr) + w.fr) % w.fr; fig(c, w.n + '#' + i, w, x, R.FY, 1, k, a, col, null, 0, 0);
+    const i = ((Math.floor(f) % w.fr) + w.fr) % w.fr; fig(c, w.n + '#' + i, w, x, y, 1, k, a, col, null, 0, 0);
   }
   // Christian walking (leaving): the game's own walk pictures, dark against the night
   const WALKT = new Map();
@@ -655,7 +655,56 @@ const RM = (() => {
   // dark), the Interpreter goes a step ahead with a candle, its light moving along the wall and the floor.
   ROOMS.pass = {
     pic: null, FY: 1160, cam0: 0, tone: [120, 92, 74], k: .82, PW: 2526,
-    enter() { this.p = 0; this.fr = 0; this.w = 0; this.st = 0; this.go = false; this.vt = 0; this.left = false; pic(VIS.C.walk.n); pic(VIS.I.walk.n); if (this.to && ROOMS[this.to].pic) pic(ROOMS[this.to].pic); },
+    enter() { this.p = 0; this.fr = 0; this.w = 0; this.st = 0; this.go = false; this.vt = 0; this.left = false; this.kind = passKind(this.from, this.to); pic(VIS.C.walk.n); pic(VIS.I.walk.n); if (this.to && ROOMS[this.to].pic) pic(ROOMS[this.to].pic); },
+    // the standing line at x: level in a corridor, rising up the great stair, falling down the cellar stair (S0 to S1 the flight)
+    S0: 760, S1: 1760, RISE: 250,
+    floorAt(x) { const q = Math.max(0, Math.min(1, (x - this.S0) / (this.S1 - this.S0))); return this.kind === 'up' ? this.FY - this.RISE * q : this.kind === 'down' ? this.FY - this.RISE * (1 - q) : this.FY; },
+    scene(c) {
+      const K = this.kind, FY = this.FY, W2 = 2526, sky = K === 'out' || K === 'round';
+      // the wall (stone and cooler in the cellar, plaster in the house) and the floor; one dark tone each, the candle reveals them
+      const wallC = K === 'down' ? '#211b18' : '#2c1d13', floorC = K === 'down' ? '#15110e' : '#1d130c';
+      c.fillStyle = wallC; c.fillRect(u(0), v(0), W2 * S, PH * S);
+      if (K === 'hall' || K === 'out' || K === 'up' || K === 'down') {
+        // a beam along the ceiling, and the doorway they came through on the left
+        c.fillStyle = 'rgba(12,7,4,.8)'; c.fillRect(u(0), v(FY - 820), W2 * S, 36 * S);
+        c.fillStyle = '#120a06'; c.fillRect(u(90), v((K === 'down' ? FY - this.RISE : FY) - 560), 190 * S, 560 * S);
+      }
+      if (K === 'up' || K === 'down') {
+        // the stair: a flight of wooden steps in side view, a handrail with turned balusters, the landing beyond
+        const n = 12, x0 = this.S0, x1 = this.S1, top = FY - this.RISE, up = K === 'up';
+        c.fillStyle = '#24170e'; c.beginPath(); c.moveTo(u(x0), v(up ? FY : top));
+        for (let i = 0; i < n; i++) { const xa = x0 + (x1 - x0) * i / n, xb = x0 + (x1 - x0) * (i + 1) / n, ya = up ? FY - this.RISE * i / n : top + this.RISE * i / n, yb = up ? FY - this.RISE * (i + 1) / n : top + this.RISE * (i + 1) / n;
+          c.lineTo(u(xa), v(up ? yb : ya)); c.lineTo(u(xb), v(up ? yb : ya)); }
+        c.lineTo(u(x1), v(up ? top : FY)); c.lineTo(u(W2), v(up ? top : FY)); c.lineTo(u(W2), v(PH)); c.lineTo(u(0), v(PH)); c.lineTo(u(0), v(up ? FY : top)); c.closePath(); c.fill();
+        // the step nosings catch the candle a little
+        c.strokeStyle = '#120a05'; c.lineWidth = Math.max(2, 26 * S); c.beginPath(); c.moveTo(u(x0), v((up ? FY : top) + 20)); c.lineTo(u(x1), v((up ? top : FY) + 20)); c.stroke();
+        c.strokeStyle = 'rgba(150,100,56,.75)'; c.lineWidth = Math.max(1.2, 6 * S);
+        for (let i = 1; i <= n; i++) { const xa = x0 + (x1 - x0) * (i - 1) / n, xb = x0 + (x1 - x0) * i / n, y = up ? FY - this.RISE * i / n : top + this.RISE * (i - 1) / n; c.beginPath(); c.moveTo(u(up ? xa : xa), v(y)); c.lineTo(u(xb), v(y)); c.stroke(); }
+        c.strokeStyle = '#3a2614'; c.lineWidth = Math.max(1.5, 9 * S); c.beginPath(); c.moveTo(u(x0 - 60), v((up ? FY : top) - 300)); c.lineTo(u(x1 + 60), v((up ? top : FY) - 300)); c.stroke();
+        c.lineWidth = Math.max(1, 5 * S); for (let i = 0; i <= n; i += 2) { const xa = x0 + (x1 - x0) * i / n, yb = up ? FY - this.RISE * i / n : top + this.RISE * i / n; c.beginPath(); c.moveTo(u(xa), v(yb)); c.lineTo(u(xa), v(yb - 300)); c.stroke(); }
+        // the doorway at the end: the bedchamber's door upstairs, the cellar's low arch below
+        c.fillStyle = '#0c0705'; if (up) c.fillRect(u(2150), v(top - 600), 210 * S, 600 * S); else { c.beginPath(); c.moveTo(u(2140), v(FY)); c.lineTo(u(2140), v(FY - 420)); c.arc(u(2250), v(FY - 420), 110 * S, Math.PI, 0); c.lineTo(u(2360), v(FY)); c.closePath(); c.fill(); }
+      }
+      if (K === 'hall') {
+        // the next room's doorway on the right, its door ajar, a little of its light on the boards
+        c.fillStyle = '#0d0805'; c.fillRect(u(2140), v(FY - 600), 230 * S, 600 * S);
+        const g = c.createLinearGradient(u(2140), 0, u(2370), 0); g.addColorStop(0, 'rgba(255,190,110,0)'); g.addColorStop(1, 'rgba(255,190,110,.22)'); c.fillStyle = g; c.fillRect(u(2140), v(FY - 600), 230 * S, 600 * S);
+        c.fillStyle = '#3a2416'; c.beginPath(); c.moveTo(u(2140), v(FY - 600)); c.lineTo(u(2210), v(FY - 570)); c.lineTo(u(2210), v(FY + 10)); c.lineTo(u(2140), v(FY)); c.closePath(); c.fill();
+      }
+      if (sky) {
+        // out of doors at night: the sky, the garden wall, the dark shrubs; the house's back wall on the left (and its lit windows when going round)
+        const x0 = K === 'out' ? 1560 : 0, g = c.createLinearGradient(0, v(0), 0, v(FY)); g.addColorStop(0, '#0b0f1c'); g.addColorStop(1, '#1b2132');
+        c.fillStyle = g; c.fillRect(u(x0), v(0), (W2 - x0) * S, (FY + 4) * S);
+        const r = rngR(4); c.fillStyle = 'rgba(230,230,255,.6)'; for (let i = 0; i < 40; i++) { const sx = x0 + r() * (W2 - x0), sy = r() * 600; c.fillRect(u(sx), v(sy), 1.2, 1.2); }
+        c.fillStyle = '#121812'; c.fillRect(u(x0), v(FY - 150), (W2 - x0) * S, 150 * S);
+        for (let x = x0 + 60; x < W2; x += 260 + r() * 200) { c.beginPath(); c.ellipse(u(x), v(FY - 120), (70 + r() * 60) * S, (90 + r() * 50) * S, 0, 0, 6.2832); c.fill(); }
+        if (K === 'out') { c.fillStyle = '#0c0705'; c.fillRect(u(1460), v(FY - 600), 110 * S, 600 * S); c.fillStyle = '#2c1d13'; c.fillRect(u(1440), v(FY - 640), 20 * S, 640 * S); }
+        if (K === 'round') { c.fillStyle = '#1a120c'; c.fillRect(u(0), v(FY - 900), 1200 * S, 900 * S); for (const wx of [240, 700]) { c.fillStyle = 'rgba(255,190,110,.55)'; c.fillRect(u(wx), v(FY - 560), 120 * S, 170 * S); }
+          c.fillStyle = '#20140c'; c.fillRect(u(2200), v(FY - 340), 26 * S, 340 * S); c.fillRect(u(2380), v(FY - 340), 26 * S, 340 * S); }
+      }
+      c.fillStyle = sky ? (K === 'out' ? floorC : '#151a12') : floorC; c.fillRect(u(0), v(FY), W2 * S, (PH - FY) * S + 200);
+      if (K === 'out') { c.fillStyle = '#151a12'; c.fillRect(u(1560), v(FY), (W2 - 1560) * S, (PH - FY) * S + 200); }
+    },
     run() { talk([[TIP, 'Touch to follow the Interpreter.', 'follow']], () => {}); },
     // one touch and he follows to the end of the passage (owner, build 312: "make walks in dark room happen without holding down walk")
     act() { if (G.act === 'follow') this.start(); },
@@ -694,17 +743,51 @@ const RM = (() => {
       const step = Math.floor(this.fr * 2 / VIS.C.walk.fr); if (step !== this.st) { this.st = step; noise(200, 1.5, .2, .06); noise(140, 1.2, .25, .04, .05); }
     },
     draw(c) {
-      const g = c.createLinearGradient(0, 0, 0, VH); g.addColorStop(0, '#0c0705'); g.addColorStop(.8, '#140c08'); g.addColorStop(1, '#0a0604'); c.fillStyle = g; c.fillRect(0, 0, VW, VH);
-      const ix = 810 + this.p * 700 * walkSpeed('I', this.k) / walkSpeed('C', this.k), fl = 1 + .06 * Math.sin(G.t / 4.7) * Math.sin(G.t / 11), lx = u(ix) + 34, ly = v(this.FY) - 128;
+      const ix = 810 + this.p * 700 * walkSpeed('I', this.k) / walkSpeed('C', this.k), fl = 1 + .06 * Math.sin(G.t / 4.7) * Math.sin(G.t / 11), iy = this.floorAt(ix), cy = this.floorAt(this.x()), lx = u(ix) + 34, ly = v(iy) - 128;
+      this.scene(c);
+      // only what the candle reaches is seen (out of doors, a little of the night as well)
+      const sky = this.kind === 'out' || this.kind === 'round'; darkWith(c, [[lx, ly, 520 * fl], [lx, v(iy) + 4, 640 * fl, .8]], sky ? .55 : .86);
       // the candle's light on the passage wall and, flat, on the floor
-      glow(c, lx, ly, 330 * fl, [255, 170, 90], .2); c.save(); c.translate(lx, v(this.FY) + 2); c.scale(1, .12); glow(c, 0, 0, 380 * fl, [255, 170, 90], .32); c.restore();
+      glow(c, lx, ly, 330 * fl, [255, 170, 90], .2); c.save(); c.translate(lx, v(iy) + 2); c.scale(1, .12); glow(c, 0, 0, 380 * fl, [255, 170, 90], .32); c.restore();
       // both walk at their videos' own full pace, each moving at the floor speed that keeps his planted foot still (build 320)
-      walkFig(c, 'I', ix, this.fr, this.k);
-      walkFig(c, 'C', this.x(), this.fr, this.k);
+      walkFig(c, 'I', ix, this.fr, this.k, 1, R.tone, iy);
+      walkFig(c, 'C', this.x(), this.fr, this.k, 1, R.tone, cy);
       glow(c, lx, ly, 26 * fl, [255, 226, 160], .7); c.fillStyle = 'rgba(255,240,200,.95)'; c.beginPath(); c.ellipse(lx, ly - 2, 1.6, 3.4, 0, 0, 6.2832); c.fill();
+      // where they are in the house: a small cutaway in the corner, the rooms seen faintly lit, the candle going from one to the next
+      housePlan(c, VW - 170, 74, 1.5, this.from, this.to, this.p);
     },
   };
   const ORDER = ['door', 'r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r7', 'leave'];
+  // ONE HOUSE (build 387; owner: "i'd like the rooms to be part of a house and clearly connected - like which ones are upstairs (if so we need stairs
+  // between them)"). Placed by the book's own words: ground floor 1 "a private room", 2 "a very large parlour", 3 "a little room", 4 the fire
+  // "against a wall" (the kitchen hearth and its chimney); 5 "a pleasant place" with the palace, the garden behind the house; 6 "a very dark room",
+  // the cellar; 7 "a chamber" with one rising out of bed, upstairs. Each passage is the real way between two of them.
+  const SEEN_R = new Set();
+  // the house as a small cutaway (in the passage's corner): each room's place [x, y, w, h] on a 100 x 62 plan
+  const PLAN = { door: [0, 24, 12, 22], r1: [12, 24, 16, 22], r2: [28, 24, 24, 22], r3: [52, 24, 14, 22], r4: [66, 24, 20, 22], r5: [90, 30, 10, 16], r6: [0, 46, 30, 13], r7: [26, 4, 30, 20], leave: [0, 24, 12, 22] };
+  function passKind(from, to) {
+    if (to === 'r5') return 'out';
+    if (to === 'r6') return 'down';
+    if (to === 'r7') return 'up';
+    if (to === 'leave') return from === 'r7' ? 'down' : from === 'r5' ? 'round' : 'hall';
+    return 'hall';
+  }
+  function housePlan(c, x0, y0, k, from, to, p) {
+    c.save(); c.translate(x0, y0); c.scale(k, k); c.globalAlpha = .85;
+    c.fillStyle = 'rgba(40,28,18,.9)'; c.beginPath(); c.moveTo(-4, 24); c.lineTo(43, 0); c.lineTo(90, 24); c.closePath(); c.fill();
+    c.fillStyle = 'rgba(30,22,16,.9)'; c.fillRect(0, 4, 86, 42); c.fillStyle = 'rgba(22,16,12,.9)'; c.fillRect(0, 46, 86, 13);
+    c.fillStyle = 'rgba(30,44,26,.8)'; c.fillRect(86, 38, 14, 8);
+    for (const id of ['r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r7']) {
+      if ((id === 'r6' || id === 'r7') && !darkOn()) continue;
+      const [x, y, w, h] = PLAN[id], lit = id === to ? .35 + .55 * smooth(.3, 1, p) : id === from ? .9 - .5 * smooth(0, .6, p) : SEEN_R.has(id) ? .32 : .08;
+      c.fillStyle = `rgba(255,196,110,${lit.toFixed(3)})`; c.fillRect(x + .8, y + .8, w - 1.6, h - 1.6);
+    }
+    // the candle's way: from the room they leave to the room they go to
+    const a = PLAN[from] || PLAN.door, b = PLAN[to] || PLAN.door, ax = a[0] + a[2] / 2, ay = a[1] + a[3] - 3, bx = b[0] + b[2] / 2, by = b[1] + b[3] - 3;
+    const q = smooth(0, 1, p), cx = ax + (bx - ax) * q, cy = ay + (by - ay) * q;
+    c.globalAlpha = 1; glow(c, cx, cy, 7, [255, 200, 120], .9); c.fillStyle = '#fff2cc'; c.beginPath(); c.arc(cx, cy, 1.1, 0, 6.2832); c.fill();
+    c.restore();
+  }
   function rngR(seed) { let s = seed; return () => (s = (s * 16807) % 2147483647) / 2147483647; }
 
   // ---------- Room 3's things ----------
@@ -757,7 +840,7 @@ const RM = (() => {
   }
   function goTo(id) {
     if (id === 'r6' && !darkOn()) id = 'leave';
-    if (R && R.id !== 'door' && R.id !== 'pass' && id !== 'pass') { ROOMS.pass.to = id; id = 'pass'; }
+    if (R && R.id !== 'door' && R.id !== 'pass' && id !== 'pass') { ROOMS.pass.to = id; ROOMS.pass.from = R.id; SEEN_R.add(R.id); id = 'pass'; }
     after = id; fadeTo = 1; G.state = 'auto';
     if (audio()) { noise(220, 1.5, .25, .08, .2); noise(220, 1.5, .25, .07, .75); }
   }
@@ -875,5 +958,5 @@ const RM = (() => {
   const HOLDS = ['round', 'walkout', 'follow'];
   const lines = []; // for the voice tool: every room's lines are written out in full above
   return { on: false, start, update, draw, touch, key, preload, HOLDS, stop: () => ambStop(), darkOn, setDark: on => { try { localStorage.setItem('pp-dark', on ? '1' : '0'); } catch (e) {} }, lines,
-    peek: () => ({ room: R && R.id, ph, t, cam: Math.round(cam.x), fade: +fade.toFixed(2), r3: R && R.id === 'r3' ? { coins: R.coins.length, rags: +R.rags.toFixed(2) } : null, bv: R && R.bv ? { x: Math.round(R.bv.x), f: +(R.bv.f || 0).toFixed(1), arm: R.bv.arm, clip: R.bv.clip || 0 } : null }) };
+    peek: () => ({ room: R && R.id, ph, t, cam: Math.round(cam.x), fade: +fade.toFixed(2), r3: R && R.id === 'r3' ? { coins: R.coins.length, rags: +R.rags.toFixed(2) } : null, pass: R && R.id === 'pass' ? R.kind + '>' + R.to : null, pp: R && R.id === 'pass' ? +R.p.toFixed(2) : null, bv: R && R.bv ? { x: Math.round(R.bv.x), f: +(R.bv.f || 0).toFixed(1), arm: R.bv.arm, clip: R.bv.clip || 0 } : null }) };
 })();
