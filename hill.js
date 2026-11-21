@@ -214,13 +214,12 @@ const HL = (() => {
     for (const l of OLEAF) { l.t++; l.y += l.vy; l.x += .25 + .5 * Math.sin(l.t / 20 + l.s); }
     for (let i = OLEAF.length - 1; i >= 0; i--) if (OLEAF[i].t > OLEAF[i].life) OLEAF.splice(i, 1); }
   // (7) THREE HIDDEN NOTES: faint lights in crevices along the rocky path; a touch on one sings a note of the hymn's first
-  // words ("A-maz-ing") bent flat, as the tune goes wrong off the right way, and the light drifts up and fades. When all
-  // three are found they are sung once more softly, in tune.
+  // words ("A-maz-ing") bent flat, as the tune goes wrong off the right way, and the light drifts up and fades. Nothing more
+  // when all three are found: the hymn comes right only at the Cross (owner, build 375).
   const HIDDEN = [[PATH0 + 170, 62, 61], [PATH0 + 560, 67, 66], [PATH0 + 900, 71, 70]].map(([x, m, f]) => ({ x, m, f, y: 0, got: 0, up: 0 }));
   function hiddenLife() { for (const h of HIDDEN) { if (!h.y) h.y = -edgeAt(h.x) - 3; if (h.got) h.up++; } }
   function hiddenTouch(sx, sy) { for (const h of HIDDEN) { if (h.got) continue; const px = (h.x - cam.cx) * cam.z + VW / 2, py = cam.wl + h.y * cam.z;
       if (Math.hypot(sx - px, sy - py) < 34 + 30 * cam.z) { h.got = 1; note(h.f - 12, .05, 3.4); note(h.f, .03, 3, .02);
-        if (HIDDEN.every(q => q.got)) HIDDEN.forEach((q, i) => note(q.m, .035, 3.2, 1.6 + i * .55));
         return true; } }
     return false; }
   // (7) A GLINT AT FIRST SIGHT: each thing that answers a touch (the oak, a lizard, a hidden light, the things he carries)
