@@ -856,7 +856,7 @@ const SL = (() => {
     // height, their home bank at the left edge, the oak's long limb reaching in over them; the water line is higher so
     // a band of mud lies between them and the words
     else if (ph === 'pli' && (!pli || pli.alpha < .6 || pli.out)) t = { cx: C2.x + 40, z: 1.2, wl: 320 };      // build 368 (D): he is left alone
-    else if (['fall', 'pli', 'back', 'backtalk'].includes(ph)) t = { cx: -740, z: 1.05, wl: 330 };
+    else if (['fall', 'pli', 'back', 'backtalk'].includes(ph)) t = { cx: -680, z: 1.05, wl: 330 };      // build 395: a little right, so the oak's long limb reaches in over them
     // build 114: the oak is bigger, so at the far bank the camera draws back a little more and the water line sits lower,
     // so the whole crown is in the picture (the top of the screen must be above about 640 units over the water: wl / z)
     // build 202: wading he starts on the left third, close, with open mud ahead; the camera draws back as he nears the far
@@ -872,8 +872,8 @@ const SL = (() => {
     cam.cx += (t.cx - cam.cx) * e; cam.z += (t.z - cam.z) * e; cam.wl += (t.wl - cam.wl) * e;
     let L;
     if (ph === 'plain') { const mi = PLAIN_MIST(C2.x); L = { mist: mi, veil: .84 * smooth(-1300, FALL_X, C2.x), gold: PLAIN_GOLD(C2.x), disc: lerp(1, .3, mi), sky: lerp(0, 1, mi) }; }
-    else if (ph === 'fall' || ph === 'pli' || ph === 'back' || ph === 'backtalk') L = { mist: 1, veil: .84, gold: 0, disc: .3, sky: 1 };
-    else if (ph === 'wade' || ph === 'stuck' || ph === 'help') L = { mist: lerp(1, .3, p), veil: lerp(.84, 0, smooth(.3, 1, p)), gold: .1 * p, disc: lerp(.3, 1, p), sky: lerp(1, .5, p) };
+    else if (ph === 'fall' || ph === 'pli' || ph === 'back' || ph === 'backtalk') L = { mist: 1, veil: .5, gold: 0, disc: .55, sky: 1 };      // build 395: less veil (the oak stays in the picture), a brighter far light
+    else if (ph === 'wade' || ph === 'stuck' || ph === 'help') L = { mist: lerp(1, .3, p), veil: lerp(.5, 0, smooth(.3, 1, p)), gold: .1 * p, disc: lerp(.55, 1, p), sky: lerp(1, .5, p) };
     else if (ph === 'drawn') L = { mist: .3, veil: 0, gold: .1, disc: 1, sky: .5 };
     else L = { mist: .25, veil: 0, gold: ph === 'look' ? lerp(.1, 1, smooth(60, 60 + LAST.length * 55 + 120, goldT)) : ph === 'onway' ? .1 : 1, disc: 1, sky: .4 };
     for (const k in L) look[k] += (L[k] - look[k]) * .03;
@@ -950,8 +950,10 @@ const SL = (() => {
       ctx.fill();
     }
     // mist lying on the far water, hiding the horizon
-    { const g = ctx.createLinearGradient(0, hor - 90, 0, wl + 20); g.addColorStop(0, css(LIGHT, 0)); g.addColorStop(.5, css(LIGHT, .35 + .6 * look.mist)); g.addColorStop(.75, css(LIGHT, .25 + .5 * look.mist)); g.addColorStop(1, css(LIGHT, 0));
+    { const g = ctx.createLinearGradient(0, hor - 90, 0, wl + 20); g.addColorStop(0, css(LIGHT, 0)); g.addColorStop(.5, css(LIGHT, .3 + .45 * look.mist)); g.addColorStop(.75, css(LIGHT, .22 + .38 * look.mist)); g.addColorStop(1, css(LIGHT, 0));
       ctx.fillStyle = g; ctx.fillRect(0, hor - 90, VW, wl + 110 - hor); }
+    // build 395: the horizon back as one soft pale line across the mire (it had melted into the mist, so sky and mud were one grey)
+    if (ph !== 'plain') { const h0 = hor - 5 * z, g = ctx.createLinearGradient(0, h0, 0, h0 + 12 * z), k = .28 * look.mist; g.addColorStop(0, css(LIGHT, 0)); g.addColorStop(.5, css(LIGHT, k)); g.addColorStop(1, css(LIGHT, 0)); ctx.fillStyle = g; ctx.fillRect(0, h0, VW, 12 * z); }
 
     // --- everything near, painted apart so the water can mirror it: banks, oak, people, steps, lights ---
     const n = nearC.getContext('2d'); n.setTransform(1, 0, 0, 1, 0, 0); n.clearRect(0, 0, nearC.width, nearC.height);
@@ -977,13 +979,13 @@ const SL = (() => {
     const pliMire = n => {
         // wallowing he faces Christian (the same frames, mirrored about his own middle), then turns to his own side
         const im = PLIC[Math.floor(pli.ct || 0)], wk = pli.wal ? pli.wk : 1, fl = (1 - (pli.fa ?? -1)) / 2, cw = 2 * (META.climb.ax - plCen(Math.floor(pli.ct || 0))) * CHR_K;
-        if (wk < 1) figure(n, 'pli0', PLI[pli.wf || 0], PLI_META, pli.wx, pli.sy, 1, fig, true, pli.alpha * (1 - smooth(.5, 1, wk)));
+        if (wk < .5) figure(n, 'pli0', PLI[pli.wf || 0], PLI_META, pli.wx, pli.sy, 1, fig, true, pli.alpha);      // build 395: a clean swap (a see-through double showed)
         MREC = 'P'; FIG_WET = { D: pli.maxY || 0, a: .78 }; FIG_DIP = 60 * (1 - smooth(.6, .8, (pli.ct || 0) / 119));
         // build 183: each picture of his climbing video melts into the next (12 a second, each held five ticks, was steppy)
         const f0 = Math.floor(pli.ct || 0), f1 = Math.min(PLIC.length - 1, f0 + 1), slide = pli.wal ? 0 : ((pli.ct || 0) - f0) * (plTop(f1) - plTop(f0)) * CHR_K;      // build 385: slid toward the next picture's height (smooth rising)
         const pc = pli.ct || 0, im2 = PLIC[Math.min(PLIC.length - 1, Math.floor(pc) + 1)], bk = 0 * pc;      // build 212: no melting of one picture into the next (two poses laid over each other read as a pale, see-through double outline)
-        if (fl < .99) { const a2 = pli.alpha * smooth(0, .5, wk) * (1 - smooth(.5, 1, fl)); figure(n, 'pli2', im, META.climb, pli.x + cw, pli.y + slide, 1, fig, true, a2); if (bk > .03) figure(n, 'pli2b', im2, META.climb, pli.x + cw, pli.y, 1, fig, true, a2 * bk); }
-        if (fl > .01) { const a1 = pli.alpha * smooth(0, .5, wk) * smooth(0, .5, fl); figure(n, 'pli', im, META.climb, pli.x, pli.y + slide, -1, fig, true, a1); if (bk > .03) figure(n, 'plib', im2, META.climb, pli.x, pli.y, -1, fig, true, a1 * bk); }
+        if (fl < .99) { const a2 = pli.alpha * (wk >= .5 ? 1 : 0) * (1 - smooth(.5, 1, fl)); figure(n, 'pli2', im, META.climb, pli.x + cw, pli.y + slide, 1, fig, true, a2); if (bk > .03) figure(n, 'pli2b', im2, META.climb, pli.x + cw, pli.y, 1, fig, true, a2 * bk); }
+        if (fl > .01) { const a1 = pli.alpha * (wk >= .5 ? 1 : 0) * smooth(0, .5, fl); figure(n, 'pli', im, META.climb, pli.x, pli.y + slide, -1, fig, true, a1); if (bk > .03) figure(n, 'plib', im2, META.climb, pli.x, pli.y, -1, fig, true, a1 * bk); }
         FIG_DIP = 0; MREC = null; FIG_WET = null;
     };
     TALKM = talkMove(PL);
@@ -1192,6 +1194,10 @@ const SL = (() => {
       m.globalCompositeOperation = 'source-over';
       ctx.drawImage(mistC, 0, wl - 30 * z, VW, MH);
     }
+    // build 395: THE NEAR MIRE DARKER AND WETTER (the mud was one mid grey from the horizon to the words): a deep wash
+    // from a little below the water line down to the foot of the picture, laid before the figures in the mire
+    { nearDk += ((['fall', 'pli', 'back', 'backtalk', 'wade', 'stuck', 'help'].includes(ph) ? 1 : 0) - nearDk) * .02;
+      if (nearDk > .01) { const g = ctx.createLinearGradient(0, wl + 20 * z, 0, VH); g.addColorStop(0, css(DARK, 0)); g.addColorStop(.45, css(DARK, .28 * nearDk)); g.addColorStop(1, css(DARK, .58 * nearDk)); ctx.fillStyle = g; ctx.fillRect(0, wl + 20 * z, VW, VH); } }
     // --- THE MIRE, IN FRONT OF THE MIRROR (build 143): the churned mud, the far half of every ring, the figures in the mire,
     // then the mud surface that answers them (see "THE MUD ANSWERS THE FIGURES"), the strings, the drops, and the near
     // half of every ring ---
@@ -1320,7 +1326,14 @@ const SL = (() => {
     // rings in the mud, under the mist. Build 126 put them back under the low mist after build 125's heavy rings on top of it
     // "stuck out"; build 127 thins that mist at the surface, so the dark churned mud and its rings are seen together
     // build 212: the veil starts to the right of Christian (with the closer camera of build 200 he stood inside it and was washed pale)
-    if (look.veil > .01) { const v0 = Math.min(VW * .8, Math.max(VW * .42, X(C2.x) + 150 * z)), g = ctx.createLinearGradient(v0, 0, Math.max(VW, v0 + 300), 0); g.addColorStop(0, css(LIGHT, 0)); g.addColorStop(.55, css(tone(.93), look.veil * .86)); g.addColorStop(1, css(tone(.93), look.veil)); ctx.fillStyle = g; ctx.fillRect(0, 0, VW, VH); }
+    // build 395: the veil was a hard-edged pale band over the mud too: now it comes in over a long soft stretch, and below
+    // the water line it thins away, so it lies over the far mist and not as a stripe down the near mire
+    if (look.veil > .01) { const v0 = Math.min(VW * .8, Math.max(VW * .42, X(C2.x) + 150 * z)), v1 = Math.max(VW + 120, v0 + 620);
+      if (!VEILC) VEILC = mk(96, 54); const q = VEILC.getContext('2d'), sx = 96 / VW, sy = 54 / VH; q.globalCompositeOperation = 'source-over'; q.clearRect(0, 0, 96, 54);
+      const g = q.createLinearGradient(v0 * sx, 0, v1 * sx, 0); g.addColorStop(0, css(tone(.93), 0)); g.addColorStop(.35, css(tone(.93), look.veil * .4)); g.addColorStop(.7, css(tone(.93), look.veil * .78)); g.addColorStop(1, css(tone(.93), look.veil)); q.fillStyle = g; q.fillRect(0, 0, 96, 54);
+      const wy = cam.wl * sy, h = q.createLinearGradient(0, wy - 8, 0, 54); h.addColorStop(0, 'rgba(0,0,0,1)'); h.addColorStop(.35, 'rgba(0,0,0,.45)'); h.addColorStop(1, 'rgba(0,0,0,.12)');
+      q.globalCompositeOperation = 'destination-in'; q.fillStyle = h; q.fillRect(0, 0, 96, 54); q.fillStyle = '#000'; q.fillRect(0, 0, 96, Math.max(0, wy - 8)); q.globalCompositeOperation = 'source-over';
+      ctx.imageSmoothingEnabled = true; ctx.drawImage(VEILC, 0, 0, VW, VH); }
     // the gold coming back from the oak outward
     if (warmth > .01) { ctx.globalCompositeOperation = 'soft-light'; const g = ctx.createRadialGradient(discX, discY + 60, 20, discX, discY + 60, 760);
       g.addColorStop(0, css(GOLD, .8 * warmth)); g.addColorStop(.55, css(GOLD, .4 * warmth)); g.addColorStop(1, css(GOLD, 0)); ctx.fillStyle = g; ctx.fillRect(0, 0, VW, VH); ctx.globalCompositeOperation = 'source-over'; }
@@ -1342,7 +1355,7 @@ const SL = (() => {
   }
   const wob = noise2(9);
   // THOUGHTS, baked once, small (so they are soft when stretched), every edge fading into a vignette like a memory
-  let THK = null;
+  let THK = null, VEILC = null, nearDk = 0;
   function thoughts() {
     if (THK) return THK;
     const vign = (c, cx, cy, r) => { const g = c.getContext('2d'); g.globalCompositeOperation = 'destination-in'; const v = g.createRadialGradient(cx, cy, 0, cx, cy, r);
@@ -1427,11 +1440,11 @@ const SL = (() => {
     // splash, instead of a long double picture while he sank from 44 to 57
     const wk = ph === 'fall' ? smooth(36, 46, C2.fallT) : smooth(36, 40, C2.y); let wa = 1;      // build 119: he flounders from the fall on
     if (WADE.length && inWater && wk > 0 && ['fall', 'pli', 'back', 'backtalk', 'wade', 'stuck', 'help'].includes(ph)) {
-      if (wk < 1) figure(n, 'chr0', walkIm, CHR_META, C2.x, C2.y, C2.face, fig, true, alpha * C2.alpha * (1 - smooth(.5, 1, wk)));
+      if (wk < .5) figure(n, 'chr0', walkIm, CHR_META, C2.x, C2.y, C2.face, fig, true, alpha * C2.alpha);      // build 395: a clean swap under the splash, never both at once
       const wf = C2.wa || 0; walkIm = WADE[Math.floor(wf) % WADE.length]; walkM = META.wade;
       // build 214: heaving on the spot (the fall, Pliable's quarrel, going back, stuck at the far bank) is the stuck video;
       // only the wading forward is the wading video
-      if (STUCKP.ready && ph !== 'wade') { const q = wf < 6 ? wf : 6 + 52 * (1 - Math.cos(Math.PI * (((wf - 6) / 52) % 2))) / 2; walkIm = STUCKP[Math.min(58, Math.floor(q))]; walkM = META.stuck; C2.q = Math.min(58, q); } wa = smooth(0, .5, wk); FIG_DIP = 46; blendIm = WADE[(Math.floor(wf) + 1) % WADE.length]; blendK = 0; }      // build 212: no melting (see Pliable's climb)
+      if (STUCKP.ready && ph !== 'wade') { const q = wf < 6 ? wf : 6 + 52 * (1 - Math.cos(Math.PI * (((wf - 6) / 52) % 2))) / 2; walkIm = STUCKP[Math.min(58, Math.floor(q))]; walkM = META.stuck; C2.q = Math.min(58, q); } wa = wk >= .5 ? 1 : 0; FIG_DIP = 46; blendIm = WADE[(Math.floor(wf) + 1) % WADE.length]; blendK = 0; }      // build 212: no melting (see Pliable's climb)
     // build 260: THE REACH IS ONE PLAY OF THE STUCK VIDEO. It used to cross-fade from his heaving picture to the reach
     // (two poses half see-through for a moment) and then end higher than the lift began, so he dropped at the grip. Now,
     // once he sees Help coming (C2.rt), the stuck video simply plays on from the picture he is in (C2.rq0) to its own
