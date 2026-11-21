@@ -229,20 +229,34 @@ const CR = (() => {
     });
   }
   // the land in world units (the transform is set by the caller)
-  // the spur's shading, baked once small and drawn stretched (soft, no grain): soft pools along the line from where he
-  // stands down to the cave, widening toward the foot, a little lighter down its middle and darker at its flanks
-  let SPUR = null;
-  function spur() {
-    if (SPUR) return SPUR;
-    const ax = STOP_X - 40, ay = -gh(STOP_X - 40), bx = TOMB_X, by = 0, X0 = Math.min(ax, bx) - 760, X1 = Math.max(ax, bx) + 760, Y0 = ay - 200, Y1 = 420, k = .2;
+  // the hill's rock (owner: "maybe give the hill more rock texture (with layers of different shades - subtle but
+  // beautiful)"): baked once at half the world's size and drawn stretched, clipped to the land: bands of rock lying under
+  // the hill's outline, each a shade lighter or darker than the next, their edges wandering, a faint lit ledge along the
+  // top of some and a dark seam under it, and a fine grain over all; all in light and dark alpha, so it takes the hill's
+  // own colour as the dawn comes
+  let ROCK = null;
+  function rockTex() {
+    if (ROCK) return ROCK;
+    const X0 = START - 700, X1 = FALL1 + 900, Y0 = -H_TOP - 40, Y1 = 700, k = .5;
     const cv = document.createElement('canvas'); cv.width = Math.ceil((X1 - X0) * k); cv.height = Math.ceil((Y1 - Y0) * k); const q = cv.getContext('2d');
-    const nx = -(by - ay), ny = bx - ax, nl = Math.hypot(nx, ny);
-    for (let i = 0; i <= 24; i++) { const u = i / 24, px = lerp(ax, bx, u), py = lerp(ay, by, u), R = 70 + 240 * Math.pow(u, 1.3);
-      for (const [o, col, a] of [[0, [128, 124, 138], .017], [-1.15, [4, 3, 6], .024], [1.15, [4, 3, 6], .024]]) {
-        const qx = (px + nx / nl * o * R - X0) * k, qy = (py + ny / nl * o * R - Y0) * k, r = R * k;
-        const g = q.createRadialGradient(qx, qy, 0, qx, qy, r); g.addColorStop(0, css(col, a)); g.addColorStop(1, css(col, 0));
-        q.fillStyle = g; q.fillRect(qx - r, qy - r, 2 * r, 2 * r); } }
-    return (SPUR = { c: cv, x: X0, y: Y0, w: X1 - X0, h: Y1 - Y0 });
+    q.scale(k, k); q.translate(-X0, -Y0);
+    const r = rgen(77), bands = []; let d = 26 + r() * 20;
+    while (d < H_TOP + 200) { bands.push({ d, a: (r() - .5) * .09, p: [r() * 6.3, r() * 6.3, r() * 6.3], amp: 6 + r() * 14, lit: r() < .55 }); d += 34 + r() * 70; }
+    const yAt = (b, x) => -(gh(x) - b.d) + b.amp * (.6 * Math.sin(x * .004 + b.p[0]) + .3 * Math.sin(x * .011 + b.p[1]) + .1 * Math.sin(x * .037 + b.p[2]));
+    for (let i = 0; i < bands.length; i++) {
+      const b = bands[i], n = bands[i + 1];
+      q.beginPath(); for (let x = X0; x <= X1; x += 12) q.lineTo(x, yAt(b, x));
+      if (n) for (let x = X1; x >= X0; x -= 12) q.lineTo(x, yAt(n, x)); else { q.lineTo(X1, Y1); q.lineTo(X0, Y1); }
+      q.closePath(); q.fillStyle = b.a > 0 ? css([170, 164, 176], b.a) : css([0, 0, 0], -b.a * 1.3); q.fill();
+      // the ledge: a dark seam with a faint lit lip above it, broken along its length
+      q.lineWidth = 2.2; for (let x = X0; x < X1; x += 90 + r() * 160) { const L = 60 + r() * 260; if (r() < .35) continue;
+        q.strokeStyle = css([0, 0, 0], .1); q.beginPath(); for (let u = x; u <= x + L; u += 10) q.lineTo(u, yAt(b, u) + 1.5); q.stroke();
+        if (b.lit) { q.strokeStyle = css([190, 182, 196], .05); q.beginPath(); for (let u = x; u <= x + L; u += 10) q.lineTo(u, yAt(b, u) - 1.2); q.stroke(); } }
+    }
+    // a fine grain of rock
+    for (let i = 0; i < 26000; i++) { const x = X0 + r() * (X1 - X0), y = Y0 + r() * (Y1 - Y0), w = 2 + r() * 6;
+      q.fillStyle = r() < .5 ? css([0, 0, 0], .05 + r() * .05) : css([180, 172, 186], .025 + r() * .03); q.fillRect(x, y, w, 1.6 + r() * 2); }
+    return (ROCK = { c: cv, x: X0, y: Y0, w: X1 - X0, h: Y1 - Y0 });
   }
   function land(c) {
     const x0 = cam.cx - VW / 2 / cam.z - 40, x1 = cam.cx + VW / 2 / cam.z + 40, step = Math.max(4, 6 / cam.z);
@@ -250,20 +264,23 @@ const CR = (() => {
     c.beginPath(); c.moveTo(x0, 2000);
     for (let x = x0; x <= x1; x += step) c.lineTo(x, -gh(x));
     c.lineTo(x1, 2000); c.closePath(); c.fillStyle = css(hc); c.fill();
-    // a breath of form (owner: "shade hill a slight bit to get sense of its 3d and how pack is rolling down"): the hill a
-    // touch lighter just under its outline, darker toward its foot; and one soft broad spur coming toward us from the
-    // crown where he stands down to the cave, a little lighter down its middle, its flanks a little darker
+    // a breath of form (owner: "shade hill a slight bit to get sense of its 3d"): the hill a touch lighter just under its
+    // outline, darker toward its foot, and its rock in layers (rockTex)
     c.save(); c.clip();
     const lite = mix(hc, [150, 146, 160], .5), dark = mix(hc, [6, 5, 8], .6);
     let g = c.createLinearGradient(0, -H_TOP, 0, 40);
     g.addColorStop(0, css(lite, .06)); g.addColorStop(.35, css(lite, 0)); g.addColorStop(.7, css(dark, 0)); g.addColorStop(1, css(dark, .5));
     c.fillStyle = g; c.fillRect(x0, -H_TOP - 60, x1 - x0, H_TOP + 2100);
-    const S = spur(); c.drawImage(S.c, S.x, S.y, S.w, S.h);
+    const R = rockTex(); c.drawImage(R.c, R.x, R.y, R.w, R.h);
     c.restore();
     // a thin edge of light along the crown, toward the sun (after dawn)
     if (gold > .01) {
-      c.save(); c.lineWidth = 2.4 / cam.z; c.lineCap = 'round';
-      for (let x = Math.max(x0, CROSS_X - 900); x <= Math.min(x1, CROSS_X + 900); x += step) { const k = Math.exp(-Math.pow((x - CROSS_X) / 420, 2)) * gold; if (k < .02) continue; c.strokeStyle = css([255, 214, 160], .7 * k); c.beginPath(); c.moveTo(x, -gh(x) + .6 / cam.z); c.lineTo(x + step, -gh(x + step) + .6 / cam.z); c.stroke(); }
+      // one stroke with its strength along a gradient (short overlapping strokes with round caps showed as beads)
+      c.save(); c.lineWidth = 2.4 / cam.z; c.lineCap = 'butt'; c.lineJoin = 'round';
+      const ga = Math.max(x0, CROSS_X - 900), gb = Math.min(x1, CROSS_X + 900);
+      if (gb > ga) { const g = c.createLinearGradient(CROSS_X - 900, 0, CROSS_X + 900, 0);
+        for (let i = 0; i <= 12; i++) { const u = i / 12, k = Math.exp(-Math.pow((u - .5) * 1800 / 420, 2)) * gold; g.addColorStop(u, css([255, 214, 160], .7 * k)); }
+        c.strokeStyle = g; c.beginPath(); for (let x = ga; x <= gb; x += step) c.lineTo(x, -gh(x) + .6 / cam.z); c.stroke(); }
       c.restore();
     }
   }
