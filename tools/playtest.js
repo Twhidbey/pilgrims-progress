@@ -15,10 +15,10 @@ const which = process.argv[2] || '3', shots = process.argv[3], lv = parseInt(whi
   let last = '', n = 0;
   for (let i = 0; i < 400; i++) {
     const r = await p.evaluate(back => {
-      const M = HL.on ? HL : SL.on ? SL : null;
+      const M = CR.on ? CR : HL.on ? HL : SL.on ? SL : null;
       for (let k = 0; k < 240 && G.state !== 'end'; k++) {
         keys.r = G.state === 'play'; if (G.state === 'dialog' && G.act === 'gate') keys.push = true;
-        if (G.state === 'dialog') { if (G.act === 'hand') SL.grip(); else if (G.act === 'light') lightTouched(); else if (HL.on && G.act) HL.key(); else if (G.act === 'walkon') keys.push = true; else if (!G.act) next(true); }
+        if (G.state === 'dialog') { if (G.act === 'hand') SL.grip(); else if (G.act === 'light') lightTouched(); else if (HL.on && G.act) HL.key(); else if (CR.on && G.act) CR.key(); else if (G.act === 'walkon') keys.push = true; else if (!G.act) next(true); }
         if (G.state === 'choice') pick(back);
         update();
       }

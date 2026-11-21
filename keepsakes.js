@@ -373,7 +373,7 @@ body.playing #pause{display:block}
   const mkEl = (html) => { const d = document.createElement('div'); d.innerHTML = html.trim(); return d.firstChild; };
   const pauseBtn = mkEl(`<button id="pause" aria-label="Pause"><i></i><i></i></button>`);
   document.getElementById('stage').appendChild(pauseBtn);
-  const NAMES = ['The City of Destruction', 'The Slough of Despond', 'Mr. Worldly Wiseman', 'The Interpreter’s House'];
+  const NAMES = ['The City of Destruction', 'The Slough of Despond', 'Mr. Worldly Wiseman', 'The Interpreter’s House', 'The Cross'];
   const menu = mkEl(`<div id="ksmenu" class="kscover"><div class="kscard"><h1>Resting a while</h1><button class="btn" data-go="on">Go on</button><button class="btn auto" data-auto="1"></button>
     <p>or begin again at</p>${NAMES.map((n, i) => `<button class="btn" data-go="${i + 1}"><i>${i + 1}</i>${n}</button>`).join('')}</div></div>`);
   const book = mkEl(`<div id="ksbook" class="kscover"><div class="bible"><div class="spread"><div class="edges"></div><div class="page L"></div><div class="page R"></div>
@@ -431,7 +431,7 @@ body.playing #pause{display:block}
   // the menu
   // (build 309) the auto-walk switch, shared with the contents page's line (setAuto in index.html)
   const autoLabel = () => { const b = menu.querySelector('[data-auto]'); if (b) b.textContent = (AUTOW ? '\u25C6' : '\u25C7') + ' He walks on by himself: ' + (AUTOW ? 'on' : 'off'); };
-  const curLv = () => RM.on ? 4 : HL.on ? 3 : SL.on ? 2 : 1;
+  const curLv = () => CR.on ? 5 : RM.on ? 4 : HL.on ? 3 : SL.on ? 2 : 1;
   function openMenu() {
     if (G.state === 'title') return;
     for (const b of menu.querySelectorAll('[data-go]')) b.classList.toggle('here', b.dataset.go === String(curLv()));
@@ -448,7 +448,7 @@ body.playing #pause{display:block}
     hush(); dlg.className = ''; choiceEl.className = ''; document.body.classList.remove('talking', 'capped', 'slough');
     G.capQ.length = 0; G.cap = 0; G.hint = null; G.act = null; G.ring = null; G.state = 'wait';
     document.getElementById('endc').className = 'card';
-    if (go === '4') goRoom('door'); else if (go === '3') go3(); else if (go === '2') go2(); else start();
+    if (go === '5') go5(); else if (go === '4') goRoom('door'); else if (go === '3') go3(); else if (go === '2') go2(); else start();
   });
 
   // the Bible

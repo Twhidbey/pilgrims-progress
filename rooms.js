@@ -881,8 +881,8 @@ const RM = (() => {
     const e = document.getElementById('endc');
     e.querySelector('h1').textContent = 'The Interpreter’s House';
     e.querySelectorAll('p')[0].textContent = 'He went on his way, and the highway was fenced on either side with a wall called Salvation.';
-    e.querySelectorAll('p')[1].textContent = 'Next: the Cross (not yet built)';
-    document.getElementById('on2').style.display = 'none';
+    e.querySelectorAll('p')[1].textContent = 'Next: the Cross';
+    document.getElementById('on2').style.display = '';
   }
 
   // THE ROOM SEEN WHOLE (owner, build 271: "rooms feel too claustrophobic ... i'd like to be zoomed out a little - if you
