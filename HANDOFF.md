@@ -8,6 +8,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 **Build 390 (Level 3 / Cross chat): LEVEL 5, THE CROSS, built** (`cross.js`, contents line V): the long dark slope before dawn, the burden slipping off by itself at the cross (a free Modal clip) and tumbling down into the sepulchre, the sunrise behind the cross with Amazing Grace whole for the first time, the three Shining Ones as light, the roll, three leaps. Lines silent until the owner approves the words (voices about 30 cents). Nothing spent. See CLAUDE.md, "LEVEL 5 IN THE GAME".
 
+**Build 393 (Level 4 editing chat): a cutaway of the whole Interpreter's House by night, shown at the door while the storyteller's first line is said (every room dark but the hearth) and again when leaving (the rooms he has seen lit one by one); see CLAUDE.md. Next: the rooms redrawn in code one by one to match the house, room 1 first; the sweeper's two-handed grip to retry free when the Hugging Face allowance resets.**
+
 **Build 389 (Level 4 editing chat): the Interpreter's House made one house: the passages between rooms are its real corridors, the cellar and great stairs and the back door to the garden, with a small cutaway of the house in the corner. Next: the cutaway at the door, rooms redrawn in code to match. Nothing spent.**
 
 **Build 386 (Level 4 editing chat): the drawn parlour (`?room=2&drawn`) has a new sweeper, made free with FLUX Kontext (the owner's HF token now saved for that host too): a bearded servant bent to his broom with both hands. Nothing spent.**

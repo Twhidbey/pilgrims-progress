@@ -358,10 +358,12 @@ const RM = (() => {
     door: {
       pic: 'room-door', FY: 1200, cam0: 210, tone: [80, 74, 90], k: .58,
       light(x) { return x < DOOR.x - 100 ? { x: DOOR.x, a: .6 * this.d, col: [230, 140, 70] } : null; },
-      enter() { this.d = 0; this.kn = 0; this.ia = 0; },
-      run() { talk([[N, 'Then he went on till he came to the house of the Interpreter, and knocked over and over.'], [TIP, 'Knock on the door.', 'knock']], () => { ph = 'open'; t = 0; G.state = 'auto'; }); },
+      enter() { this.d = 0; this.kn = 0; this.ia = 0; this.cut = 0; this.cw = 1; SEEN_R.clear(); },
+      cutLit(id) { return id === 'door' ? .5 : 0; },
+      run() { talk([[N, 'Then he went on till he came to the house of the Interpreter, and knocked over and over.']], () => { this.cw = 0; talk([[TIP, 'Knock on the door.', 'knock']], () => { ph = 'open'; t = 0; G.state = 'auto'; }); }); },
       act(sx, sy) { if (G.act === 'knock' && (sx == null || near(sx, sy, DOOR.x, 950, 150))) { knockS(); if (++this.kn >= 3) next(true); } },
       upd() {
+        this.cut += ((this.cw ? 1 : 0) - this.cut) * (this.cw ? .03 : .05); if (this.cut < .003) this.cut = 0;
         if (G.act === 'knock' && G.actT >= 90 && !G.ring) G.ring = ring(DOOR.x, 950);
         if (ph === 'open') { this.d = Math.min(1, this.d + .012); if (t > 50) this.ia = Math.min(1, this.ia + .02); if (t === 1 && audio()) { tone(98, 'sine', .05, 2.2); noise(300, 3, 1.4, .05); }
           if (t === 150) talk([[C, 'Sir, the man at the gate said that if I called here, you would show me excellent things, to help me on my journey.'], [I, 'Come in. I will show you what will help you.']], () => goTo('r1')); }
@@ -635,10 +637,12 @@ const RM = (() => {
     leave: {
       pic: 'room-door', FY: 1200, cam0: 210, tone: [100, 94, 112], k: .58,
       light(x) { return x < DOOR.x - 100 ? { x: DOOR.x, a: .55, col: [230, 140, 70] } : null; },
-      enter() { this.x = 1880; this.w = 0; this.fr = 0; this.a = 1; pic(VIS.C.walk.n); },
+      enter() { this.x = 1880; this.w = 0; this.fr = 0; this.a = 1; this.cut = 0; this.cw = 1; this.ct = 0; pic(VIS.C.walk.n); },
+      cutLit(id) { return id === 'door' ? .6 : SEEN_R.has(id) ? .45 + .4 * smooth(0, 1, (this.ct - 30 - 25 * ['r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r7'].indexOf(id)) / 60) : 0; },
       run() { talk([[I, 'Have you thought on all these things?'], [C, 'Yes, and they put me in hope and fear.'], [I, 'The Comforter be always with you, good Christian, to guide you in the way that leads to the City.'], [N, 'The highway was fenced on either side with a wall, and that wall was called Salvation.'], [TIP, 'Hold to go on your way.', 'walkout']], () => {}); },
       act() {},
       upd() {
+        this.ct++; if (this.ct > 330) this.cw = 0; this.cut += ((this.cw ? 1 : 0) - this.cut) * (this.cw ? .03 : .04); if (this.cut < .003) this.cut = 0;
         if (G.act === 'walkout') { if (G.actT >= 60 && !hold() && !G.ring) G.ring = () => [u(this.x + 160), v(1000)]; if (hold()) { G.ring = null; this.w = Math.min(1, this.w + .05); } else this.w = Math.max(0, this.w - .05); }
         if (this.w > 0) { this.fr += WALK_FPT * this.w; this.x += walkSpeed('C', .58) * this.w; }
         cam.to = Math.min(R.PW * S - VW, Math.max(R.cam0, u(this.x) + cam.x - 500));
@@ -787,6 +791,72 @@ const RM = (() => {
     const q = smooth(0, 1, p), cx = ax + (bx - ax) * q, cy = ay + (by - ay) * q;
     c.globalAlpha = 1; glow(c, cx, cy, 7, [255, 200, 120], .9); c.fillStyle = '#fff2cc'; c.beginPath(); c.arc(cx, cy, 1.1, 0, 6.2832); c.fill();
     c.restore();
+  }
+  // THE HOUSE SEEN WHOLE (build 392): a cutaway of the house by night, as on a page of an old book: the front wall taken away, every room
+  // seen in its place. At the door every room is dark but for the hearth (the fire "burned against a wall" all along); leaving, the rooms
+  // he has seen are lit. Same plan as the corner map (PLAN), drawn larger, with its roof, chimney, stairs, cellar and the garden behind.
+  function houseCut(c, a, lit) {
+    if (a <= .005) return;
+    const k = Math.min(VW * .62 / 112, VH * .7 / 84), x0 = VW / 2 - 50 * k, y0 = VH * .43 - 22 * k;
+    c.save(); c.globalAlpha = .93 * a; c.fillStyle = '#07050a'; c.fillRect(0, 0, VW, VH);
+    c.globalAlpha = a; c.translate(x0, y0); c.scale(k, k); c.lineJoin = 'round';
+    const L = id => (id === 'r6' || id === 'r7') && !darkOn() ? 0 : lit(id);
+    // night: a few stars, the ground and the earth under it
+    for (let i = 0; i < 40; i++) { const sx = -10 + (i * 37.3) % 124, sy = -22 + (i * 17.9) % 30; c.fillStyle = `rgba(230,226,255,${(.25 + .25 * Math.sin(G.t / 60 + i)).toFixed(3)})`; c.fillRect(sx, sy, .35, .35); }
+    c.fillStyle = '#1a130e'; c.fillRect(-10, 46, 124, 16);
+    c.fillStyle = '#120d09'; c.fillRect(-10, 59.5, 124, 3);
+    // the garden behind: its wall, dark shrubs, the palace small on its rise
+    c.fillStyle = '#1c2318'; c.beginPath(); c.moveTo(86, 46); c.quadraticCurveTo(98, 40.5, 112, 43); c.lineTo(112, 46); c.closePath(); c.fill();
+    c.fillStyle = '#2a2420'; c.fillRect(110, 39, 2, 7);
+    for (const [sx, r] of [[88, 1.6], [92.5, 2.1], [108, 1.8]]) { c.fillStyle = '#141a12'; c.beginPath(); c.arc(sx, 45 - r * .4, r, 0, 6.2832); c.fill(); }
+    const l5 = L('r5');
+    { const px = 97, py = 42.6; c.fillStyle = l5 > .05 ? `rgb(${60 + 120 * l5 | 0},${48 + 90 * l5 | 0},${30 + 40 * l5 | 0})` : '#221c18';
+      c.fillRect(px - 5, py - 7, 10, 7); c.fillRect(px - 6, py - 11, 2.4, 11); c.fillRect(px + 3.6, py - 11, 2.4, 11); c.fillRect(px - 1.5, py - 10, 3, 3);
+      for (const tx of [px - 4.8, px + 4.8]) { c.beginPath(); c.moveTo(tx - 1.6, py - 11); c.lineTo(tx, py - 13.5); c.lineTo(tx + 1.6, py - 11); c.fill(); }
+      if (l5 > .05) { glow(c, px, py - 6, 10, [255, 200, 120], .5 * l5); c.fillStyle = `rgba(255,230,170,${(.9 * l5).toFixed(3)})`; c.fillRect(px - .7, py - 3, 1.4, 3); } }
+    // the house: its walls (the front taken away), the roof, the chimney over the kitchen hearth
+    c.fillStyle = '#3a2c22'; c.fillRect(-1.5, 2.5, 89, 44.5);
+    c.fillStyle = '#2b2019'; c.beginPath(); c.moveTo(-5, 3.5); c.lineTo(43, -17); c.lineTo(91, 3.5); c.closePath(); c.fill();
+    c.strokeStyle = '#4a3a2c'; c.lineWidth = .5; c.stroke();
+    c.strokeStyle = 'rgba(170,176,210,.35)'; c.lineWidth = .35; c.beginPath(); c.moveTo(-5, 3.5); c.lineTo(43, -17); c.stroke();
+    c.strokeStyle = 'rgba(20,14,10,.5)'; c.lineWidth = .25; for (let i = 1; i < 6; i++) { const y = 3.5 - 20.5 * i / 6, h = (3.5 - y) / 20.5 * 48; c.beginPath(); c.moveTo(-5 + h, y); c.lineTo(91 - h, y); c.stroke(); }
+    c.fillStyle = '#33271f'; c.fillRect(75, -13, 6, 17); c.fillRect(74.4, -14, 7.2, 1.6);
+    for (let i = 0; i < 5; i++) { const q = ((G.t / 360) + i / 5) % 1, sx = 78 - 10 * q * q, sy = -15 - 13 * q, r = 1.5 + 4 * q, g = c.createRadialGradient(sx, sy, 0, sx, sy, r); g.addColorStop(0, `rgba(120,112,118,${(.12 * Math.sin(Math.PI * Math.min(1, q * 1.4))).toFixed(3)})`); g.addColorStop(1, 'rgba(120,112,118,0)'); c.fillStyle = g; c.fillRect(sx - r, sy - r, 2 * r, 2 * r); }
+    // the upper floor's other rooms (not in the story): dark, each with a small window
+    for (const [x, w] of [[0, 26], [56, 30]]) { c.fillStyle = '#100b08'; c.fillRect(x + .8, 4.8, w - 1.6, 18.4); c.fillStyle = '#1d1a24'; c.fillRect(x + w / 2 - 1.5, 9, 3, 5); }
+    // the rooms of the story: dark until lit
+    const ROOMLIST = ['door', 'r1', 'r2', 'r3', 'r4', 'r6', 'r7'];
+    for (const id of ROOMLIST) {
+      const [x, y, w, h] = PLAN[id], l = id === 'door' ? Math.max(.25, lit(id)) : L(id);
+      const dk = (id === 'r6' || id === 'r7') && !darkOn();
+      c.fillStyle = dk ? '#1a130e' : '#0e0907'; c.fillRect(x + .8, y + .8, w - 1.6, h - 1.6);
+      if (l > .01) { const g = c.createRadialGradient(x + w / 2, y + h * .62, 0, x + w / 2, y + h * .62, Math.max(w, h) * .75); g.addColorStop(0, `rgba(255,200,120,${(.95 * l).toFixed(3)})`); g.addColorStop(1, `rgba(150,80,36,${(.55 * l).toFixed(3)})`); c.fillStyle = g; c.fillRect(x + .8, y + .8, w - 1.6, h - 1.6); }
+    }
+    // a few plain things in the rooms, in one dark tone: the picture, the parlour's window, two little chairs, the hearth (always burning),
+    // the cage, the bed
+    const ink = '#160e0a'; c.fillStyle = ink; c.strokeStyle = ink; c.lineWidth = .45;
+    c.strokeRect(17.5, 30, 5, 6.5);
+    c.fillRect(30.5, 30, 3.6, 7); c.fillStyle = L('r2') > .05 ? `rgba(255,236,190,${(.7 * L('r2')).toFixed(3)})` : '#1d1a24'; c.fillRect(31, 30.5, 2.6, 6); c.fillStyle = ink;
+    for (const cx of [55.5, 61.5]) { c.fillRect(cx, 41, 2.4, .6); c.fillRect(cx, 41, .5, 4.2); c.fillRect(cx + 1.9, 41.6, .5, 3.6); c.fillRect(cx - .1, 37.5, .5, 4); }
+    c.fillRect(73, 36, 8, 10); c.fillStyle = '#0a0605'; c.fillRect(74.5, 39.5, 5, 6.5);
+    const fl = .75 + .25 * Math.sin(G.t / 6) * Math.sin(G.t / 17); glow(c, 77, 44, 6, [255, 150, 60], .8 * fl); c.fillStyle = `rgba(255,190,100,${fl.toFixed(3)})`; c.beginPath(); c.moveTo(75.5, 46); c.quadraticCurveTo(77, 41.5 - fl, 78.5, 46); c.fill();
+    c.fillStyle = ink;
+    if (darkOn()) { for (let i = 0; i < 6; i++) c.fillRect(3 + i * 1.6, 49.5, .4, 8); c.fillRect(2.5, 49, 9, .5); c.fillRect(2.5, 57.3, 9, .5);
+      c.fillRect(42, 18.5, 10, 2.4); c.fillRect(42, 15, 1, 6); c.fillRect(51.2, 16.5, .8, 4.5); }
+    // stairs: the great stair from the parlour up to the bedchamber; the cellar stair from the first room down
+    c.fillStyle = '#2a1f17';
+    for (let i = 0; i < 10; i++) c.fillRect(49 - i * 1.3, 45.2 - i * 2.2, 2.2, .8);
+    c.fillRect(35, 23.4, 4, .8);
+    for (let i = 0; i < 6; i++) c.fillRect(23 - i * 1.4, 47 + i * 2, 2.2, .7);
+    // floors and inner walls
+    c.fillStyle = '#4a3a2c'; c.fillRect(-1.5, 23.4, 89, 1.2); c.fillRect(-1.5, 45.6, 89, 1.2); c.fillRect(-1.5, 59, 33, 1);
+    for (const x of [12, 28, 52, 66]) c.fillRect(x - .5, 24, 1, 22);
+    c.fillRect(25.5, 4, 1, 20); c.fillRect(55.5, 4, 1, 20); c.fillRect(30, 46, 1, 13.5); c.fillRect(-1.5, 46, 1, 13.5);
+    // the front door, open on its warm light, and the back door to the garden
+    c.fillStyle = `rgba(255,200,120,${(.9 * Math.max(.4, lit('door'))).toFixed(3)})`; c.beginPath(); c.moveTo(-1.5, 46); c.lineTo(-1.5, 38); c.quadraticCurveTo(0, 36, 1.5, 38); c.lineTo(1.5, 46); c.fill();
+    glow(c, -1, 43, 6, [255, 190, 110], .5);
+    c.fillStyle = L('r5') > .05 ? `rgba(255,200,120,${(.7 * L('r5')).toFixed(3)})` : '#120c09'; c.fillRect(85.6, 39, 2, 7);
+    c.restore(); c.globalAlpha = 1;
   }
   function rngR(seed) { let s = seed; return () => (s = (s * 16807) % 2147483647) / 2147483647; }
 
@@ -949,6 +1019,7 @@ const RM = (() => {
     }
     if (G.ring) { const [x, y] = G.ring(); c.strokeStyle = '#ffe6ae'; c.lineWidth = 2 / VIEW.Z; for (const q0 of [0, .5]) { const q = (G.t / 80 + q0) % 1; c.globalAlpha = .65 * (1 - q); c.beginPath(); c.arc(x, y, (14 + q * 40) / VIEW.Z, 0, 6.2832); c.stroke(); } c.globalAlpha = 1; }
     c.setTransform(DPR, 0, 0, DPR, 0, 0);
+    if (R && R.cut) houseCut(c, R.cut, id => R.cutLit ? R.cutLit(id) : 0);
     for (const tp of G.taps) { tp.t++; c.strokeStyle = css([247, 243, 233], .5 * (1 - tp.t / 40)); c.lineWidth = 1.2; c.beginPath(); c.arc(tp.x, tp.y, 6 + tp.t * .8, 0, 7); c.stroke(); }
     G.taps = G.taps.filter(tp => tp.t < 40);
     if (fade > .003) { c.fillStyle = css([10, 6, 4], smooth(0, 1, fade)); c.fillRect(0, 0, VW, VH); }
@@ -957,6 +1028,6 @@ const RM = (() => {
 
   const HOLDS = ['round', 'walkout', 'follow'];
   const lines = []; // for the voice tool: every room's lines are written out in full above
-  return { on: false, start, update, draw, touch, key, preload, HOLDS, stop: () => ambStop(), darkOn, setDark: on => { try { localStorage.setItem('pp-dark', on ? '1' : '0'); } catch (e) {} }, lines,
+  return { on: false, start, update, draw, touch, key, preload, HOLDS, seen: SEEN_R, stop: () => ambStop(), darkOn, setDark: on => { try { localStorage.setItem('pp-dark', on ? '1' : '0'); } catch (e) {} }, lines,
     peek: () => ({ room: R && R.id, ph, t, cam: Math.round(cam.x), fade: +fade.toFixed(2), r3: R && R.id === 'r3' ? { coins: R.coins.length, rags: +R.rags.toFixed(2) } : null, pass: R && R.id === 'pass' ? R.kind + '>' + R.to : null, pp: R && R.id === 'pass' ? +R.p.toFixed(2) : null, bv: R && R.bv ? { x: Math.round(R.bv.x), f: +(R.bv.f || 0).toFixed(1), arm: R.bv.arm, clip: R.bv.clip || 0 } : null }) };
 })();
