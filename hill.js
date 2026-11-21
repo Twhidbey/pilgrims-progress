@@ -1854,22 +1854,32 @@ const HL = (() => {
         c.fillStyle = css([22, 14, 11]); c.fillRect(fx0, fy, fx1 - fx0, fb - fy + 1);
         c.fillStyle = css([16, 10, 8]); c.beginPath(); c.moveTo(sx0, yG + 1); c.lineTo(fx0, fb); c.lineTo(fx1, fb); c.lineTo(sx1, yG + 1); c.closePath(); c.fill();
         // the inner end's opening, where the door hangs: the light from within shows through it once the door opens
-        c.fillStyle = css(mix([10, 6, 5], [255, 214, 150], .85 * smooth(0, 1, door) * (1 - shut))); c.fill(hole(sx1));
-        if (lit) { const g = c.createLinearGradient(sx1, 0, fx0, 0); g.addColorStop(0, css([255, 216, 152], .5 * open)); g.addColorStop(.7, css([200, 120, 60], .12 * open)); g.addColorStop(1, css([200, 120, 60], 0));
-          c.save(); c.globalCompositeOperation = 'lighter'; c.fillStyle = g; c.fillRect(fx0, syP, sx1 - fx0, yG - syP + 2); c.restore(); } }
-      // THE DOOR: hinged at the inner end on the far side of the passage; it swings in, every upright of it turning about the
-      // hinge, laid in thin strips of the photographed oak door, so it is seen in perspective whether shut, opening or open
-      { const a = open * Math.PI / 2, N = 22, cols = [];
-        for (let k = 0; k <= N; k++) { const d0 = TD * k / N, rr = TD - d0, wx = sx1 + rr * Math.sin(a) * z, dp = TD - rr * Math.cos(a), q = sOf(dp); cols.push([Px(wx, q), Py(Y(-vh(d0)), q), Py(yG, q)]); }
-        const W = GDOOR ? GDOOR.width : 1, H = GDOOR ? GDOOR.height : 1, dk = .55 + .25 * Math.sin(a) - .1 * shut;
+        c.fillStyle = css(mix([10, 6, 5], [222, 150, 98], .8 * smooth(0, 1, door))); c.fill(hole(sx1));
+        // the inner half of the passage takes the light from within whenever the door has been opened (the inside stays lit);
+        // the outer half only while the door stands open
+        { const op = smooth(0, 1, door), xm = X(GATE_X); if (op > .01) { c.save(); c.globalCompositeOperation = 'lighter';
+          let g = c.createLinearGradient(sx1, 0, Px(xm, sD), 0); g.addColorStop(0, css([255, 216, 152], .5 * op)); g.addColorStop(1, css([220, 140, 80], .2 * op)); c.fillStyle = g; c.fillRect(Px(xm, sD), syP, sx1 - Px(xm, sD), yG - syP + 2);
+          if (open > .01) { g = c.createLinearGradient(Px(xm, sD), 0, fx0, 0); g.addColorStop(0, css([220, 140, 80], .2 * open)); g.addColorStop(1, css([200, 120, 60], 0)); c.fillStyle = g; c.fillRect(fx0, syP, Px(xm, sD) - fx0, yG - syP + 2); }
+          c.restore(); } } }
+      // THE DOOR (build 464, owner: "put door in middle of wall cavity ... give door some thickness and have it rotate correctly
+      // (towards doorman)"): it hangs in the middle of the passage (`xm`), hinged on the passage's far side, a slab `DT` thick;
+      // it swings in toward Good-will about its hinge. Seen from outside: its outer face (strips of the photographed oak door, in
+      // perspective) and its free edge, the cut end of the planks; iron straps across it
+      { const a = open * Math.PI / 2, N = 22, DT = 7, xm = X(GATE_X), ca = Math.cos(a), sa = Math.sin(a);
+        const pt = (r, sg) => { const dx = r * sa + sg * DT / 2 * ca, dp = TD - r * ca + sg * DT / 2 * sa, q = sOf(dp); return [Px(xm + dx * z, q), q]; };
+        const top = (r, q) => Py(Y(-vh(TD - r)), q), bot = q => Py(yG, q);
+        // the free edge: the planks' cut end, between the outer and the inner face
+        { const [xo, qo] = pt(TD, -1), [xi, qi] = pt(TD, 1); c.fillStyle = css(mix([40, 27, 19], [86, 58, 38], .5 * flick * (1 - open) + .6 * open)); c.beginPath(); c.moveTo(xo, top(TD, qo)); c.lineTo(xi, top(TD, qi)); c.lineTo(xi, bot(qi)); c.lineTo(xo, bot(qo)); c.closePath(); c.fill();
+          c.strokeStyle = css([8, 6, 5], .7); c.lineWidth = .8 * z; c.stroke(); }
+        const cols = []; for (let k = 0; k <= N; k++) { const r = TD * (1 - k / N), [x, q] = pt(r, -1); cols.push([x, top(r, q), bot(q)]); }
+        const W = GDOOR ? GDOOR.width : 1, H = GDOOR ? GDOOR.height : 1, dk = .55 + .2 * sa - .08 * shut;
         for (let k = 0; k < N; k++) { const [x0, t0, b0] = cols[k], [x1, t1, b1] = cols[k + 1], xl = Math.min(x0, x1), xw = Math.abs(x1 - x0) + .8, t = Math.min(t0, t1), b = Math.max(b0, b1);
           c.save(); c.beginPath(); c.moveTo(x0, t0); c.lineTo(x1, t1); c.lineTo(x1, b1); c.lineTo(x0, b0); c.closePath(); c.clip();
-          if (GDOOR) c.drawImage(GDOOR, W * (1 - (k + .5) / N) - W / N / 2, 0, W / N, H, xl, t, xw, b - t); else { c.fillStyle = css([46, 30, 20]); c.fillRect(xl, t, xw, b - t); }
+          if (GDOOR) c.drawImage(GDOOR, W * k / N, 0, W / N, H, xl, t, xw, b - t); else { c.fillStyle = css([46, 30, 20]); c.fillRect(xl, t, xw, b - t); }
           c.fillStyle = css([10, 7, 5], dk); c.fillRect(xl, t, xw, b - t); c.restore(); }
-        // its edge and its iron straps, a warm touch of the lantern on it while shut
         c.strokeStyle = css([8, 6, 5], .8); c.lineWidth = 1 * z; c.beginPath(); cols.forEach(([x, t], k) => k ? c.lineTo(x, t) : c.moveTo(x, t)); c.stroke();
         c.strokeStyle = css([10, 8, 7], .85); c.lineWidth = 1.6 * z; for (const f of [.22, .55, .85]) { c.beginPath(); cols.forEach(([x, t, b], k) => { const y = lerp(Math.max(t, Py(Y(-(GPH - TD)), sD)), b, f); k ? c.lineTo(x, y) : c.moveTo(x, y); }); c.stroke(); }
-        if (open < .99) { c.save(); c.globalCompositeOperation = 'lighter'; c.fillStyle = css([236, 150, 80], .08 * flick * (1 - open)); c.beginPath(); c.moveTo(cols[0][0], cols[0][1]); cols.forEach(([x, t]) => c.lineTo(x, t)); for (let k = N; k >= 0; k--) c.lineTo(cols[k][0], cols[k][2]); c.closePath(); c.fill(); c.restore(); } }
+        if (open < .99) { c.save(); c.globalCompositeOperation = 'lighter'; c.fillStyle = css([236, 150, 80], .07 * flick * (1 - open)); c.beginPath(); c.moveTo(cols[0][0], cols[0][1]); cols.forEach(([x, t]) => c.lineTo(x, t)); for (let k = N; k >= 0; k--) c.lineTo(cols[k][0], cols[k][2]); c.closePath(); c.fill(); c.restore(); } }
       // THE OUTER FACE running away from us to the horizon, its doorway cut in it, in thin upright strips of the wall's stone
       // (each strip scaled to its depth), hazing toward the far end; the lantern's warmth near the gate
       { const ds = [0, 30, 80, 160, 320, 640, 1000, GEND], top = d => Y(-GTOP - 4 * nz(GATE_X * .01 + d * .02, 61) + 1);
