@@ -475,7 +475,7 @@ const CR = (() => {
     downs.clear(); keys.r = keys.push = false;
     reset0(); ph = 'look';
     const at = new URLSearchParams(location.search).get('at');
-    if (at === 'cross') { ph = 'walk'; Ch.x = STOP_X - 260; Ch.sd = null; wideK = wideTo = 0; said.open = said.ascend = said.cut = true; dawn = .6; }
+    if (at === 'cross') { ph = 'walk'; Ch.x = STOP_X - 260; Ch.sd = null; wideK = wideTo = 0; said.open = said.ascend = said.cut = true; dawn = .6; memT = MEM_END; }
     camTick(true);
     if (audio()) { AC.resume(); if (rainG) rainG.gain.setTargetAtTime(0, AC.currentTime, .8); padStart(); }
     G.state = 'wait';
@@ -524,6 +524,8 @@ const CR = (() => {
     wideK += (wideTo - wideK) * .02;
     if (!climb) topK += (topTo - topK) * .022;
     hymnTick();
+    // the memories' own clock runs on whatever the phase, so the last one fades even once he is at the cross
+    if (memT >= 0 && memT < MEM_END + 400) { memT++; MEMS.forEach((m, i) => { if (memT === MEM0 + i * MEM_GAP) memVoice(m); }); }
     padTick(ph === 'fall' || ph === 'tumble' || ph === 'gone' ? 0 : gold > .1 ? 0 : 1);
 
     if (ph === 'look') {
@@ -535,13 +537,18 @@ const CR = (() => {
     } else if (ph === 'walk') {
       if (!said.open) { said.open = true; caption(OPEN); }
       if (climb) { climbTick(); return camTick(climb && climb.snap); }
-      if (!said.ascend && Ch.x > CREST0 - 900 && !saying()) { said.ascend = true; caption(ASCEND); }
+      // his life remembered in the sky as he runs up the hill (owner: "the memories maybe happen as he runs up the hill
+      // (too much overlapping dialogue at cross)"): once the storyteller's first line is said and he is on the slope;
+      // Good-will's promise last, just before he comes to the cross
+      if (memT < 0 && Ch.x > SLOPE0 && said.open && !saying()) memT = 0;
+      const memDone = memT >= MEM_END - 40;
+      if (!said.ascend && memDone && Ch.x > CREST0 - 900 && !saying()) { said.ascend = true; caption(ASCEND); }
       closeK += (0 - closeK) * .03;
       if (topTo && topK > .9 && !saying() && G.t - (said.topT || 0) > 150) topTo = 0;
       // no cut any more (owner: "Since he's running you can probably not cut to top of hill"): he runs all the way up
       // to the cross, the book's "He ran thus till he came at a place somewhat ascending"
       if (want && Ch.x < STOP_X - .5) { run(true); if (Ch.x > STOP_X) Ch.x = STOP_X; } else run(false);
-      if (Ch.x >= STOP_X - .5 && Ch.sd != null && Ch.run <= 0 && !saying()) { ph = 'cross'; G.state = 'auto'; t = 0; }
+      if (Ch.x >= STOP_X - .5 && Ch.sd != null && Ch.run <= 0 && said.ascend && !saying()) { ph = 'cross'; G.state = 'auto'; t = 0; }
     } else if (ph === 'cross') {
       // he stands before the cross; the standing picture gives way to the clip and the burden loosens by itself and falls behind him
       if (Ch.cf < 0) { Ch.cf = 0; Ch.fade = 0; }
@@ -562,11 +569,8 @@ const CR = (() => {
     } else if (ph === 'gone') {
       clipHold();
       // a silence; then the light comes up behind the cross, and the colour comes back from it outward
-      // his life remembered in the sky, one memory after another, nearly overlapping; the sun rises during the last,
-      // Good-will's promise, and the hymn begins once it is said
-      if (t >= 20) { memT = t - 20; MEMS.forEach((m, i) => { if (memT === MEM0 + i * MEM_GAP) memVoice(m); }); }
-      if (t === 20 + MEM0 + 5 * MEM_GAP + 150) { goldTo = 1; wideTo = .35; }
-      if (t === 20 + MEM_END) hymn = { t: 0, i: 0, b: 0 };
+      if (t === 150) { goldTo = 1; wideTo = .35; }
+      if (t === 210) hymn = { t: 0, i: 0, b: 0 };
       if (hymn && hymn.t === 9 * BEATT) caption(GLAD);
       if (hymn && hymn.t === 25 * BEATT) caption(LOOKED);
       if (hymn && hymn.t > 20 * BEATT) wideTo = 0;
@@ -612,12 +616,12 @@ const CR = (() => {
   // the run ("Life! Life!"), his wife at the door, Help's hand, Evangelist's God-speed, and last Good-will's promise,
   // heard as it comes true. Ours, not the book's.
   const MEM_GAP = 62, MEM0 = 24, MEMS = [
-    { who: E, txt: 'Do you see that shining light?', at: [.22, .2] },
-    { who: C, txt: 'Life! Life! Eternal life!', at: [.74, .17] },
-    { who: W, txt: 'Come back! Come home to us!', at: [.33, .14] },
-    { who: 'Help', txt: 'Give me your hand.', at: [.86, .3] },
-    { who: E, txt: 'God-speed.', at: [.14, .32] },
-    { who: 'Good-will', txt: 'Bear your burden a little longer. At the place of deliverance, it will fall from your back of itself.', at: [.27, .22], last: true },
+    { who: E, txt: 'Do you see that shining light?', at: [.2, .18] },
+    { who: C, txt: 'Life! Life! Eternal life!', at: [.52, .13] },
+    { who: W, txt: 'Come back! Come home to us!', at: [.3, .3] },
+    { who: 'Help', txt: 'Give me your hand.', at: [.62, .26] },
+    { who: E, txt: 'God-speed.', at: [.16, .4] },
+    { who: 'Good-will', txt: 'Bear your burden a little longer. At the place of deliverance, it will fall from your back of itself.', at: [.4, .2], last: true },
   ];
   const memC = [];
   let memT = -1;
