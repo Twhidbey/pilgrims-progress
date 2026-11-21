@@ -227,7 +227,8 @@ const CR = (() => {
     if (gl > .01) { const cx = bur.x, cy = -h - hh / 2, R = 70 * bur.k, g = c.createRadialGradient(cx, cy, 0, cx, cy, R);
       g.addColorStop(0, css([255, 232, 196], .3 * gl)); g.addColorStop(.4, css([250, 214, 170], .12 * gl)); g.addColorStop(1, 'rgba(250,210,170,0)');
       c.save(); c.globalCompositeOperation = 'screen'; c.fillStyle = g; c.fillRect(cx - R, cy - R, R * 2, R * 2); c.restore(); }
-    c.save(); c.translate(bur.x, -h - hh / 2 + 2); c.rotate(bur.r); c.globalAlpha = bur.a;
+    const sq = clamp(bur.sq || 0, -.4, .25);
+    c.save(); c.translate(bur.x, -h - hh / 2 + 2 + hh * (sq < 0 ? -sq * .5 : 0)); c.scale(1 - sq * .7, 1 + sq); c.rotate(bur.r); c.globalAlpha = bur.a;
     const tint = tintNow(), W = BURDEN.width, H = BURDEN.height;
     if (figC.width !== W || figC.height !== H) { figC.width = W; figC.height = H; }
     const f = figC.getContext('2d'); f.globalCompositeOperation = 'source-over'; f.clearRect(0, 0, W, H); f.drawImage(BURDEN, 0, 0); f.globalCompositeOperation = 'multiply'; f.fillStyle = css(mix(mix(tint, [176, 164, 162], bur.H != null ? .5 * (1 - bur.dk) + .2 * gl : 0), [8, 7, 10], bur.dk));       f.fillRect(0, 0, W, H); f.globalCompositeOperation = 'destination-in'; f.drawImage(BURDEN, 0, 0); f.globalCompositeOperation = 'source-over';
@@ -242,7 +243,7 @@ const CR = (() => {
     if (!bur) return;
     if (bur.dust) for (const d of bur.dust) { d.x += d.vx; d.y += d.vy; d.vx *= .97; d.vy *= .97; d.r += .35; d.a -= .006; }
     if (bur.st === 'roll') {
-      if (bur.x0 == null) { Object.assign(bur, { x0: bur.x, H0: gh(bur.x), gl: 0, s: 0, vs: .45, z: 0, vz: 2.2, vx: .5, dx: 0, w: -.05, rnd: rgen(77) }); }
+      if (bur.x0 == null) { Object.assign(bur, { x0: bur.x, H0: gh(bur.x), gl: 0, s: 0, vs: .45, z: 0, vz: 2.2, vx: .5, dx: 0, w: -.05, sq: 0, sqa: 0, sqv: 0, rnd: rgen(77) }); }
       const R = bur.rnd, L = bur.H0 - tombSill() - 6, g = .16;
       bur.t++; bur.gl = Math.min(1, bur.gl + .02);
       // along the face: gravity less friction, a little slower while in the air
@@ -253,7 +254,7 @@ const CR = (() => {
       bur.vz -= g; bur.z += bur.vz;
       if (bur.z <= 0) {
         bur.z = 0;
-        if (bur.vz < -1.1) { const hit = -bur.vz; bur.vz = hit * (.38 + .12 * R()); thump(Math.min(1.1, .25 + hit * .14)); bur.vx += (R() - .5) * .5 * hit; bur.w += (R() - .5) * .07 * hit; }
+        if (bur.vz < -1.1) { const hit = -bur.vz; bur.vz = hit * (.38 + .12 * R()); thump(Math.min(1.1, .25 + hit * .14)); bur.vx += (R() - .5) * .5 * hit; bur.w -= R() * .04 * hit; bur.sqv -= Math.min(.4, hit * .07); }
         else bur.vz = 0;
         // the rough face: a bump throws it up again now and then
         if (bur.vz === 0 && R() < (.012 + .018 * bur.vs) * (1 - ease)) bur.vz = .8 + bur.vs * (.8 + 1.6 * R());
@@ -262,7 +263,12 @@ const CR = (() => {
       const q = bur.s / L; bur.vx *= bur.z > 0 ? .995 : .97; bur.vx -= bur.dx * .0015; bur.dx += bur.vx;
       bur.x = lerp(bur.x0, TOMB_X, sm(0, 1, q)) + bur.dx * (1 - sm(.8, 1, q));
       // spin: on the ground it rolls with its speed, in the air it keeps what the last bounce gave it
-      const roll = -(.012 + .018 * bur.vs) * (bur.vx >= 0 ? 1 : -1); bur.w += ((bur.z > 0 ? bur.w : roll) - bur.w) * .08; bur.r += bur.w;
+      // it turns one way only, as a thing rolling down toward us (owner, build 464: "make it rotate one direction")
+      const roll = -(.012 + .018 * bur.vs); bur.w += ((bur.z > 0 ? bur.w : roll) - bur.w) * .08; bur.w = Math.min(bur.w, -.006); bur.r += bur.w;
+      // a soft sack of loose things, not a ball (owner: "the burden can change shape as it falls"): it squashes as it
+      // lands, wobbles back, and stretches a little as it flies
+      bur.sqa += (-bur.sq) * .16; bur.sqa *= .8; bur.sq += bur.sqa + bur.sqv; bur.sqv = 0;
+      if (bur.z > 0) bur.sq += (Math.min(.12, Math.abs(bur.vz) * .03) - bur.sq) * .05;
       bur.H = lerp(bur.H0, tombSill() + 6, q) + bur.z; bur.k = 1 + .3 * q;
       if (bur.s >= L && bur.z <= 0) { bur.st = 'in'; bur.t = 0; bur.x0 = bur.x; bur.v = Math.min(1.2, bur.vs * .5); bur.dust = []; }
     } else if (bur.st === 'in') {
@@ -790,5 +796,5 @@ const CR = (() => {
   }
 
   return { on: false, start, update, draw, touch, key, preload, lines: ALL, stop: () => padStop(), _pt: { roll: rollPt, chr: chrPt }, _turning: () => !!Ch.tv,
-    peek: () => ({ ph, t, fly: rollFly ? rollFly.t : -1, x: Math.round(Ch.x), cf: +Ch.cf.toFixed(1), bur: bur ? { st: bur.st, x: Math.round(bur.x), a: +bur.a.toFixed(2), t: bur.t, H: Math.round(bur.H || 0), z: +(bur.z || 0).toFixed(1), r: +(bur.r || 0).toFixed(2) } : null, gold: +gold.toFixed(2), shine: +shine.toFixed(2), leaps: leapsLeft, closeK: +closeK.toFixed(2), topK: +topK.toFixed(2), veil: +veil.toFixed(2), tear: tearT, sep: sepT }) };
+    peek: () => ({ ph, t, fly: rollFly ? rollFly.t : -1, x: Math.round(Ch.x), cf: +Ch.cf.toFixed(1), bur: bur ? { st: bur.st, x: Math.round(bur.x), a: +bur.a.toFixed(2), t: bur.t, H: Math.round(bur.H || 0), z: +(bur.z || 0).toFixed(1), r: +(bur.r || 0).toFixed(2), sq: +(bur.sq || 0).toFixed(2) } : null, gold: +gold.toFixed(2), shine: +shine.toFixed(2), leaps: leapsLeft, closeK: +closeK.toFixed(2), topK: +topK.toFixed(2), veil: +veil.toFixed(2), tear: tearT, sep: sepT }) };
 })();
