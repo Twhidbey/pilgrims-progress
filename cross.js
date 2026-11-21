@@ -489,6 +489,8 @@ const CR = (() => {
     Object.assign(G, { t: 0, capQ: [], cap: 0, hint: null, act: null, actT: 0, ring: null, auto: null, guard: 0, autoT: 0, taps: [], roll: { t: 999, x: 0, y: 0 }, ended: false, calm: 0 });
     downs.clear(); keys.r = keys.push = false;
     reset0(); ph = 'look';
+    // it opens close on him between the walls of Salvation (owner, build 451): no wide first look at the cross
+    wideK = wideTo = 0;
     const at = new URLSearchParams(location.search).get('at');
     if (at === 'cross') { ph = 'walk'; Ch.x = STOP_X - 260; Ch.sd = null; wideK = wideTo = 0; said.open = said.ascend = said.cut = true; dawn = .6; memT = 2000; memS = MEMS.map(() => 0); }
     camTick(true);
@@ -546,10 +548,10 @@ const CR = (() => {
     padTick(ph === 'fall' || ph === 'tumble' || ph === 'gone' ? 0 : gold > .1 ? 0 : 1);
 
     if (ph === 'look') {
-      // a first wide look: the long slope, the cross small on its crown against the sky; then down to him
-      if (t > 230) wideTo = 0;
+      // the opening: close on him at the walls, the storyteller's first line, then the child may run
+      wideTo = 0;
       if (t === 60 && !said.open) { said.open = true; caption(OPEN); }
-      if (G.state === 'wait' && t > 330) { G.state = 'play'; G.calm = G.t; }
+      if (G.state === 'wait' && t > 150) { G.state = 'play'; G.calm = G.t; }
       if (G.state === 'play') ph = 'walk';
     } else if (ph === 'walk') {
       if (!said.open) { said.open = true; caption(OPEN); }
