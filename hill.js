@@ -223,16 +223,6 @@ const HL = (() => {
         if (HIDDEN.every(q => q.got)) HIDDEN.forEach((q, i) => note(q.m, .035, 3.2, 1.6 + i * .55));
         return true; } }
     return false; }
-  // (6) THE HYMN'S LIGHTS IN THIS LEVEL TOO (owner, after build 367: "music lights etc", chose 1, 3, 4, 6 and 7 of the ideas
-  // offered): as in Levels 1 and 2, the first phrase of the hymn lies along the road on the plain as small lights, one note
-  // each, sung as he passes and drifting up toward the far light; off the way there are none (the tune goes wrong there);
-  // at the gate the last phrase comes back. Not collected, not counted.
-  const LITES = [];
-  function layLights() { LITES.length = 0;
-    const lay = (x0, n, gap) => { for (const [b, k] of n) LITES.push({ x: x0 + b * gap, m: NOTE[k], y: -58 - 6 * Math.sin(b * 1.3), got: 0, t: 0 }); };
-    lay(START + 90, [[0, 'D'], [1, 'G'], [3, 'B'], [3.5, 'G'], [4, 'B'], [6, 'A'], [7, 'G'], [9, 'E'], [10, 'D']], 52);
-    lay(GATE_FROM + 70, [[0, 'D'], [1, 'G'], [3, 'B'], [3.5, 'G'], [4, 'B'], [6, 'A'], [7, 'G']], 44); }
-  function lightsLife() { for (const L of LITES) { if (!L.got && Math.abs(C3.x - L.x) < 14 && (ph === 'plain' || ph === 'gate')) { L.got = 1; note(L.m, .05, 3); } if (L.got) L.t++; } }
   // (7) A GLINT AT FIRST SIGHT: each thing that answers a touch (the oak, a lizard, a hidden light, the things he carries)
   // glints once, softly, the first time it comes well into the picture, with a tiny high chime, and once more a while
   // later if it has not been touched; so a child knows there is something to find. `pos` gives its place on the screen.
@@ -835,7 +825,7 @@ const HL = (() => {
     Object.assign(C3, { x: START, face: 1, faceA: 1, anim: 12, sd: QUIET[0], alpha: 1, run: 0, ranim: RUNP_META.start || 0, weep: false, wt: 0, wa: 0, kf: 0, kp: 0, tv: null, fired: false, saidAt: 0, tapZ: 0 }); FLARES.length = 0;
     mercy = mercyTo = calm = calmTo = 0;
     wise = null; evan = null; dark = 0; hope = 0; flash = 0; flashT = 200; veil = 0; veilTo = 0; knocks = 0; knockT = 0; door = 0; doorTo = 0;
-    reveal = 0; vil = vilTo = 0; pan = panTo = 0; ROCKS.length = 0; DUST.length = 0; PATHR.length = 0; DUSTW.length = 0; fallI = 0; jolt = 0; ROLL.length = 0; rollI = 0; LIZ.length = 0; layLights(); oakT = 0; GLINTS.length = 0; for (const k in SEEN_G) delete SEEN_G[k]; OBIRD.length = 0; OLEAF.length = 0; HIDDEN.forEach(h => { h.got = 0; h.up = 0; h.y = 0; }); STEAMP.length = 0; farewell = 0; C3.dy = 0; cut = cutTo = 0; Zw = 0; zs = ''; zT = 0;
+    reveal = 0; vil = vilTo = 0; pan = panTo = 0; ROCKS.length = 0; DUST.length = 0; PATHR.length = 0; DUSTW.length = 0; fallI = 0; jolt = 0; ROLL.length = 0; rollI = 0; LIZ.length = 0; oakT = 0; GLINTS.length = 0; for (const k in SEEN_G) delete SEEN_G[k]; OBIRD.length = 0; OLEAF.length = 0; HIDDEN.forEach(h => { h.got = 0; h.up = 0; h.y = 0; }); STEAMP.length = 0; farewell = 0; C3.dy = 0; cut = cutTo = 0; Zw = 0; zs = ''; zT = 0;
     saidSeen = saidHigh = hasteSaid = gateSaid = hillSeen = greeted = signSeen = false; stillT = 0; hintT = 0; noteI = 0; noteX = 0;
   }
   // the picture behind the title page when Level 3 is the child's level: the hill hanging over the way, nobody there
@@ -979,7 +969,7 @@ const HL = (() => {
     for (const r of ROCKS) { r.t++; r.vy += .09; r.x += r.vx; r.y += r.vy; if (r.big && r.t % 5 === 0) dust(r.x, r.y, r.r * .9, 1, .5, 1);
       if (r.y >= 0) { r.done = 1; dust(r.x, 0, r.big ? r.r * 2.2 : 2 + r.r, r.big ? 6 : 2, r.big ? 1 : .5, r.big); } }
     for (let i = ROCKS.length - 1; i >= 0; i--) if (ROCKS[i].done) ROCKS.splice(i, 1);
-    pathFalls(); rollers(); lizards(); oakLife(); hiddenLife(); lightsLife(); glints(); padTick(); for (const d of DUSTW) { d.t++; d.x += d.vx; d.y += d.vy; d.r += .04; } for (let i = DUSTW.length - 1; i >= 0; i--) if (DUSTW[i].t >= DUSTW[i].life) DUSTW.splice(i, 1);
+    pathFalls(); rollers(); lizards(); oakLife(); hiddenLife(); glints(); padTick(); for (const d of DUSTW) { d.t++; d.x += d.vx; d.y += d.vy; d.r += .04; } for (let i = DUSTW.length - 1; i >= 0; i--) if (DUSTW[i].t >= DUSTW[i].life) DUSTW.splice(i, 1);
     for (const d of DUST) { d.t++; d.x += d.vx; d.y += d.vy; d.vx *= .99; d.r += d.g; } for (let i = DUST.length - 1; i >= 0; i--) if (DUST[i].t >= DUST[i].life) DUST.splice(i, 1);
     if (dark > .4 && Math.random() < .07 * dark) embers.push({ x: 20 + Math.random() * 70, y: 10 - Math.random() * 40, vx: -.2 - Math.random() * .4, vy: -.35 - Math.random() * .5, r: .6 + Math.random() * .8, h: Math.random(), t: 0, life: 140 + Math.random() * 160 });
     if (dark > .3 && ph !== 'title') { for (let v = 0; v < VENTS.length; v++) if (Math.random() < (.035 + .015 * Math.sin(G.t / 47 + v * 1.7)) * dark) steamPuff(v); }
@@ -1887,11 +1877,6 @@ const HL = (() => {
       if (rocky) alongPath(x => 1 - inPath(x), q => { const t0 = Y(-34), t1 = Y(150), b = mix([40, 30, 29], [35, 26, 25], dark), g = q.createLinearGradient(0, t0, 0, t1), u = (Y(-4) - t0) / (t1 - t0);
         g.addColorStop(0, css(b, 0)); g.addColorStop(clamp(u), css(b)); g.addColorStop(clamp(u + (1 - u) * .45), css(mix(b, [15, 12, 11], .6))); g.addColorStop(1, css([15, 12, 11])); q.fillStyle = g; q.fillRect(0, t0, VW, VH - t0 + 2); }); };
     road();
-    // (6) the hymn's lights along the road: a small warm light at chest height, breathing; once sung it drifts up and away
-    if (!rocky || gateish > .5) for (const L of LITES) { const u = L.t / 150; if (u >= 1) continue; const px = X(L.x + (L.got ? 60 * u : 0)), py = Y(L.y - (L.got ? 150 * Math.pow(u, 1.2) : 0)); if (px < -40 || px > VW + 40) continue;
-      const k = (L.got ? 1.3 * (1 - u) : .7 + .3 * Math.sin(G.t / 31 + L.x)) * (1 - .6 * dark), r = (L.got ? 18 + 12 * u : 15) * z;
-      const g = c.createRadialGradient(px, py, 0, px, py, r); g.addColorStop(0, css([255, 240, 200], .6 * k)); g.addColorStop(.35, css([255, 220, 160], .22 * k)); g.addColorStop(1, css([255, 210, 150], 0));
-      c.save(); c.globalCompositeOperation = 'lighter'; c.fillStyle = g; c.fillRect(px - r, py - r, 2 * r, 2 * r); c.fillStyle = css([255, 250, 230], .75 * k); c.beginPath(); c.arc(px, py, Math.max(.9, 1.6 * z), 0, 7); c.fill(); c.restore(); }
     // (easter eggs 3 and 7) the lizards on the path's stony edge, and the three hidden lights in its crevices
     if (rocky && Zw < .5) {
       for (const L of LIZ) { if (L.a <= 0) continue; const px = X(L.x), py = Y(L.y), k = z * 1.7, f = L.f, run = L.st === 'run';
