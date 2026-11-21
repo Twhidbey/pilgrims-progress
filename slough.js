@@ -1327,10 +1327,7 @@ const SL = (() => {
       if (R() < .5) { g.beginPath(); g.moveTo(x - .5, 101 - hh); g.lineTo(x + w / 2, 101 - hh - 4 - R() * 6); g.lineTo(x + w + .5, 101 - hh); g.fill(); }
       else { g.beginPath(); g.arc(x + w / 2, 101 - hh, w / 2 + .4, Math.PI, 0); g.fill(); } }
     g.fillRect(117, 64, 6, 38); g.beginPath(); g.moveTo(116, 64); g.lineTo(120, 44); g.lineTo(124, 64); g.fill();
-    for (const [fx, fy, k] of [[34, 70, 1], [62, 52, .8], [184, 58, .85], [210, 74, 1]]) {      // the shining ones: tall, robed, a head, a soft light round them
-      glow(g, fx, fy, 30 * k, [255, 236, 190], .4); g.fillStyle = css(P, .55);
-      g.beginPath(); g.arc(fx, fy - 15 * k, 2.2 * k, 0, 7); g.fill();
-      g.beginPath(); g.ellipse(fx, fy + 2 * k, 3.6 * k, 14 * k, 0, 0, 7); g.fill(); }      // light in the shape of a person: a head and a long robe, no edges
+    // (the shining ones round the city were taken out in build 372, owner: "light figures please remove")
     vign(city, 120, 92, 118);
     // home: his cottage far off in the mist, its door lit, his wife's dark shape in it
     const soft = (c, r) => { const m = mk(c.width, c.height), q = m.getContext('2d'); for (let i = 0; i < 16; i++) { const a = i * 2.4, d = r * Math.sqrt((i + .5) / 16); q.globalAlpha = 1 / (i + 1); q.drawImage(c, Math.cos(a) * d, Math.sin(a) * d); } return m; };      // a thought has no hard edges: kept small, so it is soft when stretched

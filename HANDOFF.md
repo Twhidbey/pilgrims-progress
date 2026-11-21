@@ -192,6 +192,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 **Build 276 (cover chat): the book cover painted in code in the game's own watercolour language (arched window of layered hills under the far light), replacing the leather photograph; no more flicker on opening. See `CLAUDE.md`, "Build 276". Nothing spent.**
 
+**Build 372 (Level 2 edits chat): the shining figures round the city in the sky taken out; the city stays. Nothing spent.**
+
 **Build 371 (Level 2 edits chat): the fears are bulges of mud rising from the bog; home in the mist taken out; the crossing a little slower; Pliable climbs out sooner with less wriggling. See `CLAUDE.md`, "Build 371". Nothing spent.**
 
 **Build 370 (Level 2 edits chat): three thoughts in the Slough, on the owner's word: the shining city faint in the sky while Christian tells of it, his home in the mist while the child chooses, and the fears as dark living shapes in the fog. See `CLAUDE.md`, "Build 370". Nothing spent.**
