@@ -242,16 +242,23 @@ const CR = (() => {
     q.scale(k, k); q.translate(-X0, -Y0);
     const r = rgen(77), bands = []; let d = 26 + r() * 20;
     while (d < H_TOP + 200) { bands.push({ d, a: (r() - .5) * .09, p: [r() * 6.3, r() * 6.3, r() * 6.3], amp: 6 + r() * 14, lit: r() < .55 }); d += 34 + r() * 70; }
-    const yAt = (b, x) => -(gh(x) - b.d) + b.amp * (.6 * Math.sin(x * .004 + b.p[0]) + .3 * Math.sin(x * .011 + b.p[1]) + .1 * Math.sin(x * .037 + b.p[2]));
+    // value noise on cells of 26 and 9 units, so each edge breaks in small steps and chips, as rock does
+    const VN = (x, c, seed) => { const i = Math.floor(x / c), f = x / c - i, h = n => { const t = Math.sin((n + seed * 101) * 127.1) * 43758.5; return t - Math.floor(t) - .5; }; return h(i) + (h(i + 1) - h(i)) * (f * f * (3 - 2 * f)); };
+    const yAt = (b, x) => -(gh(x) - b.d) + b.amp * (.6 * Math.sin(x * .004 + b.p[0]) + .3 * Math.sin(x * .011 + b.p[1]) + .1 * Math.sin(x * .037 + b.p[2])) + 9 * VN(x, 26, b.d) + 4 * VN(x, 9, b.d + 3);
     for (let i = 0; i < bands.length; i++) {
       const b = bands[i], n = bands[i + 1];
-      q.beginPath(); for (let x = X0; x <= X1; x += 12) q.lineTo(x, yAt(b, x));
-      if (n) for (let x = X1; x >= X0; x -= 12) q.lineTo(x, yAt(n, x)); else { q.lineTo(X1, Y1); q.lineTo(X0, Y1); }
+      q.beginPath(); for (let x = X0; x <= X1; x += 4) q.lineTo(x, yAt(b, x));
+      if (n) for (let x = X1; x >= X0; x -= 4) q.lineTo(x, yAt(n, x)); else { q.lineTo(X1, Y1); q.lineTo(X0, Y1); }
       q.closePath(); q.fillStyle = b.a > 0 ? css([170, 164, 176], b.a) : css([0, 0, 0], -b.a * 1.3); q.fill();
       // the ledge: a dark seam with a faint lit lip above it, broken along its length
       q.lineWidth = 2.2; for (let x = X0; x < X1; x += 90 + r() * 160) { const L = 60 + r() * 260; if (r() < .35) continue;
-        q.strokeStyle = css([0, 0, 0], .1); q.beginPath(); for (let u = x; u <= x + L; u += 10) q.lineTo(u, yAt(b, u) + 1.5); q.stroke();
-        if (b.lit) { q.strokeStyle = css([190, 182, 196], .05); q.beginPath(); for (let u = x; u <= x + L; u += 10) q.lineTo(u, yAt(b, u) - 1.2); q.stroke(); } }
+        q.strokeStyle = css([0, 0, 0], .08); q.beginPath(); for (let u = x; u <= x + L; u += 4) q.lineTo(u, yAt(b, u) + 1.5); q.stroke();
+        if (b.lit) { q.strokeStyle = css([190, 182, 196], .04); q.beginPath(); for (let u = x; u <= x + L; u += 4) q.lineTo(u, yAt(b, u) - 1.2); q.stroke(); } }
+      // joints across the band and a few blocks a shade off its tone, so it reads as broken rock, not a stripe
+      if (n) for (let x = X0 + r() * 120; x < X1; x += 70 + r() * 220) { const y1 = yAt(b, x), y2 = yAt(n, x + (r() - .5) * 20); if (y2 - y1 < 14) continue;
+        q.strokeStyle = css([0, 0, 0], .05 + r() * .05); q.lineWidth = 1.4; q.beginPath(); q.moveTo(x, y1 + 2); q.lineTo(x + (r() - .5) * 18, lerp(y1, y2, .5) + (r() - .5) * 6); q.lineTo(x + (r() - .5) * 26, y2 - 2); q.stroke();
+        if (r() < .4) { const w = 30 + r() * 80, yy = lerp(y1, y2, .2 + r() * .5), hh = Math.min(26, (y2 - y1) * .5);
+          q.fillStyle = css([0, 0, 0], .03); q.beginPath(); q.moveTo(x + 4, yy); q.lineTo(x + w * .5, yy - 3 - r() * 4); q.lineTo(x + w, yy + 2); q.lineTo(x + w - 6, yy + hh); q.lineTo(x + 8, yy + hh - 2); q.closePath(); q.fill(); } }
     }
     // a fine grain of rock
     for (let i = 0; i < 26000; i++) { const x = X0 + r() * (X1 - X0), y = Y0 + r() * (Y1 - Y0), w = 2 + r() * 6;
@@ -309,7 +316,7 @@ const CR = (() => {
   // is darker color) (very subtle but beautiful)"): an uneven dark mouth with a soft deeper shadow round it, the rock's
   // brow over it catching a faint light, and the round stone half sunk beside it in the hill's own tone
   const MOUTH = (() => { const r = rgen(31), P = []; for (let i = 0; i <= 28; i++) { const u = i / 28, a = Math.PI * (1 - u);
-    P.push([Math.cos(a) * (62 + (r() - .5) * 3) * (1 + .12 * Math.pow(1 - Math.sin(a), 2)) + 3 * Math.sin(u * 7), -Math.pow(Math.sin(a), .7) * (DOOR_H - 14) * (1 + .05 * Math.sin(u * 5 + 1))]); } return P; })();
+    P.push([Math.cos(a) * (60 + (r() - .5) * 10) * (1 + .12 * Math.pow(1 - Math.sin(a), 2)) + 3 * Math.sin(u * 7), -Math.pow(Math.sin(a), .7) * (DOOR_H - 18 + (r() - .5) * 9) * (1 + .05 * Math.sin(u * 5 + 1))]); } return P; })();
   function tomb(c) {
     const x = TOMB_X, sill = tombSill(), col = mix(mix([30, 30, 38], [36, 32, 36], dawn), [44, 34, 30], gold);
     c.save(); c.translate(x, -sill + 6);
@@ -318,18 +325,18 @@ const CR = (() => {
     let g = c.createRadialGradient(0, -70, 10, 0, -70, 150); g.addColorStop(0, css([6, 5, 8], .5)); g.addColorStop(.5, css([6, 5, 8], .2)); g.addColorStop(1, 'rgba(6,5,8,0)');
     c.fillStyle = g; c.fillRect(-160, -230, 320, 320); c.restore();
     // the mouth itself, deepest toward its top
-    c.beginPath(); MOUTH.forEach(([px, py], i) => i ? c.lineTo(px, py) : c.moveTo(px, py)); c.closePath();
-    g = c.createLinearGradient(0, -DOOR_H, 0, 0); g.addColorStop(0, 'rgb(3,3,5)'); g.addColorStop(.8, 'rgb(7,6,8)'); g.addColorStop(1, css(mix([10, 9, 11], [40, 30, 24], .3 * gold))); c.fillStyle = g; c.fill();
+    // the mouth: dark at its heart, its edge melting into the rock (laid a few times, each larger and fainter)
+    const mouth = s => { c.beginPath(); MOUTH.forEach(([px, py], i) => i ? c.lineTo(px * s, py * s) : c.moveTo(px * s, py * s)); c.closePath(); };
+    for (const [sc, a] of [[1.16, .12], [1.08, .2], [1, .45]]) { mouth(sc); c.fillStyle = css([5, 4, 7], a); c.fill(); }
+    mouth(1); g = c.createRadialGradient(0, -38, 6, 0, -38, 78); g.addColorStop(0, css([3, 3, 5], .8)); g.addColorStop(1, css([3, 3, 5], .15)); c.fillStyle = g; c.fill();
     // the brow of rock over it: its edge catches a little light from the sky, faint
-    c.strokeStyle = css(mix(col, [160, 150, 160], .35 + .2 * gold), .55); c.lineWidth = 1.6; c.lineCap = 'round';
+    c.strokeStyle = css(mix(col, [160, 150, 160], .35 + .2 * gold), .2); c.lineWidth = 1.4; c.lineCap = 'round';
     c.beginPath(); MOUTH.slice(5, 24).forEach(([px, py], i) => i ? c.lineTo(px, py - 1.5) : c.moveTo(px, py - 1.5)); c.stroke();
-    c.strokeStyle = css(mix(col, [160, 150, 160], .2), .35); c.lineWidth = 1.2;
-    c.beginPath(); c.moveTo(-80, -DOOR_H - 18); c.quadraticCurveTo(-20, -DOOR_H - 34, 46, -DOOR_H - 22); c.stroke();
     // the great round stone, rolled aside and half sunk at the mouth's left, in the hill's own tone
     const rx = -104, rr = 46;
     c.save(); c.beginPath(); c.rect(-200, -300, 400, 300); c.clip();
-    c.fillStyle = css(mix(col, [6, 5, 8], .38)); c.beginPath(); c.ellipse(rx, -rr + 10, rr * .9, rr, 0, 0, 7); c.fill();
-    c.strokeStyle = css(mix(col, [160, 150, 160], .3), .35); c.lineWidth = 1.4; c.beginPath(); c.ellipse(rx, -rr + 10, rr * .9, rr, 0, Math.PI * 1.05, Math.PI * 1.75); c.stroke();
+    c.fillStyle = css(mix(col, [6, 5, 8], .3), .7); c.beginPath(); c.ellipse(rx, -rr + 10, rr * .9, rr, 0, 0, 7); c.fill();
+    c.strokeStyle = css(mix(col, [160, 150, 160], .3), .15); c.lineWidth = 1.4; c.beginPath(); c.ellipse(rx, -rr + 10, rr * .9, rr, 0, Math.PI * 1.05, Math.PI * 1.75); c.stroke();
     c.restore();
     c.restore();
   }
