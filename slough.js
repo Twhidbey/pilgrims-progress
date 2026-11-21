@@ -400,7 +400,7 @@ const SL = (() => {
   // ---------- state ----------
   let ph = 'plain', cam = { cx: 0, z: 1, wl: 440 }, look = { mist: 0, veil: 0, gold: 1, disc: 1, sky: 0 };
   let pli = null, help = null, mv = null, lift = null, rings = [], motes = [], steps = [], gloom = 0, gloomTo = 0, noteI = 0, lastFoot = 0;
-  let prints = [], fogH = 1, fogS = 1, strain = 0, slipT = 0, fearT = 0, fearsSaid = false, goldT = 0, onwayT = 0, capsSaid = new Set(), nearSaid = true, pliGo = 0, cityT = -1, homeA = 0, fearT2 = -1;
+  let prints = [], fogH = 1, fogS = 1, strain = 0, slipT = 0, fearT = 0, fearsSaid = false, goldT = 0, onwayT = 0, capsSaid = new Set(), nearSaid = true, pliGo = 0, cityT = -1, fearT2 = -1;
   const C2 = { x: START, y: 0, face: 1, anim: 12, alpha: 1, sink: 0, reach: 0, stand: 0, st: 0 };
 
   // the picture behind the title page when Level 2 is the child's level (build 119): the oak over the bog, nobody in it
@@ -422,7 +422,7 @@ const SL = (() => {
     C2.rt = 0; C2.handGo = false; C2.tv = null; C2.fy = null; C2.md = null; C2.rq0 = null; C2.q = 0; drops = []; churns = []; fReset(); strings = []; RECS = {}; for (const k in MS) delete MS[k]; C2.D = 0;
     ph = 'plain'; Object.assign(C2, { x: START, y: bankY(START) + 4, face: 1, anim: 12, alpha: 1, sink: 0, reach: 0, stand: 1, sd: QUIET[0], st: 0, faceA: 1, done: 0 });
     pli = { x: START - 80, y: 0, face: 1, anim: 0, alpha: 1, sink: 0, mode: 'follow', px: START - 80, stop: { t: 50, x0: START - 80 - 72.5 * CHR_K } };      // he starts standing (his stop video's breathing part)
-    prints = []; fogH = 1; fogS = 1; help = null; mv = null; lift = null; rings = []; steps = []; gloom = gloomTo = 0; noteI = 0; strain = 0; slipT = 0; fearT = 300; fearsSaid = false; goldT = 0; onwayT = 0; capsSaid = new Set(); nearSaid = true; pliGo = 0; cityT = -1; homeA = 0; fearT2 = -1;
+    prints = []; fogH = 1; fogS = 1; help = null; mv = null; lift = null; rings = []; steps = []; gloom = gloomTo = 0; noteI = 0; strain = 0; slipT = 0; fearT = 300; fearsSaid = false; goldT = 0; onwayT = 0; capsSaid = new Set(); nearSaid = true; pliGo = 0; cityT = -1; fearT2 = -1;
     motes = [...Array(LAST.length)].map((_, i) => ({ ox: -30 - Math.random() * 50, oy: -112 - Math.random() * 40, x: START, y: -150, tw: Math.random() * 6, i }));
     // the steps through the bog, hidden until the lights settle on them: low flat stones, no two alike (from the approved still)
     const R = rngS(33); let sx = BANK0 - 6;
@@ -676,7 +676,7 @@ const SL = (() => {
     } else if (ph === 'wade') {
       // build 120 (owner: "can we make christian move across possibly happen quicker? it's a bit of a slog"): he makes more
       // ground with each heave (.55 a tick, was .32: about 14 s of holding, was 24); the tune still has a note for each footfall
-      const v = want && !C2.tv ? .9 : 0, p = clamp((C2.x - WADE0) / (STUCK_X - WADE0));      // (build 183: DEEP 8, was 22: more of him shows at the far bank, head, shoulders and chest; owner: "show a bit more of Christian at the far bank")
+      const v = want && !C2.tv ? .7 : 0, p = clamp((C2.x - WADE0) / (STUCK_X - WADE0));      // (build 183: DEEP 8, was 22: more of him shows at the far bank, head, shoulders and chest; owner: "show a bit more of Christian at the far bank")
       C2.x = Math.min(STUCK_X, C2.x + v); if (!C2.tv) C2.face = 1;
       waStep(v ? .2 : .08);
       if (v) { C2.anim += v / CHR_STEP * 3; footfall(); } else C2.anim = stepAnim(C2.anim, 0, CHR_STEP, CHR_META);
@@ -779,11 +779,11 @@ const SL = (() => {
         if (pli.dxo == null) pli.dxo = pli.dx0;
         const pong = () => { const L = 34; pli.ct = 2 + L * (1 - Math.cos(Math.PI * pli.wt / L)) / 2; pli.c0 = pli.ct; };      // build 180: eased at each turn (it reversed at full speed, a jerk)
         if (pli.wal) {      // wallowing: the video's first three seconds back and forth, in bursts, sinking with Christian
-          const b = burst(4); pli.wtV = lerp(pli.wtV ?? .1, calm ? .05 : .06 + .14 * b, .05); pli.wt = (pli.wt || 0) + pli.wtV; pong();
+          const b = burst(4); pli.wtV = lerp(pli.wtV ?? .1, calm ? .04 : .05 + .09 * b, .05); pli.wt = (pli.wt || 0) + pli.wtV; pong();
           pli.dy0 = ((pli.sy ?? pli.y) - (PLI_META.ground - 5) * CHR_K) - (M.sink - (M.ground - M.top0) * CHR_K); pli.wk = Math.min(1, pli.wk + .11);
         } else if (pli.dxo > .5) {      // build 121: he is well out in the slough: he struggles back toward his own side first
-          pli.dxo = Math.max(0, pli.dxo - .32); pli.wtV = lerp(pli.wtV ?? .2, .2, .05); pli.wt = (pli.wt || 0) + pli.wtV; pong();
-        } else { pli.ct = Math.min(last, (pli.ct || 0) + .2); }
+          pli.dxo = Math.max(0, pli.dxo - 1); pli.wtV = lerp(pli.wtV ?? .2, .14, .05); pli.wt = (pli.wt || 0) + pli.wtV; pong();
+        } else { pli.ct = Math.min(last, (pli.ct || 0) + .34); }      // build 371 (owner: "make pliable get out faster ... struggle once then rise out"): the climb .34 a tick (was .2), the struggle back 1 (was .32)
         // BUILD 140: HIS TURN IN THE MUD IS A HEAVE ROUND, not a slow dissolve between mirrored pictures (there are no
         // frames of him turning). He ducks into the mud with a splash; the picture swaps over a few ticks at the bottom of
         // the duck, under the splash; he comes up facing the other way. tq: 0 to 1 over about half a second.
@@ -807,7 +807,6 @@ const SL = (() => {
     }
     // --- THOUGHTS (build 370): what he sees in his mind; each comes, lingers and goes by itself ---
     if (cityT >= 0) cityT++;
-    homeA += ((ph === 'pli' && G.state === 'choice' ? 1 : 0) - homeA) * (homeA < .5 ? .015 : .03);
     if (fearT2 >= 0) fearT2++;
     // --- the lights he gathered: a slow cloud behind his shoulder; at the end they fly to the steps ---
     for (const mo of motes) {
@@ -1297,10 +1296,6 @@ const SL = (() => {
     // "stuck out"; build 127 thins that mist at the surface, so the dark churned mud and its rings are seen together
     // build 212: the veil starts to the right of Christian (with the closer camera of build 200 he stood inside it and was washed pale)
     if (look.veil > .01) { const v0 = Math.min(VW * .8, Math.max(VW * .42, X(C2.x) + 150 * z)), g = ctx.createLinearGradient(v0, 0, Math.max(VW, v0 + 300), 0); g.addColorStop(0, css(LIGHT, 0)); g.addColorStop(.55, css(tone(.93), look.veil * .86)); g.addColorStop(1, css(tone(.93), look.veil)); ctx.fillStyle = g; ctx.fillRect(0, 0, VW, VH); }
-    // (2) HOME, IN HIS MIND (build 370): while he chooses, his own lit doorway shows small and warm far off in the mist on
-    // the left, his wife's dark shape in it, the pull to go back made a picture; it fades once he has chosen (ours)
-    if (homeA > .01) { const c = thoughts().home, w = 190, h = w * c.height / c.width, x = VW * .2 - w / 2 + 6 * Math.sin(G.t / 90), y = wl - h - 40 * z - 8 * homeA;
-      ctx.globalAlpha = homeA * (.62 + .05 * Math.sin(G.t / 53)); ctx.drawImage(c, x, y, w, h); ctx.globalAlpha = 1; }
     // the gold coming back from the oak outward
     if (warmth > .01) { ctx.globalCompositeOperation = 'soft-light'; const g = ctx.createRadialGradient(discX, discY + 60, 20, discX, discY + 60, 760);
       g.addColorStop(0, css(GOLD, .8 * warmth)); g.addColorStop(.55, css(GOLD, .4 * warmth)); g.addColorStop(1, css(GOLD, 0)); ctx.fillStyle = g; ctx.fillRect(0, 0, VW, VH); ctx.globalCompositeOperation = 'source-over'; }
@@ -1338,33 +1333,37 @@ const SL = (() => {
       g.beginPath(); g.ellipse(fx, fy + 2 * k, 3.6 * k, 14 * k, 0, 0, 7); g.fill(); }      // light in the shape of a person: a head and a long robe, no edges
     vign(city, 120, 92, 118);
     // home: his cottage far off in the mist, its door lit, his wife's dark shape in it
-    // (the cottage only a faint roof and wall in the fog; what he sees is the lit door and her in it)
-    const home = mk(150, 130), h = home.getContext('2d'), D = [92, 90, 94];
-    glow(h, 74, 82, 60, [255, 196, 120], .45);
-    h.fillStyle = css(D, .32); h.fillRect(44, 62, 62, 46); h.beginPath(); h.moveTo(38, 64); h.lineTo(60, 32); h.lineTo(90, 32); h.lineTo(112, 64); h.fill();
-    h.fillStyle = css([255, 206, 128], .95); h.fillRect(67, 70, 14, 30); h.fillStyle = css([255, 206, 128], .5); h.fillRect(49, 70, 8, 7);
-    h.fillStyle = css([70, 66, 70], .95); h.beginPath(); h.arc(74, 78, 2.2, 0, 7); h.fill(); h.beginPath(); h.moveTo(71.6, 81); h.lineTo(70.6, 100); h.lineTo(77.4, 100); h.lineTo(76.4, 81); h.fill();
-    vign(home, 74, 70, 62);
-    { const f = h.createLinearGradient(0, 84, 0, 112); f.addColorStop(0, 'rgba(0,0,0,1)'); f.addColorStop(1, 'rgba(0,0,0,0)'); h.globalCompositeOperation = 'destination-in'; h.fillStyle = f; h.fillRect(0, 0, 150, 130); }      // its foot lost in the mist, no level line
     const soft = (c, r) => { const m = mk(c.width, c.height), q = m.getContext('2d'); for (let i = 0; i < 16; i++) { const a = i * 2.4, d = r * Math.sqrt((i + .5) / 16); q.globalAlpha = 1 / (i + 1); q.drawImage(c, Math.cos(a) * d, Math.sin(a) * d); } return m; };      // a thought has no hard edges: kept small, so it is soft when stretched
-    return THK = { city: soft(city, 2.4), home: soft(home, 3.4) };
+    return THK = { city: soft(city, 2.4) };
   }
   // the fears: live dark shapes in the fog round him, in world units at the surface (see (3) in draw)
   const FEARS_AT = [[-300, 1.1, 0], [-170, .8, 1.7], [190, 1, 3.1], [330, .75, 4.4], [-460, .9, 5.6]];
+  // (build 371, owner: "the shapes need to rise up as bulges from bog"): each fear is the mud itself swelling up, a dome
+  // that heaves slowly out of the surface, its outline lumpy and moving like something breathing under it, lit a little on
+  // top, now and then two dim eyes opening; then it sinks back. Mud-toned, faint, cut at the surface.
   function fears(A) {
-    ctx.save(); ctx.beginPath(); ctx.rect(C2.x - 900, -900, 1800, 900); ctx.clip();
+    const MUDT = tone(.3), TOP = tone(.46);
     for (const [dx, k, ph0] of FEARS_AT) {
-      const t = G.t / 60 + ph0, rise = (.55 + .45 * Math.sin(t * .5 + ph0)) * A, x0 = C2.x + dx + 18 * Math.sin(t * .23), r0 = 40 * k;
-      if (rise < .02) continue;
-      const y0 = -r0 * 1.9 * rise;
-      for (let i = 0; i < 6; i++) { const an = t * (.18 + .03 * i) + i * 1.05 + ph0, d = r0 * (.35 + .2 * Math.sin(t * .7 + i)), x = x0 + Math.cos(an) * d * 1.3, y = y0 + Math.sin(an) * d * .9 - (i === 0 ? r0 * .6 : i === 1 ? -r0 * .7 : 0), r = r0 * (.6 + .2 * Math.sin(t * .9 + i * 2));
-        const g = ctx.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, css(DARK, .3 * rise)); g.addColorStop(.55, css(DARK, .2 * rise)); g.addColorStop(1, css(DARK, 0)); ctx.fillStyle = g; ctx.fillRect(x - r, y - r, 2 * r, 2 * r); }
-      // now and then two dim eyes open, look, and close
-      const blink = Math.sin(t * .37 + ph0 * 2); if (blink > .6) { const e = smooth(.6, .8, blink) * (1 - smooth(.92, 1, blink)) * rise, ex = x0 + (dx < 0 ? 5 : -5) * k, ey = y0 - r0 * .62;
-        ctx.fillStyle = css([232, 222, 196], .45 * e); for (const s of [-1, 1]) { ctx.beginPath(); ctx.ellipse(ex + s * 6 * k, ey, 2.2 * k, 1.4 * k * e + .2, 0, 0, 7); ctx.fill(); } }
+      const t = G.t / 60 + ph0, rise = smooth(.15, 1, .5 + .5 * Math.sin(t * .42 + ph0)) * A, x0 = C2.x + dx + 10 * Math.sin(t * .2), w = 46 * k;
+      if (rise < .03) continue;
+      const h = w * (.2 + .75 * rise), N = 32;
+      const edge = (u, grow) => { const a = Math.PI * u, bump = 1 + .1 * Math.sin(u * 9 + t * 1.3 + ph0) + .06 * Math.sin(u * 17 - t * 2.1);
+        return [x0 - Math.cos(a) * w * 1.5 * (1 + .1 * Math.sin(t * .8 + u * 3)) * grow, -Math.pow(Math.sin(a), 1.7) * h * bump * grow]; };      // a mound: low spreading flanks, a rounded crown
+      // three passes, each a little larger and fainter, so its edge is soft, as mud seen through mist
+      for (const [grow, al] of [[1.1, .14], [1.075, .2], [1.05, .28], [1.025, .38], [1, 1]]) {
+        ctx.beginPath(); ctx.moveTo(x0 - w * 1.9 * grow, 2); for (let i = 0; i <= N; i++) { const [x, y] = edge(i / N, grow); ctx.lineTo(x, y); } ctx.lineTo(x0 + w * 1.9 * grow, 2); ctx.closePath();
+        const g = ctx.createLinearGradient(0, -h, 0, 2); g.addColorStop(0, css(TOP, .38 * rise * al)); g.addColorStop(.5, css(MUDT, .45 * rise * al)); g.addColorStop(1, css(MUDT, .55 * rise * al));
+        ctx.fillStyle = g; ctx.fill(); }
+      // a wet sheen along its crown, so it reads as mud that has risen, not a shadow
+      ctx.strokeStyle = css(tone(.62), .14 * rise); ctx.lineWidth = 1.2; ctx.beginPath();
+      for (let i = 9; i <= N - 9; i++) { const [x, y] = edge(i / N, 1); i === 9 ? ctx.moveTo(x, y + 1.5) : ctx.lineTo(x, y + 1.5); }
+      ctx.stroke();
+      // now and then two dim eyes open near its top, look, and close
+      const blink = Math.sin(t * .37 + ph0 * 2); if (blink > .55 && rise > .5) { const e = smooth(.55, .75, blink) * (1 - smooth(.9, 1, blink)) * rise, ex = x0 + (dx < 0 ? 6 : -6) * k, ey = -h * .62;
+        ctx.fillStyle = css([230, 220, 194], .42 * e); for (const sd of [-1, 1]) { ctx.beginPath(); ctx.ellipse(ex + sd * 6 * k, ey, 2.2 * k, 1.3 * k * e + .2, 0, 0, 7); ctx.fill(); } }
     }
-    ctx.restore();
   }
+
   function glow(c, x, y, r, col, a) { const g = c.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, css(col, a)); g.addColorStop(.35, css(col, a * .45)); g.addColorStop(1, css(col, 0)); c.fillStyle = g; c.fillRect(x - r, y - r, 2 * r, 2 * r); }
   function mote(c, x, y, r, a) { glow(c, x, y, r * 7, GOLD, a * .6); c.fillStyle = css(mix(GOLD, LIGHT, .5), a); c.beginPath(); c.arc(x, y, r, 0, 7); c.fill(); }
   // Christian: walking (cut at the water line while he is in it), reaching up to Help, or standing on sound ground
@@ -1429,5 +1428,5 @@ const SL = (() => {
   // for testing: SL.peek() tells where the story is
   // grow, ribbons: the tree grower and its painter, for Level 3's oak in leaf (hill.js, bakeOak): keep these exports
   // oakPic: the great oak baked small in one colour, for Level 1's far glimpse of the Slough (index.html, drawFarSlough)
-  return { on: false, show: false, title, start, update, draw, touch, grip, pick, preload, lines: ALL, oakPic: (col, k) => bakeTree(oak(18), col, k), grow: (seed, hero, depth) => oak(seed, hero, depth), ribbons, peek: () => ({ ph, thk: { cityT, homeA, fearT2 }, x: C2.x, y: C2.y, mv: mv && mv.t, lift: lift && lift.t, pli: pli && pli.mode, plx: pli && Math.round(pli.x), plStop: !!(pli && pli.stop), cam, mud: { strings: strings.length, hmax: Math.max(...fh), hmin: Math.min(...fh), drops: drops.length, rings: rings.length, recs: Object.fromEntries(Object.entries(RECS).map(([o, r]) => [o, { body: r.body, arms: (r.arms || []).length, act: MS[o] ? MS[o].act : 0, y: r.y, a: r.a }])) }, c2: { wa: C2.wa, D: C2.D, rt: C2.rt, reach: C2.reach, fallT: C2.fallT }, pl: pli && { y: pli.y, ct: pli.ct, wk: pli.wk, wal: pli.wal, fa: pli.fa, wt: pli.wt, x: pli.x, duck: pli.duck, mode: pli.mode, out: pli.out } }) };
+  return { on: false, show: false, title, start, update, draw, touch, grip, pick, preload, lines: ALL, oakPic: (col, k) => bakeTree(oak(18), col, k), grow: (seed, hero, depth) => oak(seed, hero, depth), ribbons, peek: () => ({ ph, thk: { cityT, fearT2 }, x: C2.x, y: C2.y, mv: mv && mv.t, lift: lift && lift.t, pli: pli && pli.mode, plx: pli && Math.round(pli.x), plStop: !!(pli && pli.stop), cam, mud: { strings: strings.length, hmax: Math.max(...fh), hmin: Math.min(...fh), drops: drops.length, rings: rings.length, recs: Object.fromEntries(Object.entries(RECS).map(([o, r]) => [o, { body: r.body, arms: (r.arms || []).length, act: MS[o] ? MS[o].act : 0, y: r.y, a: r.a }])) }, c2: { wa: C2.wa, D: C2.D, rt: C2.rt, reach: C2.reach, fallT: C2.fallT }, pl: pli && { y: pli.y, ct: pli.ct, wk: pli.wk, wal: pli.wal, fa: pli.fa, wt: pli.wt, x: pli.x, duck: pli.duck, mode: pli.mode, out: pli.out } }) };
 })();
