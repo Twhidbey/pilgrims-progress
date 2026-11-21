@@ -1180,11 +1180,10 @@ const SL = (() => {
     if (mudGd) { ctx.fillStyle = mudGd; for (const [sx, a] of mudCh) { ctx.globalAlpha = a * .35; ctx.fillRect(sx, wl, 5, 16 * z); } ctx.globalAlpha = 1; }
     ripples(true);
     ctx.setTransform(S * z, 0, 0, S * z, S * (VW / 2 - cx * z), S * wl);
-    // (3) THE FEARS (build 370; owner: "the shapes in the bog can look a little like monsters or live blobs - very subtle
-    // but alive looking"): on "Many fears and doubts came over him" dark soft shapes heave up out of the mud round him,
-    // each a slow cluster of lobes that swell and turn, now and then two dim eyes opening, and sink again. Drawn before
-    // him, never between us and him; cut at the surface
+    // (3) THE FEARS (build 381): the dark mist (see darkMist)
     if (help && !fearHelpT && fearT2 >= 0) fearHelpT = G.t; FP = fearDark();
+    if (FP > .01) { ctx.save(); ctx.setTransform(S, 0, 0, S, 0, 0); const B = darkMist().band, bw = 1300 * z, bh = 120 * z, off = (((-cx * z * .9 - G.t * .25) % bw) + bw) % bw;      // build 381: a low band of dark mist lying flat across the mire behind him (drawn before the figures, so never over him)
+      ctx.globalAlpha = Math.min(1, .85 * FP); for (let x = off - bw; x < VW; x += bw) ctx.drawImage(B, x, wl - 190 * z, bw, bh); ctx.restore(); }
     if (pliIn) { TALKM = talkMove(PL); pliMire(ctx); TALKM = null; }
     if (chrLate > 0) { MREC = 'C'; FIG_WET = { D: C2.D || 0, a: .8 }; TALKM = C2.reach > 0 ? null : talkMove(C); drawChr(ctx, fig, chrLate); TALKM = null; MREC = null; FIG_WET = null; }
     sense();
@@ -1309,8 +1308,11 @@ const SL = (() => {
     // the edges burned in as in a darkroom print, and paper grain
     { const g = ctx.createRadialGradient(VW * .5, VH * .5, VH * .42, VW * .5, VH * .5, VW * .78); g.addColorStop(0, css(DARK, 0)); g.addColorStop(1, css(DARK, .5 + .2 * gloom)); ctx.fillStyle = g; ctx.fillRect(0, 0, VW, VH);
       const t = ctx.createLinearGradient(0, 0, 0, VH * .3); t.addColorStop(0, css(DARK, .28)); t.addColorStop(1, css(DARK, 0)); ctx.fillStyle = t; ctx.fillRect(0, 0, VW, VH * .3); }
-    if (FP > .01) { ctx.setTransform(S, 0, 0, S, 0, 0); const cx = X(C2.x), cy = Y(-40), g = ctx.createRadialGradient(cx, cy, 30 * z, cx, cy, VW * .7);      // build 380: the whole picture sinks into the dark, a little less round him
-      g.addColorStop(0, css(DARK, .5 * FP)); g.addColorStop(.3, css(DARK, .74 * FP)); g.addColorStop(1, css(DARK, .9 * FP)); ctx.fillStyle = g; ctx.fillRect(0, 0, VW, VH); }
+    if (FP > .01) { ctx.setTransform(S, 0, 0, S, 0, 0); const D = darkMist(), t = G.t / 60, bt = Math.exp(-(G.t - beatT) / 26);      // build 381: an even dimming, then dark mist closing in from the edges (no pool of light round him)
+      ctx.fillStyle = css(DARK, .34 * FP); ctx.fillRect(0, 0, VW, VH);
+      D.f.forEach((c, i) => { const k = 1.08 - .05 * bt - .03 * FP, sw = Math.sin(t * (.11 + .05 * i) + i * 2), dx = 18 * sw + (i ? -1 : 1) * 10 * Math.sin(t * .07), dy = 8 * Math.cos(t * (.09 + .04 * i) + i);
+        const w = VW * k, h = VH * k; ctx.globalAlpha = Math.min(1, FP * (1.25 + .35 * bt)); ctx.drawImage(c, (VW - w) / 2 + dx, (VH - h) / 2 + dy, w, h); });
+      ctx.globalAlpha = 1; }
     ctx.globalCompositeOperation = 'multiply'; ctx.globalAlpha = .13; ctx.fillStyle = ctx.createPattern(paper, 'repeat'); ctx.fillRect(0, 0, VW, VH);
     ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1;
     // touches, the ring that shows where to touch, the things he carries
@@ -1354,6 +1356,28 @@ const SL = (() => {
     sweep(82, 40, .7, .13 * v, true); sweep(58, 34, 1, .07 * v); hiss(120, .7, .07 * v, .45, 'lowpass'); hiss(700, .9, .01 * v, .09, 'bandpass');
   }
   const quiet = n => !saying() && G.state !== 'dialog' && G.t - quietT > n;      // build 380: so many ticks since anyone last spoke
+  // build 381 (owner: "don't like the circle of light around him - the darkness can be a mist around perimeter of scene
+  // and then as a mist layer over parts of scene"): the dark is dark MIST, never a pool of light. Baked once, small (so it
+  // is soft when stretched): two ragged frames of dark mist, thickest in the corners and along the top, and one long low
+  // band of dark mist that wraps sideways, laid flat across the mire behind him.
+  let DMIST = null;
+  function darkMist() {
+    if (DMIST) return DMIST;
+    const blob = (q, x, y, r, a) => { const g = q.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, css(DARK, a)); g.addColorStop(.5, css(DARK, a * .55)); g.addColorStop(1, css(DARK, 0)); q.fillStyle = g; q.fillRect(x - r, y - r, 2 * r, 2 * r); };
+    const frame = seed => { const W = 320, H = 180, c = mk(W, H), q = c.getContext('2d'); let r = seed;
+      const rnd = () => (r = (r * 16807) % 2147483647) / 2147483647;
+      for (let i = 0; i < 150; i++) { const side = rnd() * 4 | 0, u = rnd(), inset = Math.pow(rnd(), 1.8);
+        let x = side === 0 ? u * W : side === 1 ? W - inset * 70 : side === 2 ? u * W : inset * 70, y = side === 0 ? inset * 60 : side === 1 ? u * H : H - inset * 40, rad = 14 + rnd() * 38;
+        const corner = Math.max(Math.abs(x / W - .5) * 2, Math.abs(y / H - .5) * 2);
+        blob(q, x, y, rad * (.7 + .6 * corner), (.16 + .14 * rnd()) * (.55 + .45 * corner) * (side === 2 ? .7 : 1)); }
+      return c; };
+    const band = (() => { const W = 480, H = 48, c = mk(W, H), q = c.getContext('2d'); let r = 7;
+      const rnd = () => (r = (r * 16807) % 2147483647) / 2147483647;
+      for (let i = 0; i < 90; i++) { const x = rnd() * W, y = H * (.45 + .3 * (rnd() - .5)), rad = 10 + rnd() * 22, a = .18 + .14 * rnd();
+        for (const dx of [-W, 0, W]) { q.save(); q.translate(x + dx, y); q.scale(2.6, .55); blob(q, 0, 0, rad, a); q.restore(); } }
+      return c; })();
+    return (DMIST = { f: [frame(11), frame(97)], band });
+  }
   function fearDark() {
     if (fearT2 < 0) return 0;
     const u = fearT2, up = smooth(0, 90, u), down = 1 - smooth(FEAR_END, FEAR_END + 180, u), helpK = fearHelpT ? Math.max(0, 1 - (G.t - fearHelpT) / 70) : 1;
