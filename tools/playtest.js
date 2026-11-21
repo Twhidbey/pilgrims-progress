@@ -9,7 +9,7 @@ const which = process.argv[2] || '3', shots = process.argv[3], lv = parseInt(whi
   const b = await chromium.launch(), p = await b.newPage({ viewport: { width: 960, height: 540 }, deviceScaleFactor: shots ? 2 : 1 });
   const errs = []; p.on('pageerror', e => errs.push(String(e))); p.on('console', m => { if (m.type() === 'error' && !/404/.test(m.text())) errs.push(m.text()); });
   await p.goto(`http://localhost:8123/index.html?level=${lv}${lv === 1 ? '&x=1' : ''}${q}`);
-  await p.waitForSelector('#open', { state: 'visible', timeout: 60000 }); await p.click('#open'); await p.waitForTimeout(3000);
+  await p.waitForSelector('body.bookready', { timeout: 60000 }); await p.click('.tcover'); await p.waitForTimeout(3000);
   if (shots) await p.screenshot({ path: `${shots}/title-${which}.png` });
   await p.click(`.lv[data-lv="${lv}"]`); await p.waitForTimeout(2500);
   let last = '', n = 0;

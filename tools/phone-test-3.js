@@ -9,8 +9,8 @@ const at = process.argv[2] || '';
   const ctx = await b.newContext({ ...devices['iPhone 13 landscape'] }); const pg = await ctx.newPage();
   const errs = []; pg.on('pageerror', e => errs.push(String(e)));
   await pg.goto('http://localhost:8123/?level=3' + (at ? '&at=' + at : ''));
-  await pg.waitForSelector('#open', { state: 'visible' }); await pg.waitForTimeout(600);
-  await pg.tap('#open'); await pg.waitForTimeout(3300);
+  await pg.waitForSelector('body.bookready'); await pg.waitForTimeout(600);
+  await pg.tap('.tcover'); await pg.waitForTimeout(3300);
   await pg.evaluate(() => { G.calm = 99999; });      // a stale clock, as if another level had just been played
   await pg.tap('.lv[data-lv="3"]'); await pg.waitForTimeout(2500);
   const cdp = await ctx.newCDPSession(pg);

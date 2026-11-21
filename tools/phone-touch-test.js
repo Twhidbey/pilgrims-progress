@@ -6,8 +6,8 @@ const { chromium, devices } = require('playwright');
   const ctx = await b.newContext({ ...devices['iPhone 13 landscape'] }); const pg = await ctx.newPage();
   const errs = []; pg.on('pageerror', e => errs.push(String(e)));
   await pg.goto('http://localhost:8123/?level=2');
-  await pg.waitForSelector('#open', { state: 'visible' }); await pg.waitForTimeout(600);
-  await pg.tap('#open'); await pg.waitForTimeout(3300);
+  await pg.waitForSelector('body.bookready'); await pg.waitForTimeout(600);
+  await pg.tap('.tcover'); await pg.waitForTimeout(3300);
   await pg.evaluate(() => { G.calm = 99999; });      // as if Level 1 had just been played
   await pg.tap('.lv[data-lv="2"]'); await pg.waitForTimeout(4500);
   const x0 = await pg.evaluate(() => SL.peek().x);

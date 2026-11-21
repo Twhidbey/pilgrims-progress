@@ -73,7 +73,7 @@ body.opened .tribbon{opacity:0}
 #levels .lvx{display:flex;align-items:baseline;white-space:nowrap;font-family:'IM Fell English',Georgia,serif;font-style:italic;font-size:max(7px,calc(var(--u,1) * 12.5px));background:none;border:none;color:rgba(42,32,24,.5);padding:.5em .2em .3em;cursor:pointer;text-align:left}
 #levels .lvx i{flex:0 0 2.8em;font-style:normal;color:#8a2a1e}#levels .lvx i::before{content:'\25C7'}#levels .lvx.on{color:#2a2018}#levels .lvx.on i::before{content:'\25C6'}
 .tfoot{display:flex;align-items:center;justify-content:center;height:calc(var(--u,1) * 70px);margin-top:calc(var(--u,1) * 12px)}
-.tfoot h2{margin:0;font-family:'IM Fell English',Georgia,serif;font-style:italic;text-transform:none;letter-spacing:.05em}
+.tfoot h2{margin:0;opacity:.62;font-family:'IM Fell English',Georgia,serif;font-style:italic;text-transform:none;letter-spacing:.05em}
 body.opened .tfoot{visibility:hidden}
 body.portrait .tc .tpin{left:calc(var(--u,1) * 18px);right:calc(var(--u,1) * 14px);padding-left:calc(var(--u,1) * 6px);padding-right:calc(var(--u,1) * 4px)}body.portrait #levels .lv i{flex-basis:2em}
 #endc{background:radial-gradient(ellipse at 50% 45%,rgba(60,40,10,.05),rgba(40,26,8,.42));opacity:0;pointer-events:none}
@@ -153,7 +153,7 @@ body.portrait #rot{display:block}
         <div class="t6 tdream">As I walked through the wilderness of this world, I lighted on a certain place where was a Den, and I laid me down in that place to sleep: and, as I slept, I dreamed a dream.</div>
       </div></div>
     </div>
-    <div class="tfoot"><h2 id="sub">Getting ready…</h2><button class="btn" id="open" style="visibility:hidden">Open the book</button></div>
+    <div class="tfoot"><h2 id="sub">Getting ready…</h2></div>
   </div>
   <div id="endc" class="card">
     <h1 style="font-size:calc(var(--s,1) * 44px)">Out of the city</h1>
@@ -164,7 +164,7 @@ body.portrait #rot{display:block}
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
   <button id="autoWalk" aria-label="He walks on by himself"><svg viewBox="0 0 24 24"><path d="M5 6l6 6-6 6M12 6l6 6-6 6"/></svg></button>
-  <div id="build">build 381 · Nov 21 2026</div>
+  <div id="build">build 382 · Nov 21 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -2511,14 +2511,17 @@ for (const b of document.querySelectorAll('#levels .lv')) { b.classList.toggle('
   g = x.createRadialGradient(W / 2, H / 2, H * .3, W / 2, H / 2, H * .72); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(16,10,6,.38)'); x.fillStyle = g; x.fillRect(0, 0, W, H);
   const el = document.querySelector('.tcover'), url = c.toDataURL('image/jpeg', .9); el.style.backgroundImage = 'url(' + url + ')';
   { const im = new Image(), ready = () => document.body.classList.add('coverready'); im.onload = ready; im.onerror = ready; im.src = url; setTimeout(ready, 1500); }
-  el.onclick = () => { const o = document.getElementById('open'); if (o.style.visibility === 'visible' && o.style.display !== 'none') o.click(); };
+  el.onclick = () => openBook();
 })();
-document.getElementById('open').onclick = () => {
-  document.getElementById('open').style.display = 'none'; document.body.classList.add('opened');
+// build 382 (owner: "can we remove the open book button and just click on cover to open"): no button; a touch on the
+// cover opens the book once everything for the first picture has loaded (body.bookready)
+function openBook() {
+  if (!document.body.classList.contains('bookready') || document.body.classList.contains('opened')) return;
+  document.body.classList.add('opened');
   if (audio()) { AC.resume(); G.opening = { t: 0, next: 70, n: 0, last: 0 }; fetchVoices(); }
   document.getElementById('levels').style.display = '';
   if (new URLSearchParams(location.search).has('room')) { RM.preload(); setTimeout(goRoom, 1300); }
-};
+}
 document.getElementById('again').onclick = () => RM.on ? RM.start() : HL.on ? HL.start() : SL.on ? SL.start() : start();
 document.getElementById('on2').onclick = () => SL.on ? go3() : HL.on ? goRoom('door') : go2();
 // the darker rooms of the Interpreter's House (6 and 7) are shewn only when this line is marked (kept on the device)
@@ -2549,8 +2552,8 @@ document.getElementById('on2').onclick = () => SL.on ? go3() : HL.on ? goRoom('d
     PROP.road = { lamp: im.lamp && bakeTint(im.lamp, .5, PROP_DETAIL) };
     for (const lv in LEVELS) { PROP[lv] = {}; for (const k in im) if (k !== 'lamp' && im[k]) PROP[lv][k] = bakeTint(im[k], LEVELS[lv].depth, LEVELS[lv].detail); } }
   reset();
-  document.getElementById('sub').textContent = '';      // build 187: the title is the book itself; no level's scene is shown behind it
-  document.getElementById('open').style.visibility = 'visible';
+  document.getElementById('sub').textContent = 'Touch the book to open it';
+  document.body.classList.add('bookready');
   requestAnimationFrame(t => { lastT = t; loop(t); });
   // the weeping (second opening line) is no longer waited for before "Open the book": a third less to fetch first.
   // If it is not ready by its line he simply stands (WEEP.ready is checked there).

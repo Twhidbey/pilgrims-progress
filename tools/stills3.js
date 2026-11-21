@@ -15,7 +15,7 @@ const [out, cond, N, holdS, at] = [process.argv[2], process.argv[3], +process.ar
 (async () => {
   const b = await chromium.launch(); const p = await b.newPage({ viewport: { width: 960, height: 540 }, deviceScaleFactor: +(process.env.DSF || 1) });
   const errs = []; p.on('pageerror', e => errs.push(String(e)));
-  await p.goto('http://localhost:' + (process.env.PORT || 8123) + '/index.html?level=3' + (at ? '&at=' + at : '')); await p.waitForSelector('#open', { state: 'visible' }); await p.click('#open'); await p.waitForTimeout(3000);
+  await p.goto('http://localhost:' + (process.env.PORT || 8123) + '/index.html?level=3' + (at ? '&at=' + at : '')); await p.waitForSelector('body.bookready'); await p.click('.tcover'); await p.waitForTimeout(3000);
   await p.click('.lv[data-lv="3"]'); await p.waitForTimeout(3500);
   await p.evaluate(() => { KS.paused = true; });
   const r = await p.evaluate(c => { let k = 0; for (; k < 60000; k++) { const s = HL.peek(); if (eval(c)) break; keys.r = G.state === 'play'; if (G.state === 'dialog') { if (G.act === 'hill') { if (G.actT > 170) HL.key(); } else if (G.act) { if (G.actT > 140) HL.key(); } else if (!G.act && G.guard <= 0) next(true); } update(); } return k; }, cond);
