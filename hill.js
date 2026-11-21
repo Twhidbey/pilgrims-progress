@@ -31,6 +31,8 @@ const HL = (() => {
   const ease5 = t => t * t * t * (t * (t * 6 - 15) + 10);
 
   // ---------- the places ----------
+  // the gate in section (build 443): the wall's slice is 2 * GSL thick, its passage GPH high, the wall GTOP high
+  const GSL = 40, GPH = 166, GTOP = 330;
   const START = 220, MEET = 900, GATE_X = 9000, GATE_FROM = GATE_X - 480, GATE_STOP = GATE_X - 74;
   // INTO THE ROCKS (owner, build 185: "i don't like that hill looks initially - it looks fake ... after he decides to go
   // off path, pilgrim goes away from viewer and down the hill descending so his body disappear ... then scene shift to
@@ -953,7 +955,7 @@ const HL = (() => {
   function doPull() {
     if (G.act !== 'pull' || pullT >= 0) return; G.ring = null; pullT = 0; pullX0 = C3.x;
     note(62, .035, 3); note(66, .03, 3, .1);
-    for (let i = 0; i < 4; i++) ARW.push({ t: -[22, 32, 44, 58][i], i, sx: CASTLE_X + 40 + 50 * Math.random(), sy: -560 - 60 * Math.random(), tx: C3.x + 10 - 40 * i - 14 * Math.random(), ty: i === 0 ? -1 : -(50 + 90 * Math.random()), stuck: false, q: 0 });      // they land just after he is taken in, where he stood
+    for (let i = 0; i < 4; i++) ARW.push({ t: -[22, 32, 44, 58][i], i, sx: CASTLE_X + 40 + 50 * Math.random(), sy: -560 - 60 * Math.random(), tx: i === 0 ? C3.x + 6 : i === 3 ? C3.x - 70 : GATE_X - GSL - 1, ty: i === 0 || i === 3 ? -1 : -(GPH + 24 + 40 * (i - 1) + 18 * Math.random()), stuck: false, q: 0 });      // they land just after he is taken in, where he stood
   }
   function takeHand() { if (G.act !== 'ehand') return; note(67, .04, 4); note(71, .035, 4, .12); note(74, .03, 4, .24); mercyTo = 1; next(true); }
   // the wide picture answers a touch (build 237): the sky above the rock = a strike there; the rock = its nearest crack flares
@@ -1163,7 +1165,7 @@ const HL = (() => {
       // (owner: "At the gate doesn't goodwill pull Christian in as arrows fly ? ... We can't see other side of gate"; chose
       // "pulled into the light"): he is hurried two quick steps in through the doorway (his own walk, at a hurried pace), and
       // as he passes the jambs he is drawn inside the arch, a step further off, so the stone frame takes him (`pullIn` in draw())
-      if (pullT >= 0) { pullT++; const tx = pullX0 + (GATE_X - 28 - pullX0) * smooth(0, 1, Math.min(1, pullT / 46)); { const d = Math.max(0, tx - C3.x); walk(1, d, 2); }      // aimed short: he walks on briskly until his feet come together, which brings him into the doorway
+      if (pullT >= 0) { pullT++; const tx = pullX0 + (GATE_X + 30 - pullX0) * smooth(0, 1, Math.min(1, pullT / 46)); { const d = Math.max(0, tx - C3.x); walk(1, d, 2); }      // aimed short: he walks on briskly until his feet come together, which brings him into the doorway
         if (pullT === 50) gwReachTo = 0; if (pullT === 96) next(true); }
       else walk(1, 0);
       if (G.act === 'knock' && knocks >= 3 && knockT > 50) { RIGHT.forEach((m, i) => note(m, .04, 3, i * .34)); next(true); }
@@ -1731,16 +1733,16 @@ const HL = (() => {
     // left over him with dust turning in it, a long flat pool on the road and his shadow lying flat behind him.
     // (4) Good-will stands in the opening, a dark shape against the light (`GWF`: Evangelist's standing picture without
     // his staff, a stand-in until Level 4 gives Good-will his own figure).
-    const GR = 40, GH = 126, SW = 104, SH = 26, SY = GH + GR + 23;
-    const gateOn = !rocky && X(GATE_X - 1300) < VW, gx = X(GATE_X), r = GR * z, gy0 = Y(-GH), lnx = gx - 72 * z, lny = Y(-162), flick = .86 + .1 * Math.sin(G.t / 7) + .04 * Math.sin(G.t / 2.3);
+    const GR = 40, GH = 126, SW = 62, SH = 22, SY = GH + GR + 23;
+    const gateOn = !rocky && X(GATE_X - 1300) < VW, gx = X(GATE_X), r = GR * z, gy0 = Y(-GH), lnx = X(GATE_X - GSL - 24), lny = Y(-150), flick = .86 + .1 * Math.sin(G.t / 7) + .04 * Math.sin(G.t / 2.3);
     // (build 216, owner: "Doorkeeper maybe should be on right side and door opens on other side (so there's some natural space
     // between two figures)": the hinge is on the LEFT now, the leaf swings in on Christian's side and the opening is on the right)
-    const pinD = pullT >= 0 ? smooth(GATE_X - 100, GATE_X - 40, C3.x) : 0, open = smooth(0, 1, door), lw = 2 * r * (1 - .62 * open - .26 * pinD), gapL = gx - r + lw, ri = r + 5 * z, ro = r + 19 * z;
+    const open = smooth(0, 1, door);
     // everything but the doorway (so the glow does not wash out Good-will standing in it)
     const notDoor = () => { c.beginPath(); c.rect(0, 0, VW, VH); c.moveTo(gx - r, Y(0)); c.lineTo(gx + r, Y(0)); c.lineTo(gx + r, gy0); c.arc(gx, gy0, r, 0, Math.PI, true); c.closePath(); c.clip('evenodd'); };
     if (gateOn) {
       const x0 = GATE_X - 1300;
-      const WEND = GATE_X - 430, wend = x => { const e = (x - WEND) / 95; if (e <= 0) return 0; if (e >= 1) return 1; return clamp(Math.pow(e, .6) * .95 + .16 * (nz(x * .045, 9) - .5) * (1 - e * .7) + .07 * (nz(x * .16, 11) - .5) * (1 - e) + .05); };
+      const WEND = GATE_X - GSL - 4, wend = x => { const e = (x - WEND) / 95; if (e <= 0) return 0; if (e >= 1) return 1; return clamp(Math.pow(e, .6) * .95 + .16 * (nz(x * .045, 9) - .5) * (1 - e * .7) + .07 * (nz(x * .16, 11) - .5) * (1 - e) + .05); };
       // (build 216, owner: "Top of wall can be little more rugged matching contours of rocks"): the top is a row of rough
       // cap stones of every width and height, each rounded and chipped, now and then one missing, over the slow swell
       if (!CAP) { CAP = []; const Rc = rngS(93); for (let x = x0 - 20; x < GATE_X + 920;) { const w = 14 + Rc() * 24, gone = Rc() < .05; CAP.push({ x, w, h: gone ? -2 - Rc() * 3 : 1 + Rc() * 4.5, l: Rc(), rr: Rc() }); x += w; } }
@@ -1803,179 +1805,84 @@ const HL = (() => {
           c.save(); c.beginPath(); c.rect(0, Y(-240), xe, Y(4) - Y(-240)); c.clip();
           rid(-150, 34, .02, 22); c.fillStyle = css([36, 20, 16]); c.fill();
           rid(-72, 16, .014, 23); { const g = c.createLinearGradient(0, Y(-80), 0, Y(4)); g.addColorStop(0, css([26, 15, 12])); g.addColorStop(1, css([16, 9, 7])); c.fillStyle = g; } c.fill(); c.restore(); } }
-      const wtop = x => 330 + (nz(x * .012, 3) - .5) * 26 + (nz(x * .05, 6) - .5) * 12 + cap(x);
-      // (vision chat, owner: "the castle shooting over wall looks strange - which side is it on?"): the wall ENDS a little way
-      // left of the gate in a broken, stepped end (`WEND`, courses fallen away unevenly), so the open land beyond shows and
-      // the castle stands out there on Christian's own side, as in the book
-      const wallPath = () => { c.beginPath(); c.moveTo(X(WEND), Y(2)); for (let x = WEND; x <= GATE_X + 900; x += 3) c.lineTo(X(x), Y(-wtop(x) * wend(x))); c.lineTo(X(GATE_X + 900), Y(2)); };
-      const arch = (rr = r, y1 = gy0) => { c.beginPath(); c.moveTo(gx - rr, Y(1)); c.lineTo(gx - rr, y1); c.arc(gx, y1, rr, Math.PI, 0); c.lineTo(gx + rr, Y(1)); };
-      // the stone surround: dressed jamb stones and voussoirs between ri and ro, the door set back in a reveal
-      const frameP = () => { c.beginPath(); c.moveTo(gx - ro, Y(0)); c.lineTo(gx - ro, gy0); c.arc(gx, gy0, ro, Math.PI, 0); c.lineTo(gx + ro, Y(0)); c.closePath(); c.moveTo(gx - ri, Y(0)); c.lineTo(gx - ri, gy0); c.arc(gx, gy0, ri, Math.PI, 0); c.lineTo(gx + ri, Y(0)); c.closePath(); c.rect(gx - SW / 2 * z, Y(-SY - SH), SW * z, SH * z); };
-      // the far light, behind the wall: only its glow over the top
-      { const gy = Y(-330), g = c.createRadialGradient(gx, gy, 0, gx, gy, 340 * z); g.addColorStop(0, css([255, 220, 160], .42 * gateish)); g.addColorStop(.35, css([230, 160, 100], .16 * gateish)); g.addColorStop(1, css([200, 120, 80], 0)); c.fillStyle = g; c.fillRect(gx - 340 * z, gy - 340 * z, 680 * z, 680 * z); }
-      wallPath(); c.fillStyle = css([22, 13, 10]); c.fill();
-      // a few fallen stones at the wall's broken end
-      { c.fillStyle = css([19, 11, 9]); for (let i = 0; i < 7; i++) { const u = WEND - 40 + i * 15 + 6 * nz(i * 1.7, 5), w = 7 + 9 * nz(i * 2.3, 6), h = 4 + 6 * nz(i * 3.1, 7); c.beginPath(); c.ellipse(X(u), Y(-h * .45), w * z * .5, h * z * .55, .2 * (nz(i, 8) - .5), 0, 7); c.fill(); } }
-      c.save(); wallPath(); c.clip();
-      // one soft pool of lantern light, and the open door's light
-      const dx0 = GATE_X - 30, lxw = GATE_X - 72, tex = GSTONE ? 1.3 : 1;
-      // (build 237, owner: "Too big of rocks need to find a much bigger swatch of rocks . Also need to go back to Rembrandt style
-      // lighting that we had before !": the picture is now TWO photographs by the same photographer of the same kind of
-      // Surrey stone-and-flint wall, Ash and Worplesdon (both CC0), joined and blended, its ends and its top and foot blended
-      // so it repeats without a seam both ways (2052 x 750), laid 640 units wide, so the stones are smaller; the dusk fill
-      // nearly gone and the lantern's and the door's pools falling off as steeply as the old lit stones did: most of the
-      // wall is dark again)
-      // (build 241, owner: "the rocks seem too big for wall is there a way to create more repetition or bring in other pictures so all
-      // rocks can be much smaller ??": four photographs of Surrey and Sussex flint walls, each scaled so its stones are the same
-      // small size and its tones matched to Ash's, laid two rows of two and blended at every seam (`assets/gate-wall.webp` 1002 x
-      // 360), 470 units a tile: the stones are about 15 units, real size beside him)
-      // THE WALL FROM ONE BIG PHOTOGRAPH (build 235; owner: "A ... Let's go for A for on wall for now !"): a stone-and-flint
-      // churchyard wall (St Peter's, Ash, Surrey; Wikimedia Commons, CC0), its daylight shading evened out and its colour
-      // quietened (`assets/gate-wall.webp`, 1400 x 1011), laid 560 units wide from the road up, its right edge blended
-      // into its left so it repeats without a seam (`GWALL`, `wallPat`); the stones keep their own real relief. ONE SET OF LIGHTS for the
-      // wall, the surround, the door and the figures (owner: "make the lighting here realistic and consistent among
-      // figures and items"): the lantern (a warm pool, brightest just round it, falling off quickly), the door's light from
-      // within (low, from the opening, as it opens), and a faint cool dusk over everything, so the stone is just there in
-      // the dark and never a flat plane. The wall picture is laid over these lights by 'multiply'.
-      c.globalCompositeOperation = 'lighter';
-      { c.fillStyle = css([44, 42, 56], .12 * (1 - open)); c.fillRect(0, 0, VW, Y(2)); }
-      // (build 246, the eye adjusting: as the door opens the lantern's pool sinks, so the doorway becomes the one bright thing)
-      const lk = flick * (1 - .45 * open), LR = 230 * z;
-      { const g = c.createRadialGradient(lnx, lny, 0, lnx, lny, LR); g.addColorStop(0, css([255, 200, 132], lk)); g.addColorStop(.12, css([250, 176, 108], .78 * lk)); g.addColorStop(.3, css([214, 116, 60], .4 * lk)); g.addColorStop(.55, css([150, 62, 32], .12 * lk)); g.addColorStop(.8, css([104, 38, 20], .03 * lk)); g.addColorStop(1, css([100, 56, 30], 0)); c.fillStyle = g; c.fillRect(lnx - LR, lny - LR, 2 * LR, 2 * LR); }
-      if (open > .01) { const bx = gapL + (gx + r - gapL) * .5, by = Y(-60), rr = 210 * z, g = c.createRadialGradient(bx, by, 0, bx, by, rr); g.addColorStop(0, css([255, 226, 176], open)); g.addColorStop(.15, css([246, 184, 116], .62 * open)); g.addColorStop(.35, css([200, 104, 56], .2 * open)); g.addColorStop(.65, css([124, 48, 26], .03 * open)); g.addColorStop(1, css([120, 70, 40], 0)); c.fillStyle = g; c.fillRect(bx - rr, by - rr, 2 * rr, 2 * rr); }
-      c.globalCompositeOperation = 'multiply';
-      if (GWALL) { const P = wallPat(c), k = 470 / GWALL.width * z; P.setTransform(new DOMMatrix([k, 0, 0, k, X(x0), Y(0) - GWALL.height * k])); c.fillStyle = P; c.fillRect(0, 0, VW, Y(2)); }
-      else if (GSTONE) { if (!GSTONE.pat) GSTONE.pat = c.createPattern(GSTONE, 'repeat'); const k = 380 / GSTONE.width * z; GSTONE.pat.setTransform(new DOMMatrix([k, 0, 0, k, X(x0), Y(0)])); c.fillStyle = GSTONE.pat; c.fillRect(0, 0, VW, Y(2)); }
-      c.globalCompositeOperation = 'source-over';
-      // (build 239, the light thought through as a whole, after Rembrandt: one light rules at a time, and the light behaves
-      // as real light does.) The lantern's own roof stops its light going straight up, so a soft dark cone rises up the
-      // wall above it, its edges softening as they go
-      { const ry = lny - 16 * z, top = ry - 150 * z; for (const [w0, w1, a] of [[8, 70, .16], [6, 52, .16], [4, 36, .18]]) { c.beginPath(); c.moveTo(lnx - w0 * z, ry); c.lineTo(lnx + w0 * z, ry); c.lineTo(lnx + w1 * z, top); c.lineTo(lnx - w1 * z, top); c.closePath();
-          const g = c.createLinearGradient(0, ry, 0, top); g.addColorStop(0, css([8, 6, 5], a * flick)); g.addColorStop(1, css([8, 6, 5], 0)); c.fillStyle = g; c.fill(); } }
-      // when the door opens, its low light throws his shadow onto the wall behind him, larger than he is and soft, leaning
-      // away from the light (the shadow is his own last drawn picture, darkened, made small and stretched up so it is soft)
-      if (open > .05 && CHRSH) { const S = CHRSH, lx = GATE_X + 14, ly = 48, m = 1.5, sw = Math.ceil(S.fc.width / 7), shh = Math.ceil(S.fc.height / 7);
-        if (!SHC) SHC = mk(8, 8); if (SHC.width !== sw || SHC.height !== shh) { SHC.width = sw; SHC.height = shh; }
-        const q = SHC.getContext('2d'); q.globalCompositeOperation = 'source-over'; q.clearRect(0, 0, sw, shh); q.drawImage(S.fc, 0, 0, sw, shh); q.globalCompositeOperation = 'source-in'; q.fillStyle = '#060404'; q.fillRect(0, 0, sw, shh);
-        c.save(); c.beginPath(); c.rect(0, 0, gx - ro, Y(0)); c.clip(); c.globalAlpha = .42 * open;
-        c.translate(X(lx), Y(-ly)); c.scale(m, m); c.translate(-X(lx), -Y(-ly));
-        c.translate(VW / 2 - cx * z, wl); c.scale(z, z); c.translate(S.x, 5); c.scale(S.face * S.k, S.k * S.sy); c.drawImage(SHC, -S.meta.ax, -S.meta.ground, S.fc.width, S.fc.height);
+      // THE GATE IN SECTION (build 443; owner: "I think gate should run to and from viewer so they can see both sides" ... "i like
+      // A and you could make other side dark till he opens it"): the wall runs toward and away from us, so it is seen cut
+      // through: one thick slice of stone standing across the way (`GSL` half its thickness, `GTOP` high), its passage
+      // (`GPH` high) a dark recess, the far jamb's face seen through it; the oak door hinged at the passage's inner end on its
+      // far side. Outside, on the left: the dusk, the lantern on its iron arm, the castle. Inside, on the right: dark until
+      // the door opens (`inside dark`, laid after the road), then the light from within, the far light and the narrow way.
+      const sx0 = X(GATE_X - GSL), sx1 = X(GATE_X + GSL), syT = Y(-GTOP), syP = Y(-GPH), yG = Y(0);
+      // inside: the dusk sky laid again (the plain's far layers would show there), the land, and the far light low ahead
+      { c.save(); c.beginPath(); c.rect(sx1, 0, VW - sx1 + 2, yG + 2); c.clip();
+        { const g = c.createLinearGradient(0, 0, 0, hor); g.addColorStop(0, css(top)); g.addColorStop(1, css(low)); c.fillStyle = g; c.fillRect(sx1, 0, VW, hor + 2); }
+        { const g = c.createLinearGradient(0, hor, 0, yG); g.addColorStop(0, css([58, 32, 22])); g.addColorStop(1, css([20, 11, 8])); c.fillStyle = g; c.fillRect(sx1, hor, VW, yG - hor + 2); }
+        // the air inside, lit low from within: one soft glow lying along the ground (no edges), behind Good-will
+        { const op = smooth(0, 1, door), fx2 = X(GATE_X + 230), R2 = 620 * z; c.beginPath(); c.rect(sx1, 0, VW - sx1 + 2, yG + 2); c.clip(); c.globalCompositeOperation = 'lighter';
+          c.translate(fx2, yG); c.scale(1, .5); const g = c.createRadialGradient(0, 0, 0, 0, 0, R2); g.addColorStop(0, css([255, 220, 160], .75 * op)); g.addColorStop(.3, css([236, 156, 92], .36 * op)); g.addColorStop(.7, css([160, 84, 48], .1 * op)); g.addColorStop(1, css([140, 70, 40], 0));
+          c.fillStyle = g; c.fillRect(-R2, -R2, 2 * R2, 2 * R2); c.globalCompositeOperation = 'source-over'; }
         c.restore(); }
-      if (GSTONE) {
-        // the surround's stones are dressed smooth and paler: the same lights, a little stronger, with only a fine grain
-        if (!GSTONE.pat) GSTONE.pat = c.createPattern(GSTONE, 'repeat');
-        { c.save(); frameP(); c.clip('evenodd'); c.fillStyle = css([24, 20, 19]); c.fillRect(gx - SW * z, Y(-SY - SH - 10), 2 * SW * z, (SY + SH + 12) * z);
-          c.globalCompositeOperation = 'lighter';
-          { const g = c.createRadialGradient(lnx, lny, 0, lnx, lny, 210 * z); g.addColorStop(0, css([236, 180, 118], .85 * flick)); g.addColorStop(.4, css([180, 120, 70], .35 * flick)); g.addColorStop(1, css([150, 90, 50], 0)); c.fillStyle = g; c.fillRect(gx - ro - 300 * z, gy0 - ro - 200 * z, 600 * z, 600 * z); }
-          if (open > .01) { const g = c.createRadialGradient(gx + r * .4, Y(-70), 0, gx + r * .4, Y(-70), 190 * z); g.addColorStop(0, css([255, 214, 150], .7 * open)); g.addColorStop(1, css([170, 100, 56], 0)); c.fillStyle = g; c.fillRect(gx - 200 * z, Y(-270), 400 * z, 400 * z); }
-          const k = 190 / GSTONE.width * z; GSTONE.pat.setTransform(new DOMMatrix([k, 0, 0, k, X(x0), Y(0)])); c.globalCompositeOperation = 'multiply'; c.globalAlpha = .8; c.fillStyle = GSTONE.pat; c.fillRect(gx - SW * z, Y(-SY - SH - 10), 2 * SW * z, (SY + SH + 12) * z);
-          c.restore(); }
-        // the joints of the surround: thin and soft, darker only where the light shows them
-        c.save(); frameP(); c.clip('evenodd'); c.strokeStyle = css([12, 9, 8], .42); c.lineWidth = 1 * z; c.beginPath();
-        for (let y = 0, i = 0; y < GH - 4; y += 21 + (i % 3) * 3, i++) { if (y) { c.moveTo(gx - ro, Y(-y)); c.lineTo(gx - ri, Y(-y)); c.moveTo(gx + ri, Y(-y - 6)); c.lineTo(gx + ro, Y(-y - 6)); } }
-        for (let k = 1; k < 9; k++) { const a = Math.PI + k / 9 * Math.PI; c.moveTo(gx + Math.cos(a) * ri, gy0 + Math.sin(a) * ri); c.lineTo(gx + Math.cos(a) * (ro + 2 * z), gy0 + Math.sin(a) * (ro + 2 * z)); }
-        c.stroke(); c.restore();
-        // the surround stands a little proud of the wall: a soft shadow along its outer edge away from the lantern
-        c.save(); c.strokeStyle = css([6, 5, 5], .35); c.lineWidth = 3 * z; c.beginPath(); c.arc(gx + 1.5 * z, gy0 + 1 * z, ro + 1.5 * z, -Math.PI * .55, 0); c.lineTo(gx + ro + 1.5 * z, Y(0)); c.stroke(); c.restore();
-      } else {
+      // the far light inside: it rises over the wall into the open sky (no edge), strong once the door is open
+      { const op = smooth(0, 1, door), fx3 = X(GATE_X + 330), R3 = 640 * z, g = c.createRadialGradient(fx3, hor, 0, fx3, hor, R3);
+        g.addColorStop(0, css([255, 240, 206], .25 + .6 * op)); g.addColorStop(.12, css([255, 210, 146], .1 + .42 * op)); g.addColorStop(.45, css([220, 130, 76], .03 + .2 * op)); g.addColorStop(1, css([200, 110, 60], 0));
+        c.save(); c.beginPath(); c.rect(0, 0, VW, yG + 2); c.clip(); c.globalCompositeOperation = 'lighter'; c.fillStyle = g; c.fillRect(fx3 - R3, hor - R3, 2 * R3, 2 * R3); c.restore(); }
+      // the slice of wall
+      { const sp = new Path2D(); sp.moveTo(sx0, yG); sp.lineTo(sx0, syT + 2 * z);
+        for (let i = 0; i <= 10; i++) sp.lineTo(lerp(sx0, sx1, i / 10), Y(-GTOP - 4 * nz(GATE_X * .01 + i * .8, 61) + 1));
+        sp.lineTo(sx1, syT + 2 * z); sp.lineTo(sx1, yG); sp.closePath();
+        c.save(); c.clip(sp);
+        // the cut face: the wall's own stone, a shade lighter than the dusk; the lantern warms its outer side, the light within its inner side
+        c.fillStyle = css([26, 16, 12]); c.fillRect(sx0 - 2, syT - 12, sx1 - sx0 + 4, yG - syT + 14);
+        if (GWALL) { const P = wallPat(c), k = 470 / GWALL.width * z; P.setTransform(new DOMMatrix([k, 0, 0, k, sx0, yG - GWALL.height * k])); c.globalCompositeOperation = 'overlay'; c.globalAlpha = .6; c.fillStyle = P; c.fillRect(sx0 - 2, syT - 12, sx1 - sx0 + 4, yG - syT + 14); c.globalAlpha = 1; }
+        c.globalCompositeOperation = 'lighter';
+        { const g = c.createRadialGradient(lnx, lny, 0, lnx, lny, 170 * z); g.addColorStop(0, css([236, 150, 80], .26 * flick * (1 - .4 * open))); g.addColorStop(.5, css([200, 100, 50], .14 * flick)); g.addColorStop(1, css([200, 100, 50], 0)); c.fillStyle = g; c.fillRect(sx0 - 2, syT - 12, sx1 - sx0 + 4, yG - syT + 14); }
+        if (open > .01) { const g = c.createLinearGradient(sx1, 0, sx0, 0); g.addColorStop(0, css([255, 214, 150], .3 * open)); g.addColorStop(.4, css([226, 146, 80], .07 * open)); g.addColorStop(1, css([200, 120, 60], 0)); c.fillStyle = g; c.fillRect(sx0 - 2, syT - 12, sx1 - sx0 + 4, yG - syT + 14); }
         c.globalCompositeOperation = 'source-over';
-        for (const s of STONES) { const cx2 = s.x + s.w / 2, cy2 = -(s.y + s.h / 2), l1 = Math.max(0, 1 - Math.hypot(cx2 - lxw, cy2 + 150) / 260), l2 = Math.max(0, 1 - Math.hypot(cx2 - dx0, (cy2 + 70) * .8) / 430);
-          const a = Math.min(1, l1 * l1 * flick + l2 * l2 * 1.2 * open); if (a < .02) continue;
-          c.fillStyle = s.t > .5 ? css([255, 226, 180], a * .16 * (s.t - .5)) : css([0, 0, 0], a * .5 * (.5 - s.t));
-          c.fillRect(X(s.x), Y(-(s.y + s.h)), s.w * z, s.h * z); }
-      }
-      c.restore();
-      // the reveal: the door is set back in the thickness of the wall; its far side catches the light from within
-      arch(ri, gy0); c.fillStyle = css([16, 12, 11]); c.fill();
-      if (door > .01) { c.save(); arch(ri, gy0); c.clip(); const g = c.createLinearGradient(gx + r, 0, gx + ri, 0); g.addColorStop(0, css([255, 214, 150], .7 * open)); g.addColorStop(1, css([200, 140, 90], .25 * open)); c.fillStyle = g; c.fillRect(gx + r, gy0 - ri, ri - r, GH * z + ri); c.restore(); }
-      if (!GSTONE) { c.save(); c.lineWidth = 2.2 * z; c.strokeStyle = css([226, 170, 106], Math.min(1, .22 * flick + .45 * open)); c.beginPath(); c.moveTo(gx - r - 5 * z, Y(0)); c.lineTo(gx - r - 5 * z, gy0); c.arc(gx, gy0, r + 5 * z, Math.PI, 0); c.lineTo(gx + r + 5 * z, Y(0)); c.stroke(); c.restore(); }
-      c.save(); arch(); c.clip();
-      // within: the light he has followed, and Good-will standing in it
-      if (door > .01) {
-        const g = c.createLinearGradient(gapL, 0, gx + r, 0); g.addColorStop(0, css([255, 222, 160])); g.addColorStop(.55, css([255, 250, 236])); g.addColorStop(1, css([255, 236, 196]));
-        c.fillStyle = g; c.fillRect(gapL - 1, gy0 - r, gx + r - gapL + 1, GH * z + r + 2);
-        const gw = smooth(.4, .95, door);
+        // the passage through it, round-headed (its vault seen cut): the far jamb's face seen through, in shadow
+        const ar = (sx1 - sx0) / 2, pa = new Path2D(); pa.moveTo(sx0 - 2, yG + 2); pa.lineTo(sx0 - 2, syP + ar); pa.ellipse((sx0 + sx1) / 2, syP + ar, ar + 2, ar, 0, Math.PI, 0); pa.lineTo(sx1 + 2, yG + 2); pa.closePath(); c.save(); c.clip(pa);
+        c.fillStyle = css([10, 6, 5], .88); c.fillRect(sx0 - 2, syP, sx1 - sx0 + 4, yG - syP + 2);
+        { const g = c.createLinearGradient(0, syP, 0, syP + 22 * z); g.addColorStop(0, css([0, 0, 0], .55)); g.addColorStop(1, css([0, 0, 0], 0)); c.fillStyle = g; c.fillRect(sx0 - 2, syP, sx1 - sx0 + 4, 22 * z); }
+        if (open > .01) { const g = c.createLinearGradient(sx1, 0, sx0, 0); g.addColorStop(0, css([255, 216, 152], .6 * open)); g.addColorStop(.6, css([220, 140, 80], .2 * open)); g.addColorStop(1, css([200, 120, 60], .06 * open)); c.globalCompositeOperation = 'lighter'; c.fillStyle = g; c.fillRect(sx0 - 2, syP, sx1 - sx0 + 4, yG - syP + 2); c.globalCompositeOperation = 'source-over'; }
+        c.restore();
+        c.restore();
+        // its edges: the outer faintly lit by the lantern, the inner by the light within
+        c.lineWidth = 1.2 * z; c.strokeStyle = css([214, 130, 70], .28 * flick); c.beginPath(); c.moveTo(sx0, syT); c.lineTo(sx0, syP); c.stroke();
+        if (open > .01) { c.strokeStyle = css([255, 216, 152], .7 * open); c.beginPath(); c.moveTo(sx1, syT); c.lineTo(sx1, syP); c.stroke(); } }
+      // THE DOOR: hinged at the passage's inner end on its far side; shut, it is seen edge-on, a dark plank across the
+      // passage's end; as it opens it swings in, its face (the photographed oak door) turning toward us, behind whoever stands there
+      { const a = open * Math.PI / 2, lf = 1 - smooth(.55, 1, open), dw = 46 * Math.sin(a) * z * lf, th = 6 * Math.cos(a) * z, hx = sx1;
+        if (dw > .5) { c.save();
+          if (GDOOR) c.drawImage(GDOOR, hx, syP, dw, yG - syP + 1); else { c.fillStyle = css([46, 30, 20]); c.fillRect(hx, syP, dw, yG - syP + 1); }
+          c.fillStyle = css([10, 7, 5], .72); c.fillRect(hx, syP, dw, yG - syP + 1);
+          const g = c.createLinearGradient(hx, 0, hx + dw, 0); g.addColorStop(0, css([255, 214, 150], .1 * open)); g.addColorStop(1, css([255, 214, 150], 0)); c.globalCompositeOperation = 'lighter'; c.fillStyle = g; c.fillRect(hx, syP, dw, yG - syP + 1); c.restore(); }
+        if (th > .3) { c.fillStyle = css(mix([28, 19, 14], [62, 42, 28], .45 * flick)); c.fillRect(hx - th, syP, th, yG - syP + 1); }
+        if (open > .5) { c.fillStyle = css([255, 222, 168], .8 * smooth(.5, 1, open)); c.fillRect(hx - .6 * z, syP + 8 * z, 1.6 * z, yG - syP - 8 * z); } }
+      // GOOD-WILL, inside, in the light (a dark shape against it); he steps back as he draws Christian in
+      if (door > .01) { const gw = smooth(.4, .95, door);
         if (gw > .01 && (GWST || EVS.ready)) {
           if (!GWST && !GWF.length) for (let i = 0; i < EVS_META.frames; i += 4) { const im = solidOf(EVS[i]), w = mk(im.width, im.height), q = w.getContext('2d'); q.drawImage(im, 0, 0); q.clearRect(150, 0, im.width, im.height); GWF.push(w); }
           c.save(); c.translate(VW / 2 - cx * z, wl); c.scale(z, z);
-          // (build 216, owner: "please make doorkeeper little smaller and less dark"): a little further in, so smaller,
-          // and his robe faintly seen in the light round him
-          const gwBack = pullT >= 0 ? smooth(GATE_X - 60, GATE_X - 14, C3.x) : 0, fx = GATE_X + GR - (gx + r - gapL) / z * .46 + 11 * gwBack;      // he steps back and aside as he draws him in
-          // (build 234: Good-will's own figure, `assets/goodwill-stand.webp`, the owner's "Looks good to me" in the other small-tweaks
-          // chat: bare-headed, white-bearded, hands folded; one still, breathing in code; the stand-in `GWF` only until it loads)
+          const gwBack = pullT >= 0 ? smooth(GATE_X - 60, GATE_X, C3.x) : 0, fx = GATE_X + GSL + 74 + 34 * gwBack;
           GWFX = fx;
-          FK = .86 - .05 * gwBack; if (GWRE && gwReach > .5) figure(c, 'gw', GWRE, GWRE_META, fx, -1, [52, 44, 40], gw * .96); else if (GWST) figure(c, 'gw', GWST, GWST_META, fx, -1, [52, 44, 40], gw * .96, breath(3)); else figure(c, 'gw', GWF[Math.floor(G.t / 20) % GWF.length], EVS_META, fx, -1, [52, 44, 40], gw * .96); FK = 1;
-          c.restore();
-          // the light wraps round his edges
-          c.save(); c.globalCompositeOperation = 'lighter'; const g2 = c.createLinearGradient(gapL, 0, gx + r, 0); g2.addColorStop(0, css([255, 214, 150], .35 * gw)); g2.addColorStop(.18, css([255, 214, 150], 0)); g2.addColorStop(.82, css([255, 214, 150], 0)); g2.addColorStop(1, css([255, 214, 150], .3 * gw)); c.fillStyle = g2; c.fillRect(gapL, gy0 - r, gx + r - gapL, GH * z + r); c.restore();
-        }
-      }
-      // the door: a photograph of an old plank door, swinging in on its hinge at the left
-      const dl = gx - r;
-      if (GDOOR) {
-        c.drawImage(GDOOR, dl, gy0 - r, lw, GH * z + r + 1 * z);
-        const g = c.createLinearGradient(dl, 0, gx + r, 0); g.addColorStop(0, css([10, 7, 5], .3 - .12 * open)); g.addColorStop(1, css([10, 7, 5], .62 - .3 * open));
-        c.globalAlpha = 1 - .18 * flick; c.fillStyle = g; c.fillRect(dl, gy0 - r, lw, GH * z + r + 1); c.globalAlpha = 1;
-        { const g3 = c.createRadialGradient(lnx, lny, 0, lnx, lny, 150 * z); g3.addColorStop(0, css([255, 170, 90], .22 * flick * (1 - .6 * open))); g3.addColorStop(1, css([255, 170, 90], 0)); c.globalCompositeOperation = 'lighter'; c.fillStyle = g3; c.fillRect(dl, gy0 - r, lw, GH * z + r); c.globalCompositeOperation = 'source-over'; }
-        // (build 225, owner: "Please lighten door as it opens as light hits it too"): the light from within falls on the
-        // leaf as it swings in, strongest at its free edge, beside the opening
-        if (open > .01) { const g4 = c.createLinearGradient(gapL, 0, dl, 0); g4.addColorStop(0, css([255, 214, 150], .55 * open)); g4.addColorStop(.6, css([235, 170, 100], .3 * open)); g4.addColorStop(1, css([200, 130, 70], .14 * open)); c.globalCompositeOperation = 'lighter'; c.fillStyle = g4; c.fillRect(dl, gy0 - r, lw, GH * z + r); c.globalCompositeOperation = 'source-over'; }
-      } else {
-        c.fillStyle = css(mix([30, 21, 15], [70, 46, 28], .5 * flick)); c.fillRect(dl, gy0 - r, lw, GH * z + r + 1);
-        c.strokeStyle = css([10, 7, 6], .8); c.lineWidth = 1.2 * z; for (const d of [.2, .4, .6, .8]) { c.beginPath(); c.moveTo(dl + d * lw, gy0 - r); c.lineTo(dl + d * lw, Y(0)); c.stroke(); }
-      }
-      // the free edge of the door catches the light from within
-      if (door > .01) { c.fillStyle = css([255, 206, 140], .7 * open); c.fillRect(gapL - 1.6 * z, gy0 - r, 1.6 * z, GH * z + r); }
-      c.restore();
-      if (door > .01) { c.save(); notDoor(); c.globalCompositeOperation = 'lighter'; const bx = gapL, by = Y(-84), rr = (80 + 200 * open) * z, g = c.createRadialGradient(bx, by, 0, bx, by, rr); g.addColorStop(0, css([255, 236, 190], .32 * open)); g.addColorStop(.3, css([255, 190, 110], .14 * open)); g.addColorStop(1, css([240, 150, 80], 0)); c.fillStyle = g; c.fillRect(bx - rr, by - rr, 2 * rr, 2 * rr); c.restore(); }
-      // the writing on a stone over the gate, shown by the lantern
-      // (build 217, owner: "The lattern and sign need redoing to make super realistic - how about we make sign clickable so one
-      // click on it and zoom in (kinda like book)"): the stone over the gate carries Bunyan's words cut in real letters (too
-      // small to read here: a touch on it opens the stone close up, `signPic()`, `KS.look()`), its edges chamfered
-      if (GSTONE) { const sx0 = gx - SW / 2 * z, sy0 = Y(-SY - SH), sw = SW * z, sh = SH * z;
-        c.strokeStyle = css([8, 6, 6], .5); c.lineWidth = 1 * z; c.strokeRect(sx0, sy0, sw, sh);
-        c.strokeStyle = css([255, 210, 150], .16 * flick); c.beginPath(); c.moveTo(sx0 + 2.5 * z, sy0 + sh - 2.5 * z); c.lineTo(sx0 + 2.5 * z, sy0 + 2.5 * z); c.lineTo(sx0 + sw - 2.5 * z, sy0 + 2.5 * z); c.stroke();
-        c.strokeStyle = css([8, 6, 6], .35); c.beginPath(); c.moveTo(sx0 + 2.5 * z, sy0 + sh - 2.5 * z); c.lineTo(sx0 + sw - 2.5 * z, sy0 + sh - 2.5 * z); c.lineTo(sx0 + sw - 2.5 * z, sy0 + 2.5 * z); c.stroke();
-        c.save(); c.textAlign = 'center'; c.textBaseline = 'middle'; c.font = `${6.2 * z}px 'IM Fell English', Georgia, serif`;
-        for (const [t, dy] of [['KNOCK, AND IT SHALL BE', -.26], ['OPENED UNTO YOU.', .2]]) { const ty = sy0 + sh * (.5 + dy);
-          c.fillStyle = css([20, 13, 9], .62); c.fillText(t, gx, ty); c.fillStyle = css([255, 214, 160], .14 * flick); c.fillText(t, gx + .5 * z, ty + .6 * z); }
+          FK = .9; if (GWRE && gwReach > .5) figure(c, 'gw', GWRE, GWRE_META, fx, -1, [52, 44, 40], gw * .96); else if (GWST) figure(c, 'gw', GWST, GWST_META, fx, -1, [52, 44, 40], gw * .96, breath(3)); else figure(c, 'gw', GWF[Math.floor(G.t / 20) % GWF.length], EVS_META, fx, -1, [52, 44, 40], gw * .96); FK = 1;
+          c.restore(); } }
+      // the carved stone over the passage: Bunyan's words cut into the slice's face, shown by the lantern (a touch opens it close up)
+      { const sx2 = gx - SW / 2 * z, sy2 = Y(-SY - SH), sw = SW * z, sh = SH * z;
+        c.fillStyle = css(mix([52, 38, 30], [96, 66, 44], .5 * flick)); c.fillRect(sx2, sy2, sw, sh);
+        c.strokeStyle = css([8, 6, 6], .55); c.lineWidth = 1 * z; c.strokeRect(sx2, sy2, sw, sh);
+        c.save(); c.textAlign = 'center'; c.textBaseline = 'middle'; c.font = `${4.3 * z}px 'IM Fell English', Georgia, serif`;
+        for (const [t, dy] of [['KNOCK, AND IT SHALL BE', -.24], ['OPENED UNTO YOU.', .22]]) { const ty = sy2 + sh * (.5 + dy); c.fillStyle = css([18, 11, 8], .7); c.fillText(t, gx, ty); c.fillStyle = css([255, 214, 160], .12 * flick); c.fillText(t, gx + .4 * z, ty + .5 * z); }
         c.restore(); }
-      else { c.fillStyle = css(mix([70, 54, 42], [222, 190, 142], .6 * flick)); c.fillRect(gx - 38 * z, Y(-GH - GR - 36), 76 * z, 13 * z); }
-      // the lantern on its iron bracket (build 222: drawn straight on, `bakeLantern()`; hung by its ring from a wrought-iron
-      // hook on a plate in the wall)
-      // the lantern's glow in the evening air, laid before the iron so the iron stays dark against it (build 246)
+      // THE LANTERN on its iron arm, standing out from the slice's outer face over the way in
       c.save(); c.globalCompositeOperation = 'lighter'; { const g = c.createRadialGradient(lnx, lny, 0, lnx, lny, 90 * z); g.addColorStop(0, css([255, 220, 160], .42 * flick)); g.addColorStop(1, css([255, 190, 110], 0)); c.fillStyle = g; c.fillRect(lnx - 90 * z, lny - 90 * z, 180 * z, 180 * z); }
         { const g = c.createRadialGradient(lnx, lny, 0, lnx, lny, 170 * z); g.addColorStop(0, css([255, 200, 140], .1 * flick * (1 - .5 * open))); g.addColorStop(1, css([255, 180, 110], 0)); c.fillStyle = g; c.fillRect(lnx - 170 * z, lny - 170 * z, 340 * z, 340 * z); } c.restore();
       if (!LANT) bakeLantern();
-      { const k = z, lx0 = lnx - LANT.fx * k, ly0 = lny - LANT.fy * k, hx = lnx, hy = ly0 + LANT.hy * k;
-        // (build 249, owner: "should we add a little piece of wood to hold lattern?": a wrought-iron arm; build 250, owner: "Can we
-        // make wrought patterned holder come out at us instead of going right"): the arm stands straight out from the wall
-        // toward us, seen a little from below and from the side, so it is short and grows thicker toward its near end: a
-        // pierced rosette plate on the wall, the arm, a scrolled brace from lower on the wall, a curl at its near end, the
-        // lantern hung from a hook there; the open door throws the lantern's shadow up and left onto the wall behind it
-        { const iron = css([13, 11, 10]), P = [hx - 7 * z, hy - 25 * z], N = [hx + 1.5 * z, hy - 5 * z], B = [hx - 7 * z, hy - 9 * z];
-          if (open > .02) { const ox = -10 * z, oy = -7 * z; c.save(); c.globalAlpha = .34 * open;
-            // made small and stretched up, so its edges are soft
-            const sc = tintC._lsh || (tintC._lsh = mk(8, 8)); if (!sc.done) { sc.width = 30; sc.height = 52; const q = sc.getContext('2d'); q.drawImage(LANT.cv, 2, 2, 26, 47); q.globalCompositeOperation = 'source-in'; q.fillStyle = '#060404'; q.fillRect(0, 0, 30, 52); sc.done = true; }
-            c.drawImage(sc, lx0 + ox - 2 / 26 * LANT.w * k, ly0 + oy - 2 / 47 * LANT.h * k, 30 / 26 * LANT.w * k, 52 / 47 * LANT.h * k);
-            c.strokeStyle = '#060404'; c.lineCap = 'round'; c.lineWidth = 2.6 * z; c.beginPath(); c.moveTo(P[0], P[1]); c.lineTo(N[0] + ox, N[1] + oy); c.lineTo(hx + ox, hy + oy); c.stroke(); c.restore(); }
-          // the plate: a quatrefoil of iron with four rivets, its lower edges lit by the flame below
-          c.fillStyle = iron; for (const [ox, oy] of [[0, -3.4], [0, 3.4], [-3.4, 0], [3.4, 0]]) { c.beginPath(); c.arc(P[0] + ox * z, P[1] + oy * z, 3 * z, 0, 7); c.fill(); }
-          c.beginPath(); c.arc(P[0], P[1], 3.6 * z, 0, 7); c.fill();
-          c.strokeStyle = css([255, 186, 110], .2 * flick); c.lineWidth = .6 * z; for (const [ox, oy] of [[0, 3.4], [-3.4, 0], [3.4, 0]]) { c.beginPath(); c.arc(P[0] + ox * z, P[1] + oy * z, 2.7 * z, .15 * Math.PI, .85 * Math.PI); c.stroke(); }
-          c.fillStyle = css([40, 30, 24]); for (const [ox, oy] of [[0, -4.4], [0, 4.4], [-4.4, 0], [4.4, 0]]) { c.beginPath(); c.arc(P[0] + ox * z, P[1] + oy * z, .7 * z, 0, 7); c.fill(); }
-          // the brace: from lower on the wall up and out to the arm, a scroll at its foot
-          c.strokeStyle = iron; c.lineCap = 'round'; c.lineWidth = 1.3 * z; c.beginPath(); c.moveTo(B[0], B[1]); c.bezierCurveTo(B[0] + 1 * z, B[1] - 4 * z, N[0] - 4 * z, N[1] - 5 * z, (P[0] + N[0]) / 2 + 1 * z, (P[1] + N[1]) / 2 + 1 * z); c.stroke();
-          c.beginPath(); c.moveTo(B[0], B[1]); c.bezierCurveTo(B[0] - 2.6 * z, B[1] + .4 * z, B[0] - 2.4 * z, B[1] - 2.8 * z, B[0] - .6 * z, B[1] - 2.4 * z); c.stroke();
-          c.fillStyle = iron; c.beginPath(); c.arc(B[0], B[1] + .6 * z, 1.4 * z, 0, 7); c.fill();
-          // the arm, thicker toward us, lit along its underside
-          { const dx = N[0] - P[0], dy = N[1] - P[1], L = Math.hypot(dx, dy), nx = -dy / L, ny = dx / L, w0 = 1.1 * z, w1 = 1.9 * z;
-            c.fillStyle = iron; c.beginPath(); c.moveTo(P[0] + nx * w0, P[1] + ny * w0); c.lineTo(N[0] + nx * w1, N[1] + ny * w1); c.lineTo(N[0] - nx * w1, N[1] - ny * w1); c.lineTo(P[0] - nx * w0, P[1] - ny * w0); c.closePath(); c.fill();
-            c.strokeStyle = css([255, 186, 110], .26 * flick); c.lineWidth = .6 * z; c.beginPath(); c.moveTo(P[0] - nx * w0 * .6 + dx * .3, P[1] - ny * w0 * .6 + dy * .3); c.lineTo(N[0] - nx * w1 * .7, N[1] - ny * w1 * .7); c.stroke(); }
-          // the curl at its near end, seen almost edge-on, so a narrow upright loop
-          c.strokeStyle = iron; c.lineWidth = 1.8 * z; c.beginPath(); c.ellipse(N[0] + .4 * z, N[1] - 3.4 * z, 1.6 * z, 3.4 * z, 0, Math.PI * .5, Math.PI * 2.2); c.stroke();
-          // the hook
-          c.lineWidth = 1.3 * z; c.beginPath(); c.moveTo(N[0], N[1]); c.lineTo(hx, hy - 3 * z); c.bezierCurveTo(hx - 3 * z, hy - 2 * z, hx - 2.5 * z, hy + 1 * z, hx, hy + .8 * z); c.stroke(); c.lineCap = 'butt'; }
+      { const k = z, lx0 = lnx - LANT.fx * k, ly0 = lny - LANT.fy * k, hx = lnx, hy = ly0 + LANT.hy * k, iron = css([13, 11, 10]), ay = hy - 6 * z;
+        c.strokeStyle = iron; c.lineCap = 'round';
+        c.lineWidth = 2 * z; c.beginPath(); c.moveTo(sx0, ay); c.lineTo(hx - 2 * z, ay); c.stroke();
+        c.lineWidth = 1.3 * z; c.beginPath(); c.moveTo(sx0, ay + 16 * z); c.quadraticCurveTo(lerp(sx0, hx, .35), ay + 4 * z, lerp(sx0, hx, .62), ay); c.stroke();
+        c.beginPath(); c.ellipse(hx - 2 * z, ay - 2.6 * z, 2.4 * z, 2.6 * z, 0, Math.PI * .5, Math.PI * 2.3); c.stroke();
+        c.lineWidth = 1.2 * z; c.beginPath(); c.moveTo(hx, ay); c.lineTo(hx, hy); c.stroke(); c.lineCap = 'butt';
+        c.strokeStyle = css([255, 186, 110], .22 * flick); c.lineWidth = .6 * z; c.beginPath(); c.moveTo(sx0, ay + 1 * z); c.lineTo(hx - 2 * z, ay + 1 * z); c.stroke();
         c.drawImage(LANT.cv, lx0, ly0, LANT.w * k, LANT.h * k);
         c.save(); c.globalCompositeOperation = 'lighter'; c.globalAlpha = Math.max(0, (flick - .82) * 2.2); c.drawImage(LANT.cv, lx0, ly0, LANT.w * k, LANT.h * k); c.restore();
         { const g = c.createRadialGradient(lnx, lny - 1 * z, 0, lnx, lny - 1 * z, 13 * z); g.addColorStop(0, css([255, 214, 150], .5 * flick)); g.addColorStop(.5, css([255, 170, 90], .16 * flick)); g.addColorStop(1, css([255, 150, 80], 0)); c.save(); c.globalCompositeOperation = 'lighter'; c.fillStyle = g; c.fillRect(lnx - 13 * z, lny - 14 * z, 26 * z, 26 * z); c.restore(); } }
@@ -1984,7 +1891,7 @@ const HL = (() => {
     // the light streaming out of the open gate: a soft wedge in the evening air, widening and fading to the left, a few
     // slow rays breathing in it, and dust turning where the light is (laid on, over him; never down the picture at us)
       if (open > .02) {
-      const x1 = (gapL + gx + r) / 2, top = Y(-GH - GR * .6), bot = Y(0), L = 560 * z;
+      const x1 = X(GATE_X + GSL), top = Y(-GPH + 10), bot = Y(0), L = 620 * z;
       // painted small and stretched up, so the edges of the light are soft (a hard straight edge read as a drawn line)
       const BS = 8, bw = Math.ceil(VW / BS), bh = Math.ceil(VH / BS); if (!BEAMC) BEAMC = mk(bw, bh); if (BEAMC.width !== bw || BEAMC.height !== bh) { BEAMC.width = bw; BEAMC.height = bh; }
       const bq = BEAMC.getContext('2d'); bq.setTransform(1, 0, 0, 1, 0, 0); bq.clearRect(0, 0, bw, bh); bq.setTransform(1 / BS, 0, 0, 1 / BS, 0, 0); bq.globalCompositeOperation = 'lighter';
@@ -1994,7 +1901,7 @@ const HL = (() => {
         const g = bq.createLinearGradient(x1, 0, x1 - L, 0); g.addColorStop(0, css([255, 222, 168], a)); g.addColorStop(.35, css([255, 200, 140], a * .55)); g.addColorStop(1, css([255, 190, 130], 0));
         bq.fillStyle = g; bq.beginPath(); bq.moveTo(x1, ty0); bq.lineTo(x1 - L, ty1); bq.lineTo(x1 - L, by1); bq.lineTo(x1, by0); bq.closePath(); bq.fill();
       }
-      c.save(); notDoor(); c.globalCompositeOperation = 'lighter'; c.drawImage(BEAMC, 0, 0, bw * BS, bh * BS);
+      c.save(); c.globalCompositeOperation = 'lighter'; c.drawImage(BEAMC, 0, 0, bw * BS, bh * BS);
       for (let i = 0; i < 26; i++) { const T = 900 + i * 53, u = ((G.t + i * 377) % T) / T, px = x1 - (30 + (i * 97) % 380) * z - 40 * u * z, py = lerp(top, bot, ((i * 0.618) % 1) * .9) + Math.sin(u * 6.283 + i) * 10 * z - 30 * u * z;
         const fade = Math.sin(Math.PI * u) * (1 - (x1 - px) / L), al = .5 * open * fade; if (al < .02) continue;
         c.fillStyle = css([255, 234, 196], al); c.beginPath(); c.arc(px, py, (.8 + (i % 3) * .4) * z, 0, 7); c.fill(); }
@@ -2107,6 +2014,12 @@ const HL = (() => {
       // his shadow lies flat on the road, away from the open door
       if (open > .02 && C3.x > GATE_X - 400) { const sx = X(C3.x), len = 200 * z; c.save(); c.translate(sx - len * .5, Y(4)); c.scale(len, 7 * z); const g = c.createRadialGradient(0, 0, 0, 0, 0, 1); g.addColorStop(0, css([2, 2, 4], .95 * open)); g.addColorStop(.55, css([2, 2, 4], .7 * open)); g.addColorStop(1, css([2, 2, 4], 0)); c.fillStyle = g; c.fillRect(-1, -1, 2, 2); c.restore(); }
     }
+    // (build 443) INSIDE THE GATE: the narrow way along the ground under the far light, and the dark that hides it all until
+    // the door opens (a soft edge just inside the wall's slice)
+    if (gateOn) { const sx1 = X(GATE_X + GSL), op = smooth(0, 1, door), dk = (1 - op) * .95 * gateish;
+      if (op > .01) { c.save(); c.beginPath(); c.rect(sx1, 0, VW - sx1 + 2, VH); c.clip(); const g = c.createLinearGradient(sx1, 0, VW, 0); g.addColorStop(0, css([255, 222, 168], .4 * op)); g.addColorStop(.6, css([255, 214, 150], .22 * op)); g.addColorStop(1, css([255, 214, 150], .1 * op));
+        c.globalCompositeOperation = 'lighter'; c.fillStyle = g; c.fillRect(sx1, Y(1), VW - sx1 + 2, 5 * z); c.globalAlpha = .4; c.fillRect(sx1, Y(6), VW - sx1 + 2, 3 * z); c.restore(); }
+      if (dk > .005) { const g = c.createLinearGradient(sx1, 0, sx1 + 140 * z, 0); g.addColorStop(0, css([5, 3, 2], .2 * dk)); g.addColorStop(1, css([5, 3, 2], dk)); c.fillStyle = g; c.fillRect(sx1, 0, VW - sx1 + 2, VH); } }
     // (build 170, owner: "The tree roots need to reach brown ground or they didn't look right": the oak is drawn AFTER the road now,
     // standing at the road's own edge and sliding with it, so its roots go down into the dark earth of the road)
     // THE OAK IN LEAF where the two ways cross (owner, build 158: "the tree at beginning needs redo - the color scheme too -
@@ -2172,7 +2085,7 @@ const HL = (() => {
     FIRE = rocky && ph !== 'title' ? { k: clamp(dark) * (1 - .4 * calm), x: HX0 + 600, f: Math.min(1, flash) } : null;
     // (build 235, one set of lights at the gate: the door's light falls on the side of him that faces it, the lantern
     // above warms his head and shoulders; Good-will in the doorway is lit from behind, so he stays dark with a lit edge)
-    if (!FIRE && gateish > .5) { const op = smooth(0, 1, door); FIRE = { k: smooth(.5, 1, gateish) * (.3 + .7 * op), x: op > .05 ? GATE_X + 14 : GATE_X - 72, f: 0, warm: [255, 206, 140], cool: [8, 6, 6] };
+    if (!FIRE && gateish > .5) { const op = smooth(0, 1, door); FIRE = { k: smooth(.5, 1, gateish) * (.3 + .7 * op), x: op > .05 ? GATE_X + GSL + 20 : GATE_X - GSL - 24, f: 0, warm: [255, 206, 140], cool: [8, 6, 6] };
       // (build 246, after Rembrandt: once the door opens he is a dark figure with a gold edge on the side that faces the light)
       if (op > .05) RIM = { k: .95 * op * smooth(.5, 1, gateish), x: GATE_X + 40, gold: true }; }
     const tint = rocky ? mix([38, 35, 39], [30, 27, 32], dark) : mix([74, 68, 60], [52, 47, 52], dark), fl = Math.min(1, flash) * dark, lit = gateish * smooth(GATE_X - 330, GATE_X - 60, C3.x), tintF = mix(mix(mix(tint, [66, 62, 72], gateish), [255, 170, 110], fl * .35), [255, 188, 120], lit * (.24 + .26 * door));
@@ -2225,16 +2138,7 @@ const HL = (() => {
     // in the wide shot he is a tiny dark figure: a faint warm light round him so the eye can find him
     if (Zw > .05) { const g = c.createRadialGradient(C3.x, -60, 0, C3.x, -60, 34 / z); g.addColorStop(0, css([255, 196, 130], .28 * Zw)); g.addColorStop(1, css([255, 170, 110], 0)); c.save(); c.globalCompositeOperation = 'lighter'; c.fillStyle = g; c.fillRect(C3.x - 34 / z, -60 - 34 / z, 68 / z, 68 / z); c.restore(); }
     gateHere = gateish > .5; CHRSH_N = null; c.save(); c.translate(0, C3.dy || 0);
-    // (the pull) taken in through the gate: drawn ONCE, solid (never a see-through double): as he passes the jambs he is
-    // drawn a step further off (smaller, darker against the light), and what of him is not inside the arch is wiped away
-    // behind the stone frame from the right (the clip is the arch and everything left of `L`, which sweeps left as he goes in)
-    { const pin = pullT >= 0 ? smooth(GATE_X - 60, GATE_X - 24, C3.x) : 0;
-      if (pin <= .005) drawChr(c, tintM);
-      else { c.save(); const L = lerp(GATE_X + GR + 60, GATE_X - GR - 26, pin); c.beginPath(); c.rect(-1e5, -1e4, 1e5 + L, 2e4);
-        c.moveTo(GATE_X - GR, FY + 8); c.lineTo(GATE_X - GR, -GH); c.arc(GATE_X, -GH, GR, Math.PI, 0); c.lineTo(GATE_X + GR, FY + 8); c.closePath(); c.clip('nonzero');
-        const k = 1 - .1 * pin; c.translate(C3.x, FY); c.scale(k, k); c.translate(-C3.x, -FY);
-        drawChr(c, mix(tintM, [34, 26, 22], .5 * pin)); c.restore(); }
-      if (pin > .5) CHRSH_N = null; }
+    drawChr(c, tintM);
     c.restore(); RIM = null; HAZE = null; SUNSH = 0; FIRE = null; CHRSH = gateHere ? CHRSH_N : null; gateHere = false;
     c.restore();
     // over the brow: the near ground is drawn again over him as he goes down behind it
