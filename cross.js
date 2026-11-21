@@ -73,6 +73,7 @@ const CR = (() => {
   const Ch = { x: START, anim: 12, sd: null, cf: -1, cfd: 1, hop: 0, hops: 0, lastV: 0, fade: 0, face: 1, tv: null };
   let bur = null, dawn = 0, gold = 0, goldTo = 0, sun = 0, robe = 0, robeTo = 0, mark = 0, markTo = 0, rollShow = 0, rollGone = 0, shine = 0, shineTo = 0, gone = 0, goneTo = 0;
   let closeK = 0, topK = 0, topTo = 0, veil = 0, climb = null;
+  let rollFly = null, rollAt = null; const ROLL_FLY = 80;
   let said = {}, hymn = null, silenceT = 0, tombT = 0, leapsLeft = 3, endT = 0, quietPad = 0;
   const frameOf = a => ((Math.floor(a) % CHR.length) + CHR.length) % CHR.length;
 
@@ -307,11 +308,24 @@ const CR = (() => {
     // the change of raiment: light wraps him for a moment
     if (robe > 0 && robe < 1) { const x = Ch.x, h = gh(x), g = c.createRadialGradient(x, -h - 75, 0, x, -h - 75, 110); g.addColorStop(0, css([255, 236, 200], .45 * Math.sin(Math.PI * robe))); g.addColorStop(1, 'rgba(255,230,190,0)'); c.fillStyle = g; c.fillRect(x - 120, -h - 200, 240, 220); }
     c.restore();
-    // the sealed roll in the third one's hands, waiting for a touch
+    // the sealed roll: a soft glowing light in the third one's hand, diffuse like the Shining Ones (owner: "How about the
+    // scroll be glowing too and be diffuse until it's handed to Christian"); touched, it is carried to him, its glow
+    // drawing in and its shape coming clear as it reaches his hands, then it goes into the tray
     if (rollShow > .01 && rollGone < 1) {
-      const [x, H] = SH[2], rx = x + 22, ry = -gh(x) - H * .52 + Math.sin(t / 30) * 2, a2 = rollShow * (1 - rollGone);
-      c.save(); c.translate(rx, ry); c.globalAlpha = a2; { const g = c.createRadialGradient(0, 0, 0, 0, 0, 26); g.addColorStop(0, 'rgba(255,240,200,.5)'); g.addColorStop(1, 'rgba(255,240,200,0)'); c.fillStyle = g; c.fillRect(-26, -26, 52, 52); } c.scale(1.6, 1.6); c.fillStyle = 'rgb(236,222,190)'; c.fillRect(-9, -3.5, 18, 7); c.fillStyle = 'rgb(214,198,160)'; c.fillRect(-11, -4.5, 3, 9); c.fillRect(8, -4.5, 3, 9);
-      c.fillStyle = 'rgb(150,24,26)'; c.beginPath(); c.arc(0, 4, 3, 0, 6.29); c.fill(); c.restore();
+      const [x, H] = SH[2], hx = x + 22, hy = -gh(x) - H * .52 + Math.sin(t / 30) * 2;
+      const u = rollFly ? smooth(0, 1, rollFly.t / ROLL_FLY) : 0, cxr = Ch.x - 24, cyr = -gh(Ch.x) - 72;
+      const rx = lerp(hx, cxr, u), ry = lerp(hy, cyr, u) - Math.sin(Math.PI * u) * 26, a2 = rollShow * (1 - rollGone), sh = smooth(.45, 1, u), df = 1 - sh;
+      c.save(); c.translate(rx, ry);
+      c.globalCompositeOperation = 'screen';
+      const br = 1 + .08 * Math.sin(t / 22);
+      let g = c.createRadialGradient(0, 0, 0, 0, 0, 60 * br); g.addColorStop(0, css([255, 244, 214], a2 * (.85 * df + .25))); g.addColorStop(1, 'rgba(255,236,200,0)'); c.fillStyle = g; c.fillRect(-62, -62, 124, 124);
+      if (df > .01) { c.save(); c.scale(2.3, 1); g = c.createRadialGradient(0, 0, 0, 0, 0, 16 * br); g.addColorStop(0, css([255, 252, 238], a2 * df)); g.addColorStop(.5, css([255, 240, 206], .5 * a2 * df)); g.addColorStop(1, 'rgba(255,236,200,0)'); c.fillStyle = g; c.fillRect(-17, -17, 34, 34); c.restore(); }
+      if (df > .01) { c.globalCompositeOperation = 'source-over'; const pu = .75 + .25 * Math.sin(t / 18); g = c.createRadialGradient(0, 0, 0, 0, 0, 30); g.addColorStop(0, css([255, 200, 120], .95 * a2 * df * pu)); g.addColorStop(.45, css([255, 214, 150], .4 * a2 * df * pu)); g.addColorStop(1, 'rgba(255,214,140,0)'); c.save(); c.scale(1.7, 1); c.fillStyle = g; c.fillRect(-30, -30, 60, 60); c.restore(); c.globalCompositeOperation = 'screen'; g = c.createRadialGradient(0, 0, 0, 0, 0, 9); g.addColorStop(0, css([255, 255, 248], a2 * df)); g.addColorStop(1, 'rgba(255,250,230,0)'); c.save(); c.scale(2, 1); c.fillStyle = g; c.fillRect(-9, -9, 18, 18); c.restore(); }
+      c.globalCompositeOperation = 'source-over';
+      if (sh > .01) { c.globalAlpha = a2 * sh; c.scale(1.6, 1.6); c.fillStyle = 'rgb(236,222,190)'; c.fillRect(-9, -3.5, 18, 7); c.fillStyle = 'rgb(214,198,160)'; c.fillRect(-11, -4.5, 3, 9); c.fillRect(8, -4.5, 3, 9);
+        c.fillStyle = 'rgb(150,24,26)'; c.beginPath(); c.arc(0, 4, 3, 0, 6.29); c.fill(); }
+      c.restore();
+      rollAt = [rx, ry];
     }
   }
   const rollPt = () => { const [x, H] = SH[2]; return [sx(x + 22), sy(gh(x) + H * .52)]; };
@@ -321,7 +335,7 @@ const CR = (() => {
   function reset0() {
     Object.assign(Ch, { x: START, anim: 12, sd: QUIET[0], cf: -1, hop: 0, hops: 0, lastV: 0, fade: 0, hv: 0, face: 1, tv: null });
     bur = null; dawn = gold = goldTo = sun = robe = robeTo = mark = markTo = rollShow = rollGone = shine = shineTo = gone = goneTo = 0; wideK = 1; wideTo = 1;
-    said = {}; hymn = null; silenceT = 0; tombT = 0; leapsLeft = 3; endT = 0; quietPad = 0; t = 0; closeK = topK = topTo = veil = 0; climb = null;
+    said = {}; hymn = null; silenceT = 0; tombT = 0; leapsLeft = 3; endT = 0; quietPad = 0; t = 0; rollFly = rollAt = null; closeK = topK = topTo = veil = 0; climb = null;
   }
   function start() {
     CR.on = true; SL.on = SL.show = false; HL.on = HL.show = false; RM.on = false; RM.stop(); preload();
@@ -354,8 +368,8 @@ const CR = (() => {
   function key() { if (G.act === 'roll') takeRoll(); else if (G.act === 'leap') leap(); }
   function takeRoll() {
     if (G.act !== 'roll') return; G.ring = null;
-    const [x, y] = rollPt(); G.roll = { t: 0, x, y, sealed: true }; rollGone = 1; note(79, .04, 2.6); note(86, .025, 2.6, .15);
-    next(true);
+    if (rollFly) return;
+    rollFly = { t: 0 }; note(79, .04, 2.6); note(86, .025, 2.6, .15);
   }
   // THREE LEAPS FOR JOY: a hop of his standing picture, a rising note each time (G, B, D: no hymn)
   function leap() {
@@ -368,6 +382,9 @@ const CR = (() => {
     G.t++; t++;
     if (G.act) G.actT++;
     if (G.roll) G.roll.t++;
+    if (rollFly && ++rollFly.t >= ROLL_FLY + 20) {
+      rollFly = null; const [x, y] = rollAt || [Ch.x, -gh(Ch.x) - 72]; G.roll = { t: 0, x: sx(x), y: cam.wl + y * cam.z, sealed: true }; rollGone = 1; next(true);
+    }
     const want = G.state === 'play' && (keys.r || held());
     if (Ch.sd != null) Ch.sd += .4;
     // the hop of a leap
@@ -436,7 +453,7 @@ const CR = (() => {
       if (t === 30) { [67, 71, 74, 79].forEach((m, i) => note(m, .04, 3.6, i * .3)); }
       if (t > 200 && G.state !== 'end') finish();
     }
-    if (G.act === 'roll' && !G.ring && G.actT >= 90) G.ring = rollPt;
+    if (G.act === 'roll' && !rollFly && !G.ring && G.actT >= 90) G.ring = rollPt;
     if (G.act === 'leap' && !G.ring && G.actT >= 90) G.ring = chrPt;
     camTick(false);
   }
@@ -477,5 +494,5 @@ const CR = (() => {
   }
 
   return { on: false, start, update, draw, touch, key, preload, lines: ALL, stop: () => padStop(), _pt: { roll: rollPt, chr: chrPt }, _turning: () => !!Ch.tv,
-    peek: () => ({ ph, t, x: Math.round(Ch.x), cf: +Ch.cf.toFixed(1), bur: bur ? { st: bur.st, x: Math.round(bur.x) } : null, gold: +gold.toFixed(2), shine: +shine.toFixed(2), leaps: leapsLeft, closeK: +closeK.toFixed(2), topK: +topK.toFixed(2), veil: +veil.toFixed(2) }) };
+    peek: () => ({ ph, t, fly: rollFly ? rollFly.t : -1, x: Math.round(Ch.x), cf: +Ch.cf.toFixed(1), bur: bur ? { st: bur.st, x: Math.round(bur.x) } : null, gold: +gold.toFixed(2), shine: +shine.toFixed(2), leaps: leapsLeft, closeK: +closeK.toFixed(2), topK: +topK.toFixed(2), veil: +veil.toFixed(2) }) };
 })();

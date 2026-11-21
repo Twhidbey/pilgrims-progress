@@ -10,6 +10,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 **Build 397 (vision chat): THE WHY PUT BACK, and the owner's rulings.** Twelve lines in Levels 1, 2, 3 and 5 reworded or added so the game says why (the city will be destroyed; he cannot get the burden off himself; no man was rid of it by Legality; Good-will's promise that it will fall of itself, said in Level 3's doorway; the sight of the cross eases him; his song "Blest cross!"). New voice for Good-will: "A grave, gentle old English man in his seventies, the keeper of a gate: slow, warm and very kind, a low quiet voice with a little age in it, welcoming and steady, like a grandfather reassuring a tired traveller. Plain speech, no theatrical flourish." (`voice_zpixol5qpz8t`). Spent about 15 cents. The owner's eight rulings (Christian after the Cross from free clips, Level 4 code-drawn and steered, dark parts level by level, Ignorance kept quietly, sixteen levels, a walking tune after the Cross) are in CLAUDE.md, "THE OWNER'S RULINGS FROM THE VISION CHAT".
 
+**Build 407 (Cross chat): the sealed roll a diffuse glow in the Shining One's hand, coming clear as it is carried to Christian, then into the tray. Nothing spent.**
+
 **Build 403 (Cross chat): the Shining Ones as very diffuse human shapes of light. Nothing spent.**
 
 **Build 402 (Cross chat): the twice-high hill made longer so its slope is about as gentle as before (a tad steeper). Nothing spent.**
