@@ -953,7 +953,7 @@ const HL = (() => {
   function doPull() {
     if (G.act !== 'pull' || pullT >= 0) return; G.ring = null; pullT = 0; pullX0 = C3.x;
     note(62, .035, 3); note(66, .03, 3, .1);
-    for (let i = 0; i < 4; i++) ARW.push({ t: -[4, 16, 30, 46][i], i, sx: CASTLE_X + 40 + 50 * Math.random(), sy: -560 - 60 * Math.random(), tx: C3.x - 64 - 46 * i - 16 * Math.random(), ty: i === 2 ? -1 : -(60 + 90 * Math.random()), stuck: false, q: 0 });
+    for (let i = 0; i < 4; i++) ARW.push({ t: -[22, 32, 44, 58][i], i, sx: CASTLE_X + 40 + 50 * Math.random(), sy: -560 - 60 * Math.random(), tx: C3.x + 10 - 40 * i - 14 * Math.random(), ty: i === 0 ? -1 : -(50 + 90 * Math.random()), stuck: false, q: 0 });      // they land just after he is taken in, where he stood
   }
   function takeHand() { if (G.act !== 'ehand') return; note(67, .04, 4); note(71, .035, 4, .12); note(74, .03, 4, .24); mercyTo = 1; next(true); }
   // the wide picture answers a touch (build 237): the sky above the rock = a strike there; the rock = its nearest crack flares
@@ -1158,9 +1158,14 @@ const HL = (() => {
       if (want) clearHint('walk'); else if (hintT === 400) hint('walk', 'Hold to walk.');
       if (C3.x >= GATE_STOP - 30 && C3.sd != null && gateSaid && !saying() && G.cap <= 0) { ph = 'knock'; clearHint('walk'); talk(KNOCK, () => { ph = 'open'; G.state = 'auto'; stillT = 0; }); }
     } else if (ph === 'knock') {
-      walk(1, 0); knockT++;
+      knockT++;
       // the pull: Christian drawn a little way in through the gate, quickly, as by a strong hand
-      if (pullT >= 0) { pullT++; C3.x = pullX0 + 14 * smooth(0, 1, Math.min(1, pullT / 22)); if (pullT === 90) { gwReachTo = 0; next(true); } }
+      // (owner: "At the gate doesn't goodwill pull Christian in as arrows fly ? ... We can't see other side of gate"; chose
+      // "pulled into the light"): he is hurried two quick steps in through the doorway (his own walk, at a hurried pace), and
+      // as he passes the jambs he is drawn inside the arch, a step further off, so the stone frame takes him (`pullIn` in draw())
+      if (pullT >= 0) { pullT++; const tx = pullX0 + (GATE_X - 28 - pullX0) * smooth(0, 1, Math.min(1, pullT / 46)); { const d = Math.max(0, tx - C3.x); walk(1, d, 2); }      // aimed short: he walks on briskly until his feet come together, which brings him into the doorway
+        if (pullT === 50) gwReachTo = 0; if (pullT === 96) next(true); }
+      else walk(1, 0);
       if (G.act === 'knock' && knocks >= 3 && knockT > 50) { RIGHT.forEach((m, i) => note(m, .04, 3, i * .34)); next(true); }
     } else if (ph === 'open') {
       if (++stillT > 280 && G.state !== 'end') finish();
@@ -1730,7 +1735,7 @@ const HL = (() => {
     const gateOn = !rocky && X(GATE_X - 1300) < VW, gx = X(GATE_X), r = GR * z, gy0 = Y(-GH), lnx = gx - 72 * z, lny = Y(-162), flick = .86 + .1 * Math.sin(G.t / 7) + .04 * Math.sin(G.t / 2.3);
     // (build 216, owner: "Doorkeeper maybe should be on right side and door opens on other side (so there's some natural space
     // between two figures)": the hinge is on the LEFT now, the leaf swings in on Christian's side and the opening is on the right)
-    const open = smooth(0, 1, door), lw = 2 * r * (1 - .62 * open), gapL = gx - r + lw, ri = r + 5 * z, ro = r + 19 * z;
+    const pinD = pullT >= 0 ? smooth(GATE_X - 100, GATE_X - 40, C3.x) : 0, open = smooth(0, 1, door), lw = 2 * r * (1 - .62 * open - .26 * pinD), gapL = gx - r + lw, ri = r + 5 * z, ro = r + 19 * z;
     // everything but the doorway (so the glow does not wash out Good-will standing in it)
     const notDoor = () => { c.beginPath(); c.rect(0, 0, VW, VH); c.moveTo(gx - r, Y(0)); c.lineTo(gx + r, Y(0)); c.lineTo(gx + r, gy0); c.arc(gx, gy0, r, 0, Math.PI, true); c.closePath(); c.clip('evenodd'); };
     if (gateOn) {
@@ -1895,11 +1900,11 @@ const HL = (() => {
           c.save(); c.translate(VW / 2 - cx * z, wl); c.scale(z, z);
           // (build 216, owner: "please make doorkeeper little smaller and less dark"): a little further in, so smaller,
           // and his robe faintly seen in the light round him
-          const fx = GATE_X + GR - (gx + r - gapL) / z * .46;
+          const gwBack = pullT >= 0 ? smooth(GATE_X - 60, GATE_X - 14, C3.x) : 0, fx = GATE_X + GR - (gx + r - gapL) / z * .46 + 11 * gwBack;      // he steps back and aside as he draws him in
           // (build 234: Good-will's own figure, `assets/goodwill-stand.webp`, the owner's "Looks good to me" in the other small-tweaks
           // chat: bare-headed, white-bearded, hands folded; one still, breathing in code; the stand-in `GWF` only until it loads)
           GWFX = fx;
-          FK = .86; if (GWRE && gwReach > .5) figure(c, 'gw', GWRE, GWRE_META, fx, -1, [52, 44, 40], gw * .96); else if (GWST) figure(c, 'gw', GWST, GWST_META, fx, -1, [52, 44, 40], gw * .96, breath(3)); else figure(c, 'gw', GWF[Math.floor(G.t / 20) % GWF.length], EVS_META, fx, -1, [52, 44, 40], gw * .96); FK = 1;
+          FK = .86 - .05 * gwBack; if (GWRE && gwReach > .5) figure(c, 'gw', GWRE, GWRE_META, fx, -1, [52, 44, 40], gw * .96); else if (GWST) figure(c, 'gw', GWST, GWST_META, fx, -1, [52, 44, 40], gw * .96, breath(3)); else figure(c, 'gw', GWF[Math.floor(G.t / 20) % GWF.length], EVS_META, fx, -1, [52, 44, 40], gw * .96); FK = 1;
           c.restore();
           // the light wraps round his edges
           c.save(); c.globalCompositeOperation = 'lighter'; const g2 = c.createLinearGradient(gapL, 0, gx + r, 0); g2.addColorStop(0, css([255, 214, 150], .35 * gw)); g2.addColorStop(.18, css([255, 214, 150], 0)); g2.addColorStop(.82, css([255, 214, 150], 0)); g2.addColorStop(1, css([255, 214, 150], .3 * gw)); c.fillStyle = g2; c.fillRect(gapL, gy0 - r, gx + r - gapL, GH * z + r); c.restore();
@@ -2219,7 +2224,18 @@ const HL = (() => {
     const LIGHT0 = [RIM, SUNSH, FIRE, HAZE];
     // in the wide shot he is a tiny dark figure: a faint warm light round him so the eye can find him
     if (Zw > .05) { const g = c.createRadialGradient(C3.x, -60, 0, C3.x, -60, 34 / z); g.addColorStop(0, css([255, 196, 130], .28 * Zw)); g.addColorStop(1, css([255, 170, 110], 0)); c.save(); c.globalCompositeOperation = 'lighter'; c.fillStyle = g; c.fillRect(C3.x - 34 / z, -60 - 34 / z, 68 / z, 68 / z); c.restore(); }
-    gateHere = gateish > .5; CHRSH_N = null; c.save(); c.translate(0, C3.dy || 0); drawChr(c, tintM); c.restore(); RIM = null; HAZE = null; SUNSH = 0; FIRE = null; CHRSH = gateHere ? CHRSH_N : null; gateHere = false;
+    gateHere = gateish > .5; CHRSH_N = null; c.save(); c.translate(0, C3.dy || 0);
+    // (the pull) taken in through the gate: drawn ONCE, solid (never a see-through double): as he passes the jambs he is
+    // drawn a step further off (smaller, darker against the light), and what of him is not inside the arch is wiped away
+    // behind the stone frame from the right (the clip is the arch and everything left of `L`, which sweeps left as he goes in)
+    { const pin = pullT >= 0 ? smooth(GATE_X - 60, GATE_X - 24, C3.x) : 0;
+      if (pin <= .005) drawChr(c, tintM);
+      else { c.save(); const L = lerp(GATE_X + GR + 60, GATE_X - GR - 26, pin); c.beginPath(); c.rect(-1e5, -1e4, 1e5 + L, 2e4);
+        c.moveTo(GATE_X - GR, FY + 8); c.lineTo(GATE_X - GR, -GH); c.arc(GATE_X, -GH, GR, Math.PI, 0); c.lineTo(GATE_X + GR, FY + 8); c.closePath(); c.clip('nonzero');
+        const k = 1 - .1 * pin; c.translate(C3.x, FY); c.scale(k, k); c.translate(-C3.x, -FY);
+        drawChr(c, mix(tintM, [34, 26, 22], .5 * pin)); c.restore(); }
+      if (pin > .5) CHRSH_N = null; }
+    c.restore(); RIM = null; HAZE = null; SUNSH = 0; FIRE = null; CHRSH = gateHere ? CHRSH_N : null; gateHere = false;
     c.restore();
     // over the brow: the near ground is drawn again over him as he goes down behind it
     // (build 202, owner: "when he goes down after talking with worldly wise, he flickers a little": the near ground used to be
