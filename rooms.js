@@ -248,7 +248,7 @@ const RM = (() => {
   // ROOM 2 DRAWN IN CODE (after build 378; owner: "can you draw the parlour"): Vermeer's one light, a tall window on the left,
   // the pale wall lit nearest it and dimming to the right, the floorboards a nearer, darker layer with the window's light lying flat on them,
   // a low band of pale tiles at the wall's foot (the Milkmaid's Delft tiles, the room's one quoted detail besides the stream from the jug)
-  const R2D = { girl: { ax: 154, g: 618, s: 1, ct: 1, mul: 1, sat: 1, noSh: 1 }, SPOUT: [289 - 154, 237 - 618], sweeper: { ax: 35, g: 302, s: 2.05, ct: 1.15, mul: .72, sat: 1 }, GX: 1716, SX: 2575, WIN: [90, 380, 170, 930] };
+  const R2D = { girl: { ax: 154, g: 618, s: 1, ct: 1, mul: 1, sat: 1, noSh: 1 }, SPOUT: [289 - 154, 237 - 618], sweeper: { ax: 290, g: 652, s: .92, ct: 1, mul: .96, sat: 1, noSh: 1 }, GX: 1716, SX: 2655, WIN: [90, 380, 170, 930] };
   function bakeR2() {
     const W = 1584, H = 672, cv = document.createElement('canvas'); cv.width = W; cv.height = H; const c = cv.getContext('2d'); c.scale(.5, .5);
     const FY = 1262, r = rngR(11), soft = (draw, w, h) => { const a = document.createElement('canvas'); a.width = w; a.height = h; draw(a.getContext('2d'), w, h); return a; };
@@ -341,7 +341,7 @@ const RM = (() => {
     x.globalCompositeOperation = 'destination-in'; x.drawImage(im, 0, 0);
     pics[out] = cv; return true;
   }
-  if (DRAWN) { const n = 'room2-drawn'; loads[n] = new Promise(r => setTimeout(r, 0)).then(() => (pics[n] = bakeR2())); pic('room2-girl'); pic('room4-caster'); }
+  if (DRAWN) { const n = 'room2-drawn'; loads[n] = new Promise(r => setTimeout(r, 0)).then(() => (pics[n] = bakeR2())); pic('room2-girl'); pic('room2-sweeper'); }
   if (DRAWN) { const n = 'room4-drawn'; loads[n] = new Promise(r => setTimeout(r, 0)).then(() => (pics[n] = bakeR4())); pic('room4-caster'); pic('goodwill-reach'); }
   // a soft flame: stacked teardrops, the core pale gold, the edge amber, swaying and breathing (no hard tongues)
   function flame(c, x, y, h, w, ph, a = 1) {
@@ -401,14 +401,11 @@ const RM = (() => {
         const FY = this.FY + 14, G2 = R2D.girl, SW2 = R2D.sweeper, col = [255, 255, 255];
         // the girl: cut straight out of the painting (build 382), so she is the painted Milkmaid herself, her jug already in her hands;
         // the water falls from its spout when the child has touched it
-        const swOK = colourFig('room4-caster', 'sweep-col', [['#5e6030', 0, 0, 69, 302], ['#9a7e68', 0, 0, 69, 46], ['#5a3c22', 0, 150, 69, 235], ['#34261a', 0, 235, 69, 302]], true);
         if (pics['room2-girl']) fig(c, 'room2-girl', G2, R2D.GX, FY + 6, -1, 1, 1, col);
         this.spout = [R2D.GX + R2D.SPOUT[0] / K, FY + 6 + R2D.SPOUT[1] / K];
-        // the broom swings at the foot while he sweeps (the phase of the old clip's loop), and rests leaning when he stops
-        const sw = this.sweeps > 0 ? Math.sin(this.sf / this.SW.fr * 6.2832 * 3) : 0, hx = R2D.SX - 30 * SW2.s / K, hy = FY - 125 * SW2.s / K, bx = 2405 + 46 * sw, by = FY - 6;
-        c.strokeStyle = '#3a2a1a'; c.lineWidth = Math.max(1, 6 * S); c.beginPath(); c.moveTo(u(hx + 10), v(hy - 70)); c.lineTo(u(bx), v(by - 50)); c.stroke();
-        c.fillStyle = '#5a4222'; c.save(); c.translate(u(bx), v(by)); c.rotate(Math.atan2(by - 50 - (hy - 70), bx - hx - 10) - Math.PI / 2); c.beginPath(); c.moveTo(-10 * S, -60 * S); c.lineTo(10 * S, -60 * S); c.lineTo(26 * S, 0); c.lineTo(-26 * S, 0); c.closePath(); c.fill(); c.restore();
-        if (swOK) fig(c, 'sweep-col', SW2, R2D.SX, FY, 1, 1, 1, col);
+        // the sweeper: his own picture (build 384, the free FLUX Kontext model from the painted boy: a bearded servant in a linen cap
+        // and brown doublet, bent to the broom with both hands on the handle), the broom's head where the dust rises
+        if (pics['room2-sweeper']) fig(c, 'room2-sweeper', SW2, R2D.SX, FY, -1, 1, 1, col);
       },
       enter() { pic('room2-sweep'); pic('room2-damsel'); this.sf = 0; this.sweeps = 0; this.df = 14; this.dt = 14; this.dust = []; this.haze = .22; this.wet = []; const r = rngR(5); for (let i = 0; i < 70; i++) this.dust.push({ x: 300 + r() * 2800, y: 300 + r() * 900, vx: 0, vy: 0, s: 2 + r() * 5, a: .5 + r() * .5, p: r() * 7 }); },
       run() { talk([[N, 'He led him into a very large parlour, full of dust, because it was never swept.'], [TIP, 'Touch the broom.', 'broom']], () => { ph = 'sweep'; t = 0; G.state = 'auto'; }); },

@@ -4,6 +4,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 ## START HERE (rewritten at build 140, Nov 16 2026)
 
+**Build 386 (Level 4 editing chat): the drawn parlour (`?room=2&drawn`) has a new sweeper, made free with FLUX Kontext (the owner's HF token now saved for that host too): a bearded servant bent to his broom with both hands. Nothing spent.**
+
 **Build 383 (Level 4 editing chat): in the drawn parlour (`?room=2&drawn`) the girl is cut straight from the painting. The new sweeper waits on the owner's choice (free with the HF token saved for the FLUX host, or about 15 cents). Nothing spent.**
 
 **Build 381 (Level 4 editing chat): the drawn parlour (`?room=2&drawn`) worked toward the painting: Vermeer's plaster and light, the side wall and window, the wicker basket and brass pail with shadows, Delft tiles, the foot warmer, board grain, and the girl and sweeper in colour. Nothing spent.**
