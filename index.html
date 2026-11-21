@@ -125,6 +125,7 @@ body.portrait:not(.playing) #snd{right:calc(50% - 1.25em)}
 body.portrait #title{position:fixed;inset:0;justify-content:center;border-radius:0}
 body.portrait .tbook{margin-top:0}
 body.portrait.opened .tbook{transform:translateX(calc(var(--u,1) * -160px))}
+body.portrait.opened.tpview .tbook{transform:translateX(calc(var(--u,1) * 160px))}
 body.portrait:not(.playing) #build{position:fixed;right:12px;bottom:calc(env(safe-area-inset-bottom) + 8px);font-size:11px}
 body.portrait:not(.playing) #rot{display:none}
 </style>
@@ -183,7 +184,7 @@ body.portrait:not(.playing) #rot{display:none}
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
   <button id="autoWalk" aria-label="He walks on by himself"><svg viewBox="0 0 24 24"><path d="M5 6l6 6-6 6M12 6l6 6-6 6"/></svg></button>
-  <div id="build">build 444 · Nov 21 2026</div>
+  <div id="build">build 445 · Nov 21 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -2434,7 +2435,7 @@ function start() {
   document.getElementById('chHome').textContent = 'Go home'; document.getElementById('chOn').textContent = 'Go on to the light';
   document.getElementById('title').style.opacity = 0; setTimeout(() => { document.getElementById('title').style.display = 'none'; }, 900);
   document.getElementById('endc').className = 'card';
-  document.body.classList.add('playing'); G.opening = null;
+  document.body.classList.add('playing'); G.opening = null; tpShow(false);
   reset();
   hush(); if (audio()) { AC.resume(); setTimeout(() => sfx.bell(.6), 300); fetchVoices(); }
   if (TEST_X) { G.state = 'play'; return; }
@@ -2548,9 +2549,26 @@ for (const b of document.querySelectorAll('#levels .lv')) { b.classList.toggle('
 })();
 // build 382 (owner: "can we remove the open book button and just click on cover to open"): no button; a touch on the
 // cover opens the book once everything for the first picture has loaded (body.bookready)
+let tpT = 0;
+function tpShow(on) { clearTimeout(tpT); document.body.classList.toggle('tpview', on); }
+// upright, once open: a touch on the title page goes to the contents, a touch left of the contents (the title page's edge) goes back; a swipe does the same
+{ const t = document.getElementById('title'); let sx = null;
+  const up = () => document.body.classList.contains('portrait') && document.body.classList.contains('opened') && !document.body.classList.contains('playing');
+  t.addEventListener('pointerdown', e => { sx = up() ? e.clientX : null; });
+  t.addEventListener('pointerup', e => {
+    if (sx === null || !up()) return; const dx = e.clientX - sx; sx = null;
+    const tv = document.body.classList.contains('tpview');
+    if (Math.abs(dx) > 40) { tpShow(dx > 0); return; }
+    if (tv) { tpShow(false); return; }
+    const c = document.querySelector('.tc').getBoundingClientRect();
+    if (e.clientX < c.left) tpShow(true);
+  });
+}
 function openBook() {
   if (!document.body.classList.contains('bookready') || document.body.classList.contains('opened')) return;
   document.body.classList.add('opened');
+  // HELD UPRIGHT the screen shows one page: the book rests first on the title page, then glides to the contents
+  if (document.body.classList.contains('portrait')) { document.body.classList.add('tpview'); tpT = setTimeout(() => tpShow(false), 3600); }
   if (audio()) { AC.resume(); G.opening = { t: 0, next: 70, n: 0, last: 0 }; fetchVoices(); }
   document.getElementById('levels').style.display = '';
   if (new URLSearchParams(location.search).has('room')) { RM.preload(); setTimeout(goRoom, 1300); }
