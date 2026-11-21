@@ -834,6 +834,7 @@ const SL = (() => {
     // --- THOUGHTS (build 370): what he sees in his mind; each comes, lingers and goes by itself ---
     if (cityT >= 0) cityT++;
     if (fearT2 >= 0) fearT2++;
+    if (help && !fearHelpT && fearT2 >= 0) fearHelpT = G.t;      // build 398: noted in the update (it was in the drawing, so it waited for a picture to be drawn)
     if (saying() || G.state === 'dialog') quietT = G.t;
     if (fearT2 >= 0 && !fearHelpT) for (const [k, v] of DRUMS) if (fearT2 === k) { beatT = G.t; drum(v); }      // build 380: the drum beats
     // --- the lights he gathered: a slow cloud behind his shoulder; at the end they fly to the steps ---
@@ -1222,7 +1223,7 @@ const SL = (() => {
     ripples(true);
     ctx.setTransform(S * z, 0, 0, S * z, S * (VW / 2 - cx * z), S * wl);
     // (3) THE FEARS (build 381): the dark mist (see darkMist)
-    if (help && !fearHelpT && fearT2 >= 0) fearHelpT = G.t; FP = fearDark();
+    FP = fearDark();
     if (FP > .01) { ctx.save(); ctx.setTransform(S, 0, 0, S, 0, 0); const B = darkMist().band, bw = 1300 * z, bh = 120 * z, off = (((-cx * z * .9 - G.t * .25) % bw) + bw) % bw;      // build 381: a low band of dark mist lying flat across the mire behind him (drawn before the figures, so never over him)
       ctx.globalAlpha = Math.min(1, .85 * FP); for (let x = off - bw; x < VW; x += bw) ctx.drawImage(B, x, wl - 190 * z, bw, bh); ctx.restore(); }
     if (pliIn) { TALKM = talkMove(PL); pliMire(ctx); TALKM = null; }
@@ -1398,7 +1399,7 @@ const SL = (() => {
   // swelling a breath at each; it lifts over about 3 s, and quickly once Help comes (he is the light coming back).
   // the beats, in ticks from the FEARS line (each [tick, loudness])
   const DRUMS = [[40, .5], [58, .32], [150, .6], [168, .38], [250, .72], [266, .45], [335, .85], [350, .55], [410, 1], [424, .65], [480, 1.1]];
-  const FEAR_END = 560;      // the dark holds to here, then lifts over 180 ticks
+  const FEAR_END = 560;      // build 398: the drums are done by here (the dark no longer lifts by the clock: only when Help comes)
   let FP = 0, fearHelpT = 0, beatT = -1e9, quietT = 0, helpSayT = 0;
   function drum(v) {      // a low skin drum, felt more than heard: a pitch falling from about 80 to 40 Hz, a dull thump of noise
     sweep(82, 40, .7, .13 * v, true); sweep(58, 34, 1, .07 * v); hiss(120, .7, .07 * v, .45, 'lowpass'); hiss(700, .9, .01 * v, .09, 'bandpass');
@@ -1433,7 +1434,9 @@ const SL = (() => {
   }
   function fearDark() {
     if (fearT2 < 0) return 0;
-    const u = fearT2, up = smooth(0, 90, u), down = 1 - smooth(FEAR_END, FEAR_END + 180, u), helpK = fearHelpT ? Math.max(0, 1 - (G.t - fearHelpT) / 70) : 1;
+    // build 398 (owner: "The darkness should come on slowly and leave only when help arrives"): it gathers over about six
+    // seconds, holds however long he struggles, and lifts only as Help comes out of the mist (quickly at first, so he is seen stepping out of it, gone in about two seconds)
+    const u = fearT2, up = smooth(0, 360, u), down = 1, helpK = fearHelpT ? Math.pow(1 - clamp((G.t - fearHelpT) / 110), 3) : 1;
     const beat = Math.exp(-(G.t - beatT) / 22) * .12;      // the dark swells a breath at each beat
     return clamp(up * down * helpK * (1 + beat));
   }

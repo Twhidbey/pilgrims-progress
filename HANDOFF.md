@@ -222,6 +222,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 **Build 276 (cover chat): the book cover painted in code in the game's own watercolour language (arched window of layered hills under the far light), replacing the leather photograph; no more flicker on opening. See `CLAUDE.md`, "Build 276". Nothing spent.**
 
+**Build 398 (Level 2 edits chat): the fears' darkness gathers slowly (about 6 s) and lifts only when Help comes out of the mist (quickly at first, gone in about 2 s). Nothing spent.**
+
 **Build 396 (Level 2 edits chat): the mire's look, second pass (D to G): calmer near mud with broad dark wet ground instead of pale dashes, the dark mist blurred smooth, the steps as uneven stones with soft settled lights, the plain a third shorter. Nothing spent.**
 
 **Build 395 (Level 2 edits chat): the look of the mire, first pass (A, B, C of the look review): no pale band down the right of the mud, no see-through double as the men fall in, a darker near mire, a brighter far light, a soft horizon line, less veil so the oak's limb stays in the picture. Nothing spent.**
