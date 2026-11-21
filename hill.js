@@ -100,6 +100,12 @@ const HL = (() => {
     [TIP, 'Knock on the gate.', 'knock'],
     [C, 'May I come in? Will he open to me, sorry as I am?'],
     [N, 'At last there came a grave person to the gate, named Good-will.', 0, () => { doorTo = 1; sfx.chord(); }],
+    // vision chat (owner: "isn't there arrows shot at him when he enters gate"; {62}): Good-will reaches out, the child
+    // takes his hand, and he pulls Christian in as arrows from Beelzebub's castle hiss over the wall and fall short
+    [TIP, 'Take Good-will\'s hand.', 'pull', () => { gwReachTo = 1; }],
+    [C, 'What does that mean?'],
+    [GW, 'A little way from this gate stands a strong castle. Beelzebub is its captain. From it they shoot arrows at those who come up to this gate.'],
+    [C, 'I rejoice, and tremble.'],
     // vision chat: Good-will's promise ({68}), the set-up the Cross keeps, said in the doorway until Level 4's gate scene is built
     [GW, 'Bear your burden a little longer. At the place of deliverance, it will fall from your back of itself.'],
   ];
@@ -275,6 +281,8 @@ const HL = (() => {
   // update(); laid in draw() before the glints), and the level opens out of Level 2's last mist, which thins as he walks
   // on (`MIST0`). Among the rocks and at the gate `mono` is 0: those are unchanged.
   let mono = 1;
+  // THE PULL AT THE GATE ({62}): Good-will's reaching picture, the pull, the arrows (`ARW`, world units) and the far castle
+  let GWRE = null, gwReach = 0, gwReachTo = 0, pullT = -1, pullX0 = 0, GWFX = null; const GWRE_META = { ax: 62, ground: 299 }, ARW = [];
   const MONO_SAT = .62, MONO_TONE = [226, 202, 158], MIST0 = 620;
   let wise = null, evan = null, dark = 0, hope = 0, flash = 0, flashT = 0, veil = 0, veilTo = 0, knocks = 0, knockT = 0, door = 0, doorTo = 0;
   let greeted = false, saidSeen = false, saidHigh = false, stillT = 0, hasteSaid = false, gateSaid = false, hintT = 0, noteI = 0, noteX = 0, lastFr = 0, hillSeen = false, signSeen = false;
@@ -581,7 +589,7 @@ const HL = (() => {
   }
   function preload() {
     loadOak(); if (!VILP) loadImg('village-far.webp').then(im => { if (im) VILP = im; }).catch(() => {});
-    if (!loading) loading = Promise.all([Promise.all([loadImg('hill-rock.webp'), loadImg('hill-fire.webp')]).then(([r, f]) => { if (r) { build(); paintHill(r, f); } }), loadPack('wiseman', WIS).catch(() => {}), loadImg('gate-door.webp').then(im => { if (im) GDOOR = soften(im, 4, .7, false, .22); }), loadImg('goodwill-stand.webp').then(im => { if (im) GWST = im; }), loadImg('gate-wall.webp').then(im => { if (im) GWALL = soften(im, 4, .7, true, .22); }), loadImg('gate-stone.webp').then(im => { if (im) GSTONE = im; }), loadPack('evangelist-walk', EVW).catch(() => {}), EVA.ready || loadPack('evangelist', EVA).catch(() => {}), loadImg('wiseman-stand.webp').then(im => { if (im) WIS_ST = im; }), OBS.ready || loadPack('obstinate', OBS).catch(() => {}), EVS.ready || loadPack('evangelist-stand', EVS).catch(() => {}), RUNP.ready || loadPack('christian-run-plain', RUNP).catch(() => {}),
+    if (!loading) loading = Promise.all([Promise.all([loadImg('hill-rock.webp'), loadImg('hill-fire.webp')]).then(([r, f]) => { if (r) { build(); paintHill(r, f); } }), loadPack('wiseman', WIS).catch(() => {}), loadImg('gate-door.webp').then(im => { if (im) GDOOR = soften(im, 4, .7, false, .22); }), loadImg('goodwill-stand.webp').then(im => { if (im) GWST = im; }), loadImg('goodwill-reach.webp').then(im => { if (im) GWRE = im; }), loadImg('gate-wall.webp').then(im => { if (im) GWALL = soften(im, 4, .7, true, .22); }), loadImg('gate-stone.webp').then(im => { if (im) GSTONE = im; }), loadPack('evangelist-walk', EVW).catch(() => {}), EVA.ready || loadPack('evangelist', EVA).catch(() => {}), loadImg('wiseman-stand.webp').then(im => { if (im) WIS_ST = im; }), OBS.ready || loadPack('obstinate', OBS).catch(() => {}), EVS.ready || loadPack('evangelist-stand', EVS).catch(() => {}), RUNP.ready || loadPack('christian-run-plain', RUNP).catch(() => {}),
       WEEP.ready || loadPack('christian-weep', WEEP).catch(() => {}), KNEEL.ready || loadPack('christian-kneel', KNEEL).catch(() => {}), TURN.ready || loadPack('christian-turn', TURN).then(() => bookLoaded('TURN')).catch(() => {}),
       OBS_ST ? 0 : loadImg('obstinate-stand.webp').then(im => { if (im && !OBS_ST) OBS_ST = im; }),
       loadImg('tree-a.webp').then(im => { if (!im) return; const c = mk(im.width, im.height), k = c.getContext('2d'); k.drawImage(im, 0, 0); k.globalCompositeOperation = 'source-in'; k.fillStyle = '#fff'; k.fillRect(0, 0, c.width, c.height); OAKT = c; })]).catch(() => {});
@@ -833,7 +841,7 @@ const HL = (() => {
   function reset0() {
     Object.assign(C3, { x: START, face: 1, faceA: 1, anim: 12, sd: QUIET[0], alpha: 1, run: 0, ranim: RUNP_META.start || 0, weep: false, wt: 0, wa: 0, kf: 0, kp: 0, tv: null, fired: false, saidAt: 0, tapZ: 0 }); FLARES.length = 0;
     mercy = mercyTo = calm = calmTo = 0;
-    mono = 1; wise = null; evan = null; dark = 0; hope = 0; flash = 0; flashT = 200; veil = 0; veilTo = 0; knocks = 0; knockT = 0; door = 0; doorTo = 0;
+    mono = 1; gwReach = gwReachTo = 0; pullT = -1; GWFX = null; ARW.length = 0; wise = null; evan = null; dark = 0; hope = 0; flash = 0; flashT = 200; veil = 0; veilTo = 0; knocks = 0; knockT = 0; door = 0; doorTo = 0;
     reveal = 0; vil = vilTo = 0; pan = panTo = 0; ROCKS.length = 0; DUST.length = 0; PATHR.length = 0; DUSTW.length = 0; fallI = 0; jolt = 0; ROLL.length = 0; rollI = 0; LIZ.length = 0; oakT = 0; GLINTS.length = 0; for (const k in SEEN_G) delete SEEN_G[k]; OBIRD.length = 0; OLEAF.length = 0; HIDDEN.forEach(h => { h.got = 0; h.up = 0; h.y = 0; }); STEAMP.length = 0; farewell = 0; C3.dy = 0; cut = cutTo = 0; Zw = 0; zs = ''; zT = 0;
     saidSeen = saidHigh = hasteSaid = gateSaid = hillSeen = greeted = signSeen = false; stillT = 0; hintT = 0; noteI = 0; noteX = 0;
   }
@@ -880,6 +888,7 @@ const HL = (() => {
       if ((ph === 'plain' || ph === 'meet') && OAKBOX) { const [bx, by, bw, bh] = OAKBOX; if (sx > bx + bw * .08 && sx < bx + bw * .95 && sy > by + bh * .04 && sy < by + bh * .62) { oakTouch(sx, sy); return; } } }
     if ((ph === 'gate' || ph === 'knock' || ph === 'open') && typeof KS !== 'undefined' && KS.look) { const [x, y, w, h] = signPt(); if (Math.abs(sx - x) < w && Math.abs(sy - y) < h) { showSign(); return; } }
     if (G.act === 'hill') { const [hx, hy] = hillPt(); if (Math.hypot(sx - hx, (sy - hy) * .7) < 230 * hillBox[2] + 40) sawHill(); else G.actT = Math.max(G.actT, 129); return; }
+    if (G.act === 'pull') { const p = gwHandPt(); if (p && Math.hypot(sx - p[0], sy - p[1]) < 60 + 110 * cam.z) doPull(); else G.actT = Math.max(G.actT, 59); return; }
     if (G.act === 'knock') { const [gx, gy] = gatePt(); if (Math.hypot(sx - gx, sy - gy) < 130) knock(); else G.actT = Math.max(G.actT, 89); return; }
     if (G.act === 'ehand') { const [hx, hy] = handPt(); if (Math.hypot(sx - hx, sy - hy) < 60 + 120 * cam.z) takeHand(); else G.actT = Math.max(G.actT, 59); return; }
   }
@@ -887,6 +896,13 @@ const HL = (() => {
   // Evangelist reaches out his hand (`evan.g`, the reach of his Level 1 pointing, frames 40 to 58), and the child touches it;
   // a warm chord, and the light of mercy gathers on the two (an echo of Help's hand in the Slough)
   const handPt = () => [(EV_X + 58 - cam.cx) * cam.z + VW / 2, cam.wl - 95 * cam.z];
+  // Good-will's reaching hand on the screen (the reaching picture's hand at picture 163, 140, drawn mirrored at GWFX)
+  const gwHandPt = () => GWFX == null ? null : [(GWFX - (163 - GWRE_META.ax) * CHR_K * .86 - cam.cx) * cam.z + VW / 2, cam.wl + (140 - GWRE_META.ground) * CHR_K * .86 * cam.z];
+  function doPull() {
+    if (G.act !== 'pull' || pullT >= 0) return; G.ring = null; pullT = 0; pullX0 = C3.x;
+    note(62, .035, 3); note(66, .03, 3, .1);
+    for (let i = 0; i < 4; i++) ARW.push({ t: -[4, 16, 30, 46][i], i, sx: C3.x - 560 - 90 * i - 140 * Math.random(), sy: -470 - 60 * Math.random(), tx: C3.x - 64 - 46 * i - 16 * Math.random(), ty: i === 2 ? -1 : -(60 + 90 * Math.random()), stuck: false, q: 0 });
+  }
   function takeHand() { if (G.act !== 'ehand') return; note(67, .04, 4); note(71, .035, 4, .12); note(74, .03, 4, .24); mercyTo = 1; next(true); }
   // the wide picture answers a touch (build 237): the sky above the rock = a strike there; the rock = its nearest crack flares
   const FLARES = [];
@@ -934,7 +950,7 @@ const HL = (() => {
     signSeen = true; const go = () => { if (!SIGNPIC) SIGNPIC = signPic(); KS.look(SIGNPIC); if (audio()) hiss(500, .5, .02, .2, 'bandpass'); };
     if (SIGNPIC || !document.fonts || !document.fonts.load) go(); else document.fonts.load(`118px 'IM Fell English'`).then(go, go);
   }
-  function key() { if (G.act === 'hill') sawHill(); else if (G.act === 'knock') knock(); else if (G.act === 'ehand') takeHand(); }
+  function key() { if (G.act === 'hill') sawHill(); else if (G.act === 'pull') doPull(); else if (G.act === 'knock') knock(); else if (G.act === 'ehand') takeHand(); }
 
   // ---------- each tick ----------
   const frameOf = a => ((Math.floor(a) % CHR.length) + CHR.length) % CHR.length;
@@ -1084,6 +1100,8 @@ const HL = (() => {
       if (C3.x >= GATE_STOP - 30 && C3.sd != null && gateSaid && !saying() && G.cap <= 0) { ph = 'knock'; clearHint('walk'); talk(KNOCK, () => { ph = 'open'; G.state = 'auto'; stillT = 0; }); }
     } else if (ph === 'knock') {
       walk(1, 0); knockT++;
+      // the pull: Christian drawn a little way in through the gate, quickly, as by a strong hand
+      if (pullT >= 0) { pullT++; C3.x = pullX0 + 14 * smooth(0, 1, Math.min(1, pullT / 22)); if (pullT === 90) { gwReachTo = 0; next(true); } }
       if (G.act === 'knock' && knocks >= 3 && knockT > 50) { RIGHT.forEach((m, i) => note(m, .04, 3, i * .34)); next(true); }
     } else if (ph === 'open') {
       if (++stillT > 280 && G.state !== 'end') finish();
@@ -1092,6 +1110,9 @@ const HL = (() => {
     // what the child is asked to do, shown after a while
     if (G.state === 'dialog' && G.act === 'hill') { G.actT++; if (G.actT === 130) { dMore.textContent = 'touch the hill ✦'; G.ring = hillPt; } }
     if (G.state === 'dialog' && G.act === 'knock') { G.actT++; if (G.actT === 90 && knocks < 3) { dMore.textContent = 'knock on the gate ✦'; G.ring = gatePt; } }
+    if (G.state === 'dialog' && G.act === 'pull' && pullT < 0) { G.actT++; if (G.actT === 60) { dMore.textContent = 'take his hand ✦'; G.ring = gwHandPt; } }
+    gwReach += Math.sign(gwReachTo - gwReach) * Math.min(Math.abs(gwReachTo - gwReach), 1 / 8);
+    for (const a of ARW) { if (a.stuck) { a.q *= .9; continue; } if (++a.t === 0 && audio()) hiss(2600, 1.2, .03, .45, 'bandpass'); if (a.t >= 24) { a.stuck = true; a.q = 1; if (audio()) { sweep(240, 110, .07, .1); hiss(1400, 1.5, .04, .05); } } }
     if (G.state === 'dialog' && G.act === 'ehand') { G.actT++; if (G.actT === 60) { dMore.textContent = 'touch his hand ✦'; G.ring = handPt; } }
     // his hand comes out and goes back at the video's own pace (52 of its frames, about two seconds each way)
     if (evan) { evan.g = evan.g || 0; const gt = evan.gTo || 0; evan.g += Math.sign(gt - evan.g) * Math.min(Math.abs(gt - evan.g), 1 / 130);
@@ -1658,6 +1679,16 @@ const HL = (() => {
       // cap stones of every width and height, each rounded and chipped, now and then one missing, over the slow swell
       if (!CAP) { CAP = []; const Rc = rngS(93); for (let x = x0 - 20; x < GATE_X + 920;) { const w = 14 + Rc() * 24, gone = Rc() < .05; CAP.push({ x, w, h: gone ? -2 - Rc() * 3 : 1 + Rc() * 4.5, l: Rc(), rr: Rc() }); x += w; } }
       const cap = x => { let lo = 0, hi = CAP.length - 1; while (lo < hi) { const m = (lo + hi + 1) >> 1; if (CAP[m].x <= x) lo = m; else hi = m - 1; } const q = CAP[lo], t = (x - q.x) / q.w, e = Math.max(0, 1 - Math.pow(Math.abs(2 * t - 1 + (q.l - .5) * .5), 3)); return q.h * Math.pow(e, .7) + (q.rr - .5) * 2 * (t - .5); };
+      // BEELZEBUB'S CASTLE ({62}: "a little distance from this gate"), far off over the wall on the left: a dark keep and
+      // two towers on a rise against the dusk, one dim ember of a window; the wall hides its foot
+      { const bx = GATE_X - 590, P = (u, v) => [X(bx + u), Y(-330 - v)];
+        { const [gx2, gy2] = P(0, 30), rr = 260 * z, g = c.createRadialGradient(gx2, gy2, 0, gx2, gy2, rr); g.addColorStop(0, css([120, 66, 44], .42)); g.addColorStop(.5, css([96, 52, 36], .16)); g.addColorStop(1, css([80, 40, 30], 0)); c.fillStyle = g; c.fillRect(gx2 - rr, gy2 - rr, 2 * rr, 2 * rr); }
+        c.fillStyle = css([24, 13, 11]); c.beginPath(); c.moveTo(...P(-230, -40));
+        // the rise, then the castle on it: a squat curtain wall between a tall round-topped keep and two thin towers
+        const pts = [[-150, 6], [-70, 22], [-58, 22], [-58, 58], [-54, 58], [-54, 62], [-49, 62], [-49, 58], [-44, 58], [-44, 30], [-20, 30], [-20, 34], [-16, 34], [-16, 30], [-8, 30],
+          [-8, 74], [-4, 74], [-4, 78], [1, 78], [1, 74], [6, 74], [6, 78], [11, 78], [11, 74], [14, 74], [14, 32], [30, 32], [30, 50], [33, 50], [33, 54], [38, 54], [38, 50], [41, 50], [41, 24], [70, 22], [160, 4], [240, -40]];
+        for (const [u, v] of pts) c.lineTo(...P(u, v)); c.closePath(); c.fill();
+        const fl = .6 + .4 * Math.sin(G.t / 37); c.fillStyle = css([160, 58, 28], .6 * fl); const [wx, wy] = P(1, 60); c.fillRect(wx, wy, 2.2 * z, 3.4 * z); }
       const wtop = x => 330 + (nz(x * .012, 3) - .5) * 26 + (nz(x * .05, 6) - .5) * 12 + cap(x);
       const wallPath = () => { c.beginPath(); c.moveTo(X(x0), Y(2)); for (let x = x0; x <= GATE_X + 900; x += 3) c.lineTo(X(x), Y(-wtop(x) * smooth(x0, x0 + 500, x))); c.lineTo(X(GATE_X + 900), Y(2)); };
       const arch = (rr = r, y1 = gy0) => { c.beginPath(); c.moveTo(gx - rr, Y(1)); c.lineTo(gx - rr, y1); c.arc(gx, y1, rr, Math.PI, 0); c.lineTo(gx + rr, Y(1)); };
@@ -1753,7 +1784,8 @@ const HL = (() => {
           const fx = GATE_X + GR - (gx + r - gapL) / z * .46;
           // (build 234: Good-will's own figure, `assets/goodwill-stand.webp`, the owner's "Looks good to me" in the other small-tweaks
           // chat: bare-headed, white-bearded, hands folded; one still, breathing in code; the stand-in `GWF` only until it loads)
-          FK = .86; if (GWST) figure(c, 'gw', GWST, GWST_META, fx, -1, [52, 44, 40], gw * .96, breath(3)); else figure(c, 'gw', GWF[Math.floor(G.t / 20) % GWF.length], EVS_META, fx, -1, [52, 44, 40], gw * .96); FK = 1;
+          GWFX = fx;
+          FK = .86; if (GWRE && gwReach > .5) figure(c, 'gw', GWRE, GWRE_META, fx, -1, [52, 44, 40], gw * .96); else if (GWST) figure(c, 'gw', GWST, GWST_META, fx, -1, [52, 44, 40], gw * .96, breath(3)); else figure(c, 'gw', GWF[Math.floor(G.t / 20) % GWF.length], EVS_META, fx, -1, [52, 44, 40], gw * .96); FK = 1;
           c.restore();
           // the light wraps round his edges
           c.save(); c.globalCompositeOperation = 'lighter'; const g2 = c.createLinearGradient(gapL, 0, gx + r, 0); g2.addColorStop(0, css([255, 214, 150], .35 * gw)); g2.addColorStop(.18, css([255, 214, 150], 0)); g2.addColorStop(.82, css([255, 214, 150], 0)); g2.addColorStop(1, css([255, 214, 150], .3 * gw)); c.fillStyle = g2; c.fillRect(gapL, gy0 - r, gx + r - gapL, GH * z + r); c.restore();
@@ -2037,6 +2069,16 @@ const HL = (() => {
     // it; laid before the figures, so it is behind and beside them, never between us and him (a picture rule)
     { const mist = mono * (1 - smooth(START, START + MIST0, C3.x)) * (1 - dark);
       if (mist > .005) { c.save(); c.setTransform(S, 0, 0, S, 0, 0); const g = c.createLinearGradient(0, 0, 0, VH); g.addColorStop(0, css([240, 228, 200], .26 * mist)); g.addColorStop(.5, css([244, 232, 204], .66 * mist)); g.addColorStop(.82, css([232, 220, 196], .5 * mist)); g.addColorStop(1, css([214, 202, 182], .2 * mist)); c.fillStyle = g; c.fillRect(0, 0, VW, VH); c.restore(); } }
+    // THE ARROWS ({62}): over the wall from the castle, falling short of him, into the wall and the road, and staying there
+    if (ARW.length) { c.save(); c.setTransform(S, 0, 0, S, 0, 0); c.lineCap = 'round';
+      for (const a of ARW) { if (a.t < 0) continue; const u = a.stuck ? 1 : a.t / 24, x = lerp(a.sx, a.tx, u), y = a.sy + (a.ty - a.sy) * Math.pow(u, 1.5) - 70 * Math.sin(Math.PI * u) * (1 - u);
+        const dx = a.tx - a.sx, dy = (a.ty - a.sy) * 1.5 * Math.pow(Math.max(u, .05), .5) - 70 * Math.PI * Math.cos(Math.PI * u) * (1 - u), ang = Math.atan2(dy, dx) + (a.stuck ? .06 * a.q * Math.sin(G.t * 1.9) : 0);
+        const L = 44 * z, vis = a.stuck ? .62 : 1, hx = X(x), hy = Y(y), tx = hx - Math.cos(ang) * L * vis, ty = hy - Math.sin(ang) * L * vis;
+        c.strokeStyle = css([26, 16, 13], .95); c.lineWidth = Math.max(1, 1.5 * z); c.beginPath(); c.moveTo(tx, ty); c.lineTo(hx, hy); c.stroke();
+        { const nx = -Math.sin(ang), ny = Math.cos(ang), o = -1.1 * z; c.strokeStyle = css([236, 196, 142], .55); c.lineWidth = Math.max(.7, .8 * z); c.beginPath(); c.moveTo(tx + nx * o, ty + ny * o); c.lineTo(hx + nx * o, hy + ny * o); c.stroke(); c.strokeStyle = css([26, 16, 13], .95); }
+        c.lineWidth = Math.max(.8, 1.1 * z); for (const s2 of [-1, 1]) { c.beginPath(); c.moveTo(tx + Math.cos(ang) * 5 * z, ty + Math.sin(ang) * 5 * z); c.lineTo(tx - Math.cos(ang + s2 * .5) * 5 * z, ty - Math.sin(ang + s2 * .5) * 5 * z); c.stroke(); }
+        if (!a.stuck) { c.fillStyle = css([26, 16, 13]); c.beginPath(); c.moveTo(hx + Math.cos(ang) * 4 * z, hy + Math.sin(ang) * 4 * z); c.lineTo(hx + Math.cos(ang + 2.5) * 3 * z, hy + Math.sin(ang + 2.5) * 3 * z); c.lineTo(hx + Math.cos(ang - 2.5) * 3 * z, hy + Math.sin(ang - 2.5) * 3 * z); c.fill(); } }
+      c.restore(); }
     if (evan && evan.x != null && EVW.ready) {
       // walking in out of the haze, then his standing frames dissolve in over the walk frame
       const ex = evan.x, fa = smooth(EV_X - EV_FROM, EV_X - EV_FROM + 220, ex), st = evan.st; TALKM = talkMove(E); foot(c, ex, fa);
@@ -2112,5 +2154,5 @@ const HL = (() => {
   }
 
   // for testing: HL.peek() tells where the story is
-  return { on: false, show: false, hillPics: () => HILL, title, start, update, draw, touch, key, preload, lines: ALL, pt: k => k === 'hill' ? hillPt() : k === 'hand' ? handPt() : k === 'sign' ? signPt() : k === 'oak' ? (OAKBOX ? [OAKBOX[0] + OAKBOX[2] * .3, OAKBOX[1] + OAKBOX[3] * .45] : null) : k === 'hid' ? (h => h ? [(h.x - cam.cx) * cam.z + VW / 2, cam.wl + h.y * cam.z] : null)(HIDDEN.find(h => !h.got)) : gatePt(), peek: () => ({ ph, x: Math.round(C3.x), eggs: { roll: ROLL.map(r => [Math.round(r.x), Math.round(r.y), r.b]), liz: LIZ.map(L => L.st), hid: HIDDEN.map(h => h.got), birds: OBIRD.length, bird: OBIRD.map(b => [Math.round(b.x), Math.round(b.y), b.t]) }, stones: PATHR.map(r => [Math.round(r.x), Math.round(r.y), r.b]), vil: +vil.toFixed(2), reveal: +reveal.toFixed(2), stillT, zs, zT, Zw: +Zw.toFixed(2), farewell, kf: +(C3.kf || 0).toFixed(1), stand: C3.sd != null, wx: wise && Math.round(wise.x), ex: evan && evan.x != null ? Math.round(evan.x) : null, dark: +dark.toFixed(2), wise: wise && wise.mode, evan: evan && +evan.a.toFixed(2), knocks, cam: { ...cam }, hb: hillBox.map(v => Math.round(v * 100) / 100), boltT, bolt: bolt && bolt.map(l => [l[0], l[l.length - 1]].map(p => p.map(Math.round))) }) };
+  return { on: false, show: false, hillPics: () => HILL, title, start, update, draw, touch, key, preload, lines: ALL, pt: k => k === 'pull' ? gwHandPt() : k === 'hill' ? hillPt() : k === 'hand' ? handPt() : k === 'sign' ? signPt() : k === 'oak' ? (OAKBOX ? [OAKBOX[0] + OAKBOX[2] * .3, OAKBOX[1] + OAKBOX[3] * .45] : null) : k === 'hid' ? (h => h ? [(h.x - cam.cx) * cam.z + VW / 2, cam.wl + h.y * cam.z] : null)(HIDDEN.find(h => !h.got)) : gatePt(), peek: () => ({ pull: pullT, ph, x: Math.round(C3.x), eggs: { roll: ROLL.map(r => [Math.round(r.x), Math.round(r.y), r.b]), liz: LIZ.map(L => L.st), hid: HIDDEN.map(h => h.got), birds: OBIRD.length, bird: OBIRD.map(b => [Math.round(b.x), Math.round(b.y), b.t]) }, stones: PATHR.map(r => [Math.round(r.x), Math.round(r.y), r.b]), vil: +vil.toFixed(2), reveal: +reveal.toFixed(2), stillT, zs, zT, Zw: +Zw.toFixed(2), farewell, kf: +(C3.kf || 0).toFixed(1), stand: C3.sd != null, wx: wise && Math.round(wise.x), ex: evan && evan.x != null ? Math.round(evan.x) : null, dark: +dark.toFixed(2), wise: wise && wise.mode, evan: evan && +evan.a.toFixed(2), knocks, cam: { ...cam }, hb: hillBox.map(v => Math.round(v * 100) / 100), boltT, bolt: bolt && bolt.map(l => [l[0], l[l.length - 1]].map(p => p.map(Math.round))) }) };
 })();

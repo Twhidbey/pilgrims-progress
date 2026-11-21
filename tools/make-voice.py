@@ -45,6 +45,8 @@ STYLE = {
     "Fear followed me so hard that I fled the nearest way, and fell in.": "[exhausted, ashamed, out of breath]",
     # Level 3 (build 143): under the burning hill and before Evangelist
     "Woe is me, for I am undone!": "[crying out, broken, in tears]",
+    "What does that mean?": "[startled, breathless]",
+    "I rejoice, and tremble.": "[trembling, quietly glad, out of breath]",
     "Is this the happiness you told me of? You can have your fine country to yourself!": "[angry, frightened, breathless, almost shouting]",
     "To that little gate ahead. I cannot get this burden off myself.": "[weary, burdened, sincere]",
     "Bear your burden a little longer. At the place of deliverance, it will fall from your back of itself.": "[gentle, kind, slow, reassuring]",

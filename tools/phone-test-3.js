@@ -25,12 +25,13 @@ const at = process.argv[2] || '';
     if (s.st === 'end') { console.log('end card after', Math.round((Date.now() - t0) / 1000), 's'); break; }
     const key = s.st + ':' + s.ph;
     if (key !== last) { console.log(key.padEnd(16), 'x', s.x, '|', s.txt); last = key; }
-    if (lastX != null && !down && lastStand && Math.abs(s.x - lastX) > 3 && s.ph !== 'gate' && s.ph !== 'mist' && !(s.ph === 'path' && lastX < 2900)) moved.push(`${s.ph} ${lastX} -> ${s.x}`);
-    lastX = s.x; lastStand = s.stand;      // finishing a stride after the finger lifts is allowed; moving while standing is not
+    if (lastX != null && !down && lastStand && Math.abs(s.x - lastX) > 3 && s.ph !== 'gate' && s.ph !== 'mist' && !(s.ph === 'path' && lastX < 2900) && !(s.pull >= 0)) moved.push(`${s.ph} ${lastX} -> ${s.x}`);
+    lastX = s.x; lastStand = s.stand;      // finishing a stride after the finger lifts is allowed; moving while standing is not (nor Good-will's pull at the gate, a story move the touch on his hand starts)
     if (s.st === 'play') { if (!down) await press(480, 200); await pg.waitForTimeout(250); continue; }
     if (down) await lift();
     if (s.st === 'dialog' && s.act === 'hill') { await pg.waitForTimeout(400); const pt = await pg.evaluate(() => HL.pt ? HL.pt('hill') : null); if (pt) await tap(...await toClient(pt)); else await pg.waitForTimeout(200); continue; }
     if (s.st === 'dialog' && s.act === 'ehand') { await pg.waitForTimeout(500); const pt = await pg.evaluate(() => HL.pt('hand')); await tap(...await toClient(pt)); continue; }
+    if (s.st === 'dialog' && s.act === 'pull') { await pg.waitForTimeout(600); const pt = await pg.evaluate(() => HL.pt('pull')); if (pt) await tap(...await toClient(pt)); await pg.waitForTimeout(1800); continue; }
     if (s.st === 'dialog' && s.act === 'knock') { await pg.waitForTimeout(700); const pt = await pg.evaluate(() => HL.pt ? HL.pt('gate') : null); if (pt) await tap(...await toClient(pt)); continue; }
     if (s.st === 'dialog' && !s.act && !s.guard) { await tap(480, 120); await pg.waitForTimeout(150); continue; }
     await pg.waitForTimeout(250);
