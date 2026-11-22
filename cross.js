@@ -65,11 +65,16 @@ const CR = (() => {
 
   // ---------- pictures ----------
   const CLIP = [], CLIP_META = { ax: 182.5, ground: 299, frames: 81 }, SWAP = 41, BALL = { ax: 31, w: 99, h: 118 };
+  // HIS NEW COAT (round 2, owner: "clothes can be swapped"): from the second Shining One's gift on he stands in the pale
+  // coat with the leaf bands, the hood down, clean-shaven (concept/christian-coat-chosen.jpg); a free clip of him standing,
+  // lifting his head to look up and settling back, played back and forth at its own pace
+  const COAT = [], COAT_META = { ax: 63, ground: 300, frames: 49 };
   let BURDEN = null, RTEX = null, RPAT = null, loaded = false;
   const MLIFT = [], MIM = {};
   function preload() {
     if (loaded) return; loaded = true;
     loadPack('christian-cross', CLIP).catch(() => {});
+    loadPack('christian-coat-stand', COAT).catch(() => {});
     RUNP.ready || loadPack('christian-run-plain', RUNP).catch(() => {});
     // the memories after the burden falls: pictures the child has already seen
     EVA.ready || loadPack('evangelist', EVA).catch(() => {});
@@ -93,7 +98,7 @@ const CR = (() => {
   // his tears (owner, offered instead of eyes in the sky: "Sure!!"): on "He looked, and looked again, till the tears ran
   // down his cheeks" the camera comes in close, and a few small drops of light run from under his hood and fall,
   // catching the dawn behind the cross, fading before they reach the ground
-  const TEARS = [0, 70, 150, 210, 290], TEAR_X = 10.5, TEAR_Y = 124;
+  const TEARS = [0, 130, 260], TEAR_X = 7.5, TEAR_Y = 137;
   let rollFly = null, rollAt = null; const ROLL_FLY = 80;
   let said = {}, hymn = null, silenceT = 0, tombT = 0, leapsLeft = 3, endT = 0, quietPad = 0;
   const frameOf = a => ((Math.floor(a) % CHR.length) + CHR.length) % CHR.length;
@@ -132,7 +137,7 @@ const CR = (() => {
   const sx = x => (x - cam.cx) * cam.z + VW / 2, sy = h => cam.wl - h * cam.z;
   const FOOTY = 418, HY = 322;
   function camTick(snap) {
-    const near = { cx: Ch.x + lerp(250, 130, closeK), z: lerp(.8, 1.45, closeK) };
+    const near = { cx: Ch.x + lerp(250, 150, closeK), z: lerp(.8, 1.15, closeK) };
     if (ph === 'cross' || ph === 'after' || ph === 'shine' || ph === 'leaps' || ph === 'end') { near.cx = CROSS_X - 130; near.z = .86; }
     const open = ph === 'look', fitT = (FOOTY - 30) / (gh(CROSS_X) + CROSS_H - tombSill() + 40);
     const wide = open ? { cx: (START + CROSS_X) / 2 + 420, z: Math.min(VW / (CROSS_X - START + 900), (FOOTY - 40) / (H_TOP + CROSS_H + 40)) } : { cx: CROSS_X - 60, z: Math.min(VW / 1500, fitT) };
@@ -191,6 +196,14 @@ const CR = (() => {
     c.save(); c.translate(x, -h + 3); if (TILT) c.rotate(TILT); c.scale(face, 1); c.globalAlpha = alpha;
     c.drawImage(figC, -meta.ax * K, -meta.ground * K, W * K, H * K); c.restore();
   }
+  // the front (right) edge of a picture's figure, row by row, worked out once and kept on the picture
+  function faceEdge(im) {
+    if (!im) return null; if (im._edge) return im._edge;
+    const w = im.width, hh = im.height, cv = document.createElement('canvas'); cv.width = w; cv.height = hh; const q = cv.getContext('2d'); q.drawImage(im, 0, 0);
+    const D = q.getImageData(0, 0, w, hh).data, E = [];
+    for (let y = 0; y < hh; y++) { let e = null; for (let x = w - 1; x >= 0; x--) if (D[(y * w + x) * 4 + 3] > 110) { e = x; break; } E.push(e); }
+    return (im._edge = E);
+  }
   function contact(c, x, h, a = 1, rx = 34) { const g = c.createRadialGradient(0, 0, 0, 0, 0, 1); g.addColorStop(0, 'rgba(6,6,12,.5)'); g.addColorStop(.6, 'rgba(6,6,12,.24)'); g.addColorStop(1, 'rgba(6,6,12,0)'); c.save(); c.translate(x, -h + 3); c.scale(rx, 5); c.globalAlpha = a; c.fillStyle = g; c.fillRect(-1, -1, 2, 2); c.restore(); }
   function drawChr(c) {
     const tint = tintNow(), rim = gold * (1 - wideK), x = Ch.x, h = gh(x) + Ch.hop;
@@ -200,17 +213,34 @@ const CR = (() => {
     if (useClip) {
       const f0 = clamp(Math.round(Ch.cf), 0, CLIP.length - 1);
       if (Ch.fade < 1 && STD.length) figure(c, STD[atTime(STD_META, breathT(Ch.sd || 0))], STD_META, x, h, fc, 1 - Ch.fade, tint, rim);
-      figure(c, CLIP[f0], CLIP_META, x, h, fc, Ch.fade < 1 ? Ch.fade : 1, tint, rim);
-      if (tearT >= 0) TEARS.forEach(t0 => {
-        const lt = tearT - t0; if (lt < 0 || lt > 110) return;
-        // it gathers, runs a little down the cheek, then falls, quicker and quicker, and fades
-        const run = smooth(0, 50, lt) * 9, fall = lt > 50 ? .012 * (lt - 50) * (lt - 50) : 0;
-        const tx = x + (TEAR_X + .06 * fall) * fc, ty = -h - TEAR_Y + run + fall;
-        const a = smooth(0, 14, lt) * (1 - smooth(70, 110, lt)), r = .85 + .25 * Math.sin(lt * .3);
-        const g = c.createRadialGradient(tx, ty, 0, tx, ty, r * 3.2); g.addColorStop(0, css([255, 238, 200], .8 * a)); g.addColorStop(.35, css([255, 210, 140], .3 * a)); g.addColorStop(1, 'rgba(255,200,130,0)');
-        c.save(); c.globalCompositeOperation = 'lighter'; c.fillStyle = g; c.fillRect(tx - r * 3.4, ty - r * 3.4, r * 6.8, r * 6.8); c.restore();
-      });
-      if (mark > .01) { const hx = x + 14 * fc, hy = -h - 138; const g = c.createRadialGradient(hx, hy, 0, hx, hy, 9); g.addColorStop(0, css([255, 244, 214], .8 * mark)); g.addColorStop(1, 'rgba(255,240,200,0)'); c.fillStyle = g; c.fillRect(hx - 10, hy - 10, 20, 20); }
+      // the new clothes come at the height of the light that wraps him (robe .5): a clean swap, no double picture
+      const coat = robe >= .5 && COAT.ready;
+      if (coat) { const k = (Ch.cc || 0) % 96, cf = clamp(Math.round(k < 48 ? k : 96 - k), 0, COAT.length - 1); figure(c, COAT[cf], COAT_META, x, h, fc, 1, mix(tint, [236, 226, 210], .55), rim); Ch.coatF = cf; }
+      else figure(c, CLIP[f0], CLIP_META, x, h, fc, Ch.fade < 1 ? Ch.fade : 1, tint, rim);
+      if (tearT >= 0) { const E = faceEdge(CLIP[f0]); TEARS.forEach(t0 => {
+        // (round 2, owner: "the tears need to be more realistic"): a small clear bead on his cheek, at the very edge of his
+        // profile, that creeps down in little starts (as a tear does, catching and letting go), leaving a faint wet line,
+        // then gathers at the jaw and drops; lit by the dawn behind the cross, no glow
+        const lt = tearT - t0; if (lt < 0 || lt > 175 || !E) return;
+        const ex = yy => { const r = Math.round(CLIP_META.ground - yy / CHR_K); const v = E[clamp(r, 0, E.length - 1)]; return v == null ? null : (v - CLIP_META.ax) * CHR_K; };
+        const p = Math.min(1, lt / 115), st = p * 4, d = (Math.floor(st) + smooth(.55, 1, st % 1)) / 4, y0 = TEAR_Y, y1 = TEAR_Y - 9;
+        const a = smooth(0, 18, lt) * (1 - smooth(150, 175, lt));
+        let ty = lerp(y0, y1, Math.min(1, d)), tx = ex(ty); if (tx == null) return; tx -= .5;
+        c.save(); c.translate(x, -h); c.scale(fc, 1);
+        // the wet line it leaves
+        c.strokeStyle = css([236, 220, 200], .2 * a); c.lineWidth = .45; c.beginPath();
+        for (let yy = y0; yy >= ty; yy -= .8) { const xx = ex(yy); if (xx != null) yy === y0 ? c.moveTo(xx - .5, -yy) : c.lineTo(xx - .5, -yy); } c.stroke();
+        // the drop: once at the jaw it falls, quicker and quicker, a little drawn out
+        let ry = 1.05, rx = .82, fy = 0;
+        if (lt > 115) { const ft = lt - 115; fy = .02 * ft * ft; tx += .02 * ft; ry = 1.2; rx = .65; }
+        const by = -(ty - fy);
+        c.fillStyle = css([226, 214, 204], .42 * a); c.beginPath(); c.ellipse(tx, by, rx, ry, 0, 0, 6.29); c.fill();
+        c.strokeStyle = css([40, 28, 26], .32 * a); c.lineWidth = .22; c.beginPath(); c.ellipse(tx, by, rx, ry, 0, .3, 2.85); c.stroke();
+        c.fillStyle = css([255, 248, 232], .95 * a); c.beginPath(); c.arc(tx + .28, by - .42, .3, 0, 6.29); c.fill();
+        c.restore();
+      }); }
+      if (mark > .01) { let hx = x + 14 * fc, hy = -h - 138;
+        if (coat) { const E = faceEdge(COAT[Ch.coatF]), r = Math.round(COAT_META.ground - 141 / CHR_K); if (E && E[r] != null) { hx = x + ((E[r] - COAT_META.ax) * CHR_K - 3) * fc; hy = -h - 141; } } const mr = coat ? 5 : 9, g = c.createRadialGradient(hx, hy, 0, hx, hy, mr); g.addColorStop(0, css([255, 244, 214], (coat ? .6 : .8) * mark)); g.addColorStop(1, 'rgba(255,240,200,0)'); c.fillStyle = g; c.fillRect(hx - 10, hy - 10, 20, 20); }
     } else if (Ch.run > 0 && RUNP.ready) {
       TILT = slopeTilt(x) * Ch.run;
       if (Ch.run < 1 && STD.length) figure(c, STD[atTime(STD_META, breathT(Ch.sd || 0))], STD_META, x, h, 1, 1 - Ch.run, tint, rim);
@@ -227,12 +257,17 @@ const CR = (() => {
     if (bur.a <= 0) return;
     const K = CHR_K, w = BALL.w * K * bur.k, hh = BALL.h * K * bur.k, h = bur.H != null ? bur.H : gh(bur.x) + bur.y;
     // a soft light round it as it falls, so it can be followed down the dark hill (owner, build 460)
+    // (round 2, owner: "the glow around burden is too intense - something more subtle would do"): a faint light only
     const gl = (bur.gl || 0) * bur.a;
-    if (gl > .01) { const cx = bur.x, cy = -h - hh / 2, R = 70 * bur.k, g = c.createRadialGradient(cx, cy, 0, cx, cy, R);
-      g.addColorStop(0, css([255, 232, 196], .3 * gl)); g.addColorStop(.4, css([250, 214, 170], .12 * gl)); g.addColorStop(1, 'rgba(250,210,170,0)');
+    if (gl > .01) { const cx = bur.x, cy = -h - hh / 2, R = 42 * bur.k, g = c.createRadialGradient(cx, cy, 0, cx, cy, R);
+      g.addColorStop(0, css([255, 232, 196], .11 * gl)); g.addColorStop(.5, css([250, 214, 170], .04 * gl)); g.addColorStop(1, 'rgba(250,210,170,0)');
       c.save(); c.globalCompositeOperation = 'screen'; c.fillStyle = g; c.fillRect(cx - R, cy - R, R * 2, R * 2); c.restore(); }
-    const sq = clamp(bur.sq || 0, -.4, .25);
-    c.save(); c.translate(bur.x, -h - hh / 2 + 2 + hh * (sq < 0 ? -sq * .5 : 0)); c.scale(1 - sq * .7, 1 + sq); c.rotate(bur.r); c.globalAlpha = bur.a;
+    // its shadow on the face where it would touch: it stays on its track while it is in the air and fades with height,
+    // so a bounce reads as a bounce, not as the sack floating up the hill
+    if (bur.st === 'roll' && bur.z != null) { const z = bur.z || 0, gy = -(h - z) + 2, sa = .55 * (1 - Math.min(1, z / 50)) * bur.a, rx = w * (.42 + .25 * Math.min(1, z / 50));
+      if (sa > .01) { c.save(); c.translate(bur.x, gy); c.scale(rx, rx * .22); const g = c.createRadialGradient(0, 0, 0, 0, 0, 1); g.addColorStop(0, css([4, 3, 6], sa)); g.addColorStop(1, 'rgba(4,3,6,0)'); c.fillStyle = g; c.fillRect(-1, -1, 2, 2); c.restore(); } }
+    const sq = clamp(bur.sq || 0, -.4, .25), cp = Math.cos(bur.ph || 0), fy = (cp < 0 ? -1 : 1) * (.58 + .42 * Math.abs(cp)), fx = 1 + .07 * (1 - Math.abs(cp));
+    c.save(); c.translate(bur.x, -h - hh / 2 + 2 + hh * (sq < 0 ? -sq * .5 : 0)); c.scale((1 - sq * .7) * fx, (1 + sq) * fy); c.rotate(bur.r); c.globalAlpha = bur.a;
     const tint = tintNow(), W = BURDEN.width, H = BURDEN.height;
     if (figC.width !== W || figC.height !== H) { figC.width = W; figC.height = H; }
     const f = figC.getContext('2d'); f.globalCompositeOperation = 'source-over'; f.clearRect(0, 0, W, H); f.drawImage(BURDEN, 0, 0); f.globalCompositeOperation = 'multiply'; f.fillStyle = css(mix(mix(tint, [176, 164, 162], bur.H != null ? .5 * (1 - bur.dk) + .2 * gl : 0), [8, 7, 10], bur.dk));       f.fillRect(0, 0, W, H); f.globalCompositeOperation = 'destination-in'; f.drawImage(BURDEN, 0, 0); f.globalCompositeOperation = 'source-over';
@@ -247,7 +282,7 @@ const CR = (() => {
     if (!bur) return;
     if (bur.dust) for (const d of bur.dust) { d.x += d.vx; d.y += d.vy; d.vx *= .97; d.vy *= .97; d.r += .35; d.a -= .006; }
     if (bur.st === 'roll') {
-      if (bur.x0 == null) { Object.assign(bur, { x0: bur.x, H0: gh(bur.x), gl: 0, s: 0, vs: .6, z: 0, vz: 2.2, vx: .5, dx: 0, w: -.05, sq: 0, sqa: 0, sqv: 0, rnd: rgen(77) }); }
+      if (bur.x0 == null) { Object.assign(bur, { x0: bur.x, H0: gh(bur.x), gl: 0, s: 0, vs: .6, z: 0, vz: 1.4, vx: .3, dx: 0, w: 0, ph: 0, pw: .05, sq: 0, sqa: 0, sqv: 0, rnd: rgen(77) }); }
       const R = bur.rnd, L = bur.H0 - tombSill() - 6, g = .16;
       bur.t++; bur.gl = Math.min(1, bur.gl + .02);
       // along the face: gravity less friction, a little slower while in the air
@@ -258,17 +293,23 @@ const CR = (() => {
       bur.vz -= g; bur.z += bur.vz;
       if (bur.z <= 0) {
         bur.z = 0;
-        if (bur.vz < -1.1) { const hit = -bur.vz; bur.vz = hit * (.38 + .12 * R()); thump(Math.min(1.1, .25 + hit * .14)); bur.vx += (R() - .5) * .5 * hit; bur.w -= R() * .04 * hit; bur.sqv -= Math.min(.4, hit * .07); }
+        // a heavy soft sack: it keeps little of its speed when it lands (owner, round 2: "the falling burden needs work")
+        if (bur.vz < -1.1) { const hit = -bur.vz; bur.vz = hit * (.22 + .1 * R()); thump(Math.min(1.1, .25 + hit * .14)); bur.vx += (R() - .5) * .3 * hit; bur.w += (R() - .5) * .03 * hit; bur.sqv -= Math.min(.4, hit * .08); }
         else bur.vz = 0;
-        // the rough face: a bump throws it up again now and then
-        if (bur.vz === 0 && R() < (.012 + .018 * bur.vs) * (1 - ease)) bur.vz = .8 + bur.vs * (.8 + 1.6 * R());
+        // the rough face: a bump throws it up again now and then, lower than a ball would go
+        if (bur.vz === 0 && R() < (.01 + .012 * bur.vs) * (1 - ease)) bur.vz = .6 + bur.vs * (.5 + .9 * R());
       }
       // sideways: drifts, slowed by the ground; drawn toward the mouth as it nears the foot
       const q = bur.s / L; bur.vx *= bur.z > 0 ? .995 : .97; bur.vx -= bur.dx * .0015; bur.dx += bur.vx;
       bur.x = lerp(bur.x0, TOMB_X, sm(0, 1, q)) + bur.dx * (1 - sm(.8, 1, q));
       // spin: on the ground it rolls with its speed, in the air it keeps what the last bounce gave it
       // it turns one way only, as a thing rolling down toward us (owner, build 464: "make it rotate one direction")
-      const roll = -(.012 + .018 * bur.vs); bur.w += ((bur.z > 0 ? bur.w : roll) - bur.w) * .08; bur.w = Math.min(bur.w, -.006); bur.r += bur.w;
+      // coming down the hill's face TOWARD us it turns over end on end (about a line across the picture), not round
+      // in the picture's plane as a wheel does: that turning is drawn as the sack's height flipping (ph, in drawBurden);
+      // on the ground it turns with its speed (rolling: the turn = the distance / its radius, about 15 units), in the air
+      // it keeps the turn the last touch gave it; in the picture's plane only a little lumpy rocking and what a bounce adds
+      if (bur.z <= 0) bur.pw += (bur.vs / 15 - bur.pw) * .25; bur.ph += bur.pw;
+      bur.w *= .985; bur.r = .16 * Math.sin(bur.ph * .5 + .7) + .06 * Math.sin(bur.ph * 1.3) + (bur.rr = ((bur.rr || 0) + bur.w) * .97);
       // a soft sack of loose things, not a ball (owner: "the burden can change shape as it falls"): it squashes as it
       // lands, wobbles back, and stretches a little as it flies
       bur.sqa += (-bur.sq) * .16; bur.sqa *= .8; bur.sq += bur.sqa + bur.sqv; bur.sqv = 0;
@@ -278,7 +319,7 @@ const CR = (() => {
     } else if (bur.st === 'in') {
       // the sepulchre: it rolls slowly up to the mouth, rocks on the lip, tips over into the dark, a dull fall inside, dust
       bur.t++; const tt = bur.t, sill = tombSill() + 6;
-      if (tt <= 50) { bur.v *= .955; bur.x += bur.v * .35; bur.r -= bur.v * .03; bur.H = sill; }
+      if (tt <= 50) { bur.v *= .955; bur.x += bur.v * .35; bur.ph += bur.v * .05; bur.H = sill; }
       else if (tt <= 96 || bur.hold) { if (tt === 96) bur.hold = !(tumbleT && G.t - tumbleT > 330); else if (bur.hold && ((tumbleT && G.t - tumbleT > 330) || tt > 700)) { bur.hold = false; bur.t = 96; } const q = tt - 50; bur.r += .09 * Math.sin(q * .26) * Math.exp(-q * .045) * .6; bur.H = sill + .8 * Math.abs(Math.sin(q * .26)) * Math.exp(-q * .05); if (q === 1) thump(.3); }
       else {
         // over it goes, back into the dark: smaller as it goes deeper, darker, rising a little in the mouth (further in)
@@ -330,10 +371,10 @@ const CR = (() => {
   // fall to the right), each row set deeper in the hill and a shade darker than the one before, so the rock grows
   // darker as it comes down; baked once small and drawn stretched (soft), in dark alpha so it takes the hill's colour
   let ROCK = null;
-  const ROCK_OPT = (new URLSearchParams(location.search).get('rock') || 'g').toLowerCase();
+  const ROCK_OPT = (new URLSearchParams(location.search).get('rock') || 'rows').toLowerCase();
   function rockTex() {
     if (ROCK) return ROCK;
-    const X0 = START - 700, X1 = FALL1 + 900, Y0 = -H_TOP - 40, Y1 = 700, k = .4;
+    const X0 = START - 700, X1 = FALL1 + 900, Y0 = -H_TOP - 40, Y1 = 700, k = .8;
     const cv = document.createElement('canvas'); cv.width = Math.ceil((X1 - X0) * k); cv.height = Math.ceil((Y1 - Y0) * k); const q = cv.getContext('2d');
     q.scale(k, k); q.translate(-X0, -Y0);
     const hs = (j, n, sd) => { const v = Math.sin(j * 127.1 + sd * 311.7 + n * 74.7) * 43758.5453; return v - Math.floor(v); };
@@ -597,7 +638,7 @@ const CR = (() => {
     if (rollShow > .01 && rollGone < 1) {
       const [x, H] = SH[2], hx = x - 22, hy = -gh(x) - H * .52 + Math.sin(t / 30) * 2;
       const u = rollFly ? smooth(0, 1, rollFly.t / ROLL_FLY) : 0, cxr = Ch.x + 24, cyr = -gh(Ch.x) - 72;
-      const rx = lerp(hx, cxr, u), ry = lerp(hy, cyr, u) - Math.sin(Math.PI * u) * 26, a2 = rollShow * (1 - rollGone), sh = smooth(.45, 1, u), df = 1 - sh;
+      const rx = lerp(hx, cxr, u), ry = lerp(hy, cyr, u) - Math.sin(Math.PI * u) * 26, a2 = rollShow * (1 - rollGone), sh = 0, df = 1 - .3 * u;
       c.save(); c.translate(rx, ry);
       c.globalCompositeOperation = 'screen';
       const br = 1 + .08 * Math.sin(t / 22);
@@ -616,7 +657,7 @@ const CR = (() => {
 
   // ---------- the story ----------
   function reset0() {
-    tumbleT = 0; sepT = -1; memT = -1; memS = []; memUntil = 0; memQ = 0; tearT = -1; looked = false; Object.assign(Ch, { x: START, anim: 12, sd: QUIET[0], cf: -1, hop: 0, hops: 0, lastV: 0, fade: 0, hv: 0, face: 1, tv: null, run: 0, ranim: 0 });
+    tumbleT = 0; sepT = -1; memT = -1; memS = []; memUntil = 0; memQ = 0; tearT = -1; looked = false; Object.assign(Ch, { x: START, anim: 12, sd: QUIET[0], cf: -1, hop: 0, hops: 0, lastV: 0, fade: 0, hv: 0, face: 1, tv: null, run: 0, ranim: 0, cc: 0 });
     bur = null; dawn = gold = goldTo = sun = robe = robeTo = mark = markTo = rollShow = rollGone = shine = shineTo = gone = goneTo = 0; wideK = 1; wideTo = 1;
     said = {}; hymn = null; silenceT = 0; tombT = 0; leapsLeft = 3; endT = 0; quietPad = 0; t = 0; rollFly = rollAt = null; closeK = topK = topTo = veil = 0; climb = null;
   }
@@ -678,6 +719,7 @@ const CR = (() => {
     // the hop of a leap
     if (Ch.hv || Ch.hop > 0) { Ch.hop += Ch.hv; Ch.hv -= .2; if (Ch.hop <= 0) { Ch.hop = 0; Ch.hv = 0; if (audio()) groundStep(1, 0); } }
     dawn += ((ph === 'walk' || ph === 'look' ? .55 * sm(SLOPE0 - 400, CREST0, Ch.x) : .7) - dawn) * .01;
+    if (robe >= .5) Ch.cc = (Ch.cc || 0) + 16 / 60;
     gold += (goldTo - gold) * .0032; robe = Math.min(1, robe + (robeTo > robe ? .01 : 0)); mark += (markTo - mark) * .03; shine += (shineTo - shine) * .012; gone += (goneTo - gone) * .012;
     // the sun rises slowly, about 14 s (owner, build 455: "sun can rise slower")
     if (goldTo > 0) sun = Math.min(1, sun + .0012);
