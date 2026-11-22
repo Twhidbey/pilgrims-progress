@@ -184,7 +184,7 @@ body.portrait:not(.playing) #rot{display:none}
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
   <button id="autoWalk" aria-label="He walks on by himself"><svg viewBox="0 0 24 24"><path d="M5 6l6 6-6 6M12 6l6 6-6 6"/></svg></button>
-  <div id="build">build 483 · Nov 22 2026</div>
+  <div id="build">build 484 · Nov 22 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -921,9 +921,13 @@ function ambience() {
 // is muffled with the rest of the world when his fingers are in his ears. Only Level 1 and the title have music yet;
 // in the other levels musCue is null and it fades out. Without its file a piece is simply silent, and the old hum stays.
 const MUSIC_V = 1;
-const MUS = { book: 'l1-title', city: 'l1-city-long', light: 'l1-light-long', run: 'l1-run', pursue: 'l1-pursue', gate: 'l1-gate' };
-const MUSV = { book: .5, city: .42, light: .46, run: .5, pursue: .5, gate: .6 };       // each piece's level (the owner's ears decide)
-const MUS_ONCE = { gate: 1 }, MUS_XF = 3;
+// build 484 (owner: "Music is dominating - only need it for in between moments or maybe key moments - maybe a light beat -
+// I loved amazing grace with lights"): no music under the walking; the book's harp on the title, and a light beat of drums
+// only at three moments, each played once with its fades baked in (cut from the run and pursuit pieces, low-passed so only
+// the drums come through). The whole hymn plays again at the gate as the lights go on ahead.
+const MUS = { book: 'l1-title', run: 'l1-beat-run', mock: 'l1-beat-mock', heart: 'l1-beat-heart' };
+const MUSV = { book: .3, run: .42, mock: .3, heart: .4 };       // each piece's level (the owner's ears decide)
+const MUS_ONCE = { run: 1, mock: 1, heart: 1 }, MUS_XF = 3;
 const musBuf = {}, musLoad = {}, musV = {};
 let musG = null, musCur = null;
 function musGet(k) {
@@ -934,18 +938,17 @@ function musGet(k) {
 function musCue() {
   if (SL.on || HL.on || RM.on || CR.on) return null;
   if (G.state === 'title') return 'book';
-  if (G.gateOpen >= 1 || G.finale) return 'gate';
-  if (G.gateSeen) return 'light';
-  if (G.neigh) return 'pursue';
-  if (G.runZone || G.fam >= 1 || G.evanGone) return 'run';
-  if (G.sawLight) return 'light';
-  return 'city';
+  if (G.neigh && !G.nchose && G.state !== 'choice') return 'heart';      // Obstinate and Pliable come after him: a low heartbeat, gone when the choice comes
+  if (G.watched && G.runZone) return 'mock';                             // the neighbours watching: a faint tap
+  if (G.runZone && (G.fam || 0) < 2 && G.evanGone) return 'run';        // "the man began to run": a beat to set him off, gone when he reaches his door
+  return null;
 }
 function musTick() {
   if (!AC || G.t % 6) return;
   if (!musG) { musG = AC.createGain(); musG.gain.value = 0; musG.connect(OUT); }
   const now = AC.currentTime, cue = musCue();
-  if (cue) { musGet(cue); musGet({ book: 'city', city: 'light', light: 'run', run: 'pursue', pursue: 'gate' }[cue] || cue); }      // the next piece loads ahead
+  if (cue) musGet(cue);
+  if (G.state !== 'title' && !SL.on && !HL.on && !RM.on && !CR.on) { musGet('run'); musGet('mock'); musGet('heart'); }      // the beats load early, they are small
   if (cue !== musCur) { musCur = cue; if (cue && !musV[cue]) musV[cue] = { g: null, srcs: [], next: 0, done: false }; }
   // sink under any voice that is speaking
   const speaking = SPK && (now - SPK.t0) * 20 < SPK.env.length + 6;
@@ -1009,7 +1012,7 @@ function reset() {
   Object.assign(G, { cam: Math.max(0, Math.min(LEVEL_W - VW, TEST_X ? START_X - VW * .38 + 40 : START_X - VW * .62 - 40)), t: 0, got: 0, extra: 0, motes: [], flyers: [], ripples: [], glints: [], taps: [], litw: [], capQ: [], cap: 0, hint: null,
     pli: null, obst: null, flare: 0, gloom: 0, gloomTo: 0, gateOpen: 0, act: null, actT: 0, ring: null, auto: null, finale: null, guard: 0, idle: 0, wins: 0,
     evanDone: !!TEST_X, evanGone: TEST_X ? 1 : 0, neigh: TEST_X > NEIGH_X + 300, gateSeen: false, walked: false, touched: false, leaving: false, fam: TEST_X > HOME_X ? 2 : 0, door: TEST_X ? (TEST_X > HOME_X ? 1 : 0) : 1, doorShut: false, roll: TEST_X ? { t: 999, x: 0, y: 0 } : null, runZone: !!TEST_X && TEST_X < RUN_END, outSaid: false, watched: TEST_X > WATCH_X, ears: TEST_X > HOME_X });
-  G.sunUp = 0; G.through = false; G.homeTo = null; G.autoRun = 0; G.calm = 0; G.doorSaid = false; G.choiceKind = null; G.sawLight = !!TEST_X && TEST_X > EVAN_X;
+  G.sunUp = 0; G.through = false; G.homeTo = null; G.autoRun = 0; G.calm = 0; G.doorSaid = false; G.choiceKind = null; G.sawLight = !!TEST_X && TEST_X > EVAN_X; G.nchose = false;
   G.zoom = 1 - (1 - ZOOM_GATE) * smooth(GATE - 1300, GATE - 380, START_X);      // starting near the gate (?at=gate): already drawn back
   G.evan.pt = TEST_X ? 239 : 0; G.evan.go = false; G.evan.st = EVS_META.frames * 100; downs.clear(); pushing = false; keys.r = keys.push = false;
   if (TEST_X) for (const l of LIGHTS) if (l.x < Math.max(TEST_X, 2000)) l.got = true;
@@ -1230,6 +1233,7 @@ const choiceEl = document.getElementById('choice');
 function choose() { G.state = 'choice'; choiceEl.className = 'on'; document.body.classList.add('talking'); }
 function pick(home) {
   if (G.state !== 'choice') return;
+  if (!SL.on && G.choiceKind !== 'door') G.nchose = true;      // the neighbours' choice is made: the heartbeat is done
   choiceEl.className = ''; document.body.classList.remove('talking');
   if (SL.on) { SL.pick(home); return; }
   if (G.choiceKind === 'door') {
@@ -1713,8 +1717,8 @@ function effects() {
   const F = G.finale;
   if (F) {
     F.t++;
-    while (F.i < TUNE.length && F.t >= TUNE[F.i][0] * 28) { if (!musOn()) note(TUNE[F.i][1], .08, 3.2); G.flare = Math.min(1.3, G.flare + .05); F.i++; }      // the far light brightens with every note
-    while (F.bar < BASS.length && F.t >= (1 + F.bar * 3) * 28) { if (!musOn()) { note(BASS[F.bar], .06, 3.4, 0, false); note(BASS[F.bar] + 12, .03, 3, 0, false); } F.bar++; }
+    while (F.i < TUNE.length && F.t >= TUNE[F.i][0] * 28) { note(TUNE[F.i][1], .08, 3.2); G.flare = Math.min(1.3, G.flare + .05); F.i++; }      // the far light brightens with every note
+    while (F.bar < BASS.length && F.t >= (1 + F.bar * 3) * 28) { note(BASS[F.bar], .06, 3.4, 0, false); note(BASS[F.bar] + 12, .03, 3, 0, false); F.bar++; }
     if (F.i >= TUNE.length && F.t > 47 * 28) G.finale = null;
   }
 }
