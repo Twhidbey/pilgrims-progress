@@ -17,7 +17,7 @@
 const CR = (() => {
   const SO = 'The Shining Ones', S1 = 'The first Shining One', S3 = 'The third Shining One';
   // ---------- the land (world units: x along the way, h up from the foot of the slope) ----------
-  const START = 480, WALL_END = 860, TOMB_X = 5085, SLOPE0 = 1180, CREST0 = 4080, CROSS_X = 4260, CREST1 = 4400, FALL1 = 5240, H_TOP = 860;
+  const START = 480, WALL_END = 860, TOMB_X = 5300, SLOPE0 = 1180, CREST0 = 4080, CROSS_X = 4260, CREST1 = 4400, FALL1 = 5420, H_TOP = 860;
   // GOLGOTHA, AFTER THE OWNER'S SKETCH (build 545): a smooth swooping ramp up from the left that meets the top of a round
   // rocky knoll shaped like a skull's crown (SK_X its top, SK_L / SK_R how far its dome reaches left and right)
   const SK_X = 4380, SK_L = 1000, SK_R = FALL1 - 4380, SK_H = H_TOP + 30, RAMP1 = SK_X - 260;
@@ -51,7 +51,7 @@ const CR = (() => {
   // of the nose, the nose, the upper jaw and teeth, the chin, and under the jaw its neck going down into the ground. It
   // overhangs (brow, nose, chin), so it is its own outline (SKO, world units [x, h]); gh() past the crown is its top
   const SKP = [[0, 1], [.2, .98], [.32, .92], [.4, .83], [.44, .72], [.455, .63], [.44, .565], [.455, .5], [.5, .41],
-    [.57, .32], [.65, .24], [.73, .19], [.81, .165], [.88, .15], [.925, .125], [.94, .085], [.93, .045], [.95, 0], [1.02, 0]];
+    [.57, .32], [.65, .24], [.73, .19], [.81, .17], [.9, .165], [.99, .16], [1.06, .145], [1.11, .115], [1.13, .07], [1.12, .035], [1.15, 0], [1.22, 0]];
   const SKO = (() => { const P = SKP.map(([u, v]) => [SK_X + u * SK_H, v * SK_H]), O = [];
     for (let i = 0; i < P.length - 1; i++) { const a = P[Math.max(0, i - 1)], b = P[i], c2 = P[i + 1], d = P[Math.min(P.length - 1, i + 2)];
       for (let k = 0; k < 8; k++) { const t = k / 8, t2 = t * t, t3 = t2 * t, f = (p0, p1, p2, p3) => .5 * (2 * p1 + (-p0 + p2) * t + (2 * p0 - 5 * p1 + 4 * p2 - p3) * t2 + (-p0 + 3 * p1 - 3 * p2 + p3) * t3);
@@ -80,7 +80,7 @@ const CR = (() => {
     [N, 'As he stood looking and weeping, three Shining Ones came to him.'],
     [SO, 'Peace be unto thee.'],
     [S1, 'Thy sins be forgiven thee.'],
-    [N, 'The second took off his rags, and clothed him with new clothes.', 0, () => { robeTo = 1; chime([74, 79, 83], .03); }],
+    [N, 'The second took off his rags, and clothed him with new clothes.', 0, () => { robeTo = 1; }],
     [N, 'The third set a mark on his forehead, and gave him a roll with a seal upon it.', 0, () => { markTo = 1; rollShow = 1; }],
     [TIP, 'Touch the roll.', 'roll'],
     [S3, 'Look on it as you run, and give it in at the Celestial Gate.'],
@@ -89,11 +89,15 @@ const CR = (() => {
   const LEAPS = [
     [N, 'Then Christian gave three leaps for joy, and went on singing.'],
     [TIP, 'Touch Christian to leap for joy.', 'leap'],
-    [C, 'Blest cross! Blest sepulchre! Blest rather be the Man that there was put to shame for me!'],      // vision chat: his song ({94})
+    [C, 'Blest cross! Blest sepulchre! Blest rather be the Man that there was put to shame for me!', 0, () => { blest = 1; }],      // vision chat: his song ({94})
   ];
   const ALL = [...OPEN, ...ASCEND, ...LOOSED, ...TUMBLE, ...GLAD, ...LOOKED, ...SHINE, ...LEAPS];
 
   // ---------- pictures ----------
+  // HE KNEELS IN THE SILENCE (awe study, owner: "yes 1-3 please"): once the burden is gone he steps in and sinks to one
+  // knee, hands together (a free Modal clip from the cross clip's frame 70, christian-kneel-nb); about a third of the way
+  // into the hymn he rises (the clip played backwards) and stands again before he speaks: Bunyan twice says he stood
+  const KNC = [], KNC_META = { ax: 130, ground: 296, frames: 65 };
   const CLIP = [], CLIP_META = { ax: 182.5, ground: 299, frames: 81 }, SWAP = 41, BALL = { ax: 31, w: 99, h: 118 };
   // HIS NEW COAT (round 2, owner: "clothes can be swapped"): from the second Shining One's gift on he stands in the pale
   // coat with the leaf bands, the hood down, clean-shaven (concept/christian-coat-chosen.jpg); a free clip of him standing,
@@ -107,6 +111,7 @@ const CR = (() => {
   function preload() {
     if (loaded) return; loaded = true;
     loadPack('christian-cross', CLIP).catch(() => {});
+    loadPack('christian-kneel-nb', KNC).catch(() => {});
     loadPack('christian-coat-stand', COAT).catch(() => {});
     loadPack('christian-coat-leap', LEAPC).catch(() => {});
     loadPack('christian-coat-walk', CWALK).catch(() => {});
@@ -126,7 +131,7 @@ const CR = (() => {
   }
 
   // ---------- state ----------
-  let tumbleT = 0, pauseKey = null, qRun = 0, quietG = 0, sepT = -1, ph = '', t = 0, cam = { cx: 0, z: 1, wl: 420 }, wideK = 0, wideTo = 0;
+  let blest = 0, tumbleT = 0, pauseKey = null, qRun = 0, quietG = 0, sepT = -1, ph = '', t = 0, cam = { cx: 0, z: 1, wl: 420 }, wideK = 0, wideTo = 0;
   const Ch = { x: START, anim: 12, sd: null, cf: -1, cfd: 1, hop: 0, hops: 0, lastV: 0, fade: 0, face: 1, tv: null, run: 0, ranim: 0 };
   let bur = null, dawn = 0, gold = 0, goldTo = 0, sun = 0, robe = 0, robeTo = 0, mark = 0, markTo = 0, rollShow = 0, rollGone = 0, shine = 0, shineTo = 0, gone = 0, goneTo = 0;
   let closeK = 0, topK = 0, topTo = 0, veil = 0, climb = null, tearT = -1, looked = false;
@@ -254,6 +259,7 @@ const CR = (() => {
         if (Ch.lp != null && LEAPC.ready) figure(c, LEAPC[clamp(Math.round(Ch.lp), 0, LEAPC.length - 1)], LEAP_META, x, h, fc, 1, ct, rim);
         else if (Ch.wo != null && CWALK.ready) figure(c, CWALK[Math.floor(Ch.wa) % CWALK.length], CWALK_META, x, h, 1, 1, ct, rim);
         else { const k = (Ch.cc || 0) % 96, cf = clamp(Math.round(k < 48 ? k : 96 - k), 0, COAT.length - 1); figure(c, COAT[cf], COAT_META, x, h, fc, 1, ct, rim); Ch.coatF = cf; } }
+      else if (Ch.kn != null && KNC.ready) figure(c, KNC[clamp(Math.round(Ch.kn), 0, KNC.length - 1)], KNC_META, x, h, fc, 1, tint, rim);
       else figure(c, CLIP[f0], CLIP_META, x, h, fc, Ch.fade < 1 ? Ch.fade : 1, tint, rim);
       if (tearT >= 0) { const E = faceEdge(CLIP[f0]); TEARS.forEach(t0 => {
         // (round 2, owner: "the tears need to be more realistic"): a small clear bead on his cheek, at the very edge of his
@@ -509,11 +515,21 @@ const CR = (() => {
       // the dome's left flank: a soft seam where the skull rises out of the smooth ramp
       for (const [w, a] of [[16, .05], [7, .08], [2.6, .2]]) { q.strokeStyle = css([0, 0, 0], a); q.lineWidth = w; q.beginPath(); let pen = false;
         for (let x = xa + 4; x <= RAMP1; x += 6) { const d = dome(x); if (d > gh(x) - 14) { pen = false; continue; } pen ? q.lineTo(x, -d) : q.moveTo(x, -d); pen = true; } q.stroke(); }
-      // curved creases following the dome, broken
-      for (const [sc, dx] of [[.84, 60], [.66, 130], [.5, 40], [.34, 160]]) { q.strokeStyle = css([0, 0, 0], .16); q.lineWidth = 2.4; q.beginPath(); let pen = false;
-        for (let t = -.95; t <= .95; t += .012) { const x = SK_X + dx + t * (t < 0 ? SK_L : SK_R) * sc, d = SK_H * sc * Math.pow(1 - t * t, .55) + 8 * Math.sin(t * 23 + sc * 9);
-          const on = Math.sin(t * 9 + sc * 17) > -.35 && d < hh(x) - 12; if (!on) { pen = false; continue; } pen ? q.lineTo(x, -d) : q.moveTo(x, -d); pen = true; }
-        q.stroke(); }
+      // CONTOURS FOR VOLUME (owner: "more contours on hill giving it volume"): lines that follow the skull's own outline,
+      // each a smaller copy of it toward its foot (so they run down the face as the face does), broken in places, a shade
+      // darker with a faint lit lip below each, and a soft band of shade just inside each one, so the rock reads as rounded
+      const FULL = []; for (let x = xa; x < SK_X; x += 14) FULL.push([x, dome(x)]); for (const p of SKO) FULL.push(p);
+      [[.9, 0, .2], [.79, 20, .17], [.68, 10, .16], [.57, 30, .14], [.46, 15, .13], [.35, 35, .11], [.24, 20, .1]].forEach(([sc, dx, a], n) => {
+        const P = FULL.map(([x, h]) => [SK_X + dx + (x - SK_X) * (.55 + .45 * sc), h * sc + 4 * Math.sin(x * .02 + n)]);
+        const on = (x, i) => Math.sin(i * .09 + n * 2.3) > -.55 && x > xa + 260;
+        // a soft band of shade under the line
+        for (const [w, al] of [[34, .035], [16, .05]]) { q.strokeStyle = css([0, 0, 0], al * a / .15); q.lineWidth = w; q.beginPath(); let pen = false;
+          P.forEach(([x, h], i) => { if (!on(x, i)) { pen = false; return; } pen ? q.lineTo(x, -h + w / 2) : q.moveTo(x, -h + w / 2); pen = true; }); q.stroke(); }
+        q.strokeStyle = css([0, 0, 0], a); q.lineWidth = 2.6; q.beginPath(); let pen = false;
+        P.forEach(([x, h], i) => { if (!on(x, i)) { pen = false; return; } pen ? q.lineTo(x, -h) : q.moveTo(x, -h); pen = true; }); q.stroke();
+        l.strokeStyle = css([255, 255, 255], a * .55); l.lineWidth = 1.6; l.beginPath(); pen = false;
+        P.forEach(([x, h], i) => { if (!on(x, i)) { pen = false; return; } pen ? l.lineTo(x, -h - 2.6) : l.moveTo(x, -h - 2.6); pen = true; }); l.stroke();
+      });
       // the hollow of the eye, only a faint shadow in the rock (it must not stare), and a faint shade under the cheekbone
       for (const [ux, uy, rx, ry, a] of []) { const ex = SK_X + ux * SK_H, ey = -uy * SK_H;
         q.save(); q.translate(ex, ey); q.scale(1, ry / rx); const g2 = q.createRadialGradient(0, 0, 0, 0, 0, rx * SK_H);
@@ -736,7 +752,7 @@ const CR = (() => {
 
   // ---------- the story ----------
   function reset0() {
-    tumbleT = 0; sepT = -1; memT = -1; memS = []; memUntil = 0; memQ = 0; tearT = -1; looked = false; Object.assign(Ch, { x: START, anim: 12, sd: QUIET[0], cf: -1, hop: 0, hops: 0, lastV: 0, fade: 0, hv: 0, face: 1, tv: null, run: 0, ranim: 0, cc: 0, lp: null, wo: null, wa: 0 });
+    blest = 0; tumbleT = 0; sepT = -1; memT = -1; memS = []; memUntil = 0; memQ = 0; tearT = -1; looked = false; Object.assign(Ch, { x: START, anim: 12, sd: QUIET[0], cf: -1, hop: 0, hops: 0, lastV: 0, fade: 0, hv: 0, face: 1, tv: null, run: 0, ranim: 0, cc: 0, lp: null, wo: null, wa: 0, kn: null, kup: false });
     bur = null; dawn = gold = goldTo = sun = robe = robeTo = mark = markTo = rollShow = rollGone = shine = shineTo = gone = goneTo = 0; wideK = 1; wideTo = 1;
     said = {}; hymn = null; silenceT = 0; tombT = 0; leapsLeft = 3; endT = 0; quietPad = 0; t = 0; rollFly = rollAt = null; closeK = topK = topTo = veil = 0; climb = null;
   }
@@ -870,20 +886,21 @@ const CR = (() => {
       // when the storyteller begins the tumble line: the burden waits on the cave's lip until he is well into it
       if (t > 50 && !tumbleT && !G.capQ.length && saying()) tumbleT = G.t;
       burdenTick();
-      if (bur.st === 'gone') { ph = 'gone'; t = 0; quietG = qRun = 0; }
+      if (bur.st === 'gone') { ph = 'gone'; t = 0; quietG = qRun = 0; if (KNC.ready) { Ch.kn = 0; Ch.knd = 1; Ch.kup = false; } }
     } else if (ph === 'gone') {
-      clipHold();
+      if (Ch.kn != null) kneelTick(); else clipHold();
       // a silence; then the light comes up behind the cross, and the colour comes back from it outward
       // the silence is counted only once every voice is done, so the sun and the hymn never come over the words
       if (!busy()) { quietG++; qRun++; } else qRun = 0;
       if (quietG === 150 && !goldTo) { goldTo = 1; wideTo = .35; }
-      if (quietG === 210 && !hymn) hymn = { t: 0, i: 0, b: 0 };
+      if (quietG === 360 && !hymn) hymn = { t: 0, i: 0, b: 0 };
       // Christian speaks only after a breath of quiet once the burden is gone (owner, build 456)
-      if (hymn && hymn.t >= 12 * BEATT && qRun >= 150 && !said.glad) { said.glad = true; caption(GLAD); }
+      if (hymn && hymn.t >= 10 * BEATT && Ch.kn != null) Ch.kup = true;
+      if (hymn && hymn.t >= 12 * BEATT && qRun >= 150 && Ch.kn == null && !said.glad) { said.glad = true; caption(GLAD); }
       if (said.glad && hymn && hymn.t >= 25 * BEATT && !looked) { caption(LOOKED); looked = true; }
       if (looked && tearT < 0 && !G.capQ.length) tearT = 0;
       if (hymn && hymn.t > 20 * BEATT) wideTo = 0;
-      if (hymnDone() && !busy()) { ph = 'shine'; t = 0; shineTo = 1; hymn = null; chime([79, 83, 86], .025); }
+      if (hymnDone() && !busy()) { ph = 'shine'; t = 0; shineTo = 1; hymn = null; }
     } else if (ph === 'shine') {
       clipHold();
       if (t === 150) talk(SHINE, () => { ph = 'leaps'; t = 0; });
@@ -919,6 +936,14 @@ const CR = (() => {
   }
   // the clip after the burden is gone: on to frame 52, then back and forth between 52 and 70 at the video's own pace,
   // eased at each end, so he stands looking up and never jumps
+  function kneelTick() {
+    const v = 16 / 60;
+    if (Ch.kup) { Ch.kn -= v; if (Ch.kn <= 0) { Ch.kn = null; Ch.cf = 70; Ch.cfd = -1; } return; }
+    if (Ch.kn < 48) { Ch.kn += v; return; }
+    // kneeling, only breathing: the clip's last frames back and forth, eased
+    Ch.kn += Ch.knd * v * .5 * (.25 + .75 * Math.sin(Math.PI * clamp((Ch.kn - 48) / 16)));
+    if (Ch.kn >= 64) { Ch.kn = 64; Ch.knd = -1; } if (Ch.kn <= 48) { Ch.kn = 48; Ch.knd = 1; }
+  }
   function clipHold(still) {
     if (Ch.cf < 52) { Ch.cf += 16 / 60; return; }
     if (still && (Ch.hop > 0 || Ch.lp != null)) return;
@@ -1035,5 +1060,7 @@ const CR = (() => {
   }
 
   return { on: false, start, update, draw, touch, key, preload, lines: ALL, stop: () => padStop(), _pt: { roll: rollPt, chr: chrPt }, _turning: () => !!Ch.tv,
-    peek: () => ({ ph, t, fly: rollFly ? rollFly.t : -1, x: Math.round(Ch.x), cf: +Ch.cf.toFixed(1), bur: bur ? { st: bur.st, x: Math.round(bur.x), a: +bur.a.toFixed(2), t: bur.t, H: Math.round(bur.H || 0), z: +(bur.z || 0).toFixed(1), r: +(bur.r || 0).toFixed(2), sq: +(bur.sq || 0).toFixed(2) } : null, gold: +gold.toFixed(2), shine: +shine.toFixed(2), leaps: leapsLeft, lp: Ch.lp == null ? -1 : +Ch.lp.toFixed(1), wo: Ch.wo == null ? -1 : Ch.wo, closeK: +closeK.toFixed(2), topK: +topK.toFixed(2), veil: +veil.toFixed(2), tear: tearT, sep: sepT, mem: memS.length }) };
+    peek: () => ({ ph, t, fly: rollFly ? rollFly.t : -1, x: Math.round(Ch.x), cf: +Ch.cf.toFixed(1), bur: bur ? { st: bur.st, x: Math.round(bur.x), a: +bur.a.toFixed(2), t: bur.t, H: Math.round(bur.H || 0), z: +(bur.z || 0).toFixed(1), r: +(bur.r || 0).toFixed(2), sq: +(bur.sq || 0).toFixed(2) } : null, gold: +gold.toFixed(2), shine: +shine.toFixed(2), leaps: leapsLeft, lp: Ch.lp == null ? -1 : +Ch.lp.toFixed(1), wo: Ch.wo == null ? -1 : Ch.wo, closeK: +closeK.toFixed(2), topK: +topK.toFixed(2), veil: +veil.toFixed(2), tear: tearT, sep: sepT, mem: memS.length, kn: Ch.kn == null ? -1 : +Ch.kn.toFixed(1), hb: hymn ? +(hymn.t / BEATT).toFixed(1) : -1 }),
+    // A SHORT WORDLESS CHOIR FOR THE SHINING ONES (awe study): from their coming until Christian's song begins (index.html's music player, cue 'choir')
+    choir: () => ph === 'shine' || (ph === 'leaps' && !blest) };
 })();

@@ -1019,3 +1019,5 @@ The owner asked what follows the Slough of Despond, what that level should hold,
 **Build 483 (music chat): Level 1 scored by story beat** (book, city in rain, the light, the run with drums, the pursuit with drums, the gate), switched by the story and sunk under voices; two new pieces with drums (about 16 cents; running total for music about 44 cents). The whole hymn no longer plays at Level 1's gate. Next: free recorded sounds (rain, steps, bell, birds, gate), then other levels.
 
 **Build 484 (music chat): music only at moments** (owner: "Music is dominating"): no music under the walking, a light drum beat as he starts to run, a faint tap past the mockers, a heartbeat as Obstinate and Pliable come; the whole hymn back at Level 1's gate; the book's harp on the title. Nothing spent.
+
+**Build 549 (Level 5 chat):** he kneels in the silence after the burden is gone (a free Modal clip) and a short wordless choir comes with the Shining Ones (one Lyria piece, about 8 cents, the owner's yes); the sepulchre further out on the skull's snout, contours on the skull. Running total: add about 8 cents (and about 10 cents of Modal's free credits).
