@@ -1170,7 +1170,11 @@ const RM = (() => {
       upd() {
         this.ct++; if (this.ct > 330) this.cw = 0; this.cut += ((this.cw ? 1 : 0) - this.cut) * (this.cw ? .03 : .04); if (this.cut < .003) this.cut = 0;
         if (G.act === 'walkout') { if (G.actT >= 60 && !hold() && !G.ring) G.ring = () => [u(this.x + 160), v(1000)]; if (hold()) { G.ring = null; this.w = Math.min(1, this.w + .05); } else this.w = Math.max(0, this.w - .05); }
-        if (this.w > 0) { this.fr += WALK_FPT * this.w; this.x += walkSpeed('C', .58) * this.w; }
+        if (this.w > 0) {
+          this.fr += WALK_FPT * this.w; this.x += walkSpeed('C', .58) * this.w;
+          // build 492: his steps on the earth of the highway
+          const st = Math.floor(this.fr * 2 / VIS.C.walk.fr); if (st !== this.lst) { this.lst = st; if (typeof sfxPlay === 'function') sfxPlay('step-dirt', 6, .26); }
+        }
         cam.to = Math.min(R.PW * S - VW, Math.max(R.cam0, u(this.x) + cam.x - 500));
         if (this.x > 2800) { this.a = Math.max(0, this.a - .03); if (G.act === 'walkout') { next(true); G.state = 'auto'; } }
         if (this.a <= 0 && ph !== 'end') { ph = 'end'; t = 0; }
@@ -1272,7 +1276,13 @@ const RM = (() => {
         if (this.p >= 1 && this.vt >= this.need && !this.left) { this.left = true; dlg.className = ''; document.body.classList.remove('capped'); goTo(this.to); }
       } else this.w = Math.max(0, this.w - .06);
       this.p = Math.min(1, this.p + walkSpeed('C', this.k) / 700 * this.w); this.fr += WALK_FPT * this.w;
-      const step = Math.floor(this.fr * 2 / VIS.C.walk.fr); if (step !== this.st) { this.st = step; noise(200, 1.5, .2, .06); noise(140, 1.2, .25, .04, .05); }
+      const step = Math.floor(this.fr * 2 / VIS.C.walk.fr); if (step !== this.st) {
+        this.st = step;
+        // build 492: the ground under his feet: boards in the house, the cellar's stone, the garden's grass out of doors
+        const late = this.p > .72, surf = this.kind === 'round' ? 'grass' : this.kind === 'out' ? (late ? 'grass' : 'wood')
+          : this.kind === 'down' ? (this.to === 'r6' ? (late ? 'stone' : 'wood') : 'wood') : 'wood';
+        if (!(typeof sfxPlay === 'function' && sfxPlay('step-' + surf, STEP_N[surf], .3))) { noise(200, 1.5, .2, .06); noise(140, 1.2, .25, .04, .05); }
+      }
     },
     draw(c) {
       const ix = 810 + this.p * 700 * walkSpeed('I', this.k) / walkSpeed('C', this.k), fl = 1 + .06 * Math.sin(G.t / 4.7) * Math.sin(G.t / 11), iy = this.floorAt(ix), cy = this.floorAt(this.x()), lx = u(ix) + 34, ly = v(iy) - 128;

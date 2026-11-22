@@ -684,6 +684,8 @@ const SL = (() => {
       C2.stand = C2.sd != null ? 1 : 0;
       // faint wet footprints in the soft ground near the bog (owner's idea, build 114: "mud prints or feet sinking slightly")
       const fr1 = ((Math.floor(C2.anim) % CHR.length) + CHR.length) % CHR.length;
+      // build 492: his steps on the grass of the plain and of the far side
+      if (v && fr1 !== fr0 && CHR_META.rest.includes(fr1) && audio()) { if (typeof stepOn === 'function') stepOn('grass', .9, .6); else sfx.step(false, .6); }
       if (ph === 'plain' && v && fr1 !== fr0 && CHR_META.rest.includes(fr1) && C2.x > -1700) prints.push({ x: C2.x + 8 + (fr1 === CHR_META.rest[0] ? 0 : 5), t: 0 });
       if (ph === 'plain') {
         OPEN_AT.forEach((x, i) => { if (C2.x > x && !capsSaid.has(i)) { capsSaid.add(i); caption([LEVEL2_OPENING[i]]); if (i === 1) cityT = 0; } });
@@ -956,7 +958,7 @@ const SL = (() => {
   function footfall() {
     const f = Math.floor(C2.anim) % CHR_META.frames, down = CHR_META.rest.includes(f);
     if (down && lastFoot !== f) {
-      if (C2.x > HOME0 - 10 && C2.x < BANK0 + 10) sfxS.step(); else sfx.step(false, .6);      // build 491: squelch in the mire, a step on land
+      if (C2.x > HOME0 - 10 && C2.x < BANK0 + 10) sfxS.step(); else if (typeof stepOn === 'function') stepOn('grass', .9, .6); else sfx.step(false, .6);      // build 491/492: squelch in the mire, a step on land
       if (ph === 'wade' && noteI < WADE_TUNE.length) bowed(WADE_TUNE[noteI++], .05, 1.9);
     }
     lastFoot = down ? f : -1;

@@ -12,3 +12,13 @@ bog-heave-0.mp3, bog-heave-1.mp3, bog-lift.mp3, bog-bubbles.mp3
   https://opengameart.org/content/25-cc0-mud-sfx
   https://opengameart.org/content/40-cc0-water-splash-slime-sfx
   Licence: CC0 (public domain)
+
+step-grass-0..5.mp3, step-dirt-0..5.mp3, step-stone-0..5.mp3, step-gravel-0..3.mp3, step-leaves-0..3.mp3
+  From "Fantozzi's Footsteps (Grass/Sand & Stone)" by Fantozzi, OpenGameArt.org
+  https://opengameart.org/content/fantozzis-footsteps-grasssand-stone
+  Licence: CC0 (public domain)
+step-wood-0..5.mp3, step-gravel-0..3.mp3 (the crunch), step-leaves-0..3.mp3 (the rustle)
+  From "[kdd] Different steps on wood, stone, leaves, gravel and mud", OpenGameArt.org
+  https://opengameart.org/content/different-steps-on-wood-stone-leaves-gravel-and-mud
+  Licence: CC0 (public domain)
+  Changes: trimmed, levelled, some lowered or raised in pitch and layered for weight on a phone speaker.

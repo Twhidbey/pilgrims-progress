@@ -281,6 +281,14 @@ const HL = (() => {
   // the sweet tune of his counsel: a pretty phrase in the major that goes nowhere (k 1: fuller, with a chord)
   function sweet(k) { const M = k ? [67, 71, 74, 79, 76, 74] : [72, 76, 79, 76]; M.forEach((m, i) => note(m, .028 + .008 * k, 2.4, i * .42)); if (k) [55, 59, 62].forEach(m => note(m, .02, 4.5, .1)); }
   // the burden groans: two heavy creaks of the pack
+  // build 492: his footsteps by the ground: packed earth on the road and over the brow, gravel among the rocks, the gate's
+  // stone, the grass of the garden inside it
+  function surface() {
+    if (['gate', 'knock', 'open'].includes(ph)) return C3.x > GATE_X + 50 ? 'grass' : 'stone';
+    if (['path', 'still', 'come', 'evan', 'back', 'mist'].includes(ph) || C3.x >= PATH0 - 40) return 'gravel';
+    return 'dirt';
+  }
+  function stepHere(v, heavy) { if (typeof stepOn === 'function') stepOn(surface(), v, heavy); else sfx.step(false, heavy); }
   function groan() { if (!audio()) return; sfx.step(false, 2.6); setTimeout(() => HL.on && sfx.step(false, 2.2), 520); }
   // ONE KEY WITH LEVEL 2 (vision chat, owner: "Level 3 can [be] more monochromatic ... the opening needs work with color - it should
   // follow level 2 - right now the color transition is too sharp"): on the plain and the way out to the hill the whole
@@ -1026,7 +1034,7 @@ const HL = (() => {
     else if (C3.sd == null) { if (fr0 === 28 || fr0 === 1 || !STD.length) C3.sd = fr0 === 28 ? 0 : STAND_FROM_1; else v = Math.max(.45, vmax); }
     C3.x += dir * v; C3.lastV = dir * v; C3.anim = stepAnim(C3.anim, v, CHR_STEP, CHR_META);
     const fr1 = frameOf(C3.anim);
-    if (v && fr1 !== fr0 && CHR_META.rest.includes(fr1) && audio()) sfx.step(false, 1 + dark * .8);
+    if (v && fr1 !== fr0 && CHR_META.rest.includes(fr1) && audio()) stepHere(1, 1 + dark * .8);
     return v;
   }
   function update() {
@@ -1157,7 +1165,7 @@ const HL = (() => {
       // (idea D) as he hurries back, stones come down behind him, where he has just been
       if (hasteSaid && go && --backFallT < 0) { backFallT = 70 + Math.random() * 90; const big = Math.random() < .3 ? 1 : 0;
         PATHR.push({ x: C3.x + 180 + Math.random() * 140, y: -520 - Math.random() * 120, vx: -(.3 + Math.random() * .4), vy: 0, r: big ? 12 + Math.random() * 4 : 3 + Math.random() * 3, big, b: 0, t: 0, s: Math.random() * 6, sh: rockShape() }); }
-      if (go && RUNP.ready) { const st = RUNP_META.vpx * CHR_K; C3.x -= st * .4; C3.ranim += .4; C3.run = clamp(C3.run + .14); C3.sd = QUIET[0]; if (Math.floor(C3.ranim) % 14 === 0 && Math.floor(C3.ranim - .4) % 14 !== 0 && audio()) sfx.step(false, 1.3); }
+      if (go && RUNP.ready) { const st = RUNP_META.vpx * CHR_K; C3.x -= st * .4; C3.ranim += .4; C3.run = clamp(C3.run + .14); C3.sd = QUIET[0]; if (Math.floor(C3.ranim) % 14 === 0 && Math.floor(C3.ranim - .4) % 14 !== 0 && audio()) stepHere(1.25, 1.3); }
       else { C3.run = clamp(C3.run - .1); if (go) walk(-1, MAXV); else if (C3.sd == null) walk(-1, 0); }
       if (want) clearHint('haste'); else if (hintT === 150) hint('haste', 'Hold to hurry back.');
       // (build 405, owner: "when Charles leaves mountain out zooms out again... please re[move] this zoom ... just have him running
@@ -1167,7 +1175,7 @@ const HL = (() => {
       if (C3.x <= PATH0 + 360 && (C3.run > .5 || (C3.x <= PATH0 + 120 && C3.run <= 0 && !saying() && G.cap <= 0))) { C3.mistRun = C3.run > .5; ph = 'mist'; veilTo = 1; G.state = 'auto'; clearHint('haste'); }
     } else if (ph === 'mist') {
       if (farewell) farewell++;
-      if (C3.mistRun && RUNP.ready) { const st = RUNP_META.vpx * CHR_K; C3.x -= st * .4; C3.ranim += .4; C3.run = 1; C3.sd = QUIET[0]; if (Math.floor(C3.ranim) % 14 === 0 && Math.floor(C3.ranim - .4) % 14 !== 0 && audio()) sfx.step(false, 1.3); }
+      if (C3.mistRun && RUNP.ready) { const st = RUNP_META.vpx * CHR_K; C3.x -= st * .4; C3.ranim += .4; C3.run = 1; C3.sd = QUIET[0]; if (Math.floor(C3.ranim) % 14 === 0 && Math.floor(C3.ranim - .4) % 14 !== 0 && audio()) stepHere(1.25, 1.3); }
       if (veil >= 1) { C3.mistRun = false; C3.run = 0; Zw = 0; ph = 'gate'; C3.x = GATE_FROM; C3.face = C3.faceA = 1; C3.sd = QUIET[0]; cam.cx = C3.x + 150; cam.z = 1; cam.wl = 440; dark = 0; hope = 1; evan = null; wise = null; veilTo = 0; G.state = 'play'; hintT = 0; }
     } else if (ph === 'gate') {
       let v = want ? MAXV : 0; if (v && C3.x + v >= GATE_STOP) v = 0;

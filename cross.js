@@ -145,13 +145,17 @@ const CR = (() => {
   }
 
   // ---------- Christian ----------
+  function groundStep(v, heavy) {
+    const surf = Ch.x < SLOPE0 ? 'dirt' : 'grass';
+    if (typeof stepOn === 'function') stepOn(surf, v, heavy); else sfx.step(false, heavy || .8);
+  }
   function walk(v) {
     const fr0 = frameOf(Ch.anim);
     if (v) { if (Ch.sd != null) { Ch.sd = null; Ch.anim = 1; } }
     else if (Ch.sd == null) { if (fr0 === 28 || fr0 === 1 || !STD.length) Ch.sd = fr0 === 28 ? 0 : STAND_FROM_1; else v = .45; }
     Ch.x += v; Ch.lastV = v; Ch.anim = stepAnim(Ch.anim, v, CHR_STEP, CHR_META);
     const fr1 = frameOf(Ch.anim);
-    if (v && fr1 !== fr0 && CHR_META.rest.includes(fr1) && audio()) sfx.step(false, ph === 'walk' ? 1.4 : .9);
+    if (v && fr1 !== fr0 && CHR_META.rest.includes(fr1) && audio()) groundStep(1, ph === 'walk' ? 1.4 : .9);      // build 492: earth between the walls, grass on the hill
     return v;
   }
   // the book: "Up this way did burdened Christian run, but not without great difficulty" ({92}): up the highway and the
@@ -160,7 +164,7 @@ const CR = (() => {
     if (!RUNP.ready) return walk(go ? MAXV * .9 : 0);
     if (go) {
       const st = RUNP_META.vpx * CHR_K * .4; Ch.x += st; Ch.lastV = st; Ch.ranim += .4; Ch.run = Math.min(1, Ch.run + .14); Ch.sd = null;
-      if (Math.floor(Ch.ranim) % 14 === 0 && Math.floor(Ch.ranim - .4) % 14 !== 0 && audio()) sfx.step(false, 1.3);
+      if (Math.floor(Ch.ranim) % 14 === 0 && Math.floor(Ch.ranim - .4) % 14 !== 0 && audio()) groundStep(1.25, 1.3);
       return st;
     }
     Ch.lastV = 0; Ch.run = Math.max(0, Ch.run - .14); if (Ch.sd == null) Ch.sd = QUIET[0];
@@ -672,7 +676,7 @@ const CR = (() => {
     const want = G.state === 'play' && (keys.r || held());
     if (Ch.sd != null) Ch.sd += .4;
     // the hop of a leap
-    if (Ch.hv || Ch.hop > 0) { Ch.hop += Ch.hv; Ch.hv -= .2; if (Ch.hop <= 0) { Ch.hop = 0; Ch.hv = 0; if (audio()) sfx.step(false, .8); } }
+    if (Ch.hv || Ch.hop > 0) { Ch.hop += Ch.hv; Ch.hv -= .2; if (Ch.hop <= 0) { Ch.hop = 0; Ch.hv = 0; if (audio()) groundStep(1.1, 0); } }
     dawn += ((ph === 'walk' || ph === 'look' ? .55 * sm(SLOPE0 - 400, CREST0, Ch.x) : .7) - dawn) * .01;
     gold += (goldTo - gold) * .0032; robe = Math.min(1, robe + (robeTo > robe ? .01 : 0)); mark += (markTo - mark) * .03; shine += (shineTo - shine) * .012; gone += (goneTo - gone) * .012;
     // the sun rises slowly, about 14 s (owner, build 455: "sun can rise slower")
