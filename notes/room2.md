@@ -17,7 +17,7 @@ Chat: **PP House · Room 2 Parlour**. Read `notes/house.md` first (shared rules,
 ## What it looks like now
 
 - **The room** (`bakeR2s()`, `R2S`; builds 435, 475, 477): on the house's shell, the parlour by night after Vermeer's *Milkmaid*: one tall leaded window in the back wall (`R2S.WIN`), the moon's light a broad soft slant down to the floor, plaster with old repairs, cracks and nail holes, the basket and brass pail on their nails with thrown shadows, a row of Delft tiles at the wall's foot with faint blue figures, honey-brown floorboards, a foot warmer, a high-backed chair with an ultramarine cushion lost in the dark at the right; Vermeer's colours (cream light, olive-umber shade, cool grey-blue half-tones, lead-tin yellow brass, ultramarine).
-- **The girl:** `room2-girl.webp` (build 383): cut from the old oil painting by GrabCut, her jug already tipped in her hands; drawn at the painting's own size. She does not move (the tipping is `df`, which only drives the water; her picture is one still). Since build 512 she and the sweeper are darkened and their colour held down in the night parlour to sit with the visitors.
+- **The girl:** `room2-girl.webp` (build 383): cut from the old oil painting by GrabCut, her jug already tipped in her hands; drawn at the painting's own size. She does not move (the tipping is `df`, which only drives the water; her picture is one still). The sweeper is darkened to sit with the visitors (build 512); the girl keeps her full colour (owner, build 515: "i liked the more colorful girl"): in Vermeer the maid is the one lit, coloured figure.
 - **The sweeper:** a real video (build 482, about 71 cents): `room2-sweeper-v.webp`, 108 frames at 12 a second (`R2D.sweepV`), an upright servant holding a long twig broom properly, sweeping in short strokes; the still `room2-sweeper.webp` stands in until the sheet loads (about 1.5 MB).
 - **The visitors:** Christian at 820, the Interpreter at 1100, both at their own size, facing right (in the `?painted` room: 470 and 690).
 - **The dust and haze:** particles drawn in `over()`, a warm haze laid over the room (a third as strong in the drawn room).
@@ -39,6 +39,8 @@ Chat: **PP House · Room 2 Parlour**. Read `notes/house.md` first (shared rules,
 - The words: four lines and two acts; within the rules.
 
 ## Log (newest first)
+
+- Build 515 (owner: "i liked the more colorful girl", then "do 1-5"): the girl in her full colour again (the sweeper stays dark); the sweeper 14 units lower, his soles on the boards; the Delft tiles' blue figures fainter and finer; the brass pail and the basket dimmer; no specks in the air at the start: a faint haze and a pale film of dust on the boards (`film`), dust flies only from the broom, and the film goes as the water falls. Nothing spent. Point 1 (her jug upright, then a clip of her sprinkling) is being tried by the free route.
 
 - Build 512 (owner: "tone the girl and sweeper darker to match the visitors"): in the night parlour the girl (`mul` .66, `sat` .55) and the sweeper (still and video, `mul` .62, `sat` .55) are held down toward the visitors' dark quiet tones (`DK`, `R2D.sweepVd` in `under()`); the `?drawn` daylight trial unchanged. Nothing spent. Suggested to the owner, waiting: the girl standing by with her jug upright, then a clip of her sprinkling; the sweeper's feet down on the boards; the tiles quieter and running the whole wall; the pail and basket dimmer; the dust rising only from the broom.
 

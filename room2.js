@@ -158,12 +158,12 @@
         // the basket: wicker, rows of strands slanting over dark gaps, ribs, a lit rim toward the window, its handle up to the nail
         c.save(); c.fillStyle = '#261c12'; basketShape(c);
         c.beginPath(); c.moveTo(BX - 90, BY); c.quadraticCurveTo(BX, BY + 22, BX + 90, BY); c.bezierCurveTo(BX + 100, BY + 90, BX + 60, BY + 150, BX, BY + 156); c.bezierCurveTo(BX - 60, BY + 150, BX - 100, BY + 90, BX - 90, BY); c.closePath(); c.clip();
-        for (let y = BY + 8, row = 0; y < BY + 160; y += 13, row++) for (let x = BX - 110 + (row % 2) * 9; x < BX + 110; x += 18) { const lit = .5 + .5 * (BX + 40 - x) / 150; c.fillStyle = `rgba(${104 + 46 * lit | 0},${86 + 36 * lit | 0},${60 + 26 * lit | 0},${(.45 + .3 * lit).toFixed(3)})`; c.beginPath(); c.ellipse(x, y, 8, 4.5, row % 2 ? .5 : -.5, 0, 6.2832); c.fill(); }
+        for (let y = BY + 8, row = 0; y < BY + 160; y += 13, row++) for (let x = BX - 110 + (row % 2) * 9; x < BX + 110; x += 18) { const lit = .5 + .5 * (BX + 40 - x) / 150; c.fillStyle = `rgba(${104 + 46 * lit | 0},${86 + 36 * lit | 0},${60 + 26 * lit | 0},${(.3 + .22 * lit).toFixed(3)})`; c.beginPath(); c.ellipse(x, y, 8, 4.5, row % 2 ? .5 : -.5, 0, 6.2832); c.fill(); }
         g = c.createLinearGradient(BX - 100, 0, BX + 100, 0); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(10,6,2,.55)'); c.fillStyle = g; c.fillRect(BX - 110, BY - 10, 220, 180); c.restore();
         c.strokeStyle = '#54452f'; c.lineWidth = 7; c.beginPath(); c.moveTo(BX - 90, BY + 1); c.quadraticCurveTo(BX, BY + 22, BX + 90, BY + 1); c.stroke();
         c.strokeStyle = '#3c3020'; c.lineWidth = 10; c.beginPath(); c.moveTo(BX - 76, BY + 6); c.bezierCurveTo(BX - 66, BY - 110, BX + 66, BY - 110, BX + 76, BY + 6); c.stroke(); c.strokeStyle = 'rgba(190,170,130,.4)'; c.lineWidth = 3; c.beginPath(); c.moveTo(BX - 79, BY + 2); c.bezierCurveTo(BX - 69, BY - 112, BX - 10, BY - 92, BX, BY - 88); c.stroke();
         // the brass pail: a warm gleam on the window's side, dark on the far side, a rim and a bail
-        g = c.createLinearGradient(PX - 62, 0, PX + 62, 0); g.addColorStop(0, '#8a6e34'); g.addColorStop(.16, '#d2b868'); g.addColorStop(.3, '#8e6e30'); g.addColorStop(.75, '#4a3416'); g.addColorStop(1, '#22180a'); c.fillStyle = g; pailShape(c);
+        g = c.createLinearGradient(PX - 62, 0, PX + 62, 0); g.addColorStop(0, '#665226'); g.addColorStop(.16, '#a08848'); g.addColorStop(.3, '#665022'); g.addColorStop(.75, '#4a3416'); g.addColorStop(1, '#22180a'); c.fillStyle = g; pailShape(c);
         c.fillStyle = '#54432a'; c.fillRect(PX - 66, PY - 6, 132, 12); c.fillStyle = 'rgba(220,210,170,.45)'; c.fillRect(PX - 64, PY - 6, 40, 3);
         c.strokeStyle = 'rgba(60,40,18,.55)'; c.lineWidth = 2; for (const y of [PY + 40, PY + 96]) { c.beginPath(); c.moveTo(PX - 58, y); c.lineTo(PX + 56, y); c.stroke(); }
         c.strokeStyle = '#3a2a14'; c.lineWidth = 5; c.beginPath(); c.moveTo(PX - 60, PY + 4); c.quadraticCurveTo(PX, PY - 70, PX + 60, PY + 4); c.stroke();
@@ -176,7 +176,7 @@
         c.fillStyle = '#1a120b'; c.fillRect(EX.x0, TY - 6, EX.x1 - EX.x0, TH + 6);
         let k = 0; for (let x = EX.x0 + 120; x < EX.x1 - 120; x += TH, k++) { const lit = Math.max(.12, 1 - Math.max(0, x - 500) / 2200), t0 = 70 + 120 * lit;
           c.fillStyle = `rgb(${t0 | 0},${t0 * .97 | 0},${t0 * .86 | 0})`; c.fillRect(x + 2, TY + 2, TH - 4, TH - 4);
-          c.strokeStyle = `rgba(32,58,150,${(.6 * lit + .12).toFixed(3)})`; c.lineWidth = 2.6; const cx = x + TH / 2, cy = TY + TH / 2, f = k % 5;
+          c.strokeStyle = `rgba(32,58,150,${(.34 * lit + .05).toFixed(3)})`; c.lineWidth = 1.8; const cx = x + TH / 2, cy = TY + TH / 2, f = k % 5;
           c.beginPath(); for (const [a, b] of [[x + 6, TY + 6], [x + TH - 6, TY + 6], [x + 6, TY + TH - 6], [x + TH - 6, TY + TH - 6]]) { c.moveTo(a - 3, b); c.lineTo(a + 3, b); c.moveTo(a, b - 3); c.lineTo(a, b + 3); } c.stroke();
           c.beginPath(); if (f === 0) { c.arc(cx, cy, 9, 0, 6.2832); } else if (f === 1) { c.moveTo(cx - 10, cy + 10); c.lineTo(cx - 10, cy - 2); c.lineTo(cx, cy - 11); c.lineTo(cx + 10, cy - 2); c.lineTo(cx + 10, cy + 10); } else if (f === 2) { c.moveTo(cx, cy + 12); c.lineTo(cx, cy - 4); c.moveTo(cx - 8, cy - 2); c.quadraticCurveTo(cx, cy - 16, cx + 8, cy - 2); } else if (f === 3) { c.moveTo(cx - 12, cy + 6); c.quadraticCurveTo(cx - 4, cy - 4, cx + 2, cy + 4); c.quadraticCurveTo(cx + 8, cy - 8, cx + 12, cy + 2); } else { c.moveTo(cx - 9, cy + 9); c.lineTo(cx, cy - 10); c.lineTo(cx + 9, cy + 9); c.moveTo(cx - 5, cy + 1); c.lineTo(cx + 5, cy + 1); } c.stroke();
           c.fillStyle = `rgba(0,0,0,${(.25 * (1 - lit)).toFixed(3)})`; c.fillRect(x + 2, TY + 2, TH - 4, TH - 4); }
@@ -214,7 +214,7 @@
         if (PAINTED) { this.ov(c, this.DM, this.df); this.ov(c, this.SW, this.sf); return; }
         // the drawn room: the girl (stand-in: his wife's picture) holding the jug, which tips as she pours; the sweeper (stand-in: Help) and his broom
         // build 512 (owner: "tone the girl and sweeper darker to match the visitors"): in the night parlour both are held down toward the visitors' dark, quiet tones
-        const FY = this.FY + (this.shell ? 0 : 14), DK = this.shell ? { ct: 1, mul: .66, sat: .55 } : null, G2 = DK ? { ...R2D.girl, ...DK } : R2D.girl, SW2 = DK ? { ...R2D.sweeper, ...DK } : R2D.sweeper, col = this.shell ? [186, 186, 198] : [255, 255, 255];
+        const FY = this.FY + (this.shell ? 0 : 14), DK = this.shell ? { ct: 1, mul: .66, sat: .55 } : null, G2 = R2D.girl, SW2 = DK ? { ...R2D.sweeper, ...DK } : R2D.sweeper, col = this.shell ? [186, 186, 198] : [255, 255, 255];
         // the girl: cut straight out of the painting (build 382), so she is the painted Milkmaid herself, her jug already in her hands;
         // the water falls from its spout when the child has touched it
         if (pics['room2-girl']) fig(c, 'room2-girl', G2, R2D.GX, FY + 6, -1, 1, 1, col);
@@ -224,10 +224,10 @@
         // build 482: the sweeper on video (Google, owner's yes): upright, hands apart on the pole; 108 frames at 12 a second, a loop that
         // starts and ends in his standing pose, played while he sweeps and held on frame 0 between
         const SV = DK ? (R2D.sweepVd = R2D.sweepVd || { ...R2D.sweepV, mul: .62, sat: .55 }) : R2D.sweepV;
-        if (sheetFrames(SV)) fig(c, SV.n + '#' + (Math.floor(this.svf || 0) % SV.fr), SV, R2D.SX, FY, -1, 1, 1, col);
+        if (sheetFrames(SV)) fig(c, SV.n + '#' + (Math.floor(this.svf || 0) % SV.fr), SV, R2D.SX, FY + (this.shell ? 14 : 0), -1, 1, 1, col);
         else if (pics['room2-sweeper']) fig(c, 'room2-sweeper', SW2, R2D.SX, FY, -1, 1, 1, col);
       },
-      enter() { pic('room2-sweep'); pic('room2-damsel'); pic('room2-sweeper-v'); this.sf = 0; this.svf = 0; this.sweeps = 0; this.df = 14; this.dt = 14; this.dust = []; this.haze = .22; this.wet = []; const r = rngR(5); for (let i = 0; i < 70; i++) this.dust.push({ x: 300 + r() * 2800, y: 300 + r() * 900, vx: 0, vy: 0, s: 2 + r() * 5, a: .5 + r() * .5, p: r() * 7 }); },
+      enter() { pic('room2-sweep'); pic('room2-damsel'); pic('room2-sweeper-v'); this.sf = 0; this.svf = 0; this.sweeps = 0; this.df = 14; this.dt = 14; this.dust = []; this.haze = this.shell ? .12 : .22; this.film = 1; this.wet = []; const r = rngR(5); for (let i = 0; i < (this.shell ? 0 : 70); i++) this.dust.push({ x: 300 + r() * 2800, y: 300 + r() * 900, vx: 0, vy: 0, s: 2 + r() * 5, a: .5 + r() * .5, p: r() * 7 }); },
       run() { talk([[N, 'He led him into a very large parlour, full of dust, because it was never swept.'], [TIP, 'Touch the broom.', 'broom']], () => { H.ph = 'sweep'; H.t = 0; G.state = 'auto'; }); },
       act(sx, sy) {
         if (G.act === 'broom' && (sx == null || near(sx, sy, 2390, 1180, 160))) next(true);
@@ -257,7 +257,7 @@
           const pour = this.df < 1.5 && H.t < 240;
           if (pour && H.t % 3 === 0) for (let k = 0; k < 2; k++) this.wet.push({ x: (!PAINTED && this.spout ? this.spout[0] : 1944) + rnd() * 14, y: !PAINTED && this.spout ? this.spout[1] : 842, vx: (rnd() - .5) * 1.2, vy: -rnd() * 1.5, l: 0 });
           if (pour && H.t % 24 === 0) noise(6000, 1, .4, .025);
-          this.haze = Math.max(0, this.haze - .0028);
+          this.haze = Math.max(0, this.haze - .0028); if (H.t > 60) this.film = Math.max(0, this.film - .005);
           for (const d of this.dust) { d.vy += .03; d.vx *= .96; }
           if (H.t === 330) talk([[C, 'What does this mean?'], [I, 'This parlour is the heart of a man. The dust is his sin. He who swept first is the Law: it stirs the dust up, but cannot make the heart clean.'], [I, 'She who brought the water is the Gospel. By it the heart is made clean, fit for the King of glory to live in.']], () => goTo('r3'));
         }
@@ -274,6 +274,8 @@
           const hx = hc.getContext('2d'); hx.globalCompositeOperation = 'source-over'; hx.fillStyle = css([170, 150, 120], hz); hx.fillRect(0, 0, hc.width, hc.height); hx.globalCompositeOperation = 'destination-in'; hx.drawImage(im, 0, 0, hc.width, hc.height);
           c.restore(); c.drawImage(hc, u((LS.bx - LS.ox) / LS.k), v((LS.by - LS.oy) / LS.k), W2, H2); c.save();
         } else { c.fillStyle = css([170, 150, 120], hz); if (this.shell) c.fillRect(u(EX.x0), v(EX.y0), (EX.x1 - EX.x0) * S, (EX.y1 - EX.y0) * S); else c.fillRect(u(0), v(0), (H.R.PW || 3168) * S, PH * S); }
+        // the night parlour: the dust lies as a pale film on the boards until the water lays it; it flies only from the broom
+        if (this.shell && this.film > 0) { const fy = v(HOUSE.FY + 3), g = c.createLinearGradient(0, fy, 0, fy + 70 * S); g.addColorStop(0, css([196, 182, 156], .2 * this.film)); g.addColorStop(1, css([196, 182, 156], 0)); c.fillStyle = g; c.fillRect(u(120), fy, 3170 * S, 70 * S); }
         for (const d of this.dust) { const a = Math.min(1, d.a * (.45 + this.haze)); const r = d.s * S * 3; const g = c.createRadialGradient(u(d.x), v(d.y), 0, u(d.x), v(d.y), r); g.addColorStop(0, css([206, 188, 160], a * .7)); g.addColorStop(1, css([196, 178, 150], 0)); c.fillStyle = g; c.fillRect(u(d.x) - r, v(d.y) - r, 2 * r, 2 * r); }
         c.fillStyle = 'rgba(200,215,225,.5)'; for (const w of this.wet) c.fillRect(u(w.x), v(w.y), 1.2, 2.4);
       },

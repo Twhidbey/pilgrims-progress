@@ -162,6 +162,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 **Build 512 (Room 2 chat): the parlour's girl and sweeper toned darker and quieter to match the visitors. Nothing spent.**
 
+**Build 515 (Room 2 chat): the parlour's girl in full colour again (owner's wish), the sweeper's feet on the boards, quieter tiles, pail and basket, dust only from the broom with a film on the floor that the water lays. Nothing spent.**
+
 **Build 502 (Level 1 chat): Level 1's run music starts at "Life! Life! Eternal life!" (no beat before his door); footsteps in every level at .4 of their loudness (`STEP_K`). Nothing spent.**
 
 **Build 501 (Level 1 chat): the storyteller's family line at his door shortened ("His family would not believe him. Now they saw him run.") so he no longer waits at the door for it. About 1 cent.**
