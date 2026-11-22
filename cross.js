@@ -363,7 +363,9 @@ const CR = (() => {
     c.fillStyle = g; c.fillRect(x0, -H_TOP - 60, x1 - x0, H_TOP + 2100);
     const R = rockTex(); c.drawImage(R.c, R.x, R.y, R.w, R.h);
     // the painted rock's grain over it all, as on Level 3's crags
-    if (RTEX) { if (!RPAT) RPAT = c.createPattern(RTEX, 'repeat'); const ts = 2.4; RPAT.setTransform(new DOMMatrix([ts, 0, 0, ts, 300, -H_TOP - 200]));
+    // the painted cliff texture from Level 3 is no longer laid on (owner, build 470: "there's lines on the hill now":
+    // its upright cracks showed as stripes down the smooth hill)
+    if (false && RTEX) { if (!RPAT) RPAT = c.createPattern(RTEX, 'repeat'); const ts = 2.4; RPAT.setTransform(new DOMMatrix([ts, 0, 0, ts, 300, -H_TOP - 200]));
       c.globalCompositeOperation = "overlay"; c.globalAlpha = .2; c.fillStyle = RPAT; c.fillRect(x0, -H_TOP - 60, x1 - x0, H_TOP + 2100); c.globalAlpha = 1; c.globalCompositeOperation = 'source-over'; }
     c.restore();
     // a thin edge of light along the crown, toward the sun (after dawn)
@@ -567,7 +569,9 @@ const CR = (() => {
   }
 
   function update() {
-    G.t++; t++;
+    // the game's clock G.t is moved on by the engine's update() before this is called; moving it here too made it run at
+    // twice its speed in this level (build 470: lines were cut short and memories spoke over the storyteller)
+    t++;
     if (G.act) G.actT++;
     if (G.roll) G.roll.t++;
     if (rollFly && ++rollFly.t >= ROLL_FLY + 20) {
