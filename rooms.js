@@ -1173,7 +1173,7 @@ const RM = (() => {
         if (this.w > 0) {
           this.fr += WALK_FPT * this.w; this.x += walkSpeed('C', .58) * this.w;
           // build 492: his steps on the earth of the highway
-          const st = Math.floor(this.fr * 2 / VIS.C.walk.fr); if (st !== this.lst) { this.lst = st; if (typeof sfxPlay === 'function') sfxPlay('step-dirt', 6, .26); }
+          const st = Math.floor(this.fr * 2 / VIS.C.walk.fr); if (st !== this.lst) { this.lst = st; if (typeof sfxPlay === 'function') sfxPlay('step-dirt', 6, .26 * (typeof STEP_K === 'number' ? STEP_K : 1)); }
         }
         cam.to = Math.min(R.PW * S - VW, Math.max(R.cam0, u(this.x) + cam.x - 500));
         if (this.x > 2800) { this.a = Math.max(0, this.a - .03); if (G.act === 'walkout') { next(true); G.state = 'auto'; } }
@@ -1281,7 +1281,7 @@ const RM = (() => {
         // build 492: the ground under his feet: boards in the house, the cellar's stone, the garden's grass out of doors
         const late = this.p > .72, surf = this.kind === 'round' ? 'grass' : this.kind === 'out' ? (late ? 'grass' : 'wood')
           : this.kind === 'down' ? (this.to === 'r6' ? (late ? 'stone' : 'wood') : 'wood') : 'wood';
-        if (!(typeof sfxPlay === 'function' && sfxPlay('step-' + surf, STEP_N[surf], .3))) { noise(200, 1.5, .2, .06); noise(140, 1.2, .25, .04, .05); }
+        if (!(typeof sfxPlay === 'function' && sfxPlay('step-' + surf, STEP_N[surf], .3 * (typeof STEP_K === 'number' ? STEP_K : 1)))) { noise(200, 1.5, .2, .06); noise(140, 1.2, .25, .04, .05); }
       }
     },
     draw(c) {
