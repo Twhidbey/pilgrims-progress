@@ -3,6 +3,8 @@
 The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build step; until build 118 it was called `story-lab.html`: read that name below as `index.html`). `style-lab.html` is the art-style test page. `CLAUDE.md` maps the code and records the owner's decisions. Work on **`main`** and push after every change: pushing IS publishing (GitHub Pages, https://twhidbey.github.io/pilgrims-progress/). Bump the build stamp in both pages on every push and tell the owner when it is live (a phone may need `?v=N` on the link). Keep this file and `CLAUDE.md` updated. Public repo: no personal details.
 
 
+**Build 522 (Room 4 chat): the fire burns in one fireplace through the chimney breast (water in at the front, oil in at the back, the oil man unseen until they go round); everyone in the room dimmer and nearly colourless (new core option `satK`); the Interpreter and his candle always behind Christian. Nothing spent.**
+
 **Build 516 (Room 4 chat): the fire room reworked: a particle fire, water arcing into it, the oil fed through a low arch into the back of the same fire, the hidden side truly dark, the two walking round behind the wall by a cupped candle (the La Tour quote). Two free clips queued (`room4-cast`, `room4-pour`). Nothing spent; see notes/room4.md.**
 
 **Build 519 (House · Outside & passages chat): leaving ends with Christian running on up the highway beside the wall of Salvation into Level 5's grey; the house has a corner; the cutaway larger and opaque; the Interpreter steps out onto the threshold and Christian walks in; Level 1's field trees and a path outside the door; the house plan only on the first passage. Nothing spent.**

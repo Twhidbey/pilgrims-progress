@@ -43,6 +43,8 @@ Several chats push to `main`. Just before pushing: `git fetch`, rebase on `origi
 
 ## Changes to the core (newest first)
 
+- Build 522 (room 4 chat): `toneOf` reads `R.satK` (a factor on every figure's colour in that room; 1 if not set, so other rooms are unchanged; it is part of the toned picture's key). Checked: rooms 3 and 5 still play, no errors.
+
 - Build 520 (room 2 chat): `toneOf` takes a room's `soft` (0..1, default none): a softened copy laid over each figure inside its own outline. Only room 2 sets it; no other room changes (the cache key gained one field).
 - Build 519 (Outside & passages): `houseCut` larger, lower and opaque; `RM.peek()` gives `wx` (the walker's place at the door and leaving).
 - Build 514 (Outside & passages): `setView` lets a passage use the shell view (`if (R && R.shell)`, was `&& R.id !== 'pass'`); only the passage changes, every room has `shell` as before. `tools/stills4.js` takes `DARK=1`.
