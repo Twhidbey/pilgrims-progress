@@ -132,7 +132,8 @@
         // THE CHIMNEY BREAST'S FACE IN PERSPECTIVE (build 523; owner: "make the fireplace opening arched like a real old hearth and make it facing
         // the man throwing on water (perspective kinda like that gate in level 3)"): the breast is cut by the section at P0..P1; its face toward
         // the room runs back from the cut to a vanishing point on the left (PV), as the gate's wall does, and the hearth is set in that face
-        const D = PV.D, [fx0, fy0] = PP(P0, FB, D), CY = HOUSE.CEIL + 80, ft0 = CY;
+        const D = PV.D, [fx0, fy0] = PP(P0, FB, D), CY = HOUSE.CEIL + 80, ft0 = CY + (FB - fy0);
+        // the top edge falls toward the far corner by as much as the foot rises (owner, build 540: "about the same angle but reflected vertically")
         c.save(); c.beginPath(); c.rect(u(EX.x0), v(CY), (EX.x1 - EX.x0) * S, (EX.y1 - CY) * S); c.clip();
         // the face itself, dark stone, warmed round the hearth
         poly([[P0, CY], [fx0, ft0], [fx0, fy0], [P0, FB]]); c.fillStyle = '#150d09'; c.fill();
