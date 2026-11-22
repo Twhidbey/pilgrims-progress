@@ -17,7 +17,7 @@
 const CR = (() => {
   const SO = 'The Shining Ones', S1 = 'The first Shining One', S3 = 'The third Shining One';
   // ---------- the land (world units: x along the way, h up from the foot of the slope) ----------
-  const START = 480, WALL_END = 860, TOMB_X = 5300, SLOPE0 = 1180, CREST0 = 4080, CROSS_X = 4260, CREST1 = 4400, FALL1 = 5420, H_TOP = 860;
+  const START = 480, WALL_END = 860, TOMB_X = 5010, SLOPE0 = 1180, CREST0 = 4080, CROSS_X = 4260, CREST1 = 4400, FALL1 = 5340, H_TOP = 860;
   // GOLGOTHA, AFTER THE OWNER'S SKETCH (build 545): a smooth swooping ramp up from the left that meets the top of a round
   // rocky knoll shaped like a skull's crown (SK_X its top, SK_L / SK_R how far its dome reaches left and right)
   const SK_X = 4380, SK_L = 1000, SK_R = FALL1 - 4380, SK_H = H_TOP + 30, RAMP1 = SK_X - 260;
@@ -50,13 +50,21 @@ const CR = (() => {
   // outline is a skull seen side-on, facing right: the round cranium, the forehead, the brow ridge, the notch at the root
   // of the nose, the nose, the upper jaw and teeth, the chin, and under the jaw its neck going down into the ground. It
   // overhangs (brow, nose, chin), so it is its own outline (SKO, world units [x, h]); gh() past the crown is its top
-  const SKP = [[0, 1], [.2, .98], [.32, .92], [.4, .83], [.44, .72], [.455, .63], [.44, .565], [.455, .5], [.5, .41],
-    [.57, .32], [.65, .24], [.73, .19], [.81, .17], [.9, .165], [.99, .16], [1.06, .145], [1.11, .115], [1.13, .07], [1.12, .035], [1.15, 0], [1.22, 0]];
+  // build 550 (owner: "the bottom of hill on right has too much swoop - should be natural, rugged almost face shape
+  // crumbling to ground with sepulchre on right"): below the brow the face falls steeply in broken steps, then crumbles
+  // to the ground in a rubble of ledges and fallen stones; the sepulchre in its foot on the right
+  const SKP = [[0, 1], [.2, .98], [.32, .93], [.4, .85], [.45, .75], [.475, .66], [.465, .6], [.485, .555], [.52, .48],
+    [.535, .42], [.56, .35], [.575, .3], [.6, .255], [.615, .215], [.65, .19], [.68, .165], [.7, .16], [.725, .135],
+    [.75, .12], [.775, .1], [.8, .095], [.83, .07], [.86, .06], [.885, .04], [.91, .042], [.93, .025], [.95, .03],
+    [.97, .012], [1, 0], [1.08, 0]];
+  const RGS = rgen(550);
   const SKO = (() => { const P = SKP.map(([u, v]) => [SK_X + u * SK_H, v * SK_H]), O = [];
     for (let i = 0; i < P.length - 1; i++) { const a = P[Math.max(0, i - 1)], b = P[i], c2 = P[i + 1], d = P[Math.min(P.length - 1, i + 2)];
       for (let k = 0; k < 8; k++) { const t = k / 8, t2 = t * t, t3 = t2 * t, f = (p0, p1, p2, p3) => .5 * (2 * p1 + (-p0 + p2) * t + (2 * p0 - 5 * p1 + 4 * p2 - p3) * t2 + (-p0 + 3 * p1 - 3 * p2 + p3) * t3);
         const x = f(a[0], b[0], c2[0], d[0]), h = f(a[1], b[1], c2[1], d[1]), up = h / SK_H;
-        O.push([x + 2.5 * Math.sin(h * .09) * (up > .05 ? 1 : 0), Math.max(0, h + 2.2 * Math.sin(x * .07 + h * .05) * (up > .05 && up < .97 ? 1 : 0))]); } }
+        // rugged: a broken jitter that grows down the face (the crown stays smooth)
+        const rg = up > .02 && up < .95 ? 1 + 2 * smooth(.6, .1, up) : 0, rr = RGS();
+        O.push([x + rg * (2.2 * Math.sin(h * .09) + 3.4 * (rr - .5)), Math.max(0, h + rg * (1.8 * Math.sin(x * .07 + h * .05) + 3 * (RGS() - .5)))]); } }
     O.push(P[P.length - 1]); return O; })();
   const SK_END = SKO[SKO.length - 1][0];
   const SKT = (() => { const T = []; for (let x = SK_X; x <= SK_END + 2; x += 2) { let m = 0;
@@ -515,21 +523,19 @@ const CR = (() => {
       // the dome's left flank: a soft seam where the skull rises out of the smooth ramp
       for (const [w, a] of [[16, .05], [7, .08], [2.6, .2]]) { q.strokeStyle = css([0, 0, 0], a); q.lineWidth = w; q.beginPath(); let pen = false;
         for (let x = xa + 4; x <= RAMP1; x += 6) { const d = dome(x); if (d > gh(x) - 14) { pen = false; continue; } pen ? q.lineTo(x, -d) : q.moveTo(x, -d); pen = true; } q.stroke(); }
-      // CONTOURS FOR VOLUME (owner: "more contours on hill giving it volume"): lines that follow the skull's own outline,
-      // each a smaller copy of it toward its foot (so they run down the face as the face does), broken in places, a shade
-      // darker with a faint lit lip below each, and a soft band of shade just inside each one, so the rock reads as rounded
+      // LAYERS OF SHADE FOR VOLUME (owner: "levels of different shades of darkness one on top of the other getting darker
+      // and smaller to show shape of hill"): six copies of the skull's own outline, each smaller (drawn in toward the
+      // middle of its foot) and laid one on another, so the hill darkens in steps toward its heart and reads as round;
+      // each step's edge a little ragged, its upper edge with a faint lit lip; faded in from the ramp on the left
       const FULL = []; for (let x = xa; x < SK_X; x += 14) FULL.push([x, dome(x)]); for (const p of SKO) FULL.push(p);
-      [[.9, 0, .2], [.79, 20, .17], [.68, 10, .16], [.57, 30, .14], [.46, 15, .13], [.35, 35, .11], [.24, 20, .1]].forEach(([sc, dx, a], n) => {
-        const P = FULL.map(([x, h]) => [SK_X + dx + (x - SK_X) * (.55 + .45 * sc), h * sc + 4 * Math.sin(x * .02 + n)]);
-        const on = (x, i) => Math.sin(i * .09 + n * 2.3) > -.55 && x > xa + 260;
-        // a soft band of shade under the line
-        for (const [w, al] of [[34, .035], [16, .05]]) { q.strokeStyle = css([0, 0, 0], al * a / .15); q.lineWidth = w; q.beginPath(); let pen = false;
-          P.forEach(([x, h], i) => { if (!on(x, i)) { pen = false; return; } pen ? q.lineTo(x, -h + w / 2) : q.moveTo(x, -h + w / 2); pen = true; }); q.stroke(); }
-        q.strokeStyle = css([0, 0, 0], a); q.lineWidth = 2.6; q.beginPath(); let pen = false;
-        P.forEach(([x, h], i) => { if (!on(x, i)) { pen = false; return; } pen ? q.lineTo(x, -h) : q.moveTo(x, -h); pen = true; }); q.stroke();
-        l.strokeStyle = css([255, 255, 255], a * .55); l.lineWidth = 1.6; l.beginPath(); pen = false;
-        P.forEach(([x, h], i) => { if (!on(x, i)) { pen = false; return; } pen ? l.lineTo(x, -h - 2.6) : l.moveTo(x, -h - 2.6); pen = true; }); l.stroke();
-      });
+      const cx0 = SK_X + .3 * SK_H;
+      const fadeL = (c2, a) => { const g2 = c2.createLinearGradient(xa + 120, 0, xa + 700, 0); g2.addColorStop(0, css([0, 0, 0], 0)); g2.addColorStop(1, css([0, 0, 0], a)); return g2; };
+      for (let n = 1; n <= 6; n++) { const sc = 1 - n * .13;
+        const P = FULL.map(([x, h], i) => [cx0 + (x - cx0) * (.25 + .75 * sc) + 5 * Math.sin(i * .37 + n), h * sc + 4 * Math.sin(x * .031 + n * 1.7) + 2.5 * Math.sin(x * .11 + n)]);
+        q.beginPath(); q.moveTo(P[0][0], 60); P.forEach(([x, h]) => q.lineTo(x, -h)); q.lineTo(P[P.length - 1][0], 60); q.closePath();
+        q.fillStyle = fadeL(q, .1); q.fill();
+        l.strokeStyle = css([255, 255, 255], .05); l.lineWidth = 1.6; l.beginPath(); let pen = false;
+        P.forEach(([x, h], i) => { if (h < 20 || x < xa + 300) { pen = false; return; } pen ? l.lineTo(x, -h - 2) : l.moveTo(x, -h - 2); pen = true; }); l.stroke(); }
       // the hollow of the eye, only a faint shadow in the rock (it must not stare), and a faint shade under the cheekbone
       for (const [ux, uy, rx, ry, a] of []) { const ex = SK_X + ux * SK_H, ey = -uy * SK_H;
         q.save(); q.translate(ex, ey); q.scale(1, ry / rx); const g2 = q.createRadialGradient(0, 0, 0, 0, 0, rx * SK_H);
