@@ -184,7 +184,7 @@ body.portrait:not(.playing) #rot{display:none}
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
   <button id="autoWalk" aria-label="He walks on by himself"><svg viewBox="0 0 24 24"><path d="M5 6l6 6-6 6M12 6l6 6-6 6"/></svg></button>
-  <div id="build">build 485 · Nov 22 2026</div>
+  <div id="build">build 486 · Nov 22 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -908,7 +908,7 @@ function ambience() {
   padG.gain.setTargetAtTime(.055 * hum, now, .8);
   warmG.gain.setTargetAtTime((.05 * w + .04 * G.gateOpen) * hum, now, .8);
   gloomG.gain.setTargetAtTime(.06 * G.gloom * hum, now, .5);
-  MUFF.frequency.setTargetAtTime(P.run && G.ears ? 520 : 20000, now, P.run && G.ears ? .12 : .3);          // fingers in his ears
+  MUFF.frequency.setTargetAtTime(20000, now, .3);          // build 486 (owner: "remove the plugged ears effect in level one"): never muffled while his fingers are in his ears
   const pushing = G.act === 'gate' && pushHeld() && G.gateOpen < 1;
   creakG.gain.setTargetAtTime(pushing ? .035 : 0, now, .08);
   creakO.frequency.setTargetAtTime(52 + 22 * Math.sin(G.t / 11) + G.gateOpen * 26, now, .1);
