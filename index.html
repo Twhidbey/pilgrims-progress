@@ -184,7 +184,7 @@ body.portrait:not(.playing) #rot{display:none}
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
   <button id="autoWalk" aria-label="He walks on by himself"><svg viewBox="0 0 24 24"><path d="M5 6l6 6-6 6M12 6l6 6-6 6"/></svg></button>
-  <div id="build">build 500 · Nov 22 2026</div>
+  <div id="build">build 501 · Nov 22 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -1250,7 +1250,7 @@ function next(force) {
 // ---------- the voices: one small recording per line, in assets/voice (made by tools/make-voice.py) ----------
 // A line's file is named by a sum of who says it and the words, so the words on screen and the recording always belong together.
 // A line with no recording is simply silent.
-const VOX = new Map(), VOICE_V = 16;       // bump VOICE_V when recordings change, so phones fetch the new ones
+const VOX = new Map(), VOICE_V = 17;       // bump VOICE_V when recordings change, so phones fetch the new ones
 let voxSrc = null, sayN = 0;
 function voiceName(who, txt) { let h = 0x811c9dc5; const t = who + '|' + txt; for (let i = 0; i < t.length; i++) h = Math.imul(h ^ t.charCodeAt(i), 0x01000193) >>> 0; return h.toString(16).padStart(8, '0'); }
 function vox(who, txt) {
@@ -1334,7 +1334,8 @@ const RUNS = [[N, 'So I saw in my dream that the man began to run.', 'quick']]; 
 // the book (fingers in his ears, "Life! Life! Eternal life!", he does not look behind him: FAMILY_RUN); let go by the
 // house and he stops, turns his back to us and stands with his family framed in the lit door, until the child holds to
 // run on (FAMILY: the owner's picture of build 45).
-const DOOR_WORDS = [[N, 'He had told his wife and children of the danger, but they would not believe him. Now they saw him run.', 'quick']];      // vision chat: {11}, {18}      // said as the door flies open
+// build 501 (owner: the line lasted too long to run past): shortened from "He had told his wife and children of the danger, but they would not believe him. Now they saw him run." (10.2 s) to about 4 s
+const DOOR_WORDS = [[N, 'His family would not believe him. Now they saw him run.', 'quick']];      // vision chat: {11}, {18}      // said as the door flies open
 const FAMILY_RUN = [[W, 'Come back! Come home to us!', 'quick']];
 const FAMILY = [
   [W, 'Come back! Come home to us!', 0, () => { P.wantBack = true; }],      // he turns to look: his back to us, his family framed in the lit door
