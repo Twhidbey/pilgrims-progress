@@ -387,7 +387,29 @@ const CR = (() => {
         for (let x = X0; x <= X1; x += 4) q.lineTo(x, -(gh(x) - D) - Hh * crag(x + n * 977, 11 + n * 7, seg) + k2 * 7);
         q.lineTo(X1, Y1); q.closePath(); q.fillStyle = css([0, 0, 0], a / 2.2); q.fill(); }
     });
-    if (O !== 'e' && O !== 'f' && O !== 'g') ROWS.forEach(([D, Hh, seg, a], n) => {
+    // (r) roundness, a trial: (1) the light follows the outline: brightest in a thin band just under the edge where the
+    // hill turns away against the dawn sky, darkening steadily inward, so the mass reads as turning away from us; (2) the
+    // two ridges are LEVEL lines round the hill: each meets the outline where the hill reaches its height on either side
+    // and sags toward us between, as a line round a dome is seen from a little above
+    if (O === 'r') {
+      const OP = []; for (let x = X0; x <= X1; x += 4) OP.push([x, -gh(x)]);
+      const below = (c2, dd) => { c2.beginPath(); c2.moveTo(X0, Y1); for (const [x, y] of OP) c2.lineTo(x, y + dd); c2.lineTo(X1, Y1); c2.closePath(); };
+      // the light: the outline laid again and again, a little lower each time and fainter (smooth along its length)
+      l.save(); below(l, 0); l.clip(); l.lineJoin = 'round'; l.lineWidth = 12;
+      for (let dd = 0; dd < 190; dd += 5) { l.strokeStyle = css([255, 255, 255], .016 * Math.pow(1 - dd / 190, 1.5)); l.beginPath(); OP.forEach(([x, y], i) => i ? l.lineTo(x, y + dd) : l.moveTo(x, y + dd)); l.stroke(); }
+      l.restore();
+      // the dark: the hill below the outline darkened a little more at each step inward
+      for (let dd = 120; dd < 760; dd += 40) { below(q, dd); q.fillStyle = css([0, 0, 0], .016); q.fill(); }
+      for (const [h, a, n] of [[600, .1, 3], [300, .11, 5]]) {
+        let xa = SLOPE0, xb = X1; for (let x = SLOPE0; x < X1; x += 2) if (gh(x) >= h) { xa = x; break; }
+        for (let x = X1; x > xa; x -= 2) if (gh(x) >= h) { xb = x; break; }
+        if (xb > X1 - 10) xb = X1;
+        const w = xb - xa, sag = Math.min(.11 * w, h * .75);
+        const cy = x => { const u = (x - xa) / w; return -h + sag * Math.pow(Math.sin(Math.PI * u), .9) - 40 * crag(x + n * 977, 11 + n * 7, 260) * Math.sin(Math.PI * u); };
+        for (let k2 = 0; k2 < 4; k2++) { q.beginPath(); q.moveTo(X0, Y1); q.lineTo(X0, -3000); q.lineTo(xa, -3000); for (let x = xa; x <= xb; x += 4) q.lineTo(x, cy(x) + k2 * 7); q.lineTo(xb, -3000); q.lineTo(X1, -3000); q.lineTo(X1, Y1); q.closePath(); q.fillStyle = css([0, 0, 0], a / 2.2); q.fill(); }
+      }
+    }
+    if (O !== 'e' && O !== 'f' && O !== 'g' && O !== 'r') ROWS.forEach(([D, Hh, seg, a], n) => {
       const top = x => -(gh(x) - D) - Hh * crag(x + n * 977, 11 + n * 7, seg);
       const pts = []; for (let x = X0; x <= X1; x += 4) pts.push([x, top(x)]);
       const shape = c2 => { c2.beginPath(); c2.moveTo(X0, Y1); for (const [x, y] of pts) c2.lineTo(x, y); c2.lineTo(X1, Y1); c2.closePath(); };
