@@ -184,7 +184,7 @@ body.portrait:not(.playing) #rot{display:none}
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
   <button id="autoWalk" aria-label="He walks on by himself"><svg viewBox="0 0 24 24"><path d="M5 6l6 6-6 6M12 6l6 6-6 6"/></svg></button>
-  <div id="build">build 499 · Nov 22 2026</div>
+  <div id="build">build 500 · Nov 22 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -1250,7 +1250,7 @@ function next(force) {
 // ---------- the voices: one small recording per line, in assets/voice (made by tools/make-voice.py) ----------
 // A line's file is named by a sum of who says it and the words, so the words on screen and the recording always belong together.
 // A line with no recording is simply silent.
-const VOX = new Map(), VOICE_V = 15;       // bump VOICE_V when recordings change, so phones fetch the new ones
+const VOX = new Map(), VOICE_V = 16;       // bump VOICE_V when recordings change, so phones fetch the new ones
 let voxSrc = null, sayN = 0;
 function voiceName(who, txt) { let h = 0x811c9dc5; const t = who + '|' + txt; for (let i = 0; i < t.length; i++) h = Math.imul(h ^ t.charCodeAt(i), 0x01000193) >>> 0; return h.toString(16).padStart(8, '0'); }
 function vox(who, txt) {
@@ -1316,6 +1316,7 @@ const INTRO = [      // {10}
 // {11}, {12}: "he would also walk solitarily in the fields, sometimes reading, and sometimes praying"
 const FIELDS = [[N, 'He walked alone in the fields, reading his book and praying.']];
 const EVAN = [       // {13} to {17}
+  [N, 'Then I saw a man named Evangelist come to him.'],      // build 500 (owner: "Evangelist needs a narrator introduction"): {13}, "I looked then, and saw a man named Evangelist coming to him"
   [E, 'Why do you cry?'],
   [C, 'Sir, this book tells me our city will be destroyed, and this burden on my back will sink me.'],      // vision chat: the why put back ({11}: "our city will be burned with fire from heaven")
   // (cut in build 74 to shorten the talk, the owner asked: Evangelist's "why do you stand still?" and "Because I do not know where to go.", {16})

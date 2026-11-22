@@ -105,6 +105,7 @@ def main():
     lines = []
     for code, text in re.findall(r"\[(N|C|E|O|PL|WW|GW|W|H|I|MAN|DRM|BR|VO|SO|S1|S3), '((?:[^'\\]|\\.)*)'", src):
         text = text.replace("\\'", "'")
+        text = re.sub(r'\\u([0-9a-fA-F]{4})', lambda m: chr(int(m.group(1), 16)), text)      # \u2018 in the source is one character in the game: name the file as the game does
         if (code, text) not in lines: lines.append((code, text))
     os.makedirs(OUT, exist_ok=True)
     keep = set()
