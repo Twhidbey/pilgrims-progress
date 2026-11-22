@@ -309,8 +309,9 @@ const RM = (() => {
   // he has seen are lit. Same plan as the corner map (PLAN), drawn larger, with its roof, chimney, stairs, cellar and the garden behind.
   function houseCut(c, a, lit) {
     if (a <= .005) return;
-    const k = Math.min(VW * .62 / 112, VH * .7 / 84), x0 = VW / 2 - 50 * k, y0 = VH * .43 - 22 * k;
-    c.save(); c.globalAlpha = .93 * a; c.fillStyle = '#07050a'; c.fillRect(0, 0, VW, VH);
+    // (build 519) larger and a little lower, on an opaque night: nothing of the scene behind shows through
+    const k = Math.min(VW * .8 / 122, VH * .8 / 86), x0 = VW / 2 - 50 * k, y0 = VH * .47 - 22 * k;
+    c.save(); c.globalAlpha = a; c.fillStyle = '#07050a'; c.fillRect(0, 0, VW, VH);
     c.globalAlpha = a; c.translate(x0, y0); c.scale(k, k); c.lineJoin = 'round';
     const L = id => (id === 'r6' || id === 'r7') && !darkOn() ? 0 : lit(id);
     // night: a few stars, the ground and the earth under it
@@ -511,5 +512,5 @@ const RM = (() => {
   (window.RMR || []).forEach(f => Object.assign(ROOMS, f(KIT)));
   if (PAINTED) ROOMS.r1 = ROOMS.r1p; delete ROOMS.r1p; if (PAINTED) ROOMS.r6 = ROOMS.r6p; delete ROOMS.r6p; if (PAINTED) ROOMS.r7 = ROOMS.r7p; delete ROOMS.r7p; if (PAINTED) ROOMS.r3 = ROOMS.r3p; delete ROOMS.r3p;
   return { on: false, start, update, draw, touch, key, preload, HOLDS, seen: SEEN_R, stop: () => ambStop(), darkOn, setDark: on => { try { localStorage.setItem('pp-dark', on ? '1' : '0'); } catch (e) {} }, lines,
-    peek: () => ({ room: R && R.id, ph, t, cam: Math.round(cam.x), fade: +fade.toFixed(2), r3: R && R.id === 'r3' ? { coins: R.coins.length, rags: +R.rags.toFixed(2) } : null, pass: R && R.id === 'pass' ? R.kind + '>' + R.to : null, pp: R && R.id === 'pass' ? +R.p.toFixed(2) : null, bv: R && R.bv ? { x: Math.round(R.bv.x), f: +(R.bv.f || 0).toFixed(1), arm: R.bv.arm, clip: R.bv.clip || 0 } : null }) };
+    peek: () => ({ room: R && R.id, ph, t, cam: Math.round(cam.x), fade: +fade.toFixed(2), r3: R && R.id === 'r3' ? { coins: R.coins.length, rags: +R.rags.toFixed(2) } : null, pass: R && R.id === 'pass' ? R.kind + '>' + R.to : null, pp: R && R.id === 'pass' ? +R.p.toFixed(2) : null, wx: R && (R.id === 'door' || R.id === 'leave') ? Math.round(R.id === 'door' ? R.cx : R.x) : null, bv: R && R.bv ? { x: Math.round(R.bv.x), f: +(R.bv.f || 0).toFixed(1), arm: R.bv.arm, clip: R.bv.clip || 0 } : null }) };
 })();

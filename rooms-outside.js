@@ -6,21 +6,29 @@
 // change while playing (R the room, t, ph, fade, toned, sayK ...) are read and set through H (H.R, H.t).
 // ============================================================
 (window.RMR = window.RMR || []).push(H => {
-  const { EX, HOUSE, I, PAINTED, PH, ROOMS, S, SEEN_R, VIS, WALK_FPT, darkWith, finish, glow, goTo, hold, housePlan, bakeShell, knockS, loads, mkBake, near, noise, passKind, pic, pics, ring, rngR, tone, u, v, visitor, walkFig, walkSpeed } = H;
+  const { EX, HOUSE, I, fig, sheetFrames, PAINTED, PH, ROOMS, S, SEEN_R, VIS, WALK_FPT, darkWith, finish, glow, goTo, hold, housePlan, bakeShell, knockS, loads, mkBake, near, noise, passKind, pic, pics, ring, rngR, tone, u, v, visitor, walkFig, walkSpeed } = H;
   // THE DOOR AND LEAVING, drawn (build 432; after Rembrandt's Rest on the Flight into Egypt): night; two layered masses of dark trees on the left
   // over still water with one tiny far fire mirrored in it; the stone house in the right half, one lit window above, the arched door (DOOR);
   // leaving, the same picture at the end of night: the low coursed wall called Salvation begins on the right and the first cold grey lies
   // along the horizon there, so Level 5 (the Cross, before dawn) follows on.
-  const HSE = { X0: 1680, WIN: [2620, 300] };
+  const HSE = { X0: 1680, X1: 2980, WIN: [2620, 300] };
   function bakeDoorScene(leaving) {
     const [cv, c] = mkBake();
     const FY = 1200, r = rngR(leaving ? 91 : 90);
     let g = c.createLinearGradient(0, EX.y0, 0, FY); g.addColorStop(0, '#05070c'); g.addColorStop(1, '#151a24'); c.fillStyle = g; c.fillRect(EX.x0, EX.y0, EX.x1 - EX.x0, EX.y1 - EX.y0);
     if (leaving) { c.save(); c.translate(EX.x1, FY); c.scale(1, .45); g = c.createRadialGradient(0, 0, 0, 0, 0, 1100); g.addColorStop(0, 'rgba(70,78,96,.75)'); g.addColorStop(.5, 'rgba(50,58,76,.3)'); g.addColorStop(1, 'rgba(40,46,60,0)'); c.fillStyle = g; c.fillRect(-1100, -1100, 2200, 1100); c.restore(); }
+    // (build 519) the end of night: the sky greys from the left toward the right, where the highway goes on (Level 5 opens in this grey)
+    if (leaving) { g = c.createLinearGradient(1200, 0, EX.x1, 0); g.addColorStop(0, 'rgba(58,64,84,0)'); g.addColorStop(1, 'rgba(58,64,84,.55)'); c.fillStyle = g; c.fillRect(1200, EX.y0, EX.x1 - 1200, FY - EX.y0); c.save(); c.translate(EX.x1, FY); c.scale(1, .6); g = c.createRadialGradient(0, 0, 0, 0, 0, 1600); g.addColorStop(0, 'rgba(96,102,122,.6)'); g.addColorStop(1, 'rgba(96,102,122,0)'); c.fillStyle = g; c.fillRect(-1600, -1600, 3200, 1600); c.restore(); }
     for (let i = 0; i < 120; i++) { c.fillStyle = `rgba(220,224,240,${(.15 + r() * .45).toFixed(2)})`; c.fillRect(EX.x0 + r() * 1900, EX.y0 + r() * 1300, 2, 2); }
-    // the trees: a far mass, paler with the haze, and a near mass, darker, both soft lumpy crowns on short trunks
-    for (const [col, base, n, rr] of [['#141821', FY - 120, 9, 170], ['#0b0d12', FY - 40, 7, 230]]) { c.fillStyle = col;
-      for (let i = 0; i < n; i++) { const x = 60 + i * (1500 / n) + r() * 90, y = base - 260 - r() * 160; for (let k = 0; k < 5; k++) { c.beginPath(); c.ellipse(x + (r() - .5) * rr, y + (r() - .5) * rr * .6, rr * (.5 + r() * .4), rr * (.4 + r() * .3), 0, 0, 6.2832); c.fill(); } c.fillRect(x - 14, y, 28, base - y + 40); } }
+    // the trees (build 519): Level 1's plain field trees (oak, ash, elm; never a level's special tree), each in ONE flat tone: a far row,
+    // paler in the haze, a band of low mist, then a nearer row, darker and larger, with sky between the crowns
+    const tree = (key, x, h, col, flip) => { const im = TREE_IMS[key]; if (!im || !im.width) return; const w = im.width * h / im.height, t = document.createElement('canvas'); t.width = Math.ceil(w); t.height = Math.ceil(h);
+      const q = t.getContext('2d'); if (flip) { q.translate(w, 0); q.scale(-1, 1); } q.drawImage(im, 0, 0, w, h); q.setTransform(1, 0, 0, 1, 0, 0); q.globalCompositeOperation = 'source-in'; q.fillStyle = col; q.fillRect(0, 0, w, h);
+      const bx = (flip ? 1 - TREE_META[key].bx : TREE_META[key].bx) * w; c.drawImage(t, x - bx, FY + 14 - h, w, h); };
+    const KEYS = ['a', 'b', 'e'];
+    for (let i = 0; i < 6; i++) tree(KEYS[i % 3], -200 + i * 300 + r() * 120, 560 + r() * 200, '#171c27', i % 2);
+    { const g2 = c.createLinearGradient(0, FY - 340, 0, FY); g2.addColorStop(0, 'rgba(40,46,62,0)'); g2.addColorStop(.6, 'rgba(40,46,62,.45)'); g2.addColorStop(1, 'rgba(40,46,62,.2)'); c.fillStyle = g2; c.fillRect(EX.x0, FY - 340, 1700 - EX.x0, 340); }
+    for (const [key, x, h, fl] of [['a', -120, 1250, 0], ['e', 520, 980, 1], ['b', 1180, 1120, 0]]) tree(key, x, h, '#0a0c11', fl);
     // still water on the left, the far fire tiny and its broken reflection beneath
     c.fillStyle = '#0e121a'; c.fillRect(EX.x0, FY - 30, 1500 - EX.x0, 60); c.fillStyle = 'rgba(255,150,70,.9)'; c.beginPath(); c.ellipse(700, FY - 40, 9, 12, 0, 0, 6.2832); c.fill();
     for (let k = 0; k < 6; k++) { c.fillStyle = `rgba(255,150,70,${(.5 - k * .07).toFixed(2)})`; c.fillRect(700 - 12 + (k % 2) * 6, FY - 24 + k * 8, 24 - k * 2, 3); }
@@ -28,7 +36,14 @@
     // 1100 high for a man 800 tall; out here a man is .58 of that, so a floor is about 640: the ground floor's ceiling at FY - 640 (a string course),
     // the upper floor above it running off the top of the picture, and the front running on off the right, as the five ground-floor rooms
     // and the stair need; the bedchamber's window lit upstairs, the parlour's tall window below, the cellar's grating at the wall's foot
-    const { X0 } = HSE, X1 = EX.x1, ST = FY - 640; c.fillStyle = '#2a231e'; c.fillRect(X0, EX.y0, X1 - X0, FY - EX.y0);
+    // beyond the house's corner (build 519): open land under the sky, two low far ridges in haze, and the wall called Salvation behind the
+    // highway, as Level 5 opens (a low coursed wall about half his height, its coping catching the sky); darker at night, greyer at dawn
+    { const XC = HSE.X1, col = leaving ? [36, 36, 46] : [22, 23, 30];
+      for (const [hy, a, cc] of [[300, .9, leaving ? '#2a2e3c' : '#141823'], [170, 1, leaving ? '#20232e' : '#0f121a']]) { c.fillStyle = cc; c.globalAlpha = a; c.beginPath(); c.moveTo(XC, FY); for (let x = XC; x <= EX.x1 + 20; x += 40) c.lineTo(x, FY - hy + 50 * Math.sin(x / 300 + hy) + 25 * Math.sin(x / 113)); c.lineTo(EX.x1 + 20, FY); c.fill(); c.globalAlpha = 1; }
+      const WH = 210; c.fillStyle = css(col); c.beginPath(); c.moveTo(XC, FY + 4); let x = XC; while (x < EX.x1 + 40) { const w = 46 + r() * 40, hh = r() * 8; c.lineTo(x, FY - WH - hh); c.lineTo(x + w - 3, FY - WH - hh); x += w; } c.lineTo(EX.x1 + 40, FY + 4); c.closePath(); c.fill();
+      c.strokeStyle = css(col.map(v => v * .8)); c.lineWidth = 3; for (let q = 1; q < 5; q++) { c.beginPath(); c.moveTo(XC, FY - WH + q * 42); c.lineTo(EX.x1 + 40, FY - WH + q * 42); c.stroke(); }
+      c.fillStyle = leaving ? 'rgba(170,170,190,.22)' : 'rgba(120,124,150,.12)'; c.fillRect(XC, FY - WH - 10, EX.x1 + 40 - XC, 6); }
+    const { X0 } = HSE, X1 = HSE.X1, ST = FY - 640; c.fillStyle = '#2a231e'; c.fillRect(X0, EX.y0, X1 - X0, FY - EX.y0);
     c.fillStyle = 'rgba(12,9,7,.55)'; c.fillRect(X0, ST - 10, X1 - X0, 22); c.fillStyle = 'rgba(90,78,64,.25)'; c.fillRect(X0, ST - 10, X1 - X0, 3);
     g = c.createLinearGradient(X0, 0, X0 + 700, 0); g.addColorStop(0, 'rgba(10,8,6,.55)'); g.addColorStop(1, 'rgba(10,8,6,0)'); c.fillStyle = g; c.fillRect(X0, EX.y0, 700, FY - EX.y0);
     c.fillStyle = 'rgba(40,46,60,.35)'; c.fillRect(X0, EX.y0, 10, FY - EX.y0);
@@ -36,16 +51,30 @@
     c.fillStyle = 'rgba(12,9,7,.55)'; c.fillRect(X0, ST - 650, X1 - X0, 22);
     for (let k = 0; k < 40; k++) { const x = X0 + r() * (X1 - X0), y = EX.y0 + r() * (FY - EX.y0), rr = 60 + r() * 160, gg = c.createRadialGradient(x, y, 0, x, y, rr); gg.addColorStop(0, r() < .5 ? 'rgba(70,58,46,.12)' : 'rgba(6,4,3,.14)'); gg.addColorStop(1, 'rgba(0,0,0,0)'); c.fillStyle = gg; c.fillRect(x - rr, y - rr, 2 * rr, 2 * rr); }
     const win = (x, y, w, h, lit) => { c.fillStyle = '#120c08'; c.fillRect(x - w / 2 - 16, y - h / 2 - 16, w + 32, h + 32); c.fillStyle = lit ? '#e8a85a' : '#151820'; c.fillRect(x - w / 2, y - h / 2, w, h); c.fillStyle = '#120c08'; c.fillRect(x - 4, y - h / 2, 8, h); c.fillRect(x - w / 2, y - h * .1, w, 8); };
-    const [wx, wy] = HSE.WIN; win(wx, wy, 130, 200, true); win(1880, wy, 130, 200, false); win(2900, 820, 150, 300, false);
+    const [wx, wy] = HSE.WIN; win(wx, wy, 130, 200, true); win(1880, wy, 130, 200, false); win(2760, 820, 150, 300, false);
     c.fillStyle = '#0c0806'; c.fillRect(2620, FY - 70, 140, 50); c.fillStyle = '#2a231e'; for (let k = 0; k < 4; k++) c.fillRect(2632 + k * 34, FY - 70, 8, 50);
     // the door's deep arched surround (the door's light itself is drawn live)
     const dx0 = DOOR.x - DOOR.w / 2 - 34, dx1 = DOOR.x + DOOR.w / 2 + 34, rr = (dx1 - dx0) / 2; c.fillStyle = '#3a302a'; c.beginPath(); c.moveTo(dx0, DOOR.bot); c.lineTo(dx0, DOOR.top + rr); c.arc(dx0 + rr, DOOR.top + rr, rr, Math.PI, 0); c.lineTo(dx1, DOOR.bot); c.fill();
     c.fillStyle = '#0c0806'; const ir = DOOR.w / 2; c.beginPath(); c.moveTo(DOOR.x - ir, DOOR.bot); c.lineTo(DOOR.x - ir, DOOR.top + ir); c.arc(DOOR.x, DOOR.top + ir, ir, Math.PI, 0); c.lineTo(DOOR.x + ir, DOOR.bot); c.fill();
-    if (leaving) { // the low coursed wall called Salvation, beginning by the house and running on out of the picture beside the way
-      c.fillStyle = '#1c1a1e'; c.fillRect(2760, FY - 150, EX.x1 - 2760, 150); c.fillStyle = 'rgba(120,126,140,.35)'; c.fillRect(2760, FY - 150, EX.x1 - 2760, 5); c.fillStyle = 'rgba(8,8,10,.6)'; for (let y = FY - 110; y < FY; y += 40) c.fillRect(2760, y, EX.x1 - 2760, 3); }
+    // the house's corner: a soft shadow on its front by the edge, and the edge itself catching the sky (greyer as dawn comes)
+    { const g3 = c.createLinearGradient(X1 - 260, 0, X1, 0); g3.addColorStop(0, 'rgba(8,6,5,0)'); g3.addColorStop(1, 'rgba(8,6,5,.5)'); c.fillStyle = g3; c.fillRect(X1 - 260, EX.y0, 260, FY - EX.y0); c.fillStyle = leaving ? 'rgba(120,126,150,.4)' : 'rgba(60,66,90,.35)'; c.fillRect(X1 - 8, EX.y0, 8, FY - EX.y0); }
     // the path and the ground
     c.fillStyle = '#0e0d0c'; c.fillRect(EX.x0, FY, EX.x1 - EX.x0, EX.y1 - FY); c.fillStyle = 'rgba(90,80,70,.25)'; c.fillRect(1500, FY, EX.x1 - 1500, 3);
+    // the worn path (build 519): a flat band of paler trodden earth along the ground from the left to the doorstep and on to the highway,
+    // its edges soft and uneven (flat, never a shape running down the picture toward us)
+    for (let k = 0; k < 4; k++) { c.fillStyle = `rgba(64,56,48,${(.16 - k * .03).toFixed(2)})`; c.beginPath(); c.moveTo(EX.x0, FY + 2); for (let x = EX.x0; x <= EX.x1; x += 60) c.lineTo(x, FY + 26 + k * 12 + 6 * Math.sin(x / 170 + k) + 4 * Math.sin(x / 61)); c.lineTo(EX.x1, FY + 2); c.fill(); }
+    c.fillStyle = '#2a2420'; c.fillRect(DOOR.x - DOOR.w / 2 - 60, FY - 8, DOOR.w + 120, 16); c.fillStyle = 'rgba(110,96,80,.3)'; c.fillRect(DOOR.x - DOOR.w / 2 - 60, FY - 8, DOOR.w + 120, 3);
     return cv;
+  }
+  // his plain run (RUNP, Level 1's pictures, the same Level 5 runs him in), toned once per picture to a near-black warm silhouette (darker than the house's wall, so he reads against it), a trace of his watercolour left
+  const RUNT = new Map();
+  function runner(c, x, frame, k) {
+    const src = RUNP[((frame % RUNP.length) + RUNP.length) % RUNP.length]; if (!src) return;
+    // the watercolour's white paper inside the figure filled first (as Level 5 does), so he is solid, never see-through
+    const base = typeof solidOf === 'function' ? solidOf(src) : src;
+    let im = RUNT.get(src); if (!im) { im = document.createElement('canvas'); im.width = base.width; im.height = base.height; const q = im.getContext('2d'); q.drawImage(base, 0, 0); const d = q.getImageData(0, 0, im.width, im.height), p = d.data, base0 = [8, 6, 6], k0 = [.085, .075, .072]; for (let i = 0; i < p.length; i += 4) for (let j = 0; j < 3; j++) p[i + j] = base0[j] + p[i + j] * k0[j]; q.putImageData(d, 0, 0); RUNT.set(src, im); }
+    const sc = (790 * k * S) / 300, fx = u(x), fy = v(H.R.FY); c.globalCompositeOperation = 'source-over';
+    c.drawImage(im, fx - RUNP_META.ax * sc, fy - RUNP_META.ground * sc, im.width * sc, im.height * sc);
   }
   // THE DOOR, at night (after Rembrandt's Rest on the Flight into Egypt): he knocks; the door opens on the light within
   const DOOR = { x: 2308, top: 690, bot: 1196, w: 288 };
@@ -58,47 +87,81 @@
     c.save(); c.translate((x0 + x1) / 2, y1 + 2); c.scale(1, .1); glow(c, 0, 0, 220, [255, 170, 90], .5 * d); c.restore();
     glow(c, (x0 + x1) / 2, (y0 + y1) / 2, 200, [255, 180, 100], .18 * d);
   }
-  if (!PAINTED) { loads['door-drawn'] = new Promise(r => setTimeout(r, 0)).then(() => (pics['door-drawn'] = bakeDoorScene(false))); loads['leave-drawn'] = new Promise(r => setTimeout(r, 0)).then(() => (pics['leave-drawn'] = bakeDoorScene(true))); }
+  // Level 1's plain field trees for the night outside (loaded once; the scene is baked when they are in, or without them if they fail)
+  const TREE_IMS = {}, treesIn = Promise.all(['a', 'b', 'e'].map(k => new Promise(res => { const im = new Image(); im.onload = im.onerror = () => res(); im.src = 'assets/tree-' + k + '.webp'; TREE_IMS[k] = im; })));
+  if (!PAINTED) { loads['door-drawn'] = treesIn.then(() => (pics['door-drawn'] = bakeDoorScene(false))); loads['leave-drawn'] = treesIn.then(() => (pics['leave-drawn'] = bakeDoorScene(true))); }
   return {
     door: {
       pic: PAINTED ? 'room-door' : 'door-drawn', shell: PAINTED ? 0 : 1, FY: 1200, cam0: 210, tone: [80, 74, 90], k: .58,
       light(x) { return x < DOOR.x - 100 ? { x: DOOR.x, a: .6 * this.d, col: [230, 140, 70] } : null; },
-      enter() { this.d = 0; this.kn = 0; this.ia = 0; this.cut = 0; this.cw = 0; SEEN_R.clear(); },
+      // (build 519) the Interpreter comes out of the light: he walks a few steps out onto the threshold in his own walk; after "Come in"
+      // Christian walks in through the door himself (a story move, like Level 3's walk in through the gate) while the Interpreter goes
+      // back into the light ahead of him; then room 1
+      IX0: 2350, IX1: 2196,
+      enter() { this.gone = false; this.d = 0; this.kn = 0; this.ia = 0; this.cut = 0; this.cw = 0; this.ix = this.IX0; this.ifr = 0; this.iw = 0; this.cx = 1880; this.cfr = 0; this.cw2 = 0; this.ca = 1; this.inT = -1; SEEN_R.clear(); pic(VIS.I.walk.n); pic(VIS.C.walk.n); },
       cutLit(id) { return id === 'door' ? .5 : 0; },
       run() { talk([[N, 'Then he went on till he came to the house of the Interpreter, and knocked over and over.']], () => { this.cw = 0; talk([[TIP, 'Knock on the door.', 'knock']], () => { H.ph = 'open'; H.t = 0; G.state = 'auto'; }); }); },
       act(sx, sy) { if (G.act === 'knock' && (sx == null || near(sx, sy, DOOR.x, 950, 150))) { knockS(); if (++this.kn >= 3) next(true); } },
       upd() {
         this.cut += ((this.cw ? 1 : 0) - this.cut) * (this.cw ? .03 : .05); if (this.cut < .003) this.cut = 0;
         if (G.act === 'knock' && G.actT >= 90 && !G.ring) G.ring = ring(DOOR.x, 950);
-        if (H.ph === 'open') { this.d = Math.min(1, this.d + .012); if (H.t > 50) this.ia = Math.min(1, this.ia + .02); if (H.t === 1 && audio()) { tone(98, 'sine', .05, 2.2); noise(300, 3, 1.4, .05); }
-          if (H.t === 150) talk([[C, 'Sir, the man at the gate said that if I called here, you would show me excellent things, to help me on my journey.'], [I, 'Come in. I will show you what will help you.']], () => goTo('r1')); }
+        if (H.ph === 'open') { this.d = Math.min(1, this.d + .012); if (H.t === 1 && audio()) { tone(98, 'sine', .05, 2.2); noise(300, 3, 1.4, .05); }
+          // he comes out of the light: fading in deep in the doorway, then walking out onto the threshold, and standing
+          if (H.t > 50 && this.inT < 0) { this.ia = Math.min(1, this.ia + .03); if (this.ix > this.IX1) { this.iw = Math.min(1, this.iw + .05); this.ix = Math.max(this.IX1, this.ix - walkSpeed('I', .58) * this.iw); this.ifr += WALK_FPT * this.iw; } else this.iw = 0; }
+          if (H.t === 170) talk([[C, 'Sir, the man at the gate said that if I called here, you would show me excellent things, to help me on my journey.'], [I, 'Come in. I will show you what will help you.']], () => { this.inT = 0; G.state = 'auto'; }); }
+        // in: the Interpreter goes back into the light, Christian walks in after him and is lost in it
+        if (this.inT >= 0) { this.inT++; this.ia = Math.max(0, this.ia - .03);
+          if (this.inT > 20) { this.cw2 = Math.min(1, this.cw2 + .05); this.cx += walkSpeed('C', .58) * this.cw2; this.cfr += WALK_FPT * this.cw2;
+            const st = Math.floor(this.cfr * 2 / VIS.C.walk.fr); if (st !== this.lst) { this.lst = st; if (typeof stepOn === 'function') stepOn(this.cx > DOOR.x - 160 ? 'wood' : 'dirt', 1); } }
+          this.ca = 1 - smooth(DOOR.x - 120, DOOR.x + 10, this.cx);
+          if (this.ca <= 0 && !this.gone) { this.gone = true; goTo('r1'); } }
       },
-      under(c) { const self = this; doorLight(c, this.d, () => { if (self.ia > .01) visitor(c, 'I', DOOR.x, -1, .58, self.ia); }); if (PAINTED) { glow(c, u(2832), v(380), 120, [255, 190, 110], .1 + .03 * Math.sin(G.t / 40)); glow(c, u(470), v(1000), 70, [255, 160, 80], .2 + .08 * Math.sin(G.t / 7) * Math.sin(G.t / 13)); } else { glow(c, u(HSE.WIN[0]), v(HSE.WIN[1]), 120, [255, 190, 110], (.12 + .03 * Math.sin(G.t / 40)) * (1 - .5 * this.d)); glow(c, u(700), v(1160), 40, [255, 160, 80], .3 + .1 * Math.sin(G.t / 7) * Math.sin(G.t / 13)); } },
-      people(c) { visitor(c, 'C', 1880, 1, .58); },
+      under(c) { doorLight(c, this.d, () => {}); if (PAINTED) { glow(c, u(2832), v(380), 120, [255, 190, 110], .1 + .03 * Math.sin(G.t / 40)); glow(c, u(470), v(1000), 70, [255, 160, 80], .2 + .08 * Math.sin(G.t / 7) * Math.sin(G.t / 13)); } else { glow(c, u(HSE.WIN[0]), v(HSE.WIN[1]), 120, [255, 190, 110], (.12 + .03 * Math.sin(G.t / 40)) * (1 - .5 * this.d)); glow(c, u(700), v(1160), 40, [255, 160, 80], .3 + .1 * Math.sin(G.t / 7) * Math.sin(G.t / 13)); } },
+      people(c) {
+        // the Interpreter on the threshold, dark against the light within (walking: his own walk, facing out; standing: his standing figure)
+        if (this.ia > .01) { const w = VIS.I.walk; if (this.iw > 0 && sheetFrames(w)) { const i = ((Math.floor(this.ifr) % w.fr) + w.fr) % w.fr; fig(c, w.n + '#' + i, w, this.ix, H.R.FY, -1, .58, this.ia, H.R.tone, null, 0, 0); } else visitor(c, 'I', this.ix, -1, .58, this.ia); }
+        if (this.ca > 0) { if (this.cw2 > 0) walkFig(c, 'C', this.cx, this.cfr, .58, this.ca); else visitor(c, 'C', this.cx, 1, .58, this.ca); }
+      },
     },
     // LEAVING by the door (book {91}, {92}): he goes on his way
     leave: {
       pic: PAINTED ? 'room-door' : 'leave-drawn', shell: PAINTED ? 0 : 1, FY: 1200, cam0: 210, tone: [100, 94, 112], k: .58,
       light(x) { return x < DOOR.x - 100 ? { x: DOOR.x, a: .55, col: [230, 140, 70] } : null; },
-      enter() { this.x = 1880; this.w = 0; this.fr = 0; this.a = 1; this.cut = 1; this.cw = 1; this.ct = 0; pic(VIS.C.walk.n); },
+      // (build 519) he walks out past the door, and once clear of the house he RUNS on up the highway by himself, as the book's next
+      // sentence has it ("Up this way, therefore, did burdened Christian run"), and as Level 5 opens; the run is his own plain run
+      // (Level 1's, the same pictures Level 5 runs him in), dark against the dawn
+      RUN0: 2440,
+      enter() { this.x = 1880; this.w = 0; this.fr = 0; this.a = 1; this.cut = 1; this.cw = 1; this.ct = 0; this.rn = 0; this.ran = 0; pic(VIS.C.walk.n); if (typeof RUNP !== 'undefined' && !RUNP.ready && typeof loadPack === 'function') loadPack('christian-run-plain', RUNP).catch(() => {}); },
       cutLit(id) { return id === 'door' ? .6 : SEEN_R.has(id) ? .45 + .4 * smooth(0, 1, (this.ct - 30 - 25 * ['r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r7'].indexOf(id)) / 60) : 0; },
       run() { talk([[I, 'Have you thought on all these things?'], [C, 'Yes, and they put me in hope and fear.'], [I, 'The Comforter be always with you, good Christian, to guide you in the way that leads to the City.'], [N, 'The highway was fenced on either side with a wall, and that wall was called Salvation.'], [TIP, 'Hold to go on your way.', 'walkout']], () => {}); },
       act() {},
       upd() {
         this.ct++; if (this.ct > 330) this.cw = 0; this.cut += ((this.cw ? 1 : 0) - this.cut) * (this.cw ? .03 : .04); if (this.cut < .003) this.cut = 0;
         if (G.act === 'walkout') { if (G.actT >= 60 && !hold() && !G.ring) G.ring = () => [u(this.x + 160), v(1000)]; if (hold()) { G.ring = null; this.w = Math.min(1, this.w + .05); } else this.w = Math.max(0, this.w - .05); }
-        if (this.w > 0) {
+        // past the door he breaks into a run and runs on by himself
+        const canRun = typeof RUNP !== 'undefined' && RUNP.ready;
+        if (this.x > this.RUN0 && canRun) { if (G.act === 'walkout') { next(true); G.state = 'auto'; } this.rn = Math.min(1, this.rn + .08); this.w = 1; }
+        if (this.rn > 0) {
+          const sp = walkSpeed('C', .58) + (RUNP_META.vpx * 790 * .58 / 300 * .4 - walkSpeed('C', .58)) * this.rn;
+          this.x += sp; this.ran += .4; this.fr += WALK_FPT;
+          const st = Math.floor(this.ran * 2 / RUNP.length); if (st !== this.lst) { this.lst = st; if (typeof stepOn === 'function') stepOn('dirt', STEP_RUN || 1.2); }
+        } else if (this.w > 0) {
           this.fr += WALK_FPT * this.w; this.x += walkSpeed('C', .58) * this.w;
           // build 492: his steps on the earth of the highway
           const st = Math.floor(this.fr * 2 / VIS.C.walk.fr); if (st !== this.lst) { this.lst = st; if (typeof stepOn === 'function') stepOn('dirt', 1); }
         }
-        H.cam.to = Math.min(H.R.PW * S - VW, Math.max(H.R.cam0, u(this.x) + H.cam.x - 500));
-        if (this.x > 2800) { this.a = Math.max(0, this.a - .03); if (G.act === 'walkout') { next(true); G.state = 'auto'; } }
+        H.cam.to = 0;
+        if (this.x > 3150) { this.a = Math.max(0, this.a - .03); if (G.act === 'walkout') { next(true); G.state = 'auto'; } }
         if (this.a <= 0 && H.ph !== 'end') { H.ph = 'end'; H.t = 0; }
         if (H.ph === 'end' && H.t === 40) finish();
       },
       under(c) { doorLight(c, 1, () => visitor(c, 'I', DOOR.x, -1, .58)); },
-      people(c) { c.globalAlpha = this.a; if (this.w > 0 || this.fr > 0) walkFig(c, 'C', this.x, this.fr, .58); else visitor(c, 'C', this.x, 1, .58); c.globalAlpha = 1; },
+      people(c) {
+        c.globalAlpha = this.a;
+        if (this.rn < 1) { c.globalAlpha = this.a * (1 - this.rn); if (this.w > 0 || this.fr > 0) walkFig(c, 'C', this.x, this.fr, .58); else visitor(c, 'C', this.x, 1, .58); }
+        if (this.rn > 0) { c.globalAlpha = this.a * this.rn; runner(c, this.x, Math.floor(this.ran), .58); }
+        c.globalAlpha = 1;
+      },
     },
   // FOLLOW THE INTERPRETER (owner, build 267: "Ok to do 1"): between two rooms a dark passage; the child touches once (build 312) to follow
   // the Interpreter's candle ("he took him by the hand, and led him into ..."). Christian walks (his own walk pictures,
@@ -249,7 +312,7 @@
       walkFig(c, 'C', this.x(), this.fr, this.k, 1, H.R.tone, cy);
       glow(c, lx, ly, 32 * fl, [255, 226, 160], .7); c.fillStyle = 'rgba(255,240,200,.95)'; c.beginPath(); c.ellipse(lx, ly - 2, 2, 4.1, 0, 0, 6.2832); c.fill();
       // where they are in the house: a small cutaway in the corner, the rooms seen faintly lit, the candle going from one to the next
-      c.save(); c.setTransform(DPR, 0, 0, DPR, 0, 0); housePlan(c, VW - 170, 74, 1.5, this.from, this.to, this.p); c.restore();
+      if (this.from === 'r1') { c.save(); c.setTransform(DPR, 0, 0, DPR, 0, 0); housePlan(c, VW - 170, 74, 1.5, this.from, this.to, this.p); c.restore(); }
     },
   },
   };
