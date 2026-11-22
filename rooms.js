@@ -325,32 +325,95 @@ const RM = (() => {
   // THE PARLOUR ON THE HOUSE'S SHELL (build 432; owner: "I want painting looks gone ... replace with drawn look across the board"): night, as in every
   // room; Vermeer's window becomes moonlight: the glass the brightest thing in the house, the plaster glowing cool beside it and dying to the
   // right, the shade warm umber; the basket and the brass pail on one nail; a low pale band of Delft tiles; the Milkmaid's colours only on the girl.
-  const R2S = { WIN: [380, 360, 720, 900] };
+  const R2S = { WIN: [330, 300, 730, 930] };
+  // THE PARLOUR LIKE A PAINTING, DRAWN (build 475; owner: "can you make the parlor look really cool like painting but drawn"): the Milkmaid's
+  // wall in code. One window rules: its leaded glass the brightest thing, one casement standing a little open, a deep splayed reveal lit on its
+  // far side; the moon's light lies down the wall as one broad soft slant and across the boards; the plaster has the painting's life (soft
+  // patches of old repair, nail holes each with its little shadow, two hairline cracks), the basket and the brass pail on their nails with
+  // their shadows thrown down and to the right, a row of real Delft tiles at the wall's foot, the foot warmer on the boards, a chair in the dark.
   function bakeR2s() {
-    const [x0, y0, x1, y1] = R2S.WIN, FY = HOUSE.FY;
-    return bakeShell({ seed: 22, doors: 'LR', skirt: 0, wallC: '#2a2219',
-      lights: [{ x: 600, y: 700, r: 1500, lit: [128, 130, 124], half: [58, 54, 46], sx: 1.25 }],
-      wall(c) {
-        // the window, frontal in the back wall: a deep reveal, the moonlit glass with its leaded diamonds, one mullion and transom, the sill
-        c.fillStyle = '#1e1810'; c.fillRect(x0 - 30, y0 - 30, x1 - x0 + 60, y1 - y0 + 60);
-        let g = c.createLinearGradient(0, y0, 0, y1); g.addColorStop(0, '#dfe7ea'); g.addColorStop(1, '#b9c6cc'); c.fillStyle = g; c.fillRect(x0, y0, x1 - x0, y1 - y0);
-        c.save(); c.beginPath(); c.rect(x0, y0, x1 - x0, y1 - y0); c.clip(); c.strokeStyle = 'rgba(50,56,60,.28)'; c.lineWidth = 2; for (let d = -600; d < 600; d += 38) { c.beginPath(); c.moveTo(x0 + d, y0); c.lineTo(x0 + d + 540, y1); c.stroke(); c.beginPath(); c.moveTo(x1 - d, y0); c.lineTo(x1 - d - 540, y1); c.stroke(); } c.restore();
-        c.fillStyle = '#2a2016'; c.fillRect((x0 + x1) / 2 - 8, y0, 16, y1 - y0); c.fillRect(x0, y0 + (y1 - y0) * .38 - 7, x1 - x0, 14);
-        c.fillStyle = '#4a3a28'; c.fillRect(x0 - 44, y1 + 30, x1 - x0 + 88, 22); c.fillStyle = 'rgba(220,230,236,.45)'; c.fillRect(x0 - 44, y1 + 30, x1 - x0 + 88, 3);
-        // the moon's light lying soft and slanting down the wall from the window (painted small, stretched)
-        const sm = document.createElement('canvas'); sm.width = 64; sm.height = 27; const q = sm.getContext('2d'); const gg = q.createLinearGradient(10, 0, 40, 27); gg.addColorStop(0, 'rgba(220,228,232,.55)'); gg.addColorStop(1, 'rgba(220,228,232,0)'); q.fillStyle = gg; q.beginPath(); q.moveTo(8, 6); q.lineTo(16, 6); q.lineTo(40, 27); q.lineTo(14, 27); q.closePath(); q.fill();
-        c.save(); c.globalCompositeOperation = 'soft-light'; c.drawImage(sm, 0, 0, 3168, 1344); c.restore();
-        // the basket and the brass pail on one nail, filled shapes with only a faint trace, a soft shadow down and right
-        c.save(); c.translate(300, -40);
-        c.fillStyle = '#4c3820'; c.beginPath(); c.moveTo(980, 560); c.quadraticCurveTo(1060, 580, 1140, 560); c.bezierCurveTo(1150, 640, 1110, 700, 1060, 706); c.bezierCurveTo(1010, 700, 972, 640, 980, 560); c.fill();
-        c.strokeStyle = '#4c3820'; c.lineWidth = 9; c.beginPath(); c.moveTo(996, 566); c.bezierCurveTo(1006, 470, 1114, 470, 1124, 566); c.stroke();
-        c.strokeStyle = 'rgba(200,190,160,.18)'; c.lineWidth = 3; for (let y = 590; y < 700; y += 22) { c.beginPath(); c.moveTo(986, y); c.lineTo(1136, y); c.stroke(); }
-        c.fillStyle = '#6a5228'; c.beginPath(); c.moveTo(1160, 560); c.lineTo(1260, 560); c.lineTo(1248, 668); c.quadraticCurveTo(1210, 680, 1172, 668); c.closePath(); c.fill();
-        c.fillStyle = 'rgba(230,226,200,.35)'; c.fillRect(1176, 572, 6, 86); c.fillStyle = '#1a120a'; c.beginPath(); c.arc(1110, 480, 6, 0, 6.2832); c.fill(); c.restore();
-        // the Delft tiles: a low pale band at the wall's foot, a few faint blue marks
-        c.fillStyle = '#8f8a7c'; c.fillRect(EX.x0, FY - 48, EX.x1 - EX.x0, 48); c.fillStyle = 'rgba(40,30,20,.5)'; c.fillRect(EX.x0, FY - 50, EX.x1 - EX.x0, 3);
-        c.strokeStyle = 'rgba(50,70,120,.35)'; c.lineWidth = 2; for (let x = EX.x0 + 24; x < EX.x1; x += 48) { c.strokeRect(x - 20, FY - 44, 40, 40); } c.strokeStyle = 'rgba(50,70,120,.4)'; for (const x of [300, 1340, 1900, 2460, 2820]) { c.beginPath(); c.arc(x, FY - 24, 9, 0, 6.2832); c.stroke(); }
-        g = c.createLinearGradient(1200, 0, EX.x1, 0); g.addColorStop(0, 'rgba(20,14,8,0)'); g.addColorStop(1, 'rgba(20,14,8,.5)'); c.fillStyle = g; c.fillRect(1200, FY - 48, EX.x1 - 1200, 48);
+    const [x0, y0, x1, y1] = R2S.WIN, FY = HOUSE.FY, WW = x1 - x0, WH = y1 - y0;
+    const small = (w, h, f) => { const a = document.createElement('canvas'); a.width = w; a.height = h; f(a.getContext('2d'), w, h); return a; };
+    // a shadow thrown by the window's light: the shape drawn small and dark, blurred by stretching, offset down and to the right
+    const shadow = (c, draw, dx, dy, a) => { const t = small(120, 80, (q, w, h) => { q.scale(w / 3528, h / 2044); q.translate(360, 700); q.fillStyle = '#000'; draw(q); }); c.save(); c.globalAlpha = a; c.drawImage(t, EX.x0 + dx, EX.y0 + dy, EX.x1 - EX.x0, EX.y1 - EX.y0); c.restore(); };
+    return bakeShell({ seed: 22, doors: 'LR', skirt: 0, wallC: '#2b221a', floorC: '#1b130c',
+      lights: [{ x: 640, y: 720, r: 1650, lit: [140, 142, 134], half: [62, 57, 48], sx: 1.3 }],
+      wall(c, r) {
+        // the plaster's life, laid softly: broad patches of old repair, a little lighter or darker, cool where the light falls, warm in the shade
+        for (let i = 0; i < 26; i++) { const x = 100 + r() * 3200, y = -200 + r() * 1350, rad = 60 + r() * 220, lit = Math.max(0, 1 - Math.abs(x - 700) / 1500), g = c.createRadialGradient(x, y, 0, x, y, rad);
+          const col = r() < .5 ? `rgba(${lit > .3 ? '190,196,190' : '150,126,96'},${(.05 + .05 * lit).toFixed(3)})` : 'rgba(20,12,6,.08)'; g.addColorStop(0, col); g.addColorStop(1, 'rgba(0,0,0,0)'); c.fillStyle = g; c.save(); c.translate(x, y); c.scale(1.4, .8); c.translate(-x, -y); c.fillRect(x - rad, y - rad, 2 * rad, 2 * rad); c.restore(); }
+        // two hairline cracks, wandering, broken, fainter at their ends
+        for (const [sx, sy, n, ang] of [[900, 180, 26, 1.2], [2300, 420, 20, 1.7]]) { let x = sx, y = sy, a = ang; for (let k = 0; k < n; k++) { a += (r() - .5) * .7; const nx = x + Math.cos(a) * 14, ny = y + Math.sin(a) * 14; if (r() > .15) { c.strokeStyle = `rgba(16,10,6,${(.35 * Math.sin(Math.PI * k / n)).toFixed(3)})`; c.lineWidth = 1.6; c.beginPath(); c.moveTo(x, y); c.lineTo(nx, ny); c.stroke(); c.strokeStyle = `rgba(200,200,190,${(.12 * Math.sin(Math.PI * k / n)).toFixed(3)})`; c.beginPath(); c.moveTo(x + 1.5, y + 1.5); c.lineTo(nx + 1.5, ny + 1.5); c.stroke(); } x = nx; y = ny; } }
+        // nail holes, as Vermeer painted them: a dark speck, a lit lower lip
+        for (let i = 0; i < 34; i++) { const x = 820 + r() * 1700, y = 260 + r() * 560; c.fillStyle = 'rgba(14,9,5,.6)'; c.beginPath(); c.arc(x, y, 2 + r() * 2.4, 0, 6.2832); c.fill(); c.fillStyle = 'rgba(210,208,196,.18)'; c.beginPath(); c.arc(x + 1.5, y + 2.5, 2, 0, 6.2832); c.fill(); }
+        // THE WINDOW: the splayed reveal (its far side, toward the room, catches the light; its near side in shade), the glass, the lead
+        c.fillStyle = '#17110b'; c.beginPath(); c.moveTo(x0 - 70, y0 - 60); c.lineTo(x1 + 70, y0 - 60); c.lineTo(x1, y0); c.lineTo(x0, y0); c.closePath(); c.fill();
+        let g = c.createLinearGradient(x1, 0, x1 + 70, 0); g.addColorStop(0, '#9da19a'); g.addColorStop(1, '#5c584f'); c.fillStyle = g; c.beginPath(); c.moveTo(x1, y0); c.lineTo(x1 + 70, y0 - 60); c.lineTo(x1 + 70, y1 + 60); c.lineTo(x1, y1); c.closePath(); c.fill();
+        c.fillStyle = '#120d08'; c.beginPath(); c.moveTo(x0, y0); c.lineTo(x0 - 70, y0 - 60); c.lineTo(x0 - 70, y1 + 60); c.lineTo(x0, y1); c.closePath(); c.fill();
+        // the glass: the sky beyond, pale silver to a little blue at the top, each small pane a shade apart (old glass is never even)
+        g = c.createLinearGradient(0, y0, 0, y1); g.addColorStop(0, '#c9d6de'); g.addColorStop(.5, '#e6ecec'); g.addColorStop(1, '#cfd5d0'); c.fillStyle = g; c.fillRect(x0, y0, WW, WH);
+        c.save(); c.beginPath(); c.rect(x0, y0, WW, WH); c.clip();
+        const dw = 44, dh = 64;
+        for (let yy = y0 - dh; yy < y1 + dh; yy += dh / 2) for (let xx = x0 - dw; xx < x1 + dw; xx += dw) { const ox = ((yy - y0) / (dh / 2)) % 2 ? dw / 2 : 0, cx = xx + ox, v2 = r(); c.fillStyle = v2 < .5 ? `rgba(60,70,74,${(.04 + .08 * r()).toFixed(3)})` : `rgba(255,255,250,${(.05 + .1 * r()).toFixed(3)})`; c.beginPath(); c.moveTo(cx, yy - dh / 2); c.lineTo(cx + dw / 2, yy); c.lineTo(cx, yy + dh / 2); c.lineTo(cx - dw / 2, yy); c.closePath(); c.fill(); }
+        c.strokeStyle = 'rgba(40,40,38,.55)'; c.lineWidth = 2.2;
+        for (let d = -WH; d < WW + WH; d += dw) { c.beginPath(); c.moveTo(x0 + d, y0); c.lineTo(x0 + d - WH * dw / dh, y1); c.stroke(); c.beginPath(); c.moveTo(x0 + d - WH * dw / dh, y0); c.lineTo(x0 + d, y1); c.stroke(); }
+        c.restore();
+        // the frame: mullion and transom, the casement on the right standing a little open (its edge a bright sliver, the gap darker sky)
+        c.fillStyle = '#2b2116'; c.fillRect(x0 - 8, y0 - 8, WW + 16, 16); c.fillRect(x0 - 8, y1 - 8, WW + 16, 16); c.fillRect(x0 - 8, y0, 16, WH); c.fillRect(x1 - 8, y0, 16, WH);
+        const mx = x0 + WW / 2, ty = y0 + WH * .36; c.fillRect(mx - 10, y0, 20, WH); c.fillRect(x0, ty - 9, WW, 18);
+        c.fillStyle = 'rgba(70,86,96,.5)'; c.fillRect(mx + 10, ty + 9, 26, y1 - ty - 17); c.fillStyle = '#e9eeea'; c.fillRect(mx + 36, ty + 9, 5, y1 - ty - 17); c.fillStyle = '#3a2d1e'; c.fillRect(mx + 41, ty + 9, 9, y1 - ty - 17);
+        // the sill, deep, its top lit
+        c.fillStyle = '#3c2e1e'; c.fillRect(x0 - 80, y1 + 52, WW + 160, 30); c.fillStyle = 'rgba(214,220,216,.55)'; c.fillRect(x0 - 80, y1 + 52, WW + 160, 4);
+        // the window's glow on the plaster round it (it lights its own surround)
+        c.save(); c.globalCompositeOperation = 'screen'; g = c.createRadialGradient((x0 + x1) / 2, (y0 + y1) / 2, WW * .4, (x0 + x1) / 2, (y0 + y1) / 2, WW * 1.4); g.addColorStop(0, 'rgba(120,128,126,.35)'); g.addColorStop(1, 'rgba(120,128,126,0)'); c.fillStyle = g; c.fillRect(x0 - WW, y0 - WW, WW * 3, WH + WW * 2); c.restore();
+        // THE MOON'S LIGHT down the wall: one broad soft slant from the window toward the floor on the right, painted small and stretched
+        const shaft = small(80, 46, (q) => { const sg = q.createLinearGradient(16, 22, 44, 44); sg.addColorStop(0, 'rgba(200,210,206,.7)'); sg.addColorStop(.6, 'rgba(200,210,206,.32)'); sg.addColorStop(1, 'rgba(200,210,206,0)'); q.fillStyle = sg; q.beginPath(); q.moveTo(15, 22); q.lineTo(22, 23); q.lineTo(52, 44); q.lineTo(30, 44); q.closePath(); q.fill(); });
+        c.save(); c.globalCompositeOperation = 'soft-light'; c.drawImage(shaft, EX.x0, EX.y0, EX.x1 - EX.x0, EX.y1 - EX.y0); c.globalCompositeOperation = 'screen'; c.globalAlpha = .28; c.drawImage(shaft, EX.x0, EX.y0, EX.x1 - EX.x0, EX.y1 - EX.y0); c.restore();
+        // THE BASKET AND THE BRASS PAIL on their nails, with their shadows thrown down and to the right
+        const BX = 1300, BY = 560, PX = 1510, PY = 560;
+        const basketShape = (q) => { q.beginPath(); q.moveTo(BX - 90, BY); q.quadraticCurveTo(BX, BY + 22, BX + 90, BY); q.bezierCurveTo(BX + 100, BY + 90, BX + 60, BY + 150, BX, BY + 156); q.bezierCurveTo(BX - 60, BY + 150, BX - 100, BY + 90, BX - 90, BY); q.closePath(); q.fill(); q.lineWidth = 12; q.strokeStyle = '#000'; q.beginPath(); q.moveTo(BX - 76, BY + 6); q.bezierCurveTo(BX - 66, BY - 110, BX + 66, BY - 110, BX + 76, BY + 6); q.stroke(); };
+        const pailShape = (q) => { q.beginPath(); q.moveTo(PX - 62, PY); q.lineTo(PX + 62, PY); q.lineTo(PX + 50, PY + 140); q.quadraticCurveTo(PX, PY + 154, PX - 50, PY + 140); q.closePath(); q.fill(); };
+        shadow(c, q => { basketShape(q); pailShape(q); }, 34, 40, .55);
+        // the basket: wicker, rows of strands slanting over dark gaps, ribs, a lit rim toward the window, its handle up to the nail
+        c.save(); c.fillStyle = '#261c12'; basketShape(c);
+        c.beginPath(); c.moveTo(BX - 90, BY); c.quadraticCurveTo(BX, BY + 22, BX + 90, BY); c.bezierCurveTo(BX + 100, BY + 90, BX + 60, BY + 150, BX, BY + 156); c.bezierCurveTo(BX - 60, BY + 150, BX - 100, BY + 90, BX - 90, BY); c.closePath(); c.clip();
+        for (let y = BY + 8, row = 0; y < BY + 160; y += 13, row++) for (let x = BX - 110 + (row % 2) * 9; x < BX + 110; x += 18) { const lit = .5 + .5 * (BX + 40 - x) / 150; c.fillStyle = `rgba(${104 + 46 * lit | 0},${86 + 36 * lit | 0},${60 + 26 * lit | 0},${(.45 + .3 * lit).toFixed(3)})`; c.beginPath(); c.ellipse(x, y, 8, 4.5, row % 2 ? .5 : -.5, 0, 6.2832); c.fill(); }
+        g = c.createLinearGradient(BX - 100, 0, BX + 100, 0); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(10,6,2,.55)'); c.fillStyle = g; c.fillRect(BX - 110, BY - 10, 220, 180); c.restore();
+        c.strokeStyle = '#54452f'; c.lineWidth = 7; c.beginPath(); c.moveTo(BX - 90, BY + 1); c.quadraticCurveTo(BX, BY + 22, BX + 90, BY + 1); c.stroke();
+        c.strokeStyle = '#3c3020'; c.lineWidth = 10; c.beginPath(); c.moveTo(BX - 76, BY + 6); c.bezierCurveTo(BX - 66, BY - 110, BX + 66, BY - 110, BX + 76, BY + 6); c.stroke(); c.strokeStyle = 'rgba(190,170,130,.4)'; c.lineWidth = 3; c.beginPath(); c.moveTo(BX - 79, BY + 2); c.bezierCurveTo(BX - 69, BY - 112, BX - 10, BY - 92, BX, BY - 88); c.stroke();
+        // the brass pail: a warm gleam on the window's side, dark on the far side, a rim and a bail
+        g = c.createLinearGradient(PX - 62, 0, PX + 62, 0); g.addColorStop(0, '#7a6440'); g.addColorStop(.16, '#bba272'); g.addColorStop(.3, '#6e5634'); g.addColorStop(.75, '#33261a'); g.addColorStop(1, '#1c140c'); c.fillStyle = g; pailShape(c);
+        c.fillStyle = '#54432a'; c.fillRect(PX - 66, PY - 6, 132, 12); c.fillStyle = 'rgba(220,210,170,.45)'; c.fillRect(PX - 64, PY - 6, 40, 3);
+        c.strokeStyle = 'rgba(60,40,18,.55)'; c.lineWidth = 2; for (const y of [PY + 40, PY + 96]) { c.beginPath(); c.moveTo(PX - 58, y); c.lineTo(PX + 56, y); c.stroke(); }
+        c.strokeStyle = '#3a2a14'; c.lineWidth = 5; c.beginPath(); c.moveTo(PX - 60, PY + 4); c.quadraticCurveTo(PX, PY - 70, PX + 60, PY + 4); c.stroke();
+        for (const [nx, ny] of [[BX, BY - 84], [PX, PY - 46]]) { c.fillStyle = '#0e0905'; c.beginPath(); c.arc(nx, ny, 6, 0, 6.2832); c.fill(); c.fillStyle = 'rgba(220,210,190,.35)'; c.beginPath(); c.arc(nx - 1.5, ny - 1.5, 2, 0, 6.2832); c.fill(); }
+      },
+      near(c, r) {
+        // THE DELFT TILES at the wall's foot: a row of real tiles, each off-white with its own small blue figure, grout between, the light on
+        // those near the window, the rest falling into the shade
+        const TH = 58, TY = FY - TH;
+        c.fillStyle = '#1a120b'; c.fillRect(EX.x0, TY - 6, EX.x1 - EX.x0, TH + 6);
+        let k = 0; for (let x = EX.x0 + 120; x < EX.x1 - 120; x += TH, k++) { const lit = Math.max(.1, 1 - Math.max(0, x - 500) / 2200), t0 = 58 + 70 * lit;
+          c.fillStyle = `rgb(${t0 | 0},${t0 * .98 | 0},${t0 * .9 | 0})`; c.fillRect(x + 2, TY + 2, TH - 4, TH - 4);
+          c.strokeStyle = `rgba(52,68,118,${(.32 * lit + .06).toFixed(3)})`; c.lineWidth = 2.6; const cx = x + TH / 2, cy = TY + TH / 2, f = k % 5;
+          c.beginPath(); for (const [a, b] of [[x + 6, TY + 6], [x + TH - 6, TY + 6], [x + 6, TY + TH - 6], [x + TH - 6, TY + TH - 6]]) { c.moveTo(a - 3, b); c.lineTo(a + 3, b); c.moveTo(a, b - 3); c.lineTo(a, b + 3); } c.stroke();
+          c.beginPath(); if (f === 0) { c.arc(cx, cy, 9, 0, 6.2832); } else if (f === 1) { c.moveTo(cx - 10, cy + 10); c.lineTo(cx - 10, cy - 2); c.lineTo(cx, cy - 11); c.lineTo(cx + 10, cy - 2); c.lineTo(cx + 10, cy + 10); } else if (f === 2) { c.moveTo(cx, cy + 12); c.lineTo(cx, cy - 4); c.moveTo(cx - 8, cy - 2); c.quadraticCurveTo(cx, cy - 16, cx + 8, cy - 2); } else if (f === 3) { c.moveTo(cx - 12, cy + 6); c.quadraticCurveTo(cx - 4, cy - 4, cx + 2, cy + 4); c.quadraticCurveTo(cx + 8, cy - 8, cx + 12, cy + 2); } else { c.moveTo(cx - 9, cy + 9); c.lineTo(cx, cy - 10); c.lineTo(cx + 9, cy + 9); c.moveTo(cx - 5, cy + 1); c.lineTo(cx + 5, cy + 1); } c.stroke();
+          c.fillStyle = `rgba(0,0,0,${(.25 * (1 - lit)).toFixed(3)})`; c.fillRect(x + 2, TY + 2, TH - 4, TH - 4); }
+        c.fillStyle = 'rgba(14,9,5,.7)'; c.fillRect(EX.x0, TY - 8, EX.x1 - EX.x0, 4);
+        // the floorboards: each board its own tone, seams, a little grain, the moon's light lying flat on them near the window
+        for (let x = EX.x0 + 110, i = 0; x < EX.x1 - 110; i++) { const w = 150 + r() * 120, t = .8 + r() * .35; c.fillStyle = `rgba(${40 * t | 0},${28 * t | 0},${17 * t | 0},.35)`; c.fillRect(x, FY + 3, w, EX.y1 - FY); c.fillStyle = 'rgba(6,4,2,.55)'; c.fillRect(x, FY + 3, 3, EX.y1 - FY); x += w; }
+        const fl = small(60, 12, (q) => { const fg = q.createRadialGradient(18, 0, 0, 18, 0, 34); fg.addColorStop(0, 'rgba(190,196,190,.4)'); fg.addColorStop(1, 'rgba(190,196,190,0)'); q.fillStyle = fg; q.fillRect(0, 0, 60, 12); });
+        c.save(); c.globalCompositeOperation = 'screen'; c.drawImage(fl, EX.x0, FY + 3, EX.x1 - EX.x0, 90); c.restore();
+        // the foot warmer on the boards (the Milkmaid's little wooden box with its holes), lit on the window's side
+        const FX = 2040, FW = 84, FH = 70; c.fillStyle = '#2e2014'; c.fillRect(FX, FY - FH, FW, FH); c.fillStyle = '#4a3620'; c.fillRect(FX, FY - FH, 7, FH); c.fillStyle = '#3a2a18'; c.fillRect(FX - 4, FY - FH - 6, FW + 8, 8);
+        c.fillStyle = '#120b06'; for (let yy = FY - FH + 16; yy < FY - 8; yy += 18) for (let xx = FX + 16; xx < FX + FW - 8; xx += 18) { c.beginPath(); c.arc(xx, yy, 3.4, 0, 6.2832); c.fill(); }
+        c.fillStyle = 'rgba(0,0,0,.45)'; c.beginPath(); c.ellipse(FX + FW / 2 + 30, FY + 4, 70, 7, 0, 0, 6.2832); c.fill();
+        // a chair in the dark at the far right, against the wall: a turned high back with two finials, lost in the shade
+        const CX = 3080; c.fillStyle = '#100a06'; c.fillRect(CX, FY - 430, 14, 430); c.fillRect(CX + 150, FY - 430, 14, 430); c.fillRect(CX - 10, FY - 230, 184, 26); c.fillRect(CX, FY - 400, 164, 70);
+        for (const fx of [CX + 7, CX + 157]) { c.beginPath(); c.arc(fx, FY - 446, 15, 0, 6.2832); c.fill(); }
+        c.fillStyle = 'rgba(120,126,120,.08)'; c.fillRect(CX, FY - 400, 4, 400);
+        // a last glaze: the shade warmed, the far corners into the dark (the painting's own falling-off)
+        let g = c.createRadialGradient(700, 720, 300, 700, 720, 3000); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(.6, 'rgba(24,14,6,.12)'); g.addColorStop(1, 'rgba(10,6,3,.5)'); c.fillStyle = g; c.fillRect(EX.x0, EX.y0, EX.x1 - EX.x0, EX.y1 - EX.y0);
       } });
   }
   if (!PAINTED) { const n = 'room2-drawn'; loads[n] = new Promise(r => setTimeout(r, 0)).then(() => (pics[n] = DRAWN ? bakeR2() : bakeR2s())); pic('room2-girl'); pic('room2-sweeper'); }
