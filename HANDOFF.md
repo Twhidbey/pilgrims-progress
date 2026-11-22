@@ -152,6 +152,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 ## START HERE (rewritten at build 140, Nov 16 2026)
 
+**Build 507 (Level 4 chat): the house's code split into one file per room (`rooms.js` core + `rooms-outside.js`, `room1.js` ... `room7.js`), notes per room in `notes/`; no change on screen (every room compared with build 506's stills). One chat per room from now on, first: Outside & passages, Room 2 Parlour, Room 4 Fire; the others in a couple of days. Nothing spent.**
+
 **Build 502 (Level 1 chat): Level 1's run music starts at "Life! Life! Eternal life!" (no beat before his door); footsteps in every level at .4 of their loudness (`STEP_K`). Nothing spent.**
 
 **Build 501 (Level 1 chat): the storyteller's family line at his door shortened ("His family would not believe him. Now they saw him run.") so he no longer waits at the door for it. About 1 cent.**

@@ -101,7 +101,7 @@ def record(code, text, dest):
 
 def main():
     redo = sys.argv[sys.argv.index('--redo') + 1] if '--redo' in sys.argv else ''
-    src = ''.join(open(os.path.join(ROOT, f), encoding='utf-8').read() for f in ('index.html', 'slough.js', 'hill.js', 'rooms.js', 'cross.js'))
+    src = ''.join(open(os.path.join(ROOT, f), encoding='utf-8').read() for f in ('index.html', 'slough.js', 'hill.js', 'rooms-outside.js', 'room1.js', 'room2.js', 'room3.js', 'room4.js', 'room5.js', 'room6.js', 'room7.js', 'rooms.js', 'cross.js'))
     lines = []
     for code, text in re.findall(r"\[(N|C|E|O|PL|WW|GW|W|H|I|MAN|DRM|BR|VO|SO|S1|S3), '((?:[^'\\]|\\.)*)'", src):
         text = text.replace("\\'", "'")
