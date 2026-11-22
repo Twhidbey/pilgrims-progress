@@ -1,0 +1,17 @@
+# Awe and reverence: the brief (vision chat, Nov 22)
+
+**The owner's words:** "let's now go over entire game and look for ways to incorporate awe and reverence - can we incorporate snapshot images from the Bible? I'd like a choir singing at some point (or multiple pts) at the cross maybe him at his knees - these sorts of powerful moments - light from heaven, an answered prayer, a sight of something beautiful in nature that point to God and his power and mercy. Build some vision prompts based on these musings and get like six subagents working on generating ideas and building sketches and other prompts - these will form the backbone of some future changes."
+
+## Rules every idea must keep (from CLAUDE.md; read it)
+- **Stay close to the book** (`book/pilgrims-progress-part-one.txt`, sections `{N}`). Name the sections an idea touches. Every departure is listed as one.
+- **Kids 7 to 10, gentle.** No game over, no score, short plain sentences. Awe first, fear never loud.
+- **The storyteller only tells the story;** instructions are quiet TIPs. About 2 minutes of speech a level; no more than about five lines before the child acts.
+- **The look:** layered silhouettes, each depth layer one tone, pale far, dark near, haze between; ONE light at a time; light lies in flat soft pools; stripped down, one special thing in the picture at a time. Each level has ONE great picture after one master (Friedrich, John Martin, Rembrandt, Turner, Adams, Hasui, Palmer...).
+- **Plain faces** (no eyes or mouths). Flat side view, flat feet.
+- **Amazing Grace is never overplayed:** whole only at the Cross (Level 5, done) and at the Celestial Gate; after the Cross only three single remembered phrases at moments of grace. Music is punctuation, silence and the world's sounds are the ground.
+- **Nothing spent without the owner's yes.** Image and music prompts may be WRITTEN, with their price (picture about 15 cents, music piece about 8 cents, video about 56 cents, a voice line about a cent), never run. Free first: code, free recordings (public domain / CC0, e.g. Wikimedia Commons, Musopen, OpenGameArt), existing packs.
+- **Existing pieces to reuse:** Level 5's "memories" in the sky (`cross.js`: `MEMS`, `memories()`, `memPic()` — dark warm figures in a soft oval of light that melts into the sky); the kneel pack (`assets/christian-kneel.pack`, `KNEEL`); the Shining Ones as diffuse shapes of light; the far light he has followed since Level 1.
+- **The owner's rulings** (vision/README.md): the dark parts ruled level by level; Ignorance's end kept quietly; 16 levels (vision/5-levels-6-onward.md); after the Cross a second walking tune for the road.
+
+## What each report gives
+A file in `vision/` (named in your task), plain English like the notes, with: (1) the idea list, each with WHERE (level, moment, book section), WHAT the child sees and hears and does, WHY it is true to the book, COST (free / priced), and its RISK (overuse, preachiness, fear, clutter); (2) your top three; (3) any image or music prompts written out in full (not run); (4) 1 to 3 free sketches drawn in code (Python PIL+numpy or a canvas page in Playwright; the game's layered look; 1600 x 900 or so, JPEG under about 300 KB) saved in `concept/awe/` with your prefix, each named and described in the report. Keep the repo public-safe: no names or personal details. Do not edit any game file, CLAUDE.md, HANDOFF.md or vision/README.md, and do not commit or push: the vision chat does that.
