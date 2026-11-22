@@ -536,6 +536,7 @@ const CR = (() => {
     // it opens close on him between the walls of Salvation (owner, build 451): no wide first look at the cross
     wideK = wideTo = 0;
     const at = new URLSearchParams(location.search).get('at');
+    if (typeof dropPlace === 'function') dropPlace();
     if (at === 'cross') { ph = 'walk'; Ch.x = STOP_X - 260; Ch.sd = null; wideK = wideTo = 0; said.open = said.ascend = said.cut = true; dawn = .6; memT = 2000; memS = MEMS.map(() => 0); }
     camTick(true);
     if (audio()) { AC.resume(); if (rainG) rainG.gain.setTargetAtTime(0, AC.currentTime, .8); padStart(); }

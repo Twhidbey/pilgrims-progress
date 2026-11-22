@@ -116,6 +116,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 **Build 472: THE BURDEN FALLS A LITTLE FASTER (owner: "the burden falling could be slightly faster").** In `burdenTick()` it gathers speed more quickly down the face (.016 a tick on the ground, .006 in the air; were .011 and .004), may go a little faster (3, was 2.4), and starts off his back a little quicker (`vs` .6, was .45): from his back to the cave's mouth about 7.5 s (was about 10). The bounces, the light round it, the rocking on the lip and the going-in are unchanged. Nothing spent.
 
+
+**Build 473 (Level 3 gate chat):** a link's place (`at=`, `x=`, `room=`) is used for the first start only (`dropPlace()`), so choosing a level again begins it from its start. Nothing spent.
 ## START HERE (rewritten at build 140, Nov 16 2026)
 
 **Build 420 (vision chat): the castle sits on the summit, its crag faded into the rock** (free). **Build 415 (vision chat): a rock mountain drawn in code holds the castle, the castle a third of its size** (free; see CLAUDE.md build 415). **Build 413 (vision chat): Beelzebub's castle painted** (about 15 cents, the owner said "Paint it"): a huge dark fortress on a crag after John Martin, left of the gate's wall end; the camera stands back on it as he arrives and glances back while the arrows fly. See CLAUDE.md, Level 3, build 413. Still open from this chat: Christian's new coat after the Cross (a free FLUX retry is scheduled; show the still before any clips); which lines at the mountain's foot the owner wants fixed.

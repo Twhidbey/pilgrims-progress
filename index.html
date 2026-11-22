@@ -184,7 +184,7 @@ body.portrait:not(.playing) #rot{display:none}
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
   <button id="autoWalk" aria-label="He walks on by himself"><svg viewBox="0 0 24 24"><path d="M5 6l6 6-6 6M12 6l6 6-6 6"/></svg></button>
-  <div id="build">build 472 · Nov 22 2026</div>
+  <div id="build">build 473 · Nov 22 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -747,7 +747,11 @@ const EVAN_X = 420, HOME_X = 2150, RUN_END = 6300, NEIGH_X = 6950, GATE_STOP = 8
 // the level just before that moment, after Evangelist. (?x=N still works for any place on the road; ?level=2 starts
 // at the Slough of Despond.)
 const AT = { door: 1500, neighbours: 3950, obstinate: 6600, gate: 8200 };
-const TEST_X = +(new URLSearchParams(location.search).get('x')) || AT[new URLSearchParams(location.search).get('at')] || 0, START_X = TEST_X || HOME_X - 280;   // he starts beside his own door; ?x=3600 starts further along, after Evangelist (for testing)
+let TEST_X = +(new URLSearchParams(location.search).get('x')) || AT[new URLSearchParams(location.search).get('at')] || 0, START_X = TEST_X || HOME_X - 280;   // he starts beside his own door; ?x=3600 starts further along, after Evangelist (for testing)
+// (build 472, owner: "if i play and then click worldly wise after completely level it should take me to start of level then, right?"):
+// a link's place (at=, x=, room=) is used by the FIRST level start only; then it is cleared from the address, so choosing a
+// level again (the contents, the pause menu, Play again, a reload) begins it from its start. Each level calls this once it has read it.
+function dropPlace() { const q = new URLSearchParams(location.search); if (!['at', 'x', 'room'].some(k => q.has(k))) return; ['at', 'x', 'room'].forEach(k => q.delete(k)); const t = q.toString(); try { history.replaceState(null, '', location.pathname + (t ? '?' + t : '')); } catch (e) {} TEST_X = 0; START_X = HOME_X - 280; }
 // The lights on the road are a tune: "Amazing Grace" (New Britain, 1829), one phrase per stretch of road.
 // Each light is one note. They are spaced by the length of each note, so walking at his steady pace plays the tune in time.
 // A higher note floats higher. [beat, note]; BEAT = road walked per beat.
@@ -2434,7 +2438,7 @@ function go3() { CR.on = false; CR.stop(); RM.on = false; RM.stop(); bookless(tr
 function go2() { CR.on = false; CR.stop(); RM.on = false; RM.stop(); bookless(true); store.set(2); HL.on = false; HL.show = false; document.getElementById('title').style.opacity = 0; setTimeout(() => { document.getElementById('title').style.display = 'none'; }, 900); SL.start(); }
 // a room of Level 4 on its own (build 257, a preview: ?room=3)
 function go5() { CR.on = false; RM.on = false; RM.stop(); bookless(true); store.set(5); SL.on = false; SL.show = false; HL.on = false; HL.show = false; document.getElementById('title').style.opacity = 0; setTimeout(() => { document.getElementById('title').style.display = 'none'; }, 900); CR.start(); }
-function goRoom(id) { if (!id || typeof id !== 'string') { id = new URLSearchParams(location.search).get('room') || 'door'; if (/^[1-7]$/.test(id)) id = 'r' + id; } if (id === 'door') store.set(4); CR.on = false; CR.stop(); bookless(true); document.getElementById('title').style.opacity = 0; setTimeout(() => { document.getElementById('title').style.display = 'none'; }, 900); RM.start(id); }
+function goRoom(id) { if (!id || typeof id !== 'string') { id = new URLSearchParams(location.search).get('room') || 'door'; if (/^[1-7]$/.test(id)) id = 'r' + id; } dropPlace(); if (id === 'door') store.set(4); CR.on = false; CR.stop(); bookless(true); document.getElementById('title').style.opacity = 0; setTimeout(() => { document.getElementById('title').style.display = 'none'; }, 900); RM.start(id); }
 const END1 = [...document.querySelectorAll('#endc h1, #endc p')].map(e => e.textContent);
 function start() {
   bookless(false);
@@ -2446,7 +2450,8 @@ function start() {
   document.body.classList.add('playing'); G.opening = null; tpShow(false);
   reset();
   hush(); if (audio()) { AC.resume(); setTimeout(() => sfx.bell(.6), 300); fetchVoices(); }
-  if (TEST_X) { G.state = 'play'; return; }
+  const wasAt = TEST_X; dropPlace();
+  if (wasAt) { G.state = 'play'; return; }
   const run = ++runN; G.state = 'wait'; setTimeout(() => { if (run === runN && G.state === 'wait') talk(INTRO); }, 1700);   // the bell, then the story
 }
 for (const b of document.querySelectorAll('#levels .lv')) { b.classList.toggle('dim', +b.dataset.lv !== LV); b.onclick = () => +b.dataset.lv === 5 ? go5() : +b.dataset.lv === 4 ? goRoom('door') : +b.dataset.lv === 3 ? go3() : +b.dataset.lv === 2 ? go2() : start(); }
@@ -2631,11 +2636,11 @@ document.getElementById('on2').onclick = () => SL.on ? go3() : HL.on ? goRoom('d
   for (const [who, txt] of INTRO) vox(who, txt);          // the first words, ready before Begin is pressed
 })();
 </script>
-<script src="slough.js?v=453"></script>
-<script src="hill.js?v=471"></script>
+<script src="slough.js?v=473"></script>
+<script src="hill.js?v=473"></script>
 <script src="rooms.js?v=468"></script>
 <script src="keepsakes.js?v=390"></script>
-<script src="cross.js?v=472"></script>
+<script src="cross.js?v=473"></script>
 <script src="editor.js?v=422"></script>
 </body>
 </html>

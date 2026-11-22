@@ -473,6 +473,7 @@ const SL = (() => {
     // SKIP-AHEAD LINK (build 122, owner: "can you give me link to entrance into water"): ?level=2&at=bog starts the two on the
     // home bank a few steps from the mire, the talk on the plain already said, the mist already in
     const AT2 = { bog: -1090 }[new URLSearchParams(location.search).get('at')];
+    if (typeof dropPlace === 'function') dropPlace();
     if (AT2) {
       C2.x = AT2; C2.y = bankY(AT2) + 4; pli.x = pli.px = AT2 - 80; pli.stop = { t: 50, x0: AT2 - 80 - 72.5 * CHR_K };
       capsSaid = new Set(OPEN_AT.map((_, i) => i)); nearSaid = true;
