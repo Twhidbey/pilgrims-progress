@@ -359,7 +359,7 @@ const HL = (() => {
 
   // ---------- pictures baked once ----------
   let CLOUDW = null, CLOUDG = null, DECK = null;
-  let HILL = null, SMOKE = null, CLOUD = null, TOWN = null, GDOOR = null, GSTONE = null, CAP = null, BEAMC = null, SIGNPIC = null, GWST = null, GWALL = null, SHC = null, CHRSH = null, CHRSH_N = null; const GWST_META = { ax: 61, ground: 306 }; const GWF = []; const CRACKS = [], STONES = [], SEAMS = [], PUFF = [];
+  let SIGNC = null, SIGNT = null, SIGNBOX = null, HILL = null, SMOKE = null, CLOUD = null, TOWN = null, GDOOR = null, GSTONE = null, CAP = null, BEAMC = null, SIGNPIC = null, GWST = null, GWALL = null, SHC = null, CHRSH = null, CHRSH_N = null; const GWST_META = { ax: 61, ground: 306 }; const GWF = []; const CRACKS = [], STONES = [], SEAMS = [], PUFF = [];
   // the hill's outline: h = height above its foot, 0 to TOP; its left side hangs far out over the way
   const TOP = 520, HW = 1500, HH = 640, HOX = 300, HOY = 610;      // the baked picture's size and where the foot's left end lies in it
   const FACE = [[0, 0], [36, -30], [84, -62], [112, -44], [150, -70], [240, -138], [320, -182], [358, -176], [420, -116], [480, -44], [520, 36]];      // a second, lower overhang under the great one
@@ -951,7 +951,7 @@ const HL = (() => {
   const hillPt = () => [hillBox[0] + 70 * hillBox[2], hillBox[1] - 250 * hillBox[2]];
   const gatePt = () => [(GATE_X - cam.cx) * cam.z + VW / 2, cam.wl - 70 * cam.z];
   // the stone over the gate, on the screen (for a touch)
-  const signPt = () => [(GATE_X - cam.cx) * cam.z + VW / 2, cam.wl - (126 + 40 + 23 + 13) * cam.z, 70 * cam.z, 26 * cam.z];
+  const signPt = () => SIGNBOX ? [(SIGNBOX[0] + SIGNBOX[1]) / 2, (SIGNBOX[2] + SIGNBOX[3]) / 2, Math.max(30 * cam.z, (SIGNBOX[1] - SIGNBOX[0]) / 2 + 8 * cam.z), Math.max(14 * cam.z, (SIGNBOX[3] - SIGNBOX[2]) / 2 + 6 * cam.z)] : [(GATE_X - cam.cx) * cam.z + VW / 2, cam.wl - (126 + 40 + 23 + 13) * cam.z, 70 * cam.z, 26 * cam.z];
   function touch(sx, sy) {
     if (ph === 'still' && zs === 'hold') { wideTouch(sx, sy); return; }
     if (!G.act) {
@@ -1992,13 +1992,26 @@ const HL = (() => {
           GWFX = fx;
           FK = .9; if (GWRE && gwReach > .5) figure(c, 'gw', GWRE, GWRE_META, fx, -1, [52, 44, 40], gw * .96); else if (GWST) figure(c, 'gw', GWST, GWST_META, fx, -1, [52, 44, 40], gw * .96, breath(3)); else figure(c, 'gw', GWF[Math.floor(G.t / 20) % GWF.length], EVS_META, fx, -1, [52, 44, 40], gw * .96); FK = 1;
           c.restore(); } }
-      // the carved stone over the passage: Bunyan's words cut into the slice's face, shown by the lantern (a touch opens it close up)
-      { const sx2 = gx - SW / 2 * z, sy2 = Y(-SY - SH), sw = SW * z, sh = SH * z;
-        c.fillStyle = css(mix([52, 38, 30], [96, 66, 44], .5 * flick)); c.fillRect(sx2, sy2, sw, sh);
-        c.strokeStyle = css([8, 6, 6], .55); c.lineWidth = 1 * z; c.strokeRect(sx2, sy2, sw, sh);
-        c.save(); c.textAlign = 'center'; c.textBaseline = 'middle'; c.font = `${4.3 * z}px 'IM Fell English', Georgia, serif`;
-        for (const [t, dy] of [['KNOCK, AND IT SHALL BE', -.24], ['OPENED UNTO YOU.', .22]]) { const ty = sy2 + sh * (.5 + dy); c.fillStyle = css([18, 11, 8], .7); c.fillText(t, gx, ty); c.fillStyle = css([255, 214, 160], .12 * flick); c.fillText(t, gx + .4 * z, ty + .5 * z); }
-        c.restore(); }
+      // the carved stone over the doorway (build 504, owner: "shouldn't sign be on face of wall?"): Bunyan's words cut into
+      // the wall's OUTER face above the doorway, in the gate's perspective (depth `d0`..`d1` into the face, as the doorway
+      // is), baked flat once (`SIGNC`) and laid in thin upright strips each at its own depth; lit by the lantern
+      { const VPx = X(GVP), VPy = Y(gvy()), Px = (x, q) => VPx + (x - VPx) * q, Py = (y, q) => VPy + (y - VPy) * q, sx0 = X(GATE_X - GSL);
+        const d0 = 4, d1 = 56, h0 = SY + 16, h1 = SY + SH + 16, Wd = d1 - d0, K = 6;
+        if (!SIGNC) { const t = mk(Wd * K, SH * K), q = t.getContext('2d'); q.fillStyle = '#fff'; q.fillRect(0, 0, t.width, t.height);
+          q.strokeStyle = 'rgba(0,0,0,.55)'; q.lineWidth = K; q.strokeRect(K / 2, K / 2, t.width - K, t.height - K);
+          q.textAlign = 'center'; q.textBaseline = 'middle'; q.font = `${4.3 * K}px 'IM Fell English', Georgia, serif`;
+          for (const [tx, dy] of [['KNOCK, AND IT SHALL BE', -.24], ['OPENED UNTO YOU.', .22]]) { q.fillStyle = 'rgba(0,0,0,.72)'; q.fillText(tx, t.width / 2, t.height * (.5 + dy)); }
+          SIGNC = t; }
+        const tint = mix([44, 31, 24], [84, 56, 37], .5 * flick), N = 26; let bx = [VW, 0, VH, 0];
+        if (!SIGNT || SIGNT.k !== tint.map(Math.round).join()) { const t = mk(SIGNC.width, SIGNC.height), q = t.getContext('2d'); q.fillStyle = css(tint); q.fillRect(0, 0, t.width, t.height); q.globalCompositeOperation = 'multiply'; q.drawImage(SIGNC, 0, 0); t.k = tint.map(Math.round).join(); SIGNT = t; }
+        for (let n = 0; n < N; n++) { const da = d0 + Wd * n / N, db = d0 + Wd * (n + 1) / N, qa = 1 / (1 + da / GPL), qb = 1 / (1 + db / GPL);
+          const xa = Px(sx0, qa), xb = Px(sx0, qb), ya = Py(Y(-h1), qa), yb = Py(Y(-h0), qa), yc = Py(Y(-h1), qb), yd = Py(Y(-h0), qb);
+          const u = SIGNT.width * (N - 1 - n) / N, uw = SIGNT.width / N;
+          c.save(); c.beginPath(); c.moveTo(xa + .3, ya); c.lineTo(xb - .3, yc); c.lineTo(xb - .3, yd); c.lineTo(xa + .3, yb); c.closePath(); c.clip();
+          c.setTransform(c.getTransform().multiply(new DOMMatrix([(xa - xb) / uw, (ya - yc) / uw, 0, (yd - yc) / SIGNT.height, xb, yc]).translate(-u, 0)));
+          c.drawImage(SIGNT, u - .5, 0, uw + 1, SIGNT.height, u - .5, 0, uw + 1, SIGNT.height); c.restore();
+          bx = [Math.min(bx[0], xb), Math.max(bx[1], xa), Math.min(bx[2], ya, yc), Math.max(bx[3], yb, yd)]; }
+        SIGNBOX = bx; }
       // THE LANTERN on its iron arm, standing out from the slice's outer face over the way in
       c.save(); c.globalCompositeOperation = 'lighter'; { const g = c.createRadialGradient(lnx, lny, 0, lnx, lny, 46 * z); g.addColorStop(0, css([255, 220, 160], .34 * flick)); g.addColorStop(1, css([255, 190, 110], 0)); c.fillStyle = g; c.fillRect(lnx - 90 * z, lny - 90 * z, 180 * z, 180 * z); }
         { const g = c.createRadialGradient(lnx, lny, 0, lnx, lny, 90 * z); g.addColorStop(0, css([255, 200, 140], .05 * flick * (1 - .5 * open))); g.addColorStop(1, css([255, 180, 110], 0)); c.fillStyle = g; c.fillRect(lnx - 170 * z, lny - 170 * z, 340 * z, 340 * z); } c.restore();
