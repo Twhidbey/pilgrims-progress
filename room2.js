@@ -213,7 +213,8 @@
       under(c) {
         if (PAINTED) { this.ov(c, this.DM, this.df); this.ov(c, this.SW, this.sf); return; }
         // the drawn room: the girl (stand-in: his wife's picture) holding the jug, which tips as she pours; the sweeper (stand-in: Help) and his broom
-        const FY = this.FY + (this.shell ? 0 : 14), G2 = R2D.girl, SW2 = R2D.sweeper, col = this.shell ? [186, 186, 198] : [255, 255, 255];
+        // build 512 (owner: "tone the girl and sweeper darker to match the visitors"): in the night parlour both are held down toward the visitors' dark, quiet tones
+        const FY = this.FY + (this.shell ? 0 : 14), DK = this.shell ? { ct: 1, mul: .66, sat: .55 } : null, G2 = DK ? { ...R2D.girl, ...DK } : R2D.girl, SW2 = DK ? { ...R2D.sweeper, ...DK } : R2D.sweeper, col = this.shell ? [186, 186, 198] : [255, 255, 255];
         // the girl: cut straight out of the painting (build 382), so she is the painted Milkmaid herself, her jug already in her hands;
         // the water falls from its spout when the child has touched it
         if (pics['room2-girl']) fig(c, 'room2-girl', G2, R2D.GX, FY + 6, -1, 1, 1, col);
@@ -222,7 +223,7 @@
         // and brown doublet, bent to the broom with both hands on the handle), the broom's head where the dust rises
         // build 482: the sweeper on video (Google, owner's yes): upright, hands apart on the pole; 108 frames at 12 a second, a loop that
         // starts and ends in his standing pose, played while he sweeps and held on frame 0 between
-        const SV = R2D.sweepV;
+        const SV = DK ? (R2D.sweepVd = R2D.sweepVd || { ...R2D.sweepV, mul: .62, sat: .55 }) : R2D.sweepV;
         if (sheetFrames(SV)) fig(c, SV.n + '#' + (Math.floor(this.svf || 0) % SV.fr), SV, R2D.SX, FY, -1, 1, 1, col);
         else if (pics['room2-sweeper']) fig(c, 'room2-sweeper', SW2, R2D.SX, FY, -1, 1, 1, col);
       },
