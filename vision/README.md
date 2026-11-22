@@ -45,6 +45,35 @@ The owner asked: (1) mine how others have depicted the book, with ideas for ever
 
 **Next from this chat:** the design packet for Level 6 (Hill Difficulty, the arbour, the lost roll), so it can be built the moment Christian's new pictures exist: its stretch of the book read line by line, the one picture and its master, the moments in order, the plain script, the child's acts, the figures and clips it needs (and which the coat clips cover), and the cost.
 
+## Awe and reverence (vision chat, Nov 22)
+
+The owner asked for awe and reverence across the game: Bible pictures, a choir at the Cross with him on his knees, light from heaven, answered prayer, and beauty in nature that points to God. Five researchers each took one theme and a critic weighed them (brief: `awe-brief.md`; reports `6-awe-scripture.md`, `7-awe-cross-choir.md`, `8-awe-light.md`, `9-awe-prayer.md`, `10-awe-nature.md`, `11-awe-critic.md`; sketches in `concept/awe/`). Nothing spent; every image and music prompt is written, not run.
+
+**What the book settles.** At the Cross Christian twice "stood" (`{94}`) and no choir sings: heavenly music belongs to the Celestial Gate (`{396}`-`{402}`). Help often comes unasked (the Slough, the burden), answers often come slowly (Doubting Castle "till almost break of day", `{292}`), and thanks follows. Bunyan's pattern is darkness first, then light.
+
+**The ranked ten** (11 added moments across 16 levels, never more than two in one level; about two new spoken lines):
+
+| # | Idea | Where (book) | Cost | Needs the owner's yes |
+|---|---|---|---|---|
+| 1 | **NOW: he kneels in the silence** after the burden is gone, the sun rising while he kneels, and stands before he speaks (every "stood" kept) | L5, `{93}`-`{94}` | free (paint the burden out of the kneel pack, or a free clip) | the departure |
+| 2 | **NOW: a short wordless choir for the Shining Ones**: one treble on the hymn's last chord, then voices that come and go with them, under 20 s, never under the hymn | L5, `{94}` | one music piece, about 8 cents (16 with a retake); timed first with a free code-made choir | money and the departure |
+| 3 | **NOW, then every level: ONE far light** (`heaven.js`): white core, gold body, a cool silver halo that sets it apart from fire, lamp and sun; it only grows, its hiding is the event, rays at most once a level, never a reward, never on false lights | all, `{17}` on | free; Levels 1 to 5 ported one at a time with before and after stills | the look |
+| 4 | **"The Quiet", first at the lost roll**: ask, wait (a fixed time, not a charge), receive (one ray finds the roll), give thanks; TIP "Stay with him."; the first remembered hymn phrase | L6, `{107}`-`{109}` | free, about 4 cents of voices | the gesture as a rule (used only four times) |
+| 5 | **The Valley from All-prayer to morning**: a held light that does not grow, Psalm 23 heard ahead, a gap of stars (Amos 5:8, Orion and the seven stars), a slow daybreak and the look back | L9, `{161}`-`{166}` | free (Crimond, free) | the stars (Bunyan's margin, not shown in the book) |
+| 6 | **Prayer till almost break of day**: stars cross the slit, it greys (no warm light before the key), a dull glint at his breast, the key Promise, the second phrase | L13, `{292}` | free | none beyond the level |
+| 7 | **Days and nights pass while they sleep by the River of Life**, the stars mirrored, wordless, about 20 s | L12, `{276}` | free | none |
+| 8 | **The trembling glass on the hill Clear**, always ending in one clear glimpse of the gate, a faint breath of the Cross's choir | L14, `{305}` | free (reuses #2) | the choir there |
+| 9 | **Hopeful's answered prayer as a memory**: a small kneeling figure under a column of light, no figure in the light, one line (its margin, Acts 16:30-31, answers Christian's first cry at `{10}`) | L15, `{348}`-`{351}` | about 1 cent | the picture |
+| 10 | **The River crossed and the Gate**: "Touch your friend", Hopeful's hand, the third phrase, the light again; then trumpets, bells, "Holy, holy, holy" one after another | L16, `{391}`-`{402}` | the Gate's choir, about 8 cents (later) | money |
+
+Close behind: the Psalm 40 page in the tray's Bible after the Slough (L2, NOW, free; "He brought me up also out of an horrible pit, out of the miry clay"); the chamber called Peace at dawn (L7, `{131}`); thanks first, then the healing leaves (L8); the chariot's column of light (L11); Beulah's turtle-dove (L16, `{382}`).
+
+**The hymn, restated** (the critic): Level 1's gate plays Amazing Grace whole again since build 484, on the owner's word, so the rule is now THREE times whole: found (Level 1's gate), given (the Cross), crowned (the Celestial Gate); between them only three remembered phrases: the roll found (L6), the key (L13), "I feel the bottom" (L16).
+
+**Do not do:** a prayer meter (nothing grows or fills with longer holding); a prayer beat before grace that comes unasked; more at the Cross than the kneel and the choir (no rays, no lark, no sung words, no Latin motets); judgment pictures in the sky (no Lot's wife, which would judge Level 1's "Stop and look back"; no lions; no furnace; no Elijah's chariot at the River); Christ's face or form, or a Good Shepherd over the real sheep; a second picture style for remembered things (Level 5's memories only); a rainbow; a warm light before the key; the Bible opening unasked; relighting Levels 1 to 5 all at once; a museum of touches in the Palace; sleepers who look like bodies.
+
+**Sketches that help most:** `cross-choir-timeline.jpg`, `light-four-lights.jpg`, `nature-delectable-mountains.jpg`. Rough and misleading in places: `cross-kneel-sunrise.jpg` (the cross on a round dome, which the owner turned down), `nature-river-of-life.jpg` (the sleepers read as bodies), `prayer-valley-held-light.jpg` and `scripture-armoury-gideon.jpg` (do not read).
+
 ## Levels 1 to 5: what to do, ranked
 
 Free unless marked. Full lists: `3-...md` section (f) and `4-...md` section 3.
