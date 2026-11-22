@@ -363,6 +363,45 @@
    "seconds": 3,
    "prompt": "A tall hooded figure in a long dark robe stands still and pours slowly and continually from a small jug held in both hands, tipping it a little more and back, a calm quiet movement. His feet stay planted, a completely FLAT SIDE VIEW. The camera is still and does NOT zoom; plain white background; no face shown, deep in the hood.",
    "status": "todo"
+  },
+  {
+   "id": "christian-coat-stand",
+   "uses": "Level 5 after the Cross, and every level after it (6 to 16): Christian in his new coat: standing, breathing (looped)",
+   "first": {
+    "src": "clips/in/christian-coat.png"
+   },
+   "last": {
+    "src": "clips/in/christian-coat.png"
+   },
+   "seconds": 3,
+   "prompt": "A young clean-shaven man in a long pale coat with embroidered bands, his hood lying on his shoulders, stands quietly facing RIGHT, breathing slowly and calmly, his head lifting very slightly, his arms relaxed at his sides; he comes back to exactly the same pose. Both feet planted on one level line, a completely FLAT SIDE VIEW like a shadow-puppet play; the far foot is never higher than the near one. The camera is still and does NOT zoom; plain white background; his face a plain soft profile.",
+   "status": "todo",
+   "via": "modal"
+  },
+  {
+   "id": "christian-coat-leap",
+   "uses": "Level 5 after the Cross, and every level after it (6 to 16): Christian in his new coat: the three leaps for joy at the Cross (played three times); any moment of joy later",
+   "first": {
+    "src": "clips/in/christian-coat.png"
+   },
+   "last": {
+    "src": "clips/in/christian-coat.png"
+   },
+   "seconds": 3,
+   "prompt": "A young clean-shaven man in a long pale coat with embroidered bands, his hood lying on his shoulders, facing RIGHT, bends his knees and leaps straight up for joy, both feet leaving the ground, his arms rising a little, his coat lifting, then lands lightly on the same spot and stands again in exactly the same pose. The camera is still and does NOT zoom; a completely FLAT SIDE VIEW like a shadow-puppet play; plain white background; his face a plain soft profile.",
+   "status": "todo",
+   "via": "modal"
+  },
+  {
+   "id": "christian-coat-walk",
+   "uses": "Level 5 after the Cross, and every level after it (6 to 16): Christian in his new coat: his walk on the road (looped)",
+   "first": {
+    "src": "clips/in/christian-coat.png"
+   },
+   "seconds": 4,
+   "prompt": "A young clean-shaven man in a long pale coat with embroidered bands, his hood lying on his shoulders, WALKS steadily to the RIGHT, upright and light, arms swinging gently, hands empty. The camera moves along with him and does NOT zoom: he stays in the centre of the frame at exactly the same size, his whole body always visible; even, regular strides on one level line, a completely FLAT SIDE VIEW like a shadow-puppet play; plain white background; his face a plain soft profile.",
+   "status": "todo",
+   "via": "modal"
   }
  ]
 }
