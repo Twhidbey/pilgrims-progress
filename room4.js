@@ -82,13 +82,13 @@
   // a vanishing point PV on the left, depth d into the
   // picture shrinks by PQ(d) (as the gate's wall in Level 3); the hearth's opening runs from depth a0 to a1, its arch springing at SPR
   // above the floor and rising RISE more; the fire sits FIN inside the face at depth FD
-  const PV = { X: 600, Y: HOUSE.FY - 100, NEAR: 90, GP: 700, D: 520, a0: 110, a1: 430, SPR: 290, RISE: 120, FD: 270, FIN: 50 };
+  const PV = { X: 600, Y: HOUSE.FY - 100, NEAR: 90, GP: 700, D: 520, a0: 110, a1: 430, SPR: 290, RISE: 120, FD: 270, FIN: 50, REV: 130 };
   // the hearth wall's foot stands NEAR in front of the back wall's foot (build 529; owner: its far corner just below where wall and
   // floor meet, its near corner down where the floor's dark shadow starts): its floor line is FB, the eye low enough for both
   const FB = HOUSE.FY + PV.NEAR;
   const PQ = d => 1 / (1 + d / PV.GP), PP = (X, Y, d) => { const q = PQ(d); return [PV.X + (X - PV.X) * q, PV.Y + (Y - PV.Y) * q]; };
-  const archAt = (d0, d1, spr, rise, th) => { const m = (d0 + d1) / 2, r = (d1 - d0) / 2, s = Math.sin(th); return PP(R4D.PART0, FB - spr - rise * Math.pow(s, .7), m - r * Math.cos(th)); };
-  const archPts = (d0, d1, spr, rise) => { const pts = [PP(R4D.PART0, FB, d1)]; for (let k = 0; k <= 24; k++) pts.push(archAt(d0, d1, spr, rise, Math.PI - Math.PI * k / 24)); pts.push(PP(R4D.PART0, FB, d0)); return pts; };
+  const archAt = (d0, d1, spr, rise, th, X = R4D.PART0) => { const m = (d0 + d1) / 2, r = (d1 - d0) / 2, s = Math.sin(th); return PP(X, FB - spr - rise * Math.pow(s, .7), m - r * Math.cos(th)); };
+  const archPts = (d0, d1, spr, rise, X = R4D.PART0) => { const pts = [PP(X, FB, d1)]; for (let k = 0; k <= 24; k++) pts.push(archAt(d0, d1, spr, rise, Math.PI - Math.PI * k / 24, X)); pts.push(PP(X, FB, d0)); return pts; };
   // where the fire is seen on the picture (for the water, the light and the glow)
   const FXS = () => PP(R4D.PART0 + PV.FIN, FB, PV.FD);
   return {
@@ -152,20 +152,36 @@
         // the surround's inner edge catches the fire
         c.save(); poly(out); c.clip(); g = c.createRadialGradient(u(hx), v(hy), 0, u(hx), v(hy), 300 * S); g.addColorStop(0, css([255, 150, 70], .5 * gw)); g.addColorStop(1, 'rgba(255,150,70,0)');
         c.globalCompositeOperation = 'lighter'; c.fillStyle = g; c.fillRect(u(hx) - 300 * S, v(hy) - 300 * S, 600 * S, 600 * S); c.restore(); c.globalCompositeOperation = 'source-over';
-        // inside the opening: the sooty recess, glowing low, and the one fire in it (drawn at its depth: smaller, as the gate's door)
+        // INSIDE THE OPENING, IN PERSPECTIVE (build 530; owner: "the arch is messed up - think perspective"): the opening has depth REV
+        // into the breast. Its back edge is the same arch REV further in (X = P0 + REV), so between the two we see the reveal: the far
+        // jamb's inner side and the arch's underside, in sooty stone lit by the fire; through the back edge the dark recess, its floor
+        // running back toward the vanishing point, the logs and embers lying along it, the fire standing on it
+        const REV = PV.REV, back = archPts(PV.a0, PV.a1, PV.SPR, PV.RISE, P0 + REV);
         c.save(); poly(inn); c.clip();
-        const [ix0, iy0] = PP(P0, FB - PV.SPR - PV.RISE, PV.FD);
-        g = c.createLinearGradient(0, v(iy0), 0, v(FB)); g.addColorStop(0, '#070302'); g.addColorStop(.5, '#1c0c07'); g.addColorStop(1, css([140, 56, 22], 1)); c.fillStyle = g; c.fillRect(u(PP(P0, FB, PV.a1)[0]) - 20, v(iy0) - 20, (P0 - PP(P0, FB, PV.a1)[0]) * S + 40, (FB - iy0) * S + 40);
-        const qm = PQ(PV.FD), [sx, sy] = PP(P0 + PV.FIN, FB, PV.FD);
-        c.save(); c.translate(u(sx), v(sy)); c.scale(qm, qm); c.translate(-u(F), -v(FY));
+        g = c.createRadialGradient(u(hx), v(hy), 0, u(hx), v(hy), 260 * S); g.addColorStop(0, css([120, 62, 30], 1)); g.addColorStop(.6, '#3a2014'); g.addColorStop(1, '#1a0e08'); c.fillStyle = g; poly(inn); c.fill();
+        // the jamb's inner face meets the arch's underside along a soft line: shade the underside a little darker
+        poly(back); c.fillStyle = '#0a0503'; c.fill();
+        c.save(); poly(back); c.clip();
+        const [ix0, iy0] = PP(P0 + REV, FB - PV.SPR - PV.RISE, PV.FD);
+        g = c.createLinearGradient(0, v(iy0), 0, v(FB)); g.addColorStop(0, '#060302'); g.addColorStop(.55, '#1a0b06'); g.addColorStop(1, css([120, 48, 20], 1)); c.fillStyle = g; poly(back); c.fill();
+        // the recess floor: a strip of hearth running back from the near jamb to the far one, glowing with embers
+        const fl0 = PP(P0 + 14, FB, PV.a0 + 14), fl1 = PP(P0 + 14, FB, PV.a1 - 14), fl2 = PP(P0 + REV, FB, PV.a1 - 14), fl3 = PP(P0 + REV, FB, PV.a0 + 14);
+        poly([fl0, fl1, fl2, fl3]); c.fillStyle = css([150, 60, 22], .9 * gw); c.fill();
+        // the fire stands on that floor: its roots spread along the floor's slope (a shear), at the recess's depth
+        const qm = PQ(PV.FD), [sx, sy] = PP(P0 + REV * .55, FB, PV.FD), sl = (fl1[1] - fl0[1]) / (fl1[0] - fl0[0]);
+        c.save(); c.translate(u(sx), v(sy)); c.transform(qm, qm * sl, 0, qm, 0, 0); c.translate(-u(F), -v(FY));
         g = c.createRadialGradient(u(F), v(FY - 120), 0, u(F), v(FY - 120), 320 * S); g.addColorStop(0, css([255, 150, 60], .55 * gw)); g.addColorStop(1, 'rgba(255,150,60,0)'); c.globalCompositeOperation = 'lighter'; c.fillStyle = g; c.fillRect(u(F - 320), v(FY - 440), 640 * S, 440 * S); c.globalCompositeOperation = 'source-over';
         c.fillStyle = '#120805';
-        for (const [x, w, a] of [[F - 150, 230, -.06], [F - 80, 200, .1], [F - 170, 120, .02], [F + 60, 150, -.08]]) { c.save(); c.translate(u(x + w / 2), v(FY - 26)); c.rotate(a); c.beginPath(); c.ellipse(0, 0, w / 2 * S, 13 * S, 0, 0, 6.2832); c.fill(); c.restore(); }
+        for (const [x, w, a] of [[F - 150, 230, -.06], [F - 80, 200, .1], [F - 170, 120, .02], [F + 60, 150, -.08]]) { c.save(); c.translate(u(x + w / 2), v(FY - 22)); c.rotate(a); c.beginPath(); c.ellipse(0, 0, w / 2 * S, 11 * S, 0, 0, 6.2832); c.fill(); c.restore(); }
         g = c.createLinearGradient(u(F - 220), 0, u(F + 220), 0); g.addColorStop(0, 'rgba(255,120,40,0)'); g.addColorStop(.12, 'rgba(255,140,50,.85)'); g.addColorStop(.88, 'rgba(255,130,45,.8)'); g.addColorStop(1, 'rgba(255,110,40,0)');
-        c.fillStyle = g; c.fillRect(u(F - 220), v(FY - 16), 440 * S, 14 * S);
+        c.fillStyle = g; c.fillRect(u(F - 220), v(FY - 14), 440 * S, 12 * S);
         fireDraw(c, this.fire, 1);
         c.globalCompositeOperation = 'lighter'; for (const p of this.sparks) { const q = p.a / p.L; c.fillStyle = css([255, 220, 150], (1 - q) * (.6 + .4 * Math.sin(p.a * .7))); c.fillRect(u(p.x), v(p.y), Math.max(1, 3 * S), Math.max(1, 3 * S)); } c.globalCompositeOperation = 'source-over';
         c.restore(); c.restore();
+        // the fire's light on the reveal (the jamb's inner face and the underside), over everything in the opening
+        g = c.createRadialGradient(u(sx), v(sy - 80), 0, u(sx), v(sy - 80), 240 * S); g.addColorStop(0, css([255, 150, 60], .28 * gw)); g.addColorStop(1, 'rgba(255,150,60,0)');
+        c.save(); poly(inn); poly(back); c.clip('evenodd'); c.globalCompositeOperation = 'lighter'; c.fillStyle = g; c.fillRect(u(sx) - 240 * S, v(sy - 80) - 240 * S, 480 * S, 480 * S); c.restore();
+        c.restore(); c.globalCompositeOperation = 'source-over';
         // the chimney breast cut by the section, over the walkers (they pass behind it); a low slot through its foot glows with the
         // back of the same fire, where from behind the wall the oil goes in
         c.fillStyle = '#0c0705'; c.fillRect(u(P0), v(EX.y0), (P1 - P0) * S, (FY + 6 - EX.y0) * S);
