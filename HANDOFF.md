@@ -3,6 +3,8 @@
 The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build step; until build 118 it was called `story-lab.html`: read that name below as `index.html`). `style-lab.html` is the art-style test page. `CLAUDE.md` maps the code and records the owner's decisions. Work on **`main`** and push after every change: pushing IS publishing (GitHub Pages, https://twhidbey.github.io/pilgrims-progress/). Bump the build stamp in both pages on every push and tell the owner when it is live (a phone may need `?v=N` on the link). Keep this file and `CLAUDE.md` updated. Public repo: no personal details.
 
 
+**Build 516 (Room 4 chat): the fire room reworked: a particle fire, water arcing into it, the oil fed through a low arch into the back of the same fire, the hidden side truly dark, the two walking round behind the wall by a cupped candle (the La Tour quote). Two free clips queued (`room4-cast`, `room4-pour`). Nothing spent; see notes/room4.md.**
+
 **Build 514 (House · Outside & passages chat): every passage between rooms now drawn on the rooms' own shell at the rooms' size: the doorway they came through, a partition with the next room's lit doorway, stairs in section, the back door onto the night garden. Nothing spent.**
 
 **Build 482 (Level 4 editing chat): the parlour's sweeper made again on Google (a picture, then a sweeping video from it; about 71 cents spent, the owner said yes): upright, hands apart on the broom, sweeping in a loop; see CLAUDE.md.**
