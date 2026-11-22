@@ -43,6 +43,7 @@ Several chats push to `main`. Just before pushing: `git fetch`, rebase on `origi
 
 ## Changes to the core (newest first)
 
+- Build 520 (room 2 chat): `toneOf` takes a room's `soft` (0..1, default none): a softened copy laid over each figure inside its own outline. Only room 2 sets it; no other room changes (the cache key gained one field).
 - Build 519 (Outside & passages): `houseCut` larger, lower and opaque; `RM.peek()` gives `wx` (the walker's place at the door and leaving).
 - Build 514 (Outside & passages): `setView` lets a passage use the shell view (`if (R && R.shell)`, was `&& R.id !== 'pass'`); only the passage changes, every room has `shell` as before. `tools/stills4.js` takes `DARK=1`.
 - Build 507: `rooms.js` split into the core and the room files (no visible change; every room checked against stills of build 506 with the same random numbers: only flickering fire and moving figures differ).

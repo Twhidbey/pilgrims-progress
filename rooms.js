@@ -98,13 +98,16 @@ const RM = (() => {
   // ---------- figures ----------
   // each figure picture, coloured for the room it stands in (baked once per room: no canvas is touched while playing)
   function toneOf(n, col, ct = 1.2, mul = 1, sat0 = null) {
-    const key = n + '|' + col.join(',') + '|' + ct + '|' + mul + '|' + sat0; if (toned[key]) return toned[key];
+    const soft = R && R.soft || 0, key = n + '|' + col.join(',') + '|' + ct + '|' + mul + '|' + sat0 + '|' + soft; if (toned[key]) return toned[key];
     const im = pics[n]; if (!im) return null;
     const cv2 = document.createElement('canvas'); cv2.width = im.w || im.width; cv2.height = im.h || im.height; const x = cv2.getContext('2d');
     if (im.sheet) x.drawImage(im.sheet, im.sx, im.sy, im.w, im.h, 0, 0, im.w, im.h); else x.drawImage(im, 0, 0); const d = x.getImageData(0, 0, cv2.width, cv2.height), p = d.data, sat = sat0 != null ? sat0 : R && R.sat != null ? R.sat : .6;
     let m = 0, cnt = 0; for (let i = 0; i < p.length; i += 4) if (p[i + 3] > 128) { m += (p[i] + p[i + 1] + p[i + 2]) / 3; cnt++; } m /= cnt || 1;
     for (let i = 0; i < p.length; i += 4) { const l = (p[i] + p[i + 1] + p[i + 2]) / 3; for (let k = 0; k < 3; k++) { let c = l + (p[i + k] - l) * sat; c = (m + (c - m) * ct) * mul; p[i + k] = Math.max(0, Math.min(255, c * col[k] / 255)); } }
     x.putImageData(d, 0, 0);
+    // a room may ask for softer figures (R.soft 0..1, room 2 since build 520): a copy made a third of the size and stretched back is laid over
+    // the figure, inside its own outline, so the oil's fine crisp detail melts toward the game's watercolour while its edge stays clean
+    if (soft) { const w3 = Math.max(2, cv2.width / 3 | 0), h3 = Math.max(2, cv2.height / 3 | 0), sm = document.createElement('canvas'); sm.width = w3; sm.height = h3; sm.getContext('2d').drawImage(cv2, 0, 0, w3, h3); x.save(); x.globalCompositeOperation = 'source-atop'; x.globalAlpha = soft; x.drawImage(sm, 0, 0, cv2.width, cv2.height); x.restore(); }
     return toned[key] = cv2;
   }
   function fig(c, spec, meta, x, y, face, k = 1, a = 1, col = R.tone || [255, 255, 255], who = null, ph0 = 0, bob = 0) {

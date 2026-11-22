@@ -10,7 +10,7 @@
   // ROOM 2 DRAWN IN CODE (after build 378; owner: "can you draw the parlour"): Vermeer's one light, a tall window on the left,
   // the pale wall lit nearest it and dimming to the right, the floorboards a nearer, darker layer with the window's light lying flat on them,
   // a low band of pale tiles at the wall's foot (the Milkmaid's Delft tiles, the room's one quoted detail besides the stream from the jug)
-  const R2D = { sweepV: { n: 'room2-sweeper-v', ax: 193.2, g: 375, cols: 8, fr: 108, W: 260, H: 382, s: 1.75, ct: 1, mul: .9, sat: 1, noSh: 1 }, girl: { ax: 154, g: 618, s: 1, ct: 1, mul: 1, sat: 1, noSh: 1 }, tipV: { n: 'room2-girl-tip', ax: 101.2, g: 398.4, cols: 8, fr: 49, W: 199, H: 403, s: 1.57, ct: 1, mul: 1, sat: 1, noSh: 1 }, SPOUT: [289 - 154, 237 - 618], sweeper: { ax: 290, g: 652, s: .92, ct: 1, mul: .96, sat: 1, noSh: 1 }, GX: 1716, SX: 2655, WIN: [90, 380, 170, 930] };
+  const R2D = { sweepV: { n: 'room2-sweeper-v', ax: 193.2, g: 375, cols: 8, fr: 108, W: 260, H: 382, s: 1.75, ct: 1, mul: .9, sat: 1, noSh: 1 }, girl: { ax: 154, g: 618, s: 1, ct: 1, mul: 1, sat: 1, noSh: 1 }, tipV: { n: 'room2-girl-tip', ax: 101.2, g: 398.4, cols: 8, fr: 49, W: 199, H: 403, s: 1.57, ct: 1, mul: 1, sat: 1, noSh: 1 }, SPOUT: [289 - 154, 237 - 618], sweeper: { ax: 290, g: 652, s: .92, ct: 1, mul: .96, sat: 1, noSh: 1 }, GX: 1716, SX: 2655, DROP: 46, WIN: [90, 380, 170, 930] };
   function bakeR2() {
     const W = 1584, H = 672, cv = document.createElement('canvas'); cv.width = W; cv.height = H; const c = cv.getContext('2d'); c.scale(.5, .5);
     const FY = 1262, r = rngR(11), soft = (draw, w, h) => { const a = document.createElement('canvas'); a.width = w; a.height = h; draw(a.getContext('2d'), w, h); return a; };
@@ -117,8 +117,8 @@
     const small = (w, h, f) => { const a = document.createElement('canvas'); a.width = w; a.height = h; f(a.getContext('2d'), w, h); return a; };
     // a shadow thrown by the window's light: the shape drawn small and dark, blurred by stretching, offset down and to the right
     const shadow = (c, draw, dx, dy, a) => { const t = small(120, 80, (q, w, h) => { q.scale(w / 3528, h / 2044); q.translate(360, 700); q.fillStyle = '#000'; draw(q); }); c.save(); c.globalAlpha = a; c.drawImage(t, EX.x0 + dx, EX.y0 + dy, EX.x1 - EX.x0, EX.y1 - EX.y0); c.restore(); };
-    return bakeShell({ seed: 22, doors: 'LR', skirt: 0, wallC: '#3a3122', floorC: '#2a1a10',
-      lights: [{ x: 640, y: 720, r: 1550, lit: [214, 206, 178], half: [104, 92, 66], sx: 1.35 }],
+    return bakeShell({ seed: 22, doors: 'LR', skirt: 0, wallC: '#74664e', floorC: '#4e3826',
+      lights: [{ x: 640, y: 720, r: 2900, lit: [238, 230, 204], half: [176, 164, 132], sx: 1.35 }],
       wall(c, r) {
         // the plaster's life, laid softly: broad patches of old repair, a little lighter or darker, cool where the light falls, warm in the shade
         for (let i = 0; i < 26; i++) { const x = 100 + r() * 3200, y = -200 + r() * 1350, rad = 60 + r() * 220, lit = Math.max(0, 1 - Math.abs(x - 700) / 1500), g = c.createRadialGradient(x, y, 0, x, y, rad);
@@ -174,7 +174,7 @@
         // those near the window, the rest falling into the shade
         const TH = 58, TY = FY - TH;
         c.fillStyle = '#1a120b'; c.fillRect(EX.x0, TY - 6, EX.x1 - EX.x0, TH + 6);
-        let k = 0; for (let x = EX.x0 + 120; x < EX.x1 - 120; x += TH, k++) { const lit = Math.max(.12, 1 - Math.max(0, x - 500) / 2200), t0 = 70 + 120 * lit;
+        let k = 0; for (let x = EX.x0 + 120; x < EX.x1 - 120; x += TH, k++) { const lit = Math.max(.5, 1 - Math.max(0, x - 500) / 4400), t0 = 70 + 120 * lit;
           c.fillStyle = `rgb(${t0 | 0},${t0 * .97 | 0},${t0 * .86 | 0})`; c.fillRect(x + 2, TY + 2, TH - 4, TH - 4);
           c.strokeStyle = `rgba(32,58,150,${(.34 * lit + .05).toFixed(3)})`; c.lineWidth = 1.8; const cx = x + TH / 2, cy = TY + TH / 2, f = k % 5;
           c.beginPath(); for (const [a, b] of [[x + 6, TY + 6], [x + TH - 6, TY + 6], [x + 6, TY + TH - 6], [x + TH - 6, TY + TH - 6]]) { c.moveTo(a - 3, b); c.lineTo(a + 3, b); c.moveTo(a, b - 3); c.lineTo(a, b + 3); } c.stroke();
@@ -198,14 +198,14 @@
         cg = c.createLinearGradient(CX, 0, CX + 170, 0); cg.addColorStop(0, '#2a4072'); cg.addColorStop(1, '#0f1a2e'); c.fillStyle = cg; c.beginPath(); c.moveTo(CX + 20, FY - 414); c.quadraticCurveTo(CX + 90, FY - 428, CX + 168, FY - 408); c.bezierCurveTo(CX + 176, FY - 360, CX + 170, FY - 300, CX + 160, FY - 250); c.bezierCurveTo(CX + 130, FY - 262, CX + 110, FY - 300, CX + 90, FY - 330); c.bezierCurveTo(CX + 60, FY - 350, CX + 30, FY - 380, CX + 20, FY - 414); c.closePath(); c.fill();
         c.strokeStyle = 'rgba(10,16,34,.5)'; c.lineWidth = 3; for (const fx of [CX + 110, CX + 140]) { c.beginPath(); c.moveTo(fx, FY - 414); c.quadraticCurveTo(fx + 8, FY - 340, fx + 14, FY - 270); c.stroke(); }
         // a last glaze: the shade warmed, the far corners into the dark (the painting's own falling-off)
-        let g = c.createRadialGradient(700, 720, 300, 700, 720, 3000); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(.6, 'rgba(40,26,8,.12)'); g.addColorStop(1, 'rgba(14,9,3,.5)'); c.fillStyle = g; c.fillRect(EX.x0, EX.y0, EX.x1 - EX.x0, EX.y1 - EX.y0);
+        let g = c.createRadialGradient(700, 720, 300, 700, 720, 3000); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(.6, 'rgba(40,26,8,.04)'); g.addColorStop(1, 'rgba(14,9,3,.2)'); c.fillStyle = g; c.fillRect(EX.x0, EX.y0, EX.x1 - EX.x0, EX.y1 - EX.y0);
       } });
   }
   if (!PAINTED) { const n = 'room2-drawn'; loads[n] = new Promise(r => setTimeout(r, 0)).then(() => (pics[n] = DRAWN ? bakeR2() : bakeR2s())); pic('room2-girl'); pic('room2-girl-wait'); pic('room2-sweeper'); }
   return {
     // 2 THE DUSTY PARLOUR (after Vermeer's Milkmaid): the broom raises the dust; the water lays it
     r2: {
-      pic: PAINTED ? 'room2-dry' : 'room2-drawn', shell: PAINTED || DRAWN ? 0 : 1, FY: PAINTED || DRAWN ? 1262 : HOUSE.FY, cam0: 140, tone: PAINTED ? [360, 346, 322] : [210, 206, 200], noShadow: 1,
+      pic: PAINTED ? 'room2-dry' : 'room2-drawn', shell: PAINTED || DRAWN ? 0 : 1, FY: PAINTED || DRAWN ? 1262 : HOUSE.FY, cam0: 140, tone: PAINTED ? [360, 346, 322] : [262, 254, 242], soft: PAINTED || DRAWN ? 0 : .6, noShadow: 1,
       // the sweeper and the girl move by free clips laid back into the painting where they move (build 364): SW his sweep (a loop),
       // DM her jug from pouring (frame 0) to held upright (14), shown at 14 until she pours; x, y, W, H in the asset's own pixels, the sheets at .7 (the clip's own resolution)
       SW: { n: 'room2-sweep', x: 1770, y: 375, W: 417, H: 680, sw: 292, sh: 476, cols: 8, fr: 49 }, DM: { n: 'room2-damsel', x: 1261, y: 380, W: 359, H: 675, sw: 251, sh: 472, cols: 8, fr: 15 },
@@ -214,7 +214,8 @@
         if (PAINTED) { this.ov(c, this.DM, this.df); this.ov(c, this.SW, this.sf); return; }
         // the drawn room: the girl (stand-in: his wife's picture) holding the jug, which tips as she pours; the sweeper (stand-in: Help) and his broom
         // build 512 (owner: "tone the girl and sweeper darker to match the visitors"): in the night parlour both are held down toward the visitors' dark, quiet tones
-        const FY = this.FY + (this.shell ? 0 : 14), DK = this.shell ? { ct: 1, mul: .66, sat: .55 } : null, G2 = R2D.girl, SW2 = DK ? { ...R2D.sweeper, ...DK } : R2D.sweeper, col = this.shell ? [186, 186, 198] : [255, 255, 255];
+        const FY = this.FY + (this.shell ? 0 : 14), DK = this.shell ? { ct: 1, mul: .82, sat: .7 } : null, DROP = this.shell ? R2D.DROP : 0, G2 = R2D.girl, SW2 = DK ? { ...R2D.sweeper, ...DK } : R2D.sweeper, col = this.shell ? [236, 233, 228] : [255, 255, 255];
+        if (this.shell) for (const [sx, w] of [[820, 150], [1100, 130], [R2D.GX - 10, 140], [R2D.SX - 40, 190]]) { c.save(); c.translate(u(sx), v(FY + DROP + 4)); c.scale(1, .13); const sg = c.createRadialGradient(0, 0, 0, 0, 0, w * S); sg.addColorStop(0, 'rgba(14,8,4,.6)'); sg.addColorStop(.6, 'rgba(14,8,4,.3)'); sg.addColorStop(1, 'rgba(14,8,4,0)'); c.fillStyle = sg; c.fillRect(-w * S, -w * S, 2 * w * S, 2 * w * S); c.restore(); }
         // the girl: cut straight out of the painting (build 382), so she is the painted Milkmaid herself, her jug already in her hands;
         // the water falls from its spout when the child has touched it
         // she "stood by" (book {74}): in the night parlour she waits holding her jug upright (room2-girl-wait, the free image model from her own
@@ -222,26 +223,26 @@
         // build 517: the tipping itself is a free clip (49 frames at 16 a second, from the waiting picture to the pouring one), played at its own
         // pace forward as she tips and backward as she rights the jug (gk 0..1); the two still pictures are held at its ends
         const TV = R2D.tipV, gk = this.shell ? this.gk || 0 : 1, gn = gk <= 0 && pics['room2-girl-wait'] ? 'room2-girl-wait' : 'room2-girl';
-        if (gk > 0 && gk < 1 && sheetFrames(TV)) fig(c, TV.n + '#' + Math.round(gk * (TV.fr - 1)), TV, R2D.GX, FY + 6, -1, 1, 1, col);
-        else if (pics[gk < .5 && pics['room2-girl-wait'] ? 'room2-girl-wait' : gn]) fig(c, gk < .5 && pics['room2-girl-wait'] ? 'room2-girl-wait' : gn, G2, R2D.GX, FY + 6, -1, 1, 1, col);
-        this.spout = [R2D.GX + R2D.SPOUT[0] / K, FY + 6 + R2D.SPOUT[1] / K];
+        if (gk > 0 && gk < 1 && sheetFrames(TV)) fig(c, TV.n + '#' + Math.round(gk * (TV.fr - 1)), TV, R2D.GX, FY + 6 + DROP, -1, 1, 1, col);
+        else if (pics[gk < .5 && pics['room2-girl-wait'] ? 'room2-girl-wait' : gn]) fig(c, gk < .5 && pics['room2-girl-wait'] ? 'room2-girl-wait' : gn, G2, R2D.GX, FY + 6 + DROP, -1, 1, 1, col);
+        this.spout = [R2D.GX + R2D.SPOUT[0] / K, FY + 6 + DROP + R2D.SPOUT[1] / K];
         // the sweeper: his own picture (build 384, the free FLUX Kontext model from the painted boy: a bearded servant in a linen cap
         // and brown doublet, bent to the broom with both hands on the handle), the broom's head where the dust rises
         // build 482: the sweeper on video (Google, owner's yes): upright, hands apart on the pole; 108 frames at 12 a second, a loop that
         // starts and ends in his standing pose, played while he sweeps and held on frame 0 between
-        const SV = DK ? (R2D.sweepVd = R2D.sweepVd || { ...R2D.sweepV, mul: .62, sat: .55 }) : R2D.sweepV;
-        if (sheetFrames(SV)) fig(c, SV.n + '#' + (Math.floor(this.svf || 0) % SV.fr), SV, R2D.SX, FY + (this.shell ? 14 : 0), -1, 1, 1, col);
+        const SV = DK ? (R2D.sweepVd = R2D.sweepVd || { ...R2D.sweepV, mul: .8, sat: .7 }) : R2D.sweepV;
+        if (sheetFrames(SV)) fig(c, SV.n + '#' + (Math.floor(this.svf || 0) % SV.fr), SV, R2D.SX, FY + (this.shell ? 8 + DROP : 0), -1, 1, 1, col);
         else if (pics['room2-sweeper']) fig(c, 'room2-sweeper', SW2, R2D.SX, FY, -1, 1, 1, col);
       },
       enter() { pic('room2-sweep'); pic('room2-damsel'); pic('room2-sweeper-v'); pic('room2-girl-tip'); this.gk = 0; this.sf = 0; this.svf = 0; this.sweeps = 0; this.df = 14; this.dt = 14; this.dust = []; this.haze = this.shell ? .12 : .22; this.film = 1; this.wet = []; const r = rngR(5); for (let i = 0; i < (this.shell ? 0 : 70); i++) this.dust.push({ x: 300 + r() * 2800, y: 300 + r() * 900, vx: 0, vy: 0, s: 2 + r() * 5, a: .5 + r() * .5, p: r() * 7 }); },
       run() { talk([[N, 'He led him into a very large parlour, full of dust, because it was never swept.'], [TIP, 'Touch the broom.', 'broom']], () => { H.ph = 'sweep'; H.t = 0; G.state = 'auto'; }); },
       act(sx, sy) {
-        if (G.act === 'broom' && (sx == null || near(sx, sy, 2390, 1180, 160))) next(true);
-        if (G.act === 'jug' && (sx == null || near(sx, sy, 1900, 860, 160))) next(true);
+        if (G.act === 'broom' && (sx == null || near(sx, sy, 2390, 1180 + (this.shell ? 46 : 0), 160))) next(true);
+        if (G.act === 'jug' && (sx == null || near(sx, sy, 1900, 860 + (this.shell ? 46 : 0), 160))) next(true);
       },
       upd() {
-        if (G.act === 'broom' && G.actT >= 70 && !G.ring) G.ring = ring(2390, 1200);
-        if (G.act === 'jug' && G.actT >= 70 && !G.ring) G.ring = ring(1900, 840);
+        if (G.act === 'broom' && G.actT >= 70 && !G.ring) G.ring = ring(2390, 1200 + (this.shell ? 46 : 0));
+        if (G.act === 'jug' && G.actT >= 70 && !G.ring) G.ring = ring(1900, 840 + (this.shell ? 46 : 0));
         // his strokes at the clip's own pace (16 a second); each sweep is whole loops, ending where it began
         if (this.sweeps > 0) { this.sf += 16 / 60; if (this.sf >= this.SW.fr - 1) { this.sf = 0; this.sweeps--; } }
         if (this.sweeps > 0 || (this.svf || 0) % R2D.sweepV.fr > .5) this.svf = (this.svf || 0) + 12 / 60;
@@ -251,7 +252,7 @@
         if (this.shell) { const to = this.dt === 0 ? 1 : 0; this.gk = Math.max(0, Math.min(1, (this.gk || 0) + Math.sign(to - (this.gk || 0)) / 180)); this.df = 14 * (1 - this.gk); }
         if (H.ph === 'sweep') {
           if (H.t === 1) this.sweeps = 2;
-          if (H.t < 300 && this.sweeps > 0 && H.t % 2 === 0) for (let k = 0; k < 6; k++) this.dust.push({ x: 2390 + (rnd() - .5) * 120, y: 1240 - rnd() * 40, vx: -1 - rnd() * 6, vy: -.6 - rnd() * 2.2, s: 2 + rnd() * 6, a: .6 + rnd() * .4, p: rnd() * 7, life: 0 });
+          if (H.t < 300 && this.sweeps > 0 && H.t % 2 === 0) for (let k = 0; k < 6; k++) this.dust.push({ x: 2390 + (rnd() - .5) * 120, y: 1240 + (this.shell ? 46 : 0) - rnd() * 40, vx: -1 - rnd() * 6, vy: -.6 - rnd() * 2.2, s: 2 + rnd() * 6, a: .6 + rnd() * .4, p: rnd() * 7, life: 0 });
           if (H.t % 18 === 0 && H.t < 140) noise(1800, .8, .3, .06);
           this.haze = Math.min(.55, this.haze + .003);
           if (H.t === 120) cough(0); if (H.t === 200) cough(0);
@@ -274,7 +275,7 @@
         for (const w of this.wet) { w.vy += .35; w.x += w.vx; w.y += w.vy; w.l++; }
         this.wet = this.wet.filter(w => w.y < 1260);
       },
-      people(c) { if (PAINTED) { visitor(c, 'I', 690, 1, 1, 1, -48); visitor(c, 'C', 470, 1, 1, 1, -48); } else { visitor(c, 'C', 820, 1); visitor(c, 'I', 1100, 1); } },
+      people(c) { if (PAINTED) { visitor(c, 'I', 690, 1, 1, 1, -48); visitor(c, 'C', 470, 1, 1, 1, -48); } else { visitor(c, 'C', 820, 1, 1, 1, -R2D.DROP); visitor(c, 'I', 1100, 1, 1, 1, -R2D.DROP); } },
       over(c) {
         const hz = Math.min(.2, this.haze * .75) * (this.shell ? .35 : 1), LS = H.R.lshape, im = pics[H.R.pic];
         if (LS && im) {

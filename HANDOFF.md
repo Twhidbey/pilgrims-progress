@@ -170,6 +170,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 **Build 517 (Room 2 chat): the parlour's girl stands by with her jug upright and tips it on the touch (a free picture and a free clip). Nothing spent.**
 
+**Build 520 (Room 2 chat): the parlour much lighter (toward Vermeer's daylight; a departure from night in every room, at the owner's wish), its figures softened (`soft` on the room, a small option in the core's `toneOf`), everyone's feet on the boards below the tile band with contact shadows. Nothing spent.**
+
 **Build 502 (Level 1 chat): Level 1's run music starts at "Life! Life! Eternal life!" (no beat before his door); footsteps in every level at .4 of their loudness (`STEP_K`). Nothing spent.**
 
 **Build 501 (Level 1 chat): the storyteller's family line at his door shortened ("His family would not believe him. Now they saw him run.") so he no longer waits at the door for it. About 1 cent.**
