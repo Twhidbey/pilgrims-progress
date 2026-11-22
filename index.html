@@ -184,7 +184,7 @@ body.portrait:not(.playing) #rot{display:none}
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
   <button id="autoWalk" aria-label="He walks on by himself"><svg viewBox="0 0 24 24"><path d="M5 6l6 6-6 6M12 6l6 6-6 6"/></svg></button>
-  <div id="build">build 494 · Nov 22 2026</div>
+  <div id="build">build 495 · Nov 22 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -1393,7 +1393,7 @@ function pick(home) {
   }
   // build 175 (owner: say lines while walking): Obstinate's and Pliable's parting is said as they go: Obstinate already
 // stomping home, Pliable already following, the child walking Christian on
-  const part = () => { G.obst.mode = 'home'; G.pli.mode = 'follow'; P.turn = 1; caption(PART); };
+  const part = () => { G.obst.wait = true; G.pli.mode = 'follow'; P.turn = 1; caption(PART); };      // build 495 (owner: "Obstinate leaves before he's done talking with pliable"): he stands and says all his lines, then goes home
   if (!home) { note(67, .05, 3); talk(ONWARD, part); return; }
   // going home: a few steps back into the rain. The light dims, then he turns round again. Nothing is lost.
   G.state = 'play'; G.gloomTo = 1; G.homeTo = { to: P.x - 85, then: () => talk(HOME, part) }; G.idle = 0;      // build 106: the child walks him back (nothing moves on its own)
@@ -1807,6 +1807,7 @@ function people() {
   // standing pose dissolves in (st 0 = walking picture, 1 = standing picture); before he walks again it dissolves out.
   const rest = (w, meta) => meta.rest.includes(Math.floor(w.anim ?? meta.rest[0]) % meta.frames);
   if (o) o.st = clamp((o.st || 0) + (o.mode === 'talk' && rest(o, OBS_META) && OBS_ST ? .035 : -.06));
+  if (o && o.wait && !G.capQ.length && (G.t > (G.capEnd || 0) + 20 || G.cap <= 0)) { o.wait = false; o.mode = 'home'; }      // his last line said: now he turns for home
   if (o && o.mode === 'home' && o.st <= 0 && o.x > G.cam - 200) o.x -= 1.25; // his video's own walking pace
   if (p && p.mode === 'follow') {                             // Pliable keeps a little behind Christian, hurrying only if he falls back
     const gap = (G.leaving ? DOOR1 + 90 : P.x - 70) - p.x;      // at the end he follows Christian in through the gate and on
