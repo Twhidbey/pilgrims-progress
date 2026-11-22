@@ -25,6 +25,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 **Build 516 (Room 4 chat): the fire room reworked: a particle fire, water arcing into it, the oil fed through a low arch into the back of the same fire, the hidden side truly dark, the two walking round behind the wall by a cupped candle (the La Tour quote). Two free clips queued (`room4-cast`, `room4-pour`). Nothing spent; see notes/room4.md.**
 
+**Build 539 (House · Outside & passages chat): at the house's door the figures a little smaller, Christian's feet in the ground, the Interpreter stands in the doorway, the little far fire on the path gone. Nothing spent.**
+
 **Build 538 (House · Outside & passages chat): the house's limewashed wall a step darker. Nothing spent.**
 
 **Build 537 (House · Outside & passages chat): the house's walls limewashed pale, its roof tiles darker and redder, so they read apart. Nothing spent.**
