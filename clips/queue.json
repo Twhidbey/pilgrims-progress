@@ -428,8 +428,11 @@
    },
    "seconds": 4,
    "prompt": "A man in a long worn hooded robe, with NOTHING on his back, facing RIGHT, slowly sinks down onto both knees, his hands coming together before his chest, his head bowing a little, then stays kneeling quietly, only breathing. A completely FLAT SIDE VIEW like a shadow-puppet play; his knees and feet rest on one level line. The camera is still and does NOT zoom; plain white background; his face a plain soft profile deep in his hood.",
-   "status": "todo",
-   "via": "modal"
+   "status": "done",
+   "via": "modal",
+   "made": "2026-11-22 23:47 UTC",
+   "frames": 65,
+   "secs": 120
   }
  ]
 }
