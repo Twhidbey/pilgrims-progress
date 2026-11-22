@@ -133,6 +133,9 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 **Build 479: THE HILL'S ROCK IS F, WITH TWO MORE SUBTLE OUTCROPS (owner: "I like F with maybe two more subtle contours").** Look (f) of build 476 is now the hill (`ROCK_OPT` defaults to 'f'; `?rock=a|b|c|d|e` still shows the trials, any other value the old rows of rounded rock). Two more outcrops are added to `RK` (2330 and 3110), smaller (210 and 250 wide), set a little deeper (70 and 90 below the outline) and at half strength (`st` .5 on their dark, their lit planes and their top edge), so six in all, four plain and two faint. Nothing spent.
 
+
+**Build 480: THE HILL PLAIN WITH TWO SUBTLE RIDGES (owner, of build 479: "I meant E with two subtle contours - sorry").** The hill is now look (g) (`ROCK_OPT` defaults to 'g'): the plain hill of (e), its gradient only, with just two broad rows of Level 3's rounded rock in it (`crag()`, 300 and 640 below the outline, seg 300 and 380), dark only (.1 and .11), each laid four times a few units lower so its edge is soft; no lit edges, no outcrops. Build 479's outcrops are still `?rock=f`. A first try at half that strength could not be seen. Nothing spent.
+
 ## START HERE (rewritten at build 140, Nov 16 2026)
 
 **Build 420 (vision chat): the castle sits on the summit, its crag faded into the rock** (free). **Build 415 (vision chat): a rock mountain drawn in code holds the castle, the castle a third of its size** (free; see CLAUDE.md build 415). **Build 413 (vision chat): Beelzebub's castle painted** (about 15 cents, the owner said "Paint it"): a huge dark fortress on a crag after John Martin, left of the gate's wall end; the camera stands back on it as he arrives and glances back while the arrows fly. See CLAUDE.md, Level 3, build 413. Still open from this chat: Christian's new coat after the Cross (a free FLUX retry is scheduled; show the still before any clips); which lines at the mountain's foot the owner wants fixed.

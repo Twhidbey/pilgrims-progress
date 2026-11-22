@@ -326,7 +326,7 @@ const CR = (() => {
   // fall to the right), each row set deeper in the hill and a shade darker than the one before, so the rock grows
   // darker as it comes down; baked once small and drawn stretched (soft), in dark alpha so it takes the hill's colour
   let ROCK = null;
-  const ROCK_OPT = (new URLSearchParams(location.search).get('rock') || 'f').toLowerCase();
+  const ROCK_OPT = (new URLSearchParams(location.search).get('rock') || 'g').toLowerCase();
   function rockTex() {
     if (ROCK) return ROCK;
     const X0 = START - 700, X1 = FALL1 + 900, Y0 = -H_TOP - 40, Y1 = 700, k = .4;
@@ -380,7 +380,14 @@ const CR = (() => {
         q.restore(); l.restore();
       }
     }
-    if (O !== 'e' && O !== 'f') ROWS.forEach(([D, Hh, seg, a], n) => {
+    // (g, the hill since build 480; owner: "I meant E with two subtle contours"): the plain hill of (e) with only two
+    // broad rows of the rounded rock in it, faint, their edges softened by laying each a few times a little lower
+    if (O === 'g') [[300, 170, 300, .1, 3], [640, 200, 380, .11, 5]].forEach(([D, Hh, seg, a, n]) => {
+      for (let k2 = 0; k2 < 4; k2++) { q.beginPath(); q.moveTo(X0, Y1);
+        for (let x = X0; x <= X1; x += 4) q.lineTo(x, -(gh(x) - D) - Hh * crag(x + n * 977, 11 + n * 7, seg) + k2 * 7);
+        q.lineTo(X1, Y1); q.closePath(); q.fillStyle = css([0, 0, 0], a / 2.2); q.fill(); }
+    });
+    if (O !== 'e' && O !== 'f' && O !== 'g') ROWS.forEach(([D, Hh, seg, a], n) => {
       const top = x => -(gh(x) - D) - Hh * crag(x + n * 977, 11 + n * 7, seg);
       const pts = []; for (let x = X0; x <= X1; x += 4) pts.push([x, top(x)]);
       const shape = c2 => { c2.beginPath(); c2.moveTo(X0, Y1); for (const [x, y] of pts) c2.lineTo(x, y); c2.lineTo(X1, Y1); c2.closePath(); };
@@ -407,7 +414,7 @@ const CR = (() => {
         l.restore();
       }
     });
-    return (ROCK = { c: cv, l: O ? lv : null, x: X0, y: Y0, w: X1 - X0, h: Y1 - Y0 });
+    return (ROCK = { c: cv, l: O && O !== 'g' ? lv : null, x: X0, y: Y0, w: X1 - X0, h: Y1 - Y0 });
   }
   function land(c) {
     const x0 = cam.cx - VW / 2 / cam.z - 40, x1 = cam.cx + VW / 2 / cam.z + 40, step = Math.max(4, 6 / cam.z);
