@@ -526,7 +526,7 @@ const HL = (() => {
   const OAK_META = { w: 1839, h: 1360, ax: 390, ground: 1328, k: .44 };
   // OAK_SIL: how far the painting is pulled toward one dark tone (owner, build 165: "Tone it down to slightly more silhouette"): 0 = the painting, 1 = a flat silhouette
   const OAK_SIL = .8;
-  let OAKP = null, oakLoading = null;
+  let OAKP = null, oakLoading = null; const GTREE = {};      // GTREE (build 469): the oak in flat tones for the garden inside the gate
   // A DRAWN TREE ON THE PAINTING'S FORM (owner, build 166: "can you make it back into drawn tree using Google tree as
   // template (remove that branch that sticks way off to the right) and made it slightly bigger so it doesn't interfere
   // with heads of characters"). The painting (its long right limb taken out of the picture file) is only the
@@ -1834,14 +1834,40 @@ const HL = (() => {
         // the land inside goes on as the land outside does, in low rises one behind another, paler, in the far light's haze;
         // a few trees on the nearest, and the narrow way running straight toward the light
         { const L = [[-150, 26, .004, 81, [104, 64, 46]], [-118, 22, .006, 82, [84, 50, 36]], [-70, 18, .009, 83, [62, 37, 27]], [-30, 12, .013, 84, [44, 26, 19]]];
-          for (const [h0, amp, f, sd, col] of L) { c.beginPath(); c.moveTo(sx1, yG + 2); for (let sx = sx1; sx <= VW + 6; sx += 4) { const wx = cx + (sx - VW / 2) / z; c.lineTo(sx, Y(h0 - amp * nz(wx * f, sd) - amp * .3 * nz(wx * f * 4, sd + 5))); } c.lineTo(VW + 6, yG + 2); c.closePath(); c.fillStyle = css(col); c.fill(); }
-          c.fillStyle = css([40, 24, 18]); for (const [tx2, th2, tw2] of [[GATE_X + 210, 62, 26], [GATE_X + 236, 44, 18], [GATE_X + 560, 70, 30]]) { const bx = X(tx2), by = Y(-30 - 12 * nz(tx2 * .013, 84)); c.fillRect(bx - 1.2 * z, by - th2 * .45 * z, 2.4 * z, th2 * .45 * z + 4 * z); c.beginPath(); c.ellipse(bx, by - th2 * .62 * z, tw2 * .5 * z, th2 * .42 * z, 0, 0, Math.PI * 2); c.fill(); } }
+          for (const [h0, amp, f, sd, col] of L) { c.beginPath(); c.moveTo(sx1, yG + 2); for (let sx = sx1; sx <= VW + 6; sx += 4) { const wx = cx + (sx - VW / 2) / z; c.lineTo(sx, Y(h0 - amp * nz(wx * f, sd) - amp * .3 * nz(wx * f * 4, sd + 5))); } c.lineTo(VW + 6, yG + 2); c.closePath(); c.fillStyle = css(col); c.fill(); } }
         // the air inside, lit from within: one soft glow lying over the far rises where the light sinks behind them (build
         // 468, owner: "the sun shoudn't be on ground on that side either"), not on the road
         { const op = smooth(0, 1, door) * .7, fx2 = X(GATE_X + 330), R2 = 620 * z; c.globalCompositeOperation = 'lighter';
           c.translate(fx2, Y(-150)); c.scale(1, .4); const g = c.createRadialGradient(0, 0, 0, 0, 0, R2); g.addColorStop(0, css([255, 220, 160], .75 * op)); g.addColorStop(.3, css([236, 156, 92], .36 * op)); g.addColorStop(.7, css([160, 84, 48], .1 * op)); g.addColorStop(1, css([140, 70, 40], 0));
           c.fillStyle = g; c.fillRect(-R2, -R2, 2 * R2, 2 * R2); c.globalCompositeOperation = 'source-over'; }
-        c.restore(); }
+        c.restore();
+        // THE GARDEN INSIDE, BY THE SAME PERSPECTIVE AS THE WALL (build 469; owner: "if the walls vanishing point is where it is the
+        // trees are too short - do perspective analysis"): the eye is at the vanishing point's height (`gvy()`, about 100 units,
+        // Christian's chest), so a thing `d` behind the road stands on the line `vw * (1 - q)` and is drawn `q` = sOf(d) its size.
+        // Near: tended fruit trees just behind the path at their real size (more than twice Good-will's height); further: a
+        // low garden wall across the picture; far: small trees and hedgerows just above the eye's height; all dark against
+        // the light from within, hazier with distance
+        { c.save(); c.beginPath(); c.rect(sx1, 0, VW - sx1 + 2, yG + 2); c.clip();
+          const vw = gvy(), q = d => 1 / (1 + d / GPL), at = (wx, d) => [X(GVP + (wx - GVP) * q(d)), Y(vw * (1 - q(d)))];
+          const hz = (col, d) => mix(col, mix(low, [222, 150, 98], .4 * smooth(0, 1, door)), clamp(d / 5000) * .75);
+          // each tree is the level's own painted oak (`OAKP.c`), made one flat tone (a tinted copy kept per tone, at half size), at
+          // its real height `H` (units) for its depth, mirrored as `fl` says, so no two read alike; a soft stand-in until it loads
+          const tree = (wx, d, H, sd, col, fl) => { const k = q(d), [bx, by] = at(wx, d), h = H * k * z, cl = hz(col, d);
+            if (OAKP && OAKP.c) { const key = cl.map(Math.round).join(','); GTREE[key] = GTREE[key] || (() => { const W2 = OAK_META.w >> 1, H2 = OAK_META.h >> 1, t = mk(W2, H2), tq = t.getContext('2d'); tq.drawImage(OAKP.c, 0, 0, W2, H2); tq.globalCompositeOperation = 'source-in'; tq.fillStyle = css(cl); tq.fillRect(0, 0, W2, H2); return t; })();
+              const sc = h / OAK_META.ground, w = OAK_META.w * sc, hh = OAK_META.h * sc; c.save(); c.translate(bx, by); if (fl) c.scale(-1, 1); c.drawImage(GTREE[key], -OAK_META.ax * sc, -OAK_META.ground * sc, w, hh); c.restore(); return; }
+            const w = .7 * h, R = rngS(sd); c.fillStyle = css(cl); c.fillRect(bx - .04 * w, by - .45 * h, .08 * w, .45 * h);
+            for (let n = 0; n < 18; n++) { const a = R() * Math.PI * 2, rr = Math.sqrt(R()); c.beginPath(); c.ellipse(bx + Math.cos(a) * rr * .4 * w, by - .66 * h + Math.sin(a) * rr * .25 * h, .12 * w, .1 * w, 0, 0, Math.PI * 2); c.fill(); } };
+          // far: hedgerow trees along the far rise
+          for (let n = 0; n < 9; n++) { const d = 3600 + 900 * nz(n * 1.7, 85); tree(GATE_X + 120 + n * 900 + 300 * nz(n, 86), d, 360 + 160 * nz(n * 2.3, 87), 400 + n, [70, 42, 30], n % 2); }
+          // the garden wall across the picture, about 1100 behind the road
+          { const d = 1100, k = q(d), y0 = Y(vw * (1 - k)), hW = 125 * k * z; c.fillStyle = css(hz([52, 31, 23], d)); c.fillRect(sx1, y0 - hW, VW - sx1 + 2, hW + 1);
+            c.fillStyle = css(hz([66, 40, 28], d)); for (let x = sx1; x < VW; x += 3) { const cap = 2.2 * k * z * (1 + .4 * nz(x * .3 / z, 88)); c.fillRect(x, y0 - hW - cap, 3.2, cap); }
+            c.save(); c.globalCompositeOperation = 'lighter'; c.fillStyle = css([255, 200, 140], .18 * smooth(0, 1, door)); c.fillRect(sx1, y0 - hW - 2.2 * k * z, VW - sx1 + 2, 1 * z); c.restore(); }
+          // middle: two trees beyond the garden wall
+          tree(GATE_X + 700, 1500, 440, 501, [58, 35, 25], 1); tree(GATE_X + 1500, 1700, 400, 502, [58, 35, 25], 0);
+          // near: the tended fruit trees just behind the path
+          tree(GATE_X + 470, 150, 540, 601, [30, 18, 14], 0); tree(GATE_X + 1150, 210, 470, 602, [30, 18, 14], 1);
+          c.restore(); } }
       // PERSPECTIVE (build 460; owner: "can we make wall extend in to background and come out at us into foreground" ... "the
       // door should be displayed with perspective too, no?"): the gate drawn as an architect's cutaway. One vanishing point
       // on the horizon, fixed on the land a little left of the gate (`GVP`); depth d (units) shrinks toward it by `sOf(d)`.

@@ -106,6 +106,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 **Build 467 (Level 3 gate chat):** a quieter, realistic edge of light on Christian at the gate; links that name a place (`level=`, `at=`, `room=`) now go straight into the game after one touch ("Touch to begin"). Nothing spent.
 
 **Build 468 (Level 3 gate chat):** Christian stops further from the gate; solid knocks (`knockWood`, shared by the wicket-gate and the Interpreter's door in `rooms.js`); the far light inside the gate sinks behind the far rises, not on the ground. Nothing spent.
+
+**Build 469 (Level 3 gate chat):** inside the gate, a garden in true perspective: two oaks at their real size near the path, a garden wall across, trees beyond and small far trees, all the level's painted oak in flat tones. Nothing spent.
 ## START HERE (rewritten at build 140, Nov 16 2026)
 
 **Build 420 (vision chat): the castle sits on the summit, its crag faded into the rock** (free). **Build 415 (vision chat): a rock mountain drawn in code holds the castle, the castle a third of its size** (free; see CLAUDE.md build 415). **Build 413 (vision chat): Beelzebub's castle painted** (about 15 cents, the owner said "Paint it"): a huge dark fortress on a crag after John Martin, left of the gate's wall end; the camera stands back on it as he arrives and glances back while the arrows fly. See CLAUDE.md, Level 3, build 413. Still open from this chat: Christian's new coat after the Cross (a free FLUX retry is scheduled; show the still before any clips); which lines at the mountain's foot the owner wants fixed.
