@@ -17,7 +17,7 @@
 const CR = (() => {
   const SO = 'The Shining Ones', S1 = 'The first Shining One', S3 = 'The third Shining One';
   // ---------- the land (world units: x along the way, h up from the foot of the slope) ----------
-  const START = 480, WALL_END = 860, TOMB_X = 5010, SLOPE0 = 1180, CREST0 = 4080, CROSS_X = 4260, CREST1 = 4400, FALL1 = 5140, H_TOP = 860;
+  const START = 480, WALL_END = 860, TOMB_X = 4650, SLOPE0 = 1180, CREST0 = 4080, CROSS_X = 4260, CREST1 = 4400, FALL1 = 5020, H_TOP = 860;
   // GOLGOTHA, AFTER THE OWNER'S SKETCH (build 545): a smooth swooping ramp up from the left that meets the top of a round
   // rocky knoll shaped like a skull's crown (SK_X its top, SK_L / SK_R how far its dome reaches left and right)
   const SK_X = 4380, SK_L = 1000, SK_R = FALL1 - 4380, SK_H = H_TOP + 30, RAMP1 = SK_X - 260;
@@ -43,9 +43,33 @@ const CR = (() => {
     if (x <= RAMP1) { const u = clamp((x - SLOPE0) / (RAMP1 - SLOPE0)), m0 = .15, m1 = .82, u2 = u * u, u3 = u2 * u;
       h = dome(RAMP1) * ((u3 - 2 * u2 + u) * m0 + (-2 * u3 + 3 * u2) + (u3 - u2) * m1);
       h += (3 * Math.sin(x * .011) + 1.6 * Math.sin(x * .031 + 1)) * sm(SLOPE0, SLOPE0 + 300, x) * (1 - sm(RAMP1 - 400, RAMP1, x)); }
-    else { h = dome(x); const fu = clamp((x - SK_X) / SK_R); h += (9 * Math.sin(x * .021 + 2) + 5 * Math.sin(x * .053)) * 4 * fu * (1 - fu); }
+    else h = x <= SK_X ? dome(x) : skTop(x);
     return h;
   }
+  // THE SKULL IN PROFILE AGAINST THE SKY (owner: "the skull should be a profile against the sky"): past the crown the
+  // outline is a skull seen side-on, facing right: the round cranium, the forehead, the brow ridge, the notch at the root
+  // of the nose, the nose, the upper jaw and teeth, the chin, and under the jaw its neck going down into the ground. It
+  // overhangs (brow, nose, chin), so it is its own outline (SKO, world units [x, h]); gh() past the crown is its top
+  const SKP = [[0, 1], [.18, .985], [.34, .935], [.46, .85], [.54, .745], [.585, .655], [.622, .59], [.606, .558], [.574, .54],
+    [.598, .508], [.616, .482], [.578, .452], [.566, .422], [.6, .4], [.626, .372], [.636, .345], [.626, .336], [.637, .322],
+    [.62, .31], [.633, .296], [.626, .268], [.634, .222], [.602, .19], [.5, .182], [.405, .17], [.415, .12], [.44, .05], [.48, 0], [.6, 0]];
+  const SKO = (() => { const P = SKP.map(([u, v]) => [SK_X + u * SK_H, v * SK_H]), O = [];
+    for (let i = 0; i < P.length - 1; i++) { const a = P[Math.max(0, i - 1)], b = P[i], c2 = P[i + 1], d = P[Math.min(P.length - 1, i + 2)];
+      for (let k = 0; k < 8; k++) { const t = k / 8, t2 = t * t, t3 = t2 * t, f = (p0, p1, p2, p3) => .5 * (2 * p1 + (-p0 + p2) * t + (2 * p0 - 5 * p1 + 4 * p2 - p3) * t2 + (-p0 + 3 * p1 - 3 * p2 + p3) * t3);
+        const x = f(a[0], b[0], c2[0], d[0]), h = f(a[1], b[1], c2[1], d[1]), up = h / SK_H;
+        O.push([x + 2.5 * Math.sin(h * .09) * (up > .05 ? 1 : 0), Math.max(0, h + 2.2 * Math.sin(x * .07 + h * .05) * (up > .05 && up < .97 ? 1 : 0))]); } }
+    O.push(P[P.length - 1]); return O; })();
+  const SK_END = SKO[SKO.length - 1][0];
+  const SKT = (() => { const T = []; for (let x = SK_X; x <= SK_END + 2; x += 2) { let m = 0;
+      for (let i = 0; i < SKO.length - 1; i++) { const [x0, h0] = SKO[i], [x1, h1] = SKO[i + 1]; if ((x - x0) * (x - x1) <= 0 && x0 !== x1) m = Math.max(m, h0 + (h1 - h0) * (x - x0) / (x1 - x0)); }
+      T.push(m); } return T; })();
+  function skTop(x) { if (x >= SK_END) return 0; const f = (x - SK_X) / 2, i = Math.floor(f); return lerp(SKT[i], SKT[Math.min(SKT.length - 1, i + 1)], f - i); }
+  // the land's whole outline from xa to xb, as [x, y] on the picture (y = -h): the height field up to the crown, the
+  // skull's own outline past it, then the plain
+  function outline(xa, xb, step) { const O = [];
+    for (let x = xa; x <= Math.min(xb, SK_X); x += step) O.push([x, -gh(x)]);
+    if (xb > SK_X) { for (const [x, h] of SKO) O.push([x, -h]); for (let x = SK_END + step; x <= xb; x += step) O.push([x, 0]); }
+    return O; }
   // ---------- the words (Bunyan's, shortened and made plain) ----------
   const OPEN = [[N, 'Up the highway between its walls Christian ran, but not without great difficulty, because of the load on his back.']];      // {92}
   const ASCEND = [[N, 'He came to a place somewhat ascending, and upon that place stood a cross, and a little below, a sepulchre.']];      // {93}
@@ -476,7 +500,7 @@ const CR = (() => {
     // right as in the sketch, each with a faint lit lip
     if (O === 'skull') {
       const r = rgen(545), xa = SK_X - SK_L, hh = x => x <= RAMP1 ? Math.min(gh(x) - 6, dome(x)) : gh(x);
-      const path = c2 => { c2.beginPath(); c2.moveTo(xa, 60); for (let x = xa; x <= FALL1; x += 6) c2.lineTo(x, -hh(x)); c2.lineTo(FALL1, 60); c2.closePath(); };
+      const path = c2 => { c2.beginPath(); c2.moveTo(xa, 60); for (let x = xa; x <= SK_X; x += 6) c2.lineTo(x, -hh(x)); for (const [x, h] of SKO) c2.lineTo(x, -h); c2.lineTo(SK_END, 60); c2.closePath(); };
       q.save(); path(q); q.clip(); l.save(); path(l); l.clip();
       let g = q.createLinearGradient(0, -SK_H, 0, 0); g.addColorStop(0, css([0, 0, 0], .05)); g.addColorStop(1, css([0, 0, 0], .16));
       q.fillStyle = g; q.fillRect(xa, -SK_H - 40, FALL1 - xa, SK_H + 100);
@@ -491,6 +515,10 @@ const CR = (() => {
         for (let t = -.95; t <= .95; t += .012) { const x = SK_X + dx + t * (t < 0 ? SK_L : SK_R) * sc, d = SK_H * sc * Math.pow(1 - t * t, .55) + 8 * Math.sin(t * 23 + sc * 9);
           const on = Math.sin(t * 9 + sc * 17) > -.35 && d < hh(x) - 12; if (!on) { pen = false; continue; } pen ? q.lineTo(x, -d) : q.moveTo(x, -d); pen = true; }
         q.stroke(); }
+      // the hollow of the eye, only a faint shadow in the rock (it must not stare), and a faint shade under the cheekbone
+      for (const [ux, uy, rx, ry, a] of [[.43, .585, .1, .085, .3], [.49, .42, .09, .05, .12]]) { const ex = SK_X + ux * SK_H, ey = -uy * SK_H;
+        q.save(); q.translate(ex, ey); q.scale(1, ry / rx); const g2 = q.createRadialGradient(0, 0, 0, 0, 0, rx * SK_H);
+        g2.addColorStop(0, css([0, 0, 0], a)); g2.addColorStop(.55, css([0, 0, 0], a * .7)); g2.addColorStop(1, 'rgba(0,0,0,0)'); q.fillStyle = g2; q.fillRect(-rx * SK_H, -rx * SK_H, 2 * rx * SK_H, 2 * rx * SK_H); q.restore(); }
       // hatched cracks down the face
       for (let i = 0; i < 900; i++) {
         const x = xa + (FALL1 - xa) * Math.pow(r(), .72), top = hh(x); if (top < 30) continue;
@@ -536,7 +564,7 @@ const CR = (() => {
     const x0 = cam.cx - VW / 2 / cam.z - 40, x1 = cam.cx + VW / 2 / cam.z + 40, step = Math.max(4, 6 / cam.z);
     const hc = mix(mix([30, 30, 38], [36, 32, 36], dawn), [44, 34, 30], gold);
     c.beginPath(); c.moveTo(x0, 2000);
-    for (let x = x0; x <= x1; x += step) c.lineTo(x, -gh(x));
+    for (const [x, y] of outline(x0, x1, step)) c.lineTo(x, y);
     c.lineTo(x1, 2000); c.closePath(); c.fillStyle = css(hc); c.fill();
     // a breath of form (owner: "shade hill a slight bit to get sense of its 3d"): the hill a touch lighter just under its
     // outline, darker toward its foot, and its rock in layers (rockTex)
@@ -560,7 +588,7 @@ const CR = (() => {
       const ga = Math.max(x0, CROSS_X - 900), gb = Math.min(x1, CROSS_X + 900);
       if (gb > ga) { const g = c.createLinearGradient(CROSS_X - 900, 0, CROSS_X + 900, 0);
         for (let i = 0; i <= 12; i++) { const u = i / 12, k = Math.exp(-Math.pow((u - .5) * 1800 / 420, 2)) * gold; g.addColorStop(u, css([255, 214, 160], .7 * k)); }
-        c.strokeStyle = g; c.beginPath(); for (let x = ga; x <= gb; x += step) c.lineTo(x, -gh(x) + .6 / cam.z); c.stroke(); }
+        c.strokeStyle = g; c.beginPath(); for (const [x, y] of outline(ga, gb, step)) if (x >= ga && x <= gb) c.lineTo(x, y + .6 / cam.z); c.stroke(); }
       c.restore();
     }
   }
@@ -593,7 +621,7 @@ const CR = (() => {
   function tomb(c) {
     const x = TOMB_X, sill = tombSill(), col = mix(mix([30, 30, 38], [36, 32, 36], dawn), [44, 34, 30], gold);
     // kept inside the hill: at the bluff's foot its soft shadow must not spill into the sky (build 544)
-    c.save(); c.beginPath(); c.moveTo(x - 320, 40); for (let xx = x - 320; xx <= x + 320; xx += 6) c.lineTo(xx, -gh(xx)); c.lineTo(x + 320, 40); c.closePath(); c.clip();
+    c.save(); c.beginPath(); c.moveTo(x - 320, 40); for (const [xx, yy] of outline(x - 320, x + 320, 6)) c.lineTo(xx, yy); c.lineTo(x + 320, 40); c.closePath(); c.clip();
     c.save(); c.translate(x, -sill + 6);
     // a soft recess round the mouth, darker than the hill
     c.save(); c.scale(1.3, .85);
