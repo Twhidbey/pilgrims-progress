@@ -100,7 +100,8 @@ const ED = (() => {
   const busyEl = document.createElement('div'); busyEl.id = 'edbusy'; busyEl.textContent = 'Jumping…'; document.body.appendChild(busyEl);
   // rooms 6 and 7 are listed only while the darker rooms are switched on (otherwise they cannot be reached)
   const darkOn = () => { try { return localStorage.getItem('pp-dark') === '1'; } catch (e) { return false; } };
-  const render = () => { list.innerHTML = '<button class="x">✕</button>' + POINTS.map(([lv, name, ps], i) => `<h3>${lv} · ${name}</h3>` + ps.map((p, j) => /^[67] /.test(p[0]) && !darkOn() ? '' : `<button data-i="${i}" data-j="${j}">${p[0].replace(' (darker rooms on)', '')}</button>`).join('')).join(''); };
+  // (build 479, owner: "Only include that levels key moments"): in a level only its own moments are listed; on the book, all
+  const render = () => { const cur = G.state === 'title' ? 0 : lvl(); list.innerHTML = '<button class="x">✕</button>' + POINTS.map(([lv, name, ps], i) => cur && lv !== cur ? '' : `<h3>${lv} · ${name}</h3>` + ps.map((p, j) => /^[67] /.test(p[0]) && !darkOn() ? '' : `<button data-i="${i}" data-j="${j}">${p[0].replace(' (darker rooms on)', '')}</button>`).join('')).join(''); };
   list.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; e.stopPropagation(); list.classList.remove('on'); if (b.dataset.i != null) jumpTo(+b.dataset.i, +b.dataset.j); });
   for (const ev of ['pointerdown', 'touchstart']) { list.addEventListener(ev, e => e.stopPropagation()); jb.addEventListener(ev, e => e.stopPropagation()); }
   jb.onclick = e => { e.stopPropagation(); render(); list.classList.toggle('on'); };
