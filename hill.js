@@ -1846,14 +1846,15 @@ const HL = (() => {
       // (build 499, owner: "Why don't we make that inside arced area transparent (not even glowing)"): the inner end of the
       // passage is an open arch: the land inside, drawn first, shows through it (`inHole`, the arch's outline in the gate's
       // perspective); the tunnel's dark and its light are laid round it, never over it
-      const inHole = (() => { const hVx = X(GVP), hVy = Y(gvy()), q0 = 1 / (1 + 60 / GPL), vhh = d => GPH - 60 + Math.sqrt(Math.max(0, 3600 - d * d));
-        const p = new Path2D(); p.moveTo(sx1, yG); for (let k = 0; k <= 12; k++) { const d = 60 * Math.sin(k / 12 * Math.PI / 2), q = 1 / (1 + d / GPL); p.lineTo(hVx + (sx1 - hVx) * q, hVy + (Y(-vhh(d)) - hVy) * q); } p.lineTo(hVx + (sx1 - hVx) * q0, hVy + (yG - hVy) * q0); p.closePath(); return p; })();
+      const mkHole = e => { const hVx = X(GVP), hVy = Y(gvy()), q0 = 1 / (1 + 60 / GPL), vhh = d => GPH - 60 + Math.sqrt(Math.max(0, 3600 - d * d));
+        const p = new Path2D(); p.moveTo(sx1 + e, yG); p.lineTo(sx1 + e, Y(-vhh(0)) - e); for (let k = 0; k <= 12; k++) { const d = 60 * Math.sin(k / 12 * Math.PI / 2), q = 1 / (1 + d / GPL); p.lineTo(hVx + (sx1 - hVx) * q, hVy + (Y(-vhh(d)) - hVy) * q); } p.lineTo(hVx + (sx1 - hVx) * q0, hVy + (yG - hVy) * q0); p.closePath(); return p; }, inHole = mkHole(0), inHoleX = mkHole(1.5);
       INHOLE = inHole;
-      const inClip = h => { const p = new Path2D(); p.rect(sx1, 0, VW - sx1 + 2, h); p.addPath(inHole); c.clip(p); };
+      const ix0 = Math.min(sx1, X(GVP) + (sx1 - X(GVP)) * (1 / (1 + 60 / GPL))) - 6;
+      const inClip = h => { const p = new Path2D(); p.moveTo(ix0, 0); p.lineTo(ix0, h); p.lineTo(VW + 2, h); p.lineTo(VW + 2, 0); p.closePath(); p.addPath(inHole); c.clip(p); };
       // inside: the dusk sky laid again (the plain's far layers would show there), the land, and the far light low ahead
       { c.save(); inClip(yG + 2);
-        { const g = c.createLinearGradient(0, 0, 0, hor); g.addColorStop(0, css(top)); g.addColorStop(1, css(low)); c.fillStyle = g; c.fillRect(sx1, 0, VW, hor + 2); }
-        { const g = c.createLinearGradient(0, hor, 0, yG); g.addColorStop(0, css([58, 32, 22])); g.addColorStop(1, css([20, 11, 8])); c.fillStyle = g; c.fillRect(sx1, hor, VW, yG - hor + 2); }
+        { const g = c.createLinearGradient(0, 0, 0, hor); g.addColorStop(0, css(top)); g.addColorStop(1, css(low)); c.fillStyle = g; c.fillRect(ix0, 0, VW, hor + 2); }
+        { const g = c.createLinearGradient(0, hor, 0, yG); g.addColorStop(0, css([58, 32, 22])); g.addColorStop(1, css([20, 11, 8])); c.fillStyle = g; c.fillRect(ix0, hor, VW, yG - hor + 2); }
         c.restore(); }
       // the far light inside: it rises over the wall into the open sky (no edge), strong once the door is open
       // (build 496, owner: "What light is there inside - it's just a wall", then "Let's do 1"): the light that pours through
@@ -1870,7 +1871,7 @@ const HL = (() => {
         // the land inside goes on as the land outside does, in low rises one behind another, paler, in the far light's haze;
         // a few trees on the nearest, and the narrow way running straight toward the light
         { const L = [[-150, 26, .004, 81, [104, 64, 46]], [-118, 22, .006, 82, [84, 50, 36]], [-70, 18, .009, 83, [62, 37, 27]], [-30, 12, .013, 84, [44, 26, 19]]];
-          for (const [h0, amp, f, sd, col] of L) { c.beginPath(); c.moveTo(sx1, yG + 2); for (let sx = sx1; sx <= VW + 6; sx += 4) { const wx = cx + (sx - VW / 2) / z; c.lineTo(sx, Y(h0 - amp * nz(wx * f, sd) - amp * .3 * nz(wx * f * 4, sd + 5))); } c.lineTo(VW + 6, yG + 2); c.closePath(); c.fillStyle = css(col); c.fill(); } }
+          for (const [h0, amp, f, sd, col] of L) { c.beginPath(); c.moveTo(ix0, yG + 2); for (let sx = ix0; sx <= VW + 6; sx += 4) { const wx = cx + (sx - VW / 2) / z; c.lineTo(sx, Y(h0 - amp * nz(wx * f, sd) - amp * .3 * nz(wx * f * 4, sd + 5))); } c.lineTo(VW + 6, yG + 2); c.closePath(); c.fillStyle = css(col); c.fill(); } }
         // the air inside, lit from within: one soft glow lying over the far rises where the light sinks behind them (build
         // 468, owner: "the sun shoudn't be on ground on that side either"), not on the road
         { const op = smooth(0, 1, door) * .7, fx2 = X(GATE_X + 330), R2 = 620 * z; c.globalCompositeOperation = 'lighter';
@@ -1895,13 +1896,13 @@ const HL = (() => {
               const sc = h / im.height, w = im.width * sc, bxf = TREE_META[key].bx; c.save(); c.translate(bx, by + 2 * k * z); if (fl) c.scale(-1, 1); c.drawImage(GTREE[tk], -bxf * w, -h, w, h); c.restore(); return; }
             c.fillStyle = css(cl); c.globalAlpha = .5; c.beginPath(); c.ellipse(bx, by - .62 * h, .32 * h, .36 * h, 0, 0, Math.PI * 2); c.fill(); c.fillRect(bx - .02 * h, by - .4 * h, .04 * h, .4 * h); c.globalAlpha = 1; };
           // far: hedgerow trees along the far rise
-          for (let n = 0; n < 9; n++) { const d = 3600 + 900 * nz(n * 1.7, 85); tree(GATE_X + 120 + n * 900 + 300 * nz(n, 86), d, 360 + 160 * nz(n * 2.3, 87), TREE_KEYS[n % 3], [70, 42, 30], n % 2); }
+          for (let n = 0; n < 9; n++) { const d = 3600 + 900 * nz(n * 1.7, 85); tree(GATE_X + 3300 + n * 900 + 300 * nz(n, 86), d, 360 + 160 * nz(n * 2.3, 87), TREE_KEYS[n % 3], [70, 42, 30], n % 2); }
           // the garden wall across the picture, about 1100 behind the road
-          { const d = 1100, k = q(d), y0 = Y(vw * (1 - k)), hW = 125 * k * z; c.fillStyle = css(hz([52, 31, 23], d)); c.fillRect(sx1, y0 - hW, VW - sx1 + 2, hW + 1);
-            c.fillStyle = css(hz([66, 40, 28], d)); for (let x = sx1; x < VW; x += 3) { const cap = 2.2 * k * z * (1 + .4 * nz(x * .3 / z, 88)); c.fillRect(x, y0 - hW - cap, 3.2, cap); }
-            c.save(); c.globalCompositeOperation = 'lighter'; c.fillStyle = css([255, 200, 140], .18 * smooth(0, 1, door)); c.fillRect(sx1, y0 - hW - 2.2 * k * z, VW - sx1 + 2, 1 * z); c.restore(); }
+          { const d = 1100, k = q(d), y0 = Y(vw * (1 - k)), hW = 125 * k * z; c.fillStyle = css(hz([52, 31, 23], d)); c.fillRect(ix0, y0 - hW, VW - ix0 + 2, hW + 1);
+            c.fillStyle = css(hz([66, 40, 28], d)); for (let x = ix0; x < VW; x += 3) { const cap = 2.2 * k * z * (1 + .4 * nz(x * .3 / z, 88)); c.fillRect(x, y0 - hW - cap, 3.2, cap); }
+            c.save(); c.globalCompositeOperation = 'lighter'; c.fillStyle = css([255, 200, 140], .18 * smooth(0, 1, door)); c.fillRect(ix0, y0 - hW - 2.2 * k * z, VW - ix0 + 2, 1 * z); c.restore(); }
           // middle: two trees beyond the garden wall
-          tree(GATE_X + 700, 1500, 440, 'b', [58, 35, 25], 1); tree(GATE_X + 1500, 1700, 400, 'e', [58, 35, 25], 0);
+          tree(GATE_X + 2300, 1500, 440, 'b', [58, 35, 25], 1); tree(GATE_X + 1500, 1700, 400, 'e', [58, 35, 25], 0);
           // near: the tended fruit trees just behind the path
           tree(GATE_X + 720, 150, 540, 'a', [30, 18, 14], 0); tree(GATE_X + 1500, 210, 470, 'e', [30, 18, 14], 1);
           c.restore(); } }
@@ -1916,7 +1917,7 @@ const HL = (() => {
       const hole = xs => { const p = new Path2D(); p.moveTo(xs, yG); for (let k = 0; k <= 12; k++) { const d = TD * Math.sin(k / 12 * Math.PI / 2), q = sOf(d); p.lineTo(Px(xs, q), Py(Y(-vh(d)), q)); } p.lineTo(Px(xs, sD), Py(yG, sD)); p.closePath(); return p; };
       const lit = open > .01;
       // the tunnel seen through the cut: its far side wall, the vault curving over, the floor; warm from the inner end when open
-      c.save(); { const p = new Path2D(); p.rect(0, 0, VW, VH); p.addPath(inHole); c.clip(p, 'evenodd'); }
+      c.save(); { const p = new Path2D(); p.rect(0, 0, VW, VH); p.addPath(inHoleX); c.clip(p, 'evenodd'); }
       { const fx0 = Px(sx0, sD), fx1 = Px(sx1, sD), fy = Py(Y(-(GPH - TD)), sD), fb = Py(yG, sD);
         c.fillStyle = css([12, 8, 6]); c.beginPath(); c.moveTo(sx0, syP); for (let k = 0; k <= 12; k++) { const d = TD * Math.sin(k / 12 * Math.PI / 2), q = sOf(d); c.lineTo(Px(sx0, q), Py(Y(-vh(d)), q)); }
         c.lineTo(fx1, fy); for (let k = 12; k >= 0; k--) { const d = TD * Math.sin(k / 12 * Math.PI / 2), q = sOf(d); c.lineTo(Px(sx1, q), Py(Y(-vh(d)), q)); } c.closePath(); c.fill();
