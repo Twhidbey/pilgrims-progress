@@ -128,6 +128,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 **Build 476: TWO MORE LOOKS FOR THE HILL, A TRIAL (owner, of a to d: "still don't like any of these"; asked, the inner shapes are what is wrong, and "a few big rocks and plain and smooth").** Also only behind `?rock=`: (e) plain and smooth, no rock masses at all, only the hill's gradient; (f) four broken outcrops set into the hill's face (`RK` in `rockTex()`: 1900, 2760, 3460, 4760), each an angular outline with a flat-ish top, its planes turned toward the sunrise a little lit and the others in shade, the top edge catching the sky more to the right, its foot faded into the hill. A first try at (f) as soft rounded blobs read as puddles. Nothing spent.
 
+
+**Build 478 (Level 3 gate chat):** the editor's arrows replaced by a "☰ Jump to…" list of described key points in all five levels (`POINTS`, `jumpTo` in `editor.js`). Nothing spent.
 ## START HERE (rewritten at build 140, Nov 16 2026)
 
 **Build 420 (vision chat): the castle sits on the summit, its crag faded into the rock** (free). **Build 415 (vision chat): a rock mountain drawn in code holds the castle, the castle a third of its size** (free; see CLAUDE.md build 415). **Build 413 (vision chat): Beelzebub's castle painted** (about 15 cents, the owner said "Paint it"): a huge dark fortress on a crag after John Martin, left of the gate's wall end; the camera stands back on it as he arrives and glances back while the arrows fly. See CLAUDE.md, Level 3, build 413. Still open from this chat: Christian's new coat after the Cross (a free FLUX retry is scheduled; show the still before any clips); which lines at the mountain's foot the owner wants fixed.
