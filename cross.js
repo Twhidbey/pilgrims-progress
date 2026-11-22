@@ -243,13 +243,13 @@ const CR = (() => {
     if (!bur) return;
     if (bur.dust) for (const d of bur.dust) { d.x += d.vx; d.y += d.vy; d.vx *= .97; d.vy *= .97; d.r += .35; d.a -= .006; }
     if (bur.st === 'roll') {
-      if (bur.x0 == null) { Object.assign(bur, { x0: bur.x, H0: gh(bur.x), gl: 0, s: 0, vs: .45, z: 0, vz: 2.2, vx: .5, dx: 0, w: -.05, sq: 0, sqa: 0, sqv: 0, rnd: rgen(77) }); }
+      if (bur.x0 == null) { Object.assign(bur, { x0: bur.x, H0: gh(bur.x), gl: 0, s: 0, vs: .6, z: 0, vz: 2.2, vx: .5, dx: 0, w: -.05, sq: 0, sqa: 0, sqv: 0, rnd: rgen(77) }); }
       const R = bur.rnd, L = bur.H0 - tombSill() - 6, g = .16;
       bur.t++; bur.gl = Math.min(1, bur.gl + .02);
       // along the face: gravity less friction, a little slower while in the air
       // the face eases off at its foot, so it comes to the mouth slower
       const q0 = bur.s / L, ease = sm(.82, 1, q0);
-      bur.vs = Math.max(.5, Math.min(2.4, bur.vs + (bur.z > 0 ? .004 : .011) - .03 * ease) * .998); bur.s = Math.min(L, bur.s + bur.vs);
+      bur.vs = Math.max(.6, Math.min(3, bur.vs + (bur.z > 0 ? .006 : .016) - .03 * ease) * .998); bur.s = Math.min(L, bur.s + bur.vs);
       // up and down: a fall under gravity, a bounce that keeps part of its speed
       bur.vz -= g; bur.z += bur.vz;
       if (bur.z <= 0) {
