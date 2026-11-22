@@ -3,6 +3,8 @@
 The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build step; until build 118 it was called `story-lab.html`: read that name below as `index.html`). `style-lab.html` is the art-style test page. `CLAUDE.md` maps the code and records the owner's decisions. Work on **`main`** and push after every change: pushing IS publishing (GitHub Pages, https://twhidbey.github.io/pilgrims-progress/). Bump the build stamp in both pages on every push and tell the owner when it is live (a phone may need `?v=N` on the link). Keep this file and `CLAUDE.md` updated. Public repo: no personal details.
 
 
+**Build 482 (Level 4 editing chat): the parlour's sweeper made again on Google (a picture, then a sweeping video from it; about 71 cents spent, the owner said yes): upright, hands apart on the broom, sweeping in a loop; see CLAUDE.md.**
+
 **Build 477 (Level 4 editing chat): the parlour in Vermeer's colours (cream light, honeyed umber shade, ultramarine tiles and chair cloth, lead-tin yellow brass); see CLAUDE.md.**
 
 **Build 475 (Level 4 editing chat): the parlour drawn like a painting (the Milkmaid's wall by moonlight: a great leaded window with an open casement, a slant of light, cracks and nail holes, basket and brass pail with their shadows, Delft tiles, boards, foot warmer, a chair in the dark); see CLAUDE.md.**

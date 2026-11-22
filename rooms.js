@@ -229,7 +229,7 @@ const RM = (() => {
   // ROOM 2 DRAWN IN CODE (after build 378; owner: "can you draw the parlour"): Vermeer's one light, a tall window on the left,
   // the pale wall lit nearest it and dimming to the right, the floorboards a nearer, darker layer with the window's light lying flat on them,
   // a low band of pale tiles at the wall's foot (the Milkmaid's Delft tiles, the room's one quoted detail besides the stream from the jug)
-  const R2D = { girl: { ax: 154, g: 618, s: 1, ct: 1, mul: 1, sat: 1, noSh: 1 }, SPOUT: [289 - 154, 237 - 618], sweeper: { ax: 290, g: 652, s: .92, ct: 1, mul: .96, sat: 1, noSh: 1 }, GX: 1716, SX: 2655, WIN: [90, 380, 170, 930] };
+  const R2D = { sweepV: { n: 'room2-sweeper-v', ax: 193.2, g: 375, cols: 8, fr: 108, W: 260, H: 382, s: 1.75, ct: 1, mul: .9, sat: 1, noSh: 1 }, girl: { ax: 154, g: 618, s: 1, ct: 1, mul: 1, sat: 1, noSh: 1 }, SPOUT: [289 - 154, 237 - 618], sweeper: { ax: 290, g: 652, s: .92, ct: 1, mul: .96, sat: 1, noSh: 1 }, GX: 1716, SX: 2655, WIN: [90, 380, 170, 930] };
   function bakeR2() {
     const W = 1584, H = 672, cv = document.createElement('canvas'); cv.width = W; cv.height = H; const c = cv.getContext('2d'); c.scale(.5, .5);
     const FY = 1262, r = rngR(11), soft = (draw, w, h) => { const a = document.createElement('canvas'); a.width = w; a.height = h; draw(a.getContext('2d'), w, h); return a; };
@@ -793,9 +793,13 @@ const RM = (() => {
         this.spout = [R2D.GX + R2D.SPOUT[0] / K, FY + 6 + R2D.SPOUT[1] / K];
         // the sweeper: his own picture (build 384, the free FLUX Kontext model from the painted boy: a bearded servant in a linen cap
         // and brown doublet, bent to the broom with both hands on the handle), the broom's head where the dust rises
-        if (pics['room2-sweeper']) fig(c, 'room2-sweeper', SW2, R2D.SX, FY, -1, 1, 1, col);
+        // build 482: the sweeper on video (Google, owner's yes): upright, hands apart on the pole; 108 frames at 12 a second, a loop that
+        // starts and ends in his standing pose, played while he sweeps and held on frame 0 between
+        const SV = R2D.sweepV;
+        if (sheetFrames(SV)) fig(c, SV.n + '#' + (Math.floor(this.svf || 0) % SV.fr), SV, R2D.SX, FY, -1, 1, 1, col);
+        else if (pics['room2-sweeper']) fig(c, 'room2-sweeper', SW2, R2D.SX, FY, -1, 1, 1, col);
       },
-      enter() { pic('room2-sweep'); pic('room2-damsel'); this.sf = 0; this.sweeps = 0; this.df = 14; this.dt = 14; this.dust = []; this.haze = .22; this.wet = []; const r = rngR(5); for (let i = 0; i < 70; i++) this.dust.push({ x: 300 + r() * 2800, y: 300 + r() * 900, vx: 0, vy: 0, s: 2 + r() * 5, a: .5 + r() * .5, p: r() * 7 }); },
+      enter() { pic('room2-sweep'); pic('room2-damsel'); pic('room2-sweeper-v'); this.sf = 0; this.svf = 0; this.sweeps = 0; this.df = 14; this.dt = 14; this.dust = []; this.haze = .22; this.wet = []; const r = rngR(5); for (let i = 0; i < 70; i++) this.dust.push({ x: 300 + r() * 2800, y: 300 + r() * 900, vx: 0, vy: 0, s: 2 + r() * 5, a: .5 + r() * .5, p: r() * 7 }); },
       run() { talk([[N, 'He led him into a very large parlour, full of dust, because it was never swept.'], [TIP, 'Touch the broom.', 'broom']], () => { ph = 'sweep'; t = 0; G.state = 'auto'; }); },
       act(sx, sy) {
         if (G.act === 'broom' && (sx == null || near(sx, sy, 2390, 1180, 160))) next(true);
@@ -806,6 +810,7 @@ const RM = (() => {
         if (G.act === 'jug' && G.actT >= 70 && !G.ring) G.ring = ring(1900, 840);
         // his strokes at the clip's own pace (16 a second); each sweep is whole loops, ending where it began
         if (this.sweeps > 0) { this.sf += 16 / 60; if (this.sf >= this.SW.fr - 1) { this.sf = 0; this.sweeps--; } }
+        if (this.sweeps > 0 || (this.svf || 0) % R2D.sweepV.fr > .5) this.svf = (this.svf || 0) + 12 / 60;
         // her jug eases toward its target frame at 12 a second (14 held upright, 0 pouring)
         if (this.df !== this.dt) this.df += Math.sign(this.dt - this.df) * Math.min(12 / 60, Math.abs(this.dt - this.df));
         if (ph === 'sweep') {
