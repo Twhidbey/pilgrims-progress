@@ -337,6 +337,32 @@
    "made": "2026-11-22 07:00 UTC",
    "frames": 65,
    "secs": 131
+  },
+  {
+   "id": "room4-cast",
+   "uses": "Level 4 room 4: the man casting water swings his bucket and throws, looped (laid over his still picture); any later scene of someone throwing water",
+   "first": {
+    "src": "assets/room4-caster2.webp"
+   },
+   "last": {
+    "src": "assets/room4-caster2.webp"
+   },
+   "seconds": 3,
+   "prompt": "A working man in a dark jerkin holding a wooden bucket swings it back a little and then throws its water forward to the RIGHT in one strong cast, and comes back to exactly the same pose. Both feet stay planted on one line, a completely FLAT SIDE VIEW like a shadow-puppet play. The camera is still and does NOT zoom; plain white background; his face is a plain soft wash.",
+   "status": "todo"
+  },
+  {
+   "id": "room4-pour",
+   "uses": "Level 4 room 4: the hooded one behind the wall pours oil slowly and continually from his jug, looped",
+   "first": {
+    "src": "assets/room4-pourer.webp"
+   },
+   "last": {
+    "src": "assets/room4-pourer.webp"
+   },
+   "seconds": 3,
+   "prompt": "A tall hooded figure in a long dark robe stands still and pours slowly and continually from a small jug held in both hands, tipping it a little more and back, a calm quiet movement. His feet stay planted, a completely FLAT SIDE VIEW. The camera is still and does NOT zoom; plain white background; no face shown, deep in the hood.",
+   "status": "todo"
   }
  ]
 }
