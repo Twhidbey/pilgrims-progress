@@ -43,7 +43,7 @@
       const WH = 210; c.fillStyle = css(col); c.beginPath(); c.moveTo(XC, FY + 4); let x = XC; while (x < EX.x1 + 40) { const w = 46 + r() * 40, hh = r() * 8; c.lineTo(x, FY - WH - hh); c.lineTo(x + w - 3, FY - WH - hh); x += w; } c.lineTo(EX.x1 + 40, FY + 4); c.closePath(); c.fill();
       c.strokeStyle = css(col.map(v => v * .8)); c.lineWidth = 3; for (let q = 1; q < 5; q++) { c.beginPath(); c.moveTo(XC, FY - WH + q * 42); c.lineTo(EX.x1 + 40, FY - WH + q * 42); c.stroke(); }
       c.fillStyle = leaving ? 'rgba(170,170,190,.22)' : 'rgba(120,124,150,.12)'; c.fillRect(XC, FY - WH - 10, EX.x1 + 40 - XC, 6); }
-    const { X0 } = HSE, X1 = HSE.X1, ST = FY - 640, EV0 = ST - 660; c.fillStyle = '#423c35'; c.fillRect(X0, EV0, X1 - X0, FY - EV0);
+    const { X0 } = HSE, X1 = HSE.X1, ST = FY - 640, EV0 = ST - 660; c.fillStyle = '#37312b'; c.fillRect(X0, EV0, X1 - X0, FY - EV0);
     // (build 537, owner: "Roof and walls too similar") the walls limewashed, pale as plastered houses of the time were, a cool breath of the
     // night sky on them from above; the roof's clay tiles darker and redder
     { const gm = c.createLinearGradient(0, EV0, 0, FY); gm.addColorStop(0, 'rgba(120,130,160,.10)'); gm.addColorStop(1, 'rgba(20,16,12,.18)'); c.fillStyle = gm; c.fillRect(X0, EV0, X1 - X0, FY - EV0); }

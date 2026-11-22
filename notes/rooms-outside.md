@@ -31,6 +31,7 @@ Chat: **PP House · Outside & passages**. Read `notes/house.md` first (shared ru
 
 ## Log (newest first)
 
+- Build 538 (owner: "maybe not so light"): the wall `#37312b`, halfway between build 536's and 537's.
 - Build 537 (owner: "Roof and walls too similar"): walls limewashed pale (`#423c35` with a cool top light), the roof's tiles darker and redder.
 - Build 536 (owner: "yes, both would be cool. light from house a bit strong ... also needs a door to open inward"): the walk up from the gate (`CX0` 1000, hold act `walkup`); `doorLight()` redrawn: an oak leaf hinged on the right jamb swinging in, the hall behind dimmer (a light from the left, a dark inner doorway, flagstones, shadowed vault and reveals), the path's pool .3; the Interpreter beckons on "Come in" (`interp-talk` cut to `room-interpreter-beckon.webp`, `BK`).
 - Build 532 (owner: "roof should have more texture ... more rectangular ... shingled as a house of that time"): clay plain tiles (peg tiles, the usual roof of a 1600s English house besides thatch), staggered overlapping courses 24 high with the lip's shadow, faint joints, uneven lips, a little sag and moss; the ridge nearly the eaves' width; ridge tiles; a brick chimney stack. A first try with dark gaps all round each tile read as brick.
