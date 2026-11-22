@@ -77,12 +77,13 @@
   // the walk round the wall (build 508): the two set off from where they stand, go BEHIND the man with the bucket and the fire (a
   // little further back: smaller, darker, standing a little higher), behind the chimney breast into the dark, the Interpreter's
   // cupped candle the only light there; they stop and turn to the one pouring oil, and the dark lifts
-  const WK = { C0: 280, I0: 560, C1: 2620, I1: 2860, V: 3.4, k: .92, up: 14, PO: 2040, SPOUT: [1896, 790], CX: 900, LIP: [1282, 830] };
+  const WK = { C0: 240, I0: 520, FEET: 45, C1: 2620, I1: 2860, V: 3.4, k: .92, up: 14, PO: 2040, SPOUT: [1896, 790 + 45], CX: 760, LIP: [1142, 830 + 45] };
   // the perspective of the chimney breast's face (build 523; build 526: the eye at chest height again, so the floor line runs up too):
   // a vanishing point PV on the left, depth d into the
   // picture shrinks by PQ(d) (as the gate's wall in Level 3); the hearth's opening runs from depth a0 to a1, its arch springing at SPR
   // above the floor and rising RISE more; the fire sits FIN inside the face at depth FD
-  const PV = { X: 600, Y: HOUSE.FY - 100, NEAR: 90, GP: 700, D: 520, a0: 110, a1: 430, SPR: 290, RISE: 120, FD: 270, FIN: 50, REV: 130 };
+  const PV = { X: 600, Y: HOUSE.FY - 50, NEAR: 90, GP: 450, D: 640, a0: 100, a1: 520, SPR: 320, RISE: 140, FD: 300, FIN: 50, REV: 130, T: 50 };
+  const rngR4 = seed => () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
   // the hearth wall's foot stands NEAR in front of the back wall's foot (build 529; owner: its far corner just below where wall and
   // floor meet, its near corner down where the floor's dark shadow starts): its floor line is FB, the eye low enough for both
   const FB = HOUSE.FY + PV.NEAR;
@@ -124,7 +125,7 @@
         // in front of both (owner, build 522: the Interpreter and his light always behind the others)
         if (this.go && this.sw < 1) {
           const col = [100, 74, 62], a = 1 - this.sw, k = WK.k, [lx, ly, lf] = this.candlePt();
-          walkFig(c, 'I', this.ix, this.if, k, a, col, FY - WK.up); cupped(c, lx, ly, lf, 1.4, this.cand * a); walkFig(c, 'C', this.cx, this.cf, k, a, col, FY - WK.up);
+          walkFig(c, 'I', this.ix, this.if, k, a, col, FY + WK.FEET - WK.up); cupped(c, lx, ly, lf, 1.4, this.cand * a); walkFig(c, 'C', this.cx, this.cf, k, a, col, FY + WK.FEET - WK.up);
         }
         const fl = .85 + .1 * Math.sin(G.t / 4.3) * Math.sin(G.t / 9.1) + .05 * Math.sin(G.t / 2.1), gw = (.8 + .3 * this.grow - .25 * this.dip) * fl;
         const poly = (pts, close = true) => { c.beginPath(); pts.forEach(([x, y], i) => i ? c.lineTo(u(x), v(y)) : c.moveTo(u(x), v(y))); if (close) c.closePath(); };
@@ -143,14 +144,32 @@
         c.restore(); c.restore();
         // the firelight lying on the floor at the opening's foot
         { const [ax, ay] = PP(P0, FB, PV.FD), r = 240 * S; c.save(); c.translate(u(ax), v(ay)); c.scale(1, .08); const fg = c.createRadialGradient(0, 0, 0, 0, 0, r); fg.addColorStop(0, css([240, 130, 55], .45 * gw)); fg.addColorStop(1, 'rgba(240,130,55,0)'); c.globalCompositeOperation = 'lighter'; c.fillStyle = fg; c.fillRect(-r, -r, 2 * r, 2 * r); c.restore(); c.globalCompositeOperation = 'source-over'; }
-        // the stone surround: a low four-centred arch, as old English hearths have, its dressed stones a shade lighter, joints radiating
-        const out = archPts(PV.a0 - 46, PV.a1 + 46, PV.SPR, PV.RISE + 46), inn = archPts(PV.a0, PV.a1, PV.SPR, PV.RISE);
-        poly(out); c.fillStyle = '#2b1e15'; c.fill();
-        c.strokeStyle = 'rgba(8,5,3,.6)'; c.lineWidth = Math.max(.6, 1.4 * S);
-        for (let k = 1; k < 8; k++) { const th = Math.PI * k / 8, a = archAt(PV.a0, PV.a1, PV.SPR, PV.RISE, th), b = archAt(PV.a0 - 46, PV.a1 + 46, PV.SPR, PV.RISE + 46, th); poly([a, b], false); c.stroke(); }
-        for (const yy of [PV.SPR * .35, PV.SPR * .7]) for (const [d0, d1] of [[PV.a1, PV.a1 + 46], [PV.a0 - 46, PV.a0]]) { poly([PP(P0, FB - yy, d0), PP(P0, FB - yy, d1)], false); c.stroke(); }
-        // the surround's inner edge catches the fire
-        c.save(); poly(out); c.clip(); g = c.createRadialGradient(u(hx), v(hy), 0, u(hx), v(hy), 300 * S); g.addColorStop(0, css([255, 150, 70], .5 * gw)); g.addColorStop(1, 'rgba(255,150,70,0)');
+        // THE ARCH OF STONES (build 534; owner: "make it out of individual stone pieces"): each stone a shape of its own on the face,
+        // every corner carried to the picture through the same perspective (PP), so every joint runs true to the vanishing point.
+        // Round the head, wedge-shaped arch stones (voussoirs) with a taller keystone; down each side, jamb blocks of alternating
+        // length (long, short, long), as dressed stone is laid; each stone its own shade, the joints dark, the inner edges firelit
+        const T = PV.T, inn = archPts(PV.a0, PV.a1, PV.SPR, PV.RISE), stones = [], NV = 9;
+        for (let k = 0; k < NV; k++) {
+          const t0 = Math.PI * k / NV, t1 = Math.PI * (k + 1) / NV, key = k === (NV - 1) / 2, TT = key ? T + 18 : T, pts = [];
+          for (let j = 0; j <= 3; j++) pts.push(archAt(PV.a0, PV.a1, PV.SPR, PV.RISE, t0 + (t1 - t0) * j / 3));
+          for (let j = 3; j >= 0; j--) pts.push(archAt(PV.a0 - TT, PV.a1 + TT, PV.SPR, PV.RISE + TT, t0 + (t1 - t0) * j / 3));
+          stones.push(pts);
+        }
+        const COURSES = [[0, 108, 1], [108, 216, 0], [216, PV.SPR, 1]];
+        for (const [h0, h1, long] of COURSES) {
+          const w = long ? T + 22 : T - 6;
+          stones.push([PP(P0, FB - h0, PV.a0), PP(P0, FB - h1, PV.a0), PP(P0, FB - h1, PV.a0 - w), PP(P0, FB - h0, PV.a0 - w)]);
+          const w2 = long ? T - 6 : T + 22;
+          stones.push([PP(P0, FB - h0, PV.a1), PP(P0, FB - h1, PV.a1), PP(P0, FB - h1, PV.a1 + w2), PP(P0, FB - h0, PV.a1 + w2)]);
+        }
+        const rs = rngR4(17);
+        stones.forEach(st => { const k = .82 + rs() * .3; poly(st); c.fillStyle = css([43 * k, 30 * k, 21 * k], 1); c.fill(); });
+        // the joints between them
+        c.strokeStyle = 'rgba(6,3,2,.8)'; c.lineWidth = Math.max(.8, 2.2 * S); c.lineJoin = 'round';
+        stones.forEach(st => { poly(st); c.stroke(); });
+        // the firelight on the stones, strongest at their inner edges
+        c.save(); c.beginPath(); stones.forEach(st => st.forEach(([x, y], i) => i ? c.lineTo(u(x), v(y)) : c.moveTo(u(x), v(y)))); c.clip();
+        g = c.createRadialGradient(u(hx), v(hy), 0, u(hx), v(hy), 300 * S); g.addColorStop(0, css([255, 150, 70], .5 * gw)); g.addColorStop(1, 'rgba(255,150,70,0)');
         c.globalCompositeOperation = 'lighter'; c.fillStyle = g; c.fillRect(u(hx) - 300 * S, v(hy) - 300 * S, 600 * S, 600 * S); c.restore(); c.globalCompositeOperation = 'source-over';
         // INSIDE THE OPENING, IN PERSPECTIVE (build 530; owner: "the arch is messed up - think perspective"): the opening has depth REV
         // into the breast. Its back edge is the same arch REV further in (X = P0 + REV), so between the two we see the reveal: the far
@@ -186,18 +205,18 @@
         // back of the same fire, where from behind the wall the oil goes in
         c.fillStyle = '#0c0705'; c.fillRect(u(P0), v(EX.y0), (P1 - P0) * S, (FB - EX.y0) * S);
         g = c.createLinearGradient(0, v(380), 0, v(900)); g.addColorStop(0, 'rgba(12,7,5,1)'); g.addColorStop(1, 'rgba(12,7,5,0)'); c.fillStyle = g; c.fillRect(u(P0), v(380), 50 * S, 520 * S);
-        g = c.createLinearGradient(0, v(FY - 46), 0, v(FY)); g.addColorStop(0, '#1a0904'); g.addColorStop(1, css([170, 66, 24], .9 * gw)); c.fillStyle = g; c.fillRect(u(P0 + 30), v(FY - 46), (P1 - P0 - 30) * S, 46 * S);
+        g = c.createLinearGradient(0, v(FY + WK.FEET - 46), 0, v(FY + WK.FEET)); g.addColorStop(0, '#1a0904'); g.addColorStop(1, css([170, 66, 24], .9 * gw)); c.fillStyle = g; c.fillRect(u(P0 + 30), v(FY + WK.FEET - 46), (P1 - P0 - 30) * S, 46 * S);
         // behind the wall: the one pouring oil, and the thin thread of oil into the slot
         // unseen until they have gone round (the book: "it is hard for the tempted to see"): only the fire's flare at each drop shows
         const pa = smooth(0, 1, this.rv);
-        if (po && pa > 0) fig(c, 'room4-pourer', { ax: 157, g: 790, s: .8, ct: 1, mul: 1, sat: 1, noSh: 1 }, WK.PO, FY, -1, 1, pa, [200, 188, 176]);
-        c.strokeStyle = css([255, 196, 90], .35 * pa); c.lineWidth = Math.max(.6, 1.6 * S); c.beginPath(); c.moveTo(u(WK.SPOUT[0]), v(WK.SPOUT[1])); c.lineTo(u(WK.SPOUT[0] - 3), v(FY - 40)); c.stroke();
+        if (po && pa > 0) fig(c, 'room4-pourer', { ax: 157, g: 790, s: .8, ct: 1, mul: 1, sat: 1, noSh: 1 }, WK.PO, FY + WK.FEET, -1, 1, pa, [200, 188, 176]);
+        c.strokeStyle = css([255, 196, 90], .35 * pa); c.lineWidth = Math.max(.6, 1.6 * S); c.beginPath(); c.moveTo(u(WK.SPOUT[0]), v(WK.SPOUT[1])); c.lineTo(u(WK.SPOUT[0] - 3), v(FY + WK.FEET - 40)); c.stroke();
         c.fillStyle = css([255, 210, 110], .9 * pa); for (const o of this.oil) { c.beginPath(); c.arc(u(o.x), v(o.y), Math.max(.8, 3 * S), 0, 6.2832); c.fill(); }
         // the man casting water (his own picture; a free clip of the swing is queued)
         const cx = WK.CX;
-        if (cs) fig(c, 'room4-caster2', { ax: 150, g: 781, s: .8, ct: 1, mul: 1, sat: 1, noSh: 1 }, cx, FY, -1, 1, 1, [150, 132, 120]);
+        if (cs) fig(c, 'room4-caster2', { ax: 150, g: 781, s: .8, ct: 1, mul: 1, sat: 1, noSh: 1 }, cx, FY + WK.FEET, -1, 1, 1, [150, 132, 120]);
         // the wet on the hearth where the water falls, darkening and slowly drying
-        if (this.wet > .01) { c.save(); c.translate(u(FXS()[0] - 200), v(FY - 12)); c.scale(1, .1); const wg = c.createRadialGradient(0, 0, 0, 0, 0, 120 * S); wg.addColorStop(0, css([12, 8, 8], .7 * this.wet)); wg.addColorStop(1, css([12, 8, 8], 0)); c.fillStyle = wg; c.fillRect(-120 * S, -120 * S, 240 * S, 240 * S); c.restore(); }
+        if (this.wet > .01) { c.save(); c.translate(u(FXS()[0] - 160), v(FY + WK.FEET + 6)); c.scale(1, .1); const wg = c.createRadialGradient(0, 0, 0, 0, 0, 120 * S); wg.addColorStop(0, css([12, 8, 8], .7 * this.wet)); wg.addColorStop(1, css([12, 8, 8], 0)); c.fillStyle = wg; c.fillRect(-120 * S, -120 * S, 240 * S, 240 * S); c.restore(); }
         c.lineCap = 'round'; c.lineWidth = Math.max(1, 2.6 * S);
         for (const w of this.water) { c.strokeStyle = css([200, 214, 226], .38 * w.a); c.beginPath(); c.moveTo(u(w.x - w.vx * 2.2), v(w.y - w.vy * 2.2)); c.lineTo(u(w.x), v(w.y)); c.stroke(); }
         c.lineCap = 'butt';
@@ -229,7 +248,7 @@
           // the cast: every few seconds water arcs from his bucket DOWN into the fire; where it strikes the fire sinks with a hiss
           // and a gust of steam, then rises higher than before (the book: "yet did the fire burn higher and hotter")
           this.cast += 1 / 70; if (this.cast >= 3.2) { this.cast = 0; this.hit = false; }
-          if (this.cast > .3 && this.cast < .62) for (let i = 0; i < 3; i++) this.water.push({ x: WK.LIP[0] + rnd() * 14, y: WK.LIP[1] + rnd() * 10, vx: 3.3 + rnd() * .7, vy: 4.4 + rnd() * 1.4, a: 1 });
+          if (this.cast > .3 && this.cast < .62) for (let i = 0; i < 3; i++) this.water.push({ x: WK.LIP[0] + rnd() * 14, y: WK.LIP[1] + rnd() * 10, vx: 3.4 + rnd() * .8, vy: 2.8 + rnd() * 1.2, a: 1 });
           for (const w of this.water) {
             w.vy += .16; w.x += w.vx; w.y += w.vy;
             if (w.x > FXS()[0] - 90 && w.y > FXS()[1] - 260 && w.a === 1) {
@@ -238,12 +257,12 @@
             }
             if (w.a < 1) w.a *= .7;
           }
-          this.water = this.water.filter(w => w.a > .05 && w.y < this.FY);
+          this.water = this.water.filter(w => w.a > .05 && w.y < this.FY + WK.FEET);
           if (this.dip > 0) { this.dip = Math.max(0, this.dip - .02); if (this.dip < .5) this.grow = Math.min(1, this.grow + .004); }
           this.wet = Math.max(0, this.wet - .0012);
           // the oil, poured continually, falls straight into the back of the fire; each drop makes it flare a little
           if (G.t % 6 === 0) this.oil.push({ x: WK.SPOUT[0] + rnd() * 3, y: WK.SPOUT[1], vy: 1 });
-          for (const o of this.oil) { o.vy += .3; o.y += o.vy; if (o.y >= this.FY - 40) { o.done = 1; for (let i = 0; i < 3; i++) puff(this.fire, R4D.FIRE + 110, this.FY - 24, 14, 2.6, 34, 40, .02); } }
+          for (const o of this.oil) { o.vy += .3; o.y += o.vy; if (o.y >= this.FY + WK.FEET - 40) { o.done = 1; for (let i = 0; i < 3; i++) puff(this.fire, R4D.FIRE + 110, this.FY - 24, 14, 2.6, 34, 40, .02); } }
           this.oil = this.oil.filter(o => !o.done);
         }
         if (!D4 && G.t % 5 === 0) this.steam.push({ x: 1760 + rnd() * 80, y: 800 + rnd() * 60, vy: -.8 - rnd(), a: .4, s: 20 + rnd() * 30 });
@@ -257,13 +276,13 @@
       },
       people(c) {
         if (!D4) { const q = smooth(0, .5, this.rv), r = smooth(.6, 1, this.rv); visitor(c, 'I', 330, 1, 1, 1 - q); visitor(c, 'C', 40, 1, 1, 1 - q); if (r > 0) { visitor(c, 'I', 2700, -1, 1, r); visitor(c, 'C', 2930, -1, 1, r); } return; }
-        if (!this.go) { visitor(c, 'I', WK.I0, 1, 1, 1); visitor(c, 'C', WK.C0, 1, 1, 1); }
+        if (!this.go) { visitor(c, 'I', WK.I0, 1, 1, 1, -WK.FEET); visitor(c, 'C', WK.C0, 1, 1, 1, -WK.FEET); }
         // arrived: standing, turned toward the one pouring oil (Christian nearer him, the Interpreter behind, his candle in his hands)
-        if (this.sw > 0) { const [lx, ly, lf] = this.candlePt(); visitor(c, 'I', WK.I1 + 70, -1, 1, this.sw); cupped(c, lx, ly, lf, 1.4, this.cand * this.sw); visitor(c, 'C', WK.C1 + 20, -1, 1, this.sw); }
+        if (this.sw > 0) { const [lx, ly, lf] = this.candlePt(); visitor(c, 'I', WK.I1 + 70, -1, 1, this.sw, -WK.FEET); cupped(c, lx, ly, lf, 1.4, this.cand * this.sw); visitor(c, 'C', WK.C1 + 20, -1, 1, this.sw, -WK.FEET); }
       },
       candlePt() {
         // where the Interpreter's hands are: walking (his walk frames, k .92) or standing turned left
-        const k = WK.k, wx = this.ix + 109 * k, wy = this.FY - WK.up - 411 * k, sx = WK.I1 + 70 - 71, sy = this.FY - 422, q = this.sw;
+        const k = WK.k, wx = this.ix + 109 * k, wy = this.FY + WK.FEET - WK.up - 411 * k, sx = WK.I1 + 70 - 71, sy = this.FY + WK.FEET - 422, q = this.sw;
         return [wx + (sx - wx) * q, wy + (sy - wy) * q, q > .5 ? -1 : 1];
       },
       over(c) {
