@@ -17,7 +17,7 @@
 const CR = (() => {
   const SO = 'The Shining Ones', S1 = 'The first Shining One', S3 = 'The third Shining One';
   // ---------- the land (world units: x along the way, h up from the foot of the slope) ----------
-  const START = 480, WALL_END = 860, TOMB_X = 4650, SLOPE0 = 1180, CREST0 = 4080, CROSS_X = 4260, CREST1 = 4400, FALL1 = 5020, H_TOP = 860;
+  const START = 480, WALL_END = 860, TOMB_X = 5085, SLOPE0 = 1180, CREST0 = 4080, CROSS_X = 4260, CREST1 = 4400, FALL1 = 5240, H_TOP = 860;
   // GOLGOTHA, AFTER THE OWNER'S SKETCH (build 545): a smooth swooping ramp up from the left that meets the top of a round
   // rocky knoll shaped like a skull's crown (SK_X its top, SK_L / SK_R how far its dome reaches left and right)
   const SK_X = 4380, SK_L = 1000, SK_R = FALL1 - 4380, SK_H = H_TOP + 30, RAMP1 = SK_X - 260;
@@ -50,9 +50,8 @@ const CR = (() => {
   // outline is a skull seen side-on, facing right: the round cranium, the forehead, the brow ridge, the notch at the root
   // of the nose, the nose, the upper jaw and teeth, the chin, and under the jaw its neck going down into the ground. It
   // overhangs (brow, nose, chin), so it is its own outline (SKO, world units [x, h]); gh() past the crown is its top
-  const SKP = [[0, 1], [.18, .985], [.34, .935], [.46, .85], [.54, .745], [.585, .655], [.622, .59], [.606, .558], [.574, .54],
-    [.598, .508], [.616, .482], [.578, .452], [.566, .422], [.6, .4], [.626, .372], [.636, .345], [.626, .336], [.637, .322],
-    [.62, .31], [.633, .296], [.626, .268], [.634, .222], [.602, .19], [.5, .182], [.405, .17], [.415, .12], [.44, .05], [.48, 0], [.6, 0]];
+  const SKP = [[0, 1], [.2, .98], [.32, .92], [.4, .83], [.44, .72], [.455, .63], [.44, .565], [.455, .5], [.5, .41],
+    [.57, .32], [.65, .24], [.73, .19], [.81, .165], [.88, .15], [.925, .125], [.94, .085], [.93, .045], [.95, 0], [1.02, 0]];
   const SKO = (() => { const P = SKP.map(([u, v]) => [SK_X + u * SK_H, v * SK_H]), O = [];
     for (let i = 0; i < P.length - 1; i++) { const a = P[Math.max(0, i - 1)], b = P[i], c2 = P[i + 1], d = P[Math.min(P.length - 1, i + 2)];
       for (let k = 0; k < 8; k++) { const t = k / 8, t2 = t * t, t3 = t2 * t, f = (p0, p1, p2, p3) => .5 * (2 * p1 + (-p0 + p2) * t + (2 * p0 - 5 * p1 + 4 * p2 - p3) * t2 + (-p0 + 3 * p1 - 3 * p2 + p3) * t3);
@@ -516,7 +515,7 @@ const CR = (() => {
           const on = Math.sin(t * 9 + sc * 17) > -.35 && d < hh(x) - 12; if (!on) { pen = false; continue; } pen ? q.lineTo(x, -d) : q.moveTo(x, -d); pen = true; }
         q.stroke(); }
       // the hollow of the eye, only a faint shadow in the rock (it must not stare), and a faint shade under the cheekbone
-      for (const [ux, uy, rx, ry, a] of [[.43, .585, .1, .085, .3], [.49, .42, .09, .05, .12]]) { const ex = SK_X + ux * SK_H, ey = -uy * SK_H;
+      for (const [ux, uy, rx, ry, a] of []) { const ex = SK_X + ux * SK_H, ey = -uy * SK_H;
         q.save(); q.translate(ex, ey); q.scale(1, ry / rx); const g2 = q.createRadialGradient(0, 0, 0, 0, 0, rx * SK_H);
         g2.addColorStop(0, css([0, 0, 0], a)); g2.addColorStop(.55, css([0, 0, 0], a * .7)); g2.addColorStop(1, 'rgba(0,0,0,0)'); q.fillStyle = g2; q.fillRect(-rx * SK_H, -rx * SK_H, 2 * rx * SK_H, 2 * rx * SK_H); q.restore(); }
       // hatched cracks down the face
