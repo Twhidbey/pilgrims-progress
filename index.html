@@ -184,7 +184,7 @@ body.portrait:not(.playing) #rot{display:none}
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
   <button id="autoWalk" aria-label="He walks on by himself"><svg viewBox="0 0 24 24"><path d="M5 6l6 6-6 6M12 6l6 6-6 6"/></svg></button>
-  <div id="build">build 505 · Nov 22 2026</div>
+  <div id="build">build 506 · Nov 22 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -763,7 +763,7 @@ const FIELD_END = 1650;      // where the wheat field ends and the street begins
 // near row (2), as a place on the road (the far row ends earlier, so no house is in view when he stops). FIELD2: the
 // wheat along the road, from just past the last cottage to short of the city wall.
 const TOWN_END = { 1: 5600, 2: 6600 }, FIELD2 = [6700, 9000];
-const EVAN_X = 420, HOME_X = 2150, RUN_END = 7700, NEIGH_X = 8350, GATE_STOP = 9770, DOOR0 = 9855, DOOR1 = 10085, DOORM = 9970;      // build 494 (owner: "run a little farther before he stops (no houses in view) ... path thru a field indicating outskirts of town"): everything from his stop on is 1400 further      // build 110: the street after his house is 900 longer, so each line is said where it belongs while he runs, and the road from the neighbours to the gate 600 longer (owner: "need more space here for obstinate and pliable to catch up and narration to read")      // build 100: a 2.6 m gateway (88 units to a metre)      // build 91: the gateway is wider (was 7006 to 7120), so the painted gatehouse is bigger
+const EVAN_X = 420, HOME_X = 2150, RUN_END = 7700, NEIGH_X = 8350, GATE_STOP = 9770, DOOR0 = 9855, DOOR1 = 10085, DOORM = 9970;      // build 506 (owner: "run a little farther before he stops (no houses in view) ... path thru a field indicating outskirts of town"): everything from his stop on is 1400 further      // build 110: the street after his house is 900 longer, so each line is said where it belongs while he runs, and the road from the neighbours to the gate 600 longer (owner: "need more space here for obstinate and pliable to catch up and narration to read")      // build 100: a 2.6 m gateway (88 units to a metre)      // build 91: the gateway is wider (was 7006 to 7120), so the painted gatehouse is bigger
 // SKIP AHEAD (owner, build 89: "is there a way to skip ahead to a moment?"): add ?at=NAME to the link. Each name starts
 // the level just before that moment, after Evangelist. (?x=N still works for any place on the road; ?level=2 starts
 // at the Slough of Despond.)
@@ -947,11 +947,14 @@ const STEP_FILES = Object.entries(STEP_N).flatMap(([k, n]) => [...Array(n).keys(
 const SFX_V = 492, SFX_FILES = [...STEP_FILES, 'knock-0', 'knock-1', 'knock-2', 'knock-3', 'bog-fall-a', 'bog-fall-b', 'bog-lift', 'bog-bubbles',
   ...[0, 1, 2, 3, 4, 5].map(i => 'bog-wade-' + i), ...[0, 1, 2].map(i => 'bog-plop-' + i), ...[0, 1, 2].map(i => 'bog-suck-' + i), 'bog-heave-0', 'bog-heave-1'], SFXB = {};
 const SFXL = {}, sfxLast = {};
-// build 502 (owner: "footsteps sound way to loud"): every recorded footstep at STEP_K of its old loudness, in every level
-const STEP_K = .4;
+// build 506 (owner: "the footprints sounds ... needs to be lowered too (make consistent rule please)"): THE RULE FOR FOOTSTEPS: every
+// footfall of his in every level is played at STEP_VOL, walking 1, running STEP_RUN; the wheat's rustle .8 of a step, a squelch in
+// the mire 1.3 (it is heavier). Nothing else sets a footstep's loudness.
+// (build 502 had turned them all to .4 of their old loudness, STEP_K: STEP_VOL is set at that level)
+const STEP_VOL = .13, STEP_RUN = 1.2, STEP_K = .4;
 function stepOn(surf, v = 1, heavy = 0) {
   if (!audio()) return;
-  if (!sfxPlay('step-' + surf, STEP_N[surf], .32 * STEP_K * v)) { sfx.step(false, heavy || .8); return; }
+  if (!sfxPlay('step-' + surf, STEP_N[surf], STEP_VOL * v)) { sfx.step(false, heavy || .8); return; }
   if (heavy > 0) { hiss(170, 9, .035 * heavy, .16, 'bandpass', .05); sweep(74, 62, .22, .018 * heavy, false, .04); }      // the burden's creak
 }
 function sfxPlay(prefix, n, v = 1, when = 0) {
@@ -1073,9 +1076,9 @@ const MUSIC_V = 1;
 // I loved amazing grace with lights"): no music under the walking; the book's harp on the title, and a light beat of drums
 // only at three moments, each played once with its fades baked in (cut from the run and pursuit pieces, low-passed so only
 // the drums come through). The whole hymn plays again at the gate as the lights go on ahead.
-const MUS = { book: 'l1-title', run: 'l1-beat-run', mock: 'l1-beat-mock', heart: 'l1-beat-heart', past: 'l1-run' };
+const MUS = { book: 'l1-title', run: 'l1-beat-run', mock: 'l1-beat-mock', heart: 'l1-beat-heart', past: 'l1-pursue' };      // build 506 (owner: the run piece "a bit upbeat - should be intense and not too many instruments"): the pursuit piece, a low heartbeat of drums and uneasy strings
 const MUSV = { book: .3, run: .42, mock: .3, heart: .4, past: .4 };       // each piece's level (the owner's ears decide)
-const MUS_ONCE = { run: 1, mock: 1, heart: 1 }, MUS_XF = 3, MUS_SKIP = { past: 2.1 };      // seconds of quiet lead-in skipped the first time a piece plays
+const MUS_ONCE = { run: 1, mock: 1, heart: 1 }, MUS_XF = 3, MUS_SKIP = {};      // seconds of quiet lead-in skipped the first time a piece plays
 const musBuf = {}, musLoad = {}, musV = {};
 let musG = null, musCur = null;
 function musGet(k) {
@@ -1348,8 +1351,8 @@ const LIFE = [[C, 'Life! Life! Eternal life!', 'quick']];      // said as he run
 // {19} to {24}: the neighbours come out while he is still running; two set out to fetch him back, and overtake him
 const WATCH = [[N, 'The neighbors also came out to see him run.', 'quick'], [N, 'Some mocked. Some threatened. And some cried after him to come back.', 'quick']];
 const FETCH = [[N, 'Two of them, Obstinate and Pliable, set out to bring him back by force.']];
-// build 175 (owner: say lines while walking): the first two are called out as the two catch up with him (NEIGH_CALL,
-// captions while he walks); the rest is said once they have come up to him
+// build 175 had the first two called out as the two caught up with him; since build 506 (owner) they are said once they have met (the book, {19}): NEIGH_CALL opens the talk NEIGH
+// (people() below)
 const NEIGH_CALL = [[C, 'Neighbors, why have you come?'], [O, 'To persuade you to go back with us.']];
 const NEIGH = [
   [C, 'That cannot be. Come with me instead, good neighbors.'],
@@ -1594,8 +1597,8 @@ function walkTick(dir, max) {
   if (down) {                                                  // a foot comes down
     // the road is wet wherever it is raining: every step sends rings out (owner loved this), fading as the weather clears
     const wet = 1 - warm((P.x - G.cam) / VW);
-    stepOn(P.x < FIELD_END - 200 ? 'grass' : P.x > FIELD2[0] + 200 && P.x < GATE - 600 ? 'dirt' : 'stone',      /* build 494: packed earth on the road through the fields */ P.run ? 1.25 : 1, P.run ? 1.3 : Math.max(.35, 1 - G.got / 60)); if (wet > .15) { G.ripples.push({ x: P.x + P.face * 14, y: GY + 9, t: 0, a: wet, r: 1 }); if (wet > .5) sfx.splash(); }
-    if (P.x < FIELD_END - 200 && !sfxPlay('step-leaves', 4, (P.run ? .34 : .24) * STEP_K)) sfx.swish(P.run ? 1.5 : 1);      // wading through the wheat (a soft brush of stalks with each step)
+    stepOn(P.x < FIELD_END - 200 ? 'grass' : P.x > FIELD2[0] + 200 && P.x < GATE - 600 ? 'dirt' : 'stone',      /* build 494: packed earth on the road through the fields */ P.run ? STEP_RUN : 1, P.run ? 1.3 : Math.max(.35, 1 - G.got / 60)); if (wet > .15) { G.ripples.push({ x: P.x + P.face * 14, y: GY + 9, t: 0, a: wet, r: 1 }); if (wet > .5) sfx.splash(); }
+    if (P.x < FIELD_END - 200 && !sfxPlay('step-leaves', 4, STEP_VOL * .8 * (P.run ? STEP_RUN : 1))) sfx.swish(P.run ? 1.5 : 1);      // wading through the wheat (a soft brush of stalks with each step)
   }
 }
 // going in through the open gate: 0 outside, 1 in the gateway. A figure in the archway grows a little smaller and rises
@@ -1805,8 +1808,9 @@ function people() {
   const o = G.obst, p = G.pli;
   if (o && o.mode === 'run') {
     if (o.x <= P.x - 235) { o.x += 2.2; p.x += 2.2; }        // hurrying after him, but still walking; they wait a step behind while words are said
-    if (!o.called && o.x > P.x - 700 && G.state === 'play') { o.called = true; caption(NEIGH_CALL); }
-    if (o.x > P.x - 235 && G.state === 'play' && !saying()) { o.mode = p.mode = 'talk'; P.turn = -1; talk(NEIGH, choose); }
+    // build 506 (owner: "shouldn't christian not respond to pliable and obstinant till they meet?"): the book, {19}: "they overtook
+    // him. Then said Christian, Neighbours, wherefore are ye come?": he speaks only once they have caught him up
+    if (o.x > P.x - 235 && G.state === 'play' && !saying()) { o.mode = p.mode = 'talk'; o.called = true; P.turn = -1; talk([...NEIGH_CALL, ...NEIGH], choose); }
   }
   // Standing (owner: they should stand while talking, not freeze mid-stride): once a walker has come to rest, his painted
   // standing pose dissolves in (st 0 = walking picture, 1 = standing picture); before he walks again it dissolves out.
@@ -2851,11 +2855,11 @@ document.getElementById('on2').onclick = () => SL.on ? go3() : HL.on ? goRoom('d
   for (const [who, txt] of INTRO) vox(who, txt);          // the first words, ready before Begin is pressed
 })();
 </script>
-<script src="slough.js?v=492"></script>
-<script src="hill.js?v=504"></script>
-<script src="rooms.js?v=502"></script>
+<script src="slough.js?v=506"></script>
+<script src="hill.js?v=506"></script>
+<script src="rooms.js?v=506"></script>
 <script src="keepsakes.js?v=505"></script>
-<script src="cross.js?v=492"></script>
+<script src="cross.js?v=506"></script>
 <script src="editor.js?v=485"></script>
 </body>
 </html>

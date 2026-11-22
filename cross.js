@@ -164,7 +164,7 @@ const CR = (() => {
     if (!RUNP.ready) return walk(go ? MAXV * .9 : 0);
     if (go) {
       const st = RUNP_META.vpx * CHR_K * .4; Ch.x += st; Ch.lastV = st; Ch.ranim += .4; Ch.run = Math.min(1, Ch.run + .14); Ch.sd = null;
-      if (Math.floor(Ch.ranim) % 14 === 0 && Math.floor(Ch.ranim - .4) % 14 !== 0 && audio()) groundStep(1.25, 1.3);
+      if (Math.floor(Ch.ranim) % 14 === 0 && Math.floor(Ch.ranim - .4) % 14 !== 0 && audio()) groundStep(typeof STEP_RUN === 'number' ? STEP_RUN : 1.2, 1.3);
       return st;
     }
     Ch.lastV = 0; Ch.run = Math.max(0, Ch.run - .14); if (Ch.sd == null) Ch.sd = QUIET[0];
@@ -676,7 +676,7 @@ const CR = (() => {
     const want = G.state === 'play' && (keys.r || held());
     if (Ch.sd != null) Ch.sd += .4;
     // the hop of a leap
-    if (Ch.hv || Ch.hop > 0) { Ch.hop += Ch.hv; Ch.hv -= .2; if (Ch.hop <= 0) { Ch.hop = 0; Ch.hv = 0; if (audio()) groundStep(1.1, 0); } }
+    if (Ch.hv || Ch.hop > 0) { Ch.hop += Ch.hv; Ch.hv -= .2; if (Ch.hop <= 0) { Ch.hop = 0; Ch.hv = 0; if (audio()) groundStep(1, 0); } }
     dawn += ((ph === 'walk' || ph === 'look' ? .55 * sm(SLOPE0 - 400, CREST0, Ch.x) : .7) - dawn) * .01;
     gold += (goldTo - gold) * .0032; robe = Math.min(1, robe + (robeTo > robe ? .01 : 0)); mark += (markTo - mark) * .03; shine += (shineTo - shine) * .012; gone += (goneTo - gone) * .012;
     // the sun rises slowly, about 14 s (owner, build 455: "sun can rise slower")

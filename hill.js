@@ -1165,7 +1165,7 @@ const HL = (() => {
       // (idea D) as he hurries back, stones come down behind him, where he has just been
       if (hasteSaid && go && --backFallT < 0) { backFallT = 70 + Math.random() * 90; const big = Math.random() < .3 ? 1 : 0;
         PATHR.push({ x: C3.x + 180 + Math.random() * 140, y: -520 - Math.random() * 120, vx: -(.3 + Math.random() * .4), vy: 0, r: big ? 12 + Math.random() * 4 : 3 + Math.random() * 3, big, b: 0, t: 0, s: Math.random() * 6, sh: rockShape() }); }
-      if (go && RUNP.ready) { const st = RUNP_META.vpx * CHR_K; C3.x -= st * .4; C3.ranim += .4; C3.run = clamp(C3.run + .14); C3.sd = QUIET[0]; if (Math.floor(C3.ranim) % 14 === 0 && Math.floor(C3.ranim - .4) % 14 !== 0 && audio()) stepHere(1.25, 1.3); }
+      if (go && RUNP.ready) { const st = RUNP_META.vpx * CHR_K; C3.x -= st * .4; C3.ranim += .4; C3.run = clamp(C3.run + .14); C3.sd = QUIET[0]; if (Math.floor(C3.ranim) % 14 === 0 && Math.floor(C3.ranim - .4) % 14 !== 0 && audio()) stepHere(typeof STEP_RUN === 'number' ? STEP_RUN : 1.2, 1.3); }
       else { C3.run = clamp(C3.run - .1); if (go) walk(-1, MAXV); else if (C3.sd == null) walk(-1, 0); }
       if (want) clearHint('haste'); else if (hintT === 150) hint('haste', 'Hold to hurry back.');
       // (build 405, owner: "when Charles leaves mountain out zooms out again... please re[move] this zoom ... just have him running
@@ -1175,7 +1175,7 @@ const HL = (() => {
       if (C3.x <= PATH0 + 360 && (C3.run > .5 || (C3.x <= PATH0 + 120 && C3.run <= 0 && !saying() && G.cap <= 0))) { C3.mistRun = C3.run > .5; ph = 'mist'; veilTo = 1; G.state = 'auto'; clearHint('haste'); }
     } else if (ph === 'mist') {
       if (farewell) farewell++;
-      if (C3.mistRun && RUNP.ready) { const st = RUNP_META.vpx * CHR_K; C3.x -= st * .4; C3.ranim += .4; C3.run = 1; C3.sd = QUIET[0]; if (Math.floor(C3.ranim) % 14 === 0 && Math.floor(C3.ranim - .4) % 14 !== 0 && audio()) stepHere(1.25, 1.3); }
+      if (C3.mistRun && RUNP.ready) { const st = RUNP_META.vpx * CHR_K; C3.x -= st * .4; C3.ranim += .4; C3.run = 1; C3.sd = QUIET[0]; if (Math.floor(C3.ranim) % 14 === 0 && Math.floor(C3.ranim - .4) % 14 !== 0 && audio()) stepHere(typeof STEP_RUN === 'number' ? STEP_RUN : 1.2, 1.3); }
       if (veil >= 1) { C3.mistRun = false; C3.run = 0; Zw = 0; ph = 'gate'; C3.x = GATE_FROM; C3.face = C3.faceA = 1; C3.sd = QUIET[0]; cam.cx = C3.x + 150; cam.z = 1; cam.wl = 440; dark = 0; hope = 1; evan = null; wise = null; veilTo = 0; G.state = 'play'; hintT = 0; }
     } else if (ph === 'gate') {
       let v = want ? MAXV : 0; if (v && C3.x + v >= GATE_STOP) v = 0;
