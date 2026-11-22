@@ -184,7 +184,7 @@ body.portrait:not(.playing) #rot{display:none}
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
   <button id="autoWalk" aria-label="He walks on by himself"><svg viewBox="0 0 24 24"><path d="M5 6l6 6-6 6M12 6l6 6-6 6"/></svg></button>
-  <div id="build">build 526 · Nov 22 2026</div>
+  <div id="build">build 527 · Nov 22 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -1091,7 +1091,8 @@ const MUSIC_V = 1;
 // I loved amazing grace with lights"): no music under the walking; the book's harp on the title, and a light beat of drums
 // only at three moments, each played once with its fades baked in (cut from the run and pursuit pieces, low-passed so only
 // the drums come through). The whole hymn plays again at the gate as the lights go on ahead.
-const MUS = { book: 'l1-title', run: 'l1-beat-run', mock: 'l1-beat-mock', heart: 'l1-beat-heart', past: 'l1-pursue' };      // build 506 (owner: the run piece "a bit upbeat - should be intense and not too many instruments"): the pursuit piece, a low heartbeat of drums and uneasy strings
+const MUS = { book: 'l1-title', run: 'l1-beat-run', mock: 'l1-beat-mock', heart: 'l1-beat-heart', past: 'l1-run-faint' };      // build 527 (owner, of the pursuit piece: "more melancholy than intense"; then chose, after the manner of Part's Fratres, the take with strings over a faint far heartbeat): grave strings over a deep held note, a faint drum heartbeat far underneath
+                                                                                    // build 506 (owner: the run piece "a bit upbeat - should be intense and not too many instruments"): the pursuit piece, a low heartbeat of drums and uneasy strings
 const MUSV = { book: .3, run: .42, mock: .3, heart: .4, past: .4 };       // each piece's level (the owner's ears decide)
 const MUS_ONCE = { run: 1, mock: 1, heart: 1 }, MUS_XF = 3, MUS_SKIP = {};      // seconds of quiet lead-in skipped the first time a piece plays
 const musBuf = {}, musLoad = {}, musV = {};
