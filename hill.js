@@ -297,7 +297,7 @@ const HL = (() => {
   // on (`MIST0`). Among the rocks and at the gate `mono` is 0: those are unchanged.
   let mono = 1;
   // THE PULL AT THE GATE ({62}): Good-will's reaching picture, the pull, the arrows (`ARW`, world units) and the far castle
-  const CASTLE_X = GATE_X - 900, MT_H = 470, CASTLE_H = 240, CASTLE_Y = -MT_H + CASTLE_H * .3; let CASTLE = null, castLook = 0, gateT = 0, castA = 0, castT = -1;
+  const CASTLE_X = GATE_X - 900, MT_H = 470, CASTLE_H = 240, CASTLE_Y = -MT_H + CASTLE_H * .3; let INHOLE = null, CASTLE = null, castLook = 0, gateT = 0, castA = 0, castT = -1;
   let GWRE = null, gwReach = 0, gwReachTo = 0, pullT = -1, pullX0 = 0, GWFX = null; const GWRE_META = { ax: 62, ground: 299 }, ARW = [];
   const MONO_SAT = .62, MONO_TONE = [226, 202, 158], MIST0 = 620;
   // THE WHEAT IN FRONT, A TRIAL (owner: "Worldly wise comes to Christian in a field no?" ... "we could use grass from level
@@ -1843,8 +1843,15 @@ const HL = (() => {
       // far side. Outside, on the left: the dusk, the lantern on its iron arm, the castle. Inside, on the right: dark until
       // the door opens (`inside dark`, laid after the road), then the light from within, the far light and the narrow way.
       const sx0 = X(GATE_X - GSL), sx1 = X(GATE_X + GSL), syT = Y(-GTOP), syP = Y(-GPH), yG = Y(0);
+      // (build 499, owner: "Why don't we make that inside arced area transparent (not even glowing)"): the inner end of the
+      // passage is an open arch: the land inside, drawn first, shows through it (`inHole`, the arch's outline in the gate's
+      // perspective); the tunnel's dark and its light are laid round it, never over it
+      const inHole = (() => { const hVx = X(GVP), hVy = Y(gvy()), q0 = 1 / (1 + 60 / GPL), vhh = d => GPH - 60 + Math.sqrt(Math.max(0, 3600 - d * d));
+        const p = new Path2D(); p.moveTo(sx1, yG); for (let k = 0; k <= 12; k++) { const d = 60 * Math.sin(k / 12 * Math.PI / 2), q = 1 / (1 + d / GPL); p.lineTo(hVx + (sx1 - hVx) * q, hVy + (Y(-vhh(d)) - hVy) * q); } p.lineTo(hVx + (sx1 - hVx) * q0, hVy + (yG - hVy) * q0); p.closePath(); return p; })();
+      INHOLE = inHole;
+      const inClip = h => { const p = new Path2D(); p.rect(sx1, 0, VW - sx1 + 2, h); p.addPath(inHole); c.clip(p); };
       // inside: the dusk sky laid again (the plain's far layers would show there), the land, and the far light low ahead
-      { c.save(); c.beginPath(); c.rect(sx1, 0, VW - sx1 + 2, yG + 2); c.clip();
+      { c.save(); inClip(yG + 2);
         { const g = c.createLinearGradient(0, 0, 0, hor); g.addColorStop(0, css(top)); g.addColorStop(1, css(low)); c.fillStyle = g; c.fillRect(sx1, 0, VW, hor + 2); }
         { const g = c.createLinearGradient(0, hor, 0, yG); g.addColorStop(0, css([58, 32, 22])); g.addColorStop(1, css([20, 11, 8])); c.fillStyle = g; c.fillRect(sx1, hor, VW, yG - hor + 2); }
         c.restore(); }
@@ -1854,11 +1861,11 @@ const HL = (() => {
       // the land inside, so Good-will and Christian stand dark against it and the passage glows with it
       { const op = smooth(0, 1, door), fx3 = X(GATE_X + 175), fy3 = Y(-215), R3 = 700 * z, g = c.createRadialGradient(fx3, fy3, 0, fx3, fy3, R3);
         g.addColorStop(0, css([255, 244, 214], .3 + .62 * op)); g.addColorStop(.05, css([255, 228, 176], .2 + .55 * op)); g.addColorStop(.16, css([255, 200, 134], .08 + .36 * op)); g.addColorStop(.45, css([220, 130, 76], .03 + .17 * op)); g.addColorStop(1, css([200, 110, 60], 0));
-        c.save(); c.beginPath(); c.rect(sx1, 0, VW - sx1 + 2, yG + 2); c.clip(); c.globalCompositeOperation = 'lighter'; c.fillStyle = g; c.fillRect(fx3 - R3, fy3 - R3, 2 * R3, 2 * R3);
+        c.save(); inClip(yG + 2); c.globalCompositeOperation = 'lighter'; c.fillStyle = g; c.fillRect(fx3 - R3, fy3 - R3, 2 * R3, 2 * R3);
         { const g2 = c.createRadialGradient(fx3, fy3, 0, fx3, fy3, 22 * z); g2.addColorStop(0, css([255, 250, 232], .9 * op)); g2.addColorStop(.6, css([255, 236, 196], .5 * op)); g2.addColorStop(1, css([255, 220, 170], 0)); c.fillStyle = g2; c.fillRect(fx3 - 22 * z, fy3 - 22 * z, 44 * z, 44 * z); }
         c.restore(); }
       // the land inside, laid after the far light so its rises hide the light's foot (it sinks behind them)
-      { c.save(); c.beginPath(); c.rect(sx1, 0, VW - sx1 + 2, yG + 2); c.clip();
+      { c.save(); inClip(yG + 2);
         // (build 460, owner: "the right side of wall doesn't continue the landscape ... continue landscape (but keep it lighter)"):
         // the land inside goes on as the land outside does, in low rises one behind another, paler, in the far light's haze;
         // a few trees on the nearest, and the narrow way running straight toward the light
@@ -1876,7 +1883,7 @@ const HL = (() => {
         // Near: tended fruit trees just behind the path at their real size (more than twice Good-will's height); further: a
         // low garden wall across the picture; far: small trees and hedgerows just above the eye's height; all dark against
         // the light from within, hazier with distance
-        { c.save(); c.beginPath(); c.rect(sx1, 0, VW - sx1 + 2, yG + 2); c.clip();
+        { c.save(); inClip(yG + 2);
           const vw = gvy(), q = d => 1 / (1 + d / GPL), at = (wx, d) => [X(GVP + (wx - GVP) * q(d)), Y(vw * (1 - q(d)))];
           const hz = (col, d) => mix(col, mix(low, [222, 150, 98], .4 * smooth(0, 1, door)), clamp(d / 5000) * .75);
           // (build 470, owner: "i don't like reusing a tree unless its one of those non special one like the ones from level 1"):
@@ -1909,19 +1916,20 @@ const HL = (() => {
       const hole = xs => { const p = new Path2D(); p.moveTo(xs, yG); for (let k = 0; k <= 12; k++) { const d = TD * Math.sin(k / 12 * Math.PI / 2), q = sOf(d); p.lineTo(Px(xs, q), Py(Y(-vh(d)), q)); } p.lineTo(Px(xs, sD), Py(yG, sD)); p.closePath(); return p; };
       const lit = open > .01;
       // the tunnel seen through the cut: its far side wall, the vault curving over, the floor; warm from the inner end when open
+      c.save(); { const p = new Path2D(); p.rect(0, 0, VW, VH); p.addPath(inHole); c.clip(p, 'evenodd'); }
       { const fx0 = Px(sx0, sD), fx1 = Px(sx1, sD), fy = Py(Y(-(GPH - TD)), sD), fb = Py(yG, sD);
         c.fillStyle = css([12, 8, 6]); c.beginPath(); c.moveTo(sx0, syP); for (let k = 0; k <= 12; k++) { const d = TD * Math.sin(k / 12 * Math.PI / 2), q = sOf(d); c.lineTo(Px(sx0, q), Py(Y(-vh(d)), q)); }
         c.lineTo(fx1, fy); for (let k = 12; k >= 0; k--) { const d = TD * Math.sin(k / 12 * Math.PI / 2), q = sOf(d); c.lineTo(Px(sx1, q), Py(Y(-vh(d)), q)); } c.closePath(); c.fill();
         c.fillStyle = css([22, 14, 11]); c.fillRect(fx0, fy, fx1 - fx0, fb - fy + 1);
         c.fillStyle = css([16, 10, 8]); c.beginPath(); c.moveTo(sx0, yG + 1); c.lineTo(fx0, fb); c.lineTo(fx1, fb); c.lineTo(sx1, yG + 1); c.closePath(); c.fill();
         // the inner end's opening, where the door hangs: the light from within shows through it once the door opens
-        c.fillStyle = css(mix([10, 6, 5], [196, 122, 76], .5 * smooth(0, 1, door))); c.fill(hole(sx1));
         // the inner half of the passage takes the light from within whenever the door has been opened (the inside stays lit);
         // the outer half only while the door stands open
         { const op = smooth(0, 1, door), xm = X(GATE_X); if (op > .01) { c.save(); c.globalCompositeOperation = 'lighter';
           let g = c.createLinearGradient(sx1, 0, Px(xm, sD), 0); g.addColorStop(0, css([255, 216, 152], .2 * op)); g.addColorStop(1, css([220, 140, 80], .07 * op)); c.fillStyle = g; c.fillRect(Px(xm, sD), syP, sx1 - Px(xm, sD), yG - syP + 2);
           if (open > .01) { g = c.createLinearGradient(Px(xm, sD), 0, fx0, 0); g.addColorStop(0, css([220, 140, 80], .07 * open)); g.addColorStop(1, css([200, 120, 60], 0)); c.fillStyle = g; c.fillRect(fx0, syP, Px(xm, sD) - fx0, yG - syP + 2); }
           c.restore(); } } }
+      c.restore();
       // THE DOOR (build 464, owner: "put door in middle of wall cavity ... give door some thickness and have it rotate correctly
       // (towards doorman)"): it hangs in the middle of the passage (`xm`), hinged on the passage's far side, a slab `DT` thick;
       // it swings in toward Good-will about its hinge. Seen from outside: its outer face (strips of the photographed oak door, in
@@ -2144,7 +2152,7 @@ const HL = (() => {
         c.strokeStyle = css([120, 72, 48], .3 * (1 - .5 * gateish) + .12); c.lineWidth = 1 * z; c.beginPath(); c.moveTo(sx0, yG); c.lineTo(Px(sx0, 5), Py(yG, 5)); c.moveTo(sx1, yG); c.lineTo(Px(sx1, 5), Py(yG, 5)); c.stroke(); }
       if (op > .01) { c.save(); c.beginPath(); c.rect(sx1, 0, VW - sx1 + 2, VH); c.clip(); const g = c.createLinearGradient(sx1, 0, VW, 0); g.addColorStop(0, css([255, 222, 168], .4 * op)); g.addColorStop(.6, css([255, 214, 150], .22 * op)); g.addColorStop(1, css([255, 214, 150], .1 * op));
         c.globalCompositeOperation = 'lighter'; c.fillStyle = g; c.fillRect(sx1, Y(1), VW - sx1 + 2, 5 * z); c.globalAlpha = .4; c.fillRect(sx1, Y(6), VW - sx1 + 2, 3 * z); c.restore(); }
-      if (dk > .005) { const g = c.createLinearGradient(sx1, 0, sx1 + 140 * z, 0); g.addColorStop(0, css([5, 3, 2], .2 * dk)); g.addColorStop(1, css([5, 3, 2], dk)); c.fillStyle = g; c.fillRect(sx1, 0, VW - sx1 + 2, VH); } }
+      if (dk > .005) { const g = c.createLinearGradient(sx1, 0, sx1 + 140 * z, 0); g.addColorStop(0, css([5, 3, 2], .2 * dk)); g.addColorStop(1, css([5, 3, 2], dk)); c.fillStyle = g; c.fillRect(sx1, 0, VW - sx1 + 2, VH); if (INHOLE) { c.fillStyle = css([5, 3, 2], dk); c.fill(INHOLE); } } }
     // (build 170, owner: "The tree roots need to reach brown ground or they didn't look right": the oak is drawn AFTER the road now,
     // standing at the road's own edge and sliding with it, so its roots go down into the dark earth of the road)
     // THE OAK IN LEAF where the two ways cross (owner, build 158: "the tree at beginning needs redo - the color scheme too -
