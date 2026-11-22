@@ -182,11 +182,11 @@
         g = c.createRadialGradient(u(sx), v(sy - 80), 0, u(sx), v(sy - 80), 240 * S); g.addColorStop(0, css([255, 150, 60], .28 * gw)); g.addColorStop(1, 'rgba(255,150,60,0)');
         c.save(); poly(inn); poly(back); c.clip('evenodd'); c.globalCompositeOperation = 'lighter'; c.fillStyle = g; c.fillRect(u(sx) - 240 * S, v(sy - 80) - 240 * S, 480 * S, 480 * S); c.restore();
         c.restore(); c.globalCompositeOperation = 'source-over';
-        // the chimney breast cut by the section, over the walkers (they pass behind it); a low slot through its foot glows with the
+        // the chimney breast cut by the section (down to the hearth wall's near foot, FB; build 531), over the walkers (they pass behind it); a low slot through its foot glows with the
         // back of the same fire, where from behind the wall the oil goes in
-        c.fillStyle = '#0c0705'; c.fillRect(u(P0), v(EX.y0), (P1 - P0) * S, (FY + 6 - EX.y0) * S);
+        c.fillStyle = '#0c0705'; c.fillRect(u(P0), v(EX.y0), (P1 - P0) * S, (FB - EX.y0) * S);
         g = c.createLinearGradient(0, v(380), 0, v(900)); g.addColorStop(0, 'rgba(12,7,5,1)'); g.addColorStop(1, 'rgba(12,7,5,0)'); c.fillStyle = g; c.fillRect(u(P0), v(380), 50 * S, 520 * S);
-        g = c.createLinearGradient(0, v(FY - 46), 0, v(FY)); g.addColorStop(0, '#1a0904'); g.addColorStop(1, css([170, 66, 24], .9 * gw)); c.fillStyle = g; c.fillRect(u(P0 + 30), v(FY - 46), (P1 - P0) * S, 46 * S);
+        g = c.createLinearGradient(0, v(FY - 46), 0, v(FY)); g.addColorStop(0, '#1a0904'); g.addColorStop(1, css([170, 66, 24], .9 * gw)); c.fillStyle = g; c.fillRect(u(P0 + 30), v(FY - 46), (P1 - P0 - 30) * S, 46 * S);
         // behind the wall: the one pouring oil, and the thin thread of oil into the slot
         // unseen until they have gone round (the book: "it is hard for the tempted to see"): only the fire's flare at each drop shows
         const pa = smooth(0, 1, this.rv);
