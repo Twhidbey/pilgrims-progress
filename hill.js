@@ -1817,12 +1817,14 @@ const HL = (() => {
             c.restore();
             // (build 416) the crag's foot is faded into the summit in the picture itself, so no rock is laid over it
             }
-          // (build 488) until Good-will speaks of it, the dusk sky and the far rises are laid again over the castle and its mountain
-          if (castA < .995) { c.save(); c.globalAlpha = 1 - castA; c.beginPath(); c.rect(0, 0, X(WEND - 30), Y(4)); c.clip();
-            const g = c.createLinearGradient(0, 0, 0, hor), fairK = (1 - dark) * (1 - gateish); g.addColorStop(0, css(top)); g.addColorStop(.58, css(mix(mix(top, low, .62), [240, 208, 186], .5 * fairK))); g.addColorStop(1, css(low)); c.fillStyle = g; c.fillRect(0, 0, VW, hor + 2);
-            c.beginPath(); c.rect(0, Y(-240), xe, Y(4) - Y(-240)); c.clip();
-            rid(-172, 34, .006, 21); c.fillStyle = css([62, 34, 27]); c.fill();
-            rid(-150, 26, .008, 24); c.fillStyle = css([46, 25, 20]); c.fill(); c.restore(); }
+          // (build 489, owner: "We should be able to see foot of mountain but maybe not peak? Don't want it to feel like it can be
+          // invisible"): until Good-will speaks of it, the dusk sky is laid again over the mountain's upper part only, fading out
+          // downward, so its foot stands there all along and its peak and the castle are lost in the dusk
+          if (castA < .995) { c.save(); c.beginPath(); c.rect(0, 0, X(WEND - 30), Y(4)); c.clip();
+            const g = c.createLinearGradient(0, 0, 0, hor), fairK = (1 - dark) * (1 - gateish); g.addColorStop(0, css(top)); g.addColorStop(.58, css(mix(mix(top, low, .62), [240, 208, 186], .5 * fairK))); g.addColorStop(1, css(low)); c.fillStyle = g;
+            const yA = Y(-330), yB = Y(-215), n = 24; c.globalAlpha = 1 - castA; c.fillRect(0, 0, VW, yA);
+            for (let i = 0; i < n; i++) { c.globalAlpha = (1 - castA) * (1 - (i + .5) / n); c.fillRect(0, yA + (yB - yA) * i / n, VW, (yB - yA) / n + .5); }
+            c.restore(); }
           c.save(); c.beginPath(); c.rect(0, Y(-240), xe, Y(4) - Y(-240)); c.clip();
           rid(-150, 34, .02, 22); c.fillStyle = css([36, 20, 16]); c.fill();
           rid(-72, 16, .014, 23); { const g = c.createLinearGradient(0, Y(-80), 0, Y(4)); g.addColorStop(0, css([26, 15, 12])); g.addColorStop(1, css([16, 9, 7])); c.fillStyle = g; } c.fill(); c.restore(); } }
