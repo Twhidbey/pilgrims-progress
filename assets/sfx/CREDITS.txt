@@ -6,7 +6,8 @@ knock-0.mp3 to knock-3.mp3
   Licence: CC BY-SA 3.0 (https://creativecommons.org/licenses/by-sa/3.0/)
   Changes: trimmed, levelled, hiss above 6 kHz softened. These changed files are shared under the same licence.
 
-bog-fall-a.mp3, bog-fall-b.mp3
+bog-fall-a.mp3, bog-fall-b.mp3, bog-wade-0..5.mp3, bog-plop-0..2.mp3, bog-suck-0..2.mp3,
+bog-heave-0.mp3, bog-heave-1.mp3, bog-lift.mp3, bog-bubbles.mp3
   Layered from "25 CC0 mud sfx" and "40 CC0 water / splash / slime SFX", OpenGameArt.org
   https://opengameart.org/content/25-cc0-mud-sfx
   https://opengameart.org/content/40-cc0-water-splash-slime-sfx

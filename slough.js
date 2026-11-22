@@ -428,11 +428,16 @@ const SL = (() => {
   // longer sing the hymn's last phrase; each rings one soft tone of a single rising chord, the gold coming back
   const LAST = [67, 71, 74, 79, 74, 78, 83];
   const sfxS = {
-    wade: () => { hiss(520, .8, .05, .5, 'lowpass'); hiss(1500, 1.5, .012, .3, 'bandpass', .05); },
+    // build 491 (owner: "Can we add sound effects to all of bog"): recorded mud (assets/sfx/bog-*.mp3, CC0, OpenGameArt), each
+    // falling back to the old made sound until its file has loaded. wade = a heavy heave (a turn in the mud, a man flung round),
+    // step = one wading squelch, strain = a smaller heave at the far bank, lift = the long suck as Help draws him out.
+    wade: () => { if (!(typeof sfxPlay === 'function' && sfxPlay('bog-heave', 2, .5))) { hiss(520, .8, .05, .5, 'lowpass'); hiss(1500, 1.5, .012, .3, 'bandpass', .05); } },
+    step: () => { if (!(typeof sfxPlay === 'function' && sfxPlay('bog-wade', 6, .42))) { hiss(520, .8, .05, .5, 'lowpass'); hiss(1500, 1.5, .012, .3, 'bandpass', .05); } },
+    lift: () => { if (typeof sfxPlay === 'function' && audio()) sfxPlay('bog-lift', 1, .8, .15); },
     // build 487: the two plunge into thick mud, Pliable a breath after Christian (mudFall, rendered sample by sample in index.html)
     fall: () => { if (typeof mudFall === 'function') { mudFall(0, 1, 0); mudFall(.2, .8, 1); } else { hiss(380, .7, .16, 1.2, 'lowpass'); hiss(1800, 1, .05, .7); sweep(90, 45, 1.2, .08); } },
     fear: () => { const r = Math.random() * 3 | 0; bowed(38 + r, .022, 3.5); bowed(39 + r, .016, 3.2, .4); hiss(900 + Math.random() * 600, 3, .006, 2.2, 'bandpass', .3); },
-    strain: () => { hiss(300, .8, .07, .7, 'lowpass'); sweep(70, 52, .9, .05); },
+    strain: () => { if (!(typeof sfxPlay === 'function' && sfxPlay('bog-heave', 2, .24))) { hiss(300, .8, .07, .7, 'lowpass'); sweep(70, 52, .9, .05); } },
     grip: () => { bowed(55, .045, 4); bowed(59, .04, 4, .05); bowed(62, .04, 4, .1); note(71, .07, 5); },
   };
 
@@ -546,12 +551,12 @@ const SL = (() => {
     fPush(x, -1.8, 4); fPush(x - 9 - w * .3, 1, 5); fPush(x + 9 + w * .3, 1, 5);
     rings.push({ x, y: 0, t: 0, k: .42 }); churns.push({ x, a: .45 });
     for (let i = 0; i < 2 + (Math.random() * 2 | 0); i++) drop(x + (Math.random() - .5) * w, -1, (Math.random() - .5) * .9, -(.7 + Math.random() * .9), .8 + Math.random() * .6);
-    if (G.t - sndT > 10 && audio()) { sndT = G.t; hiss(240, .7, .045, .3, 'lowpass'); sweep(125, 55, .26, .04); } }
+    if (G.t - sndT > 10 && audio()) { sndT = G.t; if (!(typeof sfxPlay === 'function' && sfxPlay('bog-plop', 3, .4))) { hiss(240, .7, .045, .3, 'lowpass'); sweep(125, 55, .26, .04); } } }
   // (4) an arm comes out: the mud is drawn up after the hand in a string
   function pullOut(o, x, S) { if (G.t - (S.ot ?? -99) < 5) return; S.ot = G.t;
     fPush(x, 1.1, 5); churns.push({ x, a: .3 });
     if (strings.filter(s => s.o === o).length < 3) strings.push({ o, x, tx: x, ty: -1, t0: G.t });
-    if (G.t - sndT > 10 && audio()) { sndT = G.t; hiss(650, 2.2, .018, .22); sweep(55, 120, .18, .025); } }
+    if (G.t - sndT > 10 && audio()) { sndT = G.t; if (!(typeof sfxPlay === 'function' && sfxPlay('bog-suck', 3, .32))) { hiss(650, 2.2, .018, .22); sweep(55, 120, .18, .025); } } }
   function sense() {
     for (const o in RECS) {
       const r = RECS[o], a = r.am = amap(r.im); if (!a.A) continue;
@@ -635,7 +640,7 @@ const SL = (() => {
   function touch(sx, sy) {
     const wx = (sx - VW / 2) / cam.z + cam.cx, wy = (sy - cam.wl) / cam.z;
     if (G.act === 'hand') { const [hx, hy] = handPt(); if (handReady() && Math.hypot(wx - hx, wy - hy) * cam.z < 120) grip(); else G.actT = Math.max(G.actT, 60); return; }
-    if (wy > 0 && wx > WATER_L) { rings.push({ x: wx, y: Math.max(0, wy), t: 0, k: .7 }); sfxS.wade(); }
+    if (wy > 0 && wx > WATER_L) { rings.push({ x: wx, y: Math.max(0, wy), t: 0, k: .7 }); if (!(typeof sfxPlay === 'function' && sfxPlay('bog-plop', 3, .35))) sfxS.wade(); }
   }
   function grip() {
     if (G.act !== 'hand' || !handReady()) return;
@@ -643,7 +648,7 @@ const SL = (() => {
   }
   function liftGo() {
     if (lift) return;
-    lift = { t: 0 }; sfxS.grip(); splash(C2.x + 10, 12, 1.4, true); G.ring = null; next(true); caption(DRAWN);
+    lift = { t: 0 }; sfxS.grip(); sfxS.lift(); splash(C2.x + 10, 12, 1.4, true); G.ring = null; next(true); caption(DRAWN);
   }
 
   // ---------- each tick ----------
@@ -749,7 +754,7 @@ const SL = (() => {
       // THE HEART OF THE LEVEL: he cannot get out alone. Holding does nothing but strain; he slips back; then Help comes.
       slipT++;
       waStep(want ? .2 : .07);
-      if (want) { strain++; C2.anim += .5; if (strain % 40 === 1) sfxS.strain(); }
+      if (want) { strain++; C2.anim += .5; if (strain % 95 === 1) sfxS.strain(); }      // build 491: a heave about every 1.6 s (recorded, so spaced wider than the old hiss)
       C2.x = STUCK_X - 4 * Math.max(0, Math.sin(slipT / 50)) * smooth(60, 160, slipT);
       if (!fearsSaid && quiet(110)) { fearsSaid = true; struggleSaid = true; caption(FEARS); fearT2 = 0; }
       if (fearsSaid && !stillSaid && fearT2 > 300 && quiet(110)) { stillSaid = true; caption(STILL); }      // build 409
@@ -861,7 +866,7 @@ const SL = (() => {
           pli.dy0 = ((pli.sy ?? pli.y) - (PLI_META.ground - 5) * CHR_K) - (M.sink - (M.ground - M.top0) * CHR_K); pli.wk = Math.min(1, pli.wk + .11);
         } else if (pli.dxo > .5) {      // build 121: he is well out in the slough: he struggles back toward his own side first
           pli.dxo = Math.max(0, pli.dxo - 1); pli.wtV = lerp(pli.wtV ?? .2, .14, .05); pli.wt = (pli.wt || 0) + pli.wtV; pong();
-        } else { const p0 = (pli.ct || 0) / last, tgt = p0 > .58 && p0 < .92 ? .24 : .34; pli.cv = lerp(pli.cv ?? .06, tgt, .05); pli.ct = Math.min(last, (pli.ct || 0) + pli.cv); }      // build 385: the climb eases in from the struggle and slows as he stands up out of the mud (owner: "pliable exiting bog looks jerky")      // build 371 (owner: "make pliable get out faster ... struggle once then rise out"): the climb .34 a tick (was .2), the struggle back 1 (was .32)
+        } else { const p0 = (pli.ct || 0) / last, tgt = p0 > .58 && p0 < .92 ? .24 : .34; pli.cv = lerp(pli.cv ?? .06, tgt, .05); const c0 = Math.floor((pli.ct || 0) / 13); pli.ct = Math.min(last, (pli.ct || 0) + pli.cv); if (Math.floor(pli.ct / 13) > c0 && pli.ct < last && audio()) { if (!(typeof sfxPlay === 'function' && sfxPlay(pli.ct < last * .6 ? 'bog-heave' : 'bog-wade', pli.ct < last * .6 ? 2 : 6, pli.ct < last * .6 ? .32 : .26))) sfxS.wade(); } }      // build 385: the climb eases in from the struggle and slows as he stands up out of the mud (owner: "pliable exiting bog looks jerky")      // build 371 (owner: "make pliable get out faster ... struggle once then rise out"): the climb .34 a tick (was .2), the struggle back 1 (was .32)
         // BUILD 140: HIS TURN IN THE MUD IS A HEAVE ROUND, not a slow dissolve between mirrored pictures (there are no
         // frames of him turning). He ducks into the mud with a splash; the picture swaps over a few ticks at the bottom of
         // the duck, under the splash; he comes up facing the other way. tq: 0 to 1 over about half a second.
@@ -944,13 +949,14 @@ const SL = (() => {
       MUFF.frequency.setTargetAtTime(20000, now, .3);
       creakG.gain.setTargetAtTime(ph === 'stuck' && want ? .03 : 0, now, .08); creakO.frequency.setTargetAtTime(48 + 14 * Math.sin(G.t / 13), now, .1);
       if (look.gold > .6 && Math.random() < .03) sfx.chirp();
+      if (typeof sfxLoop === 'function') sfxLoop('bog-bubbles', ['fall', 'pli', 'back', 'backtalk', 'wade', 'stuck', 'help', 'drawn', 'hist'].includes(ph) ? .09 * (1 - .5 * (lift ? clamp(lift.t / 236) : 0)) : 0);      // build 491: slow bubbles under the mire
     }
   }
   // a footfall in the water: rings, a slosh, and the next note of the tune
   function footfall() {
     const f = Math.floor(C2.anim) % CHR_META.frames, down = CHR_META.rest.includes(f);
     if (down && lastFoot !== f) {
-      sfxS.wade();
+      if (C2.x > HOME0 - 10 && C2.x < BANK0 + 10) sfxS.step(); else sfx.step(false, .6);      // build 491: squelch in the mire, a step on land
       if (ph === 'wade' && noteI < WADE_TUNE.length) bowed(WADE_TUNE[noteI++], .05, 1.9);
     }
     lastFoot = down ? f : -1;

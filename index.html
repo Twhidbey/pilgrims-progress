@@ -184,7 +184,7 @@ body.portrait:not(.playing) #rot{display:none}
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
   <button id="autoWalk" aria-label="He walks on by himself"><svg viewBox="0 0 24 24"><path d="M5 6l6 6-6 6M12 6l6 6-6 6"/></svg></button>
-  <div id="build">build 490 · Nov 22 2026</div>
+  <div id="build">build 491 · Nov 22 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -910,7 +910,28 @@ function knockBuf(seed) {
 // each, layered from real CC0 recordings ("25 CC0 mud sfx" and "40 CC0 water / splash / slime SFX", OpenGameArt): a
 // splash slowed and darkened, a deep glop of mud lowered in pitch for the weight, then squelches and glops as the mud
 // closes. Until they load, the code-made sounds above stand in.
-const SFX_V = 490, SFX_FILES = ['knock-0', 'knock-1', 'knock-2', 'knock-3', 'bog-fall-a', 'bog-fall-b'], SFXB = {};
+// build 491 (owner: "Can we add sound effects to all of bog"): the bog's other sounds, cut and layered from the same CC0 packs:
+// bog-wade-0..5 (a wading step's squelch), bog-plop-0..2 (an arm going into the mud), bog-suck-0..2 (an arm pulled out),
+// bog-heave-0/1 (a heavy heave round or a strain), bog-lift (the long suck as Help draws him out), bog-bubbles (a quiet loop of
+// slow bubbles under the mire). sfxPlay(prefix, n, v, when) picks one at random; sfxLoop(name, v) keeps a looping bed at v,
+// and sfxTick() (every level, from update()) fades any loop nobody has asked for in a while, so leaving the level silences it.
+const SFX_V = 491, SFX_FILES = ['knock-0', 'knock-1', 'knock-2', 'knock-3', 'bog-fall-a', 'bog-fall-b', 'bog-lift', 'bog-bubbles',
+  ...[0, 1, 2, 3, 4, 5].map(i => 'bog-wade-' + i), ...[0, 1, 2].map(i => 'bog-plop-' + i), ...[0, 1, 2].map(i => 'bog-suck-' + i), 'bog-heave-0', 'bog-heave-1'], SFXB = {};
+const SFXL = {}, sfxLast = {};
+function sfxPlay(prefix, n, v = 1, when = 0) {
+  if (!audio()) return false;
+  let i = Math.random() * n | 0; if (n > 1 && i === sfxLast[prefix]) i = (i + 1) % n; sfxLast[prefix] = i;
+  const b = SFXB[n > 1 ? prefix + '-' + i : prefix];
+  if (!b) return false;
+  fxPlay(b, when, v * (.85 + Math.random() * .3), .25); return true;
+}
+function sfxLoop(name, v) {
+  if (!AC || !SFXB[name]) return;
+  let L = SFXL[name];
+  if (!L) { const s = AC.createBufferSource(), g = AC.createGain(); s.buffer = SFXB[name]; s.loop = true; g.gain.value = 0; s.connect(g); g.connect(OUT); s.start(); L = SFXL[name] = { g }; }
+  L.t = G.t; L.g.gain.setTargetAtTime(v, AC.currentTime, .8);
+}
+function sfxTick() { if (AC && G.t % 8 === 0) for (const k in SFXL) if (G.t - SFXL[k].t > 40 || G.t < SFXL[k].t) SFXL[k].g.gain.setTargetAtTime(0, AC.currentTime, .4); }
 function sfxLoad() {
   if (!AC || sfxLoad.on) return; sfxLoad.on = true;
   for (const n of SFX_FILES) fetch('assets/sfx/' + n + '.mp3?v=' + SFX_V).then(r => r.arrayBuffer()).then(b => AC.decodeAudioData(b)).then(d => { SFXB[n] = d; }).catch(() => {});
@@ -1652,7 +1673,7 @@ function gateOpened() {
 // ---------- every tick ----------
 function update() {
   G.t++;
-  musTick();
+  musTick(); sfxTick();
   if (G.guard > 0 && --G.guard === 0 && G.state === 'dialog') { dlg.classList.remove('wait'); HEARD.add(G.guardKey); if (!G.act) G.autoT = 30; }      // build 175, owner: quicker hand-offs (was 75: 1.25 s)
   // LESS TAPPING (owner, build 73: "there's a lot of click thru text"): a line moves on by itself a moment after it has
   // been spoken; a tap still moves it on sooner. Lines that ask the child to do something wait as before.
@@ -2787,7 +2808,7 @@ document.getElementById('on2').onclick = () => SL.on ? go3() : HL.on ? goRoom('d
   for (const [who, txt] of INTRO) vox(who, txt);          // the first words, ready before Begin is pressed
 })();
 </script>
-<script src="slough.js?v=487"></script>
+<script src="slough.js?v=491"></script>
 <script src="hill.js?v=490"></script>
 <script src="rooms.js?v=490"></script>
 <script src="keepsakes.js?v=390"></script>
