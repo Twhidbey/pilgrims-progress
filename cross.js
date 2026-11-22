@@ -69,12 +69,17 @@ const CR = (() => {
   // coat with the leaf bands, the hood down, clean-shaven (concept/christian-coat-chosen.jpg); a free clip of him standing,
   // lifting his head to look up and settling back, played back and forth at its own pace
   const COAT = [], COAT_META = { ax: 63, ground: 300, frames: 49 };
+  // the leap for joy and his walk on, in the new coat (free clips, build 543): the leap played once a touch at its own
+  // pace (16 a second); the walk one whole stride that loops, its planted foot sliding 3.48 picture px a frame
+  const LEAPC = [], LEAP_META = { ax: 77, ground: 339, frames: 49 }, CWALK = [], CWALK_META = { ax: 78, ground: 297, frames: 29, vpx: 3.48 };
   let BURDEN = null, RTEX = null, RPAT = null, loaded = false;
   const MLIFT = [], MIM = {};
   function preload() {
     if (loaded) return; loaded = true;
     loadPack('christian-cross', CLIP).catch(() => {});
     loadPack('christian-coat-stand', COAT).catch(() => {});
+    loadPack('christian-coat-leap', LEAPC).catch(() => {});
+    loadPack('christian-coat-walk', CWALK).catch(() => {});
     RUNP.ready || loadPack('christian-run-plain', RUNP).catch(() => {});
     // the memories after the burden falls: pictures the child has already seen
     EVA.ready || loadPack('evangelist', EVA).catch(() => {});
@@ -138,7 +143,7 @@ const CR = (() => {
   const FOOTY = 418, HY = 322;
   function camTick(snap) {
     const near = { cx: Ch.x + lerp(250, 150, closeK), z: lerp(.8, 1.15, closeK) };
-    if (ph === 'cross' || ph === 'after' || ph === 'shine' || ph === 'leaps' || ph === 'end') { near.cx = CROSS_X - 130; near.z = .86; }
+    if (ph === 'cross' || ph === 'after' || ph === 'shine' || ph === 'leaps' || ph === 'end') { near.cx = Math.max(CROSS_X - 130, Ch.x + 170); near.z = .86; }
     const open = ph === 'look', fitT = (FOOTY - 30) / (gh(CROSS_X) + CROSS_H - tombSill() + 40);
     const wide = open ? { cx: (START + CROSS_X) / 2 + 420, z: Math.min(VW / (CROSS_X - START + 900), (FOOTY - 40) / (H_TOP + CROSS_H + 40)) } : { cx: CROSS_X - 60, z: Math.min(VW / 1500, fitT) };
     let tcx = lerp(near.cx, wide.cx, wideK), tz = Math.exp(lerp(Math.log(near.z), Math.log(wide.z), wideK));
@@ -215,7 +220,10 @@ const CR = (() => {
       if (Ch.fade < 1 && STD.length) figure(c, STD[atTime(STD_META, breathT(Ch.sd || 0))], STD_META, x, h, fc, 1 - Ch.fade, tint, rim);
       // the new clothes come at the height of the light that wraps him (robe .5): a clean swap, no double picture
       const coat = robe >= .5 && COAT.ready;
-      if (coat) { const k = (Ch.cc || 0) % 96, cf = clamp(Math.round(k < 48 ? k : 96 - k), 0, COAT.length - 1); figure(c, COAT[cf], COAT_META, x, h, fc, 1, mix(tint, [236, 226, 210], .55), rim); Ch.coatF = cf; }
+      if (coat) { const ct = mix(tint, [236, 226, 210], .55);
+        if (Ch.lp != null && LEAPC.ready) figure(c, LEAPC[clamp(Math.round(Ch.lp), 0, LEAPC.length - 1)], LEAP_META, x, h, fc, 1, ct, rim);
+        else if (Ch.wo != null && CWALK.ready) figure(c, CWALK[Math.floor(Ch.wa) % CWALK.length], CWALK_META, x, h, 1, 1, ct, rim);
+        else { const k = (Ch.cc || 0) % 96, cf = clamp(Math.round(k < 48 ? k : 96 - k), 0, COAT.length - 1); figure(c, COAT[cf], COAT_META, x, h, fc, 1, ct, rim); Ch.coatF = cf; } }
       else figure(c, CLIP[f0], CLIP_META, x, h, fc, Ch.fade < 1 ? Ch.fade : 1, tint, rim);
       if (tearT >= 0) { const E = faceEdge(CLIP[f0]); TEARS.forEach(t0 => {
         // (round 2, owner: "the tears need to be more realistic"): a small clear bead on his cheek, at the very edge of his
@@ -239,7 +247,7 @@ const CR = (() => {
         c.fillStyle = css([255, 248, 232], .95 * a); c.beginPath(); c.arc(tx + .28, by - .42, .3, 0, 6.29); c.fill();
         c.restore();
       }); }
-      if (mark > .01) { let hx = x + 14 * fc, hy = -h - 138;
+      if (mark > .01 && !(coat && (Ch.lp != null || Ch.wo != null))) { let hx = x + 14 * fc, hy = -h - 138;
         if (coat) { const E = faceEdge(COAT[Ch.coatF]), r = Math.round(COAT_META.ground - 141 / CHR_K); if (E && E[r] != null) { hx = x + ((E[r] - COAT_META.ax) * CHR_K - 3) * fc; hy = -h - 141; } } const mr = coat ? 5 : 9, g = c.createRadialGradient(hx, hy, 0, hx, hy, mr); g.addColorStop(0, css([255, 244, 214], (coat ? .6 : .8) * mark)); g.addColorStop(1, 'rgba(255,240,200,0)'); c.fillStyle = g; c.fillRect(hx - 10, hy - 10, 20, 20); }
     } else if (Ch.run > 0 && RUNP.ready) {
       TILT = slopeTilt(x) * Ch.run;
@@ -657,7 +665,7 @@ const CR = (() => {
 
   // ---------- the story ----------
   function reset0() {
-    tumbleT = 0; sepT = -1; memT = -1; memS = []; memUntil = 0; memQ = 0; tearT = -1; looked = false; Object.assign(Ch, { x: START, anim: 12, sd: QUIET[0], cf: -1, hop: 0, hops: 0, lastV: 0, fade: 0, hv: 0, face: 1, tv: null, run: 0, ranim: 0, cc: 0 });
+    tumbleT = 0; sepT = -1; memT = -1; memS = []; memUntil = 0; memQ = 0; tearT = -1; looked = false; Object.assign(Ch, { x: START, anim: 12, sd: QUIET[0], cf: -1, hop: 0, hops: 0, lastV: 0, fade: 0, hv: 0, face: 1, tv: null, run: 0, ranim: 0, cc: 0, lp: null, wo: null, wa: 0 });
     bur = null; dawn = gold = goldTo = sun = robe = robeTo = mark = markTo = rollShow = rollGone = shine = shineTo = gone = goneTo = 0; wideK = 1; wideTo = 1;
     said = {}; hymn = null; silenceT = 0; tombT = 0; leapsLeft = 3; endT = 0; quietPad = 0; t = 0; rollFly = rollAt = null; closeK = topK = topTo = veil = 0; climb = null;
   }
@@ -698,11 +706,13 @@ const CR = (() => {
     if (rollFly) return;
     rollFly = { t: 0 }; note(79, .04, 2.6); note(86, .025, 2.6, .15);
   }
-  // THREE LEAPS FOR JOY: a hop of his standing picture, a rising note each time (G, B, D: no hymn)
+  // THREE LEAPS FOR JOY: a rising note each time (G, B, D: no hymn); in the coat a real leap (the free clip, build 543),
+  // else a hop of his standing picture
   function leap() {
-    if (G.act !== 'leap' || Ch.hv || Ch.hop > 0) return;
-    Ch.hv = 3.4; note([67, 71, 74][3 - leapsLeft], .05, 2.2); leapsLeft--;
-    if (!leapsLeft) { G.ring = null; G.act = null; setTimeout(() => { if (CR.on) next(true); }, 900); }
+    if (G.act !== 'leap' || Ch.hv || Ch.hop > 0 || Ch.lp != null) return;
+    if (LEAPC.ready && robe >= .5) { Ch.lp = 0; Ch.lpLand = false; G.ring = null; } else Ch.hv = 3.4;
+    note([67, 71, 74][3 - leapsLeft], .05, 2.2); leapsLeft--;
+    if (!leapsLeft) { G.ring = null; G.act = null; if (Ch.lp == null) setTimeout(() => { if (CR.on) next(true); }, 900); }
   }
 
   function update() {
@@ -716,6 +726,10 @@ const CR = (() => {
     }
     const want = G.state === 'play' && (keys.r || held());
     if (Ch.sd != null) Ch.sd += .4;
+    // the leap clip: up at its own pace, a soft landing on the grass at frame 26, then on to standing
+    if (Ch.lp != null) { Ch.lp += 16 / 60;
+      if (Ch.lp >= 26 && !Ch.lpLand) { Ch.lpLand = true; if (audio()) groundStep(1, 0); }
+      if (Ch.lp >= LEAPC.length - 1) { Ch.lp = null; Ch.cc = 0; if (!leapsLeft && G.act !== 'leap') setTimeout(() => { if (CR.on) next(true); }, 500); } }
     // the hop of a leap
     if (Ch.hv || Ch.hop > 0) { Ch.hop += Ch.hv; Ch.hv -= .2; if (Ch.hop <= 0) { Ch.hop = 0; Ch.hv = 0; if (audio()) groundStep(1, 0); } }
     dawn += ((ph === 'walk' || ph === 'look' ? .55 * sm(SLOPE0 - 400, CREST0, Ch.x) : .7) - dawn) * .01;
@@ -808,12 +822,18 @@ const CR = (() => {
     } else if (ph === 'end') {
       clipHold(true);
       if (t === 30) { [67, 71, 74, 79].forEach((m, i) => note(m, .04, 3.6, i * .3)); }
-      if (t > 200 && G.state !== 'end') finish();
+      // "and went on" ({94}): in the coat he walks on by himself past the cross, at his walk's own pace (build 543)
+      if (t >= 90 && robe >= .5 && CWALK.ready) { if (Ch.wo == null) { Ch.wo = 0; Ch.wa = 0; }
+        const f0 = Math.floor(Ch.wa) % CWALK.length; Ch.wa += 16 / 60; Ch.x += CWALK_META.vpx * CHR_K * 16 / 60; Ch.wo++;
+        const f1 = Math.floor(Ch.wa) % CWALK.length; if (f1 !== f0 && (f1 === 0 || f1 === 14) && audio()) groundStep(1, .9);
+        if (Ch.wo > 470 && G.state !== 'end') finish(); }
+      else if (t > 200 && G.state !== 'end') finish();
     }
     // a breath of quiet between one speaker and the next in a talk, so each voice is heard as its own person (owner, build 458)
     if (G.state === 'dialog' && G.autoT > 0 && G.guardKey !== pauseKey) { pauseKey = G.guardKey; G.autoT += 45; }
     if (G.act === 'roll' && !rollFly && !G.ring && G.actT >= 90) G.ring = rollPt;
-    if (G.act === 'leap' && !G.ring && G.actT >= 90) G.ring = chrPt;
+    if (G.act === 'leap' && !G.ring && G.actT >= 90 && Ch.lp == null) G.ring = chrPt;
+    if (Ch.lp != null && G.ring === chrPt) G.ring = null;
     camTick(false);
   }
   // the cut over the climb: he keeps climbing while the picture dips softly toward dark (never fully), then he stands
@@ -830,7 +850,7 @@ const CR = (() => {
   // eased at each end, so he stands looking up and never jumps
   function clipHold(still) {
     if (Ch.cf < 52) { Ch.cf += 16 / 60; return; }
-    if (still && Ch.hop > 0) return;
+    if (still && (Ch.hop > 0 || Ch.lp != null)) return;
     Ch.cf += Ch.cfd * (16 / 60) * (.25 + .75 * Math.sin(Math.PI * clamp((Ch.cf - 52) / 18)));
     if (Ch.cf >= 70) { Ch.cf = 70; Ch.cfd = -1; } if (Ch.cf <= 52) { Ch.cf = 52; Ch.cfd = 1; }
   }
@@ -944,5 +964,5 @@ const CR = (() => {
   }
 
   return { on: false, start, update, draw, touch, key, preload, lines: ALL, stop: () => padStop(), _pt: { roll: rollPt, chr: chrPt }, _turning: () => !!Ch.tv,
-    peek: () => ({ ph, t, fly: rollFly ? rollFly.t : -1, x: Math.round(Ch.x), cf: +Ch.cf.toFixed(1), bur: bur ? { st: bur.st, x: Math.round(bur.x), a: +bur.a.toFixed(2), t: bur.t, H: Math.round(bur.H || 0), z: +(bur.z || 0).toFixed(1), r: +(bur.r || 0).toFixed(2), sq: +(bur.sq || 0).toFixed(2) } : null, gold: +gold.toFixed(2), shine: +shine.toFixed(2), leaps: leapsLeft, closeK: +closeK.toFixed(2), topK: +topK.toFixed(2), veil: +veil.toFixed(2), tear: tearT, sep: sepT, mem: memS.length }) };
+    peek: () => ({ ph, t, fly: rollFly ? rollFly.t : -1, x: Math.round(Ch.x), cf: +Ch.cf.toFixed(1), bur: bur ? { st: bur.st, x: Math.round(bur.x), a: +bur.a.toFixed(2), t: bur.t, H: Math.round(bur.H || 0), z: +(bur.z || 0).toFixed(1), r: +(bur.r || 0).toFixed(2), sq: +(bur.sq || 0).toFixed(2) } : null, gold: +gold.toFixed(2), shine: +shine.toFixed(2), leaps: leapsLeft, lp: Ch.lp == null ? -1 : +Ch.lp.toFixed(1), wo: Ch.wo == null ? -1 : Ch.wo, closeK: +closeK.toFixed(2), topK: +topK.toFixed(2), veil: +veil.toFixed(2), tear: tearT, sep: sepT, mem: memS.length }) };
 })();
