@@ -1309,7 +1309,7 @@ const HL = (() => {
       else c.setTransform(S, 0, 0, S, 0, 0); }
     c.globalAlpha = 1; c.globalCompositeOperation = 'source-over'; c.imageSmoothingEnabled = true;
     // the sky: a fair day over the plain, a heavy red-brown dark by the hill, a warmer morning at the gate
-    const top = mix(mix(mix([104, 134, 160], [15, 14, 20], gateish), [32, 32, 44], dark), [22, 11, 8], .75 * gateish), low = mix(mix(mix([255, 228, 168], [50, 40, 40], gateish), [124, 94, 88], dark), [74, 34, 22], .75 * gateish);
+    const top = mix(mix(mix([104, 134, 160], [15, 14, 20], gateish), [32, 32, 44], dark), [40, 22, 17], .75 * gateish), low = mix(mix(mix([255, 228, 168], [50, 40, 40], gateish), [124, 94, 88], dark), [112, 56, 38], .75 * gateish);
     { const g = c.createLinearGradient(0, 0, 0, hor), fairK = (1 - dark) * (1 - gateish); g.addColorStop(0, css(top)); g.addColorStop(.58, css(mix(mix(top, low, .62), [240, 208, 186], .5 * fairK))); g.addColorStop(1, css(low)); c.fillStyle = g; c.fillRect(0, 0, VW, hor + 2); }
     // clouds, pale by day and heavy near the hill
     { const off = ((cx * .05 + G.t * .02) % 800 + 800) % 800;
@@ -1781,23 +1781,23 @@ const HL = (() => {
       // foot lost behind the near dusk rises and a haze, its right edge kept left of the wall's end (seen over the wall it
       // would read as inside); the camera shows it whole as he comes to the gate and glances back at it when the arrows fly
       { const xe = X(WEND + 60); if (xe > 0) {
-          const rid = (y0, amp, f, sd) => { c.beginPath(); c.moveTo(0, Y(4)); for (let sx = 0; sx <= xe + 6; sx += 4) { const wx = cx + (sx - VW / 2) / z; c.lineTo(sx, Y(y0 - amp * nz(wx * f, sd))); } c.lineTo(xe + 6, Y(4)); c.closePath(); };
+          const rid = (y0, amp, f, sd, bh = 0, bw = 1) => { c.beginPath(); c.moveTo(0, Y(4)); for (let sx = 0; sx <= xe + 6; sx += 4) { const wx = cx + (sx - VW / 2) / z, u = (wx - CASTLE_X) / bw; c.lineTo(sx, Y(y0 - amp * nz(wx * f, sd) - bh * Math.exp(-u * u) * (.8 + .4 * nz(wx * .004, sd + 40)) * smooth(0, 1, (WEND - 120 - wx) / 420))); } c.lineTo(xe + 6, Y(4)); c.closePath(); };
           // the far mountain of the plain (Sinai, long behind him) would show pale here when the camera stands back:
           // the dusk sky is laid again over the open land's sky first
           { const g = c.createLinearGradient(0, 0, 0, hor), fairK = (1 - dark) * (1 - gateish); g.addColorStop(0, css(top)); g.addColorStop(.58, css(mix(mix(top, low, .62), [240, 208, 186], .5 * fairK))); g.addColorStop(1, css(low)); c.fillStyle = g; const fe = 160 * z, x0f = Math.max(0, xe - fe); c.fillRect(0, 0, x0f, hor + 2); for (let i = 0; i < 16; i++) { c.globalAlpha = 1 - (i + .5) / 16; c.fillRect(x0f + fe * i / 16, 0, fe / 16 + .5, hor + 2); } c.globalAlpha = 1; }
-          c.save(); c.beginPath(); c.rect(0, Y(-240), xe, Y(4) - Y(-240)); c.clip();
-          rid(-172, 34, .006, 21); c.fillStyle = css([62, 34, 27]); c.fill();
-          rid(-150, 26, .008, 24); c.fillStyle = css([46, 25, 20]); c.fill(); c.restore();
+          c.save(); c.beginPath(); c.rect(0, Y(-420), Math.min(xe, X(WEND - 30)), Y(4) - Y(-420)); c.clip();
+          rid(-172, 34, .006, 21, 130, 850); c.fillStyle = css([80, 45, 35]); c.fill();
+          rid(-150, 26, .008, 24, 90, 650); c.fillStyle = css([62, 35, 27]); c.fill(); c.restore();
           { const [gx2, gy2] = [X(CASTLE_X), Y(-MT_H - 120)], rr = 560 * z, g = c.createRadialGradient(gx2, gy2, 0, gx2, gy2, rr); g.addColorStop(0, css([120, 60, 40], .38)); g.addColorStop(.5, css([96, 48, 34], .14)); g.addColorStop(1, css([80, 40, 30], 0)); c.fillStyle = g; c.fillRect(gx2 - rr, gy2 - rr, 2 * rr, 2 * rr); }
           // THE MOUNTAIN THAT HOLDS IT (owner: "Build a rock mt to hold castle and make castle smaller"): one dark massif of
           // the burning hill's own rock, a broad summit under the castle, steep broken faces falling away on both sides in
           // ledges, its foot lost behind the near rises; the castle's own crag sinks into the summit (`mtTop`, `MT_H`)
-          const mtTop = x => { const d = x - CASTLE_X, a = Math.abs(d), L = d < 0, pl = L ? 205 : 170, cl = L ? 120 : 90, sp = L ? 640 : 420;
+          const mtTop = x => { const d = x - CASTLE_X, a = Math.abs(d), L = d < 0, pl = L ? 205 : 170, cl = L ? 120 : 90, sp = L ? 980 : 620;
             // a broad summit, a sheer cliff below it, then a long broken shoulder down to the plain (the left one longer)
             let h; if (a < pl) h = 1 - .04 * (a / pl) * (a / pl); else if (a < pl + cl) { const t = (a - pl) / cl; h = .96 - .3 * t * t * (3 - 2 * t); } else { const t = Math.min(1, (a - pl - cl) / sp); h = .66 * (1 - Math.pow(t, .9)) * (1 - .25 * t); }
             const st = (a / 70) % 1; h -= (a > pl + cl ? .05 : .015) * st * h;
             return MT_H * h + (nz(x * .02, 31) - .5) * 30 * Math.min(1, h * 3) + (nz(x * .09, 32) - .5) * 9; };
-          const mtPath = () => { c.beginPath(); c.moveTo(X(CASTLE_X - 900), Y(4)); for (let wx = CASTLE_X - 900; wx <= WEND; wx += 4 / z) c.lineTo(X(wx), Y(-Math.max(0, mtTop(wx)))); c.lineTo(X(WEND), Y(4)); c.closePath(); };
+          const mtPath = () => { c.beginPath(); c.moveTo(X(CASTLE_X - 1400), Y(4)); for (let wx = CASTLE_X - 1400; wx <= WEND; wx += 4 / z) c.lineTo(X(wx), Y(-Math.max(0, mtTop(wx)))); c.lineTo(X(WEND), Y(4)); c.closePath(); };
           const drawMt = (front) => { c.save(); c.beginPath(); c.rect(0, 0, X(WEND - 30), Y(2)); c.clip(); mtPath(); c.save(); c.clip();
             { const g = c.createLinearGradient(0, Y(-MT_H - 40), 0, Y(0)); g.addColorStop(0, css([40, 23, 19])); g.addColorStop(.5, css([28, 16, 13])); g.addColorStop(1, css([16, 9, 7])); c.fillStyle = g; c.fillRect(0, 0, VW, VH); }
             // the burning hill's own painted rock laid into it (the inner part of `hill-rock.webp`), so its faces are real rock
@@ -1828,14 +1828,19 @@ const HL = (() => {
           // (build 489, owner: "We should be able to see foot of mountain but maybe not peak? Don't want it to feel like it can be
           // invisible"): until Good-will speaks of it, the dusk sky is laid again over the mountain's upper part only, fading out
           // downward, so its foot stands there all along and its peak and the castle are lost in the dusk
-          if (castA < .995) { c.save(); c.beginPath(); c.rect(0, 0, X(WEND - 30), Y(4)); c.clip();
+          if (castA < .995) { c.save(); c.beginPath(); c.rect(0, 0, X(WEND - 30), Y(4)); c.clip(); mtPath(); if (CASTLE) { const kc = CASTLE_H / CASTLE.height, wc = CASTLE.width * kc; c.rect(X(CASTLE_X - wc / 2), Y(CASTLE_Y - CASTLE_H), wc * z, CASTLE_H * z); } c.clip();
             const g = c.createLinearGradient(0, 0, 0, hor), fairK = (1 - dark) * (1 - gateish); g.addColorStop(0, css(top)); g.addColorStop(.58, css(mix(mix(top, low, .62), [240, 208, 186], .5 * fairK))); g.addColorStop(1, css(low)); c.fillStyle = g;
             const yA = Y(-330), yB = Y(-215), n = 24; c.globalAlpha = 1 - castA; c.fillRect(0, 0, VW, yA);
             for (let i = 0; i < n; i++) { c.globalAlpha = (1 - castA) * (1 - (i + .5) / n); c.fillRect(0, yA + (yB - yA) * i / n, VW, (yB - yA) / n + .5); }
             c.restore(); }
-          c.save(); c.beginPath(); c.rect(0, Y(-240), xe, Y(4) - Y(-240)); c.clip();
-          rid(-150, 34, .02, 22); c.fillStyle = css([36, 20, 16]); c.fill();
-          rid(-72, 16, .014, 23); { const g = c.createLinearGradient(0, Y(-80), 0, Y(4)); g.addColorStop(0, css([26, 15, 12])); g.addColorStop(1, css([16, 9, 7])); c.fillStyle = g; } c.fill(); c.restore(); } }
+          // (build 505, owner: "the castle mountain kinda pokes out of the plain ... work into landscape"): a haze lies
+          // along the mountain's foot, and nearer foothills rise toward it, so it grows out of a range instead of the flat plain
+          c.save(); c.beginPath(); c.rect(0, 0, X(WEND - 30), Y(4)); c.clip();
+          { const g = c.createLinearGradient(0, Y(-330), 0, Y(-150)); g.addColorStop(0, css(low, 0)); g.addColorStop(.55, css(mix(low, [60, 32, 24], .3), .5)); g.addColorStop(1, css(mix(low, [60, 32, 24], .3), .62)); c.fillStyle = g; c.fillRect(0, Y(-330), VW, Y(-150) - Y(-330)); }
+          c.restore();
+          c.save(); c.beginPath(); c.rect(0, Y(-420), xe, Y(4) - Y(-420)); c.clip();
+          rid(-150, 34, .02, 22, 80, 700); c.fillStyle = css([46, 26, 20]); c.fill();
+          rid(-72, 16, .014, 23, 22, 900); { const g = c.createLinearGradient(0, Y(-100), 0, Y(4)); g.addColorStop(0, css([34, 20, 16])); g.addColorStop(1, css([20, 12, 9])); c.fillStyle = g; } c.fill(); c.restore(); } }
       // THE GATE IN SECTION (build 443; owner: "I think gate should run to and from viewer so they can see both sides" ... "i like
       // A and you could make other side dark till he opens it"): the wall runs toward and away from us, so it is seen cut
       // through: one thick slice of stone standing across the way (`GSL` half its thickness, `GTOP` high), its passage
@@ -1942,7 +1947,7 @@ const HL = (() => {
         { const [xo, qo] = pt(TD, -1), [xi, qi] = pt(TD, 1); c.fillStyle = css(mix([40, 27, 19], [86, 58, 38], .5 * flick * (1 - open) + .6 * open)); c.beginPath(); c.moveTo(xo, top(TD, qo)); c.lineTo(xi, top(TD, qi)); c.lineTo(xi, bot(qi)); c.lineTo(xo, bot(qo)); c.closePath(); c.fill();
           c.strokeStyle = css([8, 6, 5], .7); c.lineWidth = .8 * z; c.stroke(); }
         const cols = []; for (let k = 0; k <= N; k++) { const r = TD * (1 - k / N), [x, q] = pt(r, -1); cols.push([x, top(r, q), bot(q)]); }
-        const W = GDOOR ? GDOOR.width : 1, H = GDOOR ? GDOOR.height : 1, dk = .55 + .2 * sa - .08 * shut;
+        const W = GDOOR ? GDOOR.width : 1, H = GDOOR ? GDOOR.height : 1, dk = .38 + .2 * sa - .08 * shut;
         for (let k = 0; k < N; k++) { const [x0, t0, b0] = cols[k], [x1, t1, b1] = cols[k + 1], xl = Math.min(x0, x1), xw = Math.abs(x1 - x0) + .8, t = Math.min(t0, t1), b = Math.max(b0, b1);
           c.save(); c.beginPath(); c.moveTo(x0, t0); c.lineTo(x1, t1); c.lineTo(x1, b1); c.lineTo(x0, b0); c.closePath(); c.clip();
           if (GDOOR) c.drawImage(GDOOR, W * k / N, 0, W / N, H, xl, t, xw, b - t); else { c.fillStyle = css([46, 30, 20]); c.fillRect(xl, t, xw, b - t); }
@@ -1963,7 +1968,7 @@ const HL = (() => {
             for (let yy = b; yy > t - uh; yy -= uh) c.drawImage(GWALL, u, 0, uw, th, x - 2, yy - uh, 2.6, uh); }
           c.globalAlpha = 1; c.globalCompositeOperation = 'source-over'; }
         { const g = c.createLinearGradient(sx0, 0, xF, 0); g.addColorStop(0, css(low, 0)); g.addColorStop(.5, css(mix(low, [24, 15, 11], .5), .25)); g.addColorStop(1, css(mix(low, [24, 15, 11], .3), .55)); c.fillStyle = g; c.fillRect(xF - 2, syT - 20 * z, sx0 - xF + 4, yG - syT + 24 * z); }
-        c.globalCompositeOperation = 'lighter'; { const g = c.createRadialGradient(lnx, lny, 0, lnx, lny, 95 * z); g.addColorStop(0, css([236, 150, 80], .26 * flick * (1 - .4 * open))); g.addColorStop(.5, css([200, 100, 50], .07 * flick)); g.addColorStop(1, css([200, 100, 50], 0)); c.fillStyle = g; c.fillRect(lnx - 95 * z, lny - 95 * z, 190 * z, 190 * z); }
+        c.globalCompositeOperation = 'lighter'; { const g = c.createRadialGradient(lnx, lny, 0, lnx, lny, 160 * z); g.addColorStop(0, css([236, 150, 80], .3 * flick * (1 - .4 * open))); g.addColorStop(.5, css([200, 100, 50], .1 * flick)); g.addColorStop(1, css([200, 100, 50], 0)); c.fillStyle = g; c.fillRect(lnx - 160 * z, lny - 160 * z, 320 * z, 320 * z); }
         c.restore();
         // its top edge, faintly lit by the dusk
         c.strokeStyle = css([120, 70, 52], .25); c.lineWidth = 1 * z; c.beginPath(); ds.forEach((d, k) => { const q = sOf(d); k ? c.lineTo(Px(sx0, q), Py(top(d), q)) : c.moveTo(Px(sx0, q), Py(top(d), q)); }); c.stroke();
@@ -1977,7 +1982,7 @@ const HL = (() => {
         c.fillStyle = css([34, 22, 17]); c.fillRect(sx0 - 2, syT - 12, sx1 - sx0 + 4, yG - syT + 14);
         if (GWALL) { const P = wallPat(c), k = 470 / GWALL.width * z; P.setTransform(new DOMMatrix([k, 0, 0, k, sx0, yG - GWALL.height * k])); c.globalCompositeOperation = 'overlay'; c.globalAlpha = .6; c.fillStyle = P; c.fillRect(sx0 - 2, syT - 12, sx1 - sx0 + 4, yG - syT + 14); c.globalAlpha = 1; }
         c.globalCompositeOperation = 'lighter';
-        { const g = c.createRadialGradient(lnx, lny, 0, lnx, lny, 105 * z); g.addColorStop(0, css([236, 150, 80], .24 * flick * (1 - .4 * open))); g.addColorStop(.5, css([200, 100, 50], .08 * flick)); g.addColorStop(1, css([200, 100, 50], 0)); c.fillStyle = g; c.fillRect(sx0 - 2, syT - 12, sx1 - sx0 + 4, yG - syT + 14); }
+        { const g = c.createRadialGradient(lnx, lny, 0, lnx, lny, 170 * z); g.addColorStop(0, css([236, 150, 80], .28 * flick * (1 - .4 * open))); g.addColorStop(.5, css([200, 100, 50], .11 * flick)); g.addColorStop(1, css([200, 100, 50], 0)); c.fillStyle = g; c.fillRect(sx0 - 2, syT - 12, sx1 - sx0 + 4, yG - syT + 14); }
         if (lit) { const g = c.createLinearGradient(sx1, 0, sx0, 0); g.addColorStop(0, css([255, 214, 150], .1 * open)); g.addColorStop(.4, css([226, 146, 80], .025 * open)); g.addColorStop(1, css([200, 120, 60], 0)); c.fillStyle = g; c.fillRect(sx0 - 2, syT - 12, sx1 - sx0 + 4, yG - syT + 14); }
         c.restore();
         c.lineWidth = 1.2 * z; c.strokeStyle = css([214, 130, 70], .28 * flick); c.beginPath(); c.moveTo(sx0, syT); c.lineTo(sx0, syP); c.stroke();
@@ -2149,7 +2154,7 @@ const HL = (() => {
     gravel();
     // the lantern's and the open door's light lie in flat pools on the road
     if (gateOn) { c.save(); c.globalCompositeOperation = 'lighter';
-      for (const [px, rr, al, col] of [[lnx + 6 * z, 95 * z, .2 * flick * (1 - .4 * open), [255, 170, 90]], [X(GATE_X - GSL) - 40 * z, 150 * z, .34 * open, [255, 208, 134]], [X(GATE_X - GSL) + 10 * z, 70 * z, .4 * open, [255, 236, 190]]]) { if (al < .01) continue; c.save(); c.translate(px, Y(5)); c.scale(1, .09); const g = c.createRadialGradient(0, 0, 0, 0, 0, rr); g.addColorStop(0, css(col, al)); g.addColorStop(1, css(col, 0)); c.fillStyle = g; c.fillRect(-rr, -rr, 2 * rr, 2 * rr); c.restore(); }
+      for (const [px, rr, al, col] of [[lnx + 6 * z, 170 * z, .26 * flick * (1 - .4 * open), [255, 170, 90]], [X(GATE_X - GSL) - 40 * z, 150 * z, .34 * open, [255, 208, 134]], [X(GATE_X - GSL) + 10 * z, 70 * z, .4 * open, [255, 236, 190]]]) { if (al < .01) continue; c.save(); c.translate(px, Y(5)); c.scale(1, .09); const g = c.createRadialGradient(0, 0, 0, 0, 0, rr); g.addColorStop(0, css(col, al)); g.addColorStop(1, css(col, 0)); c.fillStyle = g; c.fillRect(-rr, -rr, 2 * rr, 2 * rr); c.restore(); }
       c.restore();
       // his shadow lies flat on the road, away from the open door
       if (open > .02 && C3.x > GATE_X - 400) { const sx = X(C3.x), len = 200 * z; c.save(); c.translate(sx - len * .5, Y(4)); c.scale(len, 7 * z); const g = c.createRadialGradient(0, 0, 0, 0, 0, 1); g.addColorStop(0, css([2, 2, 4], .95 * open)); g.addColorStop(.55, css([2, 2, 4], .7 * open)); g.addColorStop(1, css([2, 2, 4], 0)); c.fillStyle = g; c.fillRect(-1, -1, 2, 2); c.restore(); }
@@ -2234,7 +2239,9 @@ const HL = (() => {
     // above warms his head and shoulders; Good-will in the doorway is lit from behind, so he stays dark with a lit edge)
     if (!FIRE && gateish > .5) { const op = smooth(0, 1, door); FIRE = { k: smooth(.5, 1, gateish) * (.3 + .7 * op), x: op > .05 ? GATE_X + GSL + 20 : GATE_X - GSL - 24, f: 0, warm: [255, 206, 140], cool: [8, 6, 6] };
       // (build 246, after Rembrandt: once the door opens he is a dark figure with a gold edge on the side that faces the light)
-      if (op > .05) RIM = { k: .95 * op * smooth(.5, 1, gateish), x: GATE_X + 40, gold: true }; }
+      if (op > .05) RIM = { k: .95 * op * smooth(.5, 1, gateish), x: GATE_X + 40, gold: true };
+      // (build 505, owner: the gate "too dark - hard to see things"): before the door opens, a faint warm edge from the lantern
+      else RIM = { k: .6 * smooth(.5, 1, gateish) * smooth(GATE_X - 360, GATE_X - 150, C3.x), x: GATE_X - GSL - 24, gold: true }; }
     const tint = rocky ? mix([38, 35, 39], [30, 27, 32], dark) : mix([74, 68, 60], [52, 47, 52], dark), fl = Math.min(1, flash) * dark, lit = gateish * smooth(GATE_X - 330, GATE_X - 60, C3.x), tintF = mix(mix(mix(tint, [66, 62, 72], gateish), [255, 170, 110], fl * .35), [255, 188, 120], lit * (.24 + .26 * door));
     const tintM0 = mix(tintF, [255, 204, 150], (ph === 'back' ? 0 : mercy) * .42);
     // (build 225, owner: "Instead of shadow can you just make Christian super dark"): at the gate he is a near-black figure
@@ -2343,7 +2350,7 @@ const HL = (() => {
     if (flash > .02) { c.fillStyle = css([255, 176, 120], .07 * Math.min(1, flash)); c.fillRect(0, 0, VW, VH); }
     if (cut > .003) { c.fillStyle = css([10, 9, 12], smooth(0, 1, cut)); c.fillRect(0, 0, VW, VH); }
     if (veil > .003) { c.fillStyle = css(mix([226, 222, 214], [150, 146, 150], dark), smooth(0, 1, veil)); c.fillRect(0, 0, VW, VH); }
-    { const g = c.createRadialGradient(VW * .5, VH * .5, VH * .42, VW * .5, VH * .5, VW * .78); g.addColorStop(0, 'rgba(12,12,18,0)'); g.addColorStop(1, css(mix([12, 12, 18], [16, 7, 5], gateish), .42 + .2 * dark + .22 * gateish)); c.fillStyle = g; c.fillRect(0, 0, VW, VH); }
+    { const g = c.createRadialGradient(VW * .5, VH * .5, VH * .42, VW * .5, VH * .5, VW * .78); g.addColorStop(0, 'rgba(12,12,18,0)'); g.addColorStop(1, css(mix([12, 12, 18], [16, 7, 5], gateish), .42 + .2 * dark + .08 * gateish)); c.fillStyle = g; c.fillRect(0, 0, VW, VH); }
     // touches, the ring that shows where to touch, the things he carries
     for (const tp of G.taps) { tp.t++; c.strokeStyle = css([247, 243, 233], .5 * (1 - tp.t / 40)); c.lineWidth = 1.2; c.beginPath(); c.arc(tp.x, tp.y, 6 + tp.t * .8, 0, 7); c.stroke(); }
     G.taps = G.taps.filter(tp => tp.t < 40);
