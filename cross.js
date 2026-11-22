@@ -17,7 +17,7 @@
 const CR = (() => {
   const SO = 'The Shining Ones', S1 = 'The first Shining One', S3 = 'The third Shining One';
   // ---------- the land (world units: x along the way, h up from the foot of the slope) ----------
-  const START = 480, WALL_END = 860, TOMB_X = 4100, SLOPE0 = 1180, CREST0 = 4080, CROSS_X = 4260, CREST1 = 4480, FALL1 = 5400, H_TOP = 860;
+  const START = 480, WALL_END = 860, TOMB_X = 4890, SLOPE0 = 1180, CREST0 = 4080, CROSS_X = 4260, CREST1 = 4400, FALL1 = 5150, H_TOP = 860;
   // the hill twice as high but the slope about as gentle as before, so it is longer (owner: "Not necessarily twice as steep - I like the old slope (maybe a tad steeper is ok)")
   // the cross and the hill larger beside him (owner: "cross needs to be bigger, relative to Christian, hill too"): he is about 150 units tall
   const CROSS_H = 340, CROSS_BY = CROSS_H * .74;
@@ -35,7 +35,12 @@ const CR = (() => {
   function gh(x) {
     let h = H_TOP * Math.pow(sm(SLOPE0, CREST0, x), 1.15);
     h += 10 * Math.sin(Math.PI * clamp((x - CREST0 + 200) / 600)) * sm(SLOPE0, CREST0, x);
-    h -= (H_TOP - 70) * sm(CREST1, FALL1, x);      // the far side falls to a hollow 70 above the near foot, where the sepulchre is
+    // GOLGOTHA (owner's sketch, build 544): beyond the crown the hill ends in a steep rounded bluff of rock falling to the
+    // plain on the right, the sepulchre cut into its foot; the shoulder stays high a while (rounded), then drops steeply,
+    // then a short toe; a little broken roughness down the face, as rock
+    const fu = clamp((x - CREST1) / (FALL1 - CREST1));
+    h -= H_TOP * Math.pow(sm(CREST1, FALL1, x), 1.45);
+    h += (9 * Math.sin(x * .021 + 2) + 5 * Math.sin(x * .053)) * 4 * fu * (1 - fu);
     h += (3 * Math.sin(x * .011) + 1.6 * Math.sin(x * .031 + 1)) * sm(SLOPE0, SLOPE0 + 300, x) * (1 - sm(CREST0 - 100, CREST0, x));
     return h;
   }
@@ -145,7 +150,7 @@ const CR = (() => {
     const near = { cx: Ch.x + lerp(250, 150, closeK), z: lerp(.8, 1.15, closeK) };
     if (ph === 'cross' || ph === 'after' || ph === 'shine' || ph === 'leaps' || ph === 'end') { near.cx = Math.max(CROSS_X - 130, Ch.x + 170); near.z = .86; }
     const open = ph === 'look', fitT = (FOOTY - 30) / (gh(CROSS_X) + CROSS_H - tombSill() + 40);
-    const wide = open ? { cx: (START + CROSS_X) / 2 + 420, z: Math.min(VW / (CROSS_X - START + 900), (FOOTY - 40) / (H_TOP + CROSS_H + 40)) } : { cx: CROSS_X - 60, z: Math.min(VW / 1500, fitT) };
+    const wide = open ? { cx: (START + CROSS_X) / 2 + 420, z: Math.min(VW / (CROSS_X - START + 900), (FOOTY - 40) / (H_TOP + CROSS_H + 40)) } : { cx: (STOP_X + TOMB_X) / 2 + 40, z: Math.min(VW / (TOMB_X - STOP_X + 760), fitT) };
     let tcx = lerp(near.cx, wide.cx, wideK), tz = Math.exp(lerp(Math.log(near.z), Math.log(wide.z), wideK));
     const wh = open ? 40 : tombSill() - 14, fh = lerp(gh(Ch.x), wh, wideK);
     let twl = FOOTY + fh * tz + (open ? 28 : 0) * wideK;
@@ -551,6 +556,8 @@ const CR = (() => {
     P.push([Math.cos(a) * (60 + (r() - .5) * 10) * (1 + .12 * Math.pow(1 - Math.sin(a), 2)) + 3 * Math.sin(u * 7), -Math.pow(Math.sin(a), .7) * (DOOR_H - 18 + (r() - .5) * 9) * (1 + .05 * Math.sin(u * 5 + 1))]); } return P; })();
   function tomb(c) {
     const x = TOMB_X, sill = tombSill(), col = mix(mix([30, 30, 38], [36, 32, 36], dawn), [44, 34, 30], gold);
+    // kept inside the hill: at the bluff's foot its soft shadow must not spill into the sky (build 544)
+    c.save(); c.beginPath(); c.moveTo(x - 320, 40); for (let xx = x - 320; xx <= x + 320; xx += 6) c.lineTo(xx, -gh(xx)); c.lineTo(x + 320, 40); c.closePath(); c.clip();
     c.save(); c.translate(x, -sill + 6);
     // a soft recess round the mouth, darker than the hill
     c.save(); c.scale(1.3, .85);
@@ -569,6 +576,7 @@ const CR = (() => {
     c.save(); c.beginPath(); c.rect(-200, -300, 400, 300); c.clip();
     c.fillStyle = css(mix(col, [6, 5, 8], .3), .7); c.beginPath(); c.ellipse(rx, -rr + 10, rr * .9, rr, 0, 0, 7); c.fill();
     c.strokeStyle = css(mix(col, [160, 150, 160], .3), .15); c.lineWidth = 1.4; c.beginPath(); c.ellipse(rx, -rr + 10, rr * .9, rr, 0, Math.PI * 1.05, Math.PI * 1.75); c.stroke();
+    c.restore();
     c.restore();
     c.restore();
   }
