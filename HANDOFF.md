@@ -3,6 +3,8 @@
 The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build step; until build 118 it was called `story-lab.html`: read that name below as `index.html`). `style-lab.html` is the art-style test page. `CLAUDE.md` maps the code and records the owner's decisions. Work on **`main`** and push after every change: pushing IS publishing (GitHub Pages, https://twhidbey.github.io/pilgrims-progress/). Bump the build stamp in both pages on every push and tell the owner when it is live (a phone may need `?v=N` on the link). Keep this file and `CLAUDE.md` updated. Public repo: no personal details.
 
 
+**Build 541 (Room 4 chat): the hearth's stones level along their top, less stretched. Nothing spent.**
+
 **Build 540 (Room 4 chat): the hearth wall's top edge mirrors its floor line (same angle, reflected). Nothing spent.**
 
 **Build 535 (Room 4 chat): the hearth wall about six feet long in perspective (it was drawn too long), its stones no longer stretched. Nothing spent.**

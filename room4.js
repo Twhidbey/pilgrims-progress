@@ -88,10 +88,13 @@
   // floor meet, its near corner down where the floor's dark shadow starts): its floor line is FB, the eye low enough for both
   const FB = HOUSE.FY + PV.NEAR;
   const PQ = d => 1 / (1 + d / PV.GP), PP = (X, Y, d) => { const q = PQ(d); return [PV.X + (X - PV.X) * q, PV.Y + (Y - PV.Y) * q]; };
-  const archAt = (d0, d1, spr, rise, th, X = R4D.PART0) => { const m = (d0 + d1) / 2, r = (d1 - d0) / 2, s = Math.sin(th); return PP(X, FB - spr - rise * Math.pow(s, .7), m - r * Math.cos(th)); };
-  const archPts = (d0, d1, spr, rise, X = R4D.PART0) => { const pts = [PP(X, FB, d1)]; for (let k = 0; k <= 24; k++) pts.push(archAt(d0, d1, spr, rise, Math.PI - Math.PI * k / 24, X)); pts.push(PP(X, FB, d0)); return pts; };
+  // the hearth's own drawing (build 541; owner: "the top of fireplace rocks should have basically horiz perspective line (fireplace still seems
+  // stretched)"): across the face the stones' foot follows the floor line and their top lies level, every course between eased from one to the other
+  const PHH = (X, Y, d) => { const q = PQ(d), fy = PV.Y + (FB - PV.Y) * q, Ht = PV.SPR + PV.RISE + PV.T + 18, qm = PQ((PV.a0 + PV.a1) / 2), yt = PV.Y + (FB - PV.Y) * qm - Ht * qm; return [PV.X + (X - PV.X) * q, fy + (Y - FB) * (fy - yt) / Ht]; };
+  const archAt = (d0, d1, spr, rise, th, X = R4D.PART0) => { const m = (d0 + d1) / 2, r = (d1 - d0) / 2, s = Math.sin(th); return PHH(X, FB - spr - rise * Math.pow(s, .7), m - r * Math.cos(th)); };
+  const archPts = (d0, d1, spr, rise, X = R4D.PART0) => { const pts = [PHH(X, FB, d1)]; for (let k = 0; k <= 24; k++) pts.push(archAt(d0, d1, spr, rise, Math.PI - Math.PI * k / 24, X)); pts.push(PHH(X, FB, d0)); return pts; };
   // where the fire is seen on the picture (for the water, the light and the glow)
-  const FXS = () => PP(R4D.PART0 + PV.FIN, FB, PV.FD);
+  const FXS = () => PHH(R4D.PART0 + PV.FIN, FB, PV.FD);
   return {
     // 4 THE FIRE FED WITH OIL (after La Tour's St Joseph the Carpenter): round the back of the wall
     r4: {
@@ -139,12 +142,12 @@
         poly([[P0, CY], [fx0, ft0], [fx0, fy0], [P0, FB]]); c.fillStyle = '#150d09'; c.fill();
         c.save(); poly([[P0, CY], [fx0, ft0], [fx0, fy0], [P0, FB]]); c.clip();
         g = c.createLinearGradient(u(fx0), 0, u(P0), 0); g.addColorStop(0, 'rgba(0,0,0,.45)'); g.addColorStop(1, 'rgba(0,0,0,0)'); c.fillStyle = g; c.fillRect(u(fx0), v(ft0), (P0 - fx0) * S, (FB - ft0) * S);
-        const [hx, hy] = PP(P0, FB - PV.SPR * .6, PV.FD);
+        const [hx, hy] = PHH(P0, FB - PV.SPR * .6, PV.FD);
         g = c.createRadialGradient(u(hx), v(hy), 0, u(hx), v(hy), 520 * S); g.addColorStop(0, css([220, 120, 50], .32 * gw)); g.addColorStop(.5, css([160, 80, 34], .12 * gw)); g.addColorStop(1, 'rgba(160,80,34,0)');
         c.globalCompositeOperation = 'lighter'; c.fillStyle = g; c.fillRect(u(hx) - 520 * S, v(hy) - 520 * S, 1040 * S, 1040 * S); c.globalCompositeOperation = 'source-over';
         c.restore(); c.restore();
         // the firelight lying on the floor at the opening's foot
-        { const [ax, ay] = PP(P0, FB, PV.FD), r = 240 * S; c.save(); c.translate(u(ax), v(ay)); c.scale(1, .08); const fg = c.createRadialGradient(0, 0, 0, 0, 0, r); fg.addColorStop(0, css([240, 130, 55], .45 * gw)); fg.addColorStop(1, 'rgba(240,130,55,0)'); c.globalCompositeOperation = 'lighter'; c.fillStyle = fg; c.fillRect(-r, -r, 2 * r, 2 * r); c.restore(); c.globalCompositeOperation = 'source-over'; }
+        { const [ax, ay] = PHH(P0, FB, PV.FD), r = 240 * S; c.save(); c.translate(u(ax), v(ay)); c.scale(1, .08); const fg = c.createRadialGradient(0, 0, 0, 0, 0, r); fg.addColorStop(0, css([240, 130, 55], .45 * gw)); fg.addColorStop(1, 'rgba(240,130,55,0)'); c.globalCompositeOperation = 'lighter'; c.fillStyle = fg; c.fillRect(-r, -r, 2 * r, 2 * r); c.restore(); c.globalCompositeOperation = 'source-over'; }
         // THE ARCH OF STONES (build 534; owner: "make it out of individual stone pieces"): each stone a shape of its own on the face,
         // every corner carried to the picture through the same perspective (PP), so every joint runs true to the vanishing point.
         // Round the head, wedge-shaped arch stones (voussoirs) with a taller keystone; down each side, jamb blocks of alternating
@@ -159,9 +162,9 @@
         const COURSES = [[0, 108, 1], [108, 216, 0], [216, PV.SPR, 1]];
         for (const [h0, h1, long] of COURSES) {
           const w = long ? T + 22 : T - 6;
-          stones.push([PP(P0, FB - h0, PV.a0), PP(P0, FB - h1, PV.a0), PP(P0, FB - h1, PV.a0 - w), PP(P0, FB - h0, PV.a0 - w)]);
+          stones.push([PHH(P0, FB - h0, PV.a0), PHH(P0, FB - h1, PV.a0), PHH(P0, FB - h1, PV.a0 - w), PHH(P0, FB - h0, PV.a0 - w)]);
           const w2 = long ? T - 6 : T + 22;
-          stones.push([PP(P0, FB - h0, PV.a1), PP(P0, FB - h1, PV.a1), PP(P0, FB - h1, PV.a1 + w2), PP(P0, FB - h0, PV.a1 + w2)]);
+          stones.push([PHH(P0, FB - h0, PV.a1), PHH(P0, FB - h1, PV.a1), PHH(P0, FB - h1, PV.a1 + w2), PHH(P0, FB - h0, PV.a1 + w2)]);
         }
         const rs = rngR4(17);
         stones.forEach(st => { const k = .82 + rs() * .3; poly(st); c.fillStyle = css([43 * k, 30 * k, 21 * k], 1); c.fill(); });
@@ -182,13 +185,13 @@
         // the jamb's inner face meets the arch's underside along a soft line: shade the underside a little darker
         poly(back); c.fillStyle = '#0a0503'; c.fill();
         c.save(); poly(back); c.clip();
-        const [ix0, iy0] = PP(P0 + REV, FB - PV.SPR - PV.RISE, PV.FD);
+        const [ix0, iy0] = PHH(P0 + REV, FB - PV.SPR - PV.RISE, PV.FD);
         g = c.createLinearGradient(0, v(iy0), 0, v(FB)); g.addColorStop(0, '#060302'); g.addColorStop(.55, '#1a0b06'); g.addColorStop(1, css([120, 48, 20], 1)); c.fillStyle = g; poly(back); c.fill();
         // the recess floor: a strip of hearth running back from the near jamb to the far one, glowing with embers
-        const fl0 = PP(P0 + 14, FB, PV.a0 + 14), fl1 = PP(P0 + 14, FB, PV.a1 - 14), fl2 = PP(P0 + REV, FB, PV.a1 - 14), fl3 = PP(P0 + REV, FB, PV.a0 + 14);
+        const fl0 = PHH(P0 + 14, FB, PV.a0 + 14), fl1 = PHH(P0 + 14, FB, PV.a1 - 14), fl2 = PHH(P0 + REV, FB, PV.a1 - 14), fl3 = PHH(P0 + REV, FB, PV.a0 + 14);
         poly([fl0, fl1, fl2, fl3]); c.fillStyle = css([150, 60, 22], .9 * gw); c.fill();
         // the fire stands on that floor: its roots spread along the floor's slope (a shear), at the recess's depth
-        const qm = PQ(PV.FD), [sx, sy] = PP(P0 + REV * .55, FB, PV.FD), sl = (fl1[1] - fl0[1]) / (fl1[0] - fl0[0]);
+        const qm = PQ(PV.FD), [sx, sy] = PHH(P0 + REV * .55, FB, PV.FD), sl = (fl1[1] - fl0[1]) / (fl1[0] - fl0[0]);
         c.save(); c.translate(u(sx), v(sy)); c.transform(qm, qm * sl, 0, qm, 0, 0); c.translate(-u(F), -v(FY));
         g = c.createRadialGradient(u(F), v(FY - 120), 0, u(F), v(FY - 120), 320 * S); g.addColorStop(0, css([255, 150, 60], .55 * gw)); g.addColorStop(1, 'rgba(255,150,60,0)'); c.globalCompositeOperation = 'lighter'; c.fillStyle = g; c.fillRect(u(F - 320), v(FY - 440), 640 * S, 440 * S); c.globalCompositeOperation = 'source-over';
         c.fillStyle = '#120805';

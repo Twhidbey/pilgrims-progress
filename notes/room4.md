@@ -36,6 +36,8 @@ Chat: **PP House · Room 4 Fire**. Read `notes/house.md` first (shared rules, bu
 
 ## Log (newest first)
 
+- Build 541 (owner: "the top of fireplace rocks should have basically horiz perspective line (fireplace still seems stretched)"): the hearth's stones, opening, back arch and fire are placed by their own projection (`PHH`): x as the perspective, the foot of each stone on the floor line, the top of the stones level, every course eased between; the arch is now less tall and thin. The face's outline still uses `PP`. Nothing spent.
+
 - Build 540 (owner: "the top perspective line should be about the same angle but reflected vertically (i think you have it much more steep)"): the hearth wall's top edge no longer follows true perspective (with the eye low it fell far too steeply); it now falls toward the far corner by exactly as much as the foot rises (82 units over the face), the floor line mirrored. Nothing spent.
 
 - Build 535 (owner: "i think you are imagining that wall very long (i'm thinking like 6 feet wide (from corner to corner) so fireplace rocks shouldn't look so 'stretched'"): a man is about 800 units tall here, so the hearth wall runs 800 deep (`PV.D`), about six feet; the eye stands further back (`PV.GP` 800, was 450: the strong close perspective drew the wall out long and stretched the stones along it) and the vanishing point nearer the wall (`PV.X` 900), so the wall is still seen at a steep angle but short (about 420 wide on the picture, was about 670); the two corners of its foot kept where the owner placed them (`PV.Y` = FY - 74). The opening is about three feet wide (`a0` 200, `a1` 600), the reveal shallower (`REV` 90). The man with the bucket at `WK.CX` 960, his water aimed into the narrower opening. Nothing spent.
