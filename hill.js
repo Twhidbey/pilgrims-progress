@@ -33,7 +33,7 @@ const HL = (() => {
   // ---------- the places ----------
   // the gate in section (build 443): the wall's slice is 2 * GSL thick, its passage GPH high, the wall GTOP high
   const GSL = 40, GPH = 166, GTOP = 330, GPL = 380;      // GPL (build 460): the gate's depth scale for its perspective
-  const START = 220, MEET = 900, GATE_X = 9000, GATE_FROM = GATE_X - 480, GATE_STOP = GATE_X - 74;
+  const START = 220, MEET = 900, GATE_X = 9000, GATE_FROM = GATE_X - 480, GATE_STOP = GATE_X - 118;      // (build 468, owner: "make it so christian can't get too close to door")
   const GVP = GATE_X - 150;      // (build 460) the gate's vanishing point, on the land a little left of the wall
   // (build 463, owner: "make vanishing point a little lower so the corner of the base of the wall in the distance hits the
   // line of transition between the two colors of landscape"): its height is worked out so the wall's far foot (1500 units
@@ -896,7 +896,7 @@ const HL = (() => {
   function knock() {
     if (G.act !== 'knock' || knocks >= 3) return;
     knocks++; knockT = 0; G.ring = null; G.actT = 20;
-    if (audio()) { sweep(150, 90, .12, .2); hiss(700, 2, .08, .08, 'bandpass'); sweep(150, 90, .12, .16, true, .16); hiss(700, 2, .06, .08, 'bandpass', .16); }
+    knockWood(0, 1); knockWood(.17, .85);
   }
   function sawHill() { if (G.act !== 'hill') return; hillSeen = true; G.ring = null; note(50, .05, 4); note(57, .04, 4, .1); next(true); }
 
@@ -1178,7 +1178,7 @@ const HL = (() => {
         if (pullT === 50) gwReachTo = 0; if (pullT === 96) next(true);
         // (build 460, owner: "he should go into gate all the way to other side and door clearly shut behind him"): once he is
         // through, the door swings shut behind him with a heavy thud; the light inside stays
-        if (pullT >= 74 && shut < 1) { shut = Math.min(1, shut + 1 / 40); if (shut >= 1 && audio()) { sweep(90, 50, .3, .3); hiss(400, 2, .12, .12, 'lowpass'); sweep(150, 90, .12, .12, true, .05); } } }
+        if (pullT >= 74 && (shut > 0 || C3.x > GATE_X + 50) && shut < 1) { shut = Math.min(1, shut + 1 / 40); if (shut >= 1 && audio()) { sweep(90, 50, .3, .3); hiss(400, 2, .12, .12, 'lowpass'); sweep(150, 90, .12, .12, true, .05); } } }
       else walk(1, 0);
       if (G.act === 'knock' && knocks >= 3 && knockT > 50) { RIGHT.forEach((m, i) => note(m, .04, 3, i * .34)); next(true); }
     } else if (ph === 'open') {
@@ -1823,21 +1823,25 @@ const HL = (() => {
       { c.save(); c.beginPath(); c.rect(sx1, 0, VW - sx1 + 2, yG + 2); c.clip();
         { const g = c.createLinearGradient(0, 0, 0, hor); g.addColorStop(0, css(top)); g.addColorStop(1, css(low)); c.fillStyle = g; c.fillRect(sx1, 0, VW, hor + 2); }
         { const g = c.createLinearGradient(0, hor, 0, yG); g.addColorStop(0, css([58, 32, 22])); g.addColorStop(1, css([20, 11, 8])); c.fillStyle = g; c.fillRect(sx1, hor, VW, yG - hor + 2); }
+        c.restore(); }
+      // the far light inside: it rises over the wall into the open sky (no edge), strong once the door is open
+      { const op = smooth(0, 1, door), fx3 = X(GATE_X + 330), R3 = 640 * z, g = c.createRadialGradient(fx3, hor, 0, fx3, hor, R3);
+        g.addColorStop(0, css([255, 240, 206], .25 + .6 * op)); g.addColorStop(.12, css([255, 210, 146], .1 + .42 * op)); g.addColorStop(.45, css([220, 130, 76], .03 + .2 * op)); g.addColorStop(1, css([200, 110, 60], 0));
+        c.save(); c.beginPath(); c.rect(0, 0, VW, yG + 2); c.clip(); c.globalCompositeOperation = 'lighter'; c.fillStyle = g; c.fillRect(fx3 - R3, hor - R3, 2 * R3, 2 * R3); c.restore(); }
+      // the land inside, laid after the far light so its rises hide the light's foot (it sinks behind them)
+      { c.save(); c.beginPath(); c.rect(sx1, 0, VW - sx1 + 2, yG + 2); c.clip();
         // (build 460, owner: "the right side of wall doesn't continue the landscape ... continue landscape (but keep it lighter)"):
         // the land inside goes on as the land outside does, in low rises one behind another, paler, in the far light's haze;
         // a few trees on the nearest, and the narrow way running straight toward the light
         { const L = [[-150, 26, .004, 81, [104, 64, 46]], [-118, 22, .006, 82, [84, 50, 36]], [-70, 18, .009, 83, [62, 37, 27]], [-30, 12, .013, 84, [44, 26, 19]]];
           for (const [h0, amp, f, sd, col] of L) { c.beginPath(); c.moveTo(sx1, yG + 2); for (let sx = sx1; sx <= VW + 6; sx += 4) { const wx = cx + (sx - VW / 2) / z; c.lineTo(sx, Y(h0 - amp * nz(wx * f, sd) - amp * .3 * nz(wx * f * 4, sd + 5))); } c.lineTo(VW + 6, yG + 2); c.closePath(); c.fillStyle = css(col); c.fill(); }
           c.fillStyle = css([40, 24, 18]); for (const [tx2, th2, tw2] of [[GATE_X + 210, 62, 26], [GATE_X + 236, 44, 18], [GATE_X + 560, 70, 30]]) { const bx = X(tx2), by = Y(-30 - 12 * nz(tx2 * .013, 84)); c.fillRect(bx - 1.2 * z, by - th2 * .45 * z, 2.4 * z, th2 * .45 * z + 4 * z); c.beginPath(); c.ellipse(bx, by - th2 * .62 * z, tw2 * .5 * z, th2 * .42 * z, 0, 0, Math.PI * 2); c.fill(); } }
-        // the air inside, lit low from within: one soft glow lying along the ground (no edges), behind Good-will
-        { const op = smooth(0, 1, door), fx2 = X(GATE_X + 230), R2 = 620 * z; c.beginPath(); c.rect(sx1, 0, VW - sx1 + 2, yG + 2); c.clip(); c.globalCompositeOperation = 'lighter';
-          c.translate(fx2, yG); c.scale(1, .5); const g = c.createRadialGradient(0, 0, 0, 0, 0, R2); g.addColorStop(0, css([255, 220, 160], .75 * op)); g.addColorStop(.3, css([236, 156, 92], .36 * op)); g.addColorStop(.7, css([160, 84, 48], .1 * op)); g.addColorStop(1, css([140, 70, 40], 0));
+        // the air inside, lit from within: one soft glow lying over the far rises where the light sinks behind them (build
+        // 468, owner: "the sun shoudn't be on ground on that side either"), not on the road
+        { const op = smooth(0, 1, door) * .7, fx2 = X(GATE_X + 330), R2 = 620 * z; c.globalCompositeOperation = 'lighter';
+          c.translate(fx2, Y(-150)); c.scale(1, .4); const g = c.createRadialGradient(0, 0, 0, 0, 0, R2); g.addColorStop(0, css([255, 220, 160], .75 * op)); g.addColorStop(.3, css([236, 156, 92], .36 * op)); g.addColorStop(.7, css([160, 84, 48], .1 * op)); g.addColorStop(1, css([140, 70, 40], 0));
           c.fillStyle = g; c.fillRect(-R2, -R2, 2 * R2, 2 * R2); c.globalCompositeOperation = 'source-over'; }
         c.restore(); }
-      // the far light inside: it rises over the wall into the open sky (no edge), strong once the door is open
-      { const op = smooth(0, 1, door), fx3 = X(GATE_X + 330), R3 = 640 * z, g = c.createRadialGradient(fx3, hor, 0, fx3, hor, R3);
-        g.addColorStop(0, css([255, 240, 206], .25 + .6 * op)); g.addColorStop(.12, css([255, 210, 146], .1 + .42 * op)); g.addColorStop(.45, css([220, 130, 76], .03 + .2 * op)); g.addColorStop(1, css([200, 110, 60], 0));
-        c.save(); c.beginPath(); c.rect(0, 0, VW, yG + 2); c.clip(); c.globalCompositeOperation = 'lighter'; c.fillStyle = g; c.fillRect(fx3 - R3, hor - R3, 2 * R3, 2 * R3); c.restore(); }
       // PERSPECTIVE (build 460; owner: "can we make wall extend in to background and come out at us into foreground" ... "the
       // door should be displayed with perspective too, no?"): the gate drawn as an architect's cutaway. One vanishing point
       // on the horizon, fixed on the land a little left of the gate (`GVP`); depth d (units) shrinks toward it by `sOf(d)`.

@@ -184,7 +184,7 @@ body.portrait:not(.playing) #rot{display:none}
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
   <button id="autoWalk" aria-label="He walks on by himself"><svg viewBox="0 0 24 24"><path d="M5 6l6 6-6 6M12 6l6 6-6 6"/></svg></button>
-  <div id="build">build 467 · Nov 21 2026</div>
+  <div id="build">build 468 · Nov 22 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -866,6 +866,14 @@ function hiss(freq, q, v, d, type = 'bandpass', when = 0) {
   s.buffer = NOISE; s.loop = true; f.type = type; f.frequency.value = freq; f.Q.value = q;
   g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t + .008); g.gain.exponentialRampToValueAtTime(.0004, t + d);
   s.connect(f); f.connect(g); g.connect(OUT); s.start(t, Math.random()); s.stop(t + d + .05);
+}
+// A SOLID KNOCK on a heavy oak door (build 468, owner: "make the knocks in the game more solid sounding"): the door's low
+// body (a quick falling thump), the wood's own 'tock', the dull mass of the hand, a tiny knuckle click; `k` scales it.
+// Used by Level 3's wicket-gate and Level 4's door.
+function knockWood(when = 0, k = 1) {
+  if (!audio()) return;
+  sweep(120, 52, .2, .55 * k, true, when); sweep(240, 130, .07, .18 * k, false, when);
+  hiss(850, 2.2, .3 * k, .06, 'bandpass', when); hiss(260, .7, .42 * k, .11, 'lowpass', when); hiss(2600, 1.2, .05 * k, .018, 'bandpass', when);
 }
 const sfx = {
   // a footstep, and the burden with it: a low creak of the pack and a heavier tread. heavy = 1 at the start of the road,
@@ -2624,8 +2632,8 @@ document.getElementById('on2').onclick = () => SL.on ? go3() : HL.on ? goRoom('d
 })();
 </script>
 <script src="slough.js?v=453"></script>
-<script src="hill.js?v=467"></script>
-<script src="rooms.js?v=446"></script>
+<script src="hill.js?v=468"></script>
+<script src="rooms.js?v=468"></script>
 <script src="keepsakes.js?v=390"></script>
 <script src="cross.js?v=466"></script>
 <script src="editor.js?v=422"></script>

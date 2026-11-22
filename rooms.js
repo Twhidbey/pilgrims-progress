@@ -49,7 +49,7 @@ const RM = (() => {
     o.type = type; o.frequency.value = f; b.type = 'lowpass'; b.frequency.value = lp; g.gain.setValueAtTime(0, t0); g.gain.linearRampToValueAtTime(vol, t0 + .08); g.gain.setValueAtTime(vol, t0 + dur * .7); g.gain.exponentialRampToValueAtTime(.0005, t0 + dur);
     o.connect(b); b.connect(g); g.connect(CLEAR); if (ECHO) g.connect(ECHO); o.start(t0); o.stop(t0 + dur + .05);
   }
-  const knockS = () => { noise(160, 2, .22, .5); noise(420, 3, .08, .25); };
+  const knockS = () => { if (typeof knockWood === 'function') { knockWood(0, 1); knockWood(.17, .85); } else { noise(160, 2, .22, .5); noise(420, 3, .08, .25); } };      // (build 468) the solid knock shared with the wicket-gate
   const clash = () => { noise(3200, 6, .35, .16); tone(1567, 'triangle', .03, .5, 0, 5000); tone(2093, 'triangle', .02, .4, .01, 6000); };
   const cough = when => { noise(700, 1.2, .25, .22, when); noise(500, 1.2, .2, .16, when + .3); };
   const creak = () => { tone(70, 'sawtooth', .05, 1.6, 0, 300); noise(900, 8, 1.2, .05); };
