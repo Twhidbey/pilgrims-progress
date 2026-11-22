@@ -10,7 +10,7 @@
   // ROOM 2 DRAWN IN CODE (after build 378; owner: "can you draw the parlour"): Vermeer's one light, a tall window on the left,
   // the pale wall lit nearest it and dimming to the right, the floorboards a nearer, darker layer with the window's light lying flat on them,
   // a low band of pale tiles at the wall's foot (the Milkmaid's Delft tiles, the room's one quoted detail besides the stream from the jug)
-  const R2D = { sweepV: { n: 'room2-sweeper-v', ax: 193.2, g: 375, cols: 8, fr: 108, W: 260, H: 382, s: 1.75, ct: 1, mul: .9, sat: 1, noSh: 1 }, girl: { ax: 154, g: 618, s: 1, ct: 1, mul: 1, sat: 1, noSh: 1 }, tipV: { n: 'room2-girl-tip', ax: 101.2, g: 398.4, cols: 8, fr: 49, W: 199, H: 403, s: 1.57, ct: 1, mul: 1, sat: 1, noSh: 1 }, SPOUT: [289 - 154, 237 - 618], sweeper: { ax: 290, g: 652, s: .92, ct: 1, mul: .96, sat: 1, noSh: 1 }, GX: 1716, SX: 2655, DROP: 46, WIN: [90, 380, 170, 930] };
+  const R2D = { sweepV: { n: 'room2-sweeper-v', ax: 193.2, g: 375, cols: 8, fr: 108, W: 260, H: 382, s: 1.75, ct: 1, mul: .9, sat: 1, noSh: 1 }, girl: { ax: 154, g: 618, s: 1, ct: 1, mul: 1, sat: 1, noSh: 1 }, pourV: { n: 'room2-girl-pour', ax: 118, g: 448, cols: 8, fr: 103, W: 234, H: 453, s: 1.387, ct: 1, mul: 1, sat: 1, noSh: 1 }, LIPX: [203, 203, 202, 202, 202, 202, 202, 204, 206, 208, 211, 213, 215, 216, 217, 219, 220, 221, 222, 223, 223, 223, 221, 219, 216, 212, 210, 206, 205, 205, 207, 211, 215, 217, 220, 222, 223, 225, 226, 227, 228, 229, 230, 230, 231, 230, 229, 229, 228, 227, 224, 221, 218, 214, 211, 209, 208, 207, 206, 205, 204, 204, 204, 205, 205, 208, 211, 214, 216, 218, 220, 221, 222, 224, 225, 226, 227, 228, 228, 228, 228, 228, 228, 227, 226, 225, 223, 220, 217, 213, 211, 209, 208, 207, 206, 205, 203, 203, 203, 203, 203, 203, 203], LIPY: [176, 175, 177, 177, 176, 175, 173, 172, 162, 149, 153, 157, 161, 164, 167, 168, 170, 170, 170, 171, 171, 169, 167, 164, 160, 155, 150, 173, 171, 168, 168, 143, 146, 152, 156, 160, 165, 168, 170, 172, 172, 173, 172, 172, 172, 173, 171, 172, 171, 169, 165, 160, 155, 149, 172, 170, 169, 171, 172, 174, 176, 176, 175, 174, 171, 172, 148, 152, 156, 161, 164, 167, 169, 169, 170, 170, 169, 169, 168, 168, 168, 168, 168, 168, 167, 166, 163, 160, 155, 151, 175, 173, 172, 172, 173, 173, 176, 176, 176, 176, 176, 176, 176], SPOUT: [289 - 154, 237 - 618], sweeper: { ax: 290, g: 652, s: .92, ct: 1, mul: .96, sat: 1, noSh: 1 }, GX: 1716, SX: 2655, DROP: 46, WIN: [90, 380, 170, 930] };
   function bakeR2() {
     const W = 1584, H = 672, cv = document.createElement('canvas'); cv.width = W; cv.height = H; const c = cv.getContext('2d'); c.scale(.5, .5);
     const FY = 1262, r = rngR(11), soft = (draw, w, h) => { const a = document.createElement('canvas'); a.width = w; a.height = h; draw(a.getContext('2d'), w, h); return a; };
@@ -201,7 +201,7 @@
         let g = c.createRadialGradient(700, 720, 300, 700, 720, 3000); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(.6, 'rgba(40,26,8,.04)'); g.addColorStop(1, 'rgba(14,9,3,.2)'); c.fillStyle = g; c.fillRect(EX.x0, EX.y0, EX.x1 - EX.x0, EX.y1 - EX.y0);
       } });
   }
-  if (!PAINTED) { const n = 'room2-drawn'; loads[n] = new Promise(r => setTimeout(r, 0)).then(() => (pics[n] = DRAWN ? bakeR2() : bakeR2s())); pic('room2-girl'); pic('room2-girl-wait'); pic('room2-sweeper'); }
+  if (!PAINTED) { const n = 'room2-drawn'; loads[n] = new Promise(r => setTimeout(r, 0)).then(() => (pics[n] = DRAWN ? bakeR2() : bakeR2s())); pic('room2-girl'); pic('room2-girl-pour'); pic('room2-sweeper'); }
   return {
     // 2 THE DUSTY PARLOUR (after Vermeer's Milkmaid): the broom raises the dust; the water lays it
     r2: {
@@ -215,16 +215,16 @@
         // the drawn room: the girl (stand-in: his wife's picture) holding the jug, which tips as she pours; the sweeper (stand-in: Help) and his broom
         // build 512 (owner: "tone the girl and sweeper darker to match the visitors"): in the night parlour both are held down toward the visitors' dark, quiet tones
         const FY = this.FY + (this.shell ? 0 : 14), DK = this.shell ? { ct: 1, mul: .82, sat: .7 } : null, DROP = this.shell ? R2D.DROP : 0, G2 = R2D.girl, SW2 = DK ? { ...R2D.sweeper, ...DK } : R2D.sweeper, col = this.shell ? [236, 233, 228] : [255, 255, 255];
+        if (this.shell && this.pud > 0) { const p = this.pud, px = R2D.GX + 300, py = FY + DROP + 12, rw = (160 + 1500 * p) * S; c.save(); c.translate(u(px), v(py)); c.scale(1, .05); const wg = c.createRadialGradient(0, 0, 0, 0, 0, rw); wg.addColorStop(0, `rgba(30,18,8,${(.5 * Math.min(1, p * 3)).toFixed(3)})`); wg.addColorStop(.7, `rgba(30,18,8,${(.34 * Math.min(1, p * 3)).toFixed(3)})`); wg.addColorStop(1, 'rgba(30,18,8,0)'); c.fillStyle = wg; c.fillRect(-rw, -rw, 2 * rw, 2 * rw); { const hg = c.createRadialGradient(-rw * .2, -rw * .3, 0, -rw * .2, -rw * .3, rw * .5); hg.addColorStop(0, `rgba(236,232,214,${(.16 * Math.min(1, p * 3)).toFixed(3)})`); hg.addColorStop(1, 'rgba(236,232,214,0)'); c.fillStyle = hg; c.fillRect(-rw, -rw, 2 * rw, 2 * rw); } c.restore(); }
         if (this.shell) for (const [sx, w] of [[820, 150], [1100, 130], [R2D.GX - 10, 140], [R2D.SX - 40, 190]]) { c.save(); c.translate(u(sx), v(FY + DROP + 4)); c.scale(1, .13); const sg = c.createRadialGradient(0, 0, 0, 0, 0, w * S); sg.addColorStop(0, 'rgba(14,8,4,.6)'); sg.addColorStop(.6, 'rgba(14,8,4,.3)'); sg.addColorStop(1, 'rgba(14,8,4,0)'); c.fillStyle = sg; c.fillRect(-w * S, -w * S, 2 * w * S, 2 * w * S); c.restore(); }
         // the girl: cut straight out of the painting (build 382), so she is the painted Milkmaid herself, her jug already in her hands;
         // the water falls from its spout when the child has touched it
-        // she "stood by" (book {74}): in the night parlour she waits holding her jug upright (room2-girl-wait, the free image model from her own
-        // picture), and tips it only when the child has touched it; a free clip of the tipping is to join the two pictures
-        // build 517: the tipping itself is a free clip (49 frames at 16 a second, from the waiting picture to the pouring one), played at its own
-        // pace forward as she tips and backward as she rights the jug (gk 0..1); the two still pictures are held at its ends
-        const TV = R2D.tipV, gk = this.shell ? this.gk || 0 : 1, gn = gk <= 0 && pics['room2-girl-wait'] ? 'room2-girl-wait' : 'room2-girl';
-        if (gk > 0 && gk < 1 && sheetFrames(TV)) fig(c, TV.n + '#' + Math.round(gk * (TV.fr - 1)), TV, R2D.GX, FY + 6 + DROP, -1, 1, 1, col);
-        else if (pics[gk < .5 && pics['room2-girl-wait'] ? 'room2-girl-wait' : gn]) fig(c, gk < .5 && pics['room2-girl-wait'] ? 'room2-girl-wait' : gn, G2, R2D.GX, FY + 6 + DROP, -1, 1, 1, col);
+        // she "stood by" (book {74}): in the bright parlour she is ONE video (Google, build 524, the owner's yes): from a new picture of her holding
+        // a matte earthenware jug upright in both hands she tips it three times, as one sprinkles a floor, and brings it upright again where it
+        // began (103 frames at 12 a second, first frame = last). She waits on frame 0; the touch on the jug plays it through once (gf).
+        const PV = R2D.pourV, gfr = Math.min(PV.fr - 1, Math.floor(this.gf || 0));
+        if (this.shell && sheetFrames(PV)) { fig(c, PV.n + '#' + gfr, PV, R2D.GX, FY + 6 + DROP, -1, 1, 1, col); this.lip = this.lipAt(); }
+        else { if (pics['room2-girl']) fig(c, 'room2-girl', G2, R2D.GX, FY + 6 + DROP, -1, 1, 1, col); this.lip = null; }
         this.spout = [R2D.GX + R2D.SPOUT[0] / K, FY + 6 + DROP + R2D.SPOUT[1] / K];
         // the sweeper: his own picture (build 384, the free FLUX Kontext model from the painted boy: a bearded servant in a linen cap
         // and brown doublet, bent to the broom with both hands on the handle), the broom's head where the dust rises
@@ -234,22 +234,26 @@
         if (sheetFrames(SV)) fig(c, SV.n + '#' + (Math.floor(this.svf || 0) % SV.fr), SV, R2D.SX, FY + (this.shell ? 8 + DROP : 0), -1, 1, 1, col);
         else if (pics['room2-sweeper']) fig(c, 'room2-sweeper', SW2, R2D.SX, FY, -1, 1, 1, col);
       },
-      enter() { pic('room2-sweep'); pic('room2-damsel'); pic('room2-sweeper-v'); pic('room2-girl-tip'); this.gk = 0; this.sf = 0; this.svf = 0; this.sweeps = 0; this.df = 14; this.dt = 14; this.dust = []; this.haze = this.shell ? .12 : .22; this.film = 1; this.wet = []; const r = rngR(5); for (let i = 0; i < (this.shell ? 0 : 70); i++) this.dust.push({ x: 300 + r() * 2800, y: 300 + r() * 900, vx: 0, vy: 0, s: 2 + r() * 5, a: .5 + r() * .5, p: r() * 7 }); },
+      // where the jug's lip is now (plate units), and whether the jug is tipped far enough to let water go: from the video's own frames, so the
+      // water never depends on a picture having been drawn
+      lipAt() { const PV = R2D.pourV, f = Math.min(PV.fr - 1, Math.floor(this.gf || 0)); return [R2D.GX + (R2D.LIPX[f] - 3 - PV.ax) * PV.s / K, HOUSE.FY + 6 + R2D.DROP + (R2D.LIPY[f] + 3 - PV.g) * PV.s / K, R2D.LIPX[f] >= 219]; },
+      enter() { pic('room2-sweep'); pic('room2-damsel'); pic('room2-sweeper-v'); pic('room2-girl-pour'); this.gf = 0; this.pud = 0; this.spl = []; this.sf = 0; this.svf = 0; this.sweeps = 0; this.df = 14; this.dt = 14; this.dust = []; this.haze = this.shell ? .12 : .22; this.film = 1; this.wet = []; const r = rngR(5); for (let i = 0; i < (this.shell ? 0 : 70); i++) this.dust.push({ x: 300 + r() * 2800, y: 300 + r() * 900, vx: 0, vy: 0, s: 2 + r() * 5, a: .5 + r() * .5, p: r() * 7 }); },
       run() { talk([[N, 'He led him into a very large parlour, full of dust, because it was never swept.'], [TIP, 'Touch the broom.', 'broom']], () => { H.ph = 'sweep'; H.t = 0; G.state = 'auto'; }); },
       act(sx, sy) {
         if (G.act === 'broom' && (sx == null || near(sx, sy, 2390, 1180 + (this.shell ? 46 : 0), 160))) next(true);
-        if (G.act === 'jug' && (sx == null || near(sx, sy, 1900, 860 + (this.shell ? 46 : 0), 160))) next(true);
+        if (G.act === 'jug' && (sx == null || near(sx, sy, this.lip ? this.lip[0] - 40 : 1900, this.lip ? this.lip[1] + 30 : 860 + (this.shell ? 46 : 0), 170))) next(true);
       },
       upd() {
         if (G.act === 'broom' && G.actT >= 70 && !G.ring) G.ring = ring(2390, 1200 + (this.shell ? 46 : 0));
-        if (G.act === 'jug' && G.actT >= 70 && !G.ring) G.ring = ring(1900, 840 + (this.shell ? 46 : 0));
+        if (G.act === 'jug' && G.actT >= 70 && !G.ring) G.ring = this.lip ? ring(this.lip[0] - 40, this.lip[1] + 30) : ring(1900, 840 + (this.shell ? 46 : 0));
         // his strokes at the clip's own pace (16 a second); each sweep is whole loops, ending where it began
         if (this.sweeps > 0) { this.sf += 16 / 60; if (this.sf >= this.SW.fr - 1) { this.sf = 0; this.sweeps--; } }
         if (this.sweeps > 0 || (this.svf || 0) % R2D.sweepV.fr > .5) this.svf = (this.svf || 0) + 12 / 60;
         // her jug eases toward its target frame at 12 a second (14 held upright, 0 pouring)
         if (this.df !== this.dt) this.df += Math.sign(this.dt - this.df) * Math.min(12 / 60, Math.abs(this.dt - this.df));
         // the night parlour: her tipping clip at its own pace (48 frames at 16 a second: 180 ticks each way); df follows it, so the water waits for the jug
-        if (this.shell) { const to = this.dt === 0 ? 1 : 0; this.gk = Math.max(0, Math.min(1, (this.gk || 0) + Math.sign(to - (this.gk || 0)) / 180)); this.df = 14 * (1 - this.gk); }
+        if (this.shell && this.gf > 0) { this.gf += 12 / 60; if (this.gf >= R2D.pourV.fr - 1) this.gf = 0; }
+        if (this.shell) this.lip = this.lipAt();
         if (H.ph === 'sweep') {
           if (H.t === 1) this.sweeps = 2;
           if (H.t < 300 && this.sweeps > 0 && H.t % 2 === 0) for (let k = 0; k < 6; k++) this.dust.push({ x: 2390 + (rnd() - .5) * 120, y: 1240 + (this.shell ? 46 : 0) - rnd() * 40, vx: -1 - rnd() * 6, vy: -.6 - rnd() * 2.2, s: 2 + rnd() * 6, a: .6 + rnd() * .4, p: rnd() * 7, life: 0 });
@@ -260,20 +264,26 @@
         }
         if (H.ph === 'sprinkle') {
           // she tips the jug (the clip played backwards), pours while it is tipped, then holds it upright again; then he sweeps the room clean, no dust
-          if (H.t === 1) this.dt = 0;
-          if (H.t === (this.shell ? 340 : 240)) this.dt = 14;
-          if (H.t === (this.shell ? 360 : 260)) this.sweeps = 1;
-          const pour = this.df < 1.5 && H.t < (this.shell ? 340 : 240);
-          if (pour && H.t % 3 === 0) for (let k = 0; k < 2; k++) this.wet.push({ x: (!PAINTED && this.spout ? this.spout[0] : 1944) + rnd() * 14, y: !PAINTED && this.spout ? this.spout[1] : 842, vx: (rnd() - .5) * 1.2, vy: -rnd() * 1.5, l: 0 });
+          if (H.t === 1) { this.dt = 0; if (this.shell) this.gf = .01; }
+          if (H.t === 240) this.dt = 14;
+          if (H.t === (this.shell ? 420 : 260)) this.sweeps = 1;
+          const pour = this.shell ? !!(this.lip && this.lip[2] && this.gf > 0) : this.df < 1.5 && H.t < 240;
+          // the night-or-day drawn parlour: she SPRINKLES: scattered drops leave the jug's lip while it is tipped, fly a little forward and fall to the boards
+          if (pour && this.shell) { if (H.t % 2 === 0) for (let k = 0; k < 2; k++) this.wet.push({ x: this.lip[0] + rnd() * 8, y: this.lip[1] + rnd() * 6, vx: .6 + rnd() * 3.4, vy: -rnd() * 1.6, l: 0, fy: HOUSE.FY + R2D.DROP - 6 + rnd() * 34 }); }
+          else if (pour && H.t % 3 === 0) for (let k = 0; k < 2; k++) this.wet.push({ x: (!PAINTED && this.spout ? this.spout[0] : 1944) + rnd() * 14, y: !PAINTED && this.spout ? this.spout[1] : 842, vx: (rnd() - .5) * 1.2, vy: -rnd() * 1.5, l: 0 });
           if (pour && H.t % 24 === 0) noise(6000, 1, .4, .025);
-          if (!this.shell || H.t > 150) this.haze = Math.max(0, this.haze - .0028); if (H.t > 180) this.film = Math.max(0, this.film - .005);
+          if (!this.shell || this.pud > .02) this.haze = Math.max(0, this.haze - .0028);
           for (const d of this.dust) { d.vy += .03; d.vx *= .96; }
-          if (H.t === (this.shell ? 470 : 330)) talk([[C, 'What does this mean?'], [I, 'This parlour is the heart of a man. The dust is his sin. He who swept first is the Law: it stirs the dust up, but cannot make the heart clean.'], [I, 'She who brought the water is the Gospel. By it the heart is made clean, fit for the King of glory to live in.']], () => goTo('r3'));
+          if (H.t === (this.shell ? 520 : 330)) talk([[C, 'What does this mean?'], [I, 'This parlour is the heart of a man. The dust is his sin. He who swept first is the Law: it stirs the dust up, but cannot make the heart clean.'], [I, 'She who brought the water is the Gospel. By it the heart is made clean, fit for the King of glory to live in.']], () => goTo('r3'));
         }
         for (const d of this.dust) { d.life = (d.life || 0) + 1; d.dr = d.dr || (.95 + rnd() * .04); d.vx *= d.dr; if (d.life > 120) d.a *= .99; if (Math.abs(d.x - 1900) < 160 && d.y < 1000) d.a *= .97; if (d.y < 1000) d.vy = Math.max(d.vy, 0); d.x += d.vx + Math.sin(G.t / 60 + d.p) * .4; d.y += d.vy; d.vx *= .985; d.vy = d.vy * .985 + (H.ph === 'sprinkle' ? .05 : -.004); if (H.ph === 'sprinkle' && d.y > 1240) d.a *= .9; }
         this.dust = this.dust.filter(d => d.a > .03 && d.y < 1400);
         for (const w of this.wet) { w.vy += .35; w.x += w.vx; w.y += w.vy; w.l++; }
-        this.wet = this.wet.filter(w => w.y < 1260);
+        // a drop that reaches the boards makes a tiny splash and wets them: the wet patch spreads from where she stands, and the film of dust clears with it
+        if (this.shell) { for (const w of this.wet) if (w.y >= w.fy) { this.pud = Math.min(1, this.pud + .0034); if (rnd() < .5) this.spl.push({ x: w.x, y: w.fy, vx: (rnd() - .5) * 2.4, vy: -1.2 - rnd() * 1.6, l: 0 }); }
+          this.wet = this.wet.filter(w => w.y < w.fy); for (const p of this.spl) { p.vy += .3; p.x += p.vx; p.y += p.vy; p.l++; } this.spl = this.spl.filter(p => p.l < 16);
+          this.film = Math.max(0, 1 - this.pud * 1.15); }
+        else this.wet = this.wet.filter(w => w.y < 1260);
       },
       people(c) { if (PAINTED) { visitor(c, 'I', 690, 1, 1, 1, -48); visitor(c, 'C', 470, 1, 1, 1, -48); } else { visitor(c, 'C', 820, 1, 1, 1, -R2D.DROP); visitor(c, 'I', 1100, 1, 1, 1, -R2D.DROP); } },
       over(c) {
@@ -286,7 +296,8 @@
         // the night parlour: the dust lies as a pale film on the boards until the water lays it; it flies only from the broom
         if (this.shell && this.film > 0) { const fy = v(HOUSE.FY + 3), g = c.createLinearGradient(0, fy, 0, fy + 70 * S); g.addColorStop(0, css([196, 182, 156], .2 * this.film)); g.addColorStop(1, css([196, 182, 156], 0)); c.fillStyle = g; c.fillRect(u(120), fy, 3170 * S, 70 * S); }
         for (const d of this.dust) { const a = Math.min(1, d.a * (.45 + this.haze)); const r = d.s * S * 3; const g = c.createRadialGradient(u(d.x), v(d.y), 0, u(d.x), v(d.y), r); g.addColorStop(0, css([206, 188, 160], a * .7)); g.addColorStop(1, css([196, 178, 150], 0)); c.fillStyle = g; c.fillRect(u(d.x) - r, v(d.y) - r, 2 * r, 2 * r); }
-        c.fillStyle = 'rgba(200,215,225,.5)'; for (const w of this.wet) c.fillRect(u(w.x), v(w.y), 1.2, 2.4);
+        if (this.shell) { c.fillStyle = 'rgba(236,244,250,.85)'; for (const w of this.wet) c.fillRect(u(w.x), v(w.y), 1.5, 2.8); c.fillStyle = 'rgba(40,58,78,.35)'; for (const w of this.wet) c.fillRect(u(w.x) + 1.5, v(w.y) + 1, .8, 2); c.fillStyle = 'rgba(236,244,250,.7)'; for (const p of this.spl || []) c.fillRect(u(p.x), v(p.y), 1.2, 1.2); }
+        else { c.fillStyle = 'rgba(200,215,225,.5)'; for (const w of this.wet) c.fillRect(u(w.x), v(w.y), 1.2, 2.4); }
       },
     },
   };
