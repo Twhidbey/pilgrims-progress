@@ -526,7 +526,7 @@ const HL = (() => {
   const OAK_META = { w: 1839, h: 1360, ax: 390, ground: 1328, k: .44 };
   // OAK_SIL: how far the painting is pulled toward one dark tone (owner, build 165: "Tone it down to slightly more silhouette"): 0 = the painting, 1 = a flat silhouette
   const OAK_SIL = .8;
-  let OAKP = null, oakLoading = null; const GTREE = {};      // GTREE (build 469): the oak in flat tones for the garden inside the gate
+  let OAKP = null, oakLoading = null; const GTREE = {}, GTI = {};      // GTREE (build 469, 470): Level 1's field trees (GTI) in flat tones for the garden inside the gate
   // A DRAWN TREE ON THE PAINTING'S FORM (owner, build 166: "can you make it back into drawn tree using Google tree as
   // template (remove that branch that sticks way off to the right) and made it slightly bigger so it doesn't interfere
   // with heads of characters"). The painting (its long right limb taken out of the picture file) is only the
@@ -1850,23 +1850,24 @@ const HL = (() => {
         { c.save(); c.beginPath(); c.rect(sx1, 0, VW - sx1 + 2, yG + 2); c.clip();
           const vw = gvy(), q = d => 1 / (1 + d / GPL), at = (wx, d) => [X(GVP + (wx - GVP) * q(d)), Y(vw * (1 - q(d)))];
           const hz = (col, d) => mix(col, mix(low, [222, 150, 98], .4 * smooth(0, 1, door)), clamp(d / 5000) * .75);
-          // each tree is the level's own painted oak (`OAKP.c`), made one flat tone (a tinted copy kept per tone, at half size), at
-          // its real height `H` (units) for its depth, mirrored as `fl` says, so no two read alike; a soft stand-in until it loads
-          const tree = (wx, d, H, sd, col, fl) => { const k = q(d), [bx, by] = at(wx, d), h = H * k * z, cl = hz(col, d);
-            if (OAKP && OAKP.c) { const key = cl.map(Math.round).join(','); GTREE[key] = GTREE[key] || (() => { const W2 = OAK_META.w >> 1, H2 = OAK_META.h >> 1, t = mk(W2, H2), tq = t.getContext('2d'); tq.drawImage(OAKP.c, 0, 0, W2, H2); tq.globalCompositeOperation = 'source-in'; tq.fillStyle = css(cl); tq.fillRect(0, 0, W2, H2); return t; })();
-              const sc = h / OAK_META.ground, w = OAK_META.w * sc, hh = OAK_META.h * sc; c.save(); c.translate(bx, by); if (fl) c.scale(-1, 1); c.drawImage(GTREE[key], -OAK_META.ax * sc, -OAK_META.ground * sc, w, hh); c.restore(); return; }
-            const w = .7 * h, R = rngS(sd); c.fillStyle = css(cl); c.fillRect(bx - .04 * w, by - .45 * h, .08 * w, .45 * h);
-            for (let n = 0; n < 18; n++) { const a = R() * Math.PI * 2, rr = Math.sqrt(R()); c.beginPath(); c.ellipse(bx + Math.cos(a) * rr * .4 * w, by - .66 * h + Math.sin(a) * rr * .25 * h, .12 * w, .1 * w, 0, 0, Math.PI * 2); c.fill(); } };
+          // (build 470, owner: "i don't like reusing a tree unless its one of those non special one like the ones from level 1"):
+          // each tree is one of Level 1's three plain field trees (`tree-a`, `-b`, `-e`; `TREE_META.bx` its trunk), in one flat
+          // tone (`GTREE`, a tinted copy per tree and tone), at its real height `H` for its depth; a soft stand-in until loaded
+          const tree = (wx, d, H, key, col, fl) => { const k = q(d), [bx, by] = at(wx, d), h = H * k * z, cl = hz(col, d), im = GTI[key];
+            if (im === undefined) { GTI[key] = null; loadImg('tree-' + key + '.webp').then(m => { GTI[key] = m || null; }).catch(() => {}); }
+            if (im) { const tk = key + cl.map(Math.round).join(','); GTREE[tk] = GTREE[tk] || (() => { const t = mk(im.width, im.height), tq = t.getContext('2d'); tq.drawImage(im, 0, 0); tq.globalCompositeOperation = 'source-in'; tq.fillStyle = css(cl); tq.fillRect(0, 0, im.width, im.height); return t; })();
+              const sc = h / im.height, w = im.width * sc, bxf = TREE_META[key].bx; c.save(); c.translate(bx, by + 2 * k * z); if (fl) c.scale(-1, 1); c.drawImage(GTREE[tk], -bxf * w, -h, w, h); c.restore(); return; }
+            c.fillStyle = css(cl); c.globalAlpha = .5; c.beginPath(); c.ellipse(bx, by - .62 * h, .32 * h, .36 * h, 0, 0, Math.PI * 2); c.fill(); c.fillRect(bx - .02 * h, by - .4 * h, .04 * h, .4 * h); c.globalAlpha = 1; };
           // far: hedgerow trees along the far rise
-          for (let n = 0; n < 9; n++) { const d = 3600 + 900 * nz(n * 1.7, 85); tree(GATE_X + 120 + n * 900 + 300 * nz(n, 86), d, 360 + 160 * nz(n * 2.3, 87), 400 + n, [70, 42, 30], n % 2); }
+          for (let n = 0; n < 9; n++) { const d = 3600 + 900 * nz(n * 1.7, 85); tree(GATE_X + 120 + n * 900 + 300 * nz(n, 86), d, 360 + 160 * nz(n * 2.3, 87), TREE_KEYS[n % 3], [70, 42, 30], n % 2); }
           // the garden wall across the picture, about 1100 behind the road
           { const d = 1100, k = q(d), y0 = Y(vw * (1 - k)), hW = 125 * k * z; c.fillStyle = css(hz([52, 31, 23], d)); c.fillRect(sx1, y0 - hW, VW - sx1 + 2, hW + 1);
             c.fillStyle = css(hz([66, 40, 28], d)); for (let x = sx1; x < VW; x += 3) { const cap = 2.2 * k * z * (1 + .4 * nz(x * .3 / z, 88)); c.fillRect(x, y0 - hW - cap, 3.2, cap); }
             c.save(); c.globalCompositeOperation = 'lighter'; c.fillStyle = css([255, 200, 140], .18 * smooth(0, 1, door)); c.fillRect(sx1, y0 - hW - 2.2 * k * z, VW - sx1 + 2, 1 * z); c.restore(); }
           // middle: two trees beyond the garden wall
-          tree(GATE_X + 700, 1500, 440, 501, [58, 35, 25], 1); tree(GATE_X + 1500, 1700, 400, 502, [58, 35, 25], 0);
+          tree(GATE_X + 700, 1500, 440, 'b', [58, 35, 25], 1); tree(GATE_X + 1500, 1700, 400, 'e', [58, 35, 25], 0);
           // near: the tended fruit trees just behind the path
-          tree(GATE_X + 470, 150, 540, 601, [30, 18, 14], 0); tree(GATE_X + 1150, 210, 470, 602, [30, 18, 14], 1);
+          tree(GATE_X + 720, 150, 540, 'a', [30, 18, 14], 0); tree(GATE_X + 1500, 210, 470, 'e', [30, 18, 14], 1);
           c.restore(); } }
       // PERSPECTIVE (build 460; owner: "can we make wall extend in to background and come out at us into foreground" ... "the
       // door should be displayed with perspective too, no?"): the gate drawn as an architect's cutaway. One vanishing point
