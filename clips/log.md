@@ -19,3 +19,4 @@
 - 2026-11-20 16:15 UTC christian-oil-look: done on modal, 49 frames, 72 s, about $0.06
 - 2026-11-21 15:22 UTC interp-nod: done on modal, 49 frames, 110 s, about $0.09
 - 2026-11-21 15:23 UTC christian-oil-turn: done on modal, 49 frames, 64 s, about $0.05
+- 2026-11-22 07:00 UTC christian-run-nb: done on modal, 65 frames, 130 s, about $0.10

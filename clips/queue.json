@@ -332,8 +332,11 @@
    },
    "seconds": 4,
    "prompt": "A pilgrim in a worn hooded cloak with a great bundle tied with rope on his back RUNS steadily to the RIGHT, leaning forward a little under the weight, arms swinging, hands empty, nothing at his belt. The camera moves along with him and does NOT zoom: he stays in the centre of the frame at exactly the same size, his whole body always visible; he runs on the spot in the frame with even, regular strides, so the run can loop.",
-   "status": "todo",
-   "via": "modal"
+   "status": "done",
+   "via": "modal",
+   "made": "2026-11-22 07:00 UTC",
+   "frames": 65,
+   "secs": 131
   }
  ]
 }
