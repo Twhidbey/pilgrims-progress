@@ -149,6 +149,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 **Build 496: THE LIGHT AT THE GATE GIVEN ITS SOURCE (owner: "the light around gate door isn't justified", then "What light is there inside - it's just a wall", chose 1: the far light raised behind the gate).** (1) **The far light he has followed since Level 1 stands just behind the gate** once the door opens (`fx3` = `X(GATE_X + 175)`, `fy3` = `Y(-215)`, a little over the land inside, a small bright core in a wide warm glow), so Good-will and Christian stand dark against it and the light through the passage has a source. (2) **The lantern lights only its own patch:** its halo in the air, its glow on the slice and the outer face, and its pool on the road about half the size and a little fainter. (3) **The light out of the passage is short:** the stream into the air 300 units (was 620) and fainter, the pool on the road just outside the passage (150 units, was 300 out to the left). Nothing spent.
 ## START HERE (rewritten at build 140, Nov 16 2026)
 
+**Build 497 (Level 1 chat): after the city gate is pushed open, Christian walks in by himself with Pliable. Nothing spent.**
+
 **Build 495 (Level 1 chat): Obstinate stays standing until he has said his last line, then turns for home. Nothing spent.**
 
 **Build 494 (Level 1 chat): the run goes on past the last houses into fields at the town's edge; he stops on a road through wheat with no house in view; Obstinate and Pliable catch him there; the city gate stands at the fields' edge (everything after the stop 1400 further). Nothing spent.**

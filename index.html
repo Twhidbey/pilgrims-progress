@@ -184,7 +184,7 @@ body.portrait:not(.playing) #rot{display:none}
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
   <button id="autoWalk" aria-label="He walks on by himself"><svg viewBox="0 0 24 24"><path d="M5 6l6 6-6 6M12 6l6 6-6 6"/></svg></button>
-  <div id="build">build 496 · Nov 22 2026</div>
+  <div id="build">build 497 · Nov 22 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -1737,6 +1737,7 @@ function update() {
   let dir = 0;
   if (G.state === 'auto' && G.auto) dir = G.auto.dir;
   else if (G.state === 'play' && G.autoRun && P.x < G.autoRun) dir = 1;
+  else if (G.state === 'play' && G.through && !G.leaving && G.t > (G.throughT || 0) + 60) dir = 1;      // build 497 (owner: "After you push city gate open can Christian automatically go in"): a breath after it opens he walks in by himself, Pliable after him
   else if (G.state === 'play' && (keys.r || held())) dir = G.homeTo ? -1 : G.evanDone ? 1 : -1;      // out to the field first (left), then on toward the light
   else if (G.act === 'walkon' && G.state === 'dialog' && P.turn !== 1 && (keys.push || held())) dir = 1;   // walking on while they call
   // STOP POINTS FOR THE WORDS (owner, build 106: "need narration to not skip or start playing when character is past what
@@ -1789,7 +1790,7 @@ function story() {
   if (G.fam === 2 && !G.watched && P.x > WATCH_X) { G.watched = true; caption(WATCH); G.watch = 520; }      // the neighbours come out to see him run
   if (G.runZone && P.x > RUN_END) { G.runZone = false; caption(FETCH); }      // by now he is a good way off, and walks
   if (!G.neigh && P.x > NEIGH_X && OBS.ready && PLI.ready) { G.neigh = true; G.obst = { x: G.cam - 80, mode: 'run' }; G.pli = { x: G.cam - 150, mode: 'run' }; }
-  if (!G.gateSeen && P.x > GATE_STOP) { G.gateSeen = true; talk(GATEWORDS, () => { G.through = true; G.idle = 0; caption(END); }); }
+  if (!G.gateSeen && P.x > GATE_STOP) { G.gateSeen = true; talk(GATEWORDS, () => { G.through = true; G.throughT = G.t; G.idle = 0; caption(END); }); }
   if (G.through && !G.leaving && P.x >= DOOR1 + 89) { G.state = 'auto'; G.leaving = true; clearHint('walk'); }      // through the gate (the child walked him there): Pliable follows, then the end
   if (G.homeTo && P.x <= G.homeTo.to + 1) { const h = G.homeTo; G.homeTo = null; clearHint('walk'); h.then(); return; }
   if (G.homeTo && P.stand && G.idle === 150) hint('walk', 'Hold to walk back toward home.');
