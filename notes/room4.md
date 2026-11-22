@@ -36,6 +36,8 @@ Chat: **PP House · Room 4 Fire**. Read `notes/house.md` first (shared rules, bu
 
 ## Log (newest first)
 
+- Build 533 (owner: "the top no longer needs angle"): the hearth wall's top edge is level again, along the ceiling line (`ft0` = `CY`); only its foot runs toward the vanishing point. Nothing spent.
+
 - Build 531 (owner: "the black form the wall itself right so it should come down to near corner of fireplace face wall corner"): the cut chimney breast (the black column) now comes down to `FB`, the hearth wall's near foot, so the cut and the face meet at one corner; the glowing slot where the oil goes in ends flush with the column (it stuck out past it). Nothing spent.
 
 - Build 530 (owner: "the arch is messed up - think perspective"): the opening was a flat outline on the face. Now it has depth (`PV.REV` 130 into the breast): its back edge is the same arch further in (`archPts(..., X)` takes the plane it lies in), so between the two the far jamb's inner face and the arch's underside show, as they would from where we look, in sooty stone lit by the fire (the near jamb's inner face is turned away, unseen); through the back edge the dark recess; its floor is a strip running back toward the vanishing point, and the logs, embers and fire lie along it (the fire's roots sheared to the floor's slope, `sl`). Nothing spent.
