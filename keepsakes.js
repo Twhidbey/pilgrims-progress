@@ -99,6 +99,9 @@ body.playing #pause{display:block}
 #ksroll .words{position:absolute;left:11%;right:11%;top:30%;text-align:center;font-family:'UnifrakturCook','Old English Text MT',Georgia,serif;font-weight:700;color:#24160b;font-size:calc(var(--H) * .068);line-height:1.32;letter-spacing:.01em;text-shadow:0 0 .6px rgba(35,21,11,.55),0 0 2.5px rgba(60,35,12,.22)}
 #ksroll .flour{position:absolute;left:4%;width:92%;top:22%;height:46%;pointer-events:none;overflow:visible}
 #ksroll .ref{position:absolute;left:0;right:0;top:67%;text-align:center;font-family:'IM Fell English',Georgia,serif;font-style:italic;color:#46301c;font-size:calc(var(--H) * .031)}
+/* the Cross's roll (build 483): "a roll with a seal upon it", to be given in at the Celestial Gate ({94}); Evangelist's stays plain */
+#ksroll .words.s{top:16%}
+#ksroll:not(.sealed) .words.s,#ksroll:not(.sealed) .sealw,#ksroll.sealed .words:not(.s),#ksroll.sealed .ref,#ksroll.sealed .flour{display:none}
 #ksroll .sealw{position:absolute;left:50%;bottom:4%;width:40%;aspect-ratio:1/1.25;transform:translateX(-50%) rotate(-7deg)}
 #ksroll .tails{position:absolute;left:0;top:0;width:100%;height:100%}
 #ksroll .seal{position:absolute;left:0;top:0;width:100%;filter:drop-shadow(0 4px 4px rgba(50,8,4,.45)) drop-shadow(0 1px 1px rgba(50,8,4,.5))}
@@ -380,7 +383,9 @@ body.playing #pause{display:block}
     <div class="leaf"><div class="face front"></div><div class="face back"></div></div><div class="spine"></div><div class="ribbon"></div><div class="page scratch"></div></div></div>
     <button class="ksarrow l" aria-label="Turn back">‹</button><button class="ksarrow r" aria-label="Turn on">›</button><button class="ksx" aria-label="Close">×</button></div>`);
   const roll = mkEl(`<div id="ksroll" class="kscover"><div class="sheetw"><div class="curl"></div><div class="clip"><div class="body">
-    ${FLOUR}<div class="words"><span style="color:#86190f;font-size:1.75em;line-height:.8;vertical-align:-.13em">F</span>lee from the wrath to come.</div><div class="ref">Matt. iii. 7.</div></div></div><div class="curl b"></div></div>
+    ${FLOUR}<div class="words"><span style="color:#86190f;font-size:1.75em;line-height:.8;vertical-align:-.13em">F</span>lee from the wrath to come.</div><div class="ref">Matt. iii. 7.</div>
+    <div class="words s"><span style="color:#86190f;font-size:1.75em;line-height:.8;vertical-align:-.13em">G</span>ive this in at the Celestial Gate.</div>
+    <div class="sealw">${TAILS}<img class="seal" alt=""></div></div></div><div class="curl b"></div></div>
     <button class="ksx" aria-label="Close">×</button></div>`);
   for (const e of [menu, book, roll]) document.body.appendChild(e);
   // his Bible's ribbon in woven silk, like the closed book's on the title (build 247; owner: "Ok let's match ribbon"):
@@ -553,7 +558,7 @@ body.playing #pause{display:block}
       const edge = top + h * .5 - cl.offsetTop; cl.style.clipPath = `inset(0 0 ${Math.max(0, cl.clientHeight - edge)}px 0)`;
       if (u < 1) requestAnimationFrame(step); else cl.style.clipPath = ''; };
     requestAnimationFrame(step); }
-  function openRoll() { makeParch(); unroll(); show(roll, .45); rustle(1.4); }
+  function openRoll(sealed) { roll.classList.toggle('sealed', !!sealed); makeParch(); if (sealed) makeSeal(); unroll(); show(roll, .45); rustle(1.4); }
   roll.addEventListener('click', e => { if (e.target === roll || e.target.closest('.ksx')) hide(); });
 
   // keys: Escape pauses or closes; the arrows turn the pages; nothing reaches the game while something is open
