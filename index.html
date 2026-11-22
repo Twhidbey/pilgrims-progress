@@ -184,7 +184,7 @@ body.portrait:not(.playing) #rot{display:none}
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
   <button id="autoWalk" aria-label="He walks on by himself"><svg viewBox="0 0 24 24"><path d="M5 6l6 6-6 6M12 6l6 6-6 6"/></svg></button>
-  <div id="build">build 507 · Nov 22 2026</div>
+  <div id="build">build 508 · Nov 22 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -632,7 +632,11 @@ function buildScenery() {
       // countryside beyond the gate: trees gather in groves, with open fields between
       // Since build 68 every tree is a painted picture (L.trees, drawTrees), not a code-drawn blob: here only their places
       // are chosen, fewer than before and well apart.
-      let lastT = -1e9; const plant = x => { if (x - lastT < 210 * s) return; lastT = x; L.trees.push({ x, h: s * rr(82, 122), face: R() < .5 ? 1 : -1 }); };
+      // build 508 (owner, of the fields at the town's edge: "too many trees spaced"): they stood in an even row; now only in a few
+      // groves (a slow wave along the land, two or three trees close together), with long open fields between. The random
+      // numbers are drawn as before, so nothing else in the layer moves.
+      const grove = x => { const u = x / s; return Math.sin(u * .0029 + d * 11) + .55 * Math.sin(u * .0071 + d * 5 + 1.3) > .5; };
+      let lastT = -1e9; const plant = x => { if (!grove(x) || x - lastT < 95 * s) return; lastT = x; L.trees.push({ x, h: s * rr(82, 122), face: R() < .5 ? 1 : -1 }); };
       for (let x = Math.max(edge + 20 * s, -30); x < W + 30; x += rr(16, 46) * s / (.25 + LOOK.trees)) {
         if (cl(x, 420 * s + 120) * .5 + .5 > LOOK.trees * 1.15 - .08) continue;
         R(); plant(x);
@@ -763,7 +767,7 @@ const FIELD_END = 1650;      // where the wheat field ends and the street begins
 // near row (2), as a place on the road (the far row ends earlier, so no house is in view when he stops). FIELD2: the
 // wheat along the road, from just past the last cottage to short of the city wall.
 const TOWN_END = { 1: 5600, 2: 6600 }, FIELD2 = [6700, 9000];
-const EVAN_X = 420, HOME_X = 2150, RUN_END = 7700, NEIGH_X = 8350, GATE_STOP = 9770, DOOR0 = 9855, DOOR1 = 10085, DOORM = 9970;      // build 506 (owner: "run a little farther before he stops (no houses in view) ... path thru a field indicating outskirts of town"): everything from his stop on is 1400 further      // build 110: the street after his house is 900 longer, so each line is said where it belongs while he runs, and the road from the neighbours to the gate 600 longer (owner: "need more space here for obstinate and pliable to catch up and narration to read")      // build 100: a 2.6 m gateway (88 units to a metre)      // build 91: the gateway is wider (was 7006 to 7120), so the painted gatehouse is bigger
+const EVAN_X = 420, HOME_X = 2150, RUN_END = 7700, NEIGH_X = 8350, GATE_STOP = 9770, DOOR0 = 9855, DOOR1 = 10085, DOORM = 9970;      // build 494 (owner: "run a little farther before he stops (no houses in view) ... path thru a field indicating outskirts of town"): everything from his stop on is 1400 further      // build 110: the street after his house is 900 longer, so each line is said where it belongs while he runs, and the road from the neighbours to the gate 600 longer (owner: "need more space here for obstinate and pliable to catch up and narration to read")      // build 100: a 2.6 m gateway (88 units to a metre)      // build 91: the gateway is wider (was 7006 to 7120), so the painted gatehouse is bigger
 // SKIP AHEAD (owner, build 89: "is there a way to skip ahead to a moment?"): add ?at=NAME to the link. Each name starts
 // the level just before that moment, after Evangelist. (?x=N still works for any place on the road; ?level=2 starts
 // at the Slough of Despond.)
@@ -777,11 +781,14 @@ function dropPlace() { const q = new URLSearchParams(location.search); if (!['at
 // Each light is one note. They are spaced by the length of each note, so walking at his steady pace plays the tune in time.
 // A higher note floats higher. [beat, note]; BEAT = road walked per beat.
 const BEAT = 58, NOTE = { D: 62, E: 64, G: 67, A: 69, B: 71, d: 74 };
+// build 508 (owner: "the lights dinging at the end of the neighbor run is a little anticlimatic"): the third phrase was laid
+// at the end of the run (6250); now it waits until after the choice, on the walk with Pliable to the gate (8560), the
+// fourth just before the gate (9200), and the run's music plays on until he tires (RUN_END)
 const PHRASES = [
   { x: 1770, back: true, at: 0, n: [[0, 'D'], [1, 'G'], [3, 'B'], [3.5, 'G'], [4, 'B'], [6, 'A'], [7, 'G'], [9, 'E'], [10, 'D']] },
   { x: 1100, back: true, at: 12, n: [[0, 'D'], [1, 'G'], [3, 'B'], [3.5, 'G'], [4, 'B'], [6, 'A'], [7, 'd']] },
-  { x: 6250, at: 24, n: [[0, 'B'], [1, 'd'], [2.5, 'B'], [3, 'd'], [3.5, 'B'], [4, 'G'], [6, 'D'], [7, 'E'], [8.5, 'G'], [9, 'G'], [9.5, 'E'], [10, 'D']] },
-  { x: 9100, at: 36, n: [[0, 'D'], [1, 'G'], [3, 'B'], [3.5, 'G'], [4, 'B'], [6, 'A'], [7, 'G']] },
+  { x: 8560, at: 24, n: [[0, 'B'], [1, 'd'], [2.5, 'B'], [3, 'd'], [3.5, 'B'], [4, 'G'], [6, 'D'], [7, 'E'], [8.5, 'G'], [9, 'G'], [9.5, 'E'], [10, 'D']] },
+  { x: 9200, at: 36, n: [[0, 'D'], [1, 'G'], [3, 'B'], [3.5, 'G'], [4, 'B'], [6, 'A'], [7, 'G']] },
 ];
 // the whole tune, sung through once when the gate opens, with a low note under each bar
 const TUNE = [], BASS = [43, 43, 48, 43, 43, 43, 50, 50, 43, 43, 48, 43, 43, 50, 43, 43];
@@ -1094,7 +1101,7 @@ function musCue() {
   // strings, building) while the neighbours watch him run by; it fades before the lights of the hymn's third phrase (x 6250)
   // build 502 (owner: "music should start when he chooses to run past family 'life life eternal life'"): no beat before his door;
   // the run piece begins as his fingers go in his ears (G.ears, either choice at the door) and fades before the hymn's third phrase
-  if (G.ears && G.runZone && P.x < 5650) return 'past';
+  if (G.ears && G.runZone && P.x < RUN_END - 150) return 'past';
   return null;
 }
 function musTick() {
