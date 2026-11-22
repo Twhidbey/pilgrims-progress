@@ -20,3 +20,6 @@
 - 2026-11-21 15:22 UTC interp-nod: done on modal, 49 frames, 110 s, about $0.09
 - 2026-11-21 15:23 UTC christian-oil-turn: done on modal, 49 frames, 64 s, about $0.05
 - 2026-11-22 07:00 UTC christian-run-nb: done on modal, 65 frames, 130 s, about $0.10
+- 2026-11-22 08:01 UTC room4-cast: done on modal, 49 frames, 196 s, about $0.16
+- 2026-11-22 08:02 UTC room4-pour: done on modal, 49 frames, 78 s, about $0.06
+- 2026-11-22 08:04 UTC christian-coat-stand: done on modal, 49 frames, 78 s, about $0.06
