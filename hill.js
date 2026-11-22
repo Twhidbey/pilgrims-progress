@@ -1241,7 +1241,7 @@ const HL = (() => {
     if (ph === 'path') { tx = C3.x + 150; tz = Z_NEAR; }
     if (ph === 'still' || ph === 'come' || ph === 'evan') { tx = ph === 'still' ? FOOT + 150 : FOOT - 40; tz = Z_NEAR; }
     if (ph === 'back' || ph === 'mist') { tx = C3.x - 150; tz = Z_NEAR; }
-    if (ph === 'gate' || ph === 'knock' || ph === 'open') { tx = Math.min(C3.x + 150, GATE_X - 215); tz = lerp(1, .96, smooth(GATE_X - 500, GATE_STOP, C3.x)); if (pullT >= 0) tx = lerp(tx, GATE_X - 90, smooth(0, 70, pullT)); if (castLook > .001) { const e = smooth(0, 1, castLook); tx = lerp(tx, CASTLE_X + 140, e); tz = lerp(tz, .5, e); } }
+    if (ph === 'gate' || ph === 'knock' || ph === 'open') { tx = Math.min(C3.x + 150, GATE_X - 215); tz = lerp(1, .96, smooth(GATE_X - 500, GATE_STOP, C3.x)); if (pullT >= 0) tx = lerp(tx, GATE_X - 90, smooth(0, 70, pullT)); if (castLook > .001) { const e = smooth(0, 1, castLook); const xR = (GWFX || GATE_X + 260) + 90, xL = CASTLE_X - 330; tx = lerp(tx, (xL + xR) / 2, e); tz = lerp(tz, Math.min(.5, VW / (xR - xL)), e); } }
     cam.cx += (tx - cam.cx) * .035; cam.z += (tz - cam.z) * .03; cam.wl = 440 - (1 - cam.z) * 70 + (ph === 'meet' ? 64 * smooth(.84, .58, cam.z) : 0);      // (build 267: looking far off to the village and the hill, the road sinks so it no longer fills a quarter of the picture)
     // the pull back (see 'still'): the scale goes from close to the whole mountain in its logarithm; he slides a little
     // left of the middle; the road comes down so the summit and its cloud fit above
@@ -1869,7 +1869,9 @@ const HL = (() => {
       // the land inside, so Good-will and Christian stand dark against it and the passage glows with it
       { const op = smooth(0, 1, door), fx3 = X(GATE_X + 175), fy3 = Y(-215), R3 = 700 * z, g = c.createRadialGradient(fx3, fy3, 0, fx3, fy3, R3);
         g.addColorStop(0, css([255, 244, 214], .3 + .62 * op)); g.addColorStop(.05, css([255, 228, 176], .2 + .55 * op)); g.addColorStop(.16, css([255, 200, 134], .08 + .36 * op)); g.addColorStop(.45, css([220, 130, 76], .03 + .17 * op)); g.addColorStop(1, css([200, 110, 60], 0));
-        c.save(); inClip(yG + 2); c.globalCompositeOperation = 'lighter'; c.fillStyle = g; c.fillRect(fx3 - R3, fy3 - R3, 2 * R3, 2 * R3);
+        // (build 514, owner: the sky either side of the wall must be one sky): the glow lies on the whole sky, outside too;
+        // the wall, the passage and the land outside are drawn after it and cover it, so only the land inside is lit
+        c.save(); c.beginPath(); c.rect(0, 0, VW, yG + 2); c.clip(); c.globalCompositeOperation = 'lighter'; c.fillStyle = g; c.fillRect(fx3 - R3, fy3 - R3, 2 * R3, 2 * R3);
         { const g2 = c.createRadialGradient(fx3, fy3, 0, fx3, fy3, 22 * z); g2.addColorStop(0, css([255, 250, 232], .9 * op)); g2.addColorStop(.6, css([255, 236, 196], .5 * op)); g2.addColorStop(1, css([255, 220, 170], 0)); c.fillStyle = g2; c.fillRect(fx3 - 22 * z, fy3 - 22 * z, 44 * z, 44 * z); }
         c.restore(); }
       // the land inside, laid after the far light so its rises hide the light's foot (it sinks behind them)
