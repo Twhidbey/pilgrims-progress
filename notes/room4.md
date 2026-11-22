@@ -36,6 +36,8 @@ Chat: **PP House · Room 4 Fire**. Read `notes/house.md` first (shared rules, bu
 
 ## Log (newest first)
 
+- Build 529 (owner: "the further corner of base of fireplace should be just slightly below the line where wall and floor meet. the other corner (closest to us) should be in the shadow where the black shadow starts"): the hearth wall's foot stands `PV.NEAR` (90) in front of the back wall's foot (`FB` = FY + 90, for the face, the arch, the fire, the water's target `FXS()`), and the eye is lower (`PV.Y` = FY - 100), so its far corner falls just below where the back wall meets the floor and its near corner down where the floor's dark shadow starts. The floor strip and boards of build 526 are gone (no longer needed). The water now falls in a downward arc into the lower opening. Nothing spent.
+
 - Build 526 (owner: "i mean the perspective line along floor"): the vanishing point at chest height again (`PV.Y` = FY - 420), so the foot of the hearth wall runs up toward it as its top runs down; the strip of floor along the wall that this shows is the room's floor (warm near the hearth, darker going back) with floorboard seams running to the vanishing point, so it reads as floor and not a ramp. Nothing spent.
 
 - Build 525 (owner: "the black column can be much thinner now... i'd make perspective line much steeper"): the cut chimney breast 140 wide (`PART1` 1880, was 2180), the one pouring oil moved in with it (`WK.PO` 2040, spout 1896); the face's top edge now runs down toward the vanishing point too (it was flat), and the foreshortening is stronger (`PV.GP` 700, was 900). Nothing spent.
