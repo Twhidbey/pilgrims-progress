@@ -289,7 +289,7 @@ const HL = (() => {
   // on (`MIST0`). Among the rocks and at the gate `mono` is 0: those are unchanged.
   let mono = 1;
   // THE PULL AT THE GATE ({62}): Good-will's reaching picture, the pull, the arrows (`ARW`, world units) and the far castle
-  const CASTLE_X = GATE_X - 900, MT_H = 470, CASTLE_H = 240, CASTLE_Y = -MT_H + CASTLE_H * .3; let CASTLE = null, castLook = 0, gateT = 0;
+  const CASTLE_X = GATE_X - 900, MT_H = 470, CASTLE_H = 240, CASTLE_Y = -MT_H + CASTLE_H * .3; let CASTLE = null, castLook = 0, gateT = 0, castA = 0, castT = -1;
   let GWRE = null, gwReach = 0, gwReachTo = 0, pullT = -1, pullX0 = 0, GWFX = null; const GWRE_META = { ax: 62, ground: 299 }, ARW = [];
   const MONO_SAT = .62, MONO_TONE = [226, 202, 158], MIST0 = 620;
   // THE WHEAT IN FRONT, A TRIAL (owner: "Worldly wise comes to Christian in a field no?" ... "we could use grass from level
@@ -904,7 +904,7 @@ const HL = (() => {
   function reset0() {
     Object.assign(C3, { x: START, face: 1, faceA: 1, anim: 12, sd: QUIET[0], alpha: 1, run: 0, ranim: RUNP_META.start || 0, weep: false, wt: 0, wa: 0, kf: 0, kp: 0, tv: null, fired: false, saidAt: 0, tapZ: 0 }); FLARES.length = 0;
     mercy = mercyTo = calm = calmTo = 0;
-    mono = 1; castLook = 0; gateT = 0; gwReach = gwReachTo = 0; pullT = -1; GWFX = null; ARW.length = 0; wise = null; evan = null; dark = 0; hope = 0; flash = 0; flashT = 200; veil = 0; veilTo = 0; knocks = 0; knockT = 0; door = 0; doorTo = 0; shut = 0;
+    mono = 1; castLook = 0; gateT = 0; castA = 0; castT = -1; gwReach = gwReachTo = 0; pullT = -1; GWFX = null; ARW.length = 0; wise = null; evan = null; dark = 0; hope = 0; flash = 0; flashT = 200; veil = 0; veilTo = 0; knocks = 0; knockT = 0; door = 0; doorTo = 0; shut = 0;
     reveal = 0; vil = vilTo = 0; pan = panTo = 0; ROCKS.length = 0; DUST.length = 0; PATHR.length = 0; DUSTW.length = 0; fallI = 0; jolt = 0; ROLL.length = 0; rollI = 0; LIZ.length = 0; oakT = 0; GLINTS.length = 0; for (const k in SEEN_G) delete SEEN_G[k]; OBIRD.length = 0; OLEAF.length = 0; HIDDEN.forEach(h => { h.got = 0; h.up = 0; h.y = 0; }); STEAMP.length = 0; farewell = 0; C3.dy = 0; cut = cutTo = 0; Zw = 0; zs = ''; zT = 0;
     saidSeen = saidHigh = hasteSaid = gateSaid = hillSeen = greeted = signSeen = false; stillT = 0; hintT = 0; noteI = 0; noteX = 0;
   }
@@ -1034,7 +1034,14 @@ const HL = (() => {
     const want = G.state === 'play' && (keys.r || held());
     // THE CASTLE SEEN: the camera stands back on it as he comes out of the mist toward the gate, then comes to the gate;
     // when the arrows fly it glances back at it (`castLook`, eased by the game clock)
-    { if (ph === 'gate' || ph === 'knock' || ph === 'open') gateT++; else gateT = 0; const want = gateT > 20 && gateT < 260 ? 1 : pullT > 4 && pullT < 84 ? .55 : 0; castLook += (want - castLook) * .022; }
+    // (build 488, owner: "not show the castle till after arrows hit door and around it and doorman explains it"): the castle
+    // is hidden until Good-will begins "A little way from this gate stands a strong castle ..."; then the camera turns to it
+    // as it comes up out of the dusk (`castA`), holds while he speaks, and comes back
+    { if (ph === 'gate' || ph === 'knock' || ph === 'open') gateT++; else gateT = 0;
+      const onLine = (dlg.querySelector('.t') || {}).textContent?.startsWith('A little way from this gate');
+      if (castT < 0 && onLine) castT = 0; if (castT >= 0) castT++;
+      if (castT > 20) castA += (1 - castA) * .025;
+      const want = castT > 0 && (castT < 330 || onLine) ? 1 : 0; castLook += (want - castLook) * .022; }
     { const plainish = ph === 'plain' || ph === 'meet' || ph === 'aside' || ph === 'down'; mono += ((plainish ? 1 : 0) - mono) * (plainish ? .02 : .2); }
     if (C3.sd != null) C3.sd += .4;
     C3.faceA = clamp(C3.faceA + (C3.face - C3.faceA) * .06, -1, 1);
@@ -1810,6 +1817,12 @@ const HL = (() => {
             c.restore();
             // (build 416) the crag's foot is faded into the summit in the picture itself, so no rock is laid over it
             }
+          // (build 488) until Good-will speaks of it, the dusk sky and the far rises are laid again over the castle and its mountain
+          if (castA < .995) { c.save(); c.globalAlpha = 1 - castA; c.beginPath(); c.rect(0, 0, X(WEND - 30), Y(4)); c.clip();
+            const g = c.createLinearGradient(0, 0, 0, hor), fairK = (1 - dark) * (1 - gateish); g.addColorStop(0, css(top)); g.addColorStop(.58, css(mix(mix(top, low, .62), [240, 208, 186], .5 * fairK))); g.addColorStop(1, css(low)); c.fillStyle = g; c.fillRect(0, 0, VW, hor + 2);
+            c.beginPath(); c.rect(0, Y(-240), xe, Y(4) - Y(-240)); c.clip();
+            rid(-172, 34, .006, 21); c.fillStyle = css([62, 34, 27]); c.fill();
+            rid(-150, 26, .008, 24); c.fillStyle = css([46, 25, 20]); c.fill(); c.restore(); }
           c.save(); c.beginPath(); c.rect(0, Y(-240), xe, Y(4) - Y(-240)); c.clip();
           rid(-150, 34, .02, 22); c.fillStyle = css([36, 20, 16]); c.fill();
           rid(-72, 16, .014, 23); { const g = c.createLinearGradient(0, Y(-80), 0, Y(4)); g.addColorStop(0, css([26, 15, 12])); g.addColorStop(1, css([16, 9, 7])); c.fillStyle = g; } c.fill(); c.restore(); } }
