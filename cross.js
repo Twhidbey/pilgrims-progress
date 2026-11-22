@@ -17,7 +17,10 @@
 const CR = (() => {
   const SO = 'The Shining Ones', S1 = 'The first Shining One', S3 = 'The third Shining One';
   // ---------- the land (world units: x along the way, h up from the foot of the slope) ----------
-  const START = 480, WALL_END = 860, TOMB_X = 4890, SLOPE0 = 1180, CREST0 = 4080, CROSS_X = 4260, CREST1 = 4400, FALL1 = 5150, H_TOP = 860;
+  const START = 480, WALL_END = 860, TOMB_X = 5010, SLOPE0 = 1180, CREST0 = 4080, CROSS_X = 4260, CREST1 = 4400, FALL1 = 5140, H_TOP = 860;
+  // GOLGOTHA, AFTER THE OWNER'S SKETCH (build 545): a smooth swooping ramp up from the left that meets the top of a round
+  // rocky knoll shaped like a skull's crown (SK_X its top, SK_L / SK_R how far its dome reaches left and right)
+  const SK_X = 4380, SK_L = 1000, SK_R = FALL1 - 4380, SK_H = H_TOP + 30, RAMP1 = SK_X - 260;
   // the hill twice as high but the slope about as gentle as before, so it is longer (owner: "Not necessarily twice as steep - I like the old slope (maybe a tad steeper is ok)")
   // the cross and the hill larger beside him (owner: "cross needs to be bigger, relative to Christian, hill too"): he is about 150 units tall
   const CROSS_H = 340, CROSS_BY = CROSS_H * .74;
@@ -32,16 +35,15 @@ const CR = (() => {
   const STOP_X = CROSS_X - 300;
   const WALK_X = STOP_X - 380;
   const sm = (a, b, x) => smooth(a, b, x);
+  function dome(x) { const u = (x - SK_X) / (x < SK_X ? SK_L : SK_R); if (Math.abs(u) >= 1) return 0; return SK_H * Math.pow(1 - u * u, x < SK_X ? 1.1 : .55); }
   function gh(x) {
-    let h = H_TOP * Math.pow(sm(SLOPE0, CREST0, x), 1.15);
-    h += 10 * Math.sin(Math.PI * clamp((x - CREST0 + 200) / 600)) * sm(SLOPE0, CREST0, x);
-    // GOLGOTHA (owner's sketch, build 544): beyond the crown the hill ends in a steep rounded bluff of rock falling to the
-    // plain on the right, the sepulchre cut into its foot; the shoulder stays high a while (rounded), then drops steeply,
-    // then a short toe; a little broken roughness down the face, as rock
-    const fu = clamp((x - CREST1) / (FALL1 - CREST1));
-    h -= H_TOP * Math.pow(sm(CREST1, FALL1, x), 1.45);
-    h += (9 * Math.sin(x * .021 + 2) + 5 * Math.sin(x * .053)) * 4 * fu * (1 - fu);
-    h += (3 * Math.sin(x * .011) + 1.6 * Math.sin(x * .031 + 1)) * sm(SLOPE0, SLOPE0 + 300, x) * (1 - sm(CREST0 - 100, CREST0, x));
+    // the ramp: a smooth swoop (concave, steepening a little as it climbs) that runs up into the skull's crown with the
+    // dome's own slope where they meet, so there is no notch; past the crown, the skull's round dome falling to the plain
+    let h;
+    if (x <= RAMP1) { const u = clamp((x - SLOPE0) / (RAMP1 - SLOPE0)), m0 = .15, m1 = .82, u2 = u * u, u3 = u2 * u;
+      h = dome(RAMP1) * ((u3 - 2 * u2 + u) * m0 + (-2 * u3 + 3 * u2) + (u3 - u2) * m1);
+      h += (3 * Math.sin(x * .011) + 1.6 * Math.sin(x * .031 + 1)) * sm(SLOPE0, SLOPE0 + 300, x) * (1 - sm(RAMP1 - 400, RAMP1, x)); }
+    else { h = dome(x); const fu = clamp((x - SK_X) / SK_R); h += (9 * Math.sin(x * .021 + 2) + 5 * Math.sin(x * .053)) * 4 * fu * (1 - fu); }
     return h;
   }
   // ---------- the words (Bunyan's, shortened and made plain) ----------
@@ -384,7 +386,7 @@ const CR = (() => {
   // fall to the right), each row set deeper in the hill and a shade darker than the one before, so the rock grows
   // darker as it comes down; baked once small and drawn stretched (soft), in dark alpha so it takes the hill's colour
   let ROCK = null;
-  const ROCK_OPT = (new URLSearchParams(location.search).get('rock') || 'rows').toLowerCase();
+  const ROCK_OPT = (new URLSearchParams(location.search).get('rock') || 'skull').toLowerCase();
   function rockTex() {
     if (ROCK) return ROCK;
     const X0 = START - 700, X1 = FALL1 + 900, Y0 = -H_TOP - 40, Y1 = 700, k = .8;
@@ -467,7 +469,41 @@ const CR = (() => {
         for (let k2 = 0; k2 < 4; k2++) { q.beginPath(); q.moveTo(X0, Y1); q.lineTo(X0, -3000); q.lineTo(xa, -3000); for (let x = xa; x <= xb; x += 4) q.lineTo(x, cy(x) + k2 * 7); q.lineTo(xb, -3000); q.lineTo(X1, -3000); q.lineTo(X1, Y1); q.closePath(); q.fillStyle = css([0, 0, 0], a / 2.2); q.fill(); }
       }
     }
-    if (O !== 'e' && O !== 'f' && O !== 'g' && O !== 'r') ROWS.forEach(([D, Hh, seg, a], n) => {
+    // THE SKULL (owner's sketch, build 545: "the smooth part (not drawn on) is like a swooped ramp on the left side of hill
+    // and the rough part is shaped sort of like a skull on the right ... and there texture there"): the ramp is left plain;
+    // only the round knoll is rock: a little darker, its dome's left flank a soft seam where it rises out of the ramp,
+    // broken curved creases following the dome, and many short hatched cracks running down its face, thickest on the
+    // right as in the sketch, each with a faint lit lip
+    if (O === 'skull') {
+      const r = rgen(545), xa = SK_X - SK_L, hh = x => x <= RAMP1 ? Math.min(gh(x) - 6, dome(x)) : gh(x);
+      const path = c2 => { c2.beginPath(); c2.moveTo(xa, 60); for (let x = xa; x <= FALL1; x += 6) c2.lineTo(x, -hh(x)); c2.lineTo(FALL1, 60); c2.closePath(); };
+      q.save(); path(q); q.clip(); l.save(); path(l); l.clip();
+      let g = q.createLinearGradient(0, -SK_H, 0, 0); g.addColorStop(0, css([0, 0, 0], .05)); g.addColorStop(1, css([0, 0, 0], .16));
+      q.fillStyle = g; q.fillRect(xa, -SK_H - 40, FALL1 - xa, SK_H + 100);
+      // no hard upright edge where the skull's left foot meets the ramp's: the darkening is wiped away toward its left end
+      q.globalCompositeOperation = 'destination-out'; g = q.createLinearGradient(xa, 0, xa + 520, 0); g.addColorStop(0, 'rgba(0,0,0,1)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+      q.fillStyle = g; q.fillRect(xa, -SK_H - 40, 520, SK_H + 100); q.globalCompositeOperation = 'source-over';
+      // the dome's left flank: a soft seam where the skull rises out of the smooth ramp
+      for (const [w, a] of [[16, .05], [7, .08], [2.6, .2]]) { q.strokeStyle = css([0, 0, 0], a); q.lineWidth = w; q.beginPath(); let pen = false;
+        for (let x = xa + 4; x <= RAMP1; x += 6) { const d = dome(x); if (d > gh(x) - 14) { pen = false; continue; } pen ? q.lineTo(x, -d) : q.moveTo(x, -d); pen = true; } q.stroke(); }
+      // curved creases following the dome, broken
+      for (const [sc, dx] of [[.84, 60], [.66, 130], [.5, 40], [.34, 160]]) { q.strokeStyle = css([0, 0, 0], .16); q.lineWidth = 2.4; q.beginPath(); let pen = false;
+        for (let t = -.95; t <= .95; t += .012) { const x = SK_X + dx + t * (t < 0 ? SK_L : SK_R) * sc, d = SK_H * sc * Math.pow(1 - t * t, .55) + 8 * Math.sin(t * 23 + sc * 9);
+          const on = Math.sin(t * 9 + sc * 17) > -.35 && d < hh(x) - 12; if (!on) { pen = false; continue; } pen ? q.lineTo(x, -d) : q.moveTo(x, -d); pen = true; }
+        q.stroke(); }
+      // hatched cracks down the face
+      for (let i = 0; i < 900; i++) {
+        const x = xa + (FALL1 - xa) * Math.pow(r(), .72), top = hh(x); if (top < 30) continue;
+        const h0 = top * (.08 + .9 * r()); if (h0 > top - 8) continue;
+        const rx = (x - SK_X) / (x < SK_X ? SK_L : SK_R), lean = rx * .35 + (r() - .5) * .18, len = 14 + 52 * r() * (.5 + .5 * Math.abs(rx));
+        const a = (.1 + .18 * r()) * smooth(xa, xa + 500, x) * (.5 + .5 * smooth(xa, SK_X + 200, x)), w = 1 + 1.6 * r();
+        q.strokeStyle = css([0, 0, 0], a); q.lineWidth = w; q.beginPath(); let px = x, py = -h0; q.moveTo(px, py);
+        for (let k = 1; k <= 3; k++) { px += Math.sin(lean) * len / 3 + (r() - .5) * 3; py += Math.cos(lean) * len / 3; q.lineTo(px, py); } q.stroke();
+        l.strokeStyle = css([255, 255, 255], a * .35); l.lineWidth = w * .7; l.beginPath(); l.moveTo(x + 2.2, -h0 - 1); l.lineTo(px + 2.2, py - 1); l.stroke();
+      }
+      q.restore(); l.restore();
+    }
+    if (O !== 'e' && O !== 'f' && O !== 'g' && O !== 'r' && O !== 'skull') ROWS.forEach(([D, Hh, seg, a], n) => {
       const top = x => -(gh(x) - D) - Hh * crag(x + n * 977, 11 + n * 7, seg);
       const pts = []; for (let x = X0; x <= X1; x += 4) pts.push([x, top(x)]);
       const shape = c2 => { c2.beginPath(); c2.moveTo(X0, Y1); for (const [x, y] of pts) c2.lineTo(x, y); c2.lineTo(X1, Y1); c2.closePath(); };
