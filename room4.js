@@ -78,11 +78,11 @@
   // little further back: smaller, darker, standing a little higher), behind the chimney breast into the dark, the Interpreter's
   // cupped candle the only light there; they stop and turn to the one pouring oil, and the dark lifts
   const WK = { C0: 280, I0: 560, C1: 2620, I1: 2860, V: 3.4, k: .92, up: 14, PO: 2040, SPOUT: [1896, 790], CX: 900, LIP: [1282, 830] };
-  // the perspective of the chimney breast's face (build 523): a vanishing point PV on the left, low (just above the floor, so the
-  // face's foot stays level with the room's floor), depth d into the
+  // the perspective of the chimney breast's face (build 523; build 526: the eye at chest height again, so the floor line runs up too):
+  // a vanishing point PV on the left, depth d into the
   // picture shrinks by PQ(d) (as the gate's wall in Level 3); the hearth's opening runs from depth a0 to a1, its arch springing at SPR
   // above the floor and rising RISE more; the fire sits FIN inside the face at depth FD
-  const PV = { X: 600, Y: HOUSE.FY - 30, GP: 700, D: 520, a0: 110, a1: 430, SPR: 290, RISE: 120, FD: 270, FIN: 50 };
+  const PV = { X: 600, Y: HOUSE.FY - 420, GP: 700, D: 520, a0: 110, a1: 430, SPR: 290, RISE: 120, FD: 270, FIN: 50 };
   const PQ = d => 1 / (1 + d / PV.GP), PP = (X, Y, d) => { const q = PQ(d); return [PV.X + (X - PV.X) * q, PV.Y + (Y - PV.Y) * q]; };
   const archAt = (d0, d1, spr, rise, th) => { const m = (d0 + d1) / 2, r = (d1 - d0) / 2, s = Math.sin(th); return PP(R4D.PART0, HOUSE.FY - spr - rise * Math.pow(s, .7), m - r * Math.cos(th)); };
   const archPts = (d0, d1, spr, rise) => { const pts = [PP(R4D.PART0, HOUSE.FY, d1)]; for (let k = 0; k <= 24; k++) pts.push(archAt(d0, d1, spr, rise, Math.PI - Math.PI * k / 24)); pts.push(PP(R4D.PART0, HOUSE.FY, d0)); return pts; };
@@ -130,6 +130,15 @@
         // the room runs back from the cut to a vanishing point on the left (PV), as the gate's wall does, and the hearth is set in that face
         const D = PV.D, [fx0, fy0] = PP(P0, FY, D), CY = HOUSE.CEIL + 80, [, ft0] = PP(P0, CY, D);
         c.save(); c.beginPath(); c.rect(u(EX.x0), v(CY), (EX.x1 - EX.x0) * S, (EX.y1 - CY) * S); c.clip();
+        // the floor along the face, seen from a little above: the room's own floor, warmed by the fire near the hearth
+        g = c.createLinearGradient(0, v(fy0), 0, v(FY)); g.addColorStop(0, '#26170d'); g.addColorStop(.7, '#4a2a14'); g.addColorStop(1, '#6e3c1b');
+        poly([[P0, FY], [fx0, fy0], [fx0 - 60, FY]]); c.fillStyle = g; c.fill();
+        c.save(); poly([[P0, FY], [fx0, fy0], [fx0 - 60, FY]]); c.clip();
+        { const [ax, ay] = PP(P0 - 60, FY, PV.FD), r = 360 * S, fg = c.createRadialGradient(u(ax), v(ay), 0, u(ax), v(ay), r); fg.addColorStop(0, css([230, 120, 50], .25 * gw)); fg.addColorStop(1, 'rgba(230,120,50,0)'); c.globalCompositeOperation = 'lighter'; c.fillStyle = fg; c.fillRect(u(ax) - r, v(ay) - r, 2 * r, 2 * r); c.globalCompositeOperation = 'source-over'; }
+        // the floorboards' seams, running back to the vanishing point, so it reads as floor
+        c.strokeStyle = 'rgba(10,5,2,.5)'; c.lineWidth = Math.max(.6, 1.2 * S);
+        for (let k = 1; k <= 7; k++) { const bx = fx0 - 60 + (P0 - fx0 + 60) * k / 8; c.beginPath(); c.moveTo(u(bx), v(FY)); c.lineTo(u(PV.X), v(PV.Y)); c.stroke(); }
+        c.restore();
         // the face itself, dark stone, warmed round the hearth
         poly([[P0, CY], [fx0, ft0], [fx0, fy0], [P0, FY]]); c.fillStyle = '#150d09'; c.fill();
         c.save(); poly([[P0, CY], [fx0, ft0], [fx0, fy0], [P0, FY]]); c.clip();
