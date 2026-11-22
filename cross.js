@@ -326,7 +326,7 @@ const CR = (() => {
   // fall to the right), each row set deeper in the hill and a shade darker than the one before, so the rock grows
   // darker as it comes down; baked once small and drawn stretched (soft), in dark alpha so it takes the hill's colour
   let ROCK = null;
-  const ROCK_OPT = (new URLSearchParams(location.search).get('rock') || '').toLowerCase();
+  const ROCK_OPT = (new URLSearchParams(location.search).get('rock') || 'f').toLowerCase();
   function rockTex() {
     if (ROCK) return ROCK;
     const X0 = START - 700, X1 = FALL1 + 900, Y0 = -H_TOP - 40, Y1 = 700, k = .4;
@@ -353,8 +353,9 @@ const CR = (() => {
       // [centre x, how far below the outline its top lies, width, seed]; each an outcrop of broken rock: an angular outline
       // (flat-ish top, a few breaks), its upper planes turned to the sunrise a little lit, its lower left in shade, its foot
       // sunk into the hill (faded out)
-      const RK = [[1900, 30, 260, 1], [2760, 40, 340, 2], [3460, 50, 420, 3], [4760, 40, 320, 4]];
-      for (const [cx, dep, w, sd] of RK) {
+      const RK = [[1900, 30, 260, 1, 1], [2760, 40, 340, 2, 1], [3460, 50, 420, 3, 1], [4760, 40, 320, 4, 1], [2330, 70, 210, 6, .5], [3110, 90, 250, 7, .5]];
+      // the last two (owner: "two more subtle"): smaller, set a little deeper, at half strength
+      for (const [cx, dep, w, sd, st] of RK) {
         const r = rgen(sd * 53 + 1), top = -(gh(cx) - dep), h = w * (.5 + .1 * r()), x0 = cx - w / 2, x1 = cx + w / 2;
         // the outline: up the left face in 2 breaks, across the top in 3, down the right in 2, then the buried foot
         const P = [[x0, top + h]], n = 7;
@@ -363,18 +364,18 @@ const CR = (() => {
         P.push(...tops); P.push([x1, top + h]);
         const path = c2 => { c2.beginPath(); P.forEach(([x, y], i) => i ? c2.lineTo(x, y) : c2.moveTo(x, y)); c2.closePath(); };
         const fade = (c2, rgb, a0) => { const g = c2.createLinearGradient(0, top, 0, top + h); g.addColorStop(0, css(rgb, a0)); g.addColorStop(.6, css(rgb, a0 * .8)); g.addColorStop(1, css(rgb, 0)); return g; };
-        path(q); q.fillStyle = fade(q, [0, 0, 0], .16); q.fill();
+        path(q); q.fillStyle = fade(q, [0, 0, 0], .16 * st); q.fill();
         // planes: from each top vertex a crease runs down into the rock; the planes whose top edge faces right are lit
         q.save(); path(q); q.clip(); l.save(); path(l); l.clip();
         for (let i = 0; i < n; i++) { const [ax, ay] = tops[i], [bx, by] = tops[i + 1], slope = (by - ay) / (bx - ax);
           const lean = (r() - .3) * w * .12, poly = [[ax, ay], [bx, by], [bx + lean, top + h], [ax + lean * .6, top + h]];
           const pl = c2 => { c2.beginPath(); poly.forEach(([x, y], k) => k ? c2.lineTo(x, y) : c2.moveTo(x, y)); c2.closePath(); };
           const lit = Math.max(0, Math.min(1, slope * 1.6 + .25 + (i / n) * .3));
-          pl(l); l.fillStyle = fade(l, [255, 255, 255], .13 * lit); l.fill();
-          pl(q); q.fillStyle = fade(q, [0, 0, 0], .12 * (1 - lit)); q.fill();
+          pl(l); l.fillStyle = fade(l, [255, 255, 255], .13 * lit * st); l.fill();
+          pl(q); q.fillStyle = fade(q, [0, 0, 0], .12 * (1 - lit) * st); q.fill();
         }
         // the top edge catches the sky, more toward the right
-        l.lineJoin = 'round'; const eg = l.createLinearGradient(x0, 0, x1, 0); eg.addColorStop(0, css([255, 255, 255], .05)); eg.addColorStop(1, css([255, 255, 255], .3));
+        l.lineJoin = 'round'; const eg = l.createLinearGradient(x0, 0, x1, 0); eg.addColorStop(0, css([255, 255, 255], .05 * st)); eg.addColorStop(1, css([255, 255, 255], .3 * st));
         l.strokeStyle = eg; l.lineWidth = 5; l.beginPath(); tops.forEach(([x, y], k) => k ? l.lineTo(x, y) : l.moveTo(x, y)); l.stroke();
         q.restore(); l.restore();
       }
