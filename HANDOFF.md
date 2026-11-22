@@ -152,6 +152,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 ## START HERE (rewritten at build 140, Nov 16 2026)
 
+**Build 511 (Level 2 chat): Pliable keeps one size as he climbs out (the video had shrunk him; each picture rescaled). Nothing spent.**
+
 **Build 509 (Level 2 chat): Pliable gets out of the Slough on a new video made in mud (turns round, wades to his bank, grips it, climbs up, stands). About 56 cents (a first try was blocked by the safety filter and may also have been billed: about $1.12 at most).**
 
 **Build 507 (Level 4 chat): the house's code split into one file per room (`rooms.js` core + `rooms-outside.js`, `room1.js` ... `room7.js`), notes per room in `notes/`; no change on screen (every room compared with build 506's stills). One chat per room from now on, first: Outside & passages, Room 2 Parlour, Room 4 Fire; the others in a couple of days. Nothing spent.**
