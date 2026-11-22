@@ -400,8 +400,11 @@
    },
    "seconds": 3,
    "prompt": "A young clean-shaven man in a long pale coat with embroidered bands, his hood lying on his shoulders, facing RIGHT, bends his knees and leaps straight up for joy, both feet leaving the ground, his arms rising a little, his coat lifting, then lands lightly on the same spot and stands again in exactly the same pose. The camera is still and does NOT zoom; a completely FLAT SIDE VIEW like a shadow-puppet play; plain white background; his face a plain soft profile.",
-   "status": "todo",
-   "via": "modal"
+   "status": "done",
+   "via": "modal",
+   "made": "2026-11-22 08:27 UTC",
+   "frames": 49,
+   "secs": 117
   },
   {
    "id": "christian-coat-walk",
@@ -411,8 +414,11 @@
    },
    "seconds": 4,
    "prompt": "A young clean-shaven man in a long pale coat with embroidered bands, his hood lying on his shoulders, WALKS steadily to the RIGHT, upright and light, arms swinging gently, hands empty. The camera moves along with him and does NOT zoom: he stays in the centre of the frame at exactly the same size, his whole body always visible; even, regular strides on one level line, a completely FLAT SIDE VIEW like a shadow-puppet play; plain white background; his face a plain soft profile.",
-   "status": "todo",
-   "via": "modal"
+   "status": "done",
+   "via": "modal",
+   "made": "2026-11-22 08:28 UTC",
+   "frames": 65,
+   "secs": 85
   }
  ]
 }

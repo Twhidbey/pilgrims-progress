@@ -23,3 +23,5 @@
 - 2026-11-22 08:01 UTC room4-cast: done on modal, 49 frames, 196 s, about $0.16
 - 2026-11-22 08:02 UTC room4-pour: done on modal, 49 frames, 78 s, about $0.06
 - 2026-11-22 08:04 UTC christian-coat-stand: done on modal, 49 frames, 78 s, about $0.06
+- 2026-11-22 08:27 UTC christian-coat-leap: done on modal, 49 frames, 116 s, about $0.09
+- 2026-11-22 08:28 UTC christian-coat-walk: done on modal, 65 frames, 84 s, about $0.07
