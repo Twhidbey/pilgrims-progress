@@ -172,6 +172,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 **Build 520 (Room 2 chat): the parlour much lighter (toward Vermeer's daylight; a departure from night in every room, at the owner's wish), its figures softened (`soft` on the room, a small option in the core's `toneOf`), everyone's feet on the boards below the tile band with contact shadows. Nothing spent.**
 
+**Build 521 (Level 1 chat): no pale seams between the houses of Level 1's town (narrow gaps filled under the eaves). The run music (the pursuit piece since 506) is judged melancholy by the owner: a new intense piece offered (paid, ask). Nothing spent.**
+
 **Build 502 (Level 1 chat): Level 1's run music starts at "Life! Life! Eternal life!" (no beat before his door); footsteps in every level at .4 of their loudness (`STEP_K`). Nothing spent.**
 
 **Build 501 (Level 1 chat): the storyteller's family line at his door shortened ("His family would not believe him. Now they saw him run.") so he no longer waits at the door for it. About 1 cent.**
