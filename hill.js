@@ -655,9 +655,11 @@ const HL = (() => {
               // (build 456, owner: "mirror castle horiz so it faces the gate more ... integrate it into mountain more ... less pronounced"):
               // mirrored, darker, and its lower part sinks into the mountain's own rock tone
               q.globalCompositeOperation = 'source-atop'; { const g = q.createLinearGradient(0, im.height * .38, 0, im.height * .86); g.addColorStop(0, 'rgba(30,17,14,0)'); g.addColorStop(.6, 'rgba(30,17,14,.6)'); g.addColorStop(1, 'rgba(30,17,14,.92)'); q.fillStyle = g; q.fillRect(0, 0, im.width, im.height); }
-              // its crag's foot fades into the mountain's summit along a broken line, not a straight one (build 416)
+              // its crag's foot fades into the mountain's summit along a broken line, not a straight one (build 416); on its
+              // left side (build 511, owner: "the left part of the base of the castle") the fade starts higher, so the crag's
+              // overhanging left foot melts into the summit instead of standing over the dusk
               q.globalCompositeOperation = 'destination-out'; const H0 = im.height;
-              for (let x = 0; x < im.width; x += 3) { const top = H0 * (.76 + .025 * Math.sin(x * .013 + 1.1) + .015 * Math.sin(x * .047 + 2.3) + .01 * Math.sin(x * .13)), len = H0 * .14;
+              for (let x = 0; x < im.width; x += 3) { const top = H0 * (.76 - .2 * (1 - smooth(0, .32, x / im.width)) + .025 * Math.sin(x * .013 + 1.1) + .015 * Math.sin(x * .047 + 2.3) + .01 * Math.sin(x * .13)), len = H0 * .14;
                 const g = q.createLinearGradient(0, top, 0, top + len); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(.6, 'rgba(0,0,0,.75)'); g.addColorStop(1, 'rgba(0,0,0,1)'); q.fillStyle = g; q.fillRect(x, top, 3, H0 - top); }
               q.globalCompositeOperation = 'source-over'; CASTLE = c2; } }), loadImg('gate-wall.webp').then(im => { if (im) GWALL = soften(im, 4, .7, true, .22); }), loadImg('gate-stone.webp').then(im => { if (im) GSTONE = im; }), loadPack('evangelist-walk', EVW).catch(() => {}), EVA.ready || loadPack('evangelist', EVA).catch(() => {}), loadImg('wiseman-stand.webp').then(im => { if (im) WIS_ST = im; }), OBS.ready || loadPack('obstinate', OBS).catch(() => {}), EVS.ready || loadPack('evangelist-stand', EVS).catch(() => {}), RUNP.ready || loadPack('christian-run-plain', RUNP).catch(() => {}),
       WEEP.ready || loadPack('christian-weep', WEEP).catch(() => {}), KNEEL.ready || loadPack('christian-kneel', KNEEL).catch(() => {}), TURN.ready || loadPack('christian-turn', TURN).then(() => bookLoaded('TURN')).catch(() => {}),
@@ -1190,7 +1192,7 @@ const HL = (() => {
       // (owner: "At the gate doesn't goodwill pull Christian in as arrows fly ? ... We can't see other side of gate"; chose
       // "pulled into the light"): he is hurried two quick steps in through the doorway (his own walk, at a hurried pace), and
       // as he passes the jambs he is drawn inside the arch, a step further off, so the stone frame takes him (`pullIn` in draw())
-      if (pullT >= 0) { pullT++; const tx = pullX0 + (GATE_X + 96 - pullX0) * smooth(0, 1, Math.min(1, pullT / 56)); { const d = Math.max(0, tx - C3.x); walk(1, d, 2); }      // aimed short: he walks on briskly until his feet come together, which brings him into the doorway
+      if (pullT >= 0) { pullT++; const tx = pullX0 + (GATE_X + 76 - pullX0) * smooth(0, 1, Math.min(1, pullT / 56)); { const d = Math.max(0, tx - C3.x); walk(1, d, 2); }      // aimed short: he walks on briskly until his feet come together, which brings him into the doorway
         if (pullT === 50) gwReachTo = 0; if (pullT === 96) next(true);
         // (build 460, owner: "he should go into gate all the way to other side and door clearly shut behind him"): once he is
         // through, the door swings shut behind him with a heavy thud; the light inside stays
@@ -1792,16 +1794,16 @@ const HL = (() => {
           // THE MOUNTAIN THAT HOLDS IT (owner: "Build a rock mt to hold castle and make castle smaller"): one dark massif of
           // the burning hill's own rock, a broad summit under the castle, steep broken faces falling away on both sides in
           // ledges, its foot lost behind the near rises; the castle's own crag sinks into the summit (`mtTop`, `MT_H`)
-          const mtTop = x => { const d = x - CASTLE_X, a = Math.abs(d), L = d < 0, pl = L ? 205 : 170, cl = L ? 120 : 90, sp = L ? 980 : 620;
+          const mtTop = x => { const d = x - CASTLE_X, a = Math.abs(d), L = d < 0, pl = L ? 265 : 170, cl = L ? 140 : 90, sp = L ? 980 : 620;
             // a broad summit, a sheer cliff below it, then a long broken shoulder down to the plain (the left one longer)
             let h; if (a < pl) h = 1 - .04 * (a / pl) * (a / pl); else if (a < pl + cl) { const t = (a - pl) / cl; h = .96 - .3 * t * t * (3 - 2 * t); } else { const t = Math.min(1, (a - pl - cl) / sp); h = .66 * (1 - Math.pow(t, .9)) * (1 - .25 * t); }
-            const st = (a / 70) % 1; h -= (a > pl + cl ? .05 : .015) * st * h;
-            return MT_H * h + (nz(x * .02, 31) - .5) * 30 * Math.min(1, h * 3) + (nz(x * .09, 32) - .5) * 9; };
+            const st = (a / 70) % 1; h -= (a > pl + cl ? 0 : .015) * st * h;
+            return MT_H * h + (L ? 48 * Math.exp(-Math.pow((d + 80) / 66, 2)) : 0) + (nz(x * .02, 31) - .5) * 30 * Math.min(1, h * 3) + (nz(x * .09, 32) - .5) * 9 * Math.min(1, h * 2.5); };
           const mtPath = () => { c.beginPath(); c.moveTo(X(CASTLE_X - 1400), Y(4)); for (let wx = CASTLE_X - 1400; wx <= WEND; wx += 4 / z) c.lineTo(X(wx), Y(-Math.max(0, mtTop(wx)))); c.lineTo(X(WEND), Y(4)); c.closePath(); };
           const drawMt = (front) => { c.save(); c.beginPath(); c.rect(0, 0, X(WEND - 30), Y(2)); c.clip(); mtPath(); c.save(); c.clip();
             { const g = c.createLinearGradient(0, Y(-MT_H - 40), 0, Y(0)); g.addColorStop(0, css([40, 23, 19])); g.addColorStop(.5, css([28, 16, 13])); g.addColorStop(1, css([16, 9, 7])); c.fillStyle = g; c.fillRect(0, 0, VW, VH); }
             // the burning hill's own painted rock laid into it (the inner part of `hill-rock.webp`), so its faces are real rock
-            if (MTROCK) { const W2 = MTROCK.width, H2 = MTROCK.height; c.globalCompositeOperation = 'overlay'; c.globalAlpha = .85; c.drawImage(MTROCK, W2 * .22, H2 * .3, W2 * .5, H2 * .62, X(CASTLE_X - 900), Y(-MT_H - 30), 1700 * z, (MT_H + 34) * z); c.globalAlpha = 1; c.globalCompositeOperation = 'source-over'; }
+            if (MTROCK) { const W2 = MTROCK.width, H2 = MTROCK.height; c.globalCompositeOperation = 'overlay'; c.globalAlpha = .85; c.drawImage(MTROCK, W2 * .22, H2 * .3, W2 * .5, H2 * .62, X(CASTLE_X - 900), Y(-MT_H - 90), 1700 * z, (MT_H + 94) * z); c.globalAlpha = 1; c.globalCompositeOperation = 'source-over'; }
             else if (ROCKPAT) { const ts = 1.4 * z, tw = ROCKTEX.width * ts; ROCKPAT.setTransform(new DOMMatrix([ts, 0, 0, ts, X(CASTLE_X) % tw, Y(-MT_H)])); c.globalCompositeOperation = 'overlay'; c.globalAlpha = .4; c.fillStyle = ROCKPAT; c.fillRect(0, 0, VW, VH); c.globalAlpha = 1; c.globalCompositeOperation = 'source-over'; }
             // the side toward the dusk glow (left) a little lighter, the gate's side in shade
             { const g = c.createLinearGradient(X(CASTLE_X - 700), 0, X(CASTLE_X + 400), 0); g.addColorStop(0, css([110, 60, 44], .16)); g.addColorStop(.5, css([110, 60, 44], 0)); g.addColorStop(1, css([8, 4, 3], .35)); c.fillStyle = g; c.fillRect(0, 0, VW, VH); }
@@ -1810,7 +1812,7 @@ const HL = (() => {
             c.strokeStyle = css([120, 70, 52], .28); c.lineWidth = 1.2 * z; mtPath(); c.stroke();
             // nearer buttresses at its foot, a shade darker, each lit faintly on its left (the dusk) edge: the mountain has depth
             if (!front) [[-430, .42, 260, 71], [-90, .3, 200, 72], [250, .36, 210, 73]].forEach(([dx, hk, wd, sd]) => {
-              const bt = x => { const u = (x - CASTLE_X - dx) / wd; if (Math.abs(u) >= 1) return -1; const e = u < 0 ? 1 - Math.pow(-u, 1.6) : 1 - Math.pow(u, .8); return MT_H * hk * e + (nz(x * .03, sd) - .5) * 26 * e + (nz(x * .11, sd + 9) - .5) * 7; };
+              const bt = x => { const u = (x - CASTLE_X - dx) / wd; if (Math.abs(u) >= 1) return -1; const e = Math.pow(Math.cos(u * Math.PI / 2), 1.4); return MT_H * hk * e + (nz(x * .03, sd) - .5) * 18 * e + (nz(x * .11, sd + 9) - .5) * 4 * e; };
               c.beginPath(); c.moveTo(X(CASTLE_X + dx - wd), Y(4)); for (let wx = CASTLE_X + dx - wd; wx <= CASTLE_X + dx + wd; wx += 4 / z) c.lineTo(X(wx), Y(-Math.max(0, bt(wx)))); c.lineTo(X(CASTLE_X + dx + wd), Y(4)); c.closePath();
               c.save(); c.clip(); { const g = c.createLinearGradient(0, Y(-MT_H * hk), 0, Y(0)); g.addColorStop(0, css([30, 17, 14])); g.addColorStop(1, css([14, 8, 6])); c.fillStyle = g; c.fillRect(0, 0, VW, VH); }
                 if (MTROCK) { const W2 = MTROCK.width, H2 = MTROCK.height; c.globalCompositeOperation = 'overlay'; c.globalAlpha = .7; c.drawImage(MTROCK, W2 * (.3 + .1 * (sd - 71)), H2 * .45, W2 * .25, H2 * .45, X(CASTLE_X + dx - wd), Y(-MT_H * hk - 20), 2 * wd * z, (MT_H * hk + 24) * z); c.globalAlpha = 1; c.globalCompositeOperation = 'source-over'; }
@@ -1993,7 +1995,7 @@ const HL = (() => {
         if (gw > .01 && (GWST || EVS.ready)) {
           if (!GWST && !GWF.length) for (let i = 0; i < EVS_META.frames; i += 4) { const im = solidOf(EVS[i]), w = mk(im.width, im.height), q = w.getContext('2d'); q.drawImage(im, 0, 0); q.clearRect(150, 0, im.width, im.height); GWF.push(w); }
           c.save(); c.translate(VW / 2 - cx * z, wl); c.scale(z, z);
-          const gwBack = pullT >= 0 ? smooth(GATE_X - 40, GATE_X + 70, C3.x) : 0, fx = GATE_X + GSL + 74 + 64 * gwBack;
+          const gwBack = pullT >= 0 ? smooth(GATE_X - 40, GATE_X + 70, C3.x) : 0, fx = GATE_X + GSL + 74 + 110 * gwBack;
           GWFX = fx;
           FK = .9; if (GWRE && gwReach > .5) figure(c, 'gw', GWRE, GWRE_META, fx, -1, [52, 44, 40], gw * .96); else if (GWST) figure(c, 'gw', GWST, GWST_META, fx, -1, [52, 44, 40], gw * .96, breath(3)); else figure(c, 'gw', GWF[Math.floor(G.t / 20) % GWF.length], EVS_META, fx, -1, [52, 44, 40], gw * .96); FK = 1;
           c.restore(); } }
