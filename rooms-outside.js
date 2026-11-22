@@ -43,7 +43,10 @@
       const WH = 210; c.fillStyle = css(col); c.beginPath(); c.moveTo(XC, FY + 4); let x = XC; while (x < EX.x1 + 40) { const w = 46 + r() * 40, hh = r() * 8; c.lineTo(x, FY - WH - hh); c.lineTo(x + w - 3, FY - WH - hh); x += w; } c.lineTo(EX.x1 + 40, FY + 4); c.closePath(); c.fill();
       c.strokeStyle = css(col.map(v => v * .8)); c.lineWidth = 3; for (let q = 1; q < 5; q++) { c.beginPath(); c.moveTo(XC, FY - WH + q * 42); c.lineTo(EX.x1 + 40, FY - WH + q * 42); c.stroke(); }
       c.fillStyle = leaving ? 'rgba(170,170,190,.22)' : 'rgba(120,124,150,.12)'; c.fillRect(XC, FY - WH - 10, EX.x1 + 40 - XC, 6); }
-    const { X0 } = HSE, X1 = HSE.X1, ST = FY - 640, EV0 = ST - 660; c.fillStyle = '#2a231e'; c.fillRect(X0, EV0, X1 - X0, FY - EV0);
+    const { X0 } = HSE, X1 = HSE.X1, ST = FY - 640, EV0 = ST - 660; c.fillStyle = '#423c35'; c.fillRect(X0, EV0, X1 - X0, FY - EV0);
+    // (build 537, owner: "Roof and walls too similar") the walls limewashed, pale as plastered houses of the time were, a cool breath of the
+    // night sky on them from above; the roof's clay tiles darker and redder
+    { const gm = c.createLinearGradient(0, EV0, 0, FY); gm.addColorStop(0, 'rgba(120,130,160,.10)'); gm.addColorStop(1, 'rgba(20,16,12,.18)'); c.fillStyle = gm; c.fillRect(X0, EV0, X1 - X0, FY - EV0); }
     c.fillStyle = 'rgba(12,9,7,.55)'; c.fillRect(X0, ST - 10, X1 - X0, 22); c.fillStyle = 'rgba(90,78,64,.25)'; c.fillRect(X0, ST - 10, X1 - X0, 3);
     g = c.createLinearGradient(X0, 0, X0 + 700, 0); g.addColorStop(0, 'rgba(10,8,6,.55)'); g.addColorStop(1, 'rgba(10,8,6,0)'); c.fillStyle = g; c.fillRect(X0, EV0, 700, FY - EV0);
     c.fillStyle = 'rgba(40,46,60,.35)'; c.fillRect(X0, EV0, 10, FY - EV0);
@@ -56,7 +59,7 @@
     // nearly the house's full width, the verges at the gable ends a little inset and darker.
     { const EV = ST - 660, RG = EV - 440, x0 = X0 - 40, x1 = X1 + 40, CH = 24, TW = 40;
       const vg = 26, rx0 = x0 + vg, rx1 = x1 - vg;
-      c.fillStyle = '#18120e'; c.beginPath(); c.moveTo(x0, EV); c.lineTo(rx0, RG); c.lineTo(rx1, RG); c.lineTo(x1, EV); c.closePath(); c.fill();
+      c.fillStyle = '#140e0b'; c.beginPath(); c.moveTo(x0, EV); c.lineTo(rx0, RG); c.lineTo(rx1, RG); c.lineTo(x1, EV); c.closePath(); c.fill();
       c.save(); c.beginPath(); c.moveTo(x0, EV); c.lineTo(rx0, RG); c.lineTo(rx1, RG); c.lineTo(x1, EV); c.closePath(); c.clip();
       // the courses, from the ridge down so each lower course lies over the one above: each tile hangs a little crooked (its lower lip
       // uneven), the joints between tiles faint, and the top of every course lies in the shadow of the lip above it; the courses sag
@@ -65,7 +68,7 @@
       for (let y = RG + 4, row = 0; y < EV + CH; y += CH, row++) {
         let x = x0 - (row % 2 ? TW / 2 : 0) - r() * 10;
         while (x < x1) { const w = TW * (.8 + r() * .4), t = r(), dl = (r() - .5) * 4, dr = (r() - .5) * 4, sy = y + sagAt(x + w / 2);
-          const v = 26 + t * 10, rr = v + 6, gg = v - 2, bb = v - 7;
+          const v = 17 + t * 9, rr = v + 10, gg = v - 1, bb = v - 5;
           c.fillStyle = `rgb(${rr | 0},${gg | 0},${bb | 0})`; c.beginPath(); c.moveTo(x + .8, sy - 2); c.lineTo(x + w - .8, sy - 2); c.lineTo(x + w - .8, sy + CH + dr); c.quadraticCurveTo(x + w / 2, sy + CH + 1.5 + (dl + dr) / 2, x + .8, sy + CH + dl); c.closePath(); c.fill();
           // the lip catches a breath of light; the joint is a fine dark line, fading down the tile
           c.fillStyle = 'rgba(130,104,80,.09)'; c.fillRect(x + 2, sy + CH - 2 + (dl + dr) / 2, w - 4, 2);
