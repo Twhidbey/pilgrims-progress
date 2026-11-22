@@ -11,7 +11,7 @@
   // over still water with one tiny far fire mirrored in it; the stone house in the right half, one lit window above, the arched door (DOOR);
   // leaving, the same picture at the end of night: the low coursed wall called Salvation begins on the right and the first cold grey lies
   // along the horizon there, so Level 5 (the Cross, before dawn) follows on.
-  const HSE = { X0: 1680, X1: 2980, WIN: [2620, 300] };
+  const HSE = { X0: 1360, X1: 3260, WIN: [2660, 300] };
   function bakeDoorScene(leaving) {
     const [cv, c] = mkBake();
     const FY = 1200, r = rngR(leaving ? 91 : 90);
@@ -43,21 +43,27 @@
       const WH = 210; c.fillStyle = css(col); c.beginPath(); c.moveTo(XC, FY + 4); let x = XC; while (x < EX.x1 + 40) { const w = 46 + r() * 40, hh = r() * 8; c.lineTo(x, FY - WH - hh); c.lineTo(x + w - 3, FY - WH - hh); x += w; } c.lineTo(EX.x1 + 40, FY + 4); c.closePath(); c.fill();
       c.strokeStyle = css(col.map(v => v * .8)); c.lineWidth = 3; for (let q = 1; q < 5; q++) { c.beginPath(); c.moveTo(XC, FY - WH + q * 42); c.lineTo(EX.x1 + 40, FY - WH + q * 42); c.stroke(); }
       c.fillStyle = leaving ? 'rgba(170,170,190,.22)' : 'rgba(120,124,150,.12)'; c.fillRect(XC, FY - WH - 10, EX.x1 + 40 - XC, 6); }
-    const { X0 } = HSE, X1 = HSE.X1, ST = FY - 640; c.fillStyle = '#2a231e'; c.fillRect(X0, EX.y0, X1 - X0, FY - EX.y0);
+    const { X0 } = HSE, X1 = HSE.X1, ST = FY - 640, EV0 = ST - 660; c.fillStyle = '#2a231e'; c.fillRect(X0, EV0, X1 - X0, FY - EV0);
     c.fillStyle = 'rgba(12,9,7,.55)'; c.fillRect(X0, ST - 10, X1 - X0, 22); c.fillStyle = 'rgba(90,78,64,.25)'; c.fillRect(X0, ST - 10, X1 - X0, 3);
-    g = c.createLinearGradient(X0, 0, X0 + 700, 0); g.addColorStop(0, 'rgba(10,8,6,.55)'); g.addColorStop(1, 'rgba(10,8,6,0)'); c.fillStyle = g; c.fillRect(X0, EX.y0, 700, FY - EX.y0);
-    c.fillStyle = 'rgba(40,46,60,.35)'; c.fillRect(X0, EX.y0, 10, FY - EX.y0);
-    // the upper floor's string course and windows above (the roof is out of sight above the picture)
-    c.fillStyle = 'rgba(12,9,7,.55)'; c.fillRect(X0, ST - 650, X1 - X0, 22);
-    for (let k = 0; k < 40; k++) { const x = X0 + r() * (X1 - X0), y = EX.y0 + r() * (FY - EX.y0), rr = 60 + r() * 160, gg = c.createRadialGradient(x, y, 0, x, y, rr); gg.addColorStop(0, r() < .5 ? 'rgba(70,58,46,.12)' : 'rgba(6,4,3,.14)'); gg.addColorStop(1, 'rgba(0,0,0,0)'); c.fillStyle = gg; c.fillRect(x - rr, y - rr, 2 * rr, 2 * rr); }
+    g = c.createLinearGradient(X0, 0, X0 + 700, 0); g.addColorStop(0, 'rgba(10,8,6,.55)'); g.addColorStop(1, 'rgba(10,8,6,0)'); c.fillStyle = g; c.fillRect(X0, EV0, 700, FY - EV0);
+    c.fillStyle = 'rgba(40,46,60,.35)'; c.fillRect(X0, EV0, 10, FY - EV0);
+    // (build 528, owner: "the house is a little skinny now") a broad two-storey front round the door, under its roof: the eaves just above the
+    // upper floor, the roof's tiled slope rising behind them to the ridge, the kitchen chimney over the hearth (as in the cutaway)
+    { const EV = ST - 660, RG = EV - 420, ins = 520;
+      c.fillStyle = '#1b1612'; c.beginPath(); c.moveTo(X0 - 50, EV); c.lineTo(X0 + ins, RG); c.lineTo(X1 - ins, RG); c.lineTo(X1 + 50, EV); c.closePath(); c.fill();
+      c.strokeStyle = 'rgba(6,4,3,.45)'; c.lineWidth = 4; for (let k = 1; k < 7; k++) { const y = EV - (EV - RG) * k / 7, dx = ins * k / 7 - 50 * (1 - k / 7); c.beginPath(); c.moveTo(X0 + dx, y); c.lineTo(X1 - dx, y); c.stroke(); }
+      c.fillStyle = leaving ? 'rgba(130,136,160,.35)' : 'rgba(80,86,110,.3)'; c.fillRect(X0 + ins, RG - 4, X1 - X0 - 2 * ins, 5);
+      c.fillStyle = '#100c09'; c.fillRect(X0 - 60, EV - 8, X1 - X0 + 120, 34); c.fillStyle = 'rgba(90,78,64,.22)'; c.fillRect(X0 - 60, EV + 22, X1 - X0 + 120, 3);
+      c.fillStyle = '#1e1813'; c.fillRect(2900, RG - 140, 110, 210); c.fillRect(2885, RG - 160, 140, 26); }
+    for (let k = 0; k < 40; k++) { const x = X0 + r() * (X1 - X0), y = EV0 + 160 + r() * (FY - EV0 - 160), rr = 60 + r() * 140, gg = c.createRadialGradient(x, y, 0, x, y, rr); gg.addColorStop(0, r() < .5 ? 'rgba(70,58,46,.12)' : 'rgba(6,4,3,.14)'); gg.addColorStop(1, 'rgba(0,0,0,0)'); c.fillStyle = gg; c.fillRect(x - rr, y - rr, 2 * rr, 2 * rr); }
     const win = (x, y, w, h, lit) => { c.fillStyle = '#120c08'; c.fillRect(x - w / 2 - 16, y - h / 2 - 16, w + 32, h + 32); c.fillStyle = lit ? '#e8a85a' : '#151820'; c.fillRect(x - w / 2, y - h / 2, w, h); c.fillStyle = '#120c08'; c.fillRect(x - 4, y - h / 2, 8, h); c.fillRect(x - w / 2, y - h * .1, w, 8); };
-    const [wx, wy] = HSE.WIN; win(wx, wy, 130, 200, true); win(1880, wy, 130, 200, false); win(2760, 820, 150, 300, false);
-    c.fillStyle = '#0c0806'; c.fillRect(2620, FY - 70, 140, 50); c.fillStyle = '#2a231e'; for (let k = 0; k < 4; k++) c.fillRect(2632 + k * 34, FY - 70, 8, 50);
+    // five windows upstairs (the bedchamber's lit), two below either side of the door (the parlour's on the right)
+    const [wx, wy] = HSE.WIN; for (const x of [1600, 1960, 2308, 3010]) win(x, wy, 130, 200, false); win(wx, wy, 130, 200, true); win(1600, 820, 150, 300, false); win(2960, 820, 150, 300, false);
     // the door's deep arched surround (the door's light itself is drawn live)
     const dx0 = DOOR.x - DOOR.w / 2 - 34, dx1 = DOOR.x + DOOR.w / 2 + 34, rr = (dx1 - dx0) / 2; c.fillStyle = '#3a302a'; c.beginPath(); c.moveTo(dx0, DOOR.bot); c.lineTo(dx0, DOOR.top + rr); c.arc(dx0 + rr, DOOR.top + rr, rr, Math.PI, 0); c.lineTo(dx1, DOOR.bot); c.fill();
     c.fillStyle = '#0c0806'; const ir = DOOR.w / 2; c.beginPath(); c.moveTo(DOOR.x - ir, DOOR.bot); c.lineTo(DOOR.x - ir, DOOR.top + ir); c.arc(DOOR.x, DOOR.top + ir, ir, Math.PI, 0); c.lineTo(DOOR.x + ir, DOOR.bot); c.fill();
     // the house's corner: a soft shadow on its front by the edge, and the edge itself catching the sky (greyer as dawn comes)
-    { const g3 = c.createLinearGradient(X1 - 260, 0, X1, 0); g3.addColorStop(0, 'rgba(8,6,5,0)'); g3.addColorStop(1, 'rgba(8,6,5,.5)'); c.fillStyle = g3; c.fillRect(X1 - 260, EX.y0, 260, FY - EX.y0); c.fillStyle = leaving ? 'rgba(120,126,150,.4)' : 'rgba(60,66,90,.35)'; c.fillRect(X1 - 8, EX.y0, 8, FY - EX.y0); }
+    { const g3 = c.createLinearGradient(X1 - 260, 0, X1, 0); g3.addColorStop(0, 'rgba(8,6,5,0)'); g3.addColorStop(1, 'rgba(8,6,5,.5)'); c.fillStyle = g3; c.fillRect(X1 - 260, EV0, 260, FY - EV0); c.fillStyle = leaving ? 'rgba(120,126,150,.4)' : 'rgba(60,66,90,.35)'; c.fillRect(X1 - 8, EV0, 8, FY - EV0); }
     // the path and the ground
     c.fillStyle = '#0e0d0c'; c.fillRect(EX.x0, FY, EX.x1 - EX.x0, EX.y1 - FY); c.fillStyle = 'rgba(90,80,70,.25)'; c.fillRect(1500, FY, EX.x1 - 1500, 3);
     // the worn path (build 519): a flat band of paler trodden earth along the ground from the left to the doorstep and on to the highway,
@@ -151,7 +157,7 @@
           const st = Math.floor(this.fr * 2 / VIS.C.walk.fr); if (st !== this.lst) { this.lst = st; if (typeof stepOn === 'function') stepOn('dirt', 1); }
         }
         H.cam.to = 0;
-        if (this.x > 3150) { this.a = Math.max(0, this.a - .03); if (G.act === 'walkout') { next(true); G.state = 'auto'; } }
+        if (this.x > 3330) { this.a = Math.max(0, this.a - .03); if (G.act === 'walkout') { next(true); G.state = 'auto'; } }
         if (this.a <= 0 && H.ph !== 'end') { H.ph = 'end'; H.t = 0; }
         if (H.ph === 'end' && H.t === 40) finish();
       },

@@ -13,6 +13,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 **Build 516 (Room 4 chat): the fire room reworked: a particle fire, water arcing into it, the oil fed through a low arch into the back of the same fire, the hidden side truly dark, the two walking round behind the wall by a cupped candle (the La Tour quote). Two free clips queued (`room4-cast`, `room4-pour`). Nothing spent; see notes/room4.md.**
 
+**Build 528 (House · Outside & passages chat): the house outside the door broader, under a tiled roof with a chimney, five windows up and two down; the cellar grating and the extra string course taken out. Nothing spent.**
+
 **Build 519 (House · Outside & passages chat): leaving ends with Christian running on up the highway beside the wall of Salvation into Level 5's grey; the house has a corner; the cutaway larger and opaque; the Interpreter steps out onto the threshold and Christian walks in; Level 1's field trees and a path outside the door; the house plan only on the first passage. Nothing spent.**
 
 **Build 514 (House · Outside & passages chat): every passage between rooms now drawn on the rooms' own shell at the rooms' size: the doorway they came through, a partition with the next room's lit doorway, stairs in section, the back door onto the night garden. Nothing spent.**
