@@ -6,7 +6,7 @@
 // change while playing (R the room, t, ph, fade, toned, sayK ...) are read and set through H (H.R, H.t).
 // ============================================================
 (window.RMR = window.RMR || []).push(H => {
-  const { EX, I, PAINTED, PH, ROOMS, S, SEEN_R, VIS, WALK_FPT, darkWith, finish, glow, goTo, hold, housePlan, knockS, loads, mkBake, near, noise, passKind, pic, pics, ring, rngR, tone, u, v, visitor, walkFig, walkSpeed } = H;
+  const { EX, HOUSE, I, PAINTED, PH, ROOMS, S, SEEN_R, VIS, WALK_FPT, darkWith, finish, glow, goTo, hold, housePlan, bakeShell, knockS, loads, mkBake, near, noise, passKind, pic, pics, ring, rngR, tone, u, v, visitor, walkFig, walkSpeed } = H;
   // THE DOOR AND LEAVING, drawn (build 432; after Rembrandt's Rest on the Flight into Egypt): night; two layered masses of dark trees on the left
   // over still water with one tiny far fire mirrored in it; the stone house in the right half, one lit window above, the arched door (DOOR);
   // leaving, the same picture at the end of night: the low coursed wall called Salvation begins on the right and the first cold grey lies
@@ -104,57 +104,92 @@
   // the Interpreter's candle ("he took him by the hand, and led him into ..."). Christian walks (his own walk pictures,
   // dark), the Interpreter goes a step ahead with a candle, its light moving along the wall and the floor.
       pass: {
-    pic: null, FY: 1160, cam0: 0, tone: [120, 92, 74], k: .82, PW: 2526,
-    enter() { this.p = 0; this.fr = 0; this.w = 0; this.st = 0; this.go = false; this.vt = 0; this.left = false; this.kind = passKind(this.from, this.to); pic(VIS.C.walk.n); pic(VIS.I.walk.n); if (this.to && ROOMS[this.to].pic) pic(ROOMS[this.to].pic); },
+    // THE SAME HOUSE AS ITS ROOMS (build 508, owner: "make the passages look like the same house as the rooms"): every passage is now baked on
+    // the rooms' own shell (bakeShell: the same plaster, high beamed ceiling, skirting, floor, end walls cut edge-on, lintel height), seen at the
+    // rooms' own view and the visitors at the rooms' own size (shell 1, k 1). The way is a short stretch of the house in section: the doorway
+    // they came through in the left end wall, a partition (another wall cut edge-on, PX) with the next room's doorway, and beyond it the next
+    // room itself, dim, its own light falling through the doorway. Out of doors (to the garden, round the house) the house's back wall is cut
+    // at PX and the night garden lies beyond it.
+    pic: null, shell: 1, FY: 1250, cam0: 0, tone: [120, 92, 74], k: 1, PW: 3168,
+    PX: 1720, PW2: 110,
+    enter() { this.p = 0; this.fr = 0; this.w = 0; this.st = 0; this.go = false; this.vt = 0; this.left = false; this.kind = passKind(this.from, this.to); this.bk = this.bakeKey(); if (!pics[this.bk]) pics[this.bk] = this.bake(this.bk); pic(VIS.C.walk.n); pic(VIS.I.walk.n); if (this.to && ROOMS[this.to] && ROOMS[this.to].pic) pic(ROOMS[this.to].pic); },
+    bakeKey() { const K = this.kind; return 'pass-' + (K === 'down' && this.to !== 'r6' ? 'downH' : K); },
     // the standing line at x: level in a corridor, rising up the great stair, falling down the cellar stair (S0 to S1 the flight)
-    S0: 760, S1: 1760, RISE: 250,
+    S0: 560, S1: 1360, RISE: 300,
     floorAt(x) { const q = Math.max(0, Math.min(1, (x - this.S0) / (this.S1 - this.S0))); return this.kind === 'up' ? this.FY - this.RISE * q : this.kind === 'down' ? this.FY - this.RISE * (1 - q) : this.FY; },
-    scene(c) {
-      const K = this.kind, FY = this.FY, W2 = 2526, sky = K === 'out' || K === 'round';
-      // the wall (stone and cooler in the cellar, plaster in the house) and the floor; one dark tone each, the candle reveals them
-      const wallC = K === 'down' ? '#211b18' : '#2c1d13', floorC = K === 'down' ? '#15110e' : '#1d130c';
-      c.fillStyle = wallC; c.fillRect(u(0), v(0), W2 * S, PH * S);
-      if (K === 'hall' || K === 'out' || K === 'up' || K === 'down') {
-        // a beam along the ceiling, and the doorway they came through on the left
-        c.fillStyle = 'rgba(12,7,4,.8)'; c.fillRect(u(0), v(FY - 820), W2 * S, 36 * S);
-        c.fillStyle = '#120a06'; c.fillRect(u(90), v((K === 'down' ? FY - this.RISE : FY) - 763), 210 * S, 763 * S);
-      }
-      if (K === 'up' || K === 'down') {
-        // the stair: a flight of wooden steps in side view, a handrail with turned balusters, the landing beyond
-        const n = 12, x0 = this.S0, x1 = this.S1, top = FY - this.RISE, up = K === 'up';
-        c.fillStyle = '#24170e'; c.beginPath(); c.moveTo(u(x0), v(up ? FY : top));
-        for (let i = 0; i < n; i++) { const xa = x0 + (x1 - x0) * i / n, xb = x0 + (x1 - x0) * (i + 1) / n, ya = up ? FY - this.RISE * i / n : top + this.RISE * i / n, yb = up ? FY - this.RISE * (i + 1) / n : top + this.RISE * (i + 1) / n;
-          c.lineTo(u(xa), v(up ? yb : ya)); c.lineTo(u(xb), v(up ? yb : ya)); }
-        c.lineTo(u(x1), v(up ? top : FY)); c.lineTo(u(W2), v(up ? top : FY)); c.lineTo(u(W2), v(PH)); c.lineTo(u(0), v(PH)); c.lineTo(u(0), v(up ? FY : top)); c.closePath(); c.fill();
-        // the step nosings catch the candle a little
-        c.strokeStyle = '#120a05'; c.lineWidth = Math.max(2, 26 * S); c.beginPath(); c.moveTo(u(x0), v((up ? FY : top) + 20)); c.lineTo(u(x1), v((up ? top : FY) + 20)); c.stroke();
-        c.strokeStyle = 'rgba(150,100,56,.75)'; c.lineWidth = Math.max(1.2, 6 * S);
-        for (let i = 1; i <= n; i++) { const xa = x0 + (x1 - x0) * (i - 1) / n, xb = x0 + (x1 - x0) * i / n, y = up ? FY - this.RISE * i / n : top + this.RISE * (i - 1) / n; c.beginPath(); c.moveTo(u(up ? xa : xa), v(y)); c.lineTo(u(xb), v(y)); c.stroke(); }
-        c.strokeStyle = '#3a2614'; c.lineWidth = Math.max(1.5, 9 * S); c.beginPath(); c.moveTo(u(x0 - 60), v((up ? FY : top) - 300)); c.lineTo(u(x1 + 60), v((up ? top : FY) - 300)); c.stroke();
-        c.lineWidth = Math.max(1, 5 * S); for (let i = 0; i <= n; i += 2) { const xa = x0 + (x1 - x0) * i / n, yb = up ? FY - this.RISE * i / n : top + this.RISE * i / n; c.beginPath(); c.moveTo(u(xa), v(yb)); c.lineTo(u(xa), v(yb - 300)); c.stroke(); }
-        // the doorway at the end: the bedchamber's door upstairs, the cellar's low arch below
-        c.fillStyle = '#0c0705'; if (up) c.fillRect(u(2150), v(top - 763), 220 * S, 763 * S); else { c.beginPath(); c.moveTo(u(2140), v(FY)); c.lineTo(u(2140), v(FY - 600)); c.arc(u(2255), v(FY - 600), 115 * S, Math.PI, 0); c.lineTo(u(2370), v(FY)); c.closePath(); c.fill(); }
-      }
-      if (K === 'hall') {
-        // the next room's doorway on the right, its door ajar, a little of its light on the boards
-        c.fillStyle = '#0d0805'; c.fillRect(u(2140), v(FY - 763), 230 * S, 763 * S);
-        const g = c.createLinearGradient(u(2140), 0, u(2370), 0); g.addColorStop(0, 'rgba(255,190,110,0)'); g.addColorStop(1, 'rgba(255,190,110,.22)'); c.fillStyle = g; c.fillRect(u(2140), v(FY - 763), 230 * S, 763 * S);
-        c.fillStyle = '#3a2416'; c.beginPath(); c.moveTo(u(2140), v(FY - 763)); c.lineTo(u(2210), v(FY - 733)); c.lineTo(u(2210), v(FY + 10)); c.lineTo(u(2140), v(FY)); c.closePath(); c.fill();
-      }
-      if (sky) {
-        // out of doors at night: the sky, the garden wall, the dark shrubs; the house's back wall on the left (and its lit windows when going round)
-        const x0 = K === 'out' ? 1560 : 0, g = c.createLinearGradient(0, v(0), 0, v(FY)); g.addColorStop(0, '#0b0f1c'); g.addColorStop(1, '#1b2132');
-        c.fillStyle = g; c.fillRect(u(x0), v(0), (W2 - x0) * S, (FY + 4) * S);
-        const r = rngR(4); c.fillStyle = 'rgba(230,230,255,.6)'; for (let i = 0; i < 40; i++) { const sx = x0 + r() * (W2 - x0), sy = r() * 600; c.fillRect(u(sx), v(sy), 1.2, 1.2); }
-        c.fillStyle = '#121812'; c.fillRect(u(x0), v(FY - 150), (W2 - x0) * S, 150 * S);
-        for (let x = x0 + 60; x < W2; x += 260 + r() * 200) { c.beginPath(); c.ellipse(u(x), v(FY - 120), (70 + r() * 60) * S, (90 + r() * 50) * S, 0, 0, 6.2832); c.fill(); }
-        if (K === 'out') { c.fillStyle = '#0c0705'; c.fillRect(u(1460), v(FY - 763), 110 * S, 763 * S); c.fillStyle = '#2c1d13'; c.fillRect(u(1440), v(FY - 800), 20 * S, 800 * S); }
-        if (K === 'round') { c.fillStyle = '#1a120c'; c.fillRect(u(0), v(FY - 900), 1200 * S, 900 * S); for (const wx of [240, 700]) { c.fillStyle = 'rgba(255,190,110,.55)'; c.fillRect(u(wx), v(FY - 560), 120 * S, 170 * S); }
-          c.fillStyle = '#20140c'; c.fillRect(u(2200), v(FY - 340), 26 * S, 340 * S); c.fillRect(u(2380), v(FY - 340), 26 * S, 340 * S); }
-      }
-      c.fillStyle = sky ? (K === 'out' ? floorC : '#151a12') : floorC; c.fillRect(u(0), v(FY), W2 * S, (PH - FY) * S + 200);
-      if (K === 'out') { c.fillStyle = '#151a12'; c.fillRect(u(1560), v(FY), (W2 - 1560) * S, (PH - FY) * S + 200); }
+    bake(key) {
+      const K = key.slice(5), { FY, LINTEL, END } = HOUSE, DH = FY - LINTEL, PX = this.PX, PW2 = this.PW2, X1 = EX.x1, Y0 = EX.y0, Y1 = EX.y1, RISE = this.RISE, S0 = this.S0, S1 = this.S1;
+      const outdoors = K === 'out' || K === 'round', cellar = K === 'down';
+      // the next room beyond the partition: a faint pool of its own light on its wall
+      const beyond = outdoors ? [] : [{ x: PX + 700, y: (K === 'up' ? FY - RISE : FY) - 380, r: 1200, lit: cellar ? [70, 62, 54] : [104, 70, 40], half: cellar ? [36, 30, 26] : [52, 34, 20], sx: 1.1, a: cellar ? .5 : .7 }];
+      // a doorway cut in an end wall (or the partition), its floor at fy: dark within, a thin lit jamb on the side toward the light, a lintel
+      const endDoor = (c, x0, fy, jambR, arch) => {
+        c.fillStyle = '#070403';
+        if (arch) { const r = END / 2; c.fillRect(x0, fy - DH + 40, END, DH - 40); }
+        else c.fillRect(x0, fy - DH, END, DH);
+        c.fillStyle = '#3a2616'; c.fillRect(jambR ? x0 + END - 6 : x0, fy - DH, 6, DH); c.fillRect(x0, fy - DH - 6, END, 6);
+      };
+      return bakeShell({
+        seed: 50 + key.length, doors: K === 'down' || K === 'up' || K === 'downH' ? '' : 'L', lights: beyond,
+        wallC: cellar ? '#251c16' : '#2c1d13', floorC: '#1d130c',
+        near(c, r) {
+          // the stair: a flight of boards in section, each tread's nosing catching a little light, a handrail with balusters, and under the
+          // upper floor the dark mass of the house's structure
+          if (K === 'up' || K === 'down' || K === 'downH') {
+            const up = K === 'up', top = FY - RISE, n = 12;
+            c.fillStyle = '#1a110b'; c.beginPath(); c.moveTo(up ? S0 : EX.x0, up ? FY : top);
+            if (!up) c.lineTo(S0, top);
+            for (let i = 0; i < n; i++) { const xa = S0 + (S1 - S0) * i / n, xb = S0 + (S1 - S0) * (i + 1) / n, y = up ? FY - RISE * (i + 1) / n : top + RISE * i / n, y2 = up ? y : top + RISE * (i + 1) / n;
+              if (up) { c.lineTo(xa, y); c.lineTo(xb, y); } else { c.lineTo(xa, y2); c.lineTo(xb, y2); } }
+            if (up) { c.lineTo(X1, top); c.lineTo(X1, Y1); c.lineTo(S0, Y1); } else { c.lineTo(S1, FY); c.lineTo(S1, Y1); c.lineTo(EX.x0, Y1); }
+            c.closePath(); c.fill();
+            // the nosings and the skirting along the flight
+            c.fillStyle = 'rgba(120,84,52,.4)';
+            for (let i = 0; i < n; i++) { const xa = S0 + (S1 - S0) * i / n, xb = S0 + (S1 - S0) * (i + 1) / n, y = up ? FY - RISE * (i + 1) / n : top + RISE * (i + 1) / n; c.fillRect(xa, y, xb - xa, 3); }
+            c.fillStyle = 'rgba(120,84,52,.22)'; if (up) c.fillRect(S1, top, X1 - S1, 3); else c.fillRect(EX.x0, top, S0 - EX.x0, 3);
+            c.strokeStyle = '#2a1a0f'; c.lineWidth = 12; const hy = 330;
+            c.beginPath(); c.moveTo(S0 - 80, (up ? FY : top) - hy); c.lineTo(S1 + 80, (up ? top : FY) - hy); c.stroke();
+            c.lineWidth = 6; for (let i = 0; i <= n; i += 2) { const xa = S0 + (S1 - S0) * i / n, yb = up ? FY - RISE * i / n : top + RISE * i / n; c.beginPath(); c.moveTo(xa, yb); c.lineTo(xa, yb - hy + (up ? -RISE / n * 0 : 0)); c.stroke(); }
+            // the doorway they came through, in the left end wall, at its own floor's level
+            endDoor(c, EX.x0, up ? FY : top, true);
+          }
+          // THE PARTITION: the next room's wall cut edge-on, floor to ceiling, with its doorway (the cellar's a low stone arch)
+          const pf = K === 'up' ? FY - RISE : FY;
+          if (!outdoors) {
+            c.fillStyle = 'rgba(8,5,3,.35)'; c.fillRect(PX + PW2, Y0, X1 - PX - PW2, Y1 - Y0);
+            c.fillStyle = '#0c0705'; c.fillRect(PX, Y0, PW2, Y1 - Y0);
+            if (cellar) { c.fillStyle = '#070403'; c.beginPath(); c.moveTo(PX, pf); c.lineTo(PX, pf - DH + 160); c.lineTo(PX + PW2, pf - DH + 160); c.lineTo(PX + PW2, pf); c.fill(); c.fillStyle = 'rgba(110,92,70,.35)'; c.fillRect(PX, pf - DH + 154, PW2, 6); }
+            else endDoor(c, PX, pf, false);
+            // the opening lit from the room beyond, brighter toward it, so the doorway reads as the way on
+            { const top = cellar ? pf - DH + 160 : pf - DH, g = c.createLinearGradient(PX, 0, PX + PW2, 0), col = cellar ? '120,112,100' : '214,150,86';
+              g.addColorStop(0, `rgba(${col},.05)`); g.addColorStop(1, `rgba(${col},${cellar ? .22 : .34})`); c.fillStyle = g; c.fillRect(PX, top, PW2, pf - top);
+              const gv = c.createLinearGradient(0, top, 0, pf); gv.addColorStop(0, 'rgba(7,4,3,.6)'); gv.addColorStop(.5, 'rgba(7,4,3,0)'); c.fillStyle = gv; c.fillRect(PX, top, PW2, pf - top); }
+            // the next room's light through the doorway, flat on the boards
+            c.save(); c.translate(PX + PW2, pf + 18); c.scale(1, .1); const g = c.createRadialGradient(0, 0, 0, 0, 0, 600); g.addColorStop(0, cellar ? 'rgba(120,110,96,.25)' : 'rgba(200,140,80,.32)'); g.addColorStop(1, 'rgba(200,140,80,0)'); c.fillStyle = g; c.fillRect(-600, -600, 1200, 1200); c.restore();
+            return;
+          }
+          // OUT OF DOORS: the night beyond the house's back wall (cut at PX), the garden wall, dark shrubs, the grass
+          const gx = K === 'out' ? PX + PW2 : EX.x0;
+          let g = c.createLinearGradient(0, Y0, 0, FY); g.addColorStop(0, '#070a14'); g.addColorStop(1, '#1b2132'); c.fillStyle = g; c.fillRect(gx, Y0, X1 - gx, FY - Y0);
+          for (let i = 0; i < 70; i++) { c.fillStyle = `rgba(220,224,240,${(.15 + r() * .45).toFixed(2)})`; c.fillRect(gx + r() * (X1 - gx), Y0 + r() * 1000, 2.4, 2.4); }
+          c.fillStyle = '#121812'; c.fillRect(gx, FY - 170, X1 - gx, 170); c.fillStyle = 'rgba(110,120,130,.18)'; c.fillRect(gx, FY - 170, X1 - gx, 4);
+          c.fillStyle = '#0d120d'; for (let x = gx + 80; x < X1; x += 300 + r() * 220) { for (let k = 0; k < 4; k++) { c.beginPath(); c.ellipse(x + (r() - .5) * 140, FY - 190 - r() * 90, 90 + r() * 70, 70 + r() * 50, 0, 0, 6.2832); c.fill(); } }
+          c.fillStyle = '#111710'; c.fillRect(gx, FY, X1 - gx, Y1 - FY); c.fillStyle = 'rgba(90,110,80,.18)'; c.fillRect(gx, FY, X1 - gx, 3);
+          if (K === 'out') {
+            // the back wall cut edge-on, its door standing open on the night
+            c.fillStyle = '#0c0705'; c.fillRect(PX, Y0, PW2, Y1 - Y0); c.fillStyle = '#1b2132'; c.fillRect(PX, LINTEL, PW2, FY - LINTEL);
+            c.fillStyle = '#3a2616'; c.fillRect(PX, LINTEL - 6, PW2, 6); c.fillStyle = '#2a1a0f'; c.fillRect(PX + PW2, LINTEL, 26, FY - LINTEL);
+          } else {
+            // going round: the house's back wall on the left, its plaster outside at night, two of its windows lit, its corner at PX
+            c.fillStyle = '#231b16'; c.fillRect(EX.x0, Y0, PX - EX.x0, FY - Y0); c.fillStyle = 'rgba(40,46,60,.35)'; c.fillRect(PX - 10, Y0, 10, FY - Y0);
+            c.fillStyle = 'rgba(12,9,7,.55)'; c.fillRect(EX.x0, FY - 1100, PX - EX.x0, 26);
+            for (const wx of [100, 1000]) { c.fillStyle = '#120c08'; c.fillRect(wx - 16, FY - 780 - 16, 182, 292); c.fillStyle = '#c98a48'; c.fillRect(wx, FY - 780, 150, 260); c.fillStyle = '#120c08'; c.fillRect(wx + 71, FY - 780, 8, 260); c.fillRect(wx, FY - 655, 150, 8); }
+            c.fillStyle = '#111710'; c.fillRect(EX.x0, FY, PX - EX.x0, Y1 - FY);
+          }
+        },
+      });
     },
+    scene(c) { const im = pics[this.bk]; if (im) c.drawImage(im, u(EX.x0), v(EX.y0), (EX.x1 - EX.x0) * S, (EX.y1 - EX.y0) * S); },
     run() { talk([[TIP, 'Touch to follow the Interpreter.', 'follow']], () => {}); },
     // one touch and he follows to the end of the passage (owner, build 312: "make walks in dark room happen without holding down walk")
     act() { if (G.act === 'follow') this.start(); },
@@ -179,39 +214,42 @@
         if (this.READ.includes(this.to)) { say(N, txt); voxBuf(vox(N, txt)).then(b => { if (b && this.go && !this.left) this.need = Math.max(this.need, Math.ceil(b.duration * 60) + 30); }); }
       }
     },
-    x() { return 380 + this.p * 700; },
+    // Christian from C0, the Interpreter from I0 (he walks slower in his clip, so he starts further on and ends in the next doorway)
+    C0: 420, I0: 1120, LEN: 1000,
+    x() { return this.C0 + this.p * this.LEN; },
+    ix() { return this.I0 + this.p * this.LEN * walkSpeed('I', this.k) / walkSpeed('C', this.k); },
     upd() {
       if (G.act === 'follow') {
         if (hold()) this.start();
-        if (G.actT >= 50 && !this.go && !G.ring) G.ring = () => [u(this.x() + 420), v(820)];
+        if (G.actT >= 50 && !this.go && !G.ring) G.ring = () => [u(this.x() + 420), v(this.FY - 400)];
       }
       if (this.go) {
         this.w = Math.min(1, this.w + .04); this.vt++;
         // he arrives once the passage is walked and the verse has had time to be read
         if (this.p >= 1 && this.vt >= this.need && !this.left) { this.left = true; dlg.className = ''; document.body.classList.remove('capped'); goTo(this.to); }
       } else this.w = Math.max(0, this.w - .06);
-      this.p = Math.min(1, this.p + walkSpeed('C', this.k) / 700 * this.w); this.fr += WALK_FPT * this.w;
+      this.p = Math.min(1, this.p + walkSpeed('C', this.k) / this.LEN * this.w); this.fr += WALK_FPT * this.w;
       const step = Math.floor(this.fr * 2 / VIS.C.walk.fr); if (step !== this.st) {
         this.st = step;
         // build 492: the ground under his feet: boards in the house, the cellar's stone, the garden's grass out of doors
-        const late = this.p > .72, surf = this.kind === 'round' ? 'grass' : this.kind === 'out' ? (late ? 'grass' : 'wood')
+        const late = this.x() > this.PX + 40, surf = this.kind === 'round' ? 'grass' : this.kind === 'out' ? (late ? 'grass' : 'wood')
           : this.kind === 'down' ? (this.to === 'r6' ? (late ? 'stone' : 'wood') : 'wood') : 'wood';
         if (!(typeof stepOn === 'function' && audio() && (stepOn(surf, 1), true))) { noise(200, 1.5, .2, .06); noise(140, 1.2, .25, .04, .05); }
       }
     },
     draw(c) {
-      const ix = 810 + this.p * 700 * walkSpeed('I', this.k) / walkSpeed('C', this.k), fl = 1 + .06 * Math.sin(G.t / 4.7) * Math.sin(G.t / 11), iy = this.floorAt(ix), cy = this.floorAt(this.x()), lx = u(ix) + 34, ly = v(iy) - 128;
+      const ix = this.ix(), fl = 1 + .06 * Math.sin(G.t / 4.7) * Math.sin(G.t / 11), iy = this.floorAt(ix), cy = this.floorAt(this.x()), lx = u(ix) + 41, ly = v(iy) - 156;
       this.scene(c);
       // only what the candle reaches is seen (out of doors, a little of the night as well)
-      const sky = this.kind === 'out' || this.kind === 'round'; darkWith(c, [[lx, ly, 520 * fl], [lx, v(iy) + 4, 640 * fl, .8]], sky ? .55 : .86);
+      const sky = this.kind === 'out' || this.kind === 'round'; darkWith(c, [[lx, ly, 634 * fl], [lx, v(iy) + 4, 780 * fl, .8], [u(this.PX + 500), v(this.floorAt(this.PX + 500)) - 160, 520, .5]], sky ? .5 : .8);
       // the candle's light on the passage wall and, flat, on the floor
-      glow(c, lx, ly, 330 * fl, [255, 170, 90], .2); c.save(); c.translate(lx, v(iy) + 2); c.scale(1, .12); glow(c, 0, 0, 380 * fl, [255, 170, 90], .32); c.restore();
+      glow(c, lx, ly, 402 * fl, [255, 170, 90], .2); c.save(); c.translate(lx, v(iy) + 2); c.scale(1, .12); glow(c, 0, 0, 463 * fl, [255, 170, 90], .32); c.restore();
       // both walk at their videos' own full pace, each moving at the floor speed that keeps his planted foot still (build 320)
       walkFig(c, 'I', ix, this.fr, this.k, 1, H.R.tone, iy);
       walkFig(c, 'C', this.x(), this.fr, this.k, 1, H.R.tone, cy);
-      glow(c, lx, ly, 26 * fl, [255, 226, 160], .7); c.fillStyle = 'rgba(255,240,200,.95)'; c.beginPath(); c.ellipse(lx, ly - 2, 1.6, 3.4, 0, 0, 6.2832); c.fill();
+      glow(c, lx, ly, 32 * fl, [255, 226, 160], .7); c.fillStyle = 'rgba(255,240,200,.95)'; c.beginPath(); c.ellipse(lx, ly - 2, 2, 4.1, 0, 0, 6.2832); c.fill();
       // where they are in the house: a small cutaway in the corner, the rooms seen faintly lit, the candle going from one to the next
-      housePlan(c, VW - 170, 74, 1.5, this.from, this.to, this.p);
+      c.save(); c.setTransform(DPR, 0, 0, DPR, 0, 0); housePlan(c, VW - 170, 74, 1.5, this.from, this.to, this.p); c.restore();
     },
   },
   };

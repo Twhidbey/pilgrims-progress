@@ -437,7 +437,7 @@ const RM = (() => {
   function setView() {
     // a room drawn on the house's shell fills the picture's width (critics, build 427: "fill the screen; answer claustrophobic by drawing more room"),
     // its floor line a little above the words; zin eases in on a thing, vx moves the view sideways
-    if (R && R.shell && R.id !== 'pass') { const XW = (EX.x1 - EX.x0) * S, Z = VW / XW * (R.zin || 1); VIEW.Z = Z; VIEW.ox = (VW - XW * Z) / 2 - EX.x0 * S * Z + (R.vx || 0); VIEW.oy = VH * .86 - 440 * Z - (R.FY - 1250) * 0; return; }
+    if (R && R.shell) { const XW = (EX.x1 - EX.x0) * S, Z = VW / XW * (R.zin || 1); VIEW.Z = Z; VIEW.ox = (VW - XW * Z) / 2 - EX.x0 * S * Z + (R.vx || 0); VIEW.oy = VH * .86 - 440 * Z - (R.FY - 1250) * 0; return; }
     const vz = (R && R.vz) || VZ, Z = R && R.id === 'pass' ? 1 : vz * Math.min(1, 1204 / (R.PW * S)), top = 440 - R.FY * S;
     VIEW.Z = Z; VIEW.ox = R && R.id === 'pass' ? 0 : (VW - R.PW * S * Z) / 2 + (R.vx || 0); VIEW.oy = R && R.id === 'pass' ? 0 : 14 + PH * S * (Z / vz * .8 - Z) / 2 - top * Z + (R.vy || 0);
   }

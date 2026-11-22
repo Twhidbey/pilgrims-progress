@@ -8,7 +8,7 @@
 //   "s.room === 'r1' && s.ph === 'light' && s.t > 200"   the candle lit
 //   "s.room === 'pass'"                          the passage after the room
 // It passes lines, does every act (holds for the hold acts) and follows into the next rooms.
-// extra query: e.g. "drawn" adds &drawn. DSF=2 for twice the size. PORTRAIT=1 for an upright phone.
+// extra query: e.g. "drawn" adds &drawn. DARK=1 turns the darker rooms on. DSF=2 for twice the size. PORTRAIT=1 for an upright phone.
 const { chromium } = require('playwright'); const fs = require('fs');
 const [out, room, cond, N, extra] = [process.argv[2], process.argv[3], process.argv[4], +process.argv[5] || 1, process.argv[6] || ''];
 const STEP = +(process.env.STEP || 1);
@@ -16,6 +16,7 @@ const STEP = +(process.env.STEP || 1);
   const b = await chromium.launch(); const vp = process.env.PORTRAIT ? { width: 390, height: 844 } : { width: 960, height: 540 };
   const p = await b.newPage({ viewport: vp, deviceScaleFactor: +(process.env.DSF || 1) });
   const errs = []; p.on('pageerror', e => errs.push(String(e)));
+  if (process.env.DARK) await p.addInitScript(() => localStorage.setItem('pp-dark', '1'));
   await p.goto('http://localhost:' + (process.env.PORT || 8123) + '/index.html?room=' + room + (extra ? '&' + extra : ''));
   await p.waitForSelector('body.bookready'); await p.click('.tcover'); await p.waitForTimeout(2500);
   for (let i = 0; i < 40 && !(await p.evaluate(() => RM.on && RM.peek().room)); i++) await p.waitForTimeout(250);

@@ -43,6 +43,7 @@ Several chats push to `main`. Just before pushing: `git fetch`, rebase on `origi
 
 ## Changes to the core (newest first)
 
+- Build 514 (Outside & passages): `setView` lets a passage use the shell view (`if (R && R.shell)`, was `&& R.id !== 'pass'`); only the passage changes, every room has `shell` as before. `tools/stills4.js` takes `DARK=1`.
 - Build 507: `rooms.js` split into the core and the room files (no visible change; every room checked against stills of build 506 with the same random numbers: only flickering fire and moving figures differ).
 
 ## Clips already made and not yet used (on the `clips` branch, `clips/out/`)
