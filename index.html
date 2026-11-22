@@ -184,7 +184,7 @@ body.portrait:not(.playing) #rot{display:none}
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
   <button id="autoWalk" aria-label="He walks on by himself"><svg viewBox="0 0 24 24"><path d="M5 6l6 6-6 6M12 6l6 6-6 6"/></svg></button>
-  <div id="build">build 489 · Nov 22 2026</div>
+  <div id="build">build 490 · Nov 22 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -830,6 +830,7 @@ function audio() {
     d1.delayTime.value = .31; d2.delayTime.value = .47;
     ECHO.connect(d1); d1.connect(d2); d2.connect(lp); lp.connect(fb); fb.connect(d1); d1.connect(CLEAR); d2.connect(CLEAR);
     // rain: hiss shaped by two filters
+    setTimeout(sfxLoad, 0);      // build 490: the recorded knocks and falls (small files) fetched once sound exists
     NOISE = AC.createBuffer(1, AC.sampleRate * 2, AC.sampleRate);
     const ch = NOISE.getChannelData(0); for (let i = 0; i < ch.length; i++) ch[i] = Math.random() * 2 - 1;
     rainG = gain(0, OUT);
@@ -903,6 +904,24 @@ function knockBuf(seed) {
   fxNorm(out, .9);
   const b = AC.createBuffer(1, n, sr); b.copyToChannel(out, 0); return FXB[key] = b;
 }
+// RECORDED SOUNDS (build 490, owner chose OpenGameArt after the code sounds): `assets/sfx/`, fetched and decoded once
+// (sfxLoad, SFXB). knock-0..3: four real recordings of three knocks on a wooden door (qubodup, "12 3-knocks on wooden
+// doors", OpenGameArt, CC-BY-SA 3.0; trimmed, levelled, the hiss above 6 kHz softened). bog-fall-a/b: one heavy plunge
+// each, layered from real CC0 recordings ("25 CC0 mud sfx" and "40 CC0 water / splash / slime SFX", OpenGameArt): a
+// splash slowed and darkened, a deep glop of mud lowered in pitch for the weight, then squelches and glops as the mud
+// closes. Until they load, the code-made sounds above stand in.
+const SFX_V = 490, SFX_FILES = ['knock-0', 'knock-1', 'knock-2', 'knock-3', 'bog-fall-a', 'bog-fall-b'], SFXB = {};
+function sfxLoad() {
+  if (!AC || sfxLoad.on) return; sfxLoad.on = true;
+  for (const n of SFX_FILES) fetch('assets/sfx/' + n + '.mp3?v=' + SFX_V).then(r => r.arrayBuffer()).then(b => AC.decodeAudioData(b)).then(d => { SFXB[n] = d; }).catch(() => {});
+}
+// one touch on a door: one recording of three knocks (or two code raps until it loads)
+let doorN = 0;
+function knockDoor(k = 1) {
+  if (!audio()) return;
+  const b = SFXB['knock-' + (doorN++ % 4)];
+  if (b) fxPlay(b, 0, .85 * k, .3); else { knockWood(0, k); knockWood(.17, .85 * k); }
+}
 // Used by Level 3's wicket-gate and Level 4's door: one knock (k scales it). Each call picks one of four voicings.
 let knockN = 0;
 function knockWood(when = 0, k = 1) {
@@ -950,7 +969,7 @@ function mudBuf(seed) {
   fxNorm(out, .9);
   const b = AC.createBuffer(1, n, sr); b.copyToChannel(out, 0); return FXB[key] = b;
 }
-function mudFall(when = 0, v = 1, seed = 0) { if (audio()) fxPlay(mudBuf(seed), when, .7 * v, .25); }
+function mudFall(when = 0, v = 1, seed = 0) { if (!audio()) return; const b = SFXB['bog-fall-' + (seed ? 'b' : 'a')]; if (b) fxPlay(b, when, .9 * v, .2); else fxPlay(mudBuf(seed), when, .7 * v, .25); }
 const sfx = {
   // a footstep, and the burden with it: a low creak of the pack and a heavier tread. heavy = 1 at the start of the road,
   // easing as he gathers light (it never goes: the burden only falls off at the cross, much later in the story)
@@ -2769,8 +2788,8 @@ document.getElementById('on2').onclick = () => SL.on ? go3() : HL.on ? goRoom('d
 })();
 </script>
 <script src="slough.js?v=487"></script>
-<script src="hill.js?v=489"></script>
-<script src="rooms.js?v=482"></script>
+<script src="hill.js?v=490"></script>
+<script src="rooms.js?v=490"></script>
 <script src="keepsakes.js?v=390"></script>
 <script src="cross.js?v=481"></script>
 <script src="editor.js?v=485"></script>

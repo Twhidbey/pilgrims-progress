@@ -1,0 +1,13 @@
+Sound effects in this folder
+
+knock-0.mp3 to knock-3.mp3
+  From "12 3-knocks on wooden doors" by qubodup, OpenGameArt.org
+  https://opengameart.org/content/12-3-knocks-wooden-doors
+  Licence: CC BY-SA 3.0 (https://creativecommons.org/licenses/by-sa/3.0/)
+  Changes: trimmed, levelled, hiss above 6 kHz softened. These changed files are shared under the same licence.
+
+bog-fall-a.mp3, bog-fall-b.mp3
+  Layered from "25 CC0 mud sfx" and "40 CC0 water / splash / slime SFX", OpenGameArt.org
+  https://opengameart.org/content/25-cc0-mud-sfx
+  https://opengameart.org/content/40-cc0-water-splash-slime-sfx
+  Licence: CC0 (public domain)

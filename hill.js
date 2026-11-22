@@ -896,7 +896,7 @@ const HL = (() => {
   function knock() {
     if (G.act !== 'knock' || knocks >= 3) return;
     knocks++; knockT = 0; G.ring = null; G.actT = 20;
-    knockWood(0, 1); knockWood(.17, .85);
+    knockDoor(1);      // build 490: a recorded knock on a wooden door
   }
   function sawHill() { if (G.act !== 'hill') return; hillSeen = true; G.ring = null; note(50, .05, 4); note(57, .04, 4, .1); next(true); }
 
