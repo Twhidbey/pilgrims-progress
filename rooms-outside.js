@@ -49,12 +49,45 @@
     c.fillStyle = 'rgba(40,46,60,.35)'; c.fillRect(X0, EV0, 10, FY - EV0);
     // (build 528, owner: "the house is a little skinny now") a broad two-storey front round the door, under its roof: the eaves just above the
     // upper floor, the roof's tiled slope rising behind them to the ridge, the kitchen chimney over the hearth (as in the cutaway)
-    { const EV = ST - 660, RG = EV - 420, ins = 520;
-      c.fillStyle = '#1b1612'; c.beginPath(); c.moveTo(X0 - 50, EV); c.lineTo(X0 + ins, RG); c.lineTo(X1 - ins, RG); c.lineTo(X1 + 50, EV); c.closePath(); c.fill();
-      c.strokeStyle = 'rgba(6,4,3,.45)'; c.lineWidth = 4; for (let k = 1; k < 7; k++) { const y = EV - (EV - RG) * k / 7, dx = ins * k / 7 - 50 * (1 - k / 7); c.beginPath(); c.moveTo(X0 + dx, y); c.lineTo(X1 - dx, y); c.stroke(); }
-      c.fillStyle = leaving ? 'rgba(130,136,160,.35)' : 'rgba(80,86,110,.3)'; c.fillRect(X0 + ins, RG - 4, X1 - X0 - 2 * ins, 5);
-      c.fillStyle = '#100c09'; c.fillRect(X0 - 60, EV - 8, X1 - X0 + 120, 34); c.fillStyle = 'rgba(90,78,64,.22)'; c.fillRect(X0 - 60, EV + 22, X1 - X0 + 120, 3);
-      c.fillStyle = '#1e1813'; c.fillRect(2900, RG - 140, 110, 210); c.fillRect(2885, RG - 160, 140, 26); }
+    // THE ROOF (build 532, owner: "roof should have more texture (can look more rectangular less change from top to bottom) but shingled as a
+    // house of that time"): a steep gable roof of small clay plain tiles, as on English houses of the 1600s (Bunyan's Bedfordshire: peg tiles
+    // hung on laths, staggered course over course, each tile a little different in tone, the lower edge of each course casting a thin
+    // shadow on the one below; a row of half-round ridge tiles along the top). Seen from the front a gable roof is a rectangle: the ridge runs
+    // nearly the house's full width, the verges at the gable ends a little inset and darker.
+    { const EV = ST - 660, RG = EV - 440, x0 = X0 - 40, x1 = X1 + 40, CH = 24, TW = 40;
+      const vg = 26, rx0 = x0 + vg, rx1 = x1 - vg;
+      c.fillStyle = '#18120e'; c.beginPath(); c.moveTo(x0, EV); c.lineTo(rx0, RG); c.lineTo(rx1, RG); c.lineTo(x1, EV); c.closePath(); c.fill();
+      c.save(); c.beginPath(); c.moveTo(x0, EV); c.lineTo(rx0, RG); c.lineTo(rx1, RG); c.lineTo(x1, EV); c.closePath(); c.clip();
+      // the courses, from the ridge down so each lower course lies over the one above: each tile hangs a little crooked (its lower lip
+      // uneven), the joints between tiles faint, and the top of every course lies in the shadow of the lip above it; the courses sag
+      // a hair along their length, as old roofs do
+      const sagAt = x => 5 * Math.sin((x - x0) / (x1 - x0) * Math.PI) + 2 * Math.sin(x / 230);
+      for (let y = RG + 4, row = 0; y < EV + CH; y += CH, row++) {
+        let x = x0 - (row % 2 ? TW / 2 : 0) - r() * 10;
+        while (x < x1) { const w = TW * (.8 + r() * .4), t = r(), dl = (r() - .5) * 4, dr = (r() - .5) * 4, sy = y + sagAt(x + w / 2);
+          const v = 26 + t * 10, rr = v + 6, gg = v - 2, bb = v - 7;
+          c.fillStyle = `rgb(${rr | 0},${gg | 0},${bb | 0})`; c.beginPath(); c.moveTo(x + .8, sy - 2); c.lineTo(x + w - .8, sy - 2); c.lineTo(x + w - .8, sy + CH + dr); c.quadraticCurveTo(x + w / 2, sy + CH + 1.5 + (dl + dr) / 2, x + .8, sy + CH + dl); c.closePath(); c.fill();
+          // the lip catches a breath of light; the joint is a fine dark line, fading down the tile
+          c.fillStyle = 'rgba(130,104,80,.09)'; c.fillRect(x + 2, sy + CH - 2 + (dl + dr) / 2, w - 4, 2);
+          c.fillStyle = 'rgba(6,4,3,.35)'; c.fillRect(x - .6, sy + 4, 1.2, CH - 6);
+          if (r() < .05) { c.fillStyle = 'rgba(44,50,32,.22)'; c.fillRect(x + 3, sy + CH * .4, w * (.3 + r() * .4), CH * .55); }
+          x += w; }
+        // the course above overlaps this one: its lip throws a soft shadow across the top of this course
+        const sh = c.createLinearGradient(0, y - 2, 0, y + CH * .55); sh.addColorStop(0, 'rgba(4,3,2,.75)'); sh.addColorStop(.35, 'rgba(4,3,2,.3)'); sh.addColorStop(1, 'rgba(4,3,2,0)');
+        c.fillStyle = sh; for (let xx = x0; xx < x1; xx += 60) c.fillRect(xx, y - 2 + sagAt(xx + 30), 61, CH * .55 + 2);
+      }
+      // the roof darkens a little toward the ridge (further from the lamplight below) and toward its ends
+      let g2 = c.createLinearGradient(0, RG, 0, EV); g2.addColorStop(0, 'rgba(8,6,5,.35)'); g2.addColorStop(1, 'rgba(8,6,5,0)'); c.fillStyle = g2; c.fillRect(x0, RG, x1 - x0, EV - RG);
+      c.restore();
+      // the verges at the gable ends, and the ridge tiles catching the sky
+      c.fillStyle = '#0e0a08'; for (const [a, b] of [[x0, rx0], [x1, rx1]]) { c.beginPath(); c.moveTo(a, EV); c.lineTo(b, RG); c.lineTo(b + (a < b ? 14 : -14), RG); c.lineTo(a + (a < b ? 14 : -14), EV); c.closePath(); c.fill(); }
+      c.fillStyle = '#1a1410'; c.fillRect(rx0 - 6, RG - 16, rx1 - rx0 + 12, 18);
+      for (let x = rx0; x < rx1; x += 44) { c.fillStyle = 'rgba(6,4,3,.6)'; c.fillRect(x, RG - 16, 3, 18); }
+      c.fillStyle = leaving ? 'rgba(130,136,160,.4)' : 'rgba(80,86,110,.32)'; c.fillRect(rx0 - 6, RG - 18, rx1 - rx0 + 12, 4);
+      // the eaves: the bottom course's edge overhanging the wall, its shadow on the plaster
+      c.fillStyle = '#100c09'; c.fillRect(x0, EV - 4, x1 - x0, 14); g2 = c.createLinearGradient(0, EV + 10, 0, EV + 60); g2.addColorStop(0, 'rgba(6,4,3,.5)'); g2.addColorStop(1, 'rgba(6,4,3,0)'); c.fillStyle = g2; c.fillRect(X0, EV + 10, X1 - X0, 50);
+      // the kitchen chimney: a brick stack rising through the roof over the hearth, its cap
+      c.fillStyle = '#1e1813'; c.fillRect(2900, RG - 90, 110, 250); c.fillRect(2885, RG - 110, 140, 26); c.fillStyle = 'rgba(6,4,3,.4)'; for (let y = RG - 80; y < RG + 150; y += 16) c.fillRect(2900, y, 110, 2); }
     for (let k = 0; k < 40; k++) { const x = X0 + r() * (X1 - X0), y = EV0 + 160 + r() * (FY - EV0 - 160), rr = 60 + r() * 140, gg = c.createRadialGradient(x, y, 0, x, y, rr); gg.addColorStop(0, r() < .5 ? 'rgba(70,58,46,.12)' : 'rgba(6,4,3,.14)'); gg.addColorStop(1, 'rgba(0,0,0,0)'); c.fillStyle = gg; c.fillRect(x - rr, y - rr, 2 * rr, 2 * rr); }
     const win = (x, y, w, h, lit) => { c.fillStyle = '#120c08'; c.fillRect(x - w / 2 - 16, y - h / 2 - 16, w + 32, h + 32); c.fillStyle = lit ? '#e8a85a' : '#151820'; c.fillRect(x - w / 2, y - h / 2, w, h); c.fillStyle = '#120c08'; c.fillRect(x - 4, y - h / 2, 8, h); c.fillRect(x - w / 2, y - h * .1, w, 8); };
     // five windows upstairs (the bedchamber's lit), two below either side of the door (the parlour's on the right)
