@@ -35,6 +35,16 @@ The owner asked: (1) mine how others have depicted the book, with ideas for ever
 
 ---
 
+## Where things stand (vision chat, after build 512)
+
+**This chat's job is the whole-game vision:** faithfulness to the book, one picture per level, the plan for Levels 6 to 16, and keeping the chats in step. The building is done in the level chats. Side work it did (the arrows and Beelzebub's castle at Level 3's gate, builds 404 to 420; the new coat's free tries) is handed on: the gate to the Level 3 chat, the coat to the Level 5 chat.
+
+**Who carries what now** (session titles): Level 1 "Level 1: City of Destruction"; Level 2 "Level 2 chat (Slough of Despond)"; Level 3 and its gate "PP: Level 3 edits"; Level 4 "Level 4: Interpreter's House (new)" with one chat per room ("PP House · ..."); Level 5 and Christian after the Cross (the new coat, hood down on his shoulders, then free clips) "PP: Level 5 cross edits"; the mannequin "Character editing".
+
+**Done from the ranked list below:** the why put back (build 397: truer-to-book 1, 2, 3, 5, 6 and the Level 5 lines of 4; the stone read aloud, 7); the Shining Ones as persons of light (build 403); the cross kept plain by the owner's choice (build 411, so "a hewn cross" in artistic 1 is turned down). Open: truer-to-book 8 (room 1's picture), artistic 2 to 4 and 6, compelling 1 to 4, and decisions 3 (partly ruled: level by level), 7 and 8 below.
+
+**Next from this chat:** the design packet for Level 6 (Hill Difficulty, the arbour, the lost roll), so it can be built the moment Christian's new pictures exist: its stretch of the book read line by line, the one picture and its master, the moments in order, the plain script, the child's acts, the figures and clips it needs (and which the coat clips cover), and the cost.
+
 ## Levels 1 to 5: what to do, ranked
 
 Free unless marked. Full lists: `3-...md` section (f) and `4-...md` section 3.
