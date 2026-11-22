@@ -429,7 +429,8 @@ const SL = (() => {
   const LAST = [67, 71, 74, 79, 74, 78, 83];
   const sfxS = {
     wade: () => { hiss(520, .8, .05, .5, 'lowpass'); hiss(1500, 1.5, .012, .3, 'bandpass', .05); },
-    fall: () => { hiss(380, .7, .16, 1.2, 'lowpass'); hiss(1800, 1, .05, .7); sweep(90, 45, 1.2, .08); },
+    // build 487: the two plunge into thick mud, Pliable a breath after Christian (mudFall, rendered sample by sample in index.html)
+    fall: () => { if (typeof mudFall === 'function') { mudFall(0, 1, 0); mudFall(.2, .8, 1); } else { hiss(380, .7, .16, 1.2, 'lowpass'); hiss(1800, 1, .05, .7); sweep(90, 45, 1.2, .08); } },
     fear: () => { const r = Math.random() * 3 | 0; bowed(38 + r, .022, 3.5); bowed(39 + r, .016, 3.2, .4); hiss(900 + Math.random() * 600, 3, .006, 2.2, 'bandpass', .3); },
     strain: () => { hiss(300, .8, .07, .7, 'lowpass'); sweep(70, 52, .9, .05); },
     grip: () => { bowed(55, .045, 4); bowed(59, .04, 4, .05); bowed(62, .04, 4, .1); note(71, .07, 5); },

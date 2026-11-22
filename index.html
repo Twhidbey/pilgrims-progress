@@ -184,7 +184,7 @@ body.portrait:not(.playing) #rot{display:none}
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
   <button id="autoWalk" aria-label="He walks on by himself"><svg viewBox="0 0 24 24"><path d="M5 6l6 6-6 6M12 6l6 6-6 6"/></svg></button>
-  <div id="build">build 486 · Nov 22 2026</div>
+  <div id="build">build 487 · Nov 22 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -871,14 +871,86 @@ function hiss(freq, q, v, d, type = 'bandpass', when = 0) {
   g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t + .008); g.gain.exponentialRampToValueAtTime(.0004, t + d);
   s.connect(f); f.connect(g); g.connect(OUT); s.start(t, Math.random()); s.stop(t + d + .05);
 }
-// A SOLID KNOCK on a heavy oak door (build 468, owner: "make the knocks in the game more solid sounding"): the door's low
-// body (a quick falling thump), the wood's own 'tock', the dull mass of the hand, a tiny knuckle click; `k` scales it.
-// Used by Level 3's wicket-gate and Level 4's door.
+// SOUNDS RENDERED SAMPLE BY SAMPLE (build 487, owner: "when they fall into bog sound and knocks on door sound effects are not
+// good", then "Can you make these sounds effects"). Each is worked out once into an AudioBuffer by a small physical model and
+// kept (FXB); a few seeded variants so no two knocks are quite alike. fxRand(seed) is a repeatable random.
+const FXB = {};
+function fxRand(a) { return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function fxNorm(d, peak) { let m = 0; for (const v of d) m = Math.max(m, Math.abs(v)); if (m) for (let i = 0; i < d.length; i++) d[i] *= peak / m; }
+function fxPlay(buf, when = 0, v = 1, echo = .35) {
+  if (!audio() || !buf) return;
+  const t = AC.currentTime + when, s = AC.createBufferSource(), g = AC.createGain();
+  s.buffer = buf; g.gain.value = v; s.connect(g); g.connect(OUT);
+  if (echo) { const e = AC.createGain(); e.gain.value = echo; g.connect(e); e.connect(ECHO); }
+  s.start(t);
+}
+// A KNOCK ON A HEAVY OAK DOOR: the knuckle is a soft pulse about 3 ms long (a hand, not a hammer) with a faint click of bone;
+// it rings the door's own modes: a deep panel boom near 90 Hz, the board's hollow 'tock' round 180 to 320 Hz, and a few
+// higher woody partials that die within a few hundredths of a second. Nothing rings long: oak is heavy and damped.
+function knockBuf(seed) {
+  const key = 'knock' + seed; if (FXB[key]) return FXB[key];
+  const sr = AC.sampleRate, n = Math.round(sr * .42), R = fxRand(seed * 977 + 13), out = new Float32Array(n);
+  const pl = Math.round(sr * (.0014 + .0005 * R()));
+  const p = .96 + .08 * R();
+  const MODES = [[96, .045, .55], [178, .04, 1], [252, .034, .9], [338, .027, .85], [462, .022, .85], [630, .017, .8], [880, .012, .7], [1260, .008, .6], [1850, .005, .45], [2700, .003, .3]];
+  // each mode a damped sine of its own loudness, starting together over the knuckle's soft pulse
+  for (const [f, tau, a] of MODES) { const ff = 2 * Math.PI * f * p * (.98 + .04 * R()) / sr, ph = R() * .6; for (let i = 0; i < n; i++) out[i] += a * Math.sin(ff * i + ph) * Math.exp(-i / (tau * sr)) * (i < pl ? Math.sin(Math.PI * i / (2 * pl)) ** 2 : 1); }
+  // the bone's click, and a breath of rattle in the boards
+  for (let i = 0; i < Math.round(sr * .006); i++) out[i] += (R() * 2 - 1) * .3 * Math.exp(-i / (sr * .0012));
+  for (let i = 0; i < n; i++) out[i] += (R() * 2 - 1) * .018 * Math.exp(-i / (sr * .03));
+  // a soft fade at the very end
+  for (let i = n - 400; i < n; i++) out[i] *= (n - i) / 400;
+  fxNorm(out, .9);
+  const b = AC.createBuffer(1, n, sr); b.copyToChannel(out, 0); return FXB[key] = b;
+}
+// Used by Level 3's wicket-gate and Level 4's door: one knock (k scales it). Each call picks one of four voicings.
+let knockN = 0;
 function knockWood(when = 0, k = 1) {
   if (!audio()) return;
-  sweep(120, 52, .2, .55 * k, true, when); sweep(240, 130, .07, .18 * k, false, when);
-  hiss(850, 2.2, .3 * k, .06, 'bandpass', when); hiss(260, .7, .42 * k, .11, 'lowpass', when); hiss(2600, 1.2, .05 * k, .018, 'bandpass', when);
+  fxPlay(knockBuf(knockN++ % 4), when, .62 * k, .3);
 }
+// A HEAVY BODY INTO THICK MUD: a deep whump as the body strikes (a falling low sine and dark noise); a short dull splash (mud
+// throws heavy clots, not bright spray); the slap of clots landing round about; then the mud closes: a slow squelch (dark
+// noise whose brightness wavers) and big slow bubbles welling up (each a low tone that rises as it bursts, as a bubble's
+// does when it shrinks), fewer and fewer over about two seconds.
+function mudBuf(seed) {
+  const key = 'mud' + seed; if (FXB[key]) return FXB[key];
+  const sr = AC.sampleRate, n = Math.round(sr * 2.6), R = fxRand(seed * 131 + 7), out = new Float32Array(n);
+  let ph = 0, lp = 0, lp2 = 0, bp1 = 0, bp2 = 0;
+  for (let i = 0; i < n; i++) {
+    const t = i / sr, w = R() * 2 - 1;
+    // the whump
+    const f = 34 + 46 * Math.exp(-t / .07); ph += 2 * Math.PI * f / sr;
+    let v = Math.sin(ph) * Math.min(1, t / .004) * Math.exp(-t / .2) * .9;
+    // dark noise of the strike
+    lp += (w - lp) * .06; v += lp * 3.2 * Math.min(1, t / .006) * Math.exp(-t / .12);
+    // the dull splash: band of noise round 700 Hz, gone in a third of a second
+    const fc = 2 * Math.sin(Math.PI * 700 / sr); bp1 += fc * (w - bp1 - .9 * bp2); bp2 += fc * bp1;
+    v += bp2 * .9 * Math.min(1, Math.max(0, t - .012) / .01) * Math.exp(-Math.max(0, t - .012) / .11);
+    // the squelch as the mud closes: very dark noise, its brightness slowly wavering
+    const sq = .02 + .03 * (.5 + .5 * Math.sin(t * 9 + Math.sin(t * 3.1) * 2)); lp2 += (w - lp2) * sq;
+    v += lp2 * 2.2 * Math.max(0, Math.min(1, (t - .15) / .2)) * Math.exp(-Math.max(0, t - .3) / .7);
+    out[i] = v;
+  }
+  // clots of mud landing round about: short low slaps
+  for (let k = 0; k < 9; k++) {
+    const t0 = .18 + R() * .55, i0 = Math.round(t0 * sr), f0 = 140 + R() * 160, a = .18 + R() * .2, L = Math.round(sr * .07);
+    let q = 0, l = 0;
+    for (let i = 0; i < L && i0 + i < n; i++) { const t = i / sr; q += 2 * Math.PI * f0 * (1 - t * 3) / sr; l += ((R() * 2 - 1) - l) * .25; out[i0 + i] += (Math.sin(q) * .6 + l * .8) * a * Math.exp(-t / .018); }
+  }
+  // big slow bubbles welling up through the mud: each a low tone rising as it bursts, then a soft 'blop'
+  let t0 = .35;
+  while (t0 < 2.3) {
+    const i0 = Math.round(t0 * sr), f0 = 90 + R() * 110, L = Math.round(sr * (.06 + R() * .07)), a = .5 * (1 - t0 / 2.6) * (.5 + R() * .5);
+    let q = 0;
+    for (let i = 0; i < L && i0 + i < n; i++) { const u = i / L, t = i / sr; q += 2 * Math.PI * f0 * (1 + 1.4 * u * u) / sr; out[i0 + i] += Math.sin(q) * a * Math.sin(Math.PI * Math.min(1, u * 1.3)) * Math.exp(-t / .05); }
+    t0 += .07 + R() * .12 + t0 * t0 * .05;
+  }
+  for (let i = n - 2000; i < n; i++) out[i] *= (n - i) / 2000;
+  fxNorm(out, .9);
+  const b = AC.createBuffer(1, n, sr); b.copyToChannel(out, 0); return FXB[key] = b;
+}
+function mudFall(when = 0, v = 1, seed = 0) { if (audio()) fxPlay(mudBuf(seed), when, .7 * v, .25); }
 const sfx = {
   // a footstep, and the burden with it: a low creak of the pack and a heavier tread. heavy = 1 at the start of the road,
   // easing as he gathers light (it never goes: the burden only falls off at the cross, much later in the story)
@@ -2696,7 +2768,7 @@ document.getElementById('on2').onclick = () => SL.on ? go3() : HL.on ? goRoom('d
   for (const [who, txt] of INTRO) vox(who, txt);          // the first words, ready before Begin is pressed
 })();
 </script>
-<script src="slough.js?v=473"></script>
+<script src="slough.js?v=487"></script>
 <script src="hill.js?v=473"></script>
 <script src="rooms.js?v=482"></script>
 <script src="keepsakes.js?v=390"></script>
