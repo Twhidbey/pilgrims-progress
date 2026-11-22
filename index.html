@@ -184,7 +184,7 @@ body.portrait:not(.playing) #rot{display:none}
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
   <button id="autoWalk" aria-label="He walks on by himself"><svg viewBox="0 0 24 24"><path d="M5 6l6 6-6 6M12 6l6 6-6 6"/></svg></button>
-  <div id="build">build 482 · Nov 22 2026</div>
+  <div id="build">build 483 · Nov 22 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -904,15 +904,69 @@ function ambience() {
   const now = AC.currentTime, w = warm((P.x - G.cam) / VW);
   // build 385 (owner: "when you open book, let's not make it raining since that's level 1"): no rain on the title and contents
   rainG.gain.setTargetAtTime(G.state === 'title' ? 0 : RAIN_VOL * (1 - w) * LOOK.rain / .6 + RAIN_VOL * .7 * G.gloom, now, G.state === 'title' ? .1 : .4);
-  padG.gain.setTargetAtTime(.055, now, .8);
-  warmG.gain.setTargetAtTime(.05 * w + .04 * G.gateOpen, now, .8);
-  gloomG.gain.setTargetAtTime(.06 * G.gloom, now, .5);
+  const hum = musOn() ? 0 : 1;      // the old hum steps aside while a piece of music plays
+  padG.gain.setTargetAtTime(.055 * hum, now, .8);
+  warmG.gain.setTargetAtTime((.05 * w + .04 * G.gateOpen) * hum, now, .8);
+  gloomG.gain.setTargetAtTime(.06 * G.gloom * hum, now, .5);
   MUFF.frequency.setTargetAtTime(P.run && G.ears ? 520 : 20000, now, P.run && G.ears ? .12 : .3);          // fingers in his ears
   const pushing = G.act === 'gate' && pushHeld() && G.gateOpen < 1;
   creakG.gain.setTargetAtTime(pushing ? .035 : 0, now, .08);
   creakO.frequency.setTargetAtTime(52 + 22 * Math.sin(G.t / 11) + G.gateOpen * 26, now, .1);
   if (w > .55 && Math.random() < .035) sfx.chirp();
 }
+// ---------- MUSIC (music chat, after build 474; owner: "drive story like a soundtrack", "more drums") ----------
+// Pieces made by Google's music model (Lyria), one per story beat, in assets/music/. musTick() chooses the piece for the
+// moment (musCue) and crossfades to it over a few seconds; each piece loops with soft overlapping ends (XF), except the
+// gate, which plays once. All music sinks while anyone speaks (ducked under SPK's recording) and goes through OUT, so it
+// is muffled with the rest of the world when his fingers are in his ears. Only Level 1 and the title have music yet;
+// in the other levels musCue is null and it fades out. Without its file a piece is simply silent, and the old hum stays.
+const MUSIC_V = 1;
+const MUS = { book: 'l1-title', city: 'l1-city-long', light: 'l1-light-long', run: 'l1-run', pursue: 'l1-pursue', gate: 'l1-gate' };
+const MUSV = { book: .5, city: .42, light: .46, run: .5, pursue: .5, gate: .6 };       // each piece's level (the owner's ears decide)
+const MUS_ONCE = { gate: 1 }, MUS_XF = 3;
+const musBuf = {}, musLoad = {}, musV = {};
+let musG = null, musCur = null;
+function musGet(k) {
+  if (musBuf[k] || musLoad[k] || !AC) return musBuf[k];
+  musLoad[k] = fetch('assets/music/' + MUS[k] + '.mp3?v=' + MUSIC_V).then(r => r.ok ? r.arrayBuffer() : Promise.reject()).then(b => new Promise((ok, no) => AC.decodeAudioData(b, ok, no))).then(d => { musBuf[k] = d; }).catch(() => {});
+  return null;
+}
+function musCue() {
+  if (SL.on || HL.on || RM.on || CR.on) return null;
+  if (G.state === 'title') return 'book';
+  if (G.gateOpen >= 1 || G.finale) return 'gate';
+  if (G.gateSeen) return 'light';
+  if (G.neigh) return 'pursue';
+  if (G.runZone || G.fam >= 1 || G.evanGone) return 'run';
+  if (G.sawLight) return 'light';
+  return 'city';
+}
+function musTick() {
+  if (!AC || G.t % 6) return;
+  if (!musG) { musG = AC.createGain(); musG.gain.value = 0; musG.connect(OUT); }
+  const now = AC.currentTime, cue = musCue();
+  if (cue) { musGet(cue); musGet({ book: 'city', city: 'light', light: 'run', run: 'pursue', pursue: 'gate' }[cue] || cue); }      // the next piece loads ahead
+  if (cue !== musCur) { musCur = cue; if (cue && !musV[cue]) musV[cue] = { g: null, srcs: [], next: 0, done: false }; }
+  // sink under any voice that is speaking
+  const speaking = SPK && (now - SPK.t0) * 20 < SPK.env.length + 6;
+  musG.gain.setTargetAtTime(speaking ? .42 : 1, now, speaking ? .25 : .9);
+  for (const k in musV) {
+    const v = musV[k], on = k === musCur, b = musBuf[k];
+    if (!v.g) { v.g = AC.createGain(); v.g.gain.value = 0; v.g.connect(musG); }
+    v.g.gain.setTargetAtTime(on ? MUSV[k] : 0, now, on ? 1.1 : 1.4);
+    if (on && b && !v.done && now > v.next - .6) {
+      const t0 = Math.max(now + .05, v.next), s = AC.createBufferSource(), sg = AC.createGain(), d = b.duration, once = MUS_ONCE[k], first = !v.srcs.length;
+      s.buffer = b; s.connect(sg); sg.connect(v.g);
+      sg.gain.setValueAtTime(first ? 1 : 0, t0); if (!first) sg.gain.linearRampToValueAtTime(1, t0 + MUS_XF);
+      if (!once) { sg.gain.setValueAtTime(1, t0 + d - MUS_XF); sg.gain.linearRampToValueAtTime(0, t0 + d); }
+      s.start(t0); v.srcs.push(s); if (v.srcs.length > 3) v.srcs.shift();
+      v.next = t0 + d - MUS_XF; if (once) v.done = true;
+    }
+    if (!on) { v.off = (v.off || 0) + 1; if (v.off > 120) { for (const s of v.srcs) try { s.stop(); } catch (e) {} v.g.disconnect(); delete musV[k]; } }
+    else v.off = 0;
+  }
+}
+const musOn = () => !!(musCur && musBuf[musCur]);
 document.addEventListener('visibilitychange', () => { if (AC) document.hidden ? AC.suspend() : AC.resume(); });
 // iPhone: starting the silent <audio> (mediaSound) or a call can leave the sound 'suspended' or 'interrupted', and then nothing
 // is heard (owner, build 97: no voices on iPhone). Every touch or key starts it again.
@@ -955,7 +1009,7 @@ function reset() {
   Object.assign(G, { cam: Math.max(0, Math.min(LEVEL_W - VW, TEST_X ? START_X - VW * .38 + 40 : START_X - VW * .62 - 40)), t: 0, got: 0, extra: 0, motes: [], flyers: [], ripples: [], glints: [], taps: [], litw: [], capQ: [], cap: 0, hint: null,
     pli: null, obst: null, flare: 0, gloom: 0, gloomTo: 0, gateOpen: 0, act: null, actT: 0, ring: null, auto: null, finale: null, guard: 0, idle: 0, wins: 0,
     evanDone: !!TEST_X, evanGone: TEST_X ? 1 : 0, neigh: TEST_X > NEIGH_X + 300, gateSeen: false, walked: false, touched: false, leaving: false, fam: TEST_X > HOME_X ? 2 : 0, door: TEST_X ? (TEST_X > HOME_X ? 1 : 0) : 1, doorShut: false, roll: TEST_X ? { t: 999, x: 0, y: 0 } : null, runZone: !!TEST_X && TEST_X < RUN_END, outSaid: false, watched: TEST_X > WATCH_X, ears: TEST_X > HOME_X });
-  G.sunUp = 0; G.through = false; G.homeTo = null; G.autoRun = 0; G.calm = 0; G.doorSaid = false; G.choiceKind = null;
+  G.sunUp = 0; G.through = false; G.homeTo = null; G.autoRun = 0; G.calm = 0; G.doorSaid = false; G.choiceKind = null; G.sawLight = !!TEST_X && TEST_X > EVAN_X;
   G.zoom = 1 - (1 - ZOOM_GATE) * smooth(GATE - 1300, GATE - 380, START_X);      // starting near the gate (?at=gate): already drawn back
   G.evan.pt = TEST_X ? 239 : 0; G.evan.go = false; G.evan.st = EVS_META.frames * 100; downs.clear(); pushing = false; keys.r = keys.push = false;
   if (TEST_X) for (const l of LIGHTS) if (l.x < Math.max(TEST_X, 2000)) l.got = true;
@@ -1494,7 +1548,7 @@ let TURN = []; const TURN_META = {"ax": 90, "ground": 302, "frames": 30, "step":
 // when he has turned (turnedToLight) can the light be touched, and then he answers "I think I do."
 function turnToLight() { if (P.face > 0) return; if (TURN.ready && P.stand) P.turnV = { t: 0 }; else if (BACK && P.stand) { P.turnTo = 1; P.wantBack = true; } else P.turn = 1; }
 const turnedToLight = () => P.face > 0 && !P.turnV && !P.turnTo && !P.turn;
-function lightTouched() { if (!turnedToLight()) return; G.flare = 1.2; sfx.chord(); next(true); }
+function lightTouched() { if (!turnedToLight()) return; G.sawLight = true; G.flare = 1.2; sfx.chord(); next(true); }
 function gateOpened() {
   G.gateOpen = 1; G.flare = 1.3; sfx.open(); G.finale = { t: -50, i: 0, bar: 0 };
   next(true);       // the words are finished: on through the gate
@@ -1503,6 +1557,7 @@ function gateOpened() {
 // ---------- every tick ----------
 function update() {
   G.t++;
+  musTick();
   if (G.guard > 0 && --G.guard === 0 && G.state === 'dialog') { dlg.classList.remove('wait'); HEARD.add(G.guardKey); if (!G.act) G.autoT = 30; }      // build 175, owner: quicker hand-offs (was 75: 1.25 s)
   // LESS TAPPING (owner, build 73: "there's a lot of click thru text"): a line moves on by itself a moment after it has
   // been spoken; a tap still moves it on sooner. Lines that ask the child to do something wait as before.
@@ -1658,8 +1713,8 @@ function effects() {
   const F = G.finale;
   if (F) {
     F.t++;
-    while (F.i < TUNE.length && F.t >= TUNE[F.i][0] * 28) { note(TUNE[F.i][1], .08, 3.2); G.flare = Math.min(1.3, G.flare + .05); F.i++; }      // the far light brightens with every note
-    while (F.bar < BASS.length && F.t >= (1 + F.bar * 3) * 28) { note(BASS[F.bar], .06, 3.4, 0, false); note(BASS[F.bar] + 12, .03, 3, 0, false); F.bar++; }
+    while (F.i < TUNE.length && F.t >= TUNE[F.i][0] * 28) { if (!musOn()) note(TUNE[F.i][1], .08, 3.2); G.flare = Math.min(1.3, G.flare + .05); F.i++; }      // the far light brightens with every note
+    while (F.bar < BASS.length && F.t >= (1 + F.bar * 3) * 28) { if (!musOn()) { note(BASS[F.bar], .06, 3.4, 0, false); note(BASS[F.bar] + 12, .03, 3, 0, false); } F.bar++; }
     if (F.i >= TUNE.length && F.t > 47 * 28) G.finale = null;
   }
 }
@@ -1671,6 +1726,7 @@ function effects() {
 const OPEN_NOTES = [55, 58, 62, 65, 67, 70, 74];
 function opening() {
   const o = G.opening; if (!o || o.t++ < o.next) return;
+  if (musOn()) return;      // the book's music plays instead
   let m; do m = OPEN_NOTES[Math.random() * OPEN_NOTES.length | 0]; while (m === o.last);
   o.last = m; o.n++; o.next = o.t + 150 + Math.random() * 170;       // the next note comes 2.5 to 5 seconds later
   note(m, .034, 5.5);
