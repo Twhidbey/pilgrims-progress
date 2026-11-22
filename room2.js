@@ -10,7 +10,7 @@
   // ROOM 2 DRAWN IN CODE (after build 378; owner: "can you draw the parlour"): Vermeer's one light, a tall window on the left,
   // the pale wall lit nearest it and dimming to the right, the floorboards a nearer, darker layer with the window's light lying flat on them,
   // a low band of pale tiles at the wall's foot (the Milkmaid's Delft tiles, the room's one quoted detail besides the stream from the jug)
-  const R2D = { sweepV: { n: 'room2-sweeper-v', ax: 193.2, g: 375, cols: 8, fr: 108, W: 260, H: 382, s: 1.75, ct: 1, mul: .9, sat: 1, noSh: 1 }, girl: { ax: 154, g: 618, s: 1, ct: 1, mul: 1, sat: 1, noSh: 1 }, SPOUT: [289 - 154, 237 - 618], sweeper: { ax: 290, g: 652, s: .92, ct: 1, mul: .96, sat: 1, noSh: 1 }, GX: 1716, SX: 2655, WIN: [90, 380, 170, 930] };
+  const R2D = { sweepV: { n: 'room2-sweeper-v', ax: 193.2, g: 375, cols: 8, fr: 108, W: 260, H: 382, s: 1.75, ct: 1, mul: .9, sat: 1, noSh: 1 }, girl: { ax: 154, g: 618, s: 1, ct: 1, mul: 1, sat: 1, noSh: 1 }, tipV: { n: 'room2-girl-tip', ax: 101.2, g: 398.4, cols: 8, fr: 49, W: 199, H: 403, s: 1.57, ct: 1, mul: 1, sat: 1, noSh: 1 }, SPOUT: [289 - 154, 237 - 618], sweeper: { ax: 290, g: 652, s: .92, ct: 1, mul: .96, sat: 1, noSh: 1 }, GX: 1716, SX: 2655, WIN: [90, 380, 170, 930] };
   function bakeR2() {
     const W = 1584, H = 672, cv = document.createElement('canvas'); cv.width = W; cv.height = H; const c = cv.getContext('2d'); c.scale(.5, .5);
     const FY = 1262, r = rngR(11), soft = (draw, w, h) => { const a = document.createElement('canvas'); a.width = w; a.height = h; draw(a.getContext('2d'), w, h); return a; };
@@ -201,7 +201,7 @@
         let g = c.createRadialGradient(700, 720, 300, 700, 720, 3000); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(.6, 'rgba(40,26,8,.12)'); g.addColorStop(1, 'rgba(14,9,3,.5)'); c.fillStyle = g; c.fillRect(EX.x0, EX.y0, EX.x1 - EX.x0, EX.y1 - EX.y0);
       } });
   }
-  if (!PAINTED) { const n = 'room2-drawn'; loads[n] = new Promise(r => setTimeout(r, 0)).then(() => (pics[n] = DRAWN ? bakeR2() : bakeR2s())); pic('room2-girl'); pic('room2-sweeper'); }
+  if (!PAINTED) { const n = 'room2-drawn'; loads[n] = new Promise(r => setTimeout(r, 0)).then(() => (pics[n] = DRAWN ? bakeR2() : bakeR2s())); pic('room2-girl'); pic('room2-girl-wait'); pic('room2-sweeper'); }
   return {
     // 2 THE DUSTY PARLOUR (after Vermeer's Milkmaid): the broom raises the dust; the water lays it
     r2: {
@@ -217,7 +217,13 @@
         const FY = this.FY + (this.shell ? 0 : 14), DK = this.shell ? { ct: 1, mul: .66, sat: .55 } : null, G2 = R2D.girl, SW2 = DK ? { ...R2D.sweeper, ...DK } : R2D.sweeper, col = this.shell ? [186, 186, 198] : [255, 255, 255];
         // the girl: cut straight out of the painting (build 382), so she is the painted Milkmaid herself, her jug already in her hands;
         // the water falls from its spout when the child has touched it
-        if (pics['room2-girl']) fig(c, 'room2-girl', G2, R2D.GX, FY + 6, -1, 1, 1, col);
+        // she "stood by" (book {74}): in the night parlour she waits holding her jug upright (room2-girl-wait, the free image model from her own
+        // picture), and tips it only when the child has touched it; a free clip of the tipping is to join the two pictures
+        // build 517: the tipping itself is a free clip (49 frames at 16 a second, from the waiting picture to the pouring one), played at its own
+        // pace forward as she tips and backward as she rights the jug (gk 0..1); the two still pictures are held at its ends
+        const TV = R2D.tipV, gk = this.shell ? this.gk || 0 : 1, gn = gk <= 0 && pics['room2-girl-wait'] ? 'room2-girl-wait' : 'room2-girl';
+        if (gk > 0 && gk < 1 && sheetFrames(TV)) fig(c, TV.n + '#' + Math.round(gk * (TV.fr - 1)), TV, R2D.GX, FY + 6, -1, 1, 1, col);
+        else if (pics[gk < .5 && pics['room2-girl-wait'] ? 'room2-girl-wait' : gn]) fig(c, gk < .5 && pics['room2-girl-wait'] ? 'room2-girl-wait' : gn, G2, R2D.GX, FY + 6, -1, 1, 1, col);
         this.spout = [R2D.GX + R2D.SPOUT[0] / K, FY + 6 + R2D.SPOUT[1] / K];
         // the sweeper: his own picture (build 384, the free FLUX Kontext model from the painted boy: a bearded servant in a linen cap
         // and brown doublet, bent to the broom with both hands on the handle), the broom's head where the dust rises
@@ -227,7 +233,7 @@
         if (sheetFrames(SV)) fig(c, SV.n + '#' + (Math.floor(this.svf || 0) % SV.fr), SV, R2D.SX, FY + (this.shell ? 14 : 0), -1, 1, 1, col);
         else if (pics['room2-sweeper']) fig(c, 'room2-sweeper', SW2, R2D.SX, FY, -1, 1, 1, col);
       },
-      enter() { pic('room2-sweep'); pic('room2-damsel'); pic('room2-sweeper-v'); this.sf = 0; this.svf = 0; this.sweeps = 0; this.df = 14; this.dt = 14; this.dust = []; this.haze = this.shell ? .12 : .22; this.film = 1; this.wet = []; const r = rngR(5); for (let i = 0; i < (this.shell ? 0 : 70); i++) this.dust.push({ x: 300 + r() * 2800, y: 300 + r() * 900, vx: 0, vy: 0, s: 2 + r() * 5, a: .5 + r() * .5, p: r() * 7 }); },
+      enter() { pic('room2-sweep'); pic('room2-damsel'); pic('room2-sweeper-v'); pic('room2-girl-tip'); this.gk = 0; this.sf = 0; this.svf = 0; this.sweeps = 0; this.df = 14; this.dt = 14; this.dust = []; this.haze = this.shell ? .12 : .22; this.film = 1; this.wet = []; const r = rngR(5); for (let i = 0; i < (this.shell ? 0 : 70); i++) this.dust.push({ x: 300 + r() * 2800, y: 300 + r() * 900, vx: 0, vy: 0, s: 2 + r() * 5, a: .5 + r() * .5, p: r() * 7 }); },
       run() { talk([[N, 'He led him into a very large parlour, full of dust, because it was never swept.'], [TIP, 'Touch the broom.', 'broom']], () => { H.ph = 'sweep'; H.t = 0; G.state = 'auto'; }); },
       act(sx, sy) {
         if (G.act === 'broom' && (sx == null || near(sx, sy, 2390, 1180, 160))) next(true);
@@ -241,6 +247,8 @@
         if (this.sweeps > 0 || (this.svf || 0) % R2D.sweepV.fr > .5) this.svf = (this.svf || 0) + 12 / 60;
         // her jug eases toward its target frame at 12 a second (14 held upright, 0 pouring)
         if (this.df !== this.dt) this.df += Math.sign(this.dt - this.df) * Math.min(12 / 60, Math.abs(this.dt - this.df));
+        // the night parlour: her tipping clip at its own pace (48 frames at 16 a second: 180 ticks each way); df follows it, so the water waits for the jug
+        if (this.shell) { const to = this.dt === 0 ? 1 : 0; this.gk = Math.max(0, Math.min(1, (this.gk || 0) + Math.sign(to - (this.gk || 0)) / 180)); this.df = 14 * (1 - this.gk); }
         if (H.ph === 'sweep') {
           if (H.t === 1) this.sweeps = 2;
           if (H.t < 300 && this.sweeps > 0 && H.t % 2 === 0) for (let k = 0; k < 6; k++) this.dust.push({ x: 2390 + (rnd() - .5) * 120, y: 1240 - rnd() * 40, vx: -1 - rnd() * 6, vy: -.6 - rnd() * 2.2, s: 2 + rnd() * 6, a: .6 + rnd() * .4, p: rnd() * 7, life: 0 });
@@ -252,14 +260,14 @@
         if (H.ph === 'sprinkle') {
           // she tips the jug (the clip played backwards), pours while it is tipped, then holds it upright again; then he sweeps the room clean, no dust
           if (H.t === 1) this.dt = 0;
-          if (H.t === 240) this.dt = 14;
-          if (H.t === 260) this.sweeps = 1;
-          const pour = this.df < 1.5 && H.t < 240;
+          if (H.t === (this.shell ? 340 : 240)) this.dt = 14;
+          if (H.t === (this.shell ? 360 : 260)) this.sweeps = 1;
+          const pour = this.df < 1.5 && H.t < (this.shell ? 340 : 240);
           if (pour && H.t % 3 === 0) for (let k = 0; k < 2; k++) this.wet.push({ x: (!PAINTED && this.spout ? this.spout[0] : 1944) + rnd() * 14, y: !PAINTED && this.spout ? this.spout[1] : 842, vx: (rnd() - .5) * 1.2, vy: -rnd() * 1.5, l: 0 });
           if (pour && H.t % 24 === 0) noise(6000, 1, .4, .025);
-          this.haze = Math.max(0, this.haze - .0028); if (H.t > 60) this.film = Math.max(0, this.film - .005);
+          if (!this.shell || H.t > 150) this.haze = Math.max(0, this.haze - .0028); if (H.t > 180) this.film = Math.max(0, this.film - .005);
           for (const d of this.dust) { d.vy += .03; d.vx *= .96; }
-          if (H.t === 330) talk([[C, 'What does this mean?'], [I, 'This parlour is the heart of a man. The dust is his sin. He who swept first is the Law: it stirs the dust up, but cannot make the heart clean.'], [I, 'She who brought the water is the Gospel. By it the heart is made clean, fit for the King of glory to live in.']], () => goTo('r3'));
+          if (H.t === (this.shell ? 470 : 330)) talk([[C, 'What does this mean?'], [I, 'This parlour is the heart of a man. The dust is his sin. He who swept first is the Law: it stirs the dust up, but cannot make the heart clean.'], [I, 'She who brought the water is the Gospel. By it the heart is made clean, fit for the King of glory to live in.']], () => goTo('r3'));
         }
         for (const d of this.dust) { d.life = (d.life || 0) + 1; d.dr = d.dr || (.95 + rnd() * .04); d.vx *= d.dr; if (d.life > 120) d.a *= .99; if (Math.abs(d.x - 1900) < 160 && d.y < 1000) d.a *= .97; if (d.y < 1000) d.vy = Math.max(d.vy, 0); d.x += d.vx + Math.sin(G.t / 60 + d.p) * .4; d.y += d.vy; d.vx *= .985; d.vy = d.vy * .985 + (H.ph === 'sprinkle' ? .05 : -.004); if (H.ph === 'sprinkle' && d.y > 1240) d.a *= .9; }
         this.dust = this.dust.filter(d => d.a > .03 && d.y < 1400);
