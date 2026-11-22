@@ -117,14 +117,46 @@
   }
   // THE DOOR, at night (after Rembrandt's Rest on the Flight into Egypt): he knocks; the door opens on the light within
   const DOOR = { x: 2308, top: 690, bot: 1196, w: 288 };
+  // THE DOORWAY (build 536, owner: "light from house a bit strong (maybe little less intense with some shadows to give background texture
+  // and realism) also needs a door to open inward"): an oak door, planked and strapped with iron, hinged on the right jamb, swinging IN
+  // (seen edge-on as it turns, so it narrows toward its hinge, its free edge catching the light); behind it the entry hall, not a flat
+  // glow: its back wall warm only near the candle out of sight on the left, falling into shadow up into the vault and to the right, an
+  // inner doorway dark at the back, the floor's flagstones with the light lying on them, the reveals of the thick wall in shade.
   function doorLight(c, d, inside) {
-    if (d <= .003) return; const x0 = u(DOOR.x - DOOR.w / 2), x1 = u(DOOR.x + DOOR.w / 2), y0 = v(DOOR.top), y1 = v(DOOR.bot), r = (x1 - x0) / 2;
+    const x0 = u(DOOR.x - DOOR.w / 2), x1 = u(DOOR.x + DOOR.w / 2), y0 = v(DOOR.top), y1 = v(DOOR.bot), r = (x1 - x0) / 2, W = x1 - x0, H = y1 - y0;
+    const e = d * d * (3 - 2 * d);
     c.save(); c.beginPath(); c.moveTo(x0, y1); c.lineTo(x0, y0 + r); c.arc(x0 + r, y0 + r, r, Math.PI, 0); c.lineTo(x1, y1); c.closePath(); c.clip();
-    const g = c.createLinearGradient(0, y0, 0, y1); g.addColorStop(0, css([255, 200, 120], .82 * d)); g.addColorStop(1, css([255, 170, 90], .95 * d)); c.fillStyle = g; c.fillRect(x0, y0, x1 - x0, y1 - y0);
-    if (inside) inside(); c.restore();
-    // the light lies out flat on the path before the door
-    c.save(); c.translate((x0 + x1) / 2, y1 + 2); c.scale(1, .1); glow(c, 0, 0, 220, [255, 170, 90], .5 * d); c.restore();
-    glow(c, (x0 + x1) / 2, (y0 + y1) / 2, 200, [255, 180, 100], .18 * d);
+    if (d > .003) {
+      // the hall's back wall: a warm pool from the left, falling away
+      c.fillStyle = css([24, 16, 11], 1); c.fillRect(x0, y0, W, H);
+      let g = c.createRadialGradient(x0 + W * .2, y0 + H * .62, 0, x0 + W * .2, y0 + H * .62, W * 1.05);
+      g.addColorStop(0, css([236, 168, 96], .72 * d)); g.addColorStop(.35, css([190, 116, 60], .5 * d)); g.addColorStop(.7, css([110, 62, 34], .3 * d)); g.addColorStop(1, css([60, 34, 20], 0));
+      c.fillStyle = g; c.fillRect(x0, y0, W, H);
+      // an inner doorway at the back, dark, a little right of the middle; the floor's flags with the light flat on them
+      c.fillStyle = css([12, 8, 6], .8 * d); c.fillRect(x0 + W * .56, y0 + H * .34, W * .2, H * .54);
+      c.fillStyle = css([40, 26, 16], d); c.fillRect(x0, y0 + H * .88, W, H * .12);
+      c.save(); c.translate(x0 + W * .3, y0 + H * .93); c.scale(1, .12); g = c.createRadialGradient(0, 0, 0, 0, 0, W * .7); g.addColorStop(0, css([230, 160, 90], .45 * d)); g.addColorStop(1, css([230, 160, 90], 0)); c.fillStyle = g; c.fillRect(-W, -W, 2 * W, 2 * W); c.restore();
+      c.fillStyle = css([8, 5, 4], .35 * d); for (let k = 1; k < 5; k++) c.fillRect(x0, y0 + H * (.88 + k * .03), W, 1);
+      // shadow up into the arch's vault and down the reveals of the thick wall
+      g = c.createLinearGradient(0, y0, 0, y0 + H * .45); g.addColorStop(0, 'rgba(8,5,3,.75)'); g.addColorStop(1, 'rgba(8,5,3,0)'); c.fillStyle = g; c.fillRect(x0, y0, W, H * .45);
+      g = c.createLinearGradient(x0, 0, x0 + W * .14, 0); g.addColorStop(0, 'rgba(8,5,3,.6)'); g.addColorStop(1, 'rgba(8,5,3,0)'); c.fillStyle = g; c.fillRect(x0, y0, W * .14, H);
+      g = c.createLinearGradient(x1, 0, x1 - W * .2, 0); g.addColorStop(0, 'rgba(8,5,3,.55)'); g.addColorStop(1, 'rgba(8,5,3,0)'); c.fillStyle = g; c.fillRect(x1 - W * .2, y0, W * .2, H);
+      if (inside) inside();
+    }
+    // the door leaf: shut it fills the arch; as it swings in it narrows toward the hinge on the right
+    const lw = W * (1 - .84 * e), lx = x1 - lw;
+    c.fillStyle = css([36, 26, 19], 1); c.fillRect(lx, y0, lw, H);
+    const shade = .25 + .45 * e; c.fillStyle = css([6, 4, 3], shade); c.fillRect(lx, y0, lw, H);
+    c.fillStyle = 'rgba(6,4,3,.6)'; const n = 6; for (let k = 1; k < n; k++) c.fillRect(lx + lw * k / n - .6, y0, 1.2, H);
+    c.fillStyle = 'rgba(10,8,8,.85)'; for (const f of [.3, .72]) c.fillRect(lx, y0 + H * f, lw, Math.max(2, H * .018));
+    c.fillStyle = 'rgba(10,8,8,.9)'; c.beginPath(); c.arc(lx + lw * .16, y0 + H * .55, Math.max(1.5, W * .022), 0, 6.2832); c.fill();
+    // its free edge, the thickness of the oak, catches the light from within as it opens
+    if (d > .003) { c.fillStyle = css([210, 140, 80], .55 * d); c.fillRect(lx - Math.max(1.5, W * .035 * e), y0, Math.max(1.5, W * .035 * e), H); }
+    c.restore();
+    if (d <= .003) return;
+    // the light lies out flat on the path before the door, and a breath of it in the air
+    c.save(); c.translate((x0 + x1) / 2, y1 + 2); c.scale(1, .1); glow(c, 0, 0, 200, [255, 170, 90], .3 * d); c.restore();
+    glow(c, (x0 + x1) / 2, (y0 + y1) / 2, 180, [255, 180, 100], .08 * d);
   }
   // Level 1's plain field trees for the night outside (loaded once; the scene is baked when they are in, or without them if they fail)
   const TREE_IMS = {}, treesIn = Promise.all(['a', 'b', 'e'].map(k => new Promise(res => { const im = new Image(); im.onload = im.onerror = () => res(); im.src = 'assets/tree-' + k + '.webp'; TREE_IMS[k] = im; })));
@@ -132,22 +164,33 @@
   return {
     door: {
       pic: PAINTED ? 'room-door' : 'door-drawn', shell: PAINTED ? 0 : 1, FY: 1200, cam0: 210, tone: [80, 74, 90], k: .58,
-      light(x) { return x < DOOR.x - 100 ? { x: DOOR.x, a: .6 * this.d, col: [230, 140, 70] } : null; },
+      light(x) { return x < DOOR.x - 100 ? { x: DOOR.x, a: .45 * this.d, col: [230, 140, 70] } : null; },
+      // (build 536) he comes up the way from the gate to the house himself (book {69}, {70}: "he went on till he came to the house of the
+      // Interpreter"): the level opens with him on the path left of the house, and the child walks him up to the door; and on "Come in" the
+      // Interpreter beckons him in with an open hand (the free clip interp-talk, made from his own dark figure: the hand lifted palm up,
+      // then folded again)
+      CX0: 1000, BK: { n: 'room-interpreter-beckon', ax: 132, g: 436, cols: 8, fr: 65, W: 208, H: 441, s: 635 / 433, ct: 1, mul: .8, sat: .9 },
       // (build 519) the Interpreter comes out of the light: he walks a few steps out onto the threshold in his own walk; after "Come in"
       // Christian walks in through the door himself (a story move, like Level 3's walk in through the gate) while the Interpreter goes
       // back into the light ahead of him; then room 1
       IX0: 2350, IX1: 2196,
-      enter() { this.gone = false; this.d = 0; this.kn = 0; this.ia = 0; this.cut = 0; this.cw = 0; this.ix = this.IX0; this.ifr = 0; this.iw = 0; this.cx = 1880; this.cfr = 0; this.cw2 = 0; this.ca = 1; this.inT = -1; SEEN_R.clear(); pic(VIS.I.walk.n); pic(VIS.C.walk.n); },
+      enter() { this.gone = false; this.d = 0; this.kn = 0; this.ia = 0; this.cut = 0; this.cw = 0; this.ix = this.IX0; this.ifr = 0; this.iw = 0; this.cx = this.CX0; this.uw = 0; this.bkT = -1; this.cfr = 0; this.cw2 = 0; this.ca = 1; this.inT = -1; pic(this.BK.n); SEEN_R.clear(); pic(VIS.I.walk.n); pic(VIS.C.walk.n); },
       cutLit(id) { return id === 'door' ? .5 : 0; },
-      run() { talk([[N, 'Then he went on till he came to the house of the Interpreter, and knocked over and over.']], () => { this.cw = 0; talk([[TIP, 'Knock on the door.', 'knock']], () => { H.ph = 'open'; H.t = 0; G.state = 'auto'; }); }); },
+      run() { talk([[TIP, 'Hold to walk on to the house.', 'walkup']], () => talk([[N, 'Then he went on till he came to the house of the Interpreter, and knocked over and over.']], () => { this.cw = 0; talk([[TIP, 'Knock on the door.', 'knock']], () => { H.ph = 'open'; H.t = 0; G.state = 'auto'; }); })); },
       act(sx, sy) { if (G.act === 'knock' && (sx == null || near(sx, sy, DOOR.x, 950, 150))) { knockS(); if (++this.kn >= 3) next(true); } },
       upd() {
         this.cut += ((this.cw ? 1 : 0) - this.cut) * (this.cw ? .03 : .05); if (this.cut < .003) this.cut = 0;
         if (G.act === 'knock' && G.actT >= 90 && !G.ring) G.ring = ring(DOOR.x, 950);
+        // the walk up from the gate: hold to walk, he stops before the door
+        if (G.act === 'walkup') { if (G.actT >= 60 && !hold() && !G.ring) G.ring = () => [u(this.cx + 160), v(1000)]; if (hold()) { G.ring = null; this.uw = Math.min(1, this.uw + .05); } else this.uw = Math.max(0, this.uw - .06); }
+        if (this.uw > 0 && this.inT < 0) { this.cx += walkSpeed('C', .58) * this.uw; this.cfr += WALK_FPT * this.uw;
+          const st = Math.floor(this.cfr * 2 / VIS.C.walk.fr); if (st !== this.lst) { this.lst = st; if (typeof stepOn === 'function') stepOn('dirt', 1); }
+          if (this.cx >= 1880) { this.cx = 1880; this.uw = 0; if (G.act === 'walkup') next(true); } }
+        if (this.bkT >= 0) this.bkT++;
         if (H.ph === 'open') { this.d = Math.min(1, this.d + .012); if (H.t === 1 && audio()) { tone(98, 'sine', .05, 2.2); noise(300, 3, 1.4, .05); }
           // he comes out of the light: fading in deep in the doorway, then walking out onto the threshold, and standing
           if (H.t > 50 && this.inT < 0) { this.ia = Math.min(1, this.ia + .03); if (this.ix > this.IX1) { this.iw = Math.min(1, this.iw + .05); this.ix = Math.max(this.IX1, this.ix - walkSpeed('I', .58) * this.iw); this.ifr += WALK_FPT * this.iw; } else this.iw = 0; }
-          if (H.t === 170) talk([[C, 'Sir, the man at the gate said that if I called here, you would show me excellent things, to help me on my journey.'], [I, 'Come in. I will show you what will help you.']], () => { this.inT = 0; G.state = 'auto'; }); }
+          if (H.t === 170) talk([[C, 'Sir, the man at the gate said that if I called here, you would show me excellent things, to help me on my journey.'], [I, 'Come in. I will show you what will help you.', null, () => { this.bkT = 0; }]], () => { this.inT = 0; G.state = 'auto'; }); }
         // in: the Interpreter goes back into the light, Christian walks in after him and is lost in it
         if (this.inT >= 0) { this.inT++; this.ia = Math.max(0, this.ia - .03);
           if (this.inT > 20) { this.cw2 = Math.min(1, this.cw2 + .05); this.cx += walkSpeed('C', .58) * this.cw2; this.cfr += WALK_FPT * this.cw2;
@@ -158,8 +201,8 @@
       under(c) { doorLight(c, this.d, () => {}); if (PAINTED) { glow(c, u(2832), v(380), 120, [255, 190, 110], .1 + .03 * Math.sin(G.t / 40)); glow(c, u(470), v(1000), 70, [255, 160, 80], .2 + .08 * Math.sin(G.t / 7) * Math.sin(G.t / 13)); } else { glow(c, u(HSE.WIN[0]), v(HSE.WIN[1]), 120, [255, 190, 110], (.12 + .03 * Math.sin(G.t / 40)) * (1 - .5 * this.d)); glow(c, u(700), v(1160), 40, [255, 160, 80], .3 + .1 * Math.sin(G.t / 7) * Math.sin(G.t / 13)); } },
       people(c) {
         // the Interpreter on the threshold, dark against the light within (walking: his own walk, facing out; standing: his standing figure)
-        if (this.ia > .01) { const w = VIS.I.walk; if (this.iw > 0 && sheetFrames(w)) { const i = ((Math.floor(this.ifr) % w.fr) + w.fr) % w.fr; fig(c, w.n + '#' + i, w, this.ix, H.R.FY, -1, .58, this.ia, H.R.tone, null, 0, 0); } else visitor(c, 'I', this.ix, -1, .58, this.ia); }
-        if (this.ca > 0) { if (this.cw2 > 0) walkFig(c, 'C', this.cx, this.cfr, .58, this.ca); else visitor(c, 'C', this.cx, 1, .58, this.ca); }
+        if (this.ia > .01) { const w = VIS.I.walk, B = this.BK, bf = Math.min(B.fr - 1, Math.floor(this.bkT * 16 / 60)); if (this.bkT >= 0 && bf < B.fr - 1 && sheetFrames(B)) fig(c, B.n + '#' + bf, B, this.ix, H.R.FY, -1, .58, this.ia, H.R.tone, null, 0, 0); else if (this.iw > 0 && sheetFrames(w)) { const i = ((Math.floor(this.ifr) % w.fr) + w.fr) % w.fr; fig(c, w.n + '#' + i, w, this.ix, H.R.FY, -1, .58, this.ia, H.R.tone, null, 0, 0); } else visitor(c, 'I', this.ix, -1, .58, this.ia); }
+        if (this.ca > 0) { if (this.cw2 > 0 || this.uw > 0) walkFig(c, 'C', this.cx, this.cfr, .58, this.ca); else visitor(c, 'C', this.cx, 1, .58, this.ca); }
       },
     },
     // LEAVING by the door (book {91}, {92}): he goes on his way

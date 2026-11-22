@@ -44,6 +44,7 @@ Several chats push to `main`. Just before pushing: `git fetch`, rebase on `origi
 
 ## Changes to the core (newest first)
 
+- Build 536 (Outside & passages): `RM.HOLDS` has `'walkup'` (the walk up to the house's door).
 - Build 522 (room 4 chat): `toneOf` reads `R.satK` (a factor on every figure's colour in that room; 1 if not set, so other rooms are unchanged; it is part of the toned picture's key). Checked: rooms 3 and 5 still play, no errors.
 
 - Build 520 (room 2 chat): `toneOf` takes a room's `soft` (0..1, default none): a softened copy laid over each figure inside its own outline. Only room 2 sets it; no other room changes (the cache key gained one field).
@@ -51,6 +52,6 @@ Several chats push to `main`. Just before pushing: `git fetch`, rebase on `origi
 - Build 514 (Outside & passages): `setView` lets a passage use the shell view (`if (R && R.shell)`, was `&& R.id !== 'pass'`); only the passage changes, every room has `shell` as before. `tools/stills4.js` takes `DARK=1`.
 - Build 507: `rooms.js` split into the core and the room files (no visible change; every room checked against stills of build 506 with the same random numbers: only flickering fire and moving figures differ).
 
-## Clips already made and not yet used (on the `clips` branch, `clips/out/`)
+## Clips already made and not yet used (`interp-talk` used for the beckon at the door, build 536) (on the `clips` branch, `clips/out/`)
 
-`interp-nod`, `interp-talk`, `christian-oil-look`, `christian-oil-turn` (check they start from the dark build-351 figures before using; otherwise they jump), `goodwill-pull` (Level 3's gate). `room2-living`, `room4-living`, `room7-living`, `brave-stride` animate the old paintings and probably do not fit the drawn rooms.
+`interp-nod`, `christian-oil-look`, `christian-oil-turn` (check they start from the dark build-351 figures before using; otherwise they jump), `goodwill-pull` (Level 3's gate). `room2-living`, `room4-living`, `room7-living`, `brave-stride` animate the old paintings and probably do not fit the drawn rooms.

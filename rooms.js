@@ -508,7 +508,7 @@ const RM = (() => {
     drawItems();
   }
 
-  const HOLDS = ['round', 'walkout', 'follow'];
+  const HOLDS = ['round', 'walkout', 'follow', 'walkup'];
   const lines = []; // for the voice tool: every room's lines are written out in full above
   // THE ROOMS FROM THEIR OWN FILES (after build 501): each room file (room1.js ... room7.js, rooms-outside.js), loaded before this
   // one, pushed a function onto window.RMR; each is handed this kit and returns its stages, which are laid into ROOMS.
