@@ -322,6 +322,18 @@
    "made": "2026-11-21 15:23 UTC",
    "frames": 49,
    "secs": 65
+  },
+  {
+   "id": "christian-run-nb",
+   "uses": "Level 5: the run up the highway to the Cross; Level 3: the run back from the mountain; Level 1's run after the book is put away if ever wanted (no book or pouch at his belt)",
+   "first": {
+    "src": "pack:christian-walk-nb:14",
+    "h": 540
+   },
+   "seconds": 4,
+   "prompt": "A pilgrim in a worn hooded cloak with a great bundle tied with rope on his back RUNS steadily to the RIGHT, leaning forward a little under the weight, arms swinging, hands empty, nothing at his belt. The camera moves along with him and does NOT zoom: he stays in the centre of the frame at exactly the same size, his whole body always visible; he runs on the spot in the frame with even, regular strides, so the run can loop.",
+   "status": "todo",
+   "via": "modal"
   }
  ]
 }
