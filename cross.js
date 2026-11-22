@@ -326,6 +326,7 @@ const CR = (() => {
   // fall to the right), each row set deeper in the hill and a shade darker than the one before, so the rock grows
   // darker as it comes down; baked once small and drawn stretched (soft), in dark alpha so it takes the hill's colour
   let ROCK = null;
+  const ROCK_OPT = (new URLSearchParams(location.search).get('rock') || '').toLowerCase();
   function rockTex() {
     if (ROCK) return ROCK;
     const X0 = START - 700, X1 = FALL1 + 900, Y0 = -H_TOP - 40, Y1 = 700, k = .4;
@@ -341,12 +342,39 @@ const CR = (() => {
       return H + (nz(L * .012, sd) - .5) * .04 + (nz(L * .04, sd + 2) - .5) * .012; };
     // rows of rock: how far below the hill's outline each one's foot lies, how tall its spurs stand, their width, its shade
     const ROWS = [[150, 130, 140, .09], [380, 200, 190, .1], [620, 230, 240, .11], [880, 250, 300, .12]];
+    // a TRIAL of other looks for the rock, only with ?rock=a|b|c|d (without it the hill is as before): a light layer
+    // (`lv`, white, laid with 'screen' in land()) and, for some, a stronger dark
+    const lv = document.createElement('canvas'); lv.width = cv.width; lv.height = cv.height; const l = lv.getContext('2d');
+    l.scale(k, k); l.translate(-X0, -Y0);
+    const O = ROCK_OPT;
     ROWS.forEach(([D, Hh, seg, a], n) => {
-      q.beginPath(); q.moveTo(X0, Y1);
-      for (let x = X0; x <= X1; x += 4) q.lineTo(x, -(gh(x) - D) - Hh * crag(x + n * 977, 11 + n * 7, seg));
-      q.lineTo(X1, Y1); q.closePath(); q.fillStyle = css([0, 0, 0], a); q.fill();
+      const top = x => -(gh(x) - D) - Hh * crag(x + n * 977, 11 + n * 7, seg);
+      const pts = []; for (let x = X0; x <= X1; x += 4) pts.push([x, top(x)]);
+      const shape = c2 => { c2.beginPath(); c2.moveTo(X0, Y1); for (const [x, y] of pts) c2.lineTo(x, y); c2.lineTo(X1, Y1); c2.closePath(); };
+      shape(q); q.fillStyle = css([0, 0, 0], O === 'b' || O === 'd' ? a * 1.9 : a); q.fill();
+      // (a) a thin edge of sky light along the top of every rock mass, stronger on its brow
+      if (O === 'a' || O === 'd') {
+        l.save(); shape(l); l.clip(); l.lineJoin = 'round';
+        for (const [w, al] of [[16, .05], [8, .09], [3.5, .2]]) { l.lineWidth = w; l.strokeStyle = css([255, 255, 255], al * (1 - .15 * n)); l.beginPath(); pts.forEach(([x, y], i) => i ? l.lineTo(x, y) : l.moveTo(x, y)); l.stroke(); }
+        l.restore();
+      }
+      // (b) mist lying in the hollow behind each mass: a pale band above its outline, fading up (the game's layered look)
+      if (O === 'b' || O === 'd') {
+        l.save(); l.beginPath(); l.moveTo(X0, Y0); for (const [x, y] of pts) l.lineTo(x, y); l.lineTo(X1, Y0); l.closePath(); l.clip();
+        l.lineJoin = 'round';
+        for (let dd = 0; dd < 90; dd += 6) { l.strokeStyle = css([255, 255, 255], .03 * Math.pow(1 - dd / 90, 1.6)); l.lineWidth = 12; l.beginPath(); pts.forEach(([x, y], i) => i ? l.lineTo(x, y - dd) : l.moveTo(x, y - dd)); l.stroke(); }
+        l.restore();
+      }
+      // (c) the light from the right (the sun behind the cross): faces that fall away to the right lit, steep left faces in shade
+      if (O === 'c') {
+        l.save(); shape(l); l.clip();
+        for (let i = 12; i < pts.length - 12; i++) { const [x, y] = pts[i]; let sl = 0; for (let j = -10; j <= 10; j++) sl += (pts[i + j + 1][1] - pts[i + j - 1][1]) / 8; sl /= 21; const lit = Math.max(0, Math.min(1, sl * 1.4)), sh = Math.max(0, Math.min(1, -sl * .9));
+          if (lit > .02) { const g = l.createLinearGradient(0, y, 0, y + 110); g.addColorStop(0, css([255, 255, 255], .16 * lit)); g.addColorStop(1, css([255, 255, 255], 0)); l.fillStyle = g; l.fillRect(x - 2, y, 4.5, 110); }
+          if (sh > .02) { const g = q.createLinearGradient(0, y, 0, y + 140); g.addColorStop(0, css([0, 0, 0], .2 * sh)); g.addColorStop(1, css([0, 0, 0], 0)); q.fillStyle = g; q.fillRect(x - 2, y, 4.5, 140); } }
+        l.restore();
+      }
     });
-    return (ROCK = { c: cv, x: X0, y: Y0, w: X1 - X0, h: Y1 - Y0 });
+    return (ROCK = { c: cv, l: O ? lv : null, x: X0, y: Y0, w: X1 - X0, h: Y1 - Y0 });
   }
   function land(c) {
     const x0 = cam.cx - VW / 2 / cam.z - 40, x1 = cam.cx + VW / 2 / cam.z + 40, step = Math.max(4, 6 / cam.z);
@@ -362,6 +390,7 @@ const CR = (() => {
     g.addColorStop(0, css(lite, .1)); g.addColorStop(.3, css(lite, .03)); g.addColorStop(.6, css(dark, .05)); g.addColorStop(1, css(dark, .5));
     c.fillStyle = g; c.fillRect(x0, -H_TOP - 60, x1 - x0, H_TOP + 2100);
     const R = rockTex(); c.drawImage(R.c, R.x, R.y, R.w, R.h);
+    if (R.l) { c.globalCompositeOperation = 'screen'; c.globalAlpha = .55 + .2 * dawn + .25 * gold; c.drawImage(R.l, R.x, R.y, R.w, R.h); c.globalAlpha = 1; c.globalCompositeOperation = 'source-over'; }
     // the painted rock's grain over it all, as on Level 3's crags
     // the painted cliff texture from Level 3 is no longer laid on (owner, build 470: "there's lines on the hill now":
     // its upright cracks showed as stripes down the smooth hill)

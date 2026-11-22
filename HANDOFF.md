@@ -118,6 +118,9 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 
 **Build 473 (Level 3 gate chat):** a link's place (`at=`, `x=`, `room=`) is used for the first start only (`dropPlace()`), so choosing a level again begins it from its start. Nothing spent.
+
+**Build 474: FOUR LOOKS FOR THE HILL'S ROCK, A TRIAL (owner: "the contours on the mountain should look cooler ... maybe give me some options").** Only with `?rock=a|b|c|d` (`ROCK_OPT` in `rockTex()`); without it the hill is unchanged. Each is baked once into a white light layer (`ROCK.l`, laid with 'screen' in `land()`, stronger as dawn and gold come) and, for some, a stronger dark: (a) a thin edge of sky light along the top of every rock mass; (b) the masses darker, with a pale mist lying in the hollow behind each, fading up (the game's layered look); (c) light from the right, the sun's side: faces falling away to the right lit, steep left faces in shade, the slope smoothed over about 80 units (unsmoothed it showed as upright stripes); (d) a and b together. Comparison sheet shown to the owner (climb, the look at the sepulchre, dawn). Nothing spent.
+
 ## START HERE (rewritten at build 140, Nov 16 2026)
 
 **Build 420 (vision chat): the castle sits on the summit, its crag faded into the rock** (free). **Build 415 (vision chat): a rock mountain drawn in code holds the castle, the castle a third of its size** (free; see CLAUDE.md build 415). **Build 413 (vision chat): Beelzebub's castle painted** (about 15 cents, the owner said "Paint it"): a huge dark fortress on a crag after John Martin, left of the gate's wall end; the camera stands back on it as he arrives and glances back while the arrows fly. See CLAUDE.md, Level 3, build 413. Still open from this chat: Christian's new coat after the Cross (a free FLUX retry is scheduled; show the still before any clips); which lines at the mountain's foot the owner wants fixed.
