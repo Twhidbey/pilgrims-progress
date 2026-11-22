@@ -77,12 +77,12 @@
   // the walk round the wall (build 508): the two set off from where they stand, go BEHIND the man with the bucket and the fire (a
   // little further back: smaller, darker, standing a little higher), behind the chimney breast into the dark, the Interpreter's
   // cupped candle the only light there; they stop and turn to the one pouring oil, and the dark lifts
-  const WK = { C0: 240, I0: 520, FEET: 45, C1: 2620, I1: 2860, V: 3.4, k: .92, up: 14, PO: 2040, SPOUT: [1896, 790 + 45], CX: 760, LIP: [1142, 830 + 45] };
+  const WK = { C0: 240, I0: 520, FEET: 45, C1: 2620, I1: 2860, V: 3.4, k: .92, up: 14, PO: 2040, SPOUT: [1896, 790 + 45], CX: 960, LIP: [1342, 830 + 45] };
   // the perspective of the chimney breast's face (build 523; build 526: the eye at chest height again, so the floor line runs up too):
   // a vanishing point PV on the left, depth d into the
   // picture shrinks by PQ(d) (as the gate's wall in Level 3); the hearth's opening runs from depth a0 to a1, its arch springing at SPR
   // above the floor and rising RISE more; the fire sits FIN inside the face at depth FD
-  const PV = { X: 600, Y: HOUSE.FY - 50, NEAR: 90, GP: 450, D: 640, a0: 100, a1: 520, SPR: 320, RISE: 140, FD: 300, FIN: 50, REV: 130, T: 50 };
+  const PV = { X: 900, Y: HOUSE.FY - 74, NEAR: 90, GP: 800, D: 800, a0: 200, a1: 600, SPR: 320, RISE: 140, FD: 400, FIN: 50, REV: 90, T: 46 };
   const rngR4 = seed => () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
   // the hearth wall's foot stands NEAR in front of the back wall's foot (build 529; owner: its far corner just below where wall and
   // floor meet, its near corner down where the floor's dark shadow starts): its floor line is FB, the eye low enough for both
@@ -248,7 +248,7 @@
           // the cast: every few seconds water arcs from his bucket DOWN into the fire; where it strikes the fire sinks with a hiss
           // and a gust of steam, then rises higher than before (the book: "yet did the fire burn higher and hotter")
           this.cast += 1 / 70; if (this.cast >= 3.2) { this.cast = 0; this.hit = false; }
-          if (this.cast > .3 && this.cast < .62) for (let i = 0; i < 3; i++) this.water.push({ x: WK.LIP[0] + rnd() * 14, y: WK.LIP[1] + rnd() * 10, vx: 3.4 + rnd() * .8, vy: 2.8 + rnd() * 1.2, a: 1 });
+          if (this.cast > .3 && this.cast < .62) for (let i = 0; i < 3; i++) this.water.push({ x: WK.LIP[0] + rnd() * 14, y: WK.LIP[1] + rnd() * 10, vx: 2.6 + rnd() * .6, vy: 3.4 + rnd() * 1.4, a: 1 });
           for (const w of this.water) {
             w.vy += .16; w.x += w.vx; w.y += w.vy;
             if (w.x > FXS()[0] - 90 && w.y > FXS()[1] - 260 && w.a === 1) {
