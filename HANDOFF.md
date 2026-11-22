@@ -3,6 +3,8 @@
 The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build step; until build 118 it was called `story-lab.html`: read that name below as `index.html`). `style-lab.html` is the art-style test page. `CLAUDE.md` maps the code and records the owner's decisions. Work on **`main`** and push after every change: pushing IS publishing (GitHub Pages, https://twhidbey.github.io/pilgrims-progress/). Bump the build stamp in both pages on every push and tell the owner when it is live (a phone may need `?v=N` on the link). Keep this file and `CLAUDE.md` updated. Public repo: no personal details.
 
 
+**Build 525 (Room 4 chat): the chimney column thinner, the hearth wall's perspective steeper. Nothing spent.**
+
 **Build 523 (Room 4 chat): the fire's hearth now an arched stone opening in the chimney wall's face, drawn in perspective (as Level 3's gate) facing the man with the bucket. Nothing spent.**
 
 **Build 522 (Room 4 chat): the fire burns in one fireplace through the chimney breast (water in at the front, oil in at the back, the oil man unseen until they go round); everyone in the room dimmer and nearly colourless (new core option `satK`); the Interpreter and his candle always behind Christian. Nothing spent.**

@@ -7,7 +7,7 @@
 // ============================================================
 (window.RMR = window.RMR || []).push(H => {
   const { D4, EX, HOUSE, I, PH, S, bakeShell, fig, glow, goTo, hold, loads, noise, pic, pics, ring, rnd, u, v, visitor, VIS, WALK_FPT, walkFig, walkSpeed, sheetFrames } = H;
-  const R4D = { caster: { ax: 35, g: 302, s: 2.1, ct: 1.3, mul: .42, sat: .5 }, pourer: { ax: 62, g: 299, s: 2.1, ct: 1.3, mul: .42, sat: .5 }, FIRE: 1960, PART0: 1740, PART1: 2180, FP0: 1790, FP1: 2160, FPH: 520 };
+  const R4D = { caster: { ax: 35, g: 302, s: 2.1, ct: 1.3, mul: .42, sat: .5 }, pourer: { ax: 62, g: 299, s: 2.1, ct: 1.3, mul: .42, sat: .5 }, FIRE: 1960, PART0: 1740, PART1: 1880, FP0: 1790, FP1: 2160, FPH: 520 };
   function bakeR4() {
     // on the house's shell (build 425): the fire low on the floor at FIRE is the one light; the chimney breast between PART0 and PART1 is
     // the wall they go round (the end walls' own near-black, its face toward the fire warmed); behind it the small hidden fire's own low light
@@ -77,12 +77,12 @@
   // the walk round the wall (build 508): the two set off from where they stand, go BEHIND the man with the bucket and the fire (a
   // little further back: smaller, darker, standing a little higher), behind the chimney breast into the dark, the Interpreter's
   // cupped candle the only light there; they stop and turn to the one pouring oil, and the dark lifts
-  const WK = { C0: 280, I0: 560, C1: 2620, I1: 2860, V: 3.4, k: .92, up: 14, PO: 2340, SPOUT: [2196, 790], CX: 900, LIP: [1282, 830] };
+  const WK = { C0: 280, I0: 560, C1: 2620, I1: 2860, V: 3.4, k: .92, up: 14, PO: 2040, SPOUT: [1896, 790], CX: 900, LIP: [1282, 830] };
   // the perspective of the chimney breast's face (build 523): a vanishing point PV on the left, low (just above the floor, so the
   // face's foot stays level with the room's floor), depth d into the
   // picture shrinks by PQ(d) (as the gate's wall in Level 3); the hearth's opening runs from depth a0 to a1, its arch springing at SPR
   // above the floor and rising RISE more; the fire sits FIN inside the face at depth FD
-  const PV = { X: 600, Y: HOUSE.FY - 30, GP: 900, D: 520, a0: 110, a1: 430, SPR: 290, RISE: 120, FD: 270, FIN: 50 };
+  const PV = { X: 600, Y: HOUSE.FY - 30, GP: 700, D: 520, a0: 110, a1: 430, SPR: 290, RISE: 120, FD: 270, FIN: 50 };
   const PQ = d => 1 / (1 + d / PV.GP), PP = (X, Y, d) => { const q = PQ(d); return [PV.X + (X - PV.X) * q, PV.Y + (Y - PV.Y) * q]; };
   const archAt = (d0, d1, spr, rise, th) => { const m = (d0 + d1) / 2, r = (d1 - d0) / 2, s = Math.sin(th); return PP(R4D.PART0, HOUSE.FY - spr - rise * Math.pow(s, .7), m - r * Math.cos(th)); };
   const archPts = (d0, d1, spr, rise) => { const pts = [PP(R4D.PART0, HOUSE.FY, d1)]; for (let k = 0; k <= 24; k++) pts.push(archAt(d0, d1, spr, rise, Math.PI - Math.PI * k / 24)); pts.push(PP(R4D.PART0, HOUSE.FY, d0)); return pts; };
@@ -128,11 +128,11 @@
         // THE CHIMNEY BREAST'S FACE IN PERSPECTIVE (build 523; owner: "make the fireplace opening arched like a real old hearth and make it facing
         // the man throwing on water (perspective kinda like that gate in level 3)"): the breast is cut by the section at P0..P1; its face toward
         // the room runs back from the cut to a vanishing point on the left (PV), as the gate's wall does, and the hearth is set in that face
-        const D = PV.D, [fx0, fy0] = PP(P0, FY, D), CY = HOUSE.CEIL + 80, ft0 = CY;
+        const D = PV.D, [fx0, fy0] = PP(P0, FY, D), CY = HOUSE.CEIL + 80, [, ft0] = PP(P0, CY, D);
         c.save(); c.beginPath(); c.rect(u(EX.x0), v(CY), (EX.x1 - EX.x0) * S, (EX.y1 - CY) * S); c.clip();
         // the face itself, dark stone, warmed round the hearth
-        poly([[P0, CY], [fx0, CY], [fx0, fy0], [P0, FY]]); c.fillStyle = '#150d09'; c.fill();
-        c.save(); poly([[P0, CY], [fx0, CY], [fx0, fy0], [P0, FY]]); c.clip();
+        poly([[P0, CY], [fx0, ft0], [fx0, fy0], [P0, FY]]); c.fillStyle = '#150d09'; c.fill();
+        c.save(); poly([[P0, CY], [fx0, ft0], [fx0, fy0], [P0, FY]]); c.clip();
         g = c.createLinearGradient(u(fx0), 0, u(P0), 0); g.addColorStop(0, 'rgba(0,0,0,.45)'); g.addColorStop(1, 'rgba(0,0,0,0)'); c.fillStyle = g; c.fillRect(u(fx0), v(ft0), (P0 - fx0) * S, (FY - ft0) * S);
         const [hx, hy] = PP(P0, FY - PV.SPR * .6, PV.FD);
         g = c.createRadialGradient(u(hx), v(hy), 0, u(hx), v(hy), 520 * S); g.addColorStop(0, css([220, 120, 50], .32 * gw)); g.addColorStop(.5, css([160, 80, 34], .12 * gw)); g.addColorStop(1, 'rgba(160,80,34,0)');
