@@ -35,7 +35,7 @@ const SL = (() => {
     // build 391: Christian's "Truly, I do not know." cut; Pliable's angrier half only; the storyteller's "He struggled out on
     // his own side, and Christian saw him no more." cut (shown: he climbs out and walks off into the mist; his climb now
     // starts as the talk ends, see talk(FALL))
-    [PL, 'Is this the happiness you told me of? You can have your fine country to yourself!', null, () => { if (pli) pli.turn = 1; }],      // he turns from Christian toward his own side
+    [PL, 'Is this the happiness you told me of? You can have your fine country to yourself!', null, () => { if (pli && !PLOUT.length) pli.turn = 1; }],      // build 502: with his own video he turns in it, after the talk      // he turns from Christian toward his own side
   ];
   // the choice is ours, not the book's (as in Level 1): going back loses nothing
   const BACK = [
@@ -279,7 +279,7 @@ const SL = (() => {
   }
 
   // ---------- the people ----------
-  const HELPF = [], REACH = [], LIFT = [], PLIC = [], WADE = [], STUCKP = [], PSTOP = [], HWALK = [], HTURN = [];
+  const HELPF = [], REACH = [], LIFT = [], PLIC = [], PLOUT = [], WADE = [], STUCKP = [], PSTOP = [], HWALK = [], HTURN = [];
   const META = { help: { ax: 94, ground: 309 }, reach: { ax: 70, ground: 307 }, lift: { ax: 257, ground: 307 },
     climb: { ax: 363, ground: 342, top: 38, end: 440, sink: 39, c0: 168, top0: 143 },      // c0, top0: the middle and the head of him in the first frame (build 106)
     // Christian struggling through the mud (build 104): a loop, waist-deep in the video; ground = where his feet would be
@@ -293,6 +293,11 @@ const SL = (() => {
     // stands breathing (video 100..238, played back and forth). ax/ground = where walk frame 0's ax and ground fall in the
     // pack, so frame 0 lies exactly on the walk frame; at the end his feet are STOPD further on
     stop: { ax: 100.8, ground: 308 },
+    // build 502: his way out, one video made in mud (owner: "lets pay the big bucks"): he turns from Christian, wades to
+    // his own bank, grips it, climbs up and stands. Drawn unmirrored (the video's bank is on the left, as the home bank is).
+    // ax = the video's bank edge, ground = its mud line; bank = how far its bank stands above the mud; b0/b1 = his body at the
+    // first and last frame (pack px)
+    out: { ax: 261, ground: 378, bank: 46.8, b0: 605, b1: 109 },
     // HELP WALKS IN (build 119, owner: "can bring in help by walking"; the book, {31}: "a man came to him"): one video
     // (about 56 cents, right first time; first frame a striding frame of his kneel video, last frame his standing
     // picture; the camera still, he walks across). assets/help-walk.pack: 96 frames (every second video frame), each cut
@@ -337,7 +342,7 @@ const SL = (() => {
   // line, top = how high the bank stands in the video (pack pixels), end = where his feet are in the last frame. Without the pack
   // he wades to his own bank and rises out of the water as he walks into the mist.
   function preload() {
-    if (!loading) loading = Promise.all([loadPack('help', HELPF), loadPack('help-walk', HWALK).catch(() => {}), loadPack('help-turn', HTURN).catch(() => {}), loadPack('christian-reach', REACH), loadPack('lift', LIFT), loadPack('pliable-climb', PLIC).catch(() => {}), loadPack('christian-wade', WADE).catch(() => {}), loadPack('christian-stuck', STUCKP).catch(() => {}), loadPack('pliable-stop', PSTOP).catch(() => {})]).catch(() => {});
+    if (!loading) loading = Promise.all([loadPack('help', HELPF), loadPack('help-walk', HWALK).catch(() => {}), loadPack('help-turn', HTURN).catch(() => {}), loadPack('christian-reach', REACH), loadPack('lift', LIFT), loadPack('pliable-climb', PLIC).catch(() => {}), loadPack('pliable-out', PLOUT).catch(() => {}), loadPack('christian-wade', WADE).catch(() => {}), loadPack('christian-stuck', STUCKP).catch(() => {}), loadPack('pliable-stop', PSTOP).catch(() => {})]).catch(() => {});
     return loading;
   }
   // the middle of Pliable in a frame of his climbing video (measured once per frame, on a small copy), to mirror him about himself
@@ -615,6 +620,22 @@ const SL = (() => {
   function wadeOn() { ph = 'wade'; G.state = 'play'; if (!C2.tv) heave(1); caption(ALONE); }
   // (E, build 368) a heave round in the mire, as Pliable's (build 140): he faces Pliable in the quarrel, and back toward the
   // far bank when he struggles on; the picture swaps under a splash (there are no frames of him turning in the mud)
+  // build 502: Pliable's way out on his own video (META.out), at its own pace (12 pictures a second). Where he was wallowing
+  // (the old clip) is carried and faded out while he wades, so he does not jump; deeper in the game's mud than in the
+  // video (OUT_D) while he wades, raised to the game's bank as he climbs.
+  const OUT_D = 34;
+  function outTick() {
+    const M = META.out, last = PLOUT.length - 1, endX = HOME0 + (M.b1 - M.ax) * CHR_K;
+    if (pli.ot == null) { const C = META.climb, f = Math.floor(pli.ct || 0), old = pli.ct != null && PLIC[f] ? pli.x + (C.ax - plCen(f)) * CHR_K : pli.x;
+      pli.ot = 0; pli.ox0 = old - (HOME0 + (M.b0 - M.ax) * CHR_K); pli.oy0 = pli.y + 24; splash(old, 12, 1.3); rings.push({ x: old, y: 0, t: 0, k: 1.2 }); if (audio()) sfxS.wade();      // he heaves up out of his wallowing under a splash (the swap of pictures)
+      pli.duck = 0; pli.fa = 1; pli.wk = 1; pli.maxY = Math.max(pli.maxY || 0, OUT_D + 40); }
+    const c0 = Math.floor(pli.ot / 13); pli.ot = Math.min(last, pli.ot + .2);
+    if (Math.floor(pli.ot / 13) > c0 && pli.ot < last * .75 && audio()) { if (!(typeof sfxPlay === 'function' && sfxPlay('bog-heave', 2, .3))) sfxS.wade(); }
+    const p = pli.ot / last, up = smooth(.58, .82, p), yEnd = bankY(endX) + 4 + M.bank * CHR_K;
+    pli.x = HOME0 + pli.ox0 * (1 - smooth(0, .55, p)); pli.face = 1;
+    pli.y = lerp(lerp(pli.oy0, OUT_D, smooth(0, .12, p)), yEnd, up);
+    if (pli.ot >= last) { pli.out = true; pli.x = endX; pli.y = bankY(endX) + 4; pli.anim = 0; pli.face = -1; }
+  }
   function heave(d) { if (C2.face === d) return; C2.face = C2.faceA = d; splash(C2.x, 12, 1.3); rings.push({ x: C2.x, y: 0, t: 0, k: 1.2 }); if (audio()) sfxS.wade(); }
   // CHRISTIAN REALLY TURNS (build 120, owner: "christian turns and looks a couple times and i don't like the flip back and
   // forth without body moving, could we use turns from other levels"): Level 1's turning video (TURN, left to right),
@@ -852,6 +873,7 @@ const SL = (() => {
         if (pli.leave && (pli.leave.a -= .12) <= 0) pli.leave = null;
         if (!PSTOP.length && !pli.stop) { const atRest = PLI_META.rest.includes(Math.floor(pli.anim) % PLI_META.frames); pli.st = clamp((pli.st || 0) + (pli.x !== pli.px2 ? -.1 : atRest && PLI_ST ? .06 : -.1)); } pli.px2 = pli.x;      // (without the video: the old dissolve)      // he stands too (build 110); build 114: the standing picture comes in over the walk frame, then the walk frame goes (no see-through middle)
         if (ph === 'fall') { pli.mode = 'in'; pli.fy = pli.y; pli.st = 0; pli.stop = null; pli.leave = null; }
+      } else if (pli.mode === 'climb' && PLOUT.length && !pli.wal && !pli.out) { outTick();
       } else if (pli.mode === 'climb' && PLIC.length && !pli.out) {
         // the video: he wades crossly to the bank, climbs up it and steps off; raised to meet the game's bank as he climbs
         // BUILD 106 (owner: "when pliable gets out sprite jumps around (skips locations)"): two jumps fixed. (1) At the end
@@ -1044,6 +1066,10 @@ const SL = (() => {
     // surface so its collar and strings lie on him (build 143)
     const pliIn = pli && PLIC.length && pli.mode === 'climb' && !pli.out;
     const pliMire = n => {
+      if (pli.ot != null && PLOUT.length) { const p = pli.ot / (PLOUT.length - 1);
+        MREC = 'P'; FIG_WET = { D: pli.maxY || 0, a: .78 }; FIG_DIP = 30 * (1 - smooth(.55, .75, p));
+        figure(n, 'pli', PLOUT[Math.floor(pli.ot)], META.out, pli.x, pli.y, 1, fig, true, pli.alpha);
+        FIG_DIP = 0; MREC = null; FIG_WET = null; return; }
         // wallowing he faces Christian (the same frames, mirrored about his own middle), then turns to his own side
         const im = PLIC[Math.floor(pli.ct || 0)], wk = pli.wal ? pli.wk : 1, fl = (1 - (pli.fa ?? -1)) / 2, cw = 2 * (META.climb.ax - plCen(Math.floor(pli.ct || 0))) * CHR_K;
         if (wk < .5) figure(n, 'pli0', PLI[pli.wf || 0], PLI_META, pli.wx, pli.sy, 1, fig, true, pli.alpha);      // build 395: a clean swap (a see-through double showed)
@@ -1169,7 +1195,8 @@ const SL = (() => {
         ctx.fillStyle = g; ctx.fillRect(-1, -1, 2, 2); ctx.restore(); };
       if (['fall', 'pli', 'back', 'backtalk', 'wade', 'stuck', 'help'].includes(ph)) { const deep = smooth(C_SINK + 10, SINK + DEEP, C2.y);      // the deeper he is, the lower and thinner it lies: his head must stay clear
         low(C2.x + 6, (ph === 'fall' ? smooth(20, 120, C2.fallT) : 1) * (lift ? 1 - clamp(lift.t / 60) : 1) * (1 - .45 * deep), lerp(40, 13, deep)); }
-      if (pli && pli.mode === 'climb' && !pli.out) low(pli.x + (META.climb.ax - META.climb.c0) * CHR_K * (1 - .6 * smooth(.25, .7, (pli.ct || 0) / 119)), (pli.wk ?? 1) * (1 - smooth(.6, .85, (pli.ct || 0) / 119))); }
+      if (pli && pli.mode === 'climb' && !pli.out && pli.ot != null) low(pli.x + (lerp(META.out.b0, META.out.b1, smooth(0, .7, pli.ot / 119)) - META.out.ax) * CHR_K, 1 - smooth(.55, .8, pli.ot / 119));
+      else if (pli && pli.mode === 'climb' && !pli.out) low(pli.x + (META.climb.ax - META.climb.c0) * CHR_K * (1 - .6 * smooth(.25, .7, (pli.ct || 0) / 119)), (pli.wk ?? 1) * (1 - smooth(.6, .85, (pli.ct || 0) / 119))); }
     ctx.drawImage(nearC, 0, 0, VW, VH);
     // --- the mirror: the near picture upside down under the water line, in thin strips that wander more the nearer they are ---
     const wx0 = Math.max(0, X(WATER_L));
@@ -1636,5 +1663,5 @@ const SL = (() => {
   // for testing: SL.peek() tells where the story is
   // grow, ribbons: the tree grower and its painter, for Level 3's oak in leaf (hill.js, bakeOak): keep these exports
   // oakPic: the great oak baked small in one colour, for Level 1's far glimpse of the Slough (index.html, drawFarSlough)
-  return { on: false, show: false, title, start, update, draw, touch, grip, pick, preload, lines: ALL, oakPic: (col, k) => bakeTree(oak(18), col, k), grow: (seed, hero, depth) => oak(seed, hero, depth), ribbons, peek: () => ({ ph, nd: nearDk, hw: help && help.w, thk: { cityT, fearT2 }, mem: { histT, histA, travT, travA }, x: C2.x, y: C2.y, mv: mv && mv.t, lift: lift && lift.t, pli: pli && pli.mode, plx: pli && Math.round(pli.x), plStop: !!(pli && pli.stop), cam, mud: { strings: strings.length, hmax: Math.max(...fh), hmin: Math.min(...fh), drops: drops.length, rings: rings.length, recs: Object.fromEntries(Object.entries(RECS).map(([o, r]) => [o, { body: r.body, arms: (r.arms || []).length, act: MS[o] ? MS[o].act : 0, y: r.y, a: r.a }])) }, c2: { wa: C2.wa, D: C2.D, rt: C2.rt, hf: C2.hf, reachGo: C2.reachGo, reach: C2.reach, fallT: C2.fallT }, pl: pli && { y: pli.y, ct: pli.ct, wk: pli.wk, wal: pli.wal, fa: pli.fa, wt: pli.wt, x: pli.x, duck: pli.duck, mode: pli.mode, out: pli.out } }) };
+  return { on: false, show: false, title, start, update, draw, touch, grip, pick, preload, lines: ALL, oakPic: (col, k) => bakeTree(oak(18), col, k), grow: (seed, hero, depth) => oak(seed, hero, depth), ribbons, peek: () => ({ ph, nd: nearDk, hw: help && help.w, thk: { cityT, fearT2 }, mem: { histT, histA, travT, travA }, x: C2.x, y: C2.y, mv: mv && mv.t, lift: lift && lift.t, pli: pli && pli.mode, plx: pli && Math.round(pli.x), plStop: !!(pli && pli.stop), cam, mud: { strings: strings.length, hmax: Math.max(...fh), hmin: Math.min(...fh), drops: drops.length, rings: rings.length, recs: Object.fromEntries(Object.entries(RECS).map(([o, r]) => [o, { body: r.body, arms: (r.arms || []).length, act: MS[o] ? MS[o].act : 0, y: r.y, a: r.a }])) }, c2: { wa: C2.wa, D: C2.D, rt: C2.rt, hf: C2.hf, reachGo: C2.reachGo, reach: C2.reach, fallT: C2.fallT }, pl: pli && { y: pli.y, ct: pli.ct, wk: pli.wk, wal: pli.wal, fa: pli.fa, wt: pli.wt, x: pli.x, duck: pli.duck, mode: pli.mode, out: pli.out, ot: pli.ot } }) };
 })();
