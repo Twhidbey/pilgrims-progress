@@ -1849,9 +1849,14 @@ const HL = (() => {
         { const g = c.createLinearGradient(0, hor, 0, yG); g.addColorStop(0, css([58, 32, 22])); g.addColorStop(1, css([20, 11, 8])); c.fillStyle = g; c.fillRect(sx1, hor, VW, yG - hor + 2); }
         c.restore(); }
       // the far light inside: it rises over the wall into the open sky (no edge), strong once the door is open
-      { const op = smooth(0, 1, door), fx3 = X(GATE_X + 330), R3 = 640 * z, g = c.createRadialGradient(fx3, hor, 0, fx3, hor, R3);
-        g.addColorStop(0, css([255, 240, 206], .25 + .6 * op)); g.addColorStop(.12, css([255, 210, 146], .1 + .42 * op)); g.addColorStop(.45, css([220, 130, 76], .03 + .2 * op)); g.addColorStop(1, css([200, 110, 60], 0));
-        c.save(); c.beginPath(); c.rect(0, 0, VW, yG + 2); c.clip(); c.globalCompositeOperation = 'lighter'; c.fillStyle = g; c.fillRect(fx3 - R3, hor - R3, 2 * R3, 2 * R3); c.restore(); }
+      // (build 496, owner: "What light is there inside - it's just a wall", then "Let's do 1"): the light that pours through
+      // the passage needs a source: the far light he has followed since Level 1 stands just behind the gate, a little over
+      // the land inside, so Good-will and Christian stand dark against it and the passage glows with it
+      { const op = smooth(0, 1, door), fx3 = X(GATE_X + 175), fy3 = Y(-215), R3 = 700 * z, g = c.createRadialGradient(fx3, fy3, 0, fx3, fy3, R3);
+        g.addColorStop(0, css([255, 244, 214], .3 + .62 * op)); g.addColorStop(.05, css([255, 228, 176], .2 + .55 * op)); g.addColorStop(.16, css([255, 200, 134], .08 + .36 * op)); g.addColorStop(.45, css([220, 130, 76], .03 + .17 * op)); g.addColorStop(1, css([200, 110, 60], 0));
+        c.save(); c.beginPath(); c.rect(0, 0, VW, yG + 2); c.clip(); c.globalCompositeOperation = 'lighter'; c.fillStyle = g; c.fillRect(fx3 - R3, fy3 - R3, 2 * R3, 2 * R3);
+        { const g2 = c.createRadialGradient(fx3, fy3, 0, fx3, fy3, 22 * z); g2.addColorStop(0, css([255, 250, 232], .9 * op)); g2.addColorStop(.6, css([255, 236, 196], .5 * op)); g2.addColorStop(1, css([255, 220, 170], 0)); c.fillStyle = g2; c.fillRect(fx3 - 22 * z, fy3 - 22 * z, 44 * z, 44 * z); }
+        c.restore(); }
       // the land inside, laid after the far light so its rises hide the light's foot (it sinks behind them)
       { c.save(); c.beginPath(); c.rect(sx1, 0, VW - sx1 + 2, yG + 2); c.clip();
         // (build 460, owner: "the right side of wall doesn't continue the landscape ... continue landscape (but keep it lighter)"):
@@ -1949,7 +1954,7 @@ const HL = (() => {
             for (let yy = b; yy > t - uh; yy -= uh) c.drawImage(GWALL, u, 0, uw, th, x - 2, yy - uh, 2.6, uh); }
           c.globalAlpha = 1; c.globalCompositeOperation = 'source-over'; }
         { const g = c.createLinearGradient(sx0, 0, xF, 0); g.addColorStop(0, css(low, 0)); g.addColorStop(.5, css(mix(low, [24, 15, 11], .5), .25)); g.addColorStop(1, css(mix(low, [24, 15, 11], .3), .55)); c.fillStyle = g; c.fillRect(xF - 2, syT - 20 * z, sx0 - xF + 4, yG - syT + 24 * z); }
-        c.globalCompositeOperation = 'lighter'; { const g = c.createRadialGradient(lnx, lny, 0, lnx, lny, 190 * z); g.addColorStop(0, css([236, 150, 80], .3 * flick * (1 - .4 * open))); g.addColorStop(.5, css([200, 100, 50], .1 * flick)); g.addColorStop(1, css([200, 100, 50], 0)); c.fillStyle = g; c.fillRect(lnx - 190 * z, lny - 190 * z, 380 * z, 380 * z); }
+        c.globalCompositeOperation = 'lighter'; { const g = c.createRadialGradient(lnx, lny, 0, lnx, lny, 95 * z); g.addColorStop(0, css([236, 150, 80], .26 * flick * (1 - .4 * open))); g.addColorStop(.5, css([200, 100, 50], .07 * flick)); g.addColorStop(1, css([200, 100, 50], 0)); c.fillStyle = g; c.fillRect(lnx - 95 * z, lny - 95 * z, 190 * z, 190 * z); }
         c.restore();
         // its top edge, faintly lit by the dusk
         c.strokeStyle = css([120, 70, 52], .25); c.lineWidth = 1 * z; c.beginPath(); ds.forEach((d, k) => { const q = sOf(d); k ? c.lineTo(Px(sx0, q), Py(top(d), q)) : c.moveTo(Px(sx0, q), Py(top(d), q)); }); c.stroke();
@@ -1963,7 +1968,7 @@ const HL = (() => {
         c.fillStyle = css([34, 22, 17]); c.fillRect(sx0 - 2, syT - 12, sx1 - sx0 + 4, yG - syT + 14);
         if (GWALL) { const P = wallPat(c), k = 470 / GWALL.width * z; P.setTransform(new DOMMatrix([k, 0, 0, k, sx0, yG - GWALL.height * k])); c.globalCompositeOperation = 'overlay'; c.globalAlpha = .6; c.fillStyle = P; c.fillRect(sx0 - 2, syT - 12, sx1 - sx0 + 4, yG - syT + 14); c.globalAlpha = 1; }
         c.globalCompositeOperation = 'lighter';
-        { const g = c.createRadialGradient(lnx, lny, 0, lnx, lny, 170 * z); g.addColorStop(0, css([236, 150, 80], .26 * flick * (1 - .4 * open))); g.addColorStop(.5, css([200, 100, 50], .14 * flick)); g.addColorStop(1, css([200, 100, 50], 0)); c.fillStyle = g; c.fillRect(sx0 - 2, syT - 12, sx1 - sx0 + 4, yG - syT + 14); }
+        { const g = c.createRadialGradient(lnx, lny, 0, lnx, lny, 105 * z); g.addColorStop(0, css([236, 150, 80], .24 * flick * (1 - .4 * open))); g.addColorStop(.5, css([200, 100, 50], .08 * flick)); g.addColorStop(1, css([200, 100, 50], 0)); c.fillStyle = g; c.fillRect(sx0 - 2, syT - 12, sx1 - sx0 + 4, yG - syT + 14); }
         if (lit) { const g = c.createLinearGradient(sx1, 0, sx0, 0); g.addColorStop(0, css([255, 214, 150], .3 * open)); g.addColorStop(.4, css([226, 146, 80], .07 * open)); g.addColorStop(1, css([200, 120, 60], 0)); c.fillStyle = g; c.fillRect(sx0 - 2, syT - 12, sx1 - sx0 + 4, yG - syT + 14); }
         c.restore();
         c.lineWidth = 1.2 * z; c.strokeStyle = css([214, 130, 70], .28 * flick); c.beginPath(); c.moveTo(sx0, syT); c.lineTo(sx0, syP); c.stroke();
@@ -1986,8 +1991,8 @@ const HL = (() => {
         for (const [t, dy] of [['KNOCK, AND IT SHALL BE', -.24], ['OPENED UNTO YOU.', .22]]) { const ty = sy2 + sh * (.5 + dy); c.fillStyle = css([18, 11, 8], .7); c.fillText(t, gx, ty); c.fillStyle = css([255, 214, 160], .12 * flick); c.fillText(t, gx + .4 * z, ty + .5 * z); }
         c.restore(); }
       // THE LANTERN on its iron arm, standing out from the slice's outer face over the way in
-      c.save(); c.globalCompositeOperation = 'lighter'; { const g = c.createRadialGradient(lnx, lny, 0, lnx, lny, 90 * z); g.addColorStop(0, css([255, 220, 160], .42 * flick)); g.addColorStop(1, css([255, 190, 110], 0)); c.fillStyle = g; c.fillRect(lnx - 90 * z, lny - 90 * z, 180 * z, 180 * z); }
-        { const g = c.createRadialGradient(lnx, lny, 0, lnx, lny, 170 * z); g.addColorStop(0, css([255, 200, 140], .1 * flick * (1 - .5 * open))); g.addColorStop(1, css([255, 180, 110], 0)); c.fillStyle = g; c.fillRect(lnx - 170 * z, lny - 170 * z, 340 * z, 340 * z); } c.restore();
+      c.save(); c.globalCompositeOperation = 'lighter'; { const g = c.createRadialGradient(lnx, lny, 0, lnx, lny, 46 * z); g.addColorStop(0, css([255, 220, 160], .34 * flick)); g.addColorStop(1, css([255, 190, 110], 0)); c.fillStyle = g; c.fillRect(lnx - 90 * z, lny - 90 * z, 180 * z, 180 * z); }
+        { const g = c.createRadialGradient(lnx, lny, 0, lnx, lny, 90 * z); g.addColorStop(0, css([255, 200, 140], .05 * flick * (1 - .5 * open))); g.addColorStop(1, css([255, 180, 110], 0)); c.fillStyle = g; c.fillRect(lnx - 170 * z, lny - 170 * z, 340 * z, 340 * z); } c.restore();
       if (!LANT) bakeLantern();
       { const k = z, lx0 = lnx - LANT.fx * k, ly0 = lny - LANT.fy * k, hx = lnx, hy = ly0 + LANT.hy * k, iron = css([13, 11, 10]), ay = hy - 6 * z;
         c.strokeStyle = iron; c.lineCap = 'round';
@@ -2004,12 +2009,12 @@ const HL = (() => {
     // the light streaming out of the open gate: a soft wedge in the evening air, widening and fading to the left, a few
     // slow rays breathing in it, and dust turning where the light is (laid on, over him; never down the picture at us)
       if (open > .02) {
-      const x1 = X(GATE_X + GSL), top = Y(-GPH + 10), bot = Y(0), L = 620 * z;
+      const x1 = X(GATE_X + GSL), top = Y(-GPH + 10), bot = Y(0), L = 300 * z;
       // painted small and stretched up, so the edges of the light are soft (a hard straight edge read as a drawn line)
       const BS = 8, bw = Math.ceil(VW / BS), bh = Math.ceil(VH / BS); if (!BEAMC) BEAMC = mk(bw, bh); if (BEAMC.width !== bw || BEAMC.height !== bh) { BEAMC.width = bw; BEAMC.height = bh; }
       const bq = BEAMC.getContext('2d'); bq.setTransform(1, 0, 0, 1, 0, 0); bq.clearRect(0, 0, bw, bh); bq.setTransform(1 / BS, 0, 0, 1 / BS, 0, 0); bq.globalCompositeOperation = 'lighter';
       for (let i = 0; i < 4; i++) {
-        const sp = [.0, .35, .6, .9][i], br = .55 + .45 * Math.sin(G.t / (140 + 37 * i) + i * 1.7), a = (i ? .08 : .2) * open * br;
+        const sp = [.0, .35, .6, .9][i], br = .55 + .45 * Math.sin(G.t / (140 + 37 * i) + i * 1.7), a = (i ? .05 : .13) * open * br;
         const ty0 = lerp(top, bot, sp * .7), ty1 = ty0 - (60 + 50 * i) * z * (1 - sp), by0 = lerp(top, bot, Math.min(1, sp * .7 + (i ? .25 : 1))), by1 = by0 + 14 * z;
         const g = bq.createLinearGradient(x1, 0, x1 - L, 0); g.addColorStop(0, css([255, 222, 168], a)); g.addColorStop(.35, css([255, 200, 140], a * .55)); g.addColorStop(1, css([255, 190, 130], 0));
         bq.fillStyle = g; bq.beginPath(); bq.moveTo(x1, ty0); bq.lineTo(x1 - L, ty1); bq.lineTo(x1 - L, by1); bq.lineTo(x1, by0); bq.closePath(); bq.fill();
@@ -2122,7 +2127,7 @@ const HL = (() => {
     gravel();
     // the lantern's and the open door's light lie in flat pools on the road
     if (gateOn) { c.save(); c.globalCompositeOperation = 'lighter';
-      for (const [px, rr, al, col] of [[lnx + 10 * z, 190 * z, .24 * flick * (1 - .4 * open), [255, 170, 90]], [gx - 110 * z, 300 * z, .5 * open, [255, 208, 134]], [gx - 10 * z, 110 * z, .55 * open, [255, 236, 190]]]) { if (al < .01) continue; c.save(); c.translate(px, Y(5)); c.scale(1, .09); const g = c.createRadialGradient(0, 0, 0, 0, 0, rr); g.addColorStop(0, css(col, al)); g.addColorStop(1, css(col, 0)); c.fillStyle = g; c.fillRect(-rr, -rr, 2 * rr, 2 * rr); c.restore(); }
+      for (const [px, rr, al, col] of [[lnx + 6 * z, 95 * z, .2 * flick * (1 - .4 * open), [255, 170, 90]], [X(GATE_X - GSL) - 40 * z, 150 * z, .34 * open, [255, 208, 134]], [X(GATE_X - GSL) + 10 * z, 70 * z, .4 * open, [255, 236, 190]]]) { if (al < .01) continue; c.save(); c.translate(px, Y(5)); c.scale(1, .09); const g = c.createRadialGradient(0, 0, 0, 0, 0, rr); g.addColorStop(0, css(col, al)); g.addColorStop(1, css(col, 0)); c.fillStyle = g; c.fillRect(-rr, -rr, 2 * rr, 2 * rr); c.restore(); }
       c.restore();
       // his shadow lies flat on the road, away from the open door
       if (open > .02 && C3.x > GATE_X - 400) { const sx = X(C3.x), len = 200 * z; c.save(); c.translate(sx - len * .5, Y(4)); c.scale(len, 7 * z); const g = c.createRadialGradient(0, 0, 0, 0, 0, 1); g.addColorStop(0, css([2, 2, 4], .95 * open)); g.addColorStop(.55, css([2, 2, 4], .7 * open)); g.addColorStop(1, css([2, 2, 4], 0)); c.fillStyle = g; c.fillRect(-1, -1, 2, 2); c.restore(); }
