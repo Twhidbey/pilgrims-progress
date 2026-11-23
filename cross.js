@@ -477,7 +477,18 @@ const CR = (() => {
     c.fillStyle = g; c.fillRect(0, 0, VW, VH);
     // the far light, low behind the crown before dawn; the sun breaking behind the crown, rising behind where the
     // beams cross, and on up the sky (kept inside the picture)
-    const cxs = sx(CROSS_X + SUN_DX), top = sy(gh(CROSS_X) + CROSS_BY + 4), y0 = sy(gh(CROSS_X)) + 40, sY = Math.max(VH * .1, y0 + (top - y0) * sunH);
+    const cxs = sx(CROSS_X + SUN_DX), top = sy(gh(CROSS_X) + CROSS_BY + 4), y0 = sy(gh(CROSS_X)) + 40, sY = LOOKF
+      // ?look=f: as in the painting, the sun stays low, just over the farthest ranges, rising only a little
+      ? HY - 96 - 60 * Math.min(1.3, sunH)
+      : Math.max(VH * .1, y0 + (top - y0) * sunH);
+    if (LOOKF) {
+      // the painting's bright lemon-cream horizon: a wide warm glow round the low sun and a pale band along the horizon
+      const lk = Math.max(.35 * dawn, gold), lg = c.createRadialGradient(cxs, sY, 0, cxs, sY, VW * .75);
+      lg.addColorStop(0, css([255, 250, 222], .75 * lk)); lg.addColorStop(.25, css([255, 244, 206], .4 * lk)); lg.addColorStop(.6, css([248, 238, 206], .14 * lk)); lg.addColorStop(1, 'rgba(248,238,206,0)');
+      c.fillStyle = lg; c.fillRect(0, 0, VW, VH);
+      const hb = c.createLinearGradient(0, HY - 220, 0, HY + 40); hb.addColorStop(0, 'rgba(255,246,214,0)'); hb.addColorStop(.7, css([255, 246, 214], .5 * lk)); hb.addColorStop(1, css([255, 248, 222], .3 * lk));
+      c.fillStyle = hb; c.fillRect(0, HY - 220, VW, 260);
+    }
     if (GL > .01) {
       // a long band of rose and gold lying along the horizon
       const hb = c.createLinearGradient(0, HY - 150, 0, HY + 50); hb.addColorStop(0, 'rgba(255,170,130,0)'); hb.addColorStop(.55, css([255, 176, 132], .22 * GL)); hb.addColorStop(.85, css([255, 222, 160], .3 * GL)); hb.addColorStop(1, 'rgba(255,222,160,0)');
@@ -520,7 +531,7 @@ const CR = (() => {
   const LOOKF = /[?&]look=f\b/.test(location.search);
   const LOOKR = LOOKF || /[?&]look=r\b/.test(location.search);
   // with ?look=f the sun rises this far left of the cross (world units), so its light falls across the hill's face
-  const SUN_DX = LOOKF ? -760 : 0;
+  const SUN_DX = LOOKF ? -430 : 0;
   const RR = [3, 4, 5, 6, 7, 8].map(seed => { const r = rgen(seed * 17 + 3); return [1, 2, 3, 4, 5, 6].map(k => [r() * 6.28, k, .6 + .8 * r()]); });
   const rrY = (i, X, base, amp) => { let y = base; for (const [p, k, a] of RR[i]) y += amp * a / k * Math.sin(X * k * k * .0007 + p); return y; };
   function farR(c) {
@@ -559,7 +570,7 @@ const CR = (() => {
   // Kuindzhi: once the sun is up, the picture darkens toward its edges and corners, away from the light
   function kuindzhi(c) {
     const k = LOOKR ? Math.max(gold, .5 * dawn) * (LOOKF ? .45 : 1) : 0; if (k < .02) return;
-    const cxs = sx(CROSS_X + SUN_DX), cy = sy(gh(CROSS_X) + CROSS_BY), R = Math.hypot(VW, VH);
+    const cxs = sx(CROSS_X + SUN_DX), cy = LOOKF ? HY - 120 : sy(gh(CROSS_X) + CROSS_BY), R = Math.hypot(VW, VH);
     const g = c.createRadialGradient(cxs, cy, R * .12, cxs, cy, R * .9);
     g.addColorStop(0, 'rgba(10,8,14,0)'); g.addColorStop(.45, css([14, 10, 18], .12 * k)); g.addColorStop(1, css([10, 8, 14], .42 * k));
     c.fillStyle = g; c.fillRect(0, 0, VW, VH);
@@ -821,6 +832,17 @@ const CR = (() => {
     });
     return (ROCK = { c: cv, l: O && O !== 'g' ? lv : null, x: X0, y: Y0, w: X1 - X0, h: Y1 - Y0 });
   }
+  // the painted hill's light and shade spread to the full range of grey, made once (for ?look=f's modelled rock)
+  let HPR = null;
+  function hpRelief() {
+    if (HPR || !HPAINT) return HPR;
+    const W = Math.round(HPAINT.width / 2), H = Math.round(HPAINT.height / 2), cv = mk(W, H), q = cv.getContext('2d');
+    q.drawImage(HPAINT, 0, 0, W, H); const d = q.getImageData(0, 0, W, H), p = d.data;
+    let lo = 255, hi = 0; for (let i = 0; i < p.length; i += 4) if (p[i + 3] > 200) { const l = (p[i] + p[i + 1] + p[i + 2]) / 3; if (l < lo) lo = l; if (l > hi) hi = l; }
+    const sc = 255 / Math.max(1, hi - lo);
+    for (let i = 0; i < p.length; i += 4) { const l = Math.max(0, Math.min(255, ((p[i] + p[i + 1] + p[i + 2]) / 3 - lo) * sc)); p[i] = p[i + 1] = p[i + 2] = l; }
+    q.putImageData(d, 0, 0); return (HPR = cv);
+  }
   function land(c) {
     const x0 = cam.cx - VW / 2 / cam.z - 40, x1 = cam.cx + VW / 2 / cam.z + 40, step = Math.max(4, 6 / cam.z);
     // with ?look=r the hill is warm umber (owner: "more like Morning in the Riesengebirge in that burnt orange look for the
@@ -845,6 +867,15 @@ const CR = (() => {
       // the painting takes the hill's own colour through the dawn (its lightness kept)
       c.globalCompositeOperation = 'color'; c.fillStyle = css(hc); c.fillRect(x0, -H_TOP - 200, x1 - x0, H_TOP + 2300); c.globalCompositeOperation = 'source-over';
       // the foot sinks into the dark ground (owner: "blend edges and make everything super cohesive")
+      if (LOOKF) {
+        // the rock modelled: the painting's own light and shade, its tones spread to the full range once (hpRelief),
+        // laid with 'soft-light' so the colour stays burnt orange while tops and faces read; strongest once the sun is up
+        const rv = hpRelief(); if (rv) { c.save(); c.globalCompositeOperation = 'soft-light'; c.globalAlpha = .45 + .45 * gold; c.translate(SK_X, 0); c.scale(s, s); c.drawImage(rv, 3149.64 - 4380, -1089.42, 2478.34, 1093.75); c.restore(); }
+        // and the side light: brighter on the sun's side (left), into shade toward the right
+        const sl = c.createLinearGradient(CROSS_X - 1400, 0, CROSS_X + 900, 0);
+        sl.addColorStop(0, css([255, 190, 120], .35 * gold)); sl.addColorStop(.55, 'rgba(255,190,120,0)'); sl.addColorStop(1, css([20, 12, 10], .4 * gold));
+        c.globalCompositeOperation = 'soft-light'; c.fillStyle = sl; c.fillRect(x0, -H_TOP - 200, x1 - x0, H_TOP + 300); c.globalCompositeOperation = 'source-over';
+      }
       if (LOOKF && gold > .02) {
         // the low sun from the left lights the hill's upper slopes and its top burnt orange, falling off down the hill
         const sg = c.createLinearGradient(0, -H_TOP - 40, 0, -H_TOP * .3);
