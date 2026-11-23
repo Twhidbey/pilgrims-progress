@@ -244,6 +244,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 ## START HERE (rewritten at build 140, Nov 16 2026)
 
+**Art direction chat (Nov 23): an art deep dive, twelve research reports and the owner's taste from two rounds of marking 111 pictures, are in `vision/art-deep-dive/` (start with its README). The direction for the whole game is now in CLAUDE.md, "THE ART DIRECTION FOR THE WHOLE GAME": every level chat follows it. Taste picker (private page): https://claude.ai/artifact/DP533kn7iQQ3N8HqV7pRiv. Nothing spent.**
+
 **Build 594 (Level 2 chat): Old Hundredth begins at its full four-string part (26 s in) and fades in quickly. Nothing spent.**
 
 **Build 593 (Level 2 chat): every sound effect at half (`SFX_K`); Old Hundredth remade on strings. About 8 cents (music total now about 68 cents).**
