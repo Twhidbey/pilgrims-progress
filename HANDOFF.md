@@ -244,6 +244,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 ## START HERE (rewritten at build 140, Nov 16 2026)
 
+**Build 607 (art direction chat): `?look=f` the crag's own skyline, pinnacles lifted into a summit, the cross on the highest one (CROSS_X 5000 there); see CLAUDE.md. Nothing spent.**
+
 **Build 606 (art direction chat): `?look=f` hill painted as Friedrich's crag (one gemini-3-pro-image picture, about 25 cents; two free FLUX tries failed). Spent: about 25 cents.**
 
 **Build 605 (art direction chat): `?look=f` nearer the painting (the low sun in view, a lemon horizon, the rock modelled). Nothing spent.**

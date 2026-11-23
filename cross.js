@@ -56,7 +56,7 @@ const CR = (() => {
   };
   const SH0 = SHAPES[SHAPE] || SHAPES.skull;
   // (owner, build 558: "the hill can be bigger and long flat space on top"): H_TOP 1050 (was 860)
-  const H_TOP = +(new URLSearchParams(location.search).get('htop') || 1500), START = 480, WALL_END = 860, TOMB_X = 4380 + SH0.tomb * (H_TOP + 30), SLOPE0 = 1180, CREST0 = 4080, CROSS_X = 4820, CREST1 = 4400, FALL1 = 5340;
+  const H_TOP = +(new URLSearchParams(location.search).get('htop') || 1500), START = 480, WALL_END = 860, TOMB_X = 4380 + SH0.tomb * (H_TOP + 30), SLOPE0 = 1180, CREST0 = 4080, CROSS_X = /[?&]look=f\b/.test(location.search) ? 5000 : 4820, CREST1 = 4400, FALL1 = 5340;
   // GOLGOTHA, AFTER THE OWNER'S SKETCH (build 545): a smooth swooping ramp up from the left that meets the top of a round
   // rocky knoll shaped like a skull's crown (SK_X its top, SK_L / SK_R how far its dome reaches left and right)
   const SK_X = 4380, SK_L = 1000, SK_R = FALL1 - 4380, SK_H = H_TOP + 30, RAMP1 = SK_X - 260;
@@ -132,7 +132,22 @@ const CR = (() => {
   function outline(xa, xb, step) { const O = [];
     for (let x = xa; x <= Math.min(xb, SK_X); x += step) O.push([x, -gh(x)]);
     if (xb > SK_X) { for (const [x, h] of SKO) O.push([x, -h]); for (let x = SK_END + step; x <= xb; x += step) O.push([x, 0]); }
-    return O; }
+    return PIN_ON && HPAINT ? pinOutline(O) : O; }
+  // ?look=f: the painted crag's own summit of pinnacles (owner: "make the hill shaped more like his crag", then "Yes" to
+  // the cross standing on the highest pinnacle): the painting's pinnacles were lifted into a summit (hill-crag.webp v607,
+  // its alpha now its own skyline) and the land's outline follows that skyline over them (PIN_TAB, painting units at
+  // SK_H 1080 from painting x 4560 every 8), so they are not clipped away; the walk (gh) is unchanged; the cross's foot
+  // is on the highest pinnacle (crossH)
+  const PIN_ON = /[?&]look=f\b/.test(location.search), HP_TOP = PIN_ON ? -1243.17 : -1089.42, HP_H = PIN_ON ? 1247.5 : 1093.75;
+  const PIN_TAB = [1076,1076,1075,1075,1075,1075,1074,1075,1075,1076,1076,1076,1076,1077,1078,1078,1078,1077,1072,1070,1063,1070,1078,1085,1095,1106,1116,1124,1132,1143,1155,1163,1168,1163,1147,1119,1087,1090,1083,1137,1143,1144,1142,1132,1128,1124,1081,1075,1075,1081,1099,1122,1122,1124,1122,1110,1055,1035,1015,1023,1018,1006,984,959,935,905,854,804,780,757,736,634,625,616,607,589,568,524,523,518,479,470,461,446,437,436,433,425,415,406,396,378,331,327,328,330], PIN0 = 4560, PIN1 = PIN0 + 8 * (PIN_TAB.length - 1);
+  function ptop(x) { const s = SK_H / 1080, xp = 4380 + (x - SK_X) / s; if (xp < PIN0 || xp > PIN1) return -1;
+    const f = (xp - PIN0) / 8, i = Math.floor(f); return s * lerp(PIN_TAB[i], PIN_TAB[Math.min(PIN_TAB.length - 1, i + 1)], f - i); }
+  function pinOutline(O) { const s = SK_H / 1080, wa = SK_X + (PIN0 - 4380) * s, wb = SK_X + (PIN1 - 4380) * s, R = [];
+    let put = false;
+    for (const p of O) { if (p[0] < wa || p[0] > wb) { R.push(p); continue; }
+      if (!put) { put = true; for (let x = wa; x <= wb; x += 4) { let base = 0; for (const q of O) if (q[0] <= x) base = -q[1]; const w = smooth(wa + 160, wa + 260, x); R.push([x, -Math.max(base, lerp(base, ptop(x), w))]); } } }
+    return R; }
+  function crossH() { if (PIN_ON && HPAINT) { const t = ptop(CROSS_X); if (t > 0) return t; } return gh(CROSS_X); }
   // ---------- the words (Bunyan's, shortened and made plain) ----------
   const OPEN = [[N, 'Up the highway between its walls Christian ran, but not without great difficulty, because of the load on his back.']];      // {92}
   const ASCEND = [[N, 'He came to a place somewhat ascending, and upon that place stood a cross, and a little below, a sepulchre.']];      // {93}
@@ -191,7 +206,7 @@ const CR = (() => {
     // the hill painted by the image model (round 2 of the owner's hill): rounded weathered rock, toned dark grey, its left
     // end faded into the drawn ramp; cropped to the rock at 1.5 px a world unit (at SK_H 1080): world x 2834 to 5654, height 1089 down to 2 below the ground
     // ?look=f: the hill painted as Friedrich's crag (build 606), laid on the same outline as the old painting
-    if (HP_ON) loadImg(LOOKF ? 'hill-crag.webp?v=606' : 'hill-cross.webp?v=601').then(im => { HPAINT = im; }).catch(() => {});
+    if (HP_ON) loadImg(LOOKF ? 'hill-crag.webp?v=607' : 'hill-cross.webp?v=601').then(im => { HPAINT = im; }).catch(() => {});
     // the burning hill's own painted rock (Level 3), made a grey tile as hill.js makes it, laid over the hill in 'overlay'
     loadImg('hill-rock.webp').then(rock => { const sx = 720, sy = 540, w = 780, h = 600, t = document.createElement('canvas'); t.width = w; t.height = h; const q = t.getContext('2d'); q.drawImage(rock, sx, sy, w, h, 0, 0, w, h);
       const d = q.getImageData(0, 0, w, h), D = d.data; let m = 0; for (let i = 0; i < D.length; i += 4) m += D[i] * .3 + D[i + 1] * .59 + D[i + 2] * .11; m /= D.length / 4;
@@ -250,13 +265,18 @@ const CR = (() => {
   function camTick(snap) {
     const near = { cx: Ch.x + lerp(250, 150, closeK), z: lerp(.8, 1.15, closeK) };
     if (ph === 'cross' || ph === 'after' || ph === 'shine' || ph === 'leaps' || ph === 'end') { near.cx = Math.max(CROSS_X - 130, Ch.x + 170); near.z = .86; }
-    const open = ph === 'look', fitT = (FOOTY - 30) / (gh(CROSS_X) + CROSS_H - tombSill() + 40);
+    // ?look=f: the cross stands on the summit's highest pinnacle, well above him: draw back enough to keep it whole
+    if (PIN_ON && Ch.x > CROSS_X - 1600) { const up = crossH() + CROSS_H + 20 - gh(Ch.x); if (up > 0) near.z = Math.min(near.z, (FOOTY - 34) / up); }
+    const open = ph === 'look', fitT = (FOOTY - 30) / (crossH() + CROSS_H - tombSill() + 40);
     const wide = open ? { cx: (START + CROSS_X) / 2 + 420, z: Math.min(VW / (CROSS_X - START + 900), (FOOTY - 40) / (H_TOP + CROSS_H + 40)) } : { cx: (STOP_X + TOMB_X) / 2 + 40, z: Math.min(VW / (TOMB_X - STOP_X + 760), fitT) };
     let tcx = lerp(near.cx, wide.cx, wideK), tz = Math.exp(lerp(Math.log(near.z), Math.log(wide.z), wideK));
     const wh = open ? 40 : tombSill() - 14, fh = lerp(gh(Ch.x), wh, wideK);
     let twl = FOOTY + fh * tz + (open ? 28 : 0) * wideK;
     // the look from the top after the cut: wide, he and the cross high in the picture, the hill falling away below
     if (topK > .001) { const z2 = .4, wl2 = 250 + gh(Ch.x) * z2; tcx = lerp(tcx, Ch.x - 40, topK); twl = lerp(twl, wl2, topK); tz = Math.exp(lerp(Math.log(tz), Math.log(z2), topK)); }
+    // ?look=f: never cut the cross's top off (it stands on the summit, well above him)
+    if (PIN_ON && topK <= .001) { const c0 = (open ? 28 : 0) * wideK, up = crossH() + CROSS_H + 10 - fh;
+      if (up > 0 && FOOTY + c0 - up * tz < 34) { tz = Math.max(.05, (FOOTY + c0 - 34) / up); twl = FOOTY + fh * tz + c0; } }
     const e = snap ? 1 : .045; cam.cx += (tcx - cam.cx) * e; cam.z += (tz - cam.z) * e; cam.wl += (twl - cam.wl) * e;
   }
 
@@ -478,7 +498,7 @@ const CR = (() => {
     c.fillStyle = g; c.fillRect(0, 0, VW, VH);
     // the far light, low behind the crown before dawn; the sun breaking behind the crown, rising behind where the
     // beams cross, and on up the sky (kept inside the picture)
-    const cxs = sx(CROSS_X + SUN_DX), top = sy(gh(CROSS_X) + CROSS_BY + 4), y0 = sy(gh(CROSS_X)) + 40, sY = LOOKF
+    const cxs = sx(CROSS_X + SUN_DX), top = sy(crossH() + CROSS_BY + 4), y0 = sy(crossH()) + 40, sY = LOOKF
       // ?look=f: as in the painting, the sun stays low, just over the farthest ranges, rising only a little
       ? HY - 96 - 60 * Math.min(1.3, sunH)
       : Math.max(VH * .1, y0 + (top - y0) * sunH);
@@ -571,7 +591,7 @@ const CR = (() => {
   // Kuindzhi: once the sun is up, the picture darkens toward its edges and corners, away from the light
   function kuindzhi(c) {
     const k = LOOKR ? Math.max(gold, .5 * dawn) * (LOOKF ? .45 : 1) : 0; if (k < .02) return;
-    const cxs = sx(CROSS_X + SUN_DX), cy = LOOKF ? HY - 120 : sy(gh(CROSS_X) + CROSS_BY), R = Math.hypot(VW, VH);
+    const cxs = sx(CROSS_X + SUN_DX), cy = LOOKF ? HY - 120 : sy(crossH() + CROSS_BY), R = Math.hypot(VW, VH);
     const g = c.createRadialGradient(cxs, cy, R * .12, cxs, cy, R * .9);
     g.addColorStop(0, 'rgba(10,8,14,0)'); g.addColorStop(.45, css([14, 10, 18], .12 * k)); g.addColorStop(1, css([10, 8, 14], .42 * k));
     c.fillStyle = g; c.fillRect(0, 0, VW, VH);
@@ -860,20 +880,20 @@ const CR = (() => {
     const lite = mix(hc, [150, 146, 160], .5), dark = mix(hc, [6, 5, 8], .6);
     let g = c.createLinearGradient(0, -H_TOP, 0, 40);
     g.addColorStop(0, css(lite, .1)); g.addColorStop(.3, css(lite, .03)); g.addColorStop(.6, css(dark, .05)); g.addColorStop(1, css(dark, .5));
-    c.fillStyle = g; c.fillRect(x0, -H_TOP - 60, x1 - x0, H_TOP + 2100);
+    c.fillStyle = g; c.fillRect(x0, -H_TOP - 700, x1 - x0, H_TOP + 2740);
     // the beds of rock only when the painting is not there (their lines showed through it)
     const R = rockTex(); if (!HPAINT) c.drawImage(R.c, R.x, R.y, R.w, R.h);
     if (HPAINT) {
-      const s = SK_H / 1080; c.save(); c.translate(SK_X, 0); c.scale(s, s); c.drawImage(HPAINT, 3149.64 - 4380, -1089.42, 2478.34, 1093.75); c.restore();
+      const s = SK_H / 1080; c.save(); c.translate(SK_X, 0); c.scale(s, s); c.drawImage(HPAINT, 3149.64 - 4380, HP_TOP, 2478.34, HP_H); c.restore();
       // the painting takes the hill's own colour through the dawn (its lightness kept); the crag of ?look=f keeps its own
       // painted colours and is only darkened before the sun is up
-      if (LOOKF) { c.globalCompositeOperation = 'multiply'; c.fillStyle = css(mix(mix([92, 86, 96], [176, 160, 156], dawn), [255, 248, 240], gold)); c.fillRect(x0, -H_TOP - 200, x1 - x0, H_TOP + 2300); c.globalCompositeOperation = 'source-over'; } else {
-      c.globalCompositeOperation = 'color'; c.fillStyle = css(hc); c.fillRect(x0, -H_TOP - 200, x1 - x0, H_TOP + 2300); c.globalCompositeOperation = 'source-over'; }
+      if (LOOKF) { c.globalCompositeOperation = 'multiply'; c.fillStyle = css(mix(mix([92, 86, 96], [176, 160, 156], dawn), [255, 248, 240], gold)); c.fillRect(x0, -H_TOP - 700, x1 - x0, H_TOP + 2800); c.globalCompositeOperation = 'source-over'; } else {
+      c.globalCompositeOperation = 'color'; c.fillStyle = css(hc); c.fillRect(x0, -H_TOP - 700, x1 - x0, H_TOP + 2800); c.globalCompositeOperation = 'source-over'; }
       // the foot sinks into the dark ground (owner: "blend edges and make everything super cohesive")
       if (false) {
         // the rock modelled: the painting's own light and shade, its tones spread to the full range once (hpRelief),
         // laid with 'soft-light' so the colour stays burnt orange while tops and faces read; strongest once the sun is up
-        const rv = hpRelief(); if (rv) { c.save(); c.globalCompositeOperation = 'soft-light'; c.globalAlpha = .45 + .45 * gold; c.translate(SK_X, 0); c.scale(s, s); c.drawImage(rv, 3149.64 - 4380, -1089.42, 2478.34, 1093.75); c.restore(); }
+        const rv = hpRelief(); if (rv) { c.save(); c.globalCompositeOperation = 'soft-light'; c.globalAlpha = .45 + .45 * gold; c.translate(SK_X, 0); c.scale(s, s); c.drawImage(rv, 3149.64 - 4380, HP_TOP, 2478.34, HP_H); c.restore(); }
         // and the side light: brighter on the sun's side (left), into shade toward the right
         const sl = c.createLinearGradient(CROSS_X - 1400, 0, CROSS_X + 900, 0);
         sl.addColorStop(0, css([255, 190, 120], .35 * gold)); sl.addColorStop(.55, 'rgba(255,190,120,0)'); sl.addColorStop(1, css([20, 12, 10], .4 * gold));
@@ -1031,7 +1051,7 @@ const CR = (() => {
       c.restore(); }
   }
   function cross(c) {
-    const x = CROSS_X, h = gh(x) + (LOOKF && !HPAINT ? CRAG_LIFT : 0), col = mix(mix([20, 20, 27], [22, 20, 24], dawn), [30, 22, 20], gold), H = CROSS_H, T = 14, bw = 186, by = CROSS_BY;
+    const x = CROSS_X, h = crossH() + (LOOKF && !HPAINT ? CRAG_LIFT : 0), col = mix(mix([20, 20, 27], [22, 20, 24], dawn), [30, 22, 20], gold), H = CROSS_H, T = 14, bw = 186, by = CROSS_BY;
     c.save(); c.translate(x, -h + 4); c.fillStyle = css(col);
     // edges very slightly uneven, as a hand-hewn beam's are (owner: "ever slight variation to the straight edges to make it
     // look slightly (very slightly) more wooden"): a slow wander along each edge, a fine roughness, a hair of taper, ends
@@ -1291,7 +1311,8 @@ const CR = (() => {
       if (t >= 90 && robe >= .5 && CWALK.ready) { if (Ch.wo == null) { Ch.wo = 0; Ch.wa = 0; }
         const f0 = Math.floor(Ch.wa) % CWALK.length; Ch.wa += 16 / 60; Ch.x += CWALK_META.vpx * CHR_K * 16 / 60; Ch.wo++;
         const f1 = Math.floor(Ch.wa) % CWALK.length; if (f1 !== f0 && (f1 === 0 || f1 === 14) && audio()) groundStep(1, .9);
-        if (Ch.wo > 470 && G.state !== 'end') finish(); }
+        // ?look=f: the cross stands on the summit's pinnacle, so his walk on ends at the rock's foot
+        if ((Ch.wo > 470 || (PIN_ON && Ch.x >= CROSS_X - 175)) && G.state !== 'end') finish(); }
       else if (t > 200 && G.state !== 'end') finish();
     }
     // a breath of quiet between one speaker and the next in a talk, so each voice is heard as its own person (owner, build 458)
