@@ -7,6 +7,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 **Vision chat, Nov 22 (no build, game unchanged): AWE AND REVERENCE STUDY.** Five researchers and a critic on the owner's ask (Bible pictures, a choir at the Cross with him kneeling, light from heaven, answered prayer, nature pointing to God): reports `vision/6-awe-*.md` to `11-awe-critic.md`, sketches in `concept/awe/`, the ranked ten and a do-not-do list in `vision/README.md` ("Awe and reverence"). Nothing built until the owner chooses. Note for every chat: Amazing Grace is now played WHOLE three times (Level 1's gate since build 484, the Cross, the Celestial Gate); do not take Level 1's out. Nothing spent.
 
+**Build 588 (Room 4 chat): the water-caster remade as one Google video (about 56 cents, the owner asked): the bucket's open mouth seen as an oval with water inside, one heavy slosh into the hearth; the three on the left a step further left. Spent: about 56 cents.**
+
 **Build 587 (Room 4 chat): build 584's wedge-shaped bucket taken back. Nothing spent.**
 
 **Build 584 (Room 4 chat): the water-caster's tipped bucket a clean straight rim. Nothing spent.**

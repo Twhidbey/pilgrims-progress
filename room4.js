@@ -73,19 +73,20 @@
     c.restore(); c.globalCompositeOperation = 'source-over';
   }
   let DK = null; const dkBuf = () => { if (!DK) DK = document.createElement('canvas'); if (DK.width !== ctx.canvas.width || DK.height !== ctx.canvas.height) { DK.width = ctx.canvas.width; DK.height = ctx.canvas.height; } return DK; };
-  // the cast's frames sharpened by Real-ESRGAN to twice their size (LIPF stays in the clip's own pixels)
+  // the man casting water is a Google video (build 588, about 56 cents): from his still with the bucket's open mouth painted as an oval,
+  // 120 frames at 12 a second, the video's own water cut away; LIPF is where the bucket's lip is as he throws (frames 44 to 54)
   // the two free clips (build 564): the man casting water (49 frames at 16 a second, facing right, as his picture) and the one pouring
   // oil (49 frames, facing left), each cut from white, its water and the paper in the bucket and the crook of his arm taken out
-  const CASTV = { n: 'room4-cast-hd5', parts: 4, per: 13, ax: 239.4, g: 812, cols: 8, fr: 49, W: 680, H: 822, s: .775, ct: 1, mul: 1, sat: 0, noSh: 1 };
+  const CASTV = { n: 'room4-castg', parts: 4, per: 30, ax: 132.2, g: 414, cols: 8, fr: 120, W: 421, H: 445, s: 1.524, ct: 1, mul: 1, sat: 0, noSh: 1 };
   const POURV = { n: 'room4-pour', ax: 71.7, g: 375, cols: 8, fr: 49, W: 152, H: 380, s: 1.7, ct: 1, mul: 1, sat: 1, noSh: 1 };
   // where his bucket's lip is at the throw (cell pixels, frames 19 to 24), and the jug's spout through the pouring loop
-  const LIPF = { 19: [296, 136], 20: [304, 103], 21: [309, 80], 22: [301, 83], 23: [299, 76], 24: [301, 78] };
+  const LIPF = { 44: [382, 118], 45: [396, 90], 46: [409, 62], 47: [396, 75], 48: [383, 87], 49: [383, 88], 50: [384, 88], 51: [386, 80], 52: [388, 73], 53: [385, 76], 54: [382, 80] };
   const SPF = [[12, 153], [10, 152], [8, 148], [6, 145], [5, 142], [4, 143], [3, 141], [3, 136], [4, 135], [6, 138], [8, 143], [11, 150], [12, 152]];
   if (D4) { const n = 'room4-drawn'; loads[n] = new Promise(r => setTimeout(r, 0)).then(() => (pics[n] = bakeR4())); pic('room4-caster2'); pic('room4-pourer'); sheetFrames(CASTV); pic(POURV.n); }
   // the walk round the wall (build 508): the two set off from where they stand, go BEHIND the man with the bucket and the fire (a
   // little further back: smaller, darker, standing a little higher), behind the chimney breast into the dark, the Interpreter's
   // cupped candle the only light there; they stop and turn to the one pouring oil, and the dark lifts
-  const WK = { C0: 240, I0: 520, FEET: 45, C1: 2620, I1: 2860, V: 3.4, k: .9, up: 27, PO: 2080, SPOUT: [1931, 790 + 45], CDN: 35, CX: 860, LIP: [1342, 830 + 45] };
+  const WK = { C0: 100, I0: 370, FEET: 45, C1: 2620, I1: 2860, V: 3.4, k: .9, up: 27, PO: 2080, SPOUT: [1931, 790 + 45], CDN: 35, CX: 690, LIP: [1342, 830 + 45] };
   // the perspective of the chimney breast's face (build 523; build 526: the eye at chest height again, so the floor line runs up too):
   // a vanishing point PV on the left, depth d into the
   // picture shrinks by PQ(d) (as the gate's wall in Level 3); the hearth's opening runs from depth a0 to a1, its arch springing at SPR
@@ -280,18 +281,18 @@
           // and a gust of steam, then rises higher than before (the book: "yet did the fire burn higher and hotter")
           // the clip at its own pace (16 a second), a short rest between casts; the water leaves the bucket's lip where the clip throws it
           if (pics[CASTV.n + '#0']) {
-            this.cf4 += 16 / 60; if (this.cf4 >= CASTV.fr + 30) { this.cf4 = 0; this.hit = false; }
+            this.cf4 += 12 / 60; if (this.cf4 >= CASTV.fr + 12) { this.cf4 = 0; this.hit = false; }
             const L = LIPF[Math.floor(this.cf4)];
-            if (L) { const k = CASTV.s / .8, lx = WK.CX + (2 * L[0] - CASTV.ax) * k, ly = this.FY + WK.FEET + WK.CDN + (2 * L[1] - CASTV.g) * k;
+            if (L) { const k = CASTV.s / .8, lx = WK.CX + (L[0] - CASTV.ax) * k, ly = this.FY + WK.FEET + WK.CDN + (L[1] - CASTV.g) * k;
               // aimed so it falls into the hearth's opening (a throw under gravity .16 from the lip to just above the fire)
               const [tx, ty] = FXS();
               // a big sloshing slug of water (owner, build 580: "a large sloshy gloosh of water"): many fat drops close together on one arc,
               // the front of the slug first, its tail thinning; a slosh as it leaves the bucket
-              const fi = Math.floor(this.cf4), q = (fi - 19) / 5;
-              if (fi === 19 && !this.sl) { this.sl = true; if (typeof sfxPlay === 'function' && typeof audio === 'function' && audio()) sfxPlay('bog-heave', 2, .55); }
+              const fi = Math.floor(this.cf4), q = (fi - 44) / 10;
+              if (fi === 44 && !this.sl) { this.sl = true; if (typeof sfxPlay === 'function' && typeof audio === 'function' && audio()) sfxPlay('bog-heave', 2, .55); }
               // it leaves the lip nearly level and curves down (owner, build 582: "should start almost horiz and then arc down"): aimed at the
               // top of the hearth's opening, so it falls on into the fire
-              for (let i = 0; i < 9 - 5 * q; i++) { const vy = rnd() * .5, dy = FB - PV.SPR - PV.RISE + 60 + rnd() * 40 - ly, t = (-vy + Math.sqrt(vy * vy + .32 * Math.max(0, dy))) / .16;
+              for (let i = 0; i < 6 - 3 * q; i++) { const vy = rnd() * .5, dy = FB - PV.SPR - PV.RISE + 60 + rnd() * 40 - ly, t = (-vy + Math.sqrt(vy * vy + .32 * Math.max(0, dy))) / .16;
                 this.water.push({ x: lx + (rnd() - .5) * 26, y: ly + (rnd() - .5) * 22, vx: (tx - 40 + rnd() * 40 - lx) / t, vy, r: (13 - 7 * q) * (.6 + .6 * rnd()), a: 1 }); } }
             else this.sl = false;
           } else {
