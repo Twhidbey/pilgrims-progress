@@ -17,7 +17,19 @@
 const CR = (() => {
   const SO = 'The Shining Ones', S1 = 'The first Shining One', S3 = 'The third Shining One';
   // ---------- the land (world units: x along the way, h up from the foot of the slope) ----------
-  const START = 480, WALL_END = 860, TOMB_X = 5010, SLOPE0 = 1180, CREST0 = 4080, CROSS_X = 4260, CREST1 = 4400, FALL1 = 5340, H_TOP = 860;
+  // NEW HILL SHAPES TO TRY (owner: "we need new versions of the hill - can you [look] at how golgotha has been depicted in
+  // art"): ?shape=dome (Bruegel's far round hill), plinth (Mantegna's flat-topped rock in hewn steps), wedge (Friedrich's
+  // dark triangle), shoulder (a small rock knob on a grassy shoulder, the tomb in the rock band below); none = the skull
+  const SHAPE = (new URLSearchParams(location.search).get('shape') || 'skull').toLowerCase();
+  const SHAPES = {
+    skull: { tomb: .7, P: null },
+    dome: { tomb: 1.02, P: [[0, 1], [.2, .97], [.4, .88], [.6, .72], [.78, .52], [.92, .34], [1.02, .2], [1.1, .1], [1.17, .04], [1.24, 0], [1.3, 0]] },
+    plinth: { tomb: .93, P: [[0, 1], [.3, .995], [.42, .99], [.44, .84], [.47, .8], [.62, .79], [.645, .58], [.675, .55], [.82, .54], [.845, .3], [.875, .265], [1.02, .255], [1.045, .03], [1.06, 0], [1.13, 0]] },
+    wedge: { tomb: .55, P: [[0, 1], [.06, .95], [.16, .82], [.27, .66], [.37, .5], [.46, .35], [.54, .23], [.62, .13], [.7, .06], [.77, .02], [.82, 0], [.9, 0]] },
+    shoulder: { tomb: .74, P: [[0, 1], [.12, .97], [.2, .9], [.235, .79], [.27, .7], [.33, .64], [.5, .6], [.62, .57], [.655, .47], [.675, .34], [.7, .27], [.76, .2], [.84, .12], [.92, .05], [.98, 0], [1.05, 0]] },
+  };
+  const SH0 = SHAPES[SHAPE] || SHAPES.skull;
+  const START = 480, WALL_END = 860, TOMB_X = 4380 + SH0.tomb * 890, SLOPE0 = 1180, CREST0 = 4080, CROSS_X = 4260, CREST1 = 4400, FALL1 = 5340, H_TOP = 860;
   // GOLGOTHA, AFTER THE OWNER'S SKETCH (build 545): a smooth swooping ramp up from the left that meets the top of a round
   // rocky knoll shaped like a skull's crown (SK_X its top, SK_L / SK_R how far its dome reaches left and right)
   const SK_X = 4380, SK_L = 1000, SK_R = FALL1 - 4380, SK_H = H_TOP + 30, RAMP1 = SK_X - 260;
@@ -56,7 +68,8 @@ const CR = (() => {
   const SKP = [[0, 1], [.2, .98], [.32, .93], [.4, .85], [.45, .75], [.475, .66], [.465, .6], [.485, .555], [.52, .48],
     [.535, .42], [.56, .35], [.575, .3], [.6, .255], [.615, .215], [.65, .19], [.68, .165], [.7, .16], [.725, .135],
     [.75, .12], [.775, .1], [.8, .095], [.83, .07], [.86, .06], [.885, .04], [.91, .042], [.93, .025], [.95, .03],
-    [.97, .012], [1, 0], [1.08, 0]];
+    [.97, .012], [1, 0], [1.08, 0]].map(p => p);
+  if (SH0.P) SKP.splice(0, SKP.length, ...SH0.P);
   const RGS = rgen(550);
   const SKO = (() => { const P = SKP.map(([u, v]) => [SK_X + u * SK_H, v * SK_H]), O = [];
     for (let i = 0; i < P.length - 1; i++) { const a = P[Math.max(0, i - 1)], b = P[i], c2 = P[i + 1], d = P[Math.min(P.length - 1, i + 2)];
