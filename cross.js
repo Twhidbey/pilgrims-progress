@@ -1405,7 +1405,11 @@ const CR = (() => {
     REL.forEach(m => {
       // (`off`: the mire fades just as he reaches Help, owner, build 599)
       const inIt = ph === 'walk' && Ch.x >= m.on[0] && Ch.x < (m.off || m.on[1]) ? 1 : 0;
-      m.a += (inIt - m.a) * (inIt ? .05 : m.off ? .07 : .04); if (m.a < .004 && !inIt) { m.a = 0; m.cv = m.front = null; }
+      m.a += (inIt - m.a) * (inIt ? .05 : m.off ? .07 : .04);
+      // freed only once faded AND out of its stretch and its approach (it used to be freed every tick of the approach, where
+      // it is made ahead of time, so it was made again and again: about 200 ms a tick, the stutter on the climb)
+      const near = ph === 'walk' && Ch.x > m.on[0] - 400 && Ch.x < m.on[1];
+      if (m.a < .004 && !inIt) { m.a = 0; if (!near) m.cv = m.front = null; }
       if ((inIt || Ch.x > m.on[0] - 260 && Ch.x < m.on[1] && ph === 'walk') && !m.cv) relBake(m);
       // his thought, once he is well into it, and never over another voice
       if (inIt && !m.said && Ch.x >= m.on[0] + 110 && said.open && !busy() && memQ >= 40) { m.said = true; memVoice(m.voice); }
