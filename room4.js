@@ -73,16 +73,23 @@
     c.restore(); c.globalCompositeOperation = 'source-over';
   }
   let DK = null; const dkBuf = () => { if (!DK) DK = document.createElement('canvas'); if (DK.width !== ctx.canvas.width || DK.height !== ctx.canvas.height) { DK.width = ctx.canvas.width; DK.height = ctx.canvas.height; } return DK; };
-  if (D4) { const n = 'room4-drawn'; loads[n] = new Promise(r => setTimeout(r, 0)).then(() => (pics[n] = bakeR4())); pic('room4-caster2'); pic('room4-pourer'); }
+  // the two free clips (build 564): the man casting water (49 frames at 16 a second, facing right, as his picture) and the one pouring
+  // oil (49 frames, facing left), each cut from white, its water and the paper in the bucket and the crook of his arm taken out
+  const CASTV = { n: 'room4-cast', ax: 119.7, g: 406, cols: 8, fr: 49, W: 340, H: 411, s: 1.55, ct: 1, mul: 1, sat: 1, noSh: 1 };
+  const POURV = { n: 'room4-pour', ax: 71.7, g: 375, cols: 8, fr: 49, W: 152, H: 380, s: 1.7, ct: 1, mul: 1, sat: 1, noSh: 1 };
+  // where his bucket's lip is at the throw (cell pixels, frames 19 to 24), and the jug's spout through the pouring loop
+  const LIPF = { 19: [296, 136], 20: [304, 103], 21: [309, 80], 22: [301, 83], 23: [299, 76], 24: [301, 78] };
+  const SPF = [[12, 153], [10, 152], [8, 148], [6, 145], [5, 142], [4, 143], [3, 141], [3, 136], [4, 135], [6, 138], [8, 143], [11, 150], [12, 152]];
+  if (D4) { const n = 'room4-drawn'; loads[n] = new Promise(r => setTimeout(r, 0)).then(() => (pics[n] = bakeR4())); pic('room4-caster2'); pic('room4-pourer'); pic(CASTV.n); pic(POURV.n); }
   // the walk round the wall (build 508): the two set off from where they stand, go BEHIND the man with the bucket and the fire (a
   // little further back: smaller, darker, standing a little higher), behind the chimney breast into the dark, the Interpreter's
   // cupped candle the only light there; they stop and turn to the one pouring oil, and the dark lifts
-  const WK = { C0: 240, I0: 520, FEET: 45, C1: 2620, I1: 2860, V: 3.4, k: .92, up: 14, PO: 2075, SPOUT: [1931, 790 + 45], CX: 960, LIP: [1342, 830 + 45] };
+  const WK = { C0: 240, I0: 520, FEET: 45, C1: 2620, I1: 2860, V: 3.4, k: .9, up: 27, PO: 2080, SPOUT: [1931, 790 + 45], CDN: 35, CX: 960, LIP: [1342, 830 + 45] };
   // the perspective of the chimney breast's face (build 523; build 526: the eye at chest height again, so the floor line runs up too):
   // a vanishing point PV on the left, depth d into the
   // picture shrinks by PQ(d) (as the gate's wall in Level 3); the hearth's opening runs from depth a0 to a1, its arch springing at SPR
   // above the floor and rising RISE more; the fire sits FIN inside the face at depth FD
-  const PV = { X: 900, Y: HOUSE.FY - 74, NEAR: 90, GP: 800, D: 800, a0: 200, a1: 600, SPR: 320, RISE: 140, FD: 400, FIN: 50, REV: 90, T: 46 };
+  const PV = { X: 900, Y: HOUSE.FY - 25, NEAR: 90, GP: 550, D: 800, a0: 200, a1: 600, SPR: 320, RISE: 140, FD: 400, FIN: 50, REV: 90, T: 46 };
   const rngR4 = seed => () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
   // the hearth wall's foot stands NEAR in front of the back wall's foot (build 529; owner: its far corner just below where wall and
   // floor meet, its near corner down where the floor's dark shadow starts): its floor line is FB, the eye low enough for both
@@ -103,7 +110,7 @@
       enter() {
         this.rv = 0; this.steam = []; this.oil = []; this.water = []; this.cast = 0; this.grow = 0; this.dip = 0; this.wet = 0;
         this.fire = []; this.small = []; this.sparks = []; this.go = false; this.w = 0; this.cx = WK.C0; this.ix = WK.I0; this.cf = 0; this.if = 0; this.st = -1; this.arr = 0; this.sw = 0; this.cand = 0;
-        if (D4) { sheetFrames(VIS.C.walk); sheetFrames(VIS.I.walk); }
+        if (D4) { sheetFrames(VIS.C.walk); sheetFrames(VIS.I.walk); sheetFrames(CASTV); sheetFrames(POURV); this.cf4 = 0; this.pf = 0; }
         // the fire already burning when the room comes up
         for (let n = 0; n < 70; n++) this.fireTick();
       },
@@ -135,7 +142,7 @@
         // THE CHIMNEY BREAST'S FACE IN PERSPECTIVE (build 523; owner: "make the fireplace opening arched like a real old hearth and make it facing
         // the man throwing on water (perspective kinda like that gate in level 3)"): the breast is cut by the section at P0..P1; its face toward
         // the room runs back from the cut to a vanishing point on the left (PV), as the gate's wall does, and the hearth is set in that face
-        const D = PV.D, [fx0, fy0] = PP(P0, FB, D), CY = HOUSE.CEIL + 80, ft0 = CY + (FB - fy0);
+        const D = PV.D, [fx0, fy0] = PP(P0, FB, D), CY = EX.y0, ft0 = CY + (FB - fy0);
         // the top edge falls toward the far corner by as much as the foot rises (owner, build 540: "about the same angle but reflected vertically")
         c.save(); c.beginPath(); c.rect(u(EX.x0), v(CY), (EX.x1 - EX.x0) * S, (EX.y1 - CY) * S); c.clip();
         // the face itself, dark stone, warmed round the hearth
@@ -218,12 +225,13 @@
         // behind the wall: the one pouring oil, and the thin thread of oil into the slot
         // unseen until they have gone round (the book: "it is hard for the tempted to see"): only the fire's flare at each drop shows
         const pa = smooth(0, 1, this.rv);
-        if (po && pa > 0) fig(c, 'room4-pourer', { ax: 157, g: 790, s: .8, ct: 1, mul: 1, sat: 1, noSh: 1 }, WK.PO, FY + WK.FEET, -1, 1, pa, [200, 188, 176]);
-        c.strokeStyle = css([255, 196, 90], .35 * pa); c.lineWidth = Math.max(.6, 1.6 * S); c.beginPath(); c.moveTo(u(WK.SPOUT[0]), v(WK.SPOUT[1])); c.lineTo(u(WK.SPOUT[0] - 3), v(FY + WK.FEET - 40)); c.stroke();
+        if (pa > 0) { if (sheetFrames(POURV)) fig(c, POURV.n + '#' + (Math.floor(this.pf) % POURV.fr), POURV, WK.PO, FY + WK.FEET, -1, 1, pa, [200, 188, 176]); else if (po) fig(c, 'room4-pourer', { ax: 157, g: 790, s: .8, ct: 1, mul: 1, sat: 1, noSh: 1 }, WK.PO, FY + WK.FEET, -1, 1, pa, [200, 188, 176]); }
+        c.strokeStyle = css([255, 196, 90], .35 * pa); c.lineWidth = Math.max(.6, 1.6 * S); c.beginPath(); const [spx, spy] = this.spout(); c.moveTo(u(spx), v(spy)); c.lineTo(u(spx - 3), v(FY + WK.FEET - 40)); c.stroke();
         c.fillStyle = css([255, 210, 110], .9 * pa); for (const o of this.oil) { c.beginPath(); c.arc(u(o.x), v(o.y), Math.max(.8, 3 * S), 0, 6.2832); c.fill(); }
         // the man casting water (his own picture; a free clip of the swing is queued)
         const cx = WK.CX;
-        if (cs) fig(c, 'room4-caster2', { ax: 150, g: 781, s: .8, ct: 1, mul: 1, sat: 1, noSh: 1 }, cx, FY + WK.FEET, -1, 1, 1, [150, 132, 120]);
+        if (sheetFrames(CASTV)) fig(c, CASTV.n + '#' + Math.min(CASTV.fr - 1, Math.floor(this.cf4)), CASTV, cx, FY + WK.FEET + WK.CDN, -1, 1, 1, [150, 132, 120]);
+        else if (cs) fig(c, 'room4-caster2', { ax: 150, g: 781, s: .8, ct: 1, mul: 1, sat: 1, noSh: 1 }, cx, FY + WK.FEET + WK.CDN, -1, 1, 1, [150, 132, 120]);
         // the wet on the hearth where the water falls, darkening and slowly drying
         if (this.wet > .01) { c.save(); c.translate(u(FXS()[0] - 160), v(FY + WK.FEET + 6)); c.scale(1, .1); const wg = c.createRadialGradient(0, 0, 0, 0, 0, 120 * S); wg.addColorStop(0, css([12, 8, 8], .7 * this.wet)); wg.addColorStop(1, css([12, 8, 8], 0)); c.fillStyle = wg; c.fillRect(-120 * S, -120 * S, 240 * S, 240 * S); c.restore(); }
         c.lineCap = 'round'; c.lineWidth = Math.max(1, 2.6 * S);
@@ -256,11 +264,23 @@
           this.fireTick();
           // the cast: every few seconds water arcs from his bucket DOWN into the fire; where it strikes the fire sinks with a hiss
           // and a gust of steam, then rises higher than before (the book: "yet did the fire burn higher and hotter")
-          this.cast += 1 / 70; if (this.cast >= 3.2) { this.cast = 0; this.hit = false; }
-          if (this.cast > .3 && this.cast < .62) for (let i = 0; i < 3; i++) this.water.push({ x: WK.LIP[0] + rnd() * 14, y: WK.LIP[1] + rnd() * 10, vx: 2.6 + rnd() * .6, vy: 3.4 + rnd() * 1.4, a: 1 });
+          // the clip at its own pace (16 a second), a short rest between casts; the water leaves the bucket's lip where the clip throws it
+          if (pics[CASTV.n]) {
+            this.cf4 += 16 / 60; if (this.cf4 >= CASTV.fr + 30) { this.cf4 = 0; this.hit = false; }
+            const L = LIPF[Math.floor(this.cf4)];
+            if (L) { const k = CASTV.s / .8, lx = WK.CX + (L[0] - CASTV.ax) * k, ly = this.FY + WK.FEET + WK.CDN + (L[1] - CASTV.g) * k;
+              // aimed so it falls into the hearth's opening (a throw under gravity .16 from the lip to just above the fire)
+              const [tx, ty] = FXS();
+              for (let i = 0; i < 3; i++) { const vy = -1.6 + rnd() * 1.2, dy = ty - 150 + rnd() * 40 - ly, t = (-vy + Math.sqrt(vy * vy + .32 * Math.max(0, dy))) / .16;
+                this.water.push({ x: lx + rnd() * 12, y: ly + rnd() * 10, vx: (tx - 10 + rnd() * 40 - lx) / t, vy, a: 1 }); } }
+          } else {
+            this.cast += 1 / 70; if (this.cast >= 3.2) { this.cast = 0; this.hit = false; }
+            if (this.cast > .3 && this.cast < .62) for (let i = 0; i < 3; i++) this.water.push({ x: WK.LIP[0] + rnd() * 14, y: WK.LIP[1] + rnd() * 10, vx: 2.6 + rnd() * .6, vy: 3.4 + rnd() * 1.4, a: 1 });
+          }
+          this.pf += 16 / 60;
           for (const w of this.water) {
             w.vy += .16; w.x += w.vx; w.y += w.vy;
-            if (w.x > FXS()[0] - 90 && w.y > FXS()[1] - 260 && w.a === 1) {
+            if (w.x > FXS()[0] - 60 && w.y > FXS()[1] - 170 && w.a === 1) {
               w.a = .99; if (!this.hit) { this.hit = true; this.dip = 1; noise(3000, 1, .6, .05); noise(500, 2, .5, .04); }
               this.wet = Math.min(1, this.wet + .01); if (rnd() < .2) this.steam.push({ x: w.x + (rnd() - .5) * 60, y: w.y, vx: (rnd() - .5) * .8, vy: -1.6 - rnd() * 1.2, a: .5, s: 10 + rnd() * 14 });
             }
@@ -270,7 +290,7 @@
           if (this.dip > 0) { this.dip = Math.max(0, this.dip - .02); if (this.dip < .5) this.grow = Math.min(1, this.grow + .004); }
           this.wet = Math.max(0, this.wet - .0012);
           // the oil, poured continually, falls straight into the back of the fire; each drop makes it flare a little
-          if (G.t % 6 === 0) this.oil.push({ x: WK.SPOUT[0] + rnd() * 3, y: WK.SPOUT[1], vy: 1 });
+          if (G.t % 6 === 0) { const [spx, spy] = this.spout(); this.oil.push({ x: spx + rnd() * 3, y: spy, vy: 1 }); }
           for (const o of this.oil) { o.vy += .3; o.y += o.vy; if (o.y >= this.FY + WK.FEET - 40) { o.done = 1; for (let i = 0; i < 3; i++) puff(this.fire, R4D.FIRE + 110, this.FY - 24, 14, 2.6, 34, 40, .02); } }
           this.oil = this.oil.filter(o => !o.done);
         }
@@ -288,6 +308,13 @@
         if (!this.go) { visitor(c, 'I', WK.I0, 1, 1, 1, -WK.FEET); visitor(c, 'C', WK.C0, 1, 1, 1, -WK.FEET); }
         // arrived: standing, turned toward the one pouring oil (Christian nearer him, the Interpreter behind, his candle in his hands)
         if (this.sw > 0) { const [lx, ly, lf] = this.candlePt(); visitor(c, 'I', WK.I1 + 70, -1, 1, this.sw, -WK.FEET); cupped(c, lx, ly, lf, 1.4, this.cand * this.sw); visitor(c, 'C', WK.C1 + 20, -1, 1, this.sw, -WK.FEET); }
+      },
+      spout() {
+        // the jug's spout: the clip's, frame by frame (the old fixed point until the sheet has loaded)
+        if (!pics[POURV.n]) return WK.SPOUT;
+        const t = (this.pf % POURV.fr) / (POURV.fr - 1) * (SPF.length - 1), i = Math.min(SPF.length - 2, Math.floor(t)), q = t - i, k = POURV.s / .8;
+        const px = SPF[i][0] + (SPF[i + 1][0] - SPF[i][0]) * q, py = SPF[i][1] + (SPF[i + 1][1] - SPF[i][1]) * q;
+        return [WK.PO + (px - POURV.ax) * k, this.FY + WK.FEET + (py - POURV.g) * k];
       },
       candlePt() {
         // where the Interpreter's hands are: walking (his walk frames, k .92) or standing turned left

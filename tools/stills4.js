@@ -3,6 +3,7 @@
 //   node tools/stills4.js OUT ROOM "COND" [N] [extra query]
 // ROOM: door | 1..7 | leave. Steps the house tick by tick (the page's own loop paused, short real pauses so pictures
 // load and rooms change) until COND is true, then saves N pictures, one every STEP ticks (env, default 1), to OUT.
+// HOLD=1 keeps holding through a hold act while the pictures are taken (room 4's walk round the wall).
 // COND is JavaScript with `s` = RM.peek(), e.g.
 //   "s.room === 'r1' && s.ph === 'run'"          room 1 as it opens
 //   "s.room === 'r1' && s.ph === 'light' && s.t > 200"   the candle lit
@@ -35,7 +36,7 @@ const STEP = +(process.env.STEP || 1);
   console.log(ok ? 'reached' : 'NOT reached', JSON.stringify(await p.evaluate(() => RM.peek())));
   fs.mkdirSync(out, { recursive: true });
   for (let i = 0; i < N; i++) {
-    if (i) await p.evaluate(n => { for (let k = 0; k < n; k++) { if (G.state === 'dialog' && !G.act && G.guard <= 0) next(true); update(); } }, STEP);
+    if (i) await p.evaluate(([n, h]) => { for (let k = 0; k < n; k++) { if (h) keys.push = !!(G.act && RM.HOLDS.includes(G.act)); if (G.state === 'dialog' && !G.act && G.guard <= 0) next(true); update(); } }, [STEP, !!process.env.HOLD]);
     await p.evaluate(() => RM.draw());
     const url = await p.evaluate(() => cv.toDataURL('image/png'));
     fs.writeFileSync(`${out}/f${String(i).padStart(3, '0')}.png`, Buffer.from(url.split(',')[1], 'base64'));
