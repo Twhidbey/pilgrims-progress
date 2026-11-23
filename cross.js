@@ -293,7 +293,7 @@ const CR = (() => {
   let TILT = 0;
   const slopeTilt = x => -.6 * Math.atan((gh(x + 12) - gh(x - 12)) / 24);
   // his feet sink a little into the hill in every pose (owner: "so he doesn't look like he's floating")
-  const SINK = 10;
+  const SINK = 10, KNEEL_SINK = 5;
   function figure(c, im, meta, x, h, face, alpha, tint, rim) {
     if (!im || alpha <= .004) return;
     im = solidOf(im);
@@ -314,7 +314,7 @@ const CR = (() => {
     for (let y = 0; y < hh; y++) { let e = null; for (let x = w - 1; x >= 0; x--) if (D[(y * w + x) * 4 + 3] > 110) { e = x; break; } E.push(e); }
     return (im._edge = E);
   }
-  function contact(c, x, h, a = 1, rx = 34) { const g = c.createRadialGradient(0, 0, 0, 0, 0, 1); g.addColorStop(0, 'rgba(6,6,12,.5)'); g.addColorStop(.6, 'rgba(6,6,12,.24)'); g.addColorStop(1, 'rgba(6,6,12,0)'); c.save(); c.translate(x, -h + SINK - 2); c.scale(rx, 5); c.globalAlpha = a; c.fillStyle = g; c.fillRect(-1, -1, 2, 2); c.restore(); }
+  function contact(c, x, h, a = 1, rx = 34) { const g = c.createRadialGradient(0, 0, 0, 0, 0, 1); g.addColorStop(0, 'rgba(6,6,12,.5)'); g.addColorStop(.6, 'rgba(6,6,12,.24)'); g.addColorStop(1, 'rgba(6,6,12,0)'); c.save(); c.beginPath(); c.moveTo(x - 80, 60); for (const [xx, yy] of outline(x - 80, x + 80, 4)) c.lineTo(xx, yy); c.lineTo(x + 80, 60); c.closePath(); c.clip(); c.translate(x, -h + SINK - 2); c.scale(rx, 5); c.globalAlpha = a; c.fillStyle = g; c.fillRect(-1, -1, 2, 2); c.restore(); }
   function drawChr(c) {
     const tint = tintNow(), rim = gold * (1 - wideK), x = Ch.x, h = gh(x) + Ch.hop;
     contact(c, x, gh(x), 1 - Math.min(1, Ch.hop / 40) * .6);
@@ -329,7 +329,11 @@ const CR = (() => {
         if (Ch.lp != null && LEAPC.ready) figure(c, LEAPC[clamp(Math.round(Ch.lp), 0, LEAPC.length - 1)], LEAP_META, x, h, fc, 1, ct, rim);
         else if (Ch.wo != null && CWALK.ready) figure(c, CWALK[Math.floor(Ch.wa) % CWALK.length], CWALK_META, x, h, 1, 1, ct, rim);
         else { const k = (Ch.cc || 0) % 96, cf = clamp(Math.round(k < 48 ? k : 96 - k), 0, COAT.length - 1); figure(c, COAT[cf], COAT_META, x, h, fc, 1, ct, rim); Ch.coatF = cf; } }
-      else if (Ch.kn != null && KNC.ready) figure(c, KNC[clamp(Math.round(Ch.kn), 0, KNC.length - 1)], KNC_META, x, h, fc, 1, tint, rim);
+      else if (Ch.kn != null && KNC.ready) {
+        // kneeling, he settles into the ground and with its slope, so his back leg rests on the hill (owner: "brought down
+        // more so his back legs doesn't stick out")
+        const kk = smooth(0, 40, Ch.kn); TILT = slopeTilt(x) / .6 * kk;
+        figure(c, KNC[clamp(Math.round(Ch.kn), 0, KNC.length - 1)], KNC_META, x, h - KNEEL_SINK * kk, fc, 1, tint, rim); TILT = 0; }
       else figure(c, CLIP[f0], CLIP_META, x, h, fc, Ch.fade < 1 ? Ch.fade : 1, tint, rim);
       if (tearT >= 0) { const E = faceEdge(CLIP[f0]); TEARS.forEach(t0 => {
         // (round 2, owner: "the tears need to be more realistic"): a small clear bead on his cheek, at the very edge of his
