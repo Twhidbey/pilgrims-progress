@@ -74,15 +74,21 @@ const CR = (() => {
   const STOP_X = CROSS_X - 300;
   const WALK_X = STOP_X - 380;
   const sm = (a, b, x) => smooth(a, b, x);
+  // the crown as one even arch centred on the cross (owner: "even more rounded and the rounding should be symmetric
+  // horizontally (not its sloped to the right)"): the same fall on both sides of CROSS_X, the ramp joining it on the
+  // left at its own slope and the skull's face leaving it on the right
+  const CAP = SHAPE === 'skullsteps', CAP_W = 600, CAP_D = .075;
+  const cap = x => SK_H * (1 - CAP_D * Math.pow((x - CROSS_X) / CAP_W, 2));
+  const capS = x => -2 * SK_H * CAP_D * (x - CROSS_X) / (CAP_W * CAP_W);
   function dome(x) { const u = (x - SK_X) / (x < SK_X ? SK_L : SK_R); if (Math.abs(u) >= 1) return 0; return x < SK_X ? SK_H * Math.pow(1 - Math.pow(Math.abs(u), 3), 1.1) : SK_H * Math.pow(1 - u * u, .55); }
   function gh(x) {
     // the ramp: a smooth swoop (concave, steepening a little as it climbs) that runs up into the skull's crown with the
     // dome's own slope where they meet, so there is no notch; past the crown, the skull's round dome falling to the plain
     let h;
-    if (x <= RAMP1) { const u = clamp((x - SLOPE0) / (RAMP1 - SLOPE0)), m0 = .15, m1 = .52, u2 = u * u, u3 = u2 * u;
-      h = dome(RAMP1) * ((u3 - 2 * u2 + u) * m0 + (-2 * u3 + 3 * u2) + (u3 - u2) * m1);
+    if (x <= RAMP1) { const top = CAP ? cap(RAMP1) : dome(RAMP1), u = clamp((x - SLOPE0) / (RAMP1 - SLOPE0)), m0 = .15, m1 = CAP ? capS(RAMP1) * (RAMP1 - SLOPE0) / top : .52, u2 = u * u, u3 = u2 * u;
+      h = top * ((u3 - 2 * u2 + u) * m0 + (-2 * u3 + 3 * u2) + (u3 - u2) * m1);
       h += (3 * Math.sin(x * .011) + 1.6 * Math.sin(x * .031 + 1)) * sm(SLOPE0, SLOPE0 + 300, x) * (1 - sm(RAMP1 - 400, RAMP1, x)); }
-    else h = x <= SK_X ? dome(x) : skTop(x);
+    else h = x <= SK_X ? (CAP ? cap(x) : dome(x)) : skTop(x);
     return h;
   }
   // THE SKULL IN PROFILE AGAINST THE SKY (owner: "the skull should be a profile against the sky"): past the crown the
@@ -97,6 +103,10 @@ const CR = (() => {
     [.75, .12], [.775, .1], [.8, .095], [.83, .07], [.86, .06], [.885, .04], [.91, .042], [.93, .025], [.95, .03],
     [.97, .012], [1, 0], [1.08, 0]].map(p => p);
   if (SH0.P) SKP.splice(0, SKP.length, ...SH0.P);
+  // the skull's top follows the same arch up to its brow's shoulder
+  if (CAP) { const sh = SKP.findIndex(([u]) => u >= .545), top = [];
+    for (let u = 0; u < SKP[sh][0] - .02; u += .04) top.push([u, cap(SK_X + u * SK_H) / SK_H]);
+    SKP.splice(0, sh, ...top); }
   const RGS = rgen(550);
   const SKO = (() => { const P = SKP.map(([u, v]) => [SK_X + u * SK_H, v * SK_H]), O = [];
     for (let i = 0; i < P.length - 1; i++) { const a = P[Math.max(0, i - 1)], b = P[i], c2 = P[i + 1], d = P[Math.min(P.length - 1, i + 2)];
