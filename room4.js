@@ -89,7 +89,7 @@
   // a vanishing point PV on the left, depth d into the
   // picture shrinks by PQ(d) (as the gate's wall in Level 3); the hearth's opening runs from depth a0 to a1, its arch springing at SPR
   // above the floor and rising RISE more; the fire sits FIN inside the face at depth FD
-  const PV = { X: 900, Y: HOUSE.FY - 72, NEAR: 90, GP: 1100, D: 800, a0: 200, a1: 600, SPR: 320, RISE: 140, FD: 400, FIN: 50, REV: 90, T: 46 };
+  const PV = { X: 900, Y: HOUSE.FY - 132, NEAR: 90, GP: 1800, D: 800, a0: 200, a1: 600, SPR: 320, RISE: 140, FD: 400, FIN: 50, REV: 90, T: 46 };
   const rngR4 = seed => () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
   // the hearth wall's foot stands NEAR in front of the back wall's foot (build 529; owner: its far corner just below where wall and
   // floor meet, its near corner down where the floor's dark shadow starts): its floor line is FB, the eye low enough for both
