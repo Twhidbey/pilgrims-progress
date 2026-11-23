@@ -190,7 +190,7 @@ const CR = (() => {
     REL.forEach(m => loadImg(m.img + '.webp').then(im => { if (im) RIM[m.img] = im; }).catch(() => {}));
     // the hill painted by the image model (round 2 of the owner's hill): rounded weathered rock, toned dark grey, its left
     // end faded into the drawn ramp; cropped to the rock at 1.5 px a world unit (at SK_H 1080): world x 2834 to 5654, height 1089 down to 2 below the ground
-    if (HP_ON) loadImg('hill-cross.webp?v=578').then(im => { HPAINT = im; }).catch(() => {});
+    if (HP_ON) loadImg('hill-cross.webp?v=601').then(im => { HPAINT = im; }).catch(() => {});
     // the burning hill's own painted rock (Level 3), made a grey tile as hill.js makes it, laid over the hill in 'overlay'
     loadImg('hill-rock.webp').then(rock => { const sx = 720, sy = 540, w = 780, h = 600, t = document.createElement('canvas'); t.width = w; t.height = h; const q = t.getContext('2d'); q.drawImage(rock, sx, sy, w, h, 0, 0, w, h);
       const d = q.getImageData(0, 0, w, h), D = d.data; let m = 0; for (let i = 0; i < D.length; i += 4) m += D[i] * .3 + D[i + 1] * .59 + D[i + 2] * .11; m /= D.length / 4;
@@ -777,7 +777,7 @@ const CR = (() => {
     // the beds of rock only when the painting is not there (their lines showed through it)
     const R = rockTex(); if (!HPAINT) c.drawImage(R.c, R.x, R.y, R.w, R.h);
     if (HPAINT) {
-      const s = SK_H / 1080; c.save(); c.translate(SK_X, 0); c.scale(s, s); c.drawImage(HPAINT, 3149.64 - 4380, -1088.92, 2476.35, 1091.26); c.restore();
+      const s = SK_H / 1080; c.save(); c.translate(SK_X, 0); c.scale(s, s); c.drawImage(HPAINT, 3149.64 - 4380, -1089.42, 2478.34, 1093.75); c.restore();
       // the painting takes the hill's own colour through the dawn (its lightness kept)
       c.globalCompositeOperation = 'color'; c.fillStyle = css(hc); c.fillRect(x0, -H_TOP - 200, x1 - x0, H_TOP + 2300); c.globalCompositeOperation = 'source-over';
       // the foot sinks into the dark ground (owner: "blend edges and make everything super cohesive")
