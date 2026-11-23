@@ -202,6 +202,7 @@ const CR = (() => {
   // ---------- state ----------
   let blest = 0, tumbleT = 0, pauseKey = null, qRun = 0, quietG = 0, sepT = -1, ph = '', t = 0, cam = { cx: 0, z: 1, wl: 420 }, wideK = 0, wideTo = 0;
   const Ch = { x: START, anim: 12, sd: null, cf: -1, cfd: 1, hop: 0, hops: 0, lastV: 0, fade: 0, face: 1, tv: null, run: 0, ranim: 0 };
+  let sunT = 0, sunGo = false, sunH = 0;
   let bur = null, dawn = 0, gold = 0, goldTo = 0, sun = 0, robe = 0, robeTo = 0, mark = 0, markTo = 0, rollShow = 0, rollGone = 0, shine = 0, shineTo = 0, gone = 0, goneTo = 0;
   let closeK = 0, topK = 0, topTo = 0, veil = 0, climb = null, tearT = -1, looked = false;
   // his tears (owner, offered instead of eyes in the sky: "Sure!!"): on "He looked, and looked again, till the tears ran
@@ -465,19 +466,43 @@ const CR = (() => {
   const ridgeY = (i, X, base, amp) => { let y = base; for (const [p, k] of RIDGES[i]) y += amp / k * Math.sin(X * k * k * .0011 + p); return y; };
   function sky(c) {
     const pre = [[26, 30, 44], [60, 66, 84], [118, 112, 120]], dw = [[30, 34, 50], [78, 74, 92], [168, 140, 134]], gd = [[84, 100, 132], [206, 172, 146], [246, 214, 164]];
-    const st = [0, 1, 2].map(i => mix(mix(pre[i], dw[i], dawn), gd[i], gold));
+    // the glory: how far the sun has climbed past the crossing (0..1); everything below grows with it
+    const GL = sm(.96, 1.4, sunH), gl = [[64, 100, 162], [238, 168, 150], [255, 228, 172]];
+    const st = [0, 1, 2].map(i => mix(mix(mix(pre[i], dw[i], dawn), gd[i], gold), gl[i], GL * .85));
     const g = c.createLinearGradient(0, 0, 0, HY + 40); g.addColorStop(0, css(st[0])); g.addColorStop(.6, css(st[1])); g.addColorStop(1, css(st[2]));
     c.fillStyle = g; c.fillRect(0, 0, VW, VH);
-    // the far light, low behind the crown before dawn; the sun rising behind where the beams cross after
-    const cxs = sx(CROSS_X), top = sy(gh(CROSS_X) + CROSS_BY + 4), y0 = sy(gh(CROSS_X)) + 40, sY = lerp(y0, top, sm(0, 1, sun));
-    const glowR = 260 + 200 * gold, gg = c.createRadialGradient(cxs, sY, 0, cxs, sY, glowR);
-    gg.addColorStop(0, css([255, 226, 170], .18 + .5 * gold + .1 * dawn)); gg.addColorStop(.4, css([250, 196, 140], .08 + .22 * gold)); gg.addColorStop(1, 'rgba(250,190,140,0)');
+    // the far light, low behind the crown before dawn; the sun breaking behind the crown, rising behind where the
+    // beams cross, and on up the sky (kept inside the picture)
+    const cxs = sx(CROSS_X), top = sy(gh(CROSS_X) + CROSS_BY + 4), y0 = sy(gh(CROSS_X)) + 40, sY = Math.max(VH * .1, y0 + (top - y0) * sunH);
+    if (GL > .01) {
+      // a long band of rose and gold lying along the horizon
+      const hb = c.createLinearGradient(0, HY - 150, 0, HY + 50); hb.addColorStop(0, 'rgba(255,170,130,0)'); hb.addColorStop(.55, css([255, 176, 132], .22 * GL)); hb.addColorStop(.85, css([255, 222, 160], .3 * GL)); hb.addColorStop(1, 'rgba(255,222,160,0)');
+      c.fillStyle = hb; c.fillRect(0, HY - 150, VW, 200);
+    }
+    const glowR = 260 + 200 * gold + 320 * GL, gg = c.createRadialGradient(cxs, sY, 0, cxs, sY, glowR);
+    gg.addColorStop(0, css([255, 226, 170], Math.min(.9, .18 + .5 * gold + .1 * dawn + .12 * GL))); gg.addColorStop(.4, css([250, 196, 140], .08 + .22 * gold + .1 * GL)); gg.addColorStop(1, 'rgba(250,190,140,0)');
     c.fillStyle = gg; c.fillRect(0, 0, VW, VH);
-    if (sun > .01) { const R = 15 + 4 * cam.z, d = c.createRadialGradient(cxs, sY, 0, cxs, sY, R * 2.2); d.addColorStop(0, css([255, 252, 236], .95 * sun)); d.addColorStop(.45, css([255, 240, 200], .85 * sun)); d.addColorStop(.5, css([255, 226, 170], .35 * sun)); d.addColorStop(1, 'rgba(255,220,160,0)'); c.fillStyle = d; c.fillRect(cxs - R * 3, sY - R * 3, R * 6, R * 6); }
-    // a few long thin clouds, lit from beneath after dawn
-    for (const [y, w, a, p] of [[.16, .9, .1, .05], [.27, .7, .08, .02], [.36, 1.1, .07, .08]]) {
-      const yy = y * VH, xx = VW * (.5 + .25 * Math.sin(p * 9)) - (cam.cx * .02) % 300, cl = mix([70, 74, 92], [255, 214, 170], gold);
-      c.save(); c.translate(xx, yy); c.scale(VW * w / 2, 7); const q = c.createRadialGradient(0, 0, 0, 0, 0, 1); q.addColorStop(0, css(cl, a + .08 * gold)); q.addColorStop(1, css(cl, 0)); c.fillStyle = q; c.fillRect(-1, -1, 2, 2); c.restore();
+    if (GL > .01) {
+      // rays, once in the level: soft broad shafts fanning from the sun, turning very slowly, each fading outward
+      c.save(); c.globalCompositeOperation = 'lighter'; c.translate(cxs, sY); const RL = VW * .9;
+      for (let i = 0; i < 13; i++) {
+        const a0 = i * 6.283 / 13 + G.t / 5200 + .5 * Math.sin(i * 2.7), w = .11 + .05 * Math.sin(i * 4.1 + 1), al = (.02 + .01 * Math.sin(i * 1.7 + G.t / 190)) * GL;
+        const rg = c.createRadialGradient(0, 0, 20, 0, 0, RL); rg.addColorStop(0, css([255, 236, 190], 0)); rg.addColorStop(.12, css([255, 232, 184], al)); rg.addColorStop(1, 'rgba(255,220,170,0)');
+        for (const k of [1, .78, .56, .34]) { c.fillStyle = rg; c.beginPath(); c.moveTo(0, 0); c.lineTo(Math.cos(a0 - w * k) * RL, Math.sin(a0 - w * k) * RL); c.lineTo(Math.cos(a0 + w * k) * RL, Math.sin(a0 + w * k) * RL); c.closePath(); c.fill(); }
+      }
+      c.restore();
+    }
+    if (sun > .01) { const R = (15 + 4 * cam.z) * (1 + .4 * GL), d = c.createRadialGradient(cxs, sY, 0, cxs, sY, R * 2.2); d.addColorStop(0, css([255, 252, 236], .95 * sun)); d.addColorStop(.45, css([255, 240, 200], .85 * sun)); d.addColorStop(.5, css([255, 226, 170], .35 * sun)); d.addColorStop(1, 'rgba(255,220,160,0)'); c.fillStyle = d; c.fillRect(cxs - R * 3, sY - R * 3, R * 6, R * 6); }
+    // long thin clouds, lit from beneath after dawn; more of them catch fire as the sun climbs (the last five only then)
+    const CLD = [[.16, .9, .1, .05, 0], [.27, .7, .08, .02, 0], [.36, 1.1, .07, .08, 0], [.08, .6, 0, .31, 1], [.21, .5, 0, .62, 1], [.31, .8, 0, .44, 1], [.42, .6, 0, .77, 1], [.13, 1.2, 0, .9, 1]];
+    for (const [y, w, a, p, late] of CLD) {
+      const yy = y * VH, xx = VW * (.5 + .45 * Math.sin(p * 9)) - (cam.cx * .02 + (late ? G.t * .004 : 0)) % 300, body = mix(mix([70, 74, 92], [255, 214, 170], gold), [226, 150, 150], GL * .6), al = late ? .2 * GL : a + .08 * gold + .1 * GL;
+      if (al < .005) continue;
+      c.save(); c.translate(xx, yy); c.scale(VW * w / 2, 7 + 3 * GL); const q = c.createRadialGradient(0, 0, 0, 0, 0, 1); q.addColorStop(0, css(body, al)); q.addColorStop(1, css(body, 0)); c.fillStyle = q; c.fillRect(-1, -1, 2, 2); c.restore();
+      if (GL > .01) {
+        // its underside burning gold
+        c.save(); c.translate(xx, yy + 4 + 2 * GL); c.scale(VW * w / 2 * .8, 2.6); const q2 = c.createRadialGradient(0, 0, 0, 0, 0, 1); q2.addColorStop(0, css([255, 226, 160], (late ? .3 : .22) * GL)); q2.addColorStop(1, 'rgba(255,220,150,0)'); c.fillStyle = q2; c.fillRect(-1, -1, 2, 2); c.restore();
+      }
     }
   }
   function far(c) {
@@ -928,6 +953,7 @@ const CR = (() => {
   // ---------- the story ----------
   function reset0() {
     blest = 0; tumbleT = 0; sepT = -1; memT = -1; memS = []; memUntil = 0; memQ = 0; REL.forEach(m => { m.a = 0; m.said = false; m.cv = m.front = null; }); relGW = false; tearT = -1; looked = false; Object.assign(Ch, { x: START, anim: 12, sd: QUIET[0], cf: -1, hop: 0, hops: 0, lastV: 0, fade: 0, hv: 0, face: 1, tv: null, run: 0, ranim: 0, cc: 0, lp: null, wo: null, wa: 0, kn: null, kup: false });
+    sunT = 0; sunGo = false; sunH = 0;
     bur = null; dawn = gold = goldTo = sun = robe = robeTo = mark = markTo = rollShow = rollGone = shine = shineTo = gone = goneTo = 0; wideK = 1; wideTo = 1;
     said = {}; hymn = null; silenceT = 0; tombT = 0; leapsLeft = 3; endT = 0; quietPad = 0; t = 0; rollFly = rollAt = null; closeK = topK = topTo = veil = 0; climb = null;
   }
@@ -997,8 +1023,12 @@ const CR = (() => {
     dawn += ((ph === 'walk' || ph === 'look' ? .55 * sm(SLOPE0 - 400, CREST0, Ch.x) : .7) - dawn) * .01;
     if (robe >= .5) Ch.cc = (Ch.cc || 0) + 16 / 60;
     gold += (goldTo - gold) * .0032; robe = Math.min(1, robe + (robeTo > robe ? .01 : 0)); mark += (markTo - mark) * .03; shine += (shineTo - shine) * .012; gone += (goneTo - gone) * .012;
-    // the sun rises slowly, about 14 s (owner, build 455: "sun can rise slower")
-    if (goldTo > 0) sun = Math.min(1, sun + .0012);
+    // THE SUN BREAKS AS THE BURDEN FALLS AND KEEPS RISING (owner, build 600: "sun rise slower and keep rising - maybe
+    // it breaks just as burden falls but gets higher and higher and the sunrise become more and more spectacular"):
+    // `sunT` counts from the burden's coming off; `sun` is its brightness (full in about 25 s); `sunH` its height:
+    // 0 under the crown, 1 behind where the beams cross (about 50 s on, as the hymn plays), then on up, slower and
+    // slower, to a little under the picture's top by the level's end. The sky's glory (in `sky()`) grows with its height past the crossing.
+    if (sunGo) { sunT++; sun = Math.min(1, sunT / 1500); const u = sunT / 3000; sunH = u < 1 ? u : 1 + .42 * (1 - Math.exp(-(u - 1) / 1.1)); }
     wideK += (wideTo - wideK) * .02;
     if (!climb) topK += (topTo - topK) * .022;
     hymnTick();
@@ -1052,6 +1082,7 @@ const CR = (() => {
       if (Ch.fade >= 1 && t > 50) Ch.cf = Math.min(SWAP, Ch.cf + 16 / 60);
       if (Ch.cf >= SWAP) {
         ph = 'tumble'; t = 0; thump(1.1);
+        sunGo = true; if (!goldTo) goldTo = .2;
         bur = { st: 'roll', x: STOP_X + (BALL.ax - CLIP_META.ax) * CHR_K, y: 0, vy: 0, v: .9, r: 0, k: 1, a: 1, dk: 0, t: 0 };
         wideTo = 1;
       }
@@ -1068,7 +1099,7 @@ const CR = (() => {
       // a silence; then the light comes up behind the cross, and the colour comes back from it outward
       // the silence is counted only once every voice is done, so the sun and the hymn never come over the words
       if (!busy()) { quietG++; qRun++; } else qRun = 0;
-      if (quietG === 150 && !goldTo) { goldTo = 1; wideTo = .35; }
+      if (quietG === 150 && goldTo < 1) { goldTo = 1; wideTo = .35; }
       if (quietG === 360 && !hymn) hymn = { t: 0, i: 0, b: 0 };
       // Christian speaks only after a breath of quiet once the burden is gone (owner, build 456)
       if (hymn && hymn.t >= 10 * BEATT && Ch.kn != null) Ch.kup = true;
