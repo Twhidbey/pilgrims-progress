@@ -1402,15 +1402,19 @@ const CR = (() => {
   }
   function relTick() {
     if (!REL_ON) return;
+    // all three are made at the start, one a tick, while he stands between the walls (making one takes up to a fifth of a
+    // second: on the slope that showed as a jolt as he ran)
+    let made = false;
     REL.forEach(m => {
+      if (!made && !m.cv && Ch.x < REL[0].on[0] - 300 && RIM[m.img]) { relBake(m); made = true; }
       // (`off`: the mire fades just as he reaches Help, owner, build 599)
       const inIt = ph === 'walk' && Ch.x >= m.on[0] && Ch.x < (m.off || m.on[1]) ? 1 : 0;
       m.a += (inIt - m.a) * (inIt ? .05 : m.off ? .07 : .04);
       // freed only once faded AND out of its stretch and its approach (it used to be freed every tick of the approach, where
       // it is made ahead of time, so it was made again and again: about 200 ms a tick, the stutter on the climb)
-      const near = ph === 'walk' && Ch.x > m.on[0] - 400 && Ch.x < m.on[1];
+      const near = Ch.x < m.on[1];
       if (m.a < .004 && !inIt) { m.a = 0; if (!near) m.cv = m.front = null; }
-      if ((inIt || Ch.x > m.on[0] - 260 && Ch.x < m.on[1] && ph === 'walk') && !m.cv) relBake(m);
+      if ((inIt || Ch.x > m.on[0] - 260 && Ch.x < m.on[1] && ph === 'walk') && !m.cv && !made) { relBake(m); made = true; }
       // his thought, once he is well into it, and never over another voice
       if (inIt && !m.said && Ch.x >= m.on[0] + 110 && said.open && !busy() && memQ >= 40) { m.said = true; memVoice(m.voice); }
       // a memory he ran through before its words could be said keeps them unsaid no longer than its own stretch
