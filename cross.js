@@ -991,7 +991,10 @@ const CR = (() => {
       // a small flat top under the cross's foot
       if (Math.abs(x - CROSS_X) < 22) h = Math.max(h, CRAG_LIFT);
       // a broken, stepped edge: flat ledges and sudden small drops
-      h = Math.max(0, Math.round(h / 7) * 7 + (r() - .5) * 3 * Math.min(1, h / 20));
+      // a rough, irregular edge: two slow wanders and a fine jag, stronger the higher the rock (no flat steps: they read
+      // as a wall's battlements)
+      const jg = 7 * Math.sin(x * .043 + 1.3) + 4 * Math.sin(x * .11 + .4) + 4 * (r() - .5);
+      h = Math.max(0, h + jg * Math.min(1, h / 30) * smooth(24, 70, Math.abs(x - CROSS_X)));
       // gone at both ends, into the hill
       h *= smooth(CX0, CX0 + 120, x) * (1 - smooth(CX1 - 160, CX1, x));
       H.push([x, h]);
