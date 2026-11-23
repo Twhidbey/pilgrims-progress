@@ -36,6 +36,8 @@ Chat: **PP House · Room 4 Fire**. Read `notes/house.md` first (shared rules, bu
 
 ## Log (newest first)
 
+- Build 577 (owner: "Edge of bucket in last image is cut into - should be round"): where the clip's water spilled over the bucket's front rim, cutting the water out left bites and little dark spikes. In each frame, in the bucket's front only (the 130 px at the figure's right above the hips): spikes taken off (an opening, 13 px), bites filled (a closing, 41 px), the new rim and any pale pixels there painted from the dark wood round them, its edge softened: `room4-cast-hd3-0..3.webp` (hd2 removed). Nothing spent.
+
 - Build 575: the water-caster cut again from the clip without filling the gaps shut in by his arms and the bucket (only pinholes under 40 px filled; the paper between his arms is now clear, the wall shows through), sharpened again (Real-ESRGAN), pinholes under 150 px closed, pale specks of the clip's water at the bucket's mouth cleared: as `room4-cast-hd2-0..3.webp` (a new name so phones fetch it; the hd sheets removed). Nothing spent.
 
 - Build 573 (owner: "You can take blue off his face - also three dark between his arms that need cropping"): his skin kept a trace of the clip's pinkish colour, grey-mauve against the orange wall; now none of the clip's colour is kept (`CASTV.sat` 0), so he is wholly the room's warm brown. The dark between his arms (paper I had filled) is being cut open in the next build. Nothing spent.
