@@ -234,6 +234,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 ## START HERE (rewritten at build 140, Nov 16 2026)
 
+**Build 593 (Level 2 chat): every sound effect at half (`SFX_K`); Old Hundredth remade on strings. About 8 cents (music total now about 68 cents).**
+
 **Build 592 (Level 2 chat): Old Hundredth (a Lyria piece, viols and chamber organ) under Level 2's plain and the far bank, not the mire. About 8 cents (music total about 52 cents before; now about 60).**
 
 **Build 591 (Level 2 chat): the bog's sloshing at under half its loudness (`BOG_K`). Nothing spent.**
