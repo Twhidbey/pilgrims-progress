@@ -364,6 +364,12 @@ const CR = (() => {
     if (figC.width !== W || figC.height !== H) { figC.width = W; figC.height = H; }
     const f = figC.getContext('2d'); f.globalCompositeOperation = 'source-over'; f.clearRect(0, 0, W, H); f.drawImage(BURDEN, 0, 0); f.globalCompositeOperation = 'multiply'; f.fillStyle = css(mix(mix(tint, [176, 164, 162], bur.H != null ? .5 * (1 - bur.dk) + .2 * gl : 0), [8, 7, 10], bur.dk));       f.fillRect(0, 0, W, H); f.globalCompositeOperation = 'destination-in'; f.drawImage(BURDEN, 0, 0); f.globalCompositeOperation = 'source-over';
     c.drawImage(figC, -w / 2, -hh / 2, w, hh); c.restore();
+    // its loosed ropes trailing behind it as it flies off his back (the fling only)
+    if (FLING && bur.st === 'roll' && bur.t < 140) { const fa = (1 - bur.t / 140) * bur.a, vx = bur.vx || 0, vy = -(bur.vz || 0), L0 = Math.hypot(vx, vy) || 1, ux = -vx / L0, uy = -vy / L0;
+      c.save(); c.strokeStyle = css(mix(tintNow(), [60, 48, 40], .5), .8 * fa); c.lineCap = 'round';
+      for (let k = 0; k < 3; k++) { const ox = bur.x + (k - 1) * 6, oy = -h - hh / 2 + (k - 1) * 5, len = 34 + 12 * k; c.lineWidth = 1.6; c.beginPath(); c.moveTo(ox, oy);
+        for (let j = 1; j <= 8; j++) { const u = j / 8, wv = Math.sin(bur.t * .35 + j * 1.3 + k * 2) * 6 * u; c.lineTo(ox + ux * len * u - uy * wv, oy + uy * len * u + ux * wv); } c.stroke(); }
+      c.restore(); }
   }
   // the tumble, by simple physics (owner: "need a natural fall - think about physics of fall, it's not too important the
   // path it takes so long as it is natural"): it runs down the hill's face toward us, gathering speed under gravity with a
@@ -374,7 +380,7 @@ const CR = (() => {
     if (!bur) return;
     if (bur.dust) for (const d of bur.dust) { d.x += d.vx; d.y += d.vy; d.vx *= .97; d.vy *= .97; d.r += .35; d.a -= .006; }
     if (bur.st === 'roll') {
-      if (bur.x0 == null) { Object.assign(bur, { x0: bur.x, H0: gh(bur.x), gl: 0, s: 0, vs: .6, z: 0, vz: 1.4, vx: .3, dx: 0, w: 0, ph: 0, pw: .05, sq: 0, sqa: 0, sqv: 0, rnd: rgen(77) }); }
+      if (bur.x0 == null) { Object.assign(bur, { x0: bur.x, H0: gh(bur.x), gl: 0, s: 0, vs: .6, z: 0, vz: 1.4, vx: .3, dx: 0, w: 0, ph: 0, pw: .05, sq: 0, sqa: 0, sqv: 0, rnd: rgen(77) }); if (FLING) Object.assign(bur, { vz: 5.2, vx: -2.3, vs: .2, w: -.09, z: 4 }); }
       const R = bur.rnd, L = bur.H0 - tombSill() - 6, g = .16;
       bur.t++; bur.gl = Math.min(1, bur.gl + .02);
       // along the face: gravity less friction, a little slower while in the air
@@ -464,6 +470,8 @@ const CR = (() => {
   // darker as it comes down; baked once small and drawn stretched (soft), in dark alpha so it takes the hill's colour
   let ROCK = null;
   // six trial ways to tie the skull's ledges into the slope (owner: "the bulging circular layers looks separate from slope"): ?hl=a..f
+  // the burden bursting loose (owner, build 568, of a painting: "how burden was losed"): ?fling=1 to try
+  const FLING = /[?&]fling=1/.test(location.search);
   const HL_OPT = (new URLSearchParams(location.search).get('hl') || 'g').toLowerCase();
   const ROCK_OPT = (new URLSearchParams(location.search).get('rock') || 'skull').toLowerCase();
   // the six trials (sketches for the owner; nothing here is used without ?hl=)
@@ -510,6 +518,22 @@ const CR = (() => {
         for (const [gr, a] of [[.35, .04], [.18, .07], [0, .13]]) { rim(0, gr); q.fillStyle = css([0, 0, 0], a); q.fill(); }
         q.save(); rim(0, 0); q.clip(); const g = q.createRadialGradient(ox, oy - RY * .35, RX * .1, ox, oy, RX * 1.1); g.addColorStop(0, css([0, 0, 0], .3)); g.addColorStop(1, css([0, 0, 0], .06)); q.fillStyle = g; q.fillRect(ox - RX * 1.3, oy - RY * 1.3, RX * 2.6, RY * 2.6); q.restore();
         l.strokeStyle = css([255, 255, 255], .08); l.lineWidth = 2; l.beginPath(); for (let i = 4; i <= 16; i++) { const a = i / 20 * Math.PI, X = ox + Math.cos(a) * RX * 1.02, Y = oy + Math.sin(a) * RY * 1.02; i > 4 ? l.lineTo(X, Y) : l.moveTo(X, Y); } l.stroke(); }
+    } else if (K === 'h') {
+      // H, CARVED ROCK (owner, build 568, of a painting: "the texture of hill"): no beds; the rock is many rounded
+      // weathered masses, bulges and folds, each lit on its upper side and in shade beneath, with dark creases where
+      // they meet; larger and bolder on the skull, smaller and fainter down the ramp
+      const r = rgen(568), L = [];
+      for (let i = 0; i < 140; i++) { const x = SLOPE0 + 400 + (SK_END - SLOPE0 - 300) * Math.pow(r(), .55), top = x <= SK_X ? gh(x) : skTop(x); if (top < 60) continue;
+        const sk = smooth(SK_X - 900, SK_X, x), R = (40 + 70 * r()) * (.55 + .7 * sk), y = top * (.12 + .85 * r()); if (y + R * .4 > top) continue; L.push({ x, y, R, sk, sd: r() * 9 }); }
+      L.sort((a, b) => b.y - a.y);
+      for (const m of L) { const pts = []; for (let i = 0; i < 24; i++) { const a = i / 24 * Math.PI * 2, rr = m.R * (1 + .16 * Math.sin(a * 3 + m.sd) + .08 * Math.sin(a * 7 + m.sd * 2)); pts.push([m.x + Math.cos(a) * rr * 1.25, -m.y + Math.sin(a) * rr * .8]); }
+        const path = c2 => { c2.beginPath(); pts.forEach(([x, y], i) => i ? c2.lineTo(x, y) : c2.moveTo(x, y)); c2.closePath(); };
+        const st = .45 + .55 * m.sk;
+        let g = q.createLinearGradient(m.x - m.R * .6, -m.y - m.R * .7, m.x + m.R * .7, -m.y + m.R * .8); g.addColorStop(0, css([0, 0, 0], 0)); g.addColorStop(.55, css([0, 0, 0], .05 * st)); g.addColorStop(1, css([0, 0, 0], .2 * st));
+        path(q); q.fillStyle = g; q.fill();
+        q.strokeStyle = css([0, 0, 0], .16 * st); q.lineWidth = 2.2; q.beginPath(); for (let i = 1; i <= 13; i++) { const [x, y] = pts[i]; i > 1 ? q.lineTo(x, y) : q.moveTo(x, y); } q.stroke();
+        g = l.createLinearGradient(m.x - m.R * .7, -m.y - m.R * .8, m.x, -m.y); g.addColorStop(0, css([255, 255, 255], .07 * st)); g.addColorStop(1, css([255, 255, 255], 0));
+        path(l); l.fillStyle = g; l.fill(); }
     } else if (K === 'b') {
       // B: tilted bedding: long rock shelves running down from the upper left across the whole hill to the lower right
       for (let n = 0; n < 7; n++) { const o = 980 - n * 150; band(span(x => o - .28 * (x - SLOPE0) + spur(x, n, 70, 160)), .075); }
