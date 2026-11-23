@@ -184,7 +184,7 @@ body.portrait:not(.playing) #rot{display:none}
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
   <button id="autoWalk" aria-label="He walks on by himself"><svg viewBox="0 0 24 24"><path d="M5 6l6 6-6 6M12 6l6 6-6 6"/></svg></button>
-  <div id="build">build 593 · Nov 23 2026</div>
+  <div id="build">build 594 · Nov 23 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -1102,7 +1102,7 @@ const MUSIC_V = 1;
 const MUS = { book: 'l1-title', run: 'l1-beat-run', mock: 'l1-beat-mock', heart: 'l1-beat-heart', past: 'l1-run-faint', choir: 'l5-choir', old100: 'l2-old100-strings' };      // build 527 (owner, of the pursuit piece: "more melancholy than intense"; then chose, after the manner of Part's Fratres, the take with strings over a faint far heartbeat): grave strings over a deep held note, a faint drum heartbeat far underneath
                                                                                     // build 506 (owner: the run piece "a bit upbeat - should be intense and not too many instruments"): the pursuit piece, a low heartbeat of drums and uneasy strings
 const MUSV = { book: .3, run: .42, mock: .3, heart: .4, past: .4, choir: .38, old100: .3 };       // each piece's level (the owner's ears decide)
-const MUS_ONCE = { run: 1, mock: 1, heart: 1, choir: 1 }, MUS_XF = 3, MUS_SKIP = {};      // seconds of quiet lead-in skipped the first time a piece plays
+const MUS_ONCE = { run: 1, mock: 1, heart: 1, choir: 1 }, MUS_XF = 3, MUS_SKIP = { old100: 26 };      // seconds of quiet lead-in skipped the first time a piece plays
 const musBuf = {}, musLoad = {}, musV = {};
 let musG = null, musCur = null;
 function musGet(k) {
@@ -1140,7 +1140,7 @@ function musTick() {
   for (const k in musV) {
     const v = musV[k], on = k === musCur, b = musBuf[k];
     if (!v.g) { v.g = AC.createGain(); v.g.gain.value = 0; v.g.connect(musG); }
-    v.g.gain.setTargetAtTime(on ? MUSV[k] : 0, now, on ? 1.1 : 1.4);
+    v.g.gain.setTargetAtTime(on ? MUSV[k] : 0, now, on ? (k === 'old100' ? .35 : 1.1) : 1.4);
     if (on && b && !v.done && now > v.next - .6) {
       const first = !v.srcs.length, skip = first ? MUS_SKIP[k] || 0 : 0, t0 = Math.max(now + .05, v.next), s = AC.createBufferSource(), sg = AC.createGain(), d = b.duration - skip, once = MUS_ONCE[k];
       s.buffer = b; s.connect(sg); sg.connect(v.g);
