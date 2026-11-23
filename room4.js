@@ -7,7 +7,7 @@
 // ============================================================
 (window.RMR = window.RMR || []).push(H => {
   const { D4, EX, HOUSE, I, PH, S, bakeShell, fig, glow, goTo, hold, loads, noise, pic, pics, ring, rnd, u, v, visitor, VIS, WALK_FPT, walkFig, walkSpeed, sheetFrames } = H;
-  const R4D = { caster: { ax: 35, g: 302, s: 2.1, ct: 1.3, mul: .42, sat: .5 }, pourer: { ax: 62, g: 299, s: 2.1, ct: 1.3, mul: .42, sat: .5 }, FIRE: 1960, PART0: 1740, PART1: 1880, FP0: 1790, FP1: 2160, FPH: 520 };
+  const R4D = { caster: { ax: 35, g: 302, s: 2.1, ct: 1.3, mul: .42, sat: .5 }, pourer: { ax: 62, g: 299, s: 2.1, ct: 1.3, mul: .42, sat: .5 }, FIRE: 1960, PART0: 1740, PART1: 1915, FP0: 1790, FP1: 2160, FPH: 520 };
   function bakeR4() {
     // on the house's shell (build 425): the fire low on the floor at FIRE is the one light; the chimney breast between PART0 and PART1 is
     // the wall they go round (the end walls' own near-black, its face toward the fire warmed); behind it the small hidden fire's own low light
@@ -77,7 +77,7 @@
   // the walk round the wall (build 508): the two set off from where they stand, go BEHIND the man with the bucket and the fire (a
   // little further back: smaller, darker, standing a little higher), behind the chimney breast into the dark, the Interpreter's
   // cupped candle the only light there; they stop and turn to the one pouring oil, and the dark lifts
-  const WK = { C0: 240, I0: 520, FEET: 45, C1: 2620, I1: 2860, V: 3.4, k: .92, up: 14, PO: 2040, SPOUT: [1896, 790 + 45], CX: 960, LIP: [1342, 830 + 45] };
+  const WK = { C0: 240, I0: 520, FEET: 45, C1: 2620, I1: 2860, V: 3.4, k: .92, up: 14, PO: 2075, SPOUT: [1931, 790 + 45], CX: 960, LIP: [1342, 830 + 45] };
   // the perspective of the chimney breast's face (build 523; build 526: the eye at chest height again, so the floor line runs up too):
   // a vanishing point PV on the left, depth d into the
   // picture shrinks by PQ(d) (as the gate's wall in Level 3); the hearth's opening runs from depth a0 to a1, its arch springing at SPR
@@ -201,15 +201,20 @@
         fireDraw(c, this.fire, 1);
         c.globalCompositeOperation = 'lighter'; for (const p of this.sparks) { const q = p.a / p.L; c.fillStyle = css([255, 220, 150], (1 - q) * (.6 + .4 * Math.sin(p.a * .7))); c.fillRect(u(p.x), v(p.y), Math.max(1, 3 * S), Math.max(1, 3 * S)); } c.globalCompositeOperation = 'source-over';
         c.restore(); c.restore();
+        // the flames may lick a little over the far edge of the stone frame (owner, build 554: "fire can slightly overlap the far edge of
+        // the rock frame"): drawn again, with the same shear, only where the wider arch reaches past the recess's own back opening
+        { const wide = archPts(PV.a0 + 20, PV.a1 + 70, PV.SPR, PV.RISE + 30, P0 + REV * .55);
+          c.save(); c.beginPath(); wide.forEach(([x, y], i) => i ? c.lineTo(u(x), v(y)) : c.moveTo(u(x), v(y))); c.closePath();
+          back.forEach(([x, y], i) => i ? c.lineTo(u(x), v(y)) : c.moveTo(u(x), v(y))); c.closePath(); c.clip('evenodd');
+          c.translate(u(sx), v(sy)); c.transform(qm, qm * sl, 0, qm, 0, 0); c.translate(-u(F), -v(FY)); fireDraw(c, this.fire, .8); c.restore(); }
         // the fire's light on the reveal (the jamb's inner face and the underside), over everything in the opening
         g = c.createRadialGradient(u(sx), v(sy - 80), 0, u(sx), v(sy - 80), 240 * S); g.addColorStop(0, css([255, 150, 60], .28 * gw)); g.addColorStop(1, 'rgba(255,150,60,0)');
         c.save(); poly(inn); poly(back); c.clip('evenodd'); c.globalCompositeOperation = 'lighter'; c.fillStyle = g; c.fillRect(u(sx) - 240 * S, v(sy - 80) - 240 * S, 480 * S, 480 * S); c.restore();
         c.restore(); c.globalCompositeOperation = 'source-over';
-        // the chimney breast cut by the section (down to the hearth wall's near foot, FB; build 531), over the walkers (they pass behind it); a low slot through its foot glows with the
-        // back of the same fire, where from behind the wall the oil goes in
+        // the chimney breast cut by the section (down to the hearth wall's near foot, FB; build 531), over the walkers (they pass behind it); its foot is solid (build 554)
         c.fillStyle = '#0c0705'; c.fillRect(u(P0), v(EX.y0), (P1 - P0) * S, (FB - EX.y0) * S);
         g = c.createLinearGradient(0, v(380), 0, v(900)); g.addColorStop(0, 'rgba(12,7,5,1)'); g.addColorStop(1, 'rgba(12,7,5,0)'); c.fillStyle = g; c.fillRect(u(P0), v(380), 50 * S, 520 * S);
-        g = c.createLinearGradient(0, v(FY + WK.FEET - 46), 0, v(FY + WK.FEET)); g.addColorStop(0, '#1a0904'); g.addColorStop(1, css([170, 66, 24], .9 * gw)); c.fillStyle = g; c.fillRect(u(P0 + 30), v(FY + WK.FEET - 46), (P1 - P0 - 30) * S, 46 * S);
+        // (the glowing slot at the breast's foot is gone, build 554: the column covers it)
         // behind the wall: the one pouring oil, and the thin thread of oil into the slot
         // unseen until they have gone round (the book: "it is hard for the tempted to see"): only the fire's flare at each drop shows
         const pa = smooth(0, 1, this.rv);

@@ -7,6 +7,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 **Vision chat, Nov 22 (no build, game unchanged): AWE AND REVERENCE STUDY.** Five researchers and a critic on the owner's ask (Bible pictures, a choir at the Cross with him kneeling, light from heaven, answered prayer, nature pointing to God): reports `vision/6-awe-*.md` to `11-awe-critic.md`, sketches in `concept/awe/`, the ranked ten and a do-not-do list in `vision/README.md` ("Awe and reverence"). Nothing built until the owner chooses. Note for every chat: Amazing Grace is now played WHOLE three times (Level 1's gate since build 484, the Cross, the Celestial Gate); do not take Level 1's out. Nothing spent.
 
+**Build 554 (Room 4 chat): the hearth's flames lick over the far jamb; the chimney column wider, no red slot at its foot. Nothing spent.**
+
 **Build 541 (Room 4 chat): the hearth's stones level along their top, less stretched. Nothing spent.**
 
 **Build 540 (Room 4 chat): the hearth wall's top edge mirrors its floor line (same angle, reflected). Nothing spent.**
