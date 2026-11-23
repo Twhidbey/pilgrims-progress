@@ -80,9 +80,10 @@
   const CASTV = { n: 'room4-castg', parts: 4, per: 30, ax: 132.2, g: 414, cols: 8, fr: 120, W: 421, H: 445, s: 1.524, ct: 1, mul: 1, sat: 0, noSh: 1 };
   const POURV = { n: 'room4-pour', ax: 71.7, g: 375, cols: 8, fr: 49, W: 152, H: 380, s: 1.7, ct: 1, mul: 1, sat: 1, noSh: 1 };
   // where his bucket's lip is at the throw (cell pixels, frames 19 to 24), and the jug's spout through the pouring loop
+  const WATV = { n: 'room4-castw', f0: 42, fr: 46, cols: 8, W: 450, H: 223, z: 2, lip: 300, land: 720 };
   const LIPF = { 44: [382, 118], 45: [396, 90], 46: [409, 62], 47: [396, 75], 48: [383, 87], 49: [383, 88], 50: [384, 88], 51: [386, 80], 52: [388, 73], 53: [385, 76], 54: [382, 80] };
   const SPF = [[12, 153], [10, 152], [8, 148], [6, 145], [5, 142], [4, 143], [3, 141], [3, 136], [4, 135], [6, 138], [8, 143], [11, 150], [12, 152]];
-  if (D4) { const n = 'room4-drawn'; loads[n] = new Promise(r => setTimeout(r, 0)).then(() => (pics[n] = bakeR4())); pic('room4-caster2'); pic('room4-pourer'); sheetFrames(CASTV); pic(POURV.n); }
+  if (D4) { const n = 'room4-drawn'; loads[n] = new Promise(r => setTimeout(r, 0)).then(() => (pics[n] = bakeR4())); pic('room4-caster2'); pic('room4-pourer'); sheetFrames(CASTV); pic(POURV.n); pic(WATV.n); }
   // the walk round the wall (build 508): the two set off from where they stand, go BEHIND the man with the bucket and the fire (a
   // little further back: smaller, darker, standing a little higher), behind the chimney breast into the dark, the Interpreter's
   // cupped candle the only light there; they stop and turn to the one pouring oil, and the dark lifts
@@ -234,6 +235,18 @@
         const cx = WK.CX;
         if (sheetFrames(CASTV)) fig(c, CASTV.n + '#' + Math.min(CASTV.fr - 1, Math.floor(this.cf4)), CASTV, cx, FY + WK.FEET + WK.CDN, -1, 1, 1, [176, 124, 90]);
         else if (cs) fig(c, 'room4-caster2', { ax: 150, g: 781, s: .8, ct: 1, mul: 1, sat: 1, noSh: 1 }, cx, FY + WK.FEET + WK.CDN, -1, 1, 1, [176, 124, 90]);
+        // THE VIDEO'S OWN WATER AS THE SCAFFOLD (owner, build 590: "You could use videos water as a scaffold for your own"): its shape
+        // frame by frame, coloured as the room's water, drawn from the bucket's lip and squeezed sideways so it lands in the hearth
+        { const wi = Math.floor(this.cf4) - WATV.f0, ws = pics[WATV.n];
+          if (ws && wi >= 0 && wi < WATV.fr) {
+            const sc = S / .8 * CASTV.s, fx = u(cx), fy = v(FY + WK.FEET + WK.CDN), lipX = cx + (WATV.lip - CASTV.ax) * CASTV.s / .8;
+            const kx = Math.max(.35, Math.min(1, (FXS()[0] - lipX) / ((WATV.land - WATV.lip) * CASTV.s / .8)));
+            c.save(); c.beginPath(); c.rect(u(EX.x0), v(EX.y0), u(FXS()[0] + 70) - u(EX.x0), (EX.y1 - EX.y0) * S); c.clip();
+            c.translate(u(lipX), fy); c.scale(kx, 1); c.translate(-u(lipX), 0);
+            const sx = (wi % WATV.cols) * WATV.W, sy = Math.floor(wi / WATV.cols) * WATV.H;
+            c.drawImage(ws, sx, sy, WATV.W, WATV.H, fx - CASTV.ax * sc, -CASTV.g * sc, WATV.W * WATV.z * sc, WATV.H * WATV.z * sc);
+            c.restore();
+          } }
         // the wet on the hearth where the water falls, darkening and slowly drying
         if (this.wet > .01) { c.save(); c.translate(u(FXS()[0] - 160), v(FY + WK.FEET + 6)); c.scale(1, .1); const wg = c.createRadialGradient(0, 0, 0, 0, 0, 120 * S); wg.addColorStop(0, css([12, 8, 8], .7 * this.wet)); wg.addColorStop(1, css([12, 8, 8], 0)); c.fillStyle = wg; c.fillRect(-120 * S, -120 * S, 240 * S, 240 * S); c.restore(); }
         if (this.water.length) {
@@ -281,9 +294,11 @@
           // and a gust of steam, then rises higher than before (the book: "yet did the fire burn higher and hotter")
           // the clip at its own pace (16 a second), a short rest between casts; the water leaves the bucket's lip where the clip throws it
           if (pics[CASTV.n + '#0']) {
-            this.cf4 += 12 / 60; if (this.cf4 >= CASTV.fr + 12) { this.cf4 = 0; this.hit = false; }
+            this.cf4 += 12 / 60; if (this.cf4 >= CASTV.fr + 12) { this.cf4 = 0; this.hit = false; this.sl = false; }
             const L = LIPF[Math.floor(this.cf4)];
-            if (L) { const k = CASTV.s / .8, lx = WK.CX + (L[0] - CASTV.ax) * k, ly = this.FY + WK.FEET + WK.CDN + (L[1] - CASTV.g) * k;
+            if (pics[WATV.n]) { if (Math.floor(this.cf4) === 57 && !this.hit) { this.hit = true; this.dip = 1; noise(3000, 1, .6, .05); noise(500, 2, .5, .04); if (typeof sfxPlay === 'function' && typeof audio === 'function' && audio()) sfxPlay('bog-plop', 3, .7); this.wet = 1; const [fx0, fy0] = FXS(); for (let i = 0; i < 14; i++) this.steam.push({ x: fx0 + (rnd() - .5) * 90, y: fy0 - 40 - rnd() * 60, vx: (rnd() - .5) * .8, vy: -1.6 - rnd() * 1.2, a: .5, s: 10 + rnd() * 14 }); }
+              if (Math.floor(this.cf4) === 44 && !this.sl) { this.sl = true; if (typeof sfxPlay === 'function' && typeof audio === 'function' && audio()) sfxPlay('bog-heave', 2, .55); } }
+            else if (L) { const k = CASTV.s / .8, lx = WK.CX + (L[0] - CASTV.ax) * k, ly = this.FY + WK.FEET + WK.CDN + (L[1] - CASTV.g) * k;
               // aimed so it falls into the hearth's opening (a throw under gravity .16 from the lip to just above the fire)
               const [tx, ty] = FXS();
               // a big sloshing slug of water (owner, build 580: "a large sloshy gloosh of water"): many fat drops close together on one arc,
