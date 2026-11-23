@@ -125,3 +125,21 @@ In every game people call "art, not a video game", **the art does the design wor
 2. **The colour script** (section 3): accept as the plan for Levels 6 onward, and whether to quieten Level 3's opening gold so the Cross outshines it.
 3. **The returning frame** and **the road's shape-language** (section 2, items 5 and 6) as rules for every level.
 4. Whether to add **"Others who walked the road"**, the **burden's drone**, **Monks Gate** as the second tune.
+
+---
+
+## 7. The owner's taste, round 1 (90 pictures; 11 loved, 37 liked, 42 not)
+
+**Loved:** Hasui, *Matsushima in the Moonlight* and *Evening at Kiba*; Yoshida, *Lake Kawaguchi* and *Musashino*; Kuindzhi, *Moonlit Night on the Dnieper* and *Clouds*; Nesterov, *Holy Rus'*; Levitan, *Vladimirka*; Vasnetsov, *Knight at the Crossroads*; Chełmoński, *Dawn: the Kingdom of Birds*; Friedrich, *Wanderer above the Sea of Fog*.
+
+**Turned down as a group:** every ink-wash and Song landscape but Fan Kuan (Sesshū, Tōhaku, Guo Xi, Ma Yuan, Buson); every icon but Rublev's Trinity, and the Raigō paintings (gold ground, symbolic flat figures); every engraving and line picture (all eight Doré plates, Hollar, the emblem books, Ogilby's maps); Hiroshige's later bold cropped views and Hokusai; most fantasy illustration (Sime, Bauer, Dulac, Nielsen but one); NASA's photographs; Claude Lorrain, Cuyp, Koninck; Vrubel.
+
+**What the marks say:**
+1. **Luminous atmospheric realism, painted, with one mood.** Every love is a real place under a real sky, made poetic by its light. The owner wants nature believable, not stylised, decorated or symbolic.
+2. **Light at the edges of the day.** Five of the eleven are moonlight, dusk or dawn; Kuindzhi's glowing moon is the clearest single love. Soft low light, not noon and not Claude's gold haze.
+3. **A lone figure or a road before a great space.** The Wanderer, the Knight at the stone, Vladimirka's empty road, Nesterov's pilgrims walking toward a small far figure: the game's own subject.
+4. **Clean, quiet colour planes with smooth gradients** (Yoshida and Hasui's shin-hanga): colour is welcome, kept calm and simplified; no busy surface.
+5. **No line.** Engraving, hatching, ink brush and outline were all turned down. Form by tone and colour only, which agrees with the game's layered silhouettes.
+6. **Not flat-sacred.** Gold grounds, icons and Raigō light were turned down: the holy should come through natural light (Nesterov, Friedrich), not symbolic convention.
+
+**What this changes in sections 5 and 6:** drop the Ogilby road map and the emblem cards as looks (the ideas could survive drawn in the game's own style, but the period look is out); drop Doré as a reference for later levels; the Japanese influence is shin-hanga (Hasui, Yoshida), not ink. Keep and strengthen: Kuindzhi's light (darken round the light), Levitan's road, Nesterov's quiet holy light, Friedrich's lone figure, the colour script's moonlit and dawn levels.
