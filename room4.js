@@ -235,9 +235,22 @@
         else if (cs) fig(c, 'room4-caster2', { ax: 150, g: 781, s: .8, ct: 1, mul: 1, sat: 1, noSh: 1 }, cx, FY + WK.FEET + WK.CDN, -1, 1, 1, [176, 124, 90]);
         // the wet on the hearth where the water falls, darkening and slowly drying
         if (this.wet > .01) { c.save(); c.translate(u(FXS()[0] - 160), v(FY + WK.FEET + 6)); c.scale(1, .1); const wg = c.createRadialGradient(0, 0, 0, 0, 0, 120 * S); wg.addColorStop(0, css([12, 8, 8], .7 * this.wet)); wg.addColorStop(1, css([12, 8, 8], 0)); c.fillStyle = wg; c.fillRect(-120 * S, -120 * S, 240 * S, 240 * S); c.restore(); }
-        c.lineCap = 'round'; c.lineWidth = Math.max(1, 2.6 * S);
-        for (const w of this.water) { c.strokeStyle = css([200, 214, 226], .38 * w.a); c.beginPath(); c.moveTo(u(w.x - w.vx * 2.2), v(w.y - w.vy * 2.2)); c.lineTo(u(w.x), v(w.y)); c.stroke(); }
-        c.lineCap = 'butt';
+        if (this.water.length) {
+          const o = this.wBuf || (this.wBuf = document.createElement('canvas')); if (o.width !== c.canvas.width || o.height !== c.canvas.height) { o.width = c.canvas.width; o.height = c.canvas.height; }
+          const q = o.getContext('2d'), T = c.getTransform(); q.setTransform(1, 0, 0, 1, 0, 0); q.clearRect(0, 0, o.width, o.height); q.setTransform(T);
+          const blob = (w, k, dy) => { const sp = Math.hypot(w.vx, w.vy) || 1, L = (w.r * k + sp * 3.2) * S, R = w.r * k * S; q.save(); q.translate(u(w.x), v(w.y + dy)); q.rotate(Math.atan2(w.vy, w.vx)); q.beginPath(); q.ellipse(-L * .3, 0, L, R, 0, 0, 6.2832); q.fill(); q.restore(); };
+          // the body: every drop at full strength into one shape, so the slug reads as one mass of water
+          q.fillStyle = 'rgb(70,78,84)'; for (const w of this.water) if (w.a > .3) blob(w, 1, 0);
+          // a thin bright edge along its top, where the fire catches the water (the body inside stays clear)
+          q.globalCompositeOperation = 'source-atop'; q.fillStyle = 'rgb(250,226,190)'; for (const w of this.water) if (w.a > .3) blob(w, .9, -w.r * .75);
+          q.fillStyle = 'rgb(70,78,84)'; for (const w of this.water) if (w.a > .3) blob(w, .8, w.r * .1);
+          q.globalCompositeOperation = 'source-over';
+          c.save(); c.setTransform(1, 0, 0, 1, 0, 0); c.globalAlpha = .46; c.drawImage(o, 0, 0); c.restore();
+          // a few glints, bright and small, along the slug
+          c.save(); c.globalCompositeOperation = 'lighter'; c.lineCap = 'round';
+          for (let i = 0; i < this.water.length; i += 3) { const w = this.water[i]; if (!(w.a > .3 && w.r > 6)) continue; const sp = Math.hypot(w.vx, w.vy) || 1, ux = w.vx / sp, uy = w.vy / sp; c.strokeStyle = css([255, 228, 190], .32); c.lineWidth = Math.max(.8, 1.6 * S); c.beginPath(); c.moveTo(u(w.x - ux * w.r * 1.6), v(w.y - uy * w.r * 1.6 - w.r * .6)); c.lineTo(u(w.x + ux * w.r * .4), v(w.y + uy * w.r * .4 - w.r * .6)); c.stroke(); }
+          c.restore();
+        }
       },
       run() { talk([[I, 'This fire is the work of grace in the heart. He who casts water on it is the Devil. Come, and see why it burns on.'], [TIP, 'Touch to go round the back of the wall.', 'round']], () => {}); },
       act() { if (G.act === 'round' && D4) { this.go = true; G.ring = null; } },
@@ -272,8 +285,13 @@
             if (L) { const k = CASTV.s / .8, lx = WK.CX + (2 * L[0] - CASTV.ax) * k, ly = this.FY + WK.FEET + WK.CDN + (2 * L[1] - CASTV.g) * k;
               // aimed so it falls into the hearth's opening (a throw under gravity .16 from the lip to just above the fire)
               const [tx, ty] = FXS();
-              for (let i = 0; i < 3; i++) { const vy = -1.6 + rnd() * 1.2, dy = ty - 150 + rnd() * 40 - ly, t = (-vy + Math.sqrt(vy * vy + .32 * Math.max(0, dy))) / .16;
-                this.water.push({ x: lx + rnd() * 12, y: ly + rnd() * 10, vx: (tx - 10 + rnd() * 40 - lx) / t, vy, a: 1 }); } }
+              // a big sloshing slug of water (owner, build 580: "a large sloshy gloosh of water"): many fat drops close together on one arc,
+              // the front of the slug first, its tail thinning; a slosh as it leaves the bucket
+              const fi = Math.floor(this.cf4), q = (fi - 19) / 5;
+              if (fi === 19 && !this.sl) { this.sl = true; if (typeof sfxPlay === 'function' && typeof audio === 'function' && audio()) sfxPlay('bog-heave', 2, .55); }
+              for (let i = 0; i < 9 - 5 * q; i++) { const vy = -1.9 + rnd() * .9, dy = ty - 170 + rnd() * 50 - ly, t = (-vy + Math.sqrt(vy * vy + .32 * Math.max(0, dy))) / .16;
+                this.water.push({ x: lx + (rnd() - .5) * 26, y: ly + (rnd() - .5) * 22, vx: (tx - 20 + rnd() * 50 - lx) / t, vy, r: (13 - 7 * q) * (.6 + .6 * rnd()), a: 1 }); } }
+            else this.sl = false;
           } else {
             this.cast += 1 / 70; if (this.cast >= 3.2) { this.cast = 0; this.hit = false; }
             if (this.cast > .3 && this.cast < .62) for (let i = 0; i < 3; i++) this.water.push({ x: WK.LIP[0] + rnd() * 14, y: WK.LIP[1] + rnd() * 10, vx: 2.6 + rnd() * .6, vy: 3.4 + rnd() * 1.4, a: 1 });
@@ -282,10 +300,11 @@
           for (const w of this.water) {
             w.vy += .16; w.x += w.vx; w.y += w.vy;
             if (w.x > FXS()[0] - 60 && w.y > FXS()[1] - 170 && w.a === 1) {
-              w.a = .99; if (!this.hit) { this.hit = true; this.dip = 1; noise(3000, 1, .6, .05); noise(500, 2, .5, .04); }
+              w.a = .99; if (!this.hit) { this.hit = true; this.dip = 1; noise(3000, 1, .6, .05); noise(500, 2, .5, .04); if (typeof sfxPlay === 'function' && typeof audio === 'function' && audio()) sfxPlay('bog-plop', 3, .7); }
+              if (w.r > 6 && rnd() < .5) for (let k = 0; k < 2; k++) this.water.push({ x: w.x, y: w.y, vx: (rnd() - .7) * 2.4, vy: -2.2 - rnd() * 2.4, r: 2 + rnd() * 3, a: .98, sp: 1 });
               this.wet = Math.min(1, this.wet + .01); if (rnd() < .2) this.steam.push({ x: w.x + (rnd() - .5) * 60, y: w.y, vx: (rnd() - .5) * .8, vy: -1.6 - rnd() * 1.2, a: .5, s: 10 + rnd() * 14 });
             }
-            if (w.a < 1) w.a *= .7;
+            if (w.a < 1) w.a *= w.sp ? .93 : .74;
           }
           this.water = this.water.filter(w => w.a > .05 && w.y < this.FY + WK.FEET);
           if (this.dip > 0) { this.dip = Math.max(0, this.dip - .02); if (this.dip < .5) this.grow = Math.min(1, this.grow + .004); }
