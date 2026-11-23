@@ -184,7 +184,7 @@ body.portrait:not(.playing) #rot{display:none}
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
   <button id="autoWalk" aria-label="He walks on by himself"><svg viewBox="0 0 24 24"><path d="M5 6l6 6-6 6M12 6l6 6-6 6"/></svg></button>
-  <div id="build">build 590 · Nov 23 2026</div>
+  <div id="build">build 591 · Nov 23 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -972,14 +972,19 @@ function stepOn(surf, v = 1, heavy = 0) {
   if (!sfxPlay('step-' + surf, STEP_N[surf], STEP_VOL * v)) { sfx.step(false, heavy || .8); return; }
   if (heavy > 0) { hiss(170, 9, .035 * heavy, .16, 'bandpass', .05); sweep(74, 62, .22, .018 * heavy, false, .04); }      // the burden's creak
 }
+// build 591 (owner: "can you make sloshing sounds quieter"): every recorded sound of the bog (wading squelches, heaves, plops,
+// sucks, the lift, the bubble bed) at BOG_K of its old loudness; the two falls into the bog are unchanged
+const BOG_K = .45;
 function sfxPlay(prefix, n, v = 1, when = 0) {
   if (!audio()) return false;
+  if (prefix.startsWith('bog-') && !prefix.startsWith('bog-fall')) v *= BOG_K;
   let i = Math.random() * n | 0; if (n > 1 && i === sfxLast[prefix]) i = (i + 1) % n; sfxLast[prefix] = i;
   const b = SFXB[n > 1 ? prefix + '-' + i : prefix];
   if (!b) return false;
   fxPlay(b, when, v * (.85 + Math.random() * .3), .25); return true;
 }
 function sfxLoop(name, v) {
+  if (name.startsWith('bog-')) v *= BOG_K;
   if (!AC || !SFXB[name]) return;
   let L = SFXL[name];
   if (!L) { const s = AC.createBufferSource(), g = AC.createGain(); s.buffer = SFXB[name]; s.loop = true; g.gain.value = 0; s.connect(g); g.connect(OUT); s.start(); L = SFXL[name] = { g }; }
