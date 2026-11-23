@@ -1,0 +1,148 @@
+# 6. The Pilgrim's Progress around the world, and in the 20th and 21st centuries
+
+Researcher 6 of 12, art deep dive. Written after reading `vision/1-how-artists-drew-it.md` (the English illustrated tradition, Martin, Blake, the Moving Panorama, Thrupp's doors, Kempe's window, Dangerous Journey, Sutphin, Moser) and `vision/2-films-stage-games.md` (films, the 2019 CGI film, the opera, board games, Alcott's cellar-to-roof game, Hawthorne, Lewis). Nothing here repeats them except where a new fact is added.
+
+Marks: **[V]** checked today (a source that said it, or a Commons file whose page and licence I read through the API); **[S]** seen only in a search-engine summary of a source I could not open (this session's network blocks most sites, so most scholarly pages were read only as summaries); **[M]** from memory, not checked; treat as a lead.
+
+Network note for whoever follows: in this session only Wikimedia hosts are reachable; `hangeul.go.kr`, `seoul.co.kr`, `archive.org`, Japanese repositories and the Bloomsbury figure PDF were all blocked. Commons itself answered 429 for long stretches (twelve researchers sharing it).
+
+---
+
+## 1. Why this tradition matters for the game
+
+The book has been translated into some 200 languages, about 80 of them African [S: Hofmeyr, *The Portable Bunyan*, Princeton 2004, publisher summary and reviews; https://press.princeton.edu/books/paperback/9780691116563/the-portable-bunyan]. In most of those places it did not travel as a bare text. Missions sent it with pictures, magic-lantern slides and postcards (Hofmeyr's "visual evangelism") [S: review summaries of Hofmeyr; her chapter 8 is "Illustrating Bunyan", pp. 173-190, https://www.degruyterbrill.com/document/doi/10.1515/9780691188447-013/html]. Again and again the pictures were **redrawn in the reader's own world**: the pilgrim got a Korean gat and straw sandals, a Chinese robe drawn in the line of Ming and Qing novel prints, an African landscape. The text was not changed for this. That is the main lesson of this report: **the allegory survives any costume, and children in each place met it in their own landscape.** It also tells us what is *essential* in the pictures, because it is what every culture kept: the burden on the back, the road, the gate, the far city, the river.
+
+A 2025 scholarly volume now gathers this whole field: **Angelica Duran and Katherine Calloway (eds.), *Global Bunyan and Visual Art*** (Bloomsbury Academic, 2025; 16 chapters; "shieldry, stained glass, and Marvel comics") [V that it exists and its scope: https://www.purdue.edu/uns/PurdueToday/archive/2025/10-October/251016PurdueToday.htm ; Amazon listing with contributors https://www.amazon.com/Global-Bunyan-Visual-Angelica-Duran/dp/1666960810]. Chapters found by title: Katsuhiro Engetsu, "The Japanese Iconography of the Inquisitive Reader in *The Pilgrim's Progress*"; Nathalie Collé, "Navigating the Visual Afterlives ..."; Andy Draycott, "The ABC of *The Pilgrim's Progress* Cover Art"; Katie Calloway, "Bunyan in the Bible Belt"; Vera J. Camden on the painter Thomas Hennell [S: https://johnbunyansociety.org/committees/plenary-speakers/]. Contributors also include Mario Murgia and Ana Elena González-Treviño (Mexico) and Jerry Hunter (Welsh) [V, contributor list]. Its figures are online as a PDF (https://res.cloudinary.com/bloomsbury-online-resources/image/upload/v1752854017/GBVA-WebFigures2025feb28_xv8ozp.pdf), which I could not open here; **the single best next read for this topic.**
+
+---
+
+## 2. Korea, 1895: Gim Jun-geun's 42 pictures (the best case of all)
+
+**What it is.** *Tyŏllo yŏktyŏng* (텬로력뎡, modern 천로역정), the first Western novel translated whole into Korean (hangeul), by the Canadian missionary **James Scarth Gale** (with his wife's help in some accounts), printed 1895 (some sources 1894) [V: Commons file of the cover, "Pilgrim Progress in Korean, James S Gale (1895년 간행).jpg", public domain; S: National Hangeul Museum, https://www.hangeul.go.kr/lang/en/html/traceHangeul/traceHangeul249.do]. Its **42 woodblock illustrations** are by **Gisan Gim Jun-geun (기산 김준근)**, the late-Joseon genre painter famous for scenes of everyday Korean life sold to foreigners at the treaty ports [S: Kukmin Daily, http://www.kukmindaily.co.kr/article/view.asp?arcid=0012128685 ; Korean Heritage, http://www.koreanheritage.kr/photo/view.jsp?articleNo=73]. The edition has been registered as a Korean cultural property and is regarded as the beginning of Korean Protestant art [S: Cupnews, http://www.cupnews.kr/news/articleView.html?idxno=7748]. A Commons photo shows one of the original woodblocks (`천로역정 목판.jpg`, CC BY-SA 4.0) [V]. Facsimile reprint: CH Books, *천로역정 (조선시대 삽화수록 에디션)* [S]. Studies: Shin Seon-young, "김준근필『텬로력뎡』삽화 연구", *동양학* 47 (2010); a Sungkyunkwan doctoral thesis (2013); the Soongsil University Korean Christian Museum's catalogue of the plates (2009) [S: https://www.kci.go.kr/kciportal/ci/sereArticleSearch/ciSereArtiView.kci?sereArticleSearchBean.artiId=ART001421148 ; https://www.earticle.net/Article/A175627].
+
+**How it was made.** Gale gave Gim an English illustrated edition to work from: Robert Maguire's annotated edition (Cassell, 1860s), whose pictures are by **H. C. Selous and M. Paolo Priolo** (the heavy Cassell engravings vision/1 describes) [S: Christian Today Korea, https://www.christiantoday.co.kr/news/361950 ; Soongsil student paper, http://www.ssunews.net/news/articleView.html?idxno=4153]. So the Korean pictures are **translations of the Cassell compositions into Korean genre painting**: the same moments, re-dressed and re-drawn.
+
+**What changed** [S unless marked]:
+- **Christian** is a Korean man in a *gat* (the black horsehair hat) and *dopo* robe, a *botjim* (a cloth bundle tied on his back) for the burden, straw sandals (*jipsin*). The Selous figures in toga-like robes became *yangban* scholars and commoners.
+- **Angels / Shining Ones** are drawn as *seonnyeo*, the fairy maidens of Korean tales, in Korean dress (the National Hangeul Museum: "the angels look like traditional Korean fairies").
+- **Apollyon.** Gale's text renders his wings "like a dragon" (*yong*); a blogger reading the plate notes how the East Asian dragon (sacred) and the Western dragon (monster) are blurred by this [S, a personal blog via search summary, http://bhang813.egloos.com/9952161: weak]. In the surviving copy described there the face of Apollyon is damaged.
+- **Composition.** Gim wrote each picture's title in the empty space above it, in the manner of Korean literati painting [S]. His genre style is spare: figures in clear line, little or no background, a lot of empty paper [M from his other genre albums].
+- Scholars read it as "indigenization" (토착화): the foreign faith carried into Korean visual life, and also as a mirror of how Westerners pictured Korea [S: earticle A175627].
+
+**What it teaches the game.** (1) The figures survive being translated wholesale; only the burden-on-the-back and the road were never changed. (2) Genre painting's **empty ground** carries the story perfectly well: one or two figures in a sea of plain paper, the title written in the space. This is close to the game's own "few things, much empty space". (3) The angels as **female fairy figures of light** is an answer to "how do you draw a Shining One for a child": borrow the figure that culture already uses for heavenly beings, not armour or wings.
+
+---
+
+## 3. China: Burns, the Cantonese picture edition, and the Taiping
+
+**Texts.** William Chalmers Burns's classical-Chinese translation (*Tianlu licheng*, Xiamen, 1853), then his Mandarin version (*Tianlu licheng guanhua*, Shanghai, 1869), then a **Cantonese vernacular edition with pictures**, *Tianlu licheng tuhua* (天路歷程土話), Canton (Yangcheng, Huishi Litang), 1870-71: Part I in 5 *juan* with **29 illustrations**, Part II in 6 *juan* with **26** [S: Zurich *China and the West* database; AbeBooks dealer description; Morgan Library record https://www.themorgan.org/printed-books/174866]. Harvard's scans of the 1856 Hong Kong, 1869 Shanghai and 1870-71 Canton editions are on Commons as public-domain PDFs [V, list in section 10]. Illustrated Chinese editions were printed from the 1850s in Hong Kong, Shanghai and Fuzhou, and **Hong Xiuquan, leader of the Taiping, called it his favourite book** [S, dealer's note; the Taiping link is widely repeated, M].
+
+**Style.** The illustrations were made by **Chinese painters employed by the missionaries** (names unknown) and follow the *xiuxiang* (繡像) model, the line portraits and scenes of Ming and Qing illustrated novels, printed on *xuan* paper [S: "Memories of the Gate", *Religions* 10 (2019) 357, https://doi.org/10.3390/rel10060357; Guangdong novel-illustration study, https://www.mdpi.com/2077-1444/17/1/108]. A Dartmouth exhibition described them as showing "the pilgrim with Chinese features, costumes and settings" [S: https://www.dartmouth.edu/library/rauner/exhibits/inspired-editions-bunyan.html]. Scholarship: Yao Dadui (姚達兌) on the illustrations and the "indigenization of Christianity in late Qing novels" (Brill), arguing the illustrators drew on "repertoires of Chinese religious signs" [S: Boston College Ricci record, https://web.bc.edu/ricci/indexSubject.php?id=19652]; Chen Pingyuan on the narrative role of the pictures [S]. The 1853 edition is said to open on the **Wicket Gate** picture, not on the man reading [S: "Memories of the Gate"].
+
+What exactly was done to Apollyon, the Interpreter or the Celestial City in the Canton plates I could not check (the scans are on Commons but the server refused downloads for most of today). [M: Hofmeyr reproduces some; I recall a Christian with a queue and a scholar's robe, and a City drawn as a walled Chinese palace gate with tiled roofs.] **Look at the Harvard Canton PDF before relying on this.**
+
+**What it teaches.** The *xiuxiang* novel print is line, flat colour-free figures, landscape as a few stylised rocks and pines, architecture as a gate and a roof: the same economy as the game's silhouettes. And it shows the Gate (not the City) can be the emblem of the whole book: the Chinese tradition opened on it. That supports the game's rule that the wicket-gate is one of the great pictures.
+
+---
+
+## 4. Japan: from the 1876 serial to the inquisitive reader
+
+The first Japanese translation was serialised in 1876 in the Christian weekly *Shichi-ichi Zappō* (七一雑報) and published as a book in 1879, *Iyaku Tenro rekitei* (意訳天路歴程, Tokyo, Jūjiya), a Japanese-bound woodblock book (*wahon*, 173 leaves) [S: Waseda University Kotenseki database, https://www.wul.waseda.ac.jp/kotenseki/html/bunko11/bunko11_a1325/index.html ; NII abstract, https://cir.nii.ac.jp/crid/1050564287611021184]. The imprint names Satō Kihō as editor, but the real translator was probably Murakami Shunkichi [S]. W. J. White's 1893 translation (Tract Societies' Committee for Japan) is described as deliberately localising, "creating a very Japanese atmosphere" [S: Takano Michiyo, Yamanashi Prefectural University paper, https://www.yamanashi-ken.ac.jp/media/kgk2020004.pdf]. The same paper reportedly discusses which pictures each edition carried (some later editions borrowed Harold Copping's plates as frontispieces) [S, the summary was garbled]. Robert Lawson's 1939 pictures are the ones most Japanese children know today, in the Kirisuto Shinbun edition [S].
+
+I could **not** confirm the widely repeated idea of a Meiji edition "in ukiyo-e style with Christian as a samurai"; treat it as unverified. Waseda's scan of the 1879 book can be looked at online. Engetsu's chapter in *Global Bunyan and Visual Art* is about the **"inquisitive reader"**: the dreamer or the reader shown *looking* at the story, a recurring figure in Japanese pictures [S, title only]. That chimes with the game's own reader: the child with the book on the title page.
+
+---
+
+## 5. India: retold rather than redrawn
+
+The great Indian case is not a set of pictures but a poem: **H. A. Krishna Pillai's *Irațcaṇiya Yāttirikam* (இரட்சணிய யாத்திரிகம், "The Pilgrimage of Salvation"), Tamil, serialised over 13 years and published 1894**: not a translation but a re-making of Bunyan in classical Tamil verse, full of Tamil imagery, landscape and the conventions of Tamil epic [S: https://en.wikipedia.org/wiki/Henry_Alfred_Krishnapillai ; https://tamil.wiki/wiki/Ratchanya_Yathrigam]. It is still read in Tamil churches. The lesson is the same as Korea's from the other side: when a culture took the story to heart it put it into **its own highest art form**, not a missionary picture-book style. (Searches for an illustrated Indian edition with Christian in Indian dress found nothing; I would expect Christian Literature Society editions to exist [M].)
+
+---
+
+## 6. Africa: new landscapes, and the novels it made
+
+- **Xhosa**: Tiyo Soga's *uHambo lomhambi* (Part I, 1866-67; Part II by his son J. H. Soga, 1926), Lovedale Press; Hofmeyr calls it "perhaps the most influential translation of all". Lovedale's later editions are illustrated (1965: "181 pp., illustrations") [S: UW-Madison catalogue, https://search.library.wisc.edu/catalog/999763283502121]. Sesotho (Mabille, 1872), isiZulu (Colenso, 1883), Setswana (Moffat and Sandilands, 1909) followed [S].
+- **The first edition with African pictures**: an edition supervised by **David Carnegie of the London Missionary Society** "was the first to replace the book's illustrations with new images depicting African landscapes and African characters", illustrations by **C. Montague**; one plate may have inspired a scene in Thomas Mofolo's Sesotho novel *Moeti oa Bochabela* (*Traveller to the East*, 1907) [S: search summary of a scholarly article on Hofmeyr's chapter; the language (probably Sindebele, Carnegie worked at Hope Fountain, Matabeleland) and date are unverified, M].
+- Hofmeyr's argument, as summarised by others: pictures adapted to African settings "could subversively affirm local identity over against missionary racialization" [S: https://editions.covecollective.org/content/adventure-puritan-allegory-john-bunyans-pilgrims-progress]. The dark side of the same history: Bunyan's Flatterer is "a man black of flesh", and Andy Draycott (2025) traces how pictures of him and of white-robed Shining Ones carried a racial vision into the book's reception [S: "Still Standing ...", Cambridge Core, https://www.cambridge.org/core/journals/harvard-theological-review/article/abs/still-standing-a-spiritual-classic-monumental-racism-and-the-iconographic-reception-of-john-bunyans-the-pilgrims-progress/9DDCE156DDAC43774420CFD3D0015738].
+- **The novels it seeded**: Mofolo (Sesotho), D. O. Fagunwa's Yoruba forest novels (from 1938) and Amos Tutuola, whose wandering quests through forests of spirits are often read as Bunyan "Africanized" [S, Hofmeyr reviews]. Children's lesson: the journey through a forest of strange beings is universal; Fagunwa's forests are frightening but full of wit.
+- **Madagascar**: Christians under Queen Ranavalona I (1835 onward) are said to have read and copied Bunyan in secret; a Malagasy translation was made by LMS missionaries in the 1830s [M, not confirmed today].
+
+**For the game:** This is a strong argument for the owner's "timeless clothes" and "faces plain" rules. A plain-faced figure in worn, handmade, layered cloth belongs to no one nation; every child can be him. It is also a warning: **never let the dark-and-light of the picture map onto skin**. The game's rule that every figure has one tint, and that the Shining Ones are light rather than white-skinned people, is the right one; the Flatterer, when he comes (Level 15), should be a figure in a fine cloak with a pleasant voice, not a dark figure.
+
+---
+
+## 7. The Arabic world and others (brief)
+
+An Arabic translation by C. F. Schlienz was printed at **Malta in 1834** (a copy with many plates is digitised by Penn); the American Press at Beirut printed *Siyāḥat al-Masīḥī* ("The Christian's Journey") from the 1840s-70s on (editions 1873, 1889, 1921) [S: Penn catalogue; Open Library; Qatar National Library record https://ediscovery.qnl.qa/islandora/object/QNL:00021939]. I could not see the Malta plates. The Khasi edition of 1878 and Russian plates are on Commons (vision/1). Welsh (*Taith y Pererin*, from 1688) is the earliest translation of all [M].
+
+---
+
+## 8. The 20th and 21st centuries (beyond vision/1 and 2)
+
+**Murals: the most useful modern finds.**
+- **Hans Feibusch, the Pilgrim's Progress murals, St Elisabeth's, Eastbourne (1943-44).** A German-Jewish painter, refugee from the Nazis, painted the four walls of the lower chapel (about 130 feet, 23 m) **free, as a thank-offering for the refuge he had found in Britain**: the pilgrim's journey as his own. Local art students helped with the backgrounds. The church closed in 2003 and was demolished in 2021; the murals were taken down and are in storage awaiting restoration [S: Twentieth Century Society, https://c20society.org.uk/?p=9282 ; Biola, https://biola.edu/blogs/good-book-blog/2019/the-refugees-pilgrim-s-progress-from-war-and-terror ; Sussex Parish Churches]. Lesson: **the story read as a refugee's journey.** A long continuous painted wall, a side-scroll, again.
+- **Norman Adams RA, the Pilgrim's Progress wall paintings, St Anselm's, Kennington, London (1970-72).** **Abstract, not figurative**: long marouflaged panels on both walls of the nave that move **from dark to light**; red and purple bands that run side by side and then cross; on the other wall a more serene sequence "from Death through Transfiguration to Paradise"; death "a dark stain, a sleep, a shadow, a vacuum"; deeper panels at the sanctuary end mark the beginning and end [S: North Lambeth Parish, https://northlambethparish.org/norman-adams-murals ; Art and Christianity, https://www.artandchristianity.org/norman-adams-pilgrims-progress/ ; the RA holds his study for *The Land of Beulah*, 1971]. In 2023 a consistory court considered a scheme that would remove two panels [S]. **This is the closest thing in the whole tradition to the game's own method: the journey told by colour and light alone, dark to light along a long horizontal.** It proves that a whole book's progress can be read in a band of tone.
+- Elstow (Bunyan's village): the Bunyan Meeting there has a three-tier window of scenes from the book [S]; the Bedford Bunyan Meeting's windows still have no artist or list online (vision/1 could not find them either).
+
+**Comics and graphic novels.**
+- **Marvel / Thomas Nelson, *The Pilgrim's Progress* (1992-93)**, writer Martin Powell, art Seppo Makinen and Bob Downs; the first of Nelson's "Christian Classics" comics, **updated to the twentieth century** [S: https://comics.ha.com/itm/original-comic-art/story-page/seppo-makinen-and-bob-downs-pilgrim-s-progress-story-page-69-original-art-marvel-1992-/p/322621-18005.s ; Christianity Today 1993]. In copyright.
+- **Crossway, *Pilgrim's Progress: The Graphic Novel*** (adapted by Jeremy Patenaude, art by Brent McKee, a Kubert School comics artist; ages 6-12; announced for 2026), keeps condensed Bunyan language with "bold" comic art [S: https://crossway.org/pilgrimsprogress]. In copyright.
+- Lesson from both: the comic adaptations go loud (action panels, combat, modern dress). Nothing in them suits the owner's taste; they confirm the field's tendency to make it an action story, which the game rightly refuses (vision/2 found the same in video games).
+
+**Picture books for children.**
+- **Geraldine McCaughrean and Jason Cockcroft, *A Pilgrim's Progress*** (Hodder, 1999; Blue Peter Book Award): a retelling for about 9 to 11 with rich painted pictures [S: https://booksforkeeps.co.uk/article/classics-in-short-no-123-a-childs-introduction-to-the-pilgrims-progress/]. In copyright.
+- **Joe Sutphin's *Little Pilgrim's Progress*** (Moody, 2021; over 110 pictures): the villains are wolves, foxes, weasels and giant hares [S: https://storywarren.com/joe-sutphins-little-pilgrims-progress/]. Draycott's 2025 article uses it as a test case for race and monuments [S].
+- **Robert Lawson / Mary Godolphin** (1939) is still in print in Japanese (*天路歴程 天の都を目ざして*, Kirisuto Shinbunsha) [S]: Lawson's homely pen line has crossed cultures where the Victorian engravings did not.
+
+**American 19th-century reading (beyond Alcott):** Huck Finn finds it on the Grangerfords' table: "about a man that left his family, it didn't say why. I read considerable in it now and then. The statements was interesting, but tough" (*Huckleberry Finn*, ch. 17) [V: Gutenberg #76]. The child's-eye objection in one line: **why did he leave his family?** The game answers it (build 397, "the why put back") and should keep answering it.
+
+**Other modern artists**: Thomas Hennell (English watercolourist, 1903-45), the subject of Vera Camden's chapter "Hennell's Puritan Progress and the Portrait of the Artist as Bunyan" [S, title only]; Andrew Lui's painting series *Pilgrim Progress* (2014) [S]. The 2019 CGI film (vision/2) is being re-voiced in 20 and more languages for missions (Mandarin, Spanish, Farsi first) [S: https://gospelmusic.org/news/the-pilgrims-progress-comes-to-theaters-easter-2019]: the modern equivalent of the missionary editions, but this time the pictures stay the same everywhere and only the voice changes.
+
+---
+
+## 9. What the world's versions teach about making it universal and child-friendly
+
+1. **Keep the four constants every culture kept, change everything else.** The bundle on the back, the road, the gate, the far light/city. Korea changed hats, faces, angels and landscape; China changed the whole picture language; Africa changed the land; none removed the burden or the gate. The game's plain-faced figure in timeless cloth is already the universal version.
+2. **Draw in the culture's own highest picture language, not a missionary's copy of a European one.** Gim (genre painting), the Canton *xiuxiang* prints, Krishna Pillai's Tamil epic, Adams's abstraction are all strong because each is a master form of its own place. The game's equivalent: its own language (layered silhouettes, one tone per layer, one light) plus one master per level, never a pastiche.
+3. **Empty ground is universal.** Korean genre painting and Chinese novel prints set two figures on bare paper; the eye fills the rest. Children of 7 to 10 read that easily.
+4. **Heavenly beings are borrowed from what a culture already loves**: seonnyeo, immortals, Victorian angels. The game's "figures of light" are the culture-free version; keep them faceless, sexless, robe-shaped light.
+5. **Show the journey as one continuous band from dark to light.** The panorama, Feibusch's four walls and Adams's abstract nave all did; the game's whole contents could too.
+6. **Answer Huck's question.** Children ask why he left. Every good children's version answers it early and kindly.
+7. **Beware of tone mapping onto people.** Light and dark are spiritual in the book; in pictures they have been read onto skin. One tint for everyone, light only for light.
+
+---
+
+## 10. Concrete ideas for the game
+
+1. **A "seal of each place" title card per level, after Gim Jun-geun:** each level's end card or contents line could carry its name written in the empty sky above a tiny figure, as Gim wrote his titles above his pictures. Costs nothing; fits "one special thing".
+2. **The Shining Ones (Level 5, later the River)**: keep them light-figures, but give them the *seonnyeo*'s long trailing sleeves and sashes in the soft light (a drawn ribbon that drifts after the figure), so they read as gracious and gentle rather than as ghosts. A small change to `shineFig()`.
+3. **A "dark to light" ribbon of the whole journey (after Norman Adams):** on the contents page or as the reward after Level 5, a long horizontal band in each level's two or three key tones, from Level 1's grey rain to Level 5's dawn gold, red and purple threads (the run, the fire, the burden) running beside each other and crossing; the pointing hand at the child's place. A wordless map, more beautiful than an inked road map, and no score.
+4. **Apollyon (Level 8) as a dragon-shadow, after the Korean plate's blur of dragon and monster**: a long winged shape glimpsed in the clouds, never a face; Gale's own word for his wings, "like a dragon", is a child-friendly way in.
+5. **The gate as the book's emblem (after the Chinese 1853 edition):** the app icon or the contents' frontispiece could be the wicket-gate with its light, not the burden; already the strongest picture in Level 3.
+6. **Clothes**: hold to the timeless-cloth rule and make sure no figure reads as one nation; the post-apocalyptic 2200 version (if ever made) is the same move the missions made: re-dress the pilgrim for the reader's world, keep the bundle.
+7. **The Flatterer and Vanity Fair (later levels)**: decide now that no villain is marked by darker tone of skin; fine cloth, a smile, a net of light.
+8. **Huck's question in Level 1**: keep "His family would not believe him" and "I must find the way, for all of us": the line that answers the child.
+9. **Consider a second voice track** (later, cheap, nothing to redraw): the 2019 film's mission plan shows how far one set of pictures can travel with new voices. The game's words are already short and plain; a Spanish or Korean storyteller would cost about a cent a line.
+
+---
+
+## 11. Images for the taste-picker
+
+Verified today on Commons through the API (file page, URL and licence read). All public domain unless stated. PDF pages can be shown with Commons' page thumbnails (`/thumb/.../pageN-800px-<name>.jpg`).
+
+IMAGE_LIST_PLACEHOLDER
+
+**Copyrighted modern works (names and a page only):**
+- Alan Parry, *Dangerous Journey* (1985): https://christianhistoryinstitute.org/store/dvd/500777d/dangerous-journey
+- Joe Sutphin, *Little Pilgrim's Progress* (2021): https://storywarren.com/joe-sutphins-little-pilgrims-progress/
+- Jason Cockcroft (with Geraldine McCaughrean), *A Pilgrim's Progress* (1999): https://booksforkeeps.co.uk/article/classics-in-short-no-123-a-childs-introduction-to-the-pilgrims-progress/
+- Norman Adams, St Anselm's Kennington wall paintings (1970-72): https://northlambethparish.org/norman-adams-murals
+- Hans Feibusch, Eastbourne murals (1943-44): https://c20society.org.uk/?p=9282
+- Seppo Makinen and Bob Downs, Marvel *Pilgrim's Progress* (1992): https://comics.ha.com/itm/original-comic-art/story-page/seppo-makinen-and-bob-downs-pilgrim-s-progress-story-page-69-original-art-marvel-1992-/p/322621-18005.s
+- Brent McKee, *Pilgrim's Progress: The Graphic Novel* (Crossway): https://crossway.org/pilgrimsprogress
+- Gim Jun-geun's 42 plates in modern facsimile (CH Books): the 1895 originals are public domain; see the Korean PDF below.
+- *Global Bunyan and Visual Art* figures: https://res.cloudinary.com/bloomsbury-online-resources/image/upload/v1752854017/GBVA-WebFigures2025feb28_xv8ozp.pdf
+
+## Sources (main)
+
+Hofmeyr, *The Portable Bunyan* (Princeton, 2004), esp. ch. 8 "Illustrating Bunyan"; Duran and Calloway (eds.), *Global Bunyan and Visual Art* (Bloomsbury, 2025); Draycott, "Still Standing" (Cambridge Core, 2025); "Memories of the Gate", *Religions* 10 (2019) 357; Shin Seon-young, *동양학* 47 (2010); National Hangeul Museum; Kukmin Daily; Christian Today Korea; Waseda Kotenseki; Takano (Yamanashi Prefectural University); Twentieth Century Society; North Lambeth Parish; Crossway; Heritage Auctions; Books for Keeps; Story Warren; Twain, *Huckleberry Finn* ch. 17. URLs are given in place above.
