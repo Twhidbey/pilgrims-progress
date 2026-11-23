@@ -20,7 +20,7 @@ const CR = (() => {
   // NEW HILL SHAPES TO TRY (owner: "we need new versions of the hill - can you [look] at how golgotha has been depicted in
   // art"): ?shape=dome (Bruegel's far round hill), plinth (Mantegna's flat-topped rock in hewn steps), wedge (Friedrich's
   // dark triangle), shoulder (a small rock knob on a grassy shoulder, the tomb in the rock band below); none = the skull
-  const SHAPE = (new URLSearchParams(location.search).get('shape') || 'skullsteps').toLowerCase();
+  const SHAPE = (new URLSearchParams(location.search).get('shape') || 'k5').toLowerCase();
   const SHAPES = {
     skull: { tomb: .7, P: null },
     dome: { tomb: 1.02, P: [[0, 1], [.2, .97], [.4, .88], [.6, .72], [.78, .52], [.92, .34], [1.02, .2], [1.1, .1], [1.17, .04], [1.24, 0], [1.3, 0]] },
@@ -45,6 +45,10 @@ const CR = (() => {
     k2: { tomb: .7, P: [[0, 1], [.15, .99], [.3, .96], [.43, .9], [.54, .81], [.62, .71], [.67, .62], [.7, .55], [.69, .51], [.675, .49], [.7, .45], [.72, .415], [.695, .4], [.685, .37], [.71, .355], [.72, .32], [.725, .285], [.721, .272], [.728, .262], [.72, .25], [.74, .2], [.77, .17], [.82, .12], [.87, .06], [.93, .02], [.99, 0], [1.06, 0]] },
     k3: { tomb: .38, P: [[0, 1], [.15, .99], [.3, .96], [.43, .9], [.54, .81], [.62, .71], [.67, .62], [.7, .55], [.69, .51], [.675, .49], [.7, .45], [.72, .415], [.695, .4], [.685, .37], [.71, .355], [.72, .32], [.725, .285], [.721, .272], [.728, .262], [.72, .25], [.73, .24], [.724, .23], [.73, .22], [.72, .2], [.735, .16], [.72, .13], [.69, .12], [.55, .125], [.47, .13], [.45, .09], [.47, .04], [.52, 0], [.6, 0]] },
     k4: { tomb: .4, P: [[0, 1], [.15, .99], [.3, .96], [.43, .9], [.54, .81], [.62, .71], [.67, .62], [.68, .6], [.72, .5], [.71, .46], [.695, .44], [.72, .4], [.745, .36], [.715, .34], [.7, .3], [.73, .28], [.745, .23], [.75, .18], [.745, .15], [.752, .12], [.742, .09], [.75, .06], [.73, .04], [.66, .035], [.6, .06], [.53, .05], [.5, .02], [.52, 0], [.6, 0]] },
+    // (owner, build 562: "just the upper part of the skull, the eye sockets and nose and then end with top teeth on
+    // ground"): no lower jaw; the braincase, brow, the notch at the root of the nose, the short nasal bone, the deep
+    // nose hole, the upper jaw and its teeth resting on the ground; the eye socket a dark hollow in the rock (`ORBIT`)
+    k5: { tomb: .4, orbit: [.585, .47, .078, .066], P: [[0, 1], [.15, .99], [.3, .955], [.42, .89], [.52, .8], [.6, .7], [.65, .62], [.68, .56], [.675, .53], [.66, .51], [.685, .46], [.705, .41], [.685, .39], [.67, .35], [.665, .31], [.69, .29], [.705, .24], [.715, .19], [.72, .15], [.713, .135], [.721, .12], [.714, .105], [.722, .09], [.715, .075], [.722, .06], [.715, .045], [.72, .03], [.71, .012], [.7, 0], [.8, 0]] },
     shoulder: { tomb: .74, P: [[0, 1], [.12, .97], [.2, .9], [.235, .79], [.27, .7], [.33, .64], [.5, .6], [.62, .57], [.655, .47], [.675, .34], [.7, .27], [.76, .2], [.84, .12], [.92, .05], [.98, 0], [1.05, 0]] },
   };
   const SH0 = SHAPES[SHAPE] || SHAPES.skull;
@@ -496,6 +500,13 @@ const CR = (() => {
         const f = x => { const along = x <= SK_X ? gh(x) - d : SH_ - d + 2 * (x - SK_X); return seam(along, hk, k) + 3 * Math.sin(x * .013 + n * 2) + spur(x, n, 14, 90); };
         const P = span(f, xs, Math.max(SK_END, ...SKO.map(p => p[0])) + 40, 8).filter(([x, h]) => h > -40);
         if (P.length > 2) band(P, .085 + .01 * n, .06 - .006 * n); });
+      // the eye socket: a shallow dark hollow in the rock behind the brow, its upper rim in shadow, its lower rim
+      // catching a faint light, its edge a little rough
+      if (SH0.orbit) { const [ou, ov, rx, ry] = SH0.orbit, ox = SK_X + ou * SK_H, oy = -ov * SK_H, RX = rx * SK_H, RY = ry * SK_H;
+        const rim = (k2, grow) => { q.beginPath(); for (let i = 0; i <= 40; i++) { const a = i / 40 * Math.PI * 2, r = 1 + .06 * Math.sin(a * 5 + 1) + .04 * Math.sin(a * 11) + grow, cs = Math.cos(a), sn = Math.sin(a), sq = Math.pow(Math.pow(Math.abs(cs), 3.2) + Math.pow(Math.abs(sn), 3.2), -1 / 3.2); const X = ox + cs * sq * RX * r, Y = oy + sn * sq * RY * r; i ? q.lineTo(X, Y) : q.moveTo(X, Y); } q.closePath(); };
+        for (const [gr, a] of [[.35, .04], [.18, .07], [0, .13]]) { rim(0, gr); q.fillStyle = css([0, 0, 0], a); q.fill(); }
+        q.save(); rim(0, 0); q.clip(); const g = q.createRadialGradient(ox, oy - RY * .35, RX * .1, ox, oy, RX * 1.1); g.addColorStop(0, css([0, 0, 0], .3)); g.addColorStop(1, css([0, 0, 0], .06)); q.fillStyle = g; q.fillRect(ox - RX * 1.3, oy - RY * 1.3, RX * 2.6, RY * 2.6); q.restore();
+        l.strokeStyle = css([255, 255, 255], .08); l.lineWidth = 2; l.beginPath(); for (let i = 4; i <= 16; i++) { const a = i / 20 * Math.PI, X = ox + Math.cos(a) * RX * 1.02, Y = oy + Math.sin(a) * RY * 1.02; i > 4 ? l.lineTo(X, Y) : l.moveTo(X, Y); } l.stroke(); }
     } else if (K === 'b') {
       // B: tilted bedding: long rock shelves running down from the upper left across the whole hill to the lower right
       for (let n = 0; n < 7; n++) { const o = 980 - n * 150; band(span(x => o - .28 * (x - SLOPE0) + spur(x, n, 70, 160)), .075); }
