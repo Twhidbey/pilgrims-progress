@@ -28,7 +28,7 @@ const CR = (() => {
     wedge: { tomb: .55, P: [[0, 1], [.06, .95], [.16, .82], [.27, .66], [.37, .5], [.46, .35], [.54, .23], [.62, .13], [.7, .06], [.77, .02], [.82, 0], [.9, 0]] },
     // the skull (the owner's favourite) borrowing from the others below its brow
     // (owner, build 559: "not quite that flat, maybe halfway in between what was and what is")
-    skullsteps: { tomb: 1.005, P: [[0, 1], [.13, .996], [.26, .988], [.38, .975], [.47, .958], [0.545, 0.93], [0.625, 0.85], [0.675, 0.75], [0.7, 0.66], [0.69, 0.6], [0.71, 0.555], [0.745, 0.48], [0.785, 0.4], [0.825, 0.39], [0.845, 0.3], [0.925, 0.29], [0.945, 0.18], [1.045, 0.17], [1.065, 0.05], [1.125, 0.03], [1.175, 0], [1.245, 0]] },
+    skullsteps: { tomb: 1.005, P: [[0, 1], [.13, 1], [.26, .998], [.38, .995], [.47, .988], [0.545, 0.962], [0.625, 0.85], [0.675, 0.75], [0.7, 0.66], [0.69, 0.6], [0.71, 0.555], [0.745, 0.48], [0.785, 0.4], [0.825, 0.39], [0.845, 0.3], [0.925, 0.29], [0.945, 0.18], [1.045, 0.17], [1.065, 0.05], [1.125, 0.03], [1.175, 0], [1.245, 0]] },
     skullsoft: { tomb: .8, P: [[0, 1], [.2, .98], [.32, .93], [.4, .85], [.45, .75], [.475, .66], [.465, .6], [.485, .555], [.52, .48], [.6, .38], [.7, .28], [.8, .19], [.9, .11], [1, .05], [1.08, 0], [1.15, 0]] },
     skullwedge: { tomb: .66, P: [[0, 1], [.2, .98], [.32, .93], [.4, .85], [.45, .75], [.475, .66], [.465, .6], [.485, .555], [.52, .49], [.56, .4], [.62, .3], [.68, .21], [.74, .13], [.8, .06], [.86, .02], [.9, 0], [.97, 0]] },
     skullledge: { tomb: .78, P: [[0, 1], [.2, .98], [.32, .93], [.4, .85], [.45, .75], [.475, .66], [.465, .6], [.485, .555], [.55, .52], [.68, .5], [.72, .42], [.74, .3], [.78, .24], [.86, .15], [.92, .08], [.98, .03], [1.04, 0], [1.1, 0]] },
@@ -74,12 +74,12 @@ const CR = (() => {
   const STOP_X = CROSS_X - 300;
   const WALK_X = STOP_X - 380;
   const sm = (a, b, x) => smooth(a, b, x);
-  function dome(x) { const u = (x - SK_X) / (x < SK_X ? SK_L : SK_R); if (Math.abs(u) >= 1) return 0; return SK_H * Math.pow(1 - u * u, x < SK_X ? 1.1 : .55); }
+  function dome(x) { const u = (x - SK_X) / (x < SK_X ? SK_L : SK_R); if (Math.abs(u) >= 1) return 0; return x < SK_X ? SK_H * Math.pow(1 - u * u * u * u, 1.1) : SK_H * Math.pow(1 - u * u, .55); }
   function gh(x) {
     // the ramp: a smooth swoop (concave, steepening a little as it climbs) that runs up into the skull's crown with the
     // dome's own slope where they meet, so there is no notch; past the crown, the skull's round dome falling to the plain
     let h;
-    if (x <= RAMP1) { const u = clamp((x - SLOPE0) / (RAMP1 - SLOPE0)), m0 = .15, m1 = .82, u2 = u * u, u3 = u2 * u;
+    if (x <= RAMP1) { const u = clamp((x - SLOPE0) / (RAMP1 - SLOPE0)), m0 = .15, m1 = .38, u2 = u * u, u3 = u2 * u;
       h = dome(RAMP1) * ((u3 - 2 * u2 + u) * m0 + (-2 * u3 + 3 * u2) + (u3 - u2) * m1);
       h += (3 * Math.sin(x * .011) + 1.6 * Math.sin(x * .031 + 1)) * sm(SLOPE0, SLOPE0 + 300, x) * (1 - sm(RAMP1 - 400, RAMP1, x)); }
     else h = x <= SK_X ? dome(x) : skTop(x);
