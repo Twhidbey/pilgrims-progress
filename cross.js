@@ -1240,7 +1240,7 @@ const CR = (() => {
   const REL = [
     { img: 'mem-village', R: 722, k: REL_K, x0: 1200, on: [1260, 2230], up: [250, 440], below: 60, glow: .1, dark: .45 },
     { img: 'mem-slough', R: 776, k: REL_K * 1.3, x0: 1950, on: [2250, 3010], up: [350, 560], below: 80, glow: .07, dark: .5, lift: u => 74 * smooth(120, 420, u) * (1 - smooth(600, 820, u)) },
-    { img: 'mem-hill', R: 926, k: REL_K, x0: 2900, on: [3050, 3900], up: [400, 590], below: 60, glow: .2, dark: .8 },
+    { img: 'mem-hill-mono', R: 926, k: REL_K, x0: 2900, on: [3050, 3900], up: [400, 590], below: 60, glow: .2, dark: .8 },
   ];
   REL.forEach((m, i) => { m.a = 0; m.said = false; m.line = RELINES[i]; });
   function relBake(m) {
