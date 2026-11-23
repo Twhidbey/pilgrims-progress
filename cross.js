@@ -286,7 +286,7 @@ const CR = (() => {
     return 0;
   }
   const tintNow = () => {
-    const pre = [58, 58, 72], dw = [70, 62, 66], gd = [96, 78, 64], robeC = [150, 128, 100];
+    const pre = LOOKR ? [56, 48, 50] : [58, 58, 72], dw = LOOKR ? [66, 52, 48] : [70, 62, 66], gd = LOOKR ? [78, 58, 48] : [96, 78, 64], robeC = [150, 128, 100];
     let c = mix(pre, dw, dawn); c = mix(c, gd, gold);
     // in a memory he runs through he is a darker figure against it (pale, he showed like a ghost on the burning hill)
     const rd = REL_ON ? Math.max(...REL.map(m => m.a * (m.dark || 0))) * (1 - wideK) : 0; if (rd > 0) c = mix(c, [26, 22, 26], rd);
@@ -465,9 +465,13 @@ const CR = (() => {
   const RIDGES = [1, 2].map(seed => { const r = rgen(seed * 31 + 7); return [1, 2, 3, 4, 5].map(k => [r() * 6.28, k]); });
   const ridgeY = (i, X, base, amp) => { let y = base; for (const [p, k] of RIDGES[i]) y += amp / k * Math.sin(X * k * k * .0011 + p); return y; };
   function sky(c) {
-    const pre = [[26, 30, 44], [60, 66, 84], [118, 112, 120]], dw = [[30, 34, 50], [78, 74, 92], [168, 140, 134]], gd = [[84, 100, 132], [206, 172, 146], [246, 214, 164]];
+    // ?look=r: the whole palette after Friedrich's Morning in the Riesengebirge (owner: "Make entire color palette match"):
+    // a pale grey-blue upper sky, a lilac middle, peach and pale gold low down; never a deep navy
+    const pre = LOOKR ? [[40, 44, 60], [92, 90, 110], [150, 134, 140]] : [[26, 30, 44], [60, 66, 84], [118, 112, 120]],
+      dw = LOOKR ? [[62, 68, 90], [150, 138, 156], [222, 184, 164]] : [[30, 34, 50], [78, 74, 92], [168, 140, 134]],
+      gd = LOOKR ? [[132, 146, 168], [222, 200, 184], [250, 224, 182]] : [[84, 100, 132], [206, 172, 146], [246, 214, 164]];
     // the glory: how far the sun has climbed past the crossing (0..1); everything below grows with it
-    const GL = sm(.96, 1.4, sunH), gl = [[64, 100, 162], [238, 168, 150], [255, 228, 172]];
+    const GL = sm(.96, 1.4, sunH), gl = LOOKR ? [[118, 140, 172], [240, 196, 168], [255, 226, 176]] : [[64, 100, 162], [238, 168, 150], [255, 228, 172]];
     const st = [0, 1, 2].map(i => mix(mix(mix(pre[i], dw[i], dawn), gd[i], gold), gl[i], GL * .85));
     const g = c.createLinearGradient(0, 0, 0, HY + 40); g.addColorStop(0, css(st[0])); g.addColorStop(.6, css(st[1])); g.addColorStop(1, css(st[2]));
     c.fillStyle = g; c.fillRect(0, 0, VW, VH);
@@ -513,9 +517,10 @@ const CR = (() => {
   const RR = [3, 4, 5, 6, 7, 8].map(seed => { const r = rgen(seed * 17 + 3); return [1, 2, 3, 4, 5, 6].map(k => [r() * 6.28, k, .6 + .8 * r()]); });
   const rrY = (i, X, base, amp) => { let y = base; for (const [p, k, a] of RR[i]) y += amp * a / k * Math.sin(X * k * k * .0007 + p); return y; };
   function farR(c) {
-    const pre = [[60, 66, 84], [118, 112, 120]], dw = [[78, 74, 92], [168, 140, 134]], gd = [[206, 172, 146], [246, 214, 164]];
+    const pre = [[92, 90, 110], [150, 134, 140]], dw = [[150, 138, 156], [222, 184, 164]], gd = [[222, 200, 184], [250, 224, 182]];
     const hz = mix(mix(pre[1], dw[1], dawn), gd[1], gold), up = mix(mix(pre[0], dw[0], dawn), gd[0], gold);
-    const deep = mix(mix([44, 46, 62], [52, 48, 60], dawn), [70, 58, 62], gold);
+    // Friedrich's far ranges: lilac and blue-violet, cool against the warm mist
+    const deep = mix(mix([62, 62, 84], [92, 86, 112], dawn), [118, 112, 146], gold);
     const mistC = mix(mix([150, 150, 164], [196, 176, 172], dawn), [255, 196, 150], gold);
     // far to near: base line (screen), height of its swells, parallax, how far toward the deep colour
     const L = [[HY - 64, 26, .03, .1], [HY - 44, 30, .06, .2], [HY - 24, 30, .1, .32], [HY - 4, 26, .15, .45], [HY + 18, 22, .22, .58], [HY + 40, 18, .3, .7]];
