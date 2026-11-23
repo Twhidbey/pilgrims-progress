@@ -27,14 +27,15 @@ const CR = (() => {
     plinth: { tomb: .93, P: [[0, 1], [.3, .995], [.42, .99], [.44, .84], [.47, .8], [.62, .79], [.645, .58], [.675, .55], [.82, .54], [.845, .3], [.875, .265], [1.02, .255], [1.045, .03], [1.06, 0], [1.13, 0]] },
     wedge: { tomb: .55, P: [[0, 1], [.06, .95], [.16, .82], [.27, .66], [.37, .5], [.46, .35], [.54, .23], [.62, .13], [.7, .06], [.77, .02], [.82, 0], [.9, 0]] },
     // the skull (the owner's favourite) borrowing from the others below its brow
-    skullsteps: { tomb: .78, P: [[0, 1], [.2, .98], [.32, .93], [.4, .85], [.45, .75], [.475, .66], [.465, .6], [.485, .555], [.52, .48], [.56, .4], [.6, .39], [.62, .3], [.7, .29], [.72, .18], [.82, .17], [.84, .05], [.9, .03], [.95, 0], [1.02, 0]] },
+    skullsteps: { tomb: 1.23, P: [[0, 1], [.14, 1.003], [.26, .996], [.36, 1.004], [.47, .993], [.56, .99], [.62, .978], [0.65, 0.98], [0.77, 0.93], [0.85, 0.85], [0.9, 0.75], [0.925, 0.66], [0.915, 0.6], [0.935, 0.555], [0.97, 0.48], [1.01, 0.4], [1.05, 0.39], [1.07, 0.3], [1.15, 0.29], [1.17, 0.18], [1.27, 0.17], [1.29, 0.05], [1.35, 0.03], [1.4, 0], [1.47, 0]] },
     skullsoft: { tomb: .8, P: [[0, 1], [.2, .98], [.32, .93], [.4, .85], [.45, .75], [.475, .66], [.465, .6], [.485, .555], [.52, .48], [.6, .38], [.7, .28], [.8, .19], [.9, .11], [1, .05], [1.08, 0], [1.15, 0]] },
     skullwedge: { tomb: .66, P: [[0, 1], [.2, .98], [.32, .93], [.4, .85], [.45, .75], [.475, .66], [.465, .6], [.485, .555], [.52, .49], [.56, .4], [.62, .3], [.68, .21], [.74, .13], [.8, .06], [.86, .02], [.9, 0], [.97, 0]] },
     skullledge: { tomb: .78, P: [[0, 1], [.2, .98], [.32, .93], [.4, .85], [.45, .75], [.475, .66], [.465, .6], [.485, .555], [.55, .52], [.68, .5], [.72, .42], [.74, .3], [.78, .24], [.86, .15], [.92, .08], [.98, .03], [1.04, 0], [1.1, 0]] },
     shoulder: { tomb: .74, P: [[0, 1], [.12, .97], [.2, .9], [.235, .79], [.27, .7], [.33, .64], [.5, .6], [.62, .57], [.655, .47], [.675, .34], [.7, .27], [.76, .2], [.84, .12], [.92, .05], [.98, 0], [1.05, 0]] },
   };
   const SH0 = SHAPES[SHAPE] || SHAPES.skull;
-  const START = 480, WALL_END = 860, TOMB_X = 4380 + SH0.tomb * 890, SLOPE0 = 1180, CREST0 = 4080, CROSS_X = 4260, CREST1 = 4400, FALL1 = 5340, H_TOP = 860;
+  // (owner, build 558: "the hill can be bigger and long flat space on top"): H_TOP 1050 (was 860)
+  const H_TOP = 1050, START = 480, WALL_END = 860, TOMB_X = 4380 + SH0.tomb * (H_TOP + 30), SLOPE0 = 1180, CREST0 = 4080, CROSS_X = 4700, CREST1 = 4400, FALL1 = 5340;
   // GOLGOTHA, AFTER THE OWNER'S SKETCH (build 545): a smooth swooping ramp up from the left that meets the top of a round
   // rocky knoll shaped like a skull's crown (SK_X its top, SK_L / SK_R how far its dome reaches left and right)
   const SK_X = 4380, SK_L = 1000, SK_R = FALL1 - 4380, SK_H = H_TOP + 30, RAMP1 = SK_X - 260;
@@ -460,8 +461,11 @@ const CR = (() => {
       // (owner, build 557: "half circle bump is well defined but not connected to 'ramp' on the left"): the default now; each
       // band starts far down the ramp, faded in there, runs on under the ramp's line and over into the skull
       const fade = (a) => { const g = q.createLinearGradient(SLOPE0 + 200, 0, SLOPE0 + 1300, 0); g.addColorStop(0, css([0, 0, 0], 0)); g.addColorStop(1, css([0, 0, 0], a)); return g; };
-      for (let n = 1; n <= 6; n++) { const sc = 1 - n * .12;
-        const P = WH.map(([x, h]) => { const X = cx0 + (x - cx0) * (.7 + .3 * sc), H = h * sc; return [X, H - spur(X, n, 80 + 12 * n, 170) * smooth(10, 90, H)]; });
+      // (owner, build 558: "the levels don't have to be quite so parallel and evenly spaced. the hill can have more
+      // character"): each band its own size, its own centre and a little tilt, unevenly spaced
+      const LY = [[.93, 0, 0, .74], [.83, 220, .05, .82], [.75, -120, -.035, .66], [.56, 300, .06, .8], [.47, 60, -.02, .7], [.29, 340, .05, .84]];
+      for (let n = 1; n <= LY.length; n++) { const [sc, dx, tl, xs] = LY[n - 1], cx = cx0 + dx;
+        const P = WH.map(([x, h]) => { const X = cx + (x - cx) * (xs + (1 - xs) * sc), H = h * sc + tl * (X - cx) * smooth(10, 200, h * sc); return [X, H - spur(X, n, 80 + 12 * n, 150 + 30 * (n % 3)) * smooth(10, 90, H)]; });
         q.beginPath(); q.moveTo(P[0][0], 60); P.forEach(([x, h]) => q.lineTo(x, -h)); q.lineTo(P[P.length - 1][0], 60); q.closePath(); q.fillStyle = fade(.1); q.fill();
         l.strokeStyle = css([255, 255, 255], .05); l.lineWidth = 1.6; l.beginPath(); let pen = false;
         P.forEach(([x, h]) => { if (h < 20 || x < SLOPE0 + 900) { pen = false; return; } pen ? l.lineTo(x, -h - 2) : l.moveTo(x, -h - 2); pen = true; }); l.stroke(); }
@@ -660,7 +664,7 @@ const CR = (() => {
       // the painted rock's grain, only on the skull, as on Level 3's crags
       c.save(); c.beginPath(); c.moveTo(SLOPE0, 60); for (let x = SLOPE0; x <= SK_X; x += 8) c.lineTo(x, -gh(x)); for (const [x, h] of SKO) c.lineTo(x, -h); c.lineTo(SK_END, 60); c.closePath(); c.clip();
       if (!RPAT) RPAT = c.createPattern(RTEX, 'repeat'); const ts = 2; RPAT.setTransform(new DOMMatrix([ts, 0, 0, ts, 300, -H_TOP - 200]));
-      c.globalCompositeOperation = 'overlay'; c.globalAlpha = .14; c.fillStyle = RPAT; c.fillRect(SLOPE0, -H_TOP - 60, SK_END - SLOPE0, H_TOP + 120); c.restore(); }
+      c.globalCompositeOperation = 'overlay'; c.globalAlpha = .08; c.fillStyle = RPAT; c.fillRect(SLOPE0, -H_TOP - 60, SK_END - SLOPE0, H_TOP + 120); c.restore(); }
     if (false) { if (!RPAT) RPAT = c.createPattern(RTEX, 'repeat'); const ts = 2.4; RPAT.setTransform(new DOMMatrix([ts, 0, 0, ts, 300, -H_TOP - 200]));
       c.globalCompositeOperation = "overlay"; c.globalAlpha = .14; c.fillStyle = RPAT; c.fillRect(x0, -H_TOP - 60, x1 - x0, H_TOP + 2100); c.globalAlpha = 1; c.globalCompositeOperation = 'source-over'; }
     c.restore();
