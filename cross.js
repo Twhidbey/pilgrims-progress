@@ -970,8 +970,54 @@ const CR = (() => {
     c.restore();
   }
 
+  // FRIEDRICH'S CRAG (owner: "make the hill shaped more like his crag"), only with ?look=f: the cross stands on a broken
+  // pinnacle of rock (CRAG_LIFT above the crown) with jagged towers stepping down to the right over the scarp, as in
+  // Morning in the Riesengebirge; his walk up to the cross is unchanged (gh is not touched). Each tower is one rough
+  // shape lit from the low sun on the left: its left faces warm and bright, its right faces in shade, a lit rim along
+  // its tops, a few dark cracks; laid in the hill's own burnt orange so it grows out of the rock.
+  const CRAG_LIFT = 96;
+  // towers: [centre from the cross, width, height above the ground under it, seed]
+  const CRAG = [[-10, 120, CRAG_LIFT + 4, 1], [-70, 70, 46, 2], [95, 110, 150, 3], [190, 90, 92, 4], [290, 120, 130, 5], [400, 90, 70, 6], [500, 110, 96, 7], [600, 80, 48, 8]];
+  let CRAGP = null;
+  function cragShapes() {
+    if (CRAGP) return CRAGP;
+    CRAGP = CRAG.map(([dx, w, H, sd]) => {
+      const r = rgen(300 + sd), bx = CROSS_X + dx, gL = gh(bx - w / 2), gR = gh(bx + w / 2), base = Math.max(gL, gR) - 40, top = gh(bx) + H;
+      const L = [], R = [], n = 6;
+      // the left side climbs in rough steps to the top, the right falls in steps; the top a few broken teeth
+      for (let i = 0; i <= n; i++) { const t = i / n; L.push([bx - w / 2 + w * .22 * t + (r() - .5) * w * .1, -(base + (top - base) * t * (.92 + .1 * r()))]); }
+      const T = []; for (let i = 1; i < 5; i++) T.push([bx - w * .28 + w * .56 * i / 5 + (r() - .5) * 8, -(top - (i % 2 ? 0 : 6 + 12 * r()))]);
+      for (let i = n; i >= 0; i--) { const t = i / n; R.push([bx + w / 2 - w * .2 * t + (r() - .5) * w * .1, -(base + (top - base) * t * (.9 + .1 * r()))]); }
+      const cracks = []; for (let k = 0; k < 3; k++) { const x = bx + (r() - .5) * w * .5, y0 = -top * (.95 - .2 * r()); cracks.push([[x, y0], [x + (r() - .5) * 12, y0 + 30 + 40 * r()], [x + (r() - .5) * 16, y0 + 70 + 50 * r()]]); }
+      return { pts: [...L, ...T, ...R], bx, w, top, base, cracks };
+    });
+    return CRAGP;
+  }
+  function crag(c) {
+    if (!LOOKF) return;
+    const hc = mix(mix([46, 38, 34], [92, 58, 40], dawn), [146, 80, 42], gold);
+    const lit = mix(hc, [255, 186, 120], .2 + .25 * gold), shade = mix(hc, [18, 12, 12], .45);
+    // drawn far to near: the towers right of the cross first, the cross's own pinnacle last
+    [...cragShapes()].reverse().forEach(t => {
+      c.save(); c.beginPath(); t.pts.forEach(([x, y], i) => i ? c.lineTo(x, y) : c.moveTo(x, y)); c.closePath();
+      c.fillStyle = css(hc); c.fill(); c.clip();
+      // lit left faces, shaded right faces, the break a little left of the middle
+      const g = c.createLinearGradient(t.bx - t.w / 2, 0, t.bx + t.w / 2, 0);
+      g.addColorStop(0, css(lit, .9)); g.addColorStop(.38, css(lit, .55)); g.addColorStop(.46, css(shade, .5)); g.addColorStop(1, css(shade, .8));
+      c.fillStyle = g; c.fillRect(t.bx - t.w, -t.top - 20, t.w * 2, t.top - t.base + 40);
+      // darker toward its foot, so it grows out of the hill
+      const v = c.createLinearGradient(0, -t.top, 0, -t.base); v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, css(shade, .55));
+      c.fillStyle = v; c.fillRect(t.bx - t.w, -t.top - 20, t.w * 2, t.top - t.base + 40);
+      // cracks
+      c.strokeStyle = css(shade, .7); c.lineWidth = 1.6; t.cracks.forEach(k => { c.beginPath(); k.forEach(([x, y], i) => i ? c.lineTo(x, y) : c.moveTo(x, y)); c.stroke(); });
+      c.restore();
+      // the low sun on its top and left edges
+      if (gold > .02) { c.save(); c.strokeStyle = css([255, 214, 150], .55 * gold); c.lineWidth = 2; c.beginPath();
+        const n = Math.ceil(t.pts.length * .55); t.pts.slice(0, n).forEach(([x, y], i) => i ? c.lineTo(x, y) : c.moveTo(x, y)); c.stroke(); c.restore(); }
+    });
+  }
   function cross(c) {
-    const x = CROSS_X, h = gh(x), col = mix(mix([20, 20, 27], [22, 20, 24], dawn), [30, 22, 20], gold), H = CROSS_H, T = 14, bw = 186, by = CROSS_BY;
+    const x = CROSS_X, h = gh(x) + (LOOKF ? CRAG_LIFT : 0), col = mix(mix([20, 20, 27], [22, 20, 24], dawn), [30, 22, 20], gold), H = CROSS_H, T = 14, bw = 186, by = CROSS_BY;
     c.save(); c.translate(x, -h + 4); c.fillStyle = css(col);
     // edges very slightly uneven, as a hand-hewn beam's are (owner: "ever slight variation to the straight edges to make it
     // look slightly (very slightly) more wooden"): a slow wander along each edge, a fine roughness, a hair of taper, ends
@@ -1468,7 +1514,7 @@ const CR = (() => {
     const c = ctx; c.setTransform(DPR, 0, 0, DPR, 0, 0);
     sky(c); far(c); memories(c);
     c.setTransform(DPR * cam.z, 0, 0, DPR * cam.z, DPR * (VW / 2 - cam.cx * cam.z), DPR * cam.wl);
-    wall(c); land(c); tomb(c); cross(c); relive(c, false);
+    wall(c); land(c); crag(c); tomb(c); cross(c); relive(c, false);
     shining(c);
     drawBurden(c); drawChr(c); relive(c, true);
     // the nearest ground, a dark band along the foot of the picture, under the words
