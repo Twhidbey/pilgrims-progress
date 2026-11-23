@@ -20,7 +20,7 @@ const CR = (() => {
   // NEW HILL SHAPES TO TRY (owner: "we need new versions of the hill - can you [look] at how golgotha has been depicted in
   // art"): ?shape=dome (Bruegel's far round hill), plinth (Mantegna's flat-topped rock in hewn steps), wedge (Friedrich's
   // dark triangle), shoulder (a small rock knob on a grassy shoulder, the tomb in the rock band below); none = the skull
-  const SHAPE = (new URLSearchParams(location.search).get('shape') || 'k5').toLowerCase();
+  const SHAPE = (new URLSearchParams(location.search).get('shape') || 'skullsteps').toLowerCase();
   const SHAPES = {
     skull: { tomb: .7, P: null },
     dome: { tomb: 1.02, P: [[0, 1], [.2, .97], [.4, .88], [.6, .72], [.78, .52], [.92, .34], [1.02, .2], [1.1, .1], [1.17, .04], [1.24, 0], [1.3, 0]] },
