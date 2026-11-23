@@ -56,7 +56,7 @@ const CR = (() => {
   };
   const SH0 = SHAPES[SHAPE] || SHAPES.skull;
   // (owner, build 558: "the hill can be bigger and long flat space on top"): H_TOP 1050 (was 860)
-  const H_TOP = 1050, START = 480, WALL_END = 860, TOMB_X = 4380 + SH0.tomb * (H_TOP + 30), SLOPE0 = 1180, CREST0 = 4080, CROSS_X = 4700, CREST1 = 4400, FALL1 = 5340;
+  const H_TOP = +(new URLSearchParams(location.search).get('htop') || 1500), START = 480, WALL_END = 860, TOMB_X = 4380 + SH0.tomb * (H_TOP + 30), SLOPE0 = 1180, CREST0 = 4080, CROSS_X = 4700, CREST1 = 4400, FALL1 = 5340;
   // GOLGOTHA, AFTER THE OWNER'S SKETCH (build 545): a smooth swooping ramp up from the left that meets the top of a round
   // rocky knoll shaped like a skull's crown (SK_X its top, SK_L / SK_R how far its dome reaches left and right)
   const SK_X = 4380, SK_L = 1000, SK_R = FALL1 - 4380, SK_H = H_TOP + 30, RAMP1 = SK_X - 260;
@@ -154,7 +154,8 @@ const CR = (() => {
   // the leap for joy and his walk on, in the new coat (free clips, build 543): the leap played once a touch at its own
   // pace (16 a second); the walk one whole stride that loops, its planted foot sliding 3.48 picture px a frame
   const LEAPC = [], LEAP_META = { ax: 77, ground: 339, frames: 49 }, CWALK = [], CWALK_META = { ax: 78, ground: 297, frames: 29, vpx: 3.48 };
-  let BURDEN = null, RTEX = null, RPAT = null, loaded = false;
+  let BURDEN = null, RTEX = null, RPAT = null, HPAINT = null, loaded = false;
+  const HP_ON = new URLSearchParams(location.search).get('hp') !== '0';
   const MLIFT = [], MIM = {};
   function preload() {
     if (loaded) return; loaded = true;
@@ -170,6 +171,9 @@ const CR = (() => {
     loadPack('lift', MLIFT).catch(() => {});
     ['wife', 'goodwill-reach'].forEach(n => loadImg(n + '.webp').then(im => { MIM[n] = im; }).catch(() => {}));
     loadImg('cross-burden.webp').then(im => { BURDEN = im; }).catch(() => {});
+    // the hill painted by the image model (round 2 of the owner's hill): rounded weathered rock, toned dark grey, its left
+    // end faded into the drawn ramp; its pixels are world units at SK_H 1080, its ground on row 1250, world x 2650 at 0
+    if (HP_ON) loadImg('hill-cross.webp').then(im => { HPAINT = im; }).catch(() => {});
     // the burning hill's own painted rock (Level 3), made a grey tile as hill.js makes it, laid over the hill in 'overlay'
     loadImg('hill-rock.webp').then(rock => { const sx = 720, sy = 540, w = 780, h = 600, t = document.createElement('canvas'); t.width = w; t.height = h; const q = t.getContext('2d'); q.drawImage(rock, sx, sy, w, h, 0, 0, w, h);
       const d = q.getImageData(0, 0, w, h), D = d.data; let m = 0; for (let i = 0; i < D.length; i += 4) m += D[i] * .3 + D[i + 1] * .59 + D[i + 2] * .11; m /= D.length / 4;
@@ -721,6 +725,11 @@ const CR = (() => {
     g.addColorStop(0, css(lite, .1)); g.addColorStop(.3, css(lite, .03)); g.addColorStop(.6, css(dark, .05)); g.addColorStop(1, css(dark, .5));
     c.fillStyle = g; c.fillRect(x0, -H_TOP - 60, x1 - x0, H_TOP + 2100);
     const R = rockTex(); c.drawImage(R.c, R.x, R.y, R.w, R.h);
+    if (HPAINT) {
+      const s = SK_H / 1080; c.save(); c.translate(SK_X, 0); c.scale(s, s); c.drawImage(HPAINT, 2650 - 4380, -1250); c.restore();
+      // the painting takes the hill's own colour through the dawn (its lightness kept)
+      c.globalCompositeOperation = 'color'; c.fillStyle = css(hc); c.fillRect(x0, -H_TOP - 200, x1 - x0, H_TOP + 2300); c.globalCompositeOperation = 'source-over';
+    }
     if (R.l) { c.globalCompositeOperation = 'screen'; c.globalAlpha = .55 + .2 * dawn + .25 * gold; c.drawImage(R.l, R.x, R.y, R.w, R.h); c.globalAlpha = 1; c.globalCompositeOperation = 'source-over'; }
     // the painted rock's grain over it all, as on Level 3's crags
     // the painted cliff texture from Level 3 is no longer laid on (owner, build 470: "there's lines on the hill now":
@@ -1199,5 +1208,7 @@ const CR = (() => {
   return { on: false, start, update, draw, touch, key, preload, lines: ALL, stop: () => padStop(), _pt: { roll: rollPt, chr: chrPt }, _turning: () => !!Ch.tv,
     peek: () => ({ ph, t, fly: rollFly ? rollFly.t : -1, x: Math.round(Ch.x), cf: +Ch.cf.toFixed(1), bur: bur ? { st: bur.st, x: Math.round(bur.x), a: +bur.a.toFixed(2), t: bur.t, H: Math.round(bur.H || 0), z: +(bur.z || 0).toFixed(1), r: +(bur.r || 0).toFixed(2), sq: +(bur.sq || 0).toFixed(2) } : null, gold: +gold.toFixed(2), shine: +shine.toFixed(2), leaps: leapsLeft, lp: Ch.lp == null ? -1 : +Ch.lp.toFixed(1), wo: Ch.wo == null ? -1 : Ch.wo, closeK: +closeK.toFixed(2), topK: +topK.toFixed(2), veil: +veil.toFixed(2), tear: tearT, sep: sepT, mem: memS.length, kn: Ch.kn == null ? -1 : +Ch.kn.toFixed(1), hb: hymn ? +(hymn.t / BEATT).toFixed(1) : -1 }),
     // A SHORT WORDLESS CHOIR FOR THE SHINING ONES (awe study): from their coming until Christian's song begins (index.html's music player, cue 'choir')
-    choir: () => ph === 'shine' || (ph === 'leaps' && !blest) };
+    choir: () => ph === 'shine' || (ph === 'leaps' && !blest),
+    // the land's outline, for making pictures of the hill (tools)
+    outlinePts: (a, b, st) => outline(a, b, st), SK: () => ({ SK_X, SK_END, SK_H, SLOPE0, CROSS_X, TOMB_X }) };
 })();

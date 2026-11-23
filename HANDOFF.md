@@ -1031,3 +1031,5 @@ The owner asked what follows the Slough of Despond, what that level should hold,
 **Build 484 (music chat): music only at moments** (owner: "Music is dominating"): no music under the walking, a light drum beat as he starts to run, a faint tap past the mockers, a heartbeat as Obstinate and Pliable come; the whole hymn back at Level 1's gate; the book's harp on the title. Nothing spent.
 
 **Build 549 (Level 5 chat):** he kneels in the silence after the burden is gone (a free Modal clip) and a short wordless choir comes with the Shining Ones (one Lyria piece, about 8 cents, the owner's yes); the sepulchre further out on the skull's snout, contours on the skull. Running total: add about 8 cents (and about 10 cents of Modal's free credits).
+
+**Build 569 (Level 5 chat):** the hill painted by the image model (one 4K picture, about 25 cents, the owner's yes), its eye socket covered free so the skull is only hinted, and the hill much bigger (`H_TOP` 1500). Running total: add about 25 cents.
