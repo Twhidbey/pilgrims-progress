@@ -1227,13 +1227,13 @@ const CR = (() => {
   // he runs through it. Baked once when he comes near (one canvas, freed after), drawn a little see-through with a
   // breathing light over it. In the mire the surface lies above the ground up to his waist and is drawn again in front
   // of him. ?skymem=1 brings back the old pictures in the sky. Ours, not the book's.
-  const REL_ON = new URLSearchParams(location.search).get('skymem') !== '1', REL_K = .625, REL_Z = 1.25, RIM = {};
+  const REL_ON = new URLSearchParams(location.search).get('skymem') !== '1', REL_K = .625, REL_Z = 1.25, REL_A = .7, RIM = {};
   // img: the still (assets); R: its ground row; k: world units a picture pixel; x0: where its left edge lies on the hill;
   // on: he is in it from..to; up: it fades into the sky between these heights above the ground; lift: the mire's depth
   const REL = [
-    { img: 'mem-village', R: 722, k: REL_K, x0: 1200, on: [1260, 2230], up: [250, 440], below: 60, glow: .1, dark: .45 },
-    { img: 'mem-slough', R: 776, k: REL_K * 1.3, x0: 1950, on: [2250, 3010], up: [350, 560], below: 80, glow: .07, dark: .5, lift: u => 74 * smooth(120, 420, u) * (1 - smooth(600, 820, u)) },
-    { img: 'mem-hill-mono', R: 926, k: REL_K, x0: 2900, on: [3050, 3900], up: [400, 590], below: 60, glow: .2, dark: .8 },
+    { img: 'mem-village', R: 722, k: REL_K, x0: 1200, on: [1260, 2230], up: [250, 440], below: 60, glow: .1, dark: .45, flat: [[187, 737, 30, .85], [770, 1050, 30, .85], [1087, 1200, 30, .85]] },
+    { img: 'mem-slough', R: 776, k: REL_K * 1.3, x0: 1950, on: [2250, 3010], up: [350, 560], below: 80, glow: .07, dark: .5, flat: [[780, 1220, 320, .85, .42]], lift: u => 74 * smooth(120, 420, u) * (1 - smooth(600, 820, u)) },
+    { img: 'mem-hill-mono', R: 926, k: REL_K, x0: 2900, on: [3050, 3900], up: [400, 590], below: 60, glow: .2, dark: .8, flat: [[237, 1175, 160, .6, .22]] },
   ];
   // what he hears in each is the voice he heard there (owner, build 595: "i wonder if other people's messages as we did
   // with the memories is better"): his wife at the door, Help, Evangelist's God-speed; and last, near the top, with no
@@ -1243,12 +1243,17 @@ const CR = (() => {
   function relBake(m) {
     const im = RIM[m.img]; if (!im) return false;
     const k = m.k, Wu = im.width * k, Z = REL_Z, n = Math.ceil(Wu * Z), lift = m.lift || (() => 0);
+    // LESS WARPED (owner, build 597: "not as warped especially the figures"): the picture no longer follows the slope
+    // everywhere. Over each of its things (a house, Help and the oak, the mountain: `flat` [from, to, ease, how much, where along it the height is taken])
+    // it stands level, at the hill's height under that thing's middle, and takes up the slope only in the gaps between;
+    // the fade into the hill still follows the hill's own line, so a level thing sits into the hillside
+    const dOf = u => { let d = gh(m.x0 + u); for (const [a, b, e, f, at] of m.flat || []) { const w = smooth(a - e, a, u) * (1 - smooth(b, b + Math.min(e, 120), u)) * f; if (w > 0) d = d * (1 - w) + gh(m.x0 + a + (b - a) * (at === undefined ? .5 : at)) * w; } return d; };
     let top = 1e9, bot = -1e9;
-    for (let u = 0; u <= Wu; u += 8) { const g = gh(m.x0 + u); top = Math.min(top, -g - lift(u) - m.R * k); bot = Math.max(bot, -g + (im.height - m.R) * k); }
+    for (let u = 0; u <= Wu; u += 8) { const g = dOf(u); top = Math.min(top, -g - lift(u) - m.R * k, -gh(m.x0 + u) - m.up[1]); bot = Math.max(bot, -g + (im.height - m.R) * k, -gh(m.x0 + u) + m.below); }
     top = Math.floor(top) - 2; const Hu = Math.ceil(bot - top) + 2;
     const cv = mk(n, Math.ceil(Hu * Z)), q = cv.getContext('2d'), mask = mk(cv.width, cv.height), mq = mask.getContext('2d'), surf = [];
     for (let i = 0; i < n; i++) {
-      const u = (i + .5) / Z, g = gh(m.x0 + u), gl = g + lift(u), sx = Math.min(im.width - 1.5, u / k);
+      const u = (i + .5) / Z, g = gh(m.x0 + u), gl = dOf(u) + lift(u), sx = Math.min(im.width - 1.5, u / k);
       q.drawImage(im, sx, 0, Math.min(1 / Z / k + .5, im.width - sx), im.height, i, (-gl - m.R * k - top) * Z, 1, im.height * k * Z);
       if (i % 4 === 0) {
         // it melts upward into the sky, downward into the hill, and at both ends
@@ -1287,9 +1292,9 @@ const CR = (() => {
     if (!REL_ON) return;
     for (const m of REL) {
       const cv = front ? m.front : m.cv, a = m.a * (1 - wideK); if (!cv || a < .01) continue;
-      c.save(); c.globalAlpha = .86 * a; c.drawImage(cv, m.x0, m.top, m.Wu, m.Hu);
+      c.save(); c.globalAlpha = REL_A * a; c.drawImage(cv, m.x0, m.top, m.Wu, m.Hu);
       // intense: a breathing light over it, and a brightening as it comes
-      if (!front) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = a * (m.glow * (.7 + .3 * Math.sin(G.t / 37)) + .22 * (1 - m.a)); c.drawImage(cv, m.x0, m.top, m.Wu, m.Hu); }
+      if (!front) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = a * (m.glow * .7 * (.7 + .3 * Math.sin(G.t / 37)) + .16 * (1 - m.a)); c.drawImage(cv, m.x0, m.top, m.Wu, m.Hu); }
       c.restore();
     }
   }
