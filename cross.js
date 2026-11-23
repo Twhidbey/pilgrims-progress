@@ -423,7 +423,46 @@ const CR = (() => {
   // fall to the right), each row set deeper in the hill and a shade darker than the one before, so the rock grows
   // darker as it comes down; baked once small and drawn stretched (soft), in dark alpha so it takes the hill's colour
   let ROCK = null;
+  // six trial ways to tie the skull's ledges into the slope (owner: "the bulging circular layers looks separate from slope"): ?hl=a..f
+  const HL_OPT = (new URLSearchParams(location.search).get('hl') || '').toLowerCase();
   const ROCK_OPT = (new URLSearchParams(location.search).get('rock') || 'skull').toLowerCase();
+  // the six trials (sketches for the owner; nothing here is used without ?hl=)
+  function hillTrial(q, l, K, crag) {
+    const xs = SLOPE0 - 100, WH = []; for (let x = xs; x < SK_X; x += 12) WH.push([x, gh(x)]); for (const p of SKO) WH.push(p);
+    const clipW = c2 => { c2.beginPath(); c2.moveTo(xs, 60); WH.forEach(([x, h]) => c2.lineTo(x, -h)); c2.lineTo(SK_END, 60); c2.closePath(); };
+    q.save(); clipW(q); q.clip(); l.save(); clipW(l); l.clip();
+    const spur = (x, n, amp, seg) => amp * (crag(x + n * 613, 31 + n * 5, seg) - .45);
+    // fill the region below an edge given as points [x, h], with a lit lip along it
+    const band = (P, a, lip = .05) => { q.beginPath(); q.moveTo(P[0][0], 60); P.forEach(([x, h]) => q.lineTo(x, -h)); q.lineTo(P[P.length - 1][0], 60); q.closePath(); q.fillStyle = css([0, 0, 0], a); q.fill();
+      l.strokeStyle = css([255, 255, 255], lip); l.lineWidth = 1.6; l.beginPath(); P.forEach(([x, h], i) => i ? l.lineTo(x, -h - 2) : l.moveTo(x, -h - 2)); l.stroke(); };
+    const span = (f, x0 = xs, x1 = SK_END + 40, st = 8) => { const P = []; for (let x = x0; x <= x1; x += st) P.push([x, f(x)]); return P; };
+    if (K === 'a') {
+      // A: the ledges run the WHOLE hill: nested copies of the whole outline, ramp and skull together, drawn in toward the tomb
+      const cx0 = TOMB_X - 200;
+      for (let n = 1; n <= 6; n++) { const sc = 1 - n * .13; band(WH.map(([x, h]) => { const X = cx0 + (x - cx0) * (.55 + .45 * sc), H = h * sc; return [X, H - spur(X, n, 80 + 12 * n, 170) * smooth(10, 90, H)]; }), .09); }
+    } else if (K === 'b') {
+      // B: tilted bedding: long rock shelves running down from the upper left across the whole hill to the lower right
+      for (let n = 0; n < 7; n++) { const o = 980 - n * 150; band(span(x => o - .28 * (x - SLOPE0) + spur(x, n, 70, 160)), .075); }
+    } else if (K === 'c') {
+      // C: no ledges: one light falls from the sunrise over the crown; the ramp's top lit, the skull's face and foot in
+      // deep shade, a soft turn between, so it is one mass in one light
+      let g = q.createLinearGradient(SK_X - 300, 0, SK_END, 0); g.addColorStop(0, css([0, 0, 0], 0)); g.addColorStop(.55, css([0, 0, 0], .18)); g.addColorStop(1, css([0, 0, 0], .4));
+      q.fillStyle = g; q.fillRect(xs, -SK_H - 60, SK_END - xs + 60, SK_H + 140);
+      g = q.createLinearGradient(0, -SK_H, 0, 0); g.addColorStop(0, css([0, 0, 0], 0)); g.addColorStop(1, css([0, 0, 0], .22)); q.fillStyle = g; q.fillRect(xs, -SK_H - 60, SK_END - xs + 60, SK_H + 140);
+      // the rugged face's own ledges only, near its edge
+      for (let n = 1; n <= 3; n++) band(SKO.filter(([x, h]) => h < SK_H * .7).map(([x, h]) => [x - 40 * n, h - 30 * n + spur(x, n, 40, 90)]), .06, .03);
+    } else if (K === 'd') {
+      // D: ledges curving round the tomb, as if the whole hill had settled round the grave's mouth
+      for (let n = 1; n <= 7; n++) { const R = 1500 - n * 190; band(span(x => { const u = (x - TOMB_X) / (R * 1.9); return Math.abs(u) >= 1 ? -50 : R * .62 * Math.sqrt(1 - u * u) + spur(x, n, 60, 150); }), .07); }
+    } else if (K === 'e') {
+      // E: the ramp's own shoulder runs on as ONE long ledge wrapping over the skull and down its face, with two below it
+      for (let n = 1; n <= 3; n++) band(WH.map(([x, h]) => [x + 30 * n, h - 70 * n - spur(x, n, 50 + 10 * n, 200) * smooth(10, 90, h)]), .12, .07);
+    } else if (K === 'f') {
+      // F: level terraces: ledges at even heights across ramp and skull alike, darker below
+      for (let n = 0; n < 6; n++) { const H0 = 760 - n * 135; band(span(x => H0 + spur(x, n, 60, 150)), .08); }
+    }
+    q.restore(); l.restore();
+  }
   function rockTex() {
     if (ROCK) return ROCK;
     const X0 = START - 700, X1 = FALL1 + 900, Y0 = -H_TOP - 40, Y1 = 700, k = .8;
@@ -511,7 +550,8 @@ const CR = (() => {
     // only the round knoll is rock: a little darker, its dome's left flank a soft seam where it rises out of the ramp,
     // broken curved creases following the dome, and many short hatched cracks running down its face, thickest on the
     // right as in the sketch, each with a faint lit lip
-    if (O === 'skull') {
+    if (O === 'skull' && HL_OPT) hillTrial(q, l, HL_OPT, crag);
+    if (O === 'skull' && !HL_OPT) {
       const r = rgen(545), xa = SK_X - SK_L, hh = x => x <= RAMP1 ? Math.min(gh(x) - 6, dome(x)) : gh(x);
       const path = c2 => { c2.beginPath(); c2.moveTo(xa, 60); for (let x = xa; x <= SK_X; x += 6) c2.lineTo(x, -hh(x)); for (const [x, h] of SKO) c2.lineTo(x, -h); c2.lineTo(SK_END, 60); c2.closePath(); };
       q.save(); path(q); q.clip(); l.save(); path(l); l.clip();
