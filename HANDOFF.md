@@ -244,6 +244,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 ## START HERE (rewritten at build 140, Nov 16 2026)
 
+**Build 604 (art direction chat): Level 5's climb no longer stutters (the memories were remade every tick of the approach); `?look=f`, the painting's own palette, as a second trial beside `?look=r`. Nothing spent.**
+
 **Build 603 (art direction chat): Level 5's `?look=r` trial backlit in Friedrich's whole palette (umber hill, orange rim, lilac distance). Nothing spent.**
 
 **Build 602 (art direction chat): Level 5's Cross with misty ridges after Friedrich, only with `?look=r` (a trial for the owner). Nothing spent.**
