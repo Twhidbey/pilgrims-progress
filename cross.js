@@ -516,16 +516,24 @@ const CR = (() => {
     const pre = [[60, 66, 84], [118, 112, 120]], dw = [[78, 74, 92], [168, 140, 134]], gd = [[206, 172, 146], [246, 214, 164]];
     const hz = mix(mix(pre[1], dw[1], dawn), gd[1], gold), up = mix(mix(pre[0], dw[0], dawn), gd[0], gold);
     const deep = mix(mix([44, 46, 62], [52, 48, 60], dawn), [70, 58, 62], gold);
-    const mistC = mix(mix([150, 150, 164], [196, 176, 172], dawn), [255, 232, 200], gold);
+    const mistC = mix(mix([150, 150, 164], [196, 176, 172], dawn), [255, 196, 150], gold);
     // far to near: base line (screen), height of its swells, parallax, how far toward the deep colour
     const L = [[HY - 64, 26, .03, .1], [HY - 44, 30, .06, .2], [HY - 24, 30, .1, .32], [HY - 4, 26, .15, .45], [HY + 18, 22, .22, .58], [HY + 40, 18, .3, .7]];
     L.forEach(([base, amp, p, k], i) => {
       let col = mix(mix(hz, up, .25), deep, k);
       // the nearer hills take the same burnt orange as the hill, fading into the cool distance
-      if (i >= 2) col = mix(col, mix(mix([58, 44, 42], [96, 62, 48], dawn), [168, 98, 56], gold), (i - 1) / 5 * (.45 + .45 * gold));
+      // the nearer ridges stand dark and warm against the light (umber, not lit orange)
+      if (i >= 2) col = mix(col, mix(mix([56, 44, 44], [70, 52, 48], dawn), [84, 56, 46], gold), (i - 1) / 5 * (.45 + .4 * gold));
       c.beginPath(); c.moveTo(0, VH);
       for (let X = 0; X <= VW + 8; X += 6) c.lineTo(X, rrY(i, X + cam.cx * p * 6, base, amp));
       c.lineTo(VW, VH); c.closePath(); c.fillStyle = css(col); c.fill();
+      if (gold > .02) {
+        // backlight on the ridge's top: brightest toward the sun, fading away from it
+        const sxs = sx(CROSS_X), g = c.createLinearGradient(0, 0, VW, 0);
+        for (let q = 0; q <= 8; q++) { const X = q / 8 * VW, k = Math.exp(-Math.pow((X - sxs) / (VW * .45), 2)); g.addColorStop(q / 8, css([255, 150, 74], (.25 + .1 * i) * gold * k)); }
+        c.save(); c.strokeStyle = g; c.lineWidth = 2.2 + .5 * i; c.beginPath();
+        for (let X = 0; X <= VW + 8; X += 6) c.lineTo(X, rrY(i, X + cam.cx * p * 6, base, amp) + 1); c.stroke(); c.restore();
+      }
       // mist lying in the valley below this ridge: thickest low down, fading up the next ridge; strongest far off
       const mb = base + amp * .9, g = c.createLinearGradient(0, mb - 34, 0, mb + 26);
       const ma = (.62 - .07 * i) * (.75 + .25 * gold);
@@ -800,10 +808,11 @@ const CR = (() => {
   }
   function land(c) {
     const x0 = cam.cx - VW / 2 / cam.z - 40, x1 = cam.cx + VW / 2 / cam.z + 40, step = Math.max(4, 6 / cam.z);
-    // with ?look=r the hill is Friedrich's burnt orange-brown rock in the morning sun (owner: "more like Morning in the
-    // Riesengebirge in that burnt orange look for the hill and nearby hills"): a warm dark brown before dawn, ember-brown
-    // at dawn, burnt orange once the sun is up
-    const hc = LOOKR ? mix(mix([40, 31, 28], [64, 42, 32], dawn), [112, 62, 34], gold) : mix(mix([30, 30, 38], [36, 32, 36], dawn), [44, 34, 30], gold);
+    // with ?look=r the hill is warm umber (owner: "more like Morning in the Riesengebirge in that burnt orange look for the
+    // hill and nearby hills", then "think about where sun is and if that's realistic" ... "yes do the realistic backlit
+    // version"): the sun rises BEHIND the cross, so the face toward us is in its own shadow, a dark warm umber; the burnt
+    // orange is only where backlight truly falls: a glowing rim along the crown and the sunlit mist and ridge tops
+    const hc = LOOKR ? mix(mix([40, 31, 28], [50, 36, 30], dawn), [62, 40, 30], gold) : mix(mix([30, 30, 38], [36, 32, 36], dawn), [44, 34, 30], gold);
     c.beginPath(); c.moveTo(x0, 2000);
     for (const [x, y] of outline(x0, x1, step)) c.lineTo(x, y);
     c.lineTo(x1, 2000); c.closePath(); c.fillStyle = css(hc); c.fill();
@@ -821,12 +830,6 @@ const CR = (() => {
       // the painting takes the hill's own colour through the dawn (its lightness kept)
       c.globalCompositeOperation = 'color'; c.fillStyle = css(hc); c.fillRect(x0, -H_TOP - 200, x1 - x0, H_TOP + 2300); c.globalCompositeOperation = 'source-over';
       // the foot sinks into the dark ground (owner: "blend edges and make everything super cohesive")
-      if (LOOKR && gold > .02) {
-        // the low sun on the upper rock, a soft warm light falling off down the hill (laid with 'soft-light')
-        const sg = c.createLinearGradient(0, -H_TOP - 40, 0, -H_TOP * .25);
-        sg.addColorStop(0, css([255, 150, 70], .55 * gold)); sg.addColorStop(1, 'rgba(255,150,70,0)');
-        c.globalCompositeOperation = 'soft-light'; c.fillStyle = sg; c.fillRect(x0, -H_TOP - 200, x1 - x0, H_TOP); c.globalCompositeOperation = 'source-over';
-      }
       const fg = c.createLinearGradient(0, -260, 0, 8); fg.addColorStop(0, css(dark, 0)); fg.addColorStop(.6, css(dark, .22)); fg.addColorStop(1, css(dark, .5));
       c.fillStyle = fg; c.fillRect(x0, -260, x1 - x0, 2300);
     }
@@ -845,7 +848,16 @@ const CR = (() => {
     // a thin edge of light along the crown, toward the sun (after dawn)
     if (gold > .01) {
       // one stroke with its strength along a gradient (short overlapping strokes with round caps showed as beads)
-      c.save(); c.lineWidth = 2.4 / cam.z; c.lineCap = 'butt'; c.lineJoin = 'round';
+      c.save(); c.lineCap = 'butt'; c.lineJoin = 'round';
+      if (LOOKR) {
+        // backlight: the sun behind the crown burns along its whole edge in orange, a soft glow under a bright core
+        const ga = Math.max(x0, SLOPE0 + 600), gb = x1, pts = outline(ga, gb, step).filter(([x]) => x >= ga && x <= gb);
+        const rim = (w, col, a) => { const g = c.createLinearGradient(CROSS_X - 2200, 0, CROSS_X + 1400, 0);
+          for (let i = 0; i <= 14; i++) { const u = i / 14, wx = CROSS_X - 2200 + 3600 * u, k = Math.exp(-Math.pow((wx - CROSS_X) / 1100, 2)) * gold; g.addColorStop(u, css(col, a * k)); }
+          c.strokeStyle = g; c.lineWidth = w / cam.z; c.beginPath(); for (const [x, y] of pts) c.lineTo(x, y + w * .35 / cam.z); c.stroke(); };
+        rim(14, [255, 132, 60], .16); rim(6, [255, 160, 80], .38); rim(2.2, [255, 222, 170], .85);
+      }
+      c.lineWidth = 2.4 / cam.z;
       const ga = Math.max(x0, CROSS_X - 900), gb = Math.min(x1, CROSS_X + 900);
       if (gb > ga) { const g = c.createLinearGradient(CROSS_X - 900, 0, CROSS_X + 900, 0);
         for (let i = 0; i <= 12; i++) { const u = i / 12, k = Math.exp(-Math.pow((u - .5) * 1800 / 420, 2)) * gold; g.addColorStop(u, css([255, 214, 160], .7 * k)); }
