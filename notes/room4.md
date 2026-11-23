@@ -36,6 +36,8 @@ Chat: **PP House · Room 4 Fire**. Read `notes/house.md` first (shared rules, bu
 
 ## Log (newest first)
 
+- Build 587 (owner: "It should be oval like one a you can see into it"): build 584's convex-hull fill turned the tipped bucket into a big wedge (it filled from the hands down); taken back: the frames are build 582's again (as `room4-cast-hd5-0..3.webp`, a new name so phones fetch them). An oval mouth drawn in automatically was tried and put on the wrong edge in many frames; the clip itself does not show the mouth, so a new clip is proposed. Nothing spent.
+
 - Build 584 (owner: "The edge of the bucket when it's down is off"): with the bucket tipped down, its rim still had a bite where the clip's water poured out, and grey specks of that water. In each frame, the bucket's front (the 150 px at the figure's right, above row 700) is filled to its convex hull, so the tipped rim is a straight edge; the new pixels and the grey, unwarm specks there (lum over 38, red less than blue + 18% of lum) painted from the dark wood round them: `room4-cast-hd4-0..3.webp` (hd3 removed). Nothing spent.
 
 - Build 582 (owner: "Arc is too great. Should start almost Horiz and then arc down"): the slug left the lip going up (vy -1.9 to -1). Now it leaves nearly level (vy 0 to .5), aimed at the top of the hearth's opening (`FB - PV.SPR - PV.RISE + 60`), and once inside the opening its forward speed is damped (`vx *= .55` a tick) so it strikes the back and drops into the fire instead of flying on past the far jamb. The bucket was too high and close for a level throw, so the man casting water stands 100 further from the hearth (`WK.CX` 860, was 960). Nothing spent.
