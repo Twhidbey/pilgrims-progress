@@ -32,6 +32,7 @@ Chat: **PP House · Outside & passages**. Read `notes/house.md` first (shared ru
 ## Log (newest first)
 
 - Build 539 (owner's four points): figures outside at `KO` .5 (was .58); Christian's feet `CY` 16 lower; the Interpreter stands in the doorway (inside the arch) and beckons there, no step out; the tiny far fire (it read as a light on the path) removed.
+- Build 555 (owner: "is there a way to put light in there ?"): a candle on an iron bracket on the hall's back wall at `x0 + W*.2, y0 + H*.5` (the warm pool centred on it), flame flickering on `G.t`, drawn before `inside()` so the Interpreter stands in front of it. Nothing spent.
 - Build 538 (owner: "maybe not so light"): the wall `#37312b`, halfway between build 536's and 537's.
 - Build 537 (owner: "Roof and walls too similar"): walls limewashed pale (`#423c35` with a cool top light), the roof's tiles darker and redder.
 - Build 536 (owner: "yes, both would be cool. light from house a bit strong ... also needs a door to open inward"): the walk up from the gate (`CX0` 1000, hold act `walkup`); `doorLight()` redrawn: an oak leaf hinged on the right jamb swinging in, the hall behind dimmer (a light from the left, a dark inner doorway, flagstones, shadowed vault and reveals), the path's pool .3; the Interpreter beckons on "Come in" (`interp-talk` cut to `room-interpreter-beckon.webp`, `BK`).

@@ -135,7 +135,7 @@
     if (d > .003) {
       // the hall's back wall: a warm pool from the left, falling away
       c.fillStyle = css([24, 16, 11], 1); c.fillRect(x0, y0, W, H);
-      let g = c.createRadialGradient(x0 + W * .2, y0 + H * .62, 0, x0 + W * .2, y0 + H * .62, W * 1.05);
+      let g = c.createRadialGradient(x0 + W * .2, y0 + H * .5, 0, x0 + W * .2, y0 + H * .5, W * 1.05);
       g.addColorStop(0, css([236, 168, 96], .72 * d)); g.addColorStop(.35, css([190, 116, 60], .5 * d)); g.addColorStop(.7, css([110, 62, 34], .3 * d)); g.addColorStop(1, css([60, 34, 20], 0));
       c.fillStyle = g; c.fillRect(x0, y0, W, H);
       // an inner doorway at the back, dark, a little right of the middle; the floor's flags with the light flat on them
@@ -147,6 +147,17 @@
       g = c.createLinearGradient(0, y0, 0, y0 + H * .45); g.addColorStop(0, 'rgba(8,5,3,.75)'); g.addColorStop(1, 'rgba(8,5,3,0)'); c.fillStyle = g; c.fillRect(x0, y0, W, H * .45);
       g = c.createLinearGradient(x0, 0, x0 + W * .14, 0); g.addColorStop(0, 'rgba(8,5,3,.6)'); g.addColorStop(1, 'rgba(8,5,3,0)'); c.fillStyle = g; c.fillRect(x0, y0, W * .14, H);
       g = c.createLinearGradient(x1, 0, x1 - W * .2, 0); g.addColorStop(0, 'rgba(8,5,3,.55)'); g.addColorStop(1, 'rgba(8,5,3,0)'); c.fillStyle = g; c.fillRect(x1 - W * .2, y0, W * .2, H);
+      // (build 540, owner: "is there a way to put light in there ?") the light's own source: a candle on an iron bracket on the hall's
+      // back wall, where the warm pool lies, its small flame breathing; the Interpreter stands in front of it
+      { const fl = 1 + .06 * Math.sin(G.t * .21) + .04 * Math.sin(G.t * .53 + 1), cx = x0 + W * .2, cy = y0 + H * .5, q = W / 288;
+        glow(c, cx, cy - 8 * q, 70 * q * fl, [255, 190, 110], .45 * d);
+        c.fillStyle = css([14, 9, 6], d); c.fillRect(cx - 6 * q, cy + 22 * q, 12 * q, 26 * q);
+        c.fillRect(cx - 1.5 * q, cy + 8 * q, 3 * q, 16 * q); c.fillRect(cx - 9 * q, cy + 6 * q, 18 * q, 3 * q);
+        c.fillStyle = css([226, 206, 170], .9 * d); c.fillRect(cx - 3 * q, cy - 10 * q, 6 * q, 16 * q);
+        c.fillStyle = css([90, 70, 50], .5 * d); c.fillRect(cx + 1 * q, cy - 10 * q, 2 * q, 16 * q);
+        c.save(); c.translate(cx + .6 * q * Math.sin(G.t * .37), cy - 12 * q); c.scale(q, q * fl);
+        let fg = c.createRadialGradient(0, -6, 0, 0, -6, 9); fg.addColorStop(0, css([255, 250, 225], d)); fg.addColorStop(.45, css([255, 200, 110], .9 * d)); fg.addColorStop(1, css([255, 140, 50], 0));
+        c.fillStyle = fg; c.beginPath(); c.moveTo(0, -17); c.quadraticCurveTo(5, -6, 3.2, -1); c.quadraticCurveTo(0, 2, -3.2, -1); c.quadraticCurveTo(-5, -6, 0, -17); c.fill(); c.restore(); }
       if (inside) inside();
     }
     // the door leaf: shut it fills the arch; as it swings in it narrows toward the hinge on the right
