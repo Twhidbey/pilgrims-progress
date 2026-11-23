@@ -27,7 +27,8 @@ const CR = (() => {
     plinth: { tomb: .93, P: [[0, 1], [.3, .995], [.42, .99], [.44, .84], [.47, .8], [.62, .79], [.645, .58], [.675, .55], [.82, .54], [.845, .3], [.875, .265], [1.02, .255], [1.045, .03], [1.06, 0], [1.13, 0]] },
     wedge: { tomb: .55, P: [[0, 1], [.06, .95], [.16, .82], [.27, .66], [.37, .5], [.46, .35], [.54, .23], [.62, .13], [.7, .06], [.77, .02], [.82, 0], [.9, 0]] },
     // the skull (the owner's favourite) borrowing from the others below its brow
-    skullsteps: { tomb: 1.23, P: [[0, 1], [.14, 1.003], [.26, .996], [.36, 1.004], [.47, .993], [.56, .99], [.62, .978], [0.65, 0.98], [0.77, 0.93], [0.85, 0.85], [0.9, 0.75], [0.925, 0.66], [0.915, 0.6], [0.935, 0.555], [0.97, 0.48], [1.01, 0.4], [1.05, 0.39], [1.07, 0.3], [1.15, 0.29], [1.17, 0.18], [1.27, 0.17], [1.29, 0.05], [1.35, 0.03], [1.4, 0], [1.47, 0]] },
+    // (owner, build 559: "not quite that flat, maybe halfway in between what was and what is")
+    skullsteps: { tomb: 1.005, P: [[0, 1], [.13, .996], [.26, .988], [.38, .975], [.47, .958], [0.545, 0.93], [0.625, 0.85], [0.675, 0.75], [0.7, 0.66], [0.69, 0.6], [0.71, 0.555], [0.745, 0.48], [0.785, 0.4], [0.825, 0.39], [0.845, 0.3], [0.925, 0.29], [0.945, 0.18], [1.045, 0.17], [1.065, 0.05], [1.125, 0.03], [1.175, 0], [1.245, 0]] },
     skullsoft: { tomb: .8, P: [[0, 1], [.2, .98], [.32, .93], [.4, .85], [.45, .75], [.475, .66], [.465, .6], [.485, .555], [.52, .48], [.6, .38], [.7, .28], [.8, .19], [.9, .11], [1, .05], [1.08, 0], [1.15, 0]] },
     skullwedge: { tomb: .66, P: [[0, 1], [.2, .98], [.32, .93], [.4, .85], [.45, .75], [.475, .66], [.465, .6], [.485, .555], [.52, .49], [.56, .4], [.62, .3], [.68, .21], [.74, .13], [.8, .06], [.86, .02], [.9, 0], [.97, 0]] },
     skullledge: { tomb: .78, P: [[0, 1], [.2, .98], [.32, .93], [.4, .85], [.45, .75], [.475, .66], [.465, .6], [.485, .555], [.55, .52], [.68, .5], [.72, .42], [.74, .3], [.78, .24], [.86, .15], [.92, .08], [.98, .03], [1.04, 0], [1.1, 0]] },
@@ -443,7 +444,7 @@ const CR = (() => {
   // darker as it comes down; baked once small and drawn stretched (soft), in dark alpha so it takes the hill's colour
   let ROCK = null;
   // six trial ways to tie the skull's ledges into the slope (owner: "the bulging circular layers looks separate from slope"): ?hl=a..f
-  const HL_OPT = (new URLSearchParams(location.search).get('hl') || 'a').toLowerCase();
+  const HL_OPT = (new URLSearchParams(location.search).get('hl') || 'g').toLowerCase();
   const ROCK_OPT = (new URLSearchParams(location.search).get('rock') || 'skull').toLowerCase();
   // the six trials (sketches for the owner; nothing here is used without ?hl=)
   function hillTrial(q, l, K, crag) {
@@ -469,6 +470,19 @@ const CR = (() => {
         q.beginPath(); q.moveTo(P[0][0], 60); P.forEach(([x, h]) => q.lineTo(x, -h)); q.lineTo(P[P.length - 1][0], 60); q.closePath(); q.fillStyle = fade(.1); q.fill();
         l.strokeStyle = css([255, 255, 255], .05); l.lineWidth = 1.6; l.beginPath(); let pen = false;
         P.forEach(([x, h]) => { if (h < 20 || x < SLOPE0 + 900) { pen = false; return; } pen ? l.lineTo(x, -h - 2) : l.moveTo(x, -h - 2); pen = true; }); l.stroke(); }
+    } else if (K === 'g') {
+      // G, THE BEDS OF ROCK (owner, build 559: "the layers variability and shape should all have purpose -- think about
+      // geometry of hill and how layers describe it"): the hill is a cuesta, a long gentle dip slope (the ramp) and a steep
+      // scarp (the stepped face). Its beds lie parallel to the ramp under its surface (the slope IS the top bed), turn
+      // level under the knoll, and are cut off by the scarp, where each hard bed stands out as one of the face's steps.
+      // So each band's boundary: as deep under the ramp as its step is below the crown, level under the knoll at its
+      // step's height, ending at that step; deeper beds darker; the boundary a little rough, a faint lit lip on the
+      // harder bed's top
+      const SH_ = SK_H, beds = [.75, .555, .39, .29, .17].map(v => v * SH_), seam = (a, b, k) => -k * Math.log(Math.exp(-a / k) + Math.exp(-b / k));
+      beds.forEach((hk, n) => { const d = SH_ - hk, k = 40;
+        const f = x => { const along = x <= SK_X ? gh(x) - d : SH_ - d + 2 * (x - SK_X); return seam(along, hk, k) + 3 * Math.sin(x * .013 + n * 2) + spur(x, n, 14, 90); };
+        const P = span(f, xs, SK_END + 40, 8).filter(([x, h]) => h > -40);
+        if (P.length > 2) band(P, .085 + .01 * n, .06 - .006 * n); });
     } else if (K === 'b') {
       // B: tilted bedding: long rock shelves running down from the upper left across the whole hill to the lower right
       for (let n = 0; n < 7; n++) { const o = 980 - n * 150; band(span(x => o - .28 * (x - SLOPE0) + spur(x, n, 70, 160)), .075); }
