@@ -56,7 +56,7 @@ const CR = (() => {
   };
   const SH0 = SHAPES[SHAPE] || SHAPES.skull;
   // (owner, build 558: "the hill can be bigger and long flat space on top"): H_TOP 1050 (was 860)
-  const H_TOP = +(new URLSearchParams(location.search).get('htop') || 1500), START = 480, WALL_END = 860, TOMB_X = 4380 + SH0.tomb * (H_TOP + 30), SLOPE0 = 1180, CREST0 = 4080, CROSS_X = /[?&]look=f\b/.test(location.search) ? 5000 : 4820, CREST1 = 4400, FALL1 = 5340;
+  const H_TOP = +(new URLSearchParams(location.search).get('htop') || 1500), START = 480, WALL_END = 860, TOMB_X = 4380 + SH0.tomb * (H_TOP + 30), SLOPE0 = 1180, CREST0 = 4080, CROSS_X = 4820, CREST1 = 4400, FALL1 = 5340;
   // GOLGOTHA, AFTER THE OWNER'S SKETCH (build 545): a smooth swooping ramp up from the left that meets the top of a round
   // rocky knoll shaped like a skull's crown (SK_X its top, SK_L / SK_R how far its dome reaches left and right)
   const SK_X = 4380, SK_L = 1000, SK_R = FALL1 - 4380, SK_H = H_TOP + 30, RAMP1 = SK_X - 260;
@@ -138,14 +138,14 @@ const CR = (() => {
   // its alpha now its own skyline) and the land's outline follows that skyline over them (PIN_TAB, painting units at
   // SK_H 1080 from painting x 4560 every 8), so they are not clipped away; the walk (gh) is unchanged; the cross's foot
   // is on the highest pinnacle (crossH)
-  const PIN_ON = /[?&]look=f\b/.test(location.search), HP_TOP = PIN_ON ? -1243.17 : -1089.42, HP_H = PIN_ON ? 1247.5 : 1093.75;
-  const PIN_TAB = [1076,1076,1075,1075,1075,1075,1074,1075,1075,1076,1076,1076,1076,1077,1078,1078,1078,1077,1072,1070,1063,1070,1078,1085,1095,1106,1116,1124,1132,1143,1155,1163,1168,1163,1147,1119,1087,1090,1083,1137,1143,1144,1142,1132,1128,1124,1081,1075,1075,1081,1099,1122,1122,1124,1122,1110,1055,1035,1015,1023,1018,1006,984,959,935,905,854,804,780,757,736,634,625,616,607,589,568,524,523,518,479,470,461,446,437,436,433,425,415,406,396,378,331,327,328,330], PIN0 = 4560, PIN1 = PIN0 + 8 * (PIN_TAB.length - 1);
+  const PIN_ON = /[?&]look=f\b/.test(location.search), HP_TOP = PIN_ON ? -1092.95 : -1089.42, HP_H = PIN_ON ? 1097.28 : 1093.75;
+  const PIN_TAB = [1077,1076,1076,1075,1075,1074,1074,1074,1075,1076,1076,1076,1076,1077,1078,1078,1077,1077,1071,1065,1056,1057,1057,1057,1058,1059,1059,1057,1055,1055,1057,1057,1056,1046,1028,1002,973,976,970,1016,1021,1021,1019,1012,1008,1004,968,963,964,968,984,1003,1003,1004,1002,993,947,932,918,928,929,925,912,897,884,863,822,781,764,747,730,632,623,616,607,590,568,524,523,518,479,470,461,446,437,436,433,425,415,405,396,378,331,328,328,330], PIN0 = 4560, PIN1 = PIN0 + 8 * (PIN_TAB.length - 1);
   function ptop(x) { const s = SK_H / 1080, xp = 4380 + (x - SK_X) / s; if (xp < PIN0 || xp > PIN1) return -1;
     const f = (xp - PIN0) / 8, i = Math.floor(f); return s * lerp(PIN_TAB[i], PIN_TAB[Math.min(PIN_TAB.length - 1, i + 1)], f - i); }
   function pinOutline(O) { const s = SK_H / 1080, wa = SK_X + (PIN0 - 4380) * s, wb = SK_X + (PIN1 - 4380) * s, R = [];
     let put = false;
     for (const p of O) { if (p[0] < wa || p[0] > wb) { R.push(p); continue; }
-      if (!put) { put = true; for (let x = wa; x <= wb; x += 4) { let base = 0; for (const q of O) if (q[0] <= x) base = -q[1]; const w = smooth(wa + 160, wa + 260, x); R.push([x, -Math.max(base, lerp(base, ptop(x), w))]); } } }
+      if (!put) { put = true; for (let x = wa; x <= wb; x += 4) { let base = 0; for (const q of O) if (q[0] <= x) base = -q[1]; const w = smooth(wa + 160, wa + 260, x); const pt = ptop(x); R.push([x, -(pt < 0 ? base : lerp(base, pt, w))]); } } }
     return R; }
   function crossH() { if (PIN_ON && HPAINT) { const t = ptop(CROSS_X); if (t > 0) return t; } return gh(CROSS_X); }
   // ---------- the words (Bunyan's, shortened and made plain) ----------
@@ -206,7 +206,7 @@ const CR = (() => {
     // the hill painted by the image model (round 2 of the owner's hill): rounded weathered rock, toned dark grey, its left
     // end faded into the drawn ramp; cropped to the rock at 1.5 px a world unit (at SK_H 1080): world x 2834 to 5654, height 1089 down to 2 below the ground
     // ?look=f: the hill painted as Friedrich's crag (build 606), laid on the same outline as the old painting
-    if (HP_ON) loadImg(LOOKF ? 'hill-crag.webp?v=607' : 'hill-cross.webp?v=601').then(im => { HPAINT = im; }).catch(() => {});
+    if (HP_ON) loadImg(LOOKF ? 'hill-crag.webp?v=608' : 'hill-cross.webp?v=601').then(im => { HPAINT = im; }).catch(() => {});
     // the burning hill's own painted rock (Level 3), made a grey tile as hill.js makes it, laid over the hill in 'overlay'
     loadImg('hill-rock.webp').then(rock => { const sx = 720, sy = 540, w = 780, h = 600, t = document.createElement('canvas'); t.width = w; t.height = h; const q = t.getContext('2d'); q.drawImage(rock, sx, sy, w, h, 0, 0, w, h);
       const d = q.getImageData(0, 0, w, h), D = d.data; let m = 0; for (let i = 0; i < D.length; i += 4) m += D[i] * .3 + D[i + 1] * .59 + D[i + 2] * .11; m /= D.length / 4;
@@ -1311,8 +1311,7 @@ const CR = (() => {
       if (t >= 90 && robe >= .5 && CWALK.ready) { if (Ch.wo == null) { Ch.wo = 0; Ch.wa = 0; }
         const f0 = Math.floor(Ch.wa) % CWALK.length; Ch.wa += 16 / 60; Ch.x += CWALK_META.vpx * CHR_K * 16 / 60; Ch.wo++;
         const f1 = Math.floor(Ch.wa) % CWALK.length; if (f1 !== f0 && (f1 === 0 || f1 === 14) && audio()) groundStep(1, .9);
-        // ?look=f: the cross stands on the summit's pinnacle, so his walk on ends at the rock's foot
-        if ((Ch.wo > 470 || (PIN_ON && Ch.x >= CROSS_X - 175)) && G.state !== 'end') finish(); }
+        if (Ch.wo > 470 && G.state !== 'end') finish(); }
       else if (t > 200 && G.state !== 'end') finish();
     }
     // a breath of quiet between one speaker and the next in a talk, so each voice is heard as its own person (owner, build 458)
