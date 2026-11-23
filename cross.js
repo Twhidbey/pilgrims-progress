@@ -37,6 +37,14 @@ const CR = (() => {
     sk2: { tomb: 1.005, P: [[0, 1], [.13, .996], [.26, .988], [.38, .975], [.47, .958], [.545, .93], [.625, .85], [.675, .75], [.715, .66], [.735, .6], [.705, .565], [.69, .53], [.71, .49], [.77, .44], [.8, .4], [.79, .37], [.82, .34], [.845, .3], [.925, .29], [.945, .18], [1.045, .17], [1.065, .05], [1.125, .03], [1.175, 0], [1.245, 0]] },
     sk3: { tomb: .74, P: [[0, 1], [.13, .996], [.26, .988], [.38, .975], [.47, .958], [.545, .93], [.625, .85], [.675, .75], [.715, .66], [.735, .6], [.705, .565], [.69, .53], [.71, .49], [.745, .42], [.78, .36], [.79, .32], [.77, .3], [.79, .27], [.86, .24], [.88, .2], [.84, .17], [.8, .15], [.82, .1], [.86, .05], [.9, .02], [.95, 0], [1.02, 0]] },
     sk4: { tomb: .64, P: [[0, 1], [.13, .996], [.26, .988], [.38, .975], [.47, .958], [.545, .93], [.625, .85], [.675, .75], [.715, .66], [.735, .6], [.7, .56], [.72, .52], [.75, .47], [.73, .44], [.76, .4], [.765, .36], [.75, .345], [.765, .33], [.76, .29], [.78, .25], [.74, .22], [.66, .21], [.68, .15], [.72, .08], [.78, .03], [.84, 0], [.9, 0]] },
+    // skull-like profiles after a real skull's side view (owner, build 561: "look up skull profiles ... i think you are
+    // thinking face profiles"): a big round braincase, the small face low at the front, the brow (glabella), the notch at
+    // the root of the nose (nasion), a short nasal bone then the deep nose hole, the upper jaw jutting with its teeth, the
+    // lower jaw's long straight edge running back to its corner (gonion). The eye socket is a hole, not on the outline.
+    k1: { tomb: .86, P: [[0, 1], [.15, .99], [.3, .96], [.43, .9], [.54, .81], [.62, .71], [.67, .62], [.7, .55], [.69, .51], [.675, .49], [.7, .45], [.72, .415], [.695, .4], [.685, .37], [.7, .3], [.78, .29], [.8, .18], [.9, .17], [.92, .05], [.98, .03], [1.03, 0], [1.1, 0]] },
+    k2: { tomb: .7, P: [[0, 1], [.15, .99], [.3, .96], [.43, .9], [.54, .81], [.62, .71], [.67, .62], [.7, .55], [.69, .51], [.675, .49], [.7, .45], [.72, .415], [.695, .4], [.685, .37], [.71, .355], [.72, .32], [.725, .285], [.721, .272], [.728, .262], [.72, .25], [.74, .2], [.77, .17], [.82, .12], [.87, .06], [.93, .02], [.99, 0], [1.06, 0]] },
+    k3: { tomb: .38, P: [[0, 1], [.15, .99], [.3, .96], [.43, .9], [.54, .81], [.62, .71], [.67, .62], [.7, .55], [.69, .51], [.675, .49], [.7, .45], [.72, .415], [.695, .4], [.685, .37], [.71, .355], [.72, .32], [.725, .285], [.721, .272], [.728, .262], [.72, .25], [.73, .24], [.724, .23], [.73, .22], [.72, .2], [.735, .16], [.72, .13], [.69, .12], [.55, .125], [.47, .13], [.45, .09], [.47, .04], [.52, 0], [.6, 0]] },
+    k4: { tomb: .4, P: [[0, 1], [.15, .99], [.3, .96], [.43, .9], [.54, .81], [.62, .71], [.67, .62], [.68, .6], [.72, .5], [.71, .46], [.695, .44], [.72, .4], [.745, .36], [.715, .34], [.7, .3], [.73, .28], [.745, .23], [.75, .18], [.745, .15], [.752, .12], [.742, .09], [.75, .06], [.73, .04], [.66, .035], [.6, .06], [.53, .05], [.5, .02], [.52, 0], [.6, 0]] },
     shoulder: { tomb: .74, P: [[0, 1], [.12, .97], [.2, .9], [.235, .79], [.27, .7], [.33, .64], [.5, .6], [.62, .57], [.655, .47], [.675, .34], [.7, .27], [.76, .2], [.84, .12], [.92, .05], [.98, 0], [1.05, 0]] },
   };
   const SH0 = SHAPES[SHAPE] || SHAPES.skull;
@@ -460,7 +468,7 @@ const CR = (() => {
     // fill the region below an edge given as points [x, h], with a lit lip along it
     const band = (P, a, lip = .05) => { q.beginPath(); q.moveTo(P[0][0], 60); P.forEach(([x, h]) => q.lineTo(x, -h)); q.lineTo(P[P.length - 1][0], 60); q.closePath(); q.fillStyle = css([0, 0, 0], a); q.fill();
       l.strokeStyle = css([255, 255, 255], lip); l.lineWidth = 1.6; l.beginPath(); P.forEach(([x, h], i) => i ? l.lineTo(x, -h - 2) : l.moveTo(x, -h - 2)); l.stroke(); };
-    const span = (f, x0 = xs, x1 = SK_END + 40, st = 8) => { const P = []; for (let x = x0; x <= x1; x += st) P.push([x, f(x)]); return P; };
+    const span = (f, x0 = xs, x1 = Math.max(SK_END, ...SKO.map(p => p[0])) + 40, st = 8) => { const P = []; for (let x = x0; x <= x1; x += st) P.push([x, f(x)]); return P; };
     if (K === 'a') {
       // A: the ledges run the WHOLE hill: nested copies of the whole outline, ramp and skull together, drawn in toward the tomb
       const cx0 = TOMB_X - 200;
@@ -486,7 +494,7 @@ const CR = (() => {
       const SH_ = SK_H, beds = [.75, .555, .39, .29, .17].map(v => v * SH_), seam = (a, b, k) => -k * Math.log(Math.exp(-a / k) + Math.exp(-b / k));
       beds.forEach((hk, n) => { const d = SH_ - hk, k = 40;
         const f = x => { const along = x <= SK_X ? gh(x) - d : SH_ - d + 2 * (x - SK_X); return seam(along, hk, k) + 3 * Math.sin(x * .013 + n * 2) + spur(x, n, 14, 90); };
-        const P = span(f, xs, SK_END + 40, 8).filter(([x, h]) => h > -40);
+        const P = span(f, xs, Math.max(SK_END, ...SKO.map(p => p[0])) + 40, 8).filter(([x, h]) => h > -40);
         if (P.length > 2) band(P, .085 + .01 * n, .06 - .006 * n); });
     } else if (K === 'b') {
       // B: tilted bedding: long rock shelves running down from the upper left across the whole hill to the lower right
