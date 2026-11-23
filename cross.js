@@ -975,46 +975,51 @@ const CR = (() => {
   // Morning in the Riesengebirge; his walk up to the cross is unchanged (gh is not touched). Each tower is one rough
   // shape lit from the low sun on the left: its left faces warm and bright, its right faces in shade, a lit rim along
   // its tops, a few dark cracks; laid in the hill's own burnt orange so it grows out of the rock.
-  const CRAG_LIFT = 96;
-  // towers: [centre from the cross, width, height above the ground under it, seed]
-  const CRAG = [[-10, 120, CRAG_LIFT + 4, 1], [-70, 70, 46, 2], [95, 110, 150, 3], [190, 90, 92, 4], [290, 120, 130, 5], [400, 90, 70, 6], [500, 110, 96, 7], [600, 80, 48, 8]];
+  const CRAG_LIFT = 60;
+  // ONE broken mass, not separate towers (a row of separate towers read as standing stones): its height above the hill
+  // is the highest of a few pinnacles (each a rough steep-sided peak) with a broken, stepped edge, fading out at both ends
+  // into the hill. The cross stands on the first pinnacle.
+  const CPK = [[0, CRAG_LIFT, 70, 1.1], [-120, 26, 90, 1], [110, 120, 110, 1.4], [220, 70, 90, 1], [330, 104, 120, 1.3], [470, 52, 110, 1], [600, 66, 90, 1.2], [720, 28, 110, 1]];
+  const CX0 = CROSS_X - 260, CX1 = CROSS_X + 860;
   let CRAGP = null;
   function cragShapes() {
     if (CRAGP) return CRAGP;
-    CRAGP = CRAG.map(([dx, w, H, sd]) => {
-      const r = rgen(300 + sd), bx = CROSS_X + dx, gL = gh(bx - w / 2), gR = gh(bx + w / 2), base = Math.max(gL, gR) - 40, top = gh(bx) + H;
-      const L = [], R = [], n = 6;
-      // the left side climbs in rough steps to the top, the right falls in steps; the top a few broken teeth
-      for (let i = 0; i <= n; i++) { const t = i / n; L.push([bx - w / 2 + w * .22 * t + (r() - .5) * w * .1, -(base + (top - base) * t * (.92 + .1 * r()))]); }
-      const T = []; for (let i = 1; i < 5; i++) T.push([bx - w * .28 + w * .56 * i / 5 + (r() - .5) * 8, -(top - (i % 2 ? 0 : 6 + 12 * r()))]);
-      for (let i = n; i >= 0; i--) { const t = i / n; R.push([bx + w / 2 - w * .2 * t + (r() - .5) * w * .1, -(base + (top - base) * t * (.9 + .1 * r()))]); }
-      const cracks = []; for (let k = 0; k < 3; k++) { const x = bx + (r() - .5) * w * .5, y0 = -top * (.95 - .2 * r()); cracks.push([[x, y0], [x + (r() - .5) * 12, y0 + 30 + 40 * r()], [x + (r() - .5) * 16, y0 + 70 + 50 * r()]]); }
-      return { pts: [...L, ...T, ...R], bx, w, top, base, cracks };
-    });
-    return CRAGP;
+    const r = rgen(431), H = [];
+    for (let x = CX0; x <= CX1; x += 4) {
+      let h = 0;
+      for (const [dx, ph, hw, p] of CPK) { const u = Math.abs(x - CROSS_X - dx) / hw; if (u < 1) h = Math.max(h, ph * (1 - Math.pow(u, p))); }
+      // a broken, stepped edge: flat ledges and sudden small drops
+      h = Math.max(0, Math.round(h / 7) * 7 + (r() - .5) * 5);
+      // gone at both ends, into the hill
+      h *= smooth(CX0, CX0 + 120, x) * (1 - smooth(CX1 - 160, CX1, x));
+      H.push([x, h]);
+    }
+    // a little smoothing so the steps are ledges, not saw teeth
+    const S = H.map(([x], i) => [x, (H[Math.max(0, i - 1)][1] + 2 * H[i][1] + H[Math.min(H.length - 1, i + 1)][1]) / 4]);
+    return (CRAGP = S);
   }
   function crag(c) {
     if (!LOOKF) return;
-    const hc = mix(mix([46, 38, 34], [92, 58, 40], dawn), [146, 80, 42], gold);
-    const lit = mix(hc, [255, 186, 120], .2 + .25 * gold), shade = mix(hc, [18, 12, 12], .45);
-    // drawn far to near: the towers right of the cross first, the cross's own pinnacle last
-    [...cragShapes()].reverse().forEach(t => {
-      c.save(); c.beginPath(); t.pts.forEach(([x, y], i) => i ? c.lineTo(x, y) : c.moveTo(x, y)); c.closePath();
-      c.fillStyle = css(hc); c.fill(); c.clip();
-      // lit left faces, shaded right faces, the break a little left of the middle
-      const g = c.createLinearGradient(t.bx - t.w / 2, 0, t.bx + t.w / 2, 0);
-      g.addColorStop(0, css(lit, .9)); g.addColorStop(.38, css(lit, .55)); g.addColorStop(.46, css(shade, .5)); g.addColorStop(1, css(shade, .8));
-      c.fillStyle = g; c.fillRect(t.bx - t.w, -t.top - 20, t.w * 2, t.top - t.base + 40);
-      // darker toward its foot, so it grows out of the hill
-      const v = c.createLinearGradient(0, -t.top, 0, -t.base); v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, css(shade, .55));
-      c.fillStyle = v; c.fillRect(t.bx - t.w, -t.top - 20, t.w * 2, t.top - t.base + 40);
-      // cracks
-      c.strokeStyle = css(shade, .7); c.lineWidth = 1.6; t.cracks.forEach(k => { c.beginPath(); k.forEach(([x, y], i) => i ? c.lineTo(x, y) : c.moveTo(x, y)); c.stroke(); });
-      c.restore();
-      // the low sun on its top and left edges
-      if (gold > .02) { c.save(); c.strokeStyle = css([255, 214, 150], .55 * gold); c.lineWidth = 2; c.beginPath();
-        const n = Math.ceil(t.pts.length * .55); t.pts.slice(0, n).forEach(([x, y], i) => i ? c.lineTo(x, y) : c.moveTo(x, y)); c.stroke(); c.restore(); }
-    });
+    const S = cragShapes(), hc = mix(mix([46, 38, 34], [92, 58, 40], dawn), [146, 80, 42], gold);
+    const lit = mix(hc, [255, 190, 124], .18 + .3 * gold), shade = mix(hc, [20, 12, 12], .5);
+    c.save(); c.beginPath(); c.moveTo(S[0][0], -gh(S[0][0]) + 30);
+    S.forEach(([x, h]) => c.lineTo(x, -(gh(x) + h)));
+    for (let i = S.length - 1; i >= 0; i -= 4) c.lineTo(S[i][0], -gh(S[i][0]) + 30);
+    c.closePath(); c.fillStyle = css(hc); c.fill(); c.clip();
+    // each face lit by its slope: faces turned to the low sun on the left (rising to the right) warm and bright, faces
+    // turned away in shade; strips four units wide, so the faces read as planes
+    for (let i = 2; i < S.length - 2; i++) {
+      const [x, h] = S[i], sl = (S[i + 2][1] - S[i - 2][1]) / 16, top = gh(x) + h, k = smooth(-.5, .5, sl);
+      const g = c.createLinearGradient(0, -top, 0, -gh(x) + 30);
+      g.addColorStop(0, css(mix(shade, lit, k), .95)); g.addColorStop(.55, css(mix(shade, lit, k * .6), .7)); g.addColorStop(1, css(shade, .6));
+      c.fillStyle = g; c.fillRect(x - 2, -top - 2, 4.6, top - gh(x) + 34);
+    }
+    c.restore();
+    // the low sun along the edges that face it
+    if (gold > .02) { c.save(); c.lineWidth = 2; c.lineCap = 'round';
+      for (let i = 2; i < S.length - 2; i++) { const [x, h] = S[i], sl = (S[i + 2][1] - S[i - 2][1]) / 16; if (sl > .15 || (Math.abs(sl) < .1 && h > 20)) {
+        c.strokeStyle = css([255, 218, 156], .6 * gold * Math.min(1, h / 30)); c.beginPath(); c.moveTo(x - 2, -(gh(x - 2) + S[i - 1][1])); c.lineTo(x + 2, -(gh(x + 2) + S[i + 1][1])); c.stroke(); } }
+      c.restore(); }
   }
   function cross(c) {
     const x = CROSS_X, h = gh(x) + (LOOKF ? CRAG_LIFT : 0), col = mix(mix([20, 20, 27], [22, 20, 24], dawn), [30, 22, 20], gold), H = CROSS_H, T = 14, bw = 186, by = CROSS_BY;
