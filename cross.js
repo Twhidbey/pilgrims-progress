@@ -134,12 +134,6 @@ const CR = (() => {
     if (xb > SK_X) { for (const [x, h] of SKO) O.push([x, -h]); for (let x = SK_END + step; x <= xb; x += step) O.push([x, 0]); }
     return O; }
   // ---------- the words (Bunyan's, shortened and made plain) ----------
-  // his thoughts as he relives his way on the slope (build 589); the third is Bunyan's ({65}, to Good-will), the others ours
-  const RELINES = [
-    [C, 'I ran from my own door. It was God\u2019s mercy that I ran.'],
-    [C, 'I sank in the mire. Yet a hand was given me.'],
-    [C, 'It was God\u2019s mercy that Evangelist came to me again.'],
-  ];
   const OPEN = [[N, 'Up the highway between its walls Christian ran, but not without great difficulty, because of the load on his back.']];      // {92}
   const ASCEND = [[N, 'He came to a place somewhat ascending, and upon that place stood a cross, and a little below, a sepulchre.']];      // {93}
   const LOOSED = [[N, 'Just as Christian came up with the cross, his burden loosed from off his shoulders, and fell from off his back.']];      // {93}
@@ -161,7 +155,7 @@ const CR = (() => {
     [TIP, 'Touch Christian to leap for joy.', 'leap'],
     [C, 'Blest cross! Blest sepulchre! Blest rather be the Man that there was put to shame for me!', 0, () => { blest = 1; }],      // vision chat: his song ({94})
   ];
-  const ALL = [...OPEN, ...RELINES, ...ASCEND, ...LOOSED, ...TUMBLE, ...GLAD, ...LOOKED, ...SHINE, ...LEAPS];
+  const ALL = [...OPEN, ...ASCEND, ...LOOSED, ...TUMBLE, ...GLAD, ...LOOKED, ...SHINE, ...LEAPS];
 
   // ---------- pictures ----------
   // HE KNEELS IN THE SILENCE (awe study, owner: "yes 1-3 please"): once the burden is gone he steps in and sinks to one
@@ -934,7 +928,7 @@ const CR = (() => {
 
   // ---------- the story ----------
   function reset0() {
-    blest = 0; tumbleT = 0; sepT = -1; memT = -1; memS = []; memUntil = 0; memQ = 0; REL.forEach(m => { m.a = 0; m.said = false; m.cv = m.front = null; }); tearT = -1; looked = false; Object.assign(Ch, { x: START, anim: 12, sd: QUIET[0], cf: -1, hop: 0, hops: 0, lastV: 0, fade: 0, hv: 0, face: 1, tv: null, run: 0, ranim: 0, cc: 0, lp: null, wo: null, wa: 0, kn: null, kup: false });
+    blest = 0; tumbleT = 0; sepT = -1; memT = -1; memS = []; memUntil = 0; memQ = 0; REL.forEach(m => { m.a = 0; m.said = false; m.cv = m.front = null; }); relGW = false; tearT = -1; looked = false; Object.assign(Ch, { x: START, anim: 12, sd: QUIET[0], cf: -1, hop: 0, hops: 0, lastV: 0, fade: 0, hv: 0, face: 1, tv: null, run: 0, ranim: 0, cc: 0, lp: null, wo: null, wa: 0, kn: null, kup: false });
     bur = null; dawn = gold = goldTo = sun = robe = robeTo = mark = markTo = rollShow = rollGone = shine = shineTo = gone = goneTo = 0; wideK = 1; wideTo = 1;
     said = {}; hymn = null; silenceT = 0; tombT = 0; leapsLeft = 3; endT = 0; quietPad = 0; t = 0; rollFly = rollAt = null; closeK = topK = topTo = veil = 0; climb = null;
   }
@@ -950,7 +944,7 @@ const CR = (() => {
     wideK = wideTo = 0;
     const at = new URLSearchParams(location.search).get('at');
     if (typeof dropPlace === 'function') dropPlace();
-    if (at === 'cross') { ph = 'walk'; Ch.x = STOP_X - 260; Ch.sd = null; wideK = wideTo = 0; said.open = said.ascend = said.cut = true; dawn = .6; memT = 2000; memS = MEMS.map(() => 0); REL.forEach(m => { m.said = true; }); }
+    if (at === 'cross') { ph = 'walk'; Ch.x = STOP_X - 260; Ch.sd = null; wideK = wideTo = 0; said.open = said.ascend = said.cut = true; dawn = .6; memT = 2000; memS = MEMS.map(() => 0); REL.forEach(m => { m.said = true; }); relGW = true; }
     camTick(true);
     if (audio()) { AC.resume(); if (rainG) rainG.gain.setTargetAtTime(0, AC.currentTime, .8); padStart(); }
     G.state = 'wait';
@@ -1034,7 +1028,7 @@ const CR = (() => {
       // Good-will's promise last, just before he comes to the cross
       if (!REL_ON && memT < 0 && Ch.x > SLOPE0 && said.open && !busy()) memT = 0;
       // after the last memory, about three seconds of quiet before the storyteller speaks (owner, build 452)
-      const memDone = REL_ON ? REL.every(m => m.said) && memQ >= 150 : memT >= memLast() + 300 && G.t >= memUntil + 180;
+      const memDone = REL_ON ? REL.every(m => m.said) && relGW && memQ >= 150 : memT >= memLast() + 300 && G.t >= memUntil + 180;
       if (!said.ascend && memDone && Ch.x > CREST0 - 900 && !busy()) { said.ascend = true; caption(ASCEND); sepT = 0; }
       // "and a little below, a sepulchre": the camera draws back and down to show it, then comes back up to him (owner,
       // build 452); he stands still while it looks
@@ -1242,7 +1236,11 @@ const CR = (() => {
     { img: 'mem-slough', R: 776, k: REL_K * 1.3, x0: 1950, on: [2250, 3010], up: [350, 560], below: 80, glow: .07, dark: .5, lift: u => 74 * smooth(120, 420, u) * (1 - smooth(600, 820, u)) },
     { img: 'mem-hill-mono', R: 926, k: REL_K, x0: 2900, on: [3050, 3900], up: [400, 590], below: 60, glow: .2, dark: .8 },
   ];
-  REL.forEach((m, i) => { m.a = 0; m.said = false; m.line = RELINES[i]; });
+  // what he hears in each is the voice he heard there (owner, build 595: "i wonder if other people's messages as we did
+  // with the memories is better"): his wife at the door, Help, Evangelist's God-speed; and last, near the top, with no
+  // picture, Good-will's promise, heard as it comes true. All existing recordings (MEMS), nothing new to record.
+  REL.forEach((m, i) => { m.a = 0; m.said = false; m.voice = MEMS[[2, 3, 4][i]]; });
+  const REL_GW_X = 4000; let relGW = false;
   function relBake(m) {
     const im = RIM[m.img]; if (!im) return false;
     const k = m.k, Wu = im.width * k, Z = REL_Z, n = Math.ceil(Wu * Z), lift = m.lift || (() => 0);
@@ -1280,10 +1278,11 @@ const CR = (() => {
       m.a += (inIt - m.a) * (inIt ? .05 : .04); if (m.a < .004 && !inIt) { m.a = 0; m.cv = m.front = null; }
       if ((inIt || Ch.x > m.on[0] - 260 && Ch.x < m.on[1] && ph === 'walk') && !m.cv) relBake(m);
       // his thought, once he is well into it, and never over another voice
-      if (inIt && !m.said && Ch.x >= m.on[0] + 110 && said.open && !busy() && memQ >= 40) { m.said = true; caption([m.line]); }
+      if (inIt && !m.said && Ch.x >= m.on[0] + 110 && said.open && !busy() && memQ >= 40) { m.said = true; memVoice(m.voice); }
       // a memory he ran through before its words could be said keeps them unsaid no longer than its own stretch
       if (!m.said && Ch.x >= m.on[1]) m.said = true;
     });
+    if (!relGW && ph === 'walk' && Ch.x >= REL_GW_X && REL.every(m => m.said) && said.open && !busy() && memQ >= 60) { relGW = true; memVoice(MEMS[5]); }
   }
   function relive(c, front) {
     if (!REL_ON) return;

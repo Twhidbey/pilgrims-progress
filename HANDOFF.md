@@ -3,6 +3,8 @@
 The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build step; until build 118 it was called `story-lab.html`: read that name below as `index.html`). `style-lab.html` is the art-style test page. `CLAUDE.md` maps the code and records the owner's decisions. Work on **`main`** and push after every change: pushing IS publishing (GitHub Pages, https://twhidbey.github.io/pilgrims-progress/). Bump the build stamp in both pages on every push and tell the owner when it is live (a phone may need `?v=N` on the link). Keep this file and `CLAUDE.md` updated. Public repo: no personal details.
 
 
+**Build 595 (Level 5 ideas chat): Level 5's relived memories now play the existing recordings of what he heard there (his wife, Help, Evangelist's God-speed, then Good-will's promise near the top); Christian's three new lines were dropped unrecorded. Nothing spent.**
+
 **Build 590 (Level 5 ideas chat): the burning hill's memory on Level 5's slope nearly one grey tone, its fire a pale warmth (`mem-hill-mono.webp`). Nothing spent.**
 
 **Build 589 (Level 5 ideas chat): the sky memories on Level 5's climb are replaced by three pictures of the game laid on the slope as he runs through them (the street past his door, the mire with Help and the oak, the burning hill), a little see-through, with Christian's thought in each (`REL`, `RELINES` in `cross.js`; `?skymem=1` for the old). The three lines are NOT recorded yet (about 3 cents, waiting on the owner's yes). Nothing spent.**
