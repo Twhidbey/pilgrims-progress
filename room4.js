@@ -76,7 +76,7 @@
   // the cast's frames sharpened by Real-ESRGAN to twice their size (LIPF stays in the clip's own pixels)
   // the two free clips (build 564): the man casting water (49 frames at 16 a second, facing right, as his picture) and the one pouring
   // oil (49 frames, facing left), each cut from white, its water and the paper in the bucket and the crook of his arm taken out
-  const CASTV = { n: 'room4-cast-hd', parts: 4, per: 13, ax: 239.4, g: 812, cols: 8, fr: 49, W: 680, H: 822, s: .775, ct: 1, mul: 1, sat: 0, noSh: 1 };
+  const CASTV = { n: 'room4-cast-hd2', parts: 4, per: 13, ax: 239.4, g: 812, cols: 8, fr: 49, W: 680, H: 822, s: .775, ct: 1, mul: 1, sat: 0, noSh: 1 };
   const POURV = { n: 'room4-pour', ax: 71.7, g: 375, cols: 8, fr: 49, W: 152, H: 380, s: 1.7, ct: 1, mul: 1, sat: 1, noSh: 1 };
   // where his bucket's lip is at the throw (cell pixels, frames 19 to 24), and the jug's spout through the pouring loop
   const LIPF = { 19: [296, 136], 20: [304, 103], 21: [309, 80], 22: [301, 83], 23: [299, 76], 24: [301, 78] };

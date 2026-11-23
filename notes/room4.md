@@ -36,6 +36,8 @@ Chat: **PP House · Room 4 Fire**. Read `notes/house.md` first (shared rules, bu
 
 ## Log (newest first)
 
+- Build 575: the water-caster cut again from the clip without filling the gaps shut in by his arms and the bucket (only pinholes under 40 px filled; the paper between his arms is now clear, the wall shows through), sharpened again (Real-ESRGAN), pinholes under 150 px closed, pale specks of the clip's water at the bucket's mouth cleared: as `room4-cast-hd2-0..3.webp` (a new name so phones fetch it; the hd sheets removed). Nothing spent.
+
 - Build 573 (owner: "You can take blue off his face - also three dark between his arms that need cropping"): his skin kept a trace of the clip's pinkish colour, grey-mauve against the orange wall; now none of the clip's colour is kept (`CASTV.sat` 0), so he is wholly the room's warm brown. The dark between his arms (paper I had filled) is being cut open in the next build. Nothing spent.
 
 - Build 572: the water-caster's 49 frames sharpened free with Real-ESRGAN (x4plus, on the CPU here with spandrel; the clear area filled with edge colours first, then made at twice the size), the pinholes round the filled patch in his bucket closed: `assets/room4-cast-hd-0..3.webp` (four sheets of 13, 680 x 822 a frame, `CASTV` `parts` 4; `room4-cast.webp` removed). The lip positions `LIPF` stay in the clip's own pixels (doubled in code). The one pouring oil was not upscaled (his face is hidden in the hood). Nothing spent.
