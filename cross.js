@@ -975,11 +975,11 @@ const CR = (() => {
   // Morning in the Riesengebirge; his walk up to the cross is unchanged (gh is not touched). Each tower is one rough
   // shape lit from the low sun on the left: its left faces warm and bright, its right faces in shade, a lit rim along
   // its tops, a few dark cracks; laid in the hill's own burnt orange so it grows out of the rock.
-  const CRAG_LIFT = 60;
+  const CRAG_LIFT = 78;
   // ONE broken mass, not separate towers (a row of separate towers read as standing stones): its height above the hill
   // is the highest of a few pinnacles (each a rough steep-sided peak) with a broken, stepped edge, fading out at both ends
   // into the hill. The cross stands on the first pinnacle.
-  const CPK = [[0, CRAG_LIFT, 70, 1.1], [-120, 26, 90, 1], [110, 120, 110, 1.4], [220, 70, 90, 1], [330, 104, 120, 1.3], [470, 52, 110, 1], [600, 66, 90, 1.2], [720, 28, 110, 1]];
+  const CPK = [[0, CRAG_LIFT + 6, 150, 1.5], [-150, 20, 110, 1], [150, 58, 90, 1.3], [260, 40, 80, 1], [380, 64, 110, 1.4], [520, 34, 110, 1], [650, 44, 90, 1.2], [760, 18, 110, 1]];
   const CX0 = CROSS_X - 260, CX1 = CROSS_X + 860;
   let CRAGP = null;
   function cragShapes() {
@@ -988,8 +988,10 @@ const CR = (() => {
     for (let x = CX0; x <= CX1; x += 4) {
       let h = 0;
       for (const [dx, ph, hw, p] of CPK) { const u = Math.abs(x - CROSS_X - dx) / hw; if (u < 1) h = Math.max(h, ph * (1 - Math.pow(u, p))); }
+      // a small flat top under the cross's foot
+      if (Math.abs(x - CROSS_X) < 22) h = Math.max(h, CRAG_LIFT);
       // a broken, stepped edge: flat ledges and sudden small drops
-      h = Math.max(0, Math.round(h / 7) * 7 + (r() - .5) * 5);
+      h = Math.max(0, Math.round(h / 7) * 7 + (r() - .5) * 3 * Math.min(1, h / 20));
       // gone at both ends, into the hill
       h *= smooth(CX0, CX0 + 120, x) * (1 - smooth(CX1 - 160, CX1, x));
       H.push([x, h]);
@@ -1009,7 +1011,7 @@ const CR = (() => {
     // each face lit by its slope: faces turned to the low sun on the left (rising to the right) warm and bright, faces
     // turned away in shade; strips four units wide, so the faces read as planes
     for (let i = 2; i < S.length - 2; i++) {
-      const [x, h] = S[i], sl = (S[i + 2][1] - S[i - 2][1]) / 16, top = gh(x) + h, k = smooth(-.5, .5, sl);
+      const [x, h] = S[i], j0 = Math.max(0, i - 4), j1 = Math.min(S.length - 1, i + 4), sl = (S[j1][1] - S[j0][1]) / ((j1 - j0) * 4), top = gh(x) + h, k = sl > .12 ? 1 : sl < -.12 ? 0 : .5;
       const g = c.createLinearGradient(0, -top, 0, -gh(x) + 30);
       g.addColorStop(0, css(mix(shade, lit, k), .95)); g.addColorStop(.55, css(mix(shade, lit, k * .6), .7)); g.addColorStop(1, css(shade, .6));
       c.fillStyle = g; c.fillRect(x - 2, -top - 2, 4.6, top - gh(x) + 34);
