@@ -184,7 +184,7 @@ body.portrait:not(.playing) #rot{display:none}
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
   <button id="autoWalk" aria-label="He walks on by himself"><svg viewBox="0 0 24 24"><path d="M5 6l6 6-6 6M12 6l6 6-6 6"/></svg></button>
-  <div id="build">build 591 · Nov 23 2026</div>
+  <div id="build">build 601 · Nov 23 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -829,7 +829,10 @@ function buildLevel() {
 }
 
 // ---------- sound: everything is made in the browser (no sound files) ----------
-let AC = null, OUT, MASTER, MUFF, CLEAR, VOICEG, ECHO, NOISE, rainG, padG, warmG, gloomG, creakG, creakO, muted = false;
+// build 593 (owner: "can we lower volume of sound effects by half"): every sound effect (recorded and made in the browser:
+// fxPlay, sfxLoop, hiss, sweep) goes through SFXG at SFX_K; voices, music, the rain and the lights' notes are untouched
+const SFX_K = .5;
+let SFXG, AC = null, OUT, MASTER, MUFF, CLEAR, VOICEG, ECHO, NOISE, rainG, padG, warmG, gloomG, creakG, creakO, muted = false;
 // THE IPHONE'S SILENT SWITCH (owner, build 85: on the phone the voices are muted "unless iPhone is not on silent"). Web
 // audio counts as ringer sound on an iPhone, so the switch silences it. Telling the phone this page plays media (iOS 17
 // and later: navigator.audioSession), and on older phones quietly playing a silent looping <audio> element from the
@@ -857,7 +860,7 @@ function audio() {
     const comp = AC.createDynamicsCompressor(); comp.connect(MASTER);
     OUT = AC.createGain(); MUFF = AC.createBiquadFilter(); MUFF.type = 'lowpass'; MUFF.frequency.value = 20000; OUT.connect(MUFF); MUFF.connect(comp);
     CLEAR = AC.createGain(); CLEAR.connect(comp);
-    VOICEG = AC.createGain(); VOICEG.gain.value = 1.15; VOICEG.connect(OUT);
+    VOICEG = AC.createGain(); VOICEG.gain.value = 1.15; VOICEG.connect(OUT); SFXG = AC.createGain(); SFXG.gain.value = SFX_K; SFXG.connect(OUT);
     const gain = (v, to) => { const g = AC.createGain(); g.gain.value = v; if (to) g.connect(to); return g; };
     const filt = (type, f, q, to) => { const b = AC.createBiquadFilter(); b.type = type; b.frequency.value = f; if (q) b.Q.value = q; if (to) b.connect(to); return b; };
     // an echo that gives the notes room to ring
@@ -899,14 +902,14 @@ function sweep(f0, f1, d, v, echo, when = 0) {
   const t = AC.currentTime + when, o = AC.createOscillator(), g = AC.createGain();
   o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(f1, t + d);
   g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t + .01); g.gain.exponentialRampToValueAtTime(.0004, t + d);
-  o.connect(g); g.connect(OUT); if (echo) g.connect(ECHO); o.start(t); o.stop(t + d + .05);
+  o.connect(g); g.connect(SFXG); if (echo) g.connect(ECHO); o.start(t); o.stop(t + d + .05);
 }
 function hiss(freq, q, v, d, type = 'bandpass', when = 0) {
   if (!audio()) return;
   const t = AC.currentTime + when, s = AC.createBufferSource(), f = AC.createBiquadFilter(), g = AC.createGain();
   s.buffer = NOISE; s.loop = true; f.type = type; f.frequency.value = freq; f.Q.value = q;
   g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t + .008); g.gain.exponentialRampToValueAtTime(.0004, t + d);
-  s.connect(f); f.connect(g); g.connect(OUT); s.start(t, Math.random()); s.stop(t + d + .05);
+  s.connect(f); f.connect(g); g.connect(SFXG); s.start(t, Math.random()); s.stop(t + d + .05);
 }
 // SOUNDS RENDERED SAMPLE BY SAMPLE (build 487, owner: "when they fall into bog sound and knocks on door sound effects are not
 // good", then "Can you make these sounds effects"). Each is worked out once into an AudioBuffer by a small physical model and
@@ -917,7 +920,7 @@ function fxNorm(d, peak) { let m = 0; for (const v of d) m = Math.max(m, Math.ab
 function fxPlay(buf, when = 0, v = 1, echo = .35) {
   if (!audio() || !buf) return;
   const t = AC.currentTime + when, s = AC.createBufferSource(), g = AC.createGain();
-  s.buffer = buf; g.gain.value = v; s.connect(g); g.connect(OUT);
+  s.buffer = buf; g.gain.value = v; s.connect(g); g.connect(SFXG);
   if (echo) { const e = AC.createGain(); e.gain.value = echo; g.connect(e); e.connect(ECHO); }
   s.start(t);
 }
@@ -987,7 +990,7 @@ function sfxLoop(name, v) {
   if (name.startsWith('bog-')) v *= BOG_K;
   if (!AC || !SFXB[name]) return;
   let L = SFXL[name];
-  if (!L) { const s = AC.createBufferSource(), g = AC.createGain(); s.buffer = SFXB[name]; s.loop = true; g.gain.value = 0; s.connect(g); g.connect(OUT); s.start(); L = SFXL[name] = { g }; }
+  if (!L) { const s = AC.createBufferSource(), g = AC.createGain(); s.buffer = SFXB[name]; s.loop = true; g.gain.value = 0; s.connect(g); g.connect(SFXG); s.start(); L = SFXL[name] = { g }; }
   L.t = G.t; L.g.gain.setTargetAtTime(v, AC.currentTime, .8);
 }
 function sfxTick() { if (AC && G.t % 8 === 0) for (const k in SFXL) if (G.t - SFXL[k].t > 40 || G.t < SFXL[k].t) SFXL[k].g.gain.setTargetAtTime(0, AC.currentTime, .4); }
@@ -1096,10 +1099,10 @@ const MUSIC_V = 1;
 // I loved amazing grace with lights"): no music under the walking; the book's harp on the title, and a light beat of drums
 // only at three moments, each played once with its fades baked in (cut from the run and pursuit pieces, low-passed so only
 // the drums come through). The whole hymn plays again at the gate as the lights go on ahead.
-const MUS = { book: 'l1-title', run: 'l1-beat-run', mock: 'l1-beat-mock', heart: 'l1-beat-heart', past: 'l1-run-faint', choir: 'l5-choir' };      // build 527 (owner, of the pursuit piece: "more melancholy than intense"; then chose, after the manner of Part's Fratres, the take with strings over a faint far heartbeat): grave strings over a deep held note, a faint drum heartbeat far underneath
+const MUS = { book: 'l1-title', run: 'l1-beat-run', mock: 'l1-beat-mock', heart: 'l1-beat-heart', past: 'l1-run-faint', choir: 'l5-choir', old100: 'l2-old100-strings' };      // build 527 (owner, of the pursuit piece: "more melancholy than intense"; then chose, after the manner of Part's Fratres, the take with strings over a faint far heartbeat): grave strings over a deep held note, a faint drum heartbeat far underneath
                                                                                     // build 506 (owner: the run piece "a bit upbeat - should be intense and not too many instruments"): the pursuit piece, a low heartbeat of drums and uneasy strings
-const MUSV = { book: .3, run: .42, mock: .3, heart: .4, past: .4, choir: .38 };       // each piece's level (the owner's ears decide)
-const MUS_ONCE = { run: 1, mock: 1, heart: 1, choir: 1 }, MUS_XF = 3, MUS_SKIP = {};      // seconds of quiet lead-in skipped the first time a piece plays
+const MUSV = { book: .3, run: .42, mock: .3, heart: .4, past: .4, choir: .38, old100: .3 };       // each piece's level (the owner's ears decide)
+const MUS_ONCE = { run: 1, mock: 1, heart: 1, choir: 1 }, MUS_XF = 3, MUS_SKIP = { old100: 26 };      // seconds of quiet lead-in skipped the first time a piece plays
 const musBuf = {}, musLoad = {}, musV = {};
 let musG = null, musCur = null;
 function musGet(k) {
@@ -1109,7 +1112,11 @@ function musGet(k) {
 }
 function musCue() {
   if (CR.on) return CR.choir && CR.choir() ? 'choir' : null;
-  if (SL.on || HL.on || RM.on) return null;
+  // build 592 (owner: "add a nice background music - i like hymns particularly ones of that era", chose Old Hundredth): Level 2's
+  // plain, and the far bank from the lift on, under the psalm tune Old Hundredth (1551) on viols and a chamber organ; never in the
+  // mire, where its own minor notes and the fears' drums are
+  if (SL.on) { const p = SL.phase ? SL.phase() : ''; return p === 'plain' || p === 'drawn' || p === 'hist' || p === 'look' || p === 'onway' || p === 'on' ? 'old100' : null; }
+  if (HL.on || RM.on) return null;
   if (G.state === 'title') return 'book';
   if (G.neigh && !G.nchose && G.state !== 'choice') return 'heart';      // Obstinate and Pliable come after him: a low heartbeat, gone when the choice comes
   // build 493 (owner: "Music for running part in level one as he runs past neighbors"): the whole run piece (frame drums, timpani,
@@ -1133,7 +1140,7 @@ function musTick() {
   for (const k in musV) {
     const v = musV[k], on = k === musCur, b = musBuf[k];
     if (!v.g) { v.g = AC.createGain(); v.g.gain.value = 0; v.g.connect(musG); }
-    v.g.gain.setTargetAtTime(on ? MUSV[k] : 0, now, on ? 1.1 : 1.4);
+    v.g.gain.setTargetAtTime(on ? MUSV[k] : 0, now, on ? (k === 'old100' ? .35 : 1.1) : 1.4);
     if (on && b && !v.done && now > v.next - .6) {
       const first = !v.srcs.length, skip = first ? MUS_SKIP[k] || 0 : 0, t0 = Math.max(now + .05, v.next), s = AC.createBufferSource(), sg = AC.createGain(), d = b.duration - skip, once = MUS_ONCE[k];
       s.buffer = b; s.connect(sg); sg.connect(v.g);
@@ -2880,7 +2887,7 @@ document.getElementById('on2').onclick = () => SL.on ? go3() : HL.on ? goRoom('d
   for (const [who, txt] of INTRO) vox(who, txt);          // the first words, ready before Begin is pressed
 })();
 </script>
-<script src="slough.js?v=511"></script>
+<script src="slough.js?v=592"></script>
 <script src="hill.js?v=518"></script>
 <script src="rooms-outside.js?v=555"></script>
 <script src="room1.js?v=507"></script>
@@ -2893,7 +2900,7 @@ document.getElementById('on2').onclick = () => SL.on ? go3() : HL.on ? goRoom('d
 <script src="rooms.js?v=571"></script>
 <script src="heaven.js?v=547"></script>
 <script src="keepsakes.js?v=505"></script>
-<script src="cross.js?v=590"></script>
+<script src="cross.js?v=601"></script>
 <script src="editor.js?v=485"></script>
 </body>
 </html>

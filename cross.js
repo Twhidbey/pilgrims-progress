@@ -134,12 +134,6 @@ const CR = (() => {
     if (xb > SK_X) { for (const [x, h] of SKO) O.push([x, -h]); for (let x = SK_END + step; x <= xb; x += step) O.push([x, 0]); }
     return O; }
   // ---------- the words (Bunyan's, shortened and made plain) ----------
-  // his thoughts as he relives his way on the slope (build 589); the third is Bunyan's ({65}, to Good-will), the others ours
-  const RELINES = [
-    [C, 'I ran from my own door. It was God\u2019s mercy that I ran.'],
-    [C, 'I sank in the mire. Yet a hand was given me.'],
-    [C, 'It was God\u2019s mercy that Evangelist came to me again.'],
-  ];
   const OPEN = [[N, 'Up the highway between its walls Christian ran, but not without great difficulty, because of the load on his back.']];      // {92}
   const ASCEND = [[N, 'He came to a place somewhat ascending, and upon that place stood a cross, and a little below, a sepulchre.']];      // {93}
   const LOOSED = [[N, 'Just as Christian came up with the cross, his burden loosed from off his shoulders, and fell from off his back.']];      // {93}
@@ -161,7 +155,7 @@ const CR = (() => {
     [TIP, 'Touch Christian to leap for joy.', 'leap'],
     [C, 'Blest cross! Blest sepulchre! Blest rather be the Man that there was put to shame for me!', 0, () => { blest = 1; }],      // vision chat: his song ({94})
   ];
-  const ALL = [...OPEN, ...RELINES, ...ASCEND, ...LOOSED, ...TUMBLE, ...GLAD, ...LOOKED, ...SHINE, ...LEAPS];
+  const ALL = [...OPEN, ...ASCEND, ...LOOSED, ...TUMBLE, ...GLAD, ...LOOKED, ...SHINE, ...LEAPS];
 
   // ---------- pictures ----------
   // HE KNEELS IN THE SILENCE (awe study, owner: "yes 1-3 please"): once the burden is gone he steps in and sinks to one
@@ -196,7 +190,7 @@ const CR = (() => {
     REL.forEach(m => loadImg(m.img + '.webp').then(im => { if (im) RIM[m.img] = im; }).catch(() => {}));
     // the hill painted by the image model (round 2 of the owner's hill): rounded weathered rock, toned dark grey, its left
     // end faded into the drawn ramp; cropped to the rock at 1.5 px a world unit (at SK_H 1080): world x 2834 to 5654, height 1089 down to 2 below the ground
-    if (HP_ON) loadImg('hill-cross.webp?v=578').then(im => { HPAINT = im; }).catch(() => {});
+    if (HP_ON) loadImg('hill-cross.webp?v=601').then(im => { HPAINT = im; }).catch(() => {});
     // the burning hill's own painted rock (Level 3), made a grey tile as hill.js makes it, laid over the hill in 'overlay'
     loadImg('hill-rock.webp').then(rock => { const sx = 720, sy = 540, w = 780, h = 600, t = document.createElement('canvas'); t.width = w; t.height = h; const q = t.getContext('2d'); q.drawImage(rock, sx, sy, w, h, 0, 0, w, h);
       const d = q.getImageData(0, 0, w, h), D = d.data; let m = 0; for (let i = 0; i < D.length; i += 4) m += D[i] * .3 + D[i + 1] * .59 + D[i + 2] * .11; m /= D.length / 4;
@@ -208,6 +202,7 @@ const CR = (() => {
   // ---------- state ----------
   let blest = 0, tumbleT = 0, pauseKey = null, qRun = 0, quietG = 0, sepT = -1, ph = '', t = 0, cam = { cx: 0, z: 1, wl: 420 }, wideK = 0, wideTo = 0;
   const Ch = { x: START, anim: 12, sd: null, cf: -1, cfd: 1, hop: 0, hops: 0, lastV: 0, fade: 0, face: 1, tv: null, run: 0, ranim: 0 };
+  let sunT = 0, sunGo = false, sunH = 0;
   let bur = null, dawn = 0, gold = 0, goldTo = 0, sun = 0, robe = 0, robeTo = 0, mark = 0, markTo = 0, rollShow = 0, rollGone = 0, shine = 0, shineTo = 0, gone = 0, goneTo = 0;
   let closeK = 0, topK = 0, topTo = 0, veil = 0, climb = null, tearT = -1, looked = false;
   // his tears (owner, offered instead of eyes in the sky: "Sure!!"): on "He looked, and looked again, till the tears ran
@@ -335,7 +330,7 @@ const CR = (() => {
       if (Ch.fade < 1 && STD.length) figure(c, STD[atTime(STD_META, breathT(Ch.sd || 0))], STD_META, x, h, fc, 1 - Ch.fade, tint, rim);
       // the new clothes come at the height of the light that wraps him (robe .5): a clean swap, no double picture
       const coat = robe >= .5 && COAT.ready;
-      if (coat) { const ct = mix(tint, [236, 226, 210], .55);
+      if (coat) { const ct = mix(tint, [236, 226, 210], .18);
         if (Ch.lp != null && LEAPC.ready) figure(c, LEAPC[clamp(Math.round(Ch.lp), 0, LEAPC.length - 1)], LEAP_META, x, h, fc, 1, ct, rim);
         else if (Ch.wo != null && CWALK.ready) figure(c, CWALK[Math.floor(Ch.wa) % CWALK.length], CWALK_META, x, h, 1, 1, ct, rim);
         else { const k = (Ch.cc || 0) % 96, cf = clamp(Math.round(k < 48 ? k : 96 - k), 0, COAT.length - 1); figure(c, COAT[cf], COAT_META, x, h, fc, 1, ct, rim); Ch.coatF = cf; } }
@@ -367,8 +362,7 @@ const CR = (() => {
         c.fillStyle = css([255, 248, 232], .95 * a); c.beginPath(); c.arc(tx + .28, by - .42, .3, 0, 6.29); c.fill();
         c.restore();
       }); }
-      if (mark > .01 && !(coat && (Ch.lp != null || Ch.wo != null))) { let hx = x + 14 * fc, hy = -h - 138 + SINK - 3;
-        if (coat) { const E = faceEdge(COAT[Ch.coatF]), r = Math.round(COAT_META.ground - 141 / CHR_K); if (E && E[r] != null) { hx = x + ((E[r] - COAT_META.ax) * CHR_K - 3) * fc; hy = -h - 141 + SINK - 3; } } const mr = coat ? 5 : 9, g = c.createRadialGradient(hx, hy, 0, hx, hy, mr); g.addColorStop(0, css([255, 244, 214], (coat ? .6 : .8) * mark)); g.addColorStop(1, 'rgba(255,240,200,0)'); c.fillStyle = g; c.fillRect(hx - 10, hy - 10, 20, 20); }
+      // no mark drawn on his forehead (owner: "i don't like seal on his forehead"); the book's mark is told, not shown
     } else if (Ch.run > 0 && RUNP.ready) {
       TILT = slopeTilt(x) * Ch.run;
       if (Ch.run < 1 && STD.length) figure(c, STD[atTime(STD_META, breathT(Ch.sd || 0))], STD_META, x, h, 1, 1 - Ch.run, tint, rim);
@@ -472,19 +466,43 @@ const CR = (() => {
   const ridgeY = (i, X, base, amp) => { let y = base; for (const [p, k] of RIDGES[i]) y += amp / k * Math.sin(X * k * k * .0011 + p); return y; };
   function sky(c) {
     const pre = [[26, 30, 44], [60, 66, 84], [118, 112, 120]], dw = [[30, 34, 50], [78, 74, 92], [168, 140, 134]], gd = [[84, 100, 132], [206, 172, 146], [246, 214, 164]];
-    const st = [0, 1, 2].map(i => mix(mix(pre[i], dw[i], dawn), gd[i], gold));
+    // the glory: how far the sun has climbed past the crossing (0..1); everything below grows with it
+    const GL = sm(.96, 1.4, sunH), gl = [[64, 100, 162], [238, 168, 150], [255, 228, 172]];
+    const st = [0, 1, 2].map(i => mix(mix(mix(pre[i], dw[i], dawn), gd[i], gold), gl[i], GL * .85));
     const g = c.createLinearGradient(0, 0, 0, HY + 40); g.addColorStop(0, css(st[0])); g.addColorStop(.6, css(st[1])); g.addColorStop(1, css(st[2]));
     c.fillStyle = g; c.fillRect(0, 0, VW, VH);
-    // the far light, low behind the crown before dawn; the sun rising behind where the beams cross after
-    const cxs = sx(CROSS_X), top = sy(gh(CROSS_X) + CROSS_BY + 4), y0 = sy(gh(CROSS_X)) + 40, sY = lerp(y0, top, sm(0, 1, sun));
-    const glowR = 260 + 200 * gold, gg = c.createRadialGradient(cxs, sY, 0, cxs, sY, glowR);
-    gg.addColorStop(0, css([255, 226, 170], .18 + .5 * gold + .1 * dawn)); gg.addColorStop(.4, css([250, 196, 140], .08 + .22 * gold)); gg.addColorStop(1, 'rgba(250,190,140,0)');
+    // the far light, low behind the crown before dawn; the sun breaking behind the crown, rising behind where the
+    // beams cross, and on up the sky (kept inside the picture)
+    const cxs = sx(CROSS_X), top = sy(gh(CROSS_X) + CROSS_BY + 4), y0 = sy(gh(CROSS_X)) + 40, sY = Math.max(VH * .1, y0 + (top - y0) * sunH);
+    if (GL > .01) {
+      // a long band of rose and gold lying along the horizon
+      const hb = c.createLinearGradient(0, HY - 150, 0, HY + 50); hb.addColorStop(0, 'rgba(255,170,130,0)'); hb.addColorStop(.55, css([255, 176, 132], .22 * GL)); hb.addColorStop(.85, css([255, 222, 160], .3 * GL)); hb.addColorStop(1, 'rgba(255,222,160,0)');
+      c.fillStyle = hb; c.fillRect(0, HY - 150, VW, 200);
+    }
+    const glowR = 260 + 200 * gold + 320 * GL, gg = c.createRadialGradient(cxs, sY, 0, cxs, sY, glowR);
+    gg.addColorStop(0, css([255, 226, 170], Math.min(.9, .18 + .5 * gold + .1 * dawn + .12 * GL))); gg.addColorStop(.4, css([250, 196, 140], .08 + .22 * gold + .1 * GL)); gg.addColorStop(1, 'rgba(250,190,140,0)');
     c.fillStyle = gg; c.fillRect(0, 0, VW, VH);
-    if (sun > .01) { const R = 15 + 4 * cam.z, d = c.createRadialGradient(cxs, sY, 0, cxs, sY, R * 2.2); d.addColorStop(0, css([255, 252, 236], .95 * sun)); d.addColorStop(.45, css([255, 240, 200], .85 * sun)); d.addColorStop(.5, css([255, 226, 170], .35 * sun)); d.addColorStop(1, 'rgba(255,220,160,0)'); c.fillStyle = d; c.fillRect(cxs - R * 3, sY - R * 3, R * 6, R * 6); }
-    // a few long thin clouds, lit from beneath after dawn
-    for (const [y, w, a, p] of [[.16, .9, .1, .05], [.27, .7, .08, .02], [.36, 1.1, .07, .08]]) {
-      const yy = y * VH, xx = VW * (.5 + .25 * Math.sin(p * 9)) - (cam.cx * .02) % 300, cl = mix([70, 74, 92], [255, 214, 170], gold);
-      c.save(); c.translate(xx, yy); c.scale(VW * w / 2, 7); const q = c.createRadialGradient(0, 0, 0, 0, 0, 1); q.addColorStop(0, css(cl, a + .08 * gold)); q.addColorStop(1, css(cl, 0)); c.fillStyle = q; c.fillRect(-1, -1, 2, 2); c.restore();
+    if (GL > .01) {
+      // rays, once in the level: soft broad shafts fanning from the sun, turning very slowly, each fading outward
+      c.save(); c.globalCompositeOperation = 'lighter'; c.translate(cxs, sY); const RL = VW * .9;
+      for (let i = 0; i < 13; i++) {
+        const a0 = i * 6.283 / 13 + G.t / 5200 + .5 * Math.sin(i * 2.7), w = .11 + .05 * Math.sin(i * 4.1 + 1), al = (.02 + .01 * Math.sin(i * 1.7 + G.t / 190)) * GL;
+        const rg = c.createRadialGradient(0, 0, 20, 0, 0, RL); rg.addColorStop(0, css([255, 236, 190], 0)); rg.addColorStop(.12, css([255, 232, 184], al)); rg.addColorStop(1, 'rgba(255,220,170,0)');
+        for (const k of [1, .78, .56, .34]) { c.fillStyle = rg; c.beginPath(); c.moveTo(0, 0); c.lineTo(Math.cos(a0 - w * k) * RL, Math.sin(a0 - w * k) * RL); c.lineTo(Math.cos(a0 + w * k) * RL, Math.sin(a0 + w * k) * RL); c.closePath(); c.fill(); }
+      }
+      c.restore();
+    }
+    if (sun > .01) { const R = (15 + 4 * cam.z) * (1 + .4 * GL), d = c.createRadialGradient(cxs, sY, 0, cxs, sY, R * 2.2); d.addColorStop(0, css([255, 252, 236], .95 * sun)); d.addColorStop(.45, css([255, 240, 200], .85 * sun)); d.addColorStop(.5, css([255, 226, 170], .35 * sun)); d.addColorStop(1, 'rgba(255,220,160,0)'); c.fillStyle = d; c.fillRect(cxs - R * 3, sY - R * 3, R * 6, R * 6); }
+    // long thin clouds, lit from beneath after dawn; more of them catch fire as the sun climbs (the last five only then)
+    const CLD = [[.16, .9, .1, .05, 0], [.27, .7, .08, .02, 0], [.36, 1.1, .07, .08, 0], [.08, .6, 0, .31, 1], [.21, .5, 0, .62, 1], [.31, .8, 0, .44, 1], [.42, .6, 0, .77, 1], [.13, 1.2, 0, .9, 1]];
+    for (const [y, w, a, p, late] of CLD) {
+      const yy = y * VH, xx = VW * (.5 + .45 * Math.sin(p * 9)) - (cam.cx * .02 + (late ? G.t * .004 : 0)) % 300, body = mix(mix([70, 74, 92], [255, 214, 170], gold), [226, 150, 150], GL * .6), al = late ? .2 * GL : a + .08 * gold + .1 * GL;
+      if (al < .005) continue;
+      c.save(); c.translate(xx, yy); c.scale(VW * w / 2, 7 + 3 * GL); const q = c.createRadialGradient(0, 0, 0, 0, 0, 1); q.addColorStop(0, css(body, al)); q.addColorStop(1, css(body, 0)); c.fillStyle = q; c.fillRect(-1, -1, 2, 2); c.restore();
+      if (GL > .01) {
+        // its underside burning gold
+        c.save(); c.translate(xx, yy + 4 + 2 * GL); c.scale(VW * w / 2 * .8, 2.6); const q2 = c.createRadialGradient(0, 0, 0, 0, 0, 1); q2.addColorStop(0, css([255, 226, 160], (late ? .3 : .22) * GL)); q2.addColorStop(1, 'rgba(255,220,150,0)'); c.fillStyle = q2; c.fillRect(-1, -1, 2, 2); c.restore();
+      }
     }
   }
   function far(c) {
@@ -759,7 +777,7 @@ const CR = (() => {
     // the beds of rock only when the painting is not there (their lines showed through it)
     const R = rockTex(); if (!HPAINT) c.drawImage(R.c, R.x, R.y, R.w, R.h);
     if (HPAINT) {
-      const s = SK_H / 1080; c.save(); c.translate(SK_X, 0); c.scale(s, s); c.drawImage(HPAINT, 3149.64 - 4380, -1088.92, 2476.35, 1091.26); c.restore();
+      const s = SK_H / 1080; c.save(); c.translate(SK_X, 0); c.scale(s, s); c.drawImage(HPAINT, 3149.64 - 4380, -1089.42, 2478.34, 1093.75); c.restore();
       // the painting takes the hill's own colour through the dawn (its lightness kept)
       c.globalCompositeOperation = 'color'; c.fillStyle = css(hc); c.fillRect(x0, -H_TOP - 200, x1 - x0, H_TOP + 2300); c.globalCompositeOperation = 'source-over';
       // the foot sinks into the dark ground (owner: "blend edges and make everything super cohesive")
@@ -934,7 +952,8 @@ const CR = (() => {
 
   // ---------- the story ----------
   function reset0() {
-    blest = 0; tumbleT = 0; sepT = -1; memT = -1; memS = []; memUntil = 0; memQ = 0; REL.forEach(m => { m.a = 0; m.said = false; m.cv = m.front = null; }); tearT = -1; looked = false; Object.assign(Ch, { x: START, anim: 12, sd: QUIET[0], cf: -1, hop: 0, hops: 0, lastV: 0, fade: 0, hv: 0, face: 1, tv: null, run: 0, ranim: 0, cc: 0, lp: null, wo: null, wa: 0, kn: null, kup: false });
+    blest = 0; tumbleT = 0; sepT = -1; memT = -1; memS = []; memUntil = 0; memQ = 0; REL.forEach(m => { m.a = 0; m.said = false; m.cv = m.front = null; }); relGW = false; tearT = -1; looked = false; Object.assign(Ch, { x: START, anim: 12, sd: QUIET[0], cf: -1, hop: 0, hops: 0, lastV: 0, fade: 0, hv: 0, face: 1, tv: null, run: 0, ranim: 0, cc: 0, lp: null, wo: null, wa: 0, kn: null, kup: false });
+    sunT = 0; sunGo = false; sunH = 0;
     bur = null; dawn = gold = goldTo = sun = robe = robeTo = mark = markTo = rollShow = rollGone = shine = shineTo = gone = goneTo = 0; wideK = 1; wideTo = 1;
     said = {}; hymn = null; silenceT = 0; tombT = 0; leapsLeft = 3; endT = 0; quietPad = 0; t = 0; rollFly = rollAt = null; closeK = topK = topTo = veil = 0; climb = null;
   }
@@ -950,7 +969,7 @@ const CR = (() => {
     wideK = wideTo = 0;
     const at = new URLSearchParams(location.search).get('at');
     if (typeof dropPlace === 'function') dropPlace();
-    if (at === 'cross') { ph = 'walk'; Ch.x = STOP_X - 260; Ch.sd = null; wideK = wideTo = 0; said.open = said.ascend = said.cut = true; dawn = .6; memT = 2000; memS = MEMS.map(() => 0); REL.forEach(m => { m.said = true; }); }
+    if (at === 'cross') { ph = 'walk'; Ch.x = STOP_X - 260; Ch.sd = null; wideK = wideTo = 0; said.open = said.ascend = said.cut = true; dawn = .6; memT = 2000; memS = MEMS.map(() => 0); REL.forEach(m => { m.said = true; }); relGW = true; }
     camTick(true);
     if (audio()) { AC.resume(); if (rainG) rainG.gain.setTargetAtTime(0, AC.currentTime, .8); padStart(); }
     G.state = 'wait';
@@ -1004,8 +1023,12 @@ const CR = (() => {
     dawn += ((ph === 'walk' || ph === 'look' ? .55 * sm(SLOPE0 - 400, CREST0, Ch.x) : .7) - dawn) * .01;
     if (robe >= .5) Ch.cc = (Ch.cc || 0) + 16 / 60;
     gold += (goldTo - gold) * .0032; robe = Math.min(1, robe + (robeTo > robe ? .01 : 0)); mark += (markTo - mark) * .03; shine += (shineTo - shine) * .012; gone += (goneTo - gone) * .012;
-    // the sun rises slowly, about 14 s (owner, build 455: "sun can rise slower")
-    if (goldTo > 0) sun = Math.min(1, sun + .0012);
+    // THE SUN BREAKS AS THE BURDEN FALLS AND KEEPS RISING (owner, build 600: "sun rise slower and keep rising - maybe
+    // it breaks just as burden falls but gets higher and higher and the sunrise become more and more spectacular"):
+    // `sunT` counts from the burden's coming off; `sun` is its brightness (full in about 25 s); `sunH` its height:
+    // 0 under the crown, 1 behind where the beams cross (about 50 s on, as the hymn plays), then on up, slower and
+    // slower, to a little under the picture's top by the level's end. The sky's glory (in `sky()`) grows with its height past the crossing.
+    if (sunGo) { sunT++; sun = Math.min(1, sunT / 1500); const u = sunT / 3000; sunH = u < 1 ? u : 1 + .42 * (1 - Math.exp(-(u - 1) / 1.1)); }
     wideK += (wideTo - wideK) * .02;
     if (!climb) topK += (topTo - topK) * .022;
     hymnTick();
@@ -1034,7 +1057,7 @@ const CR = (() => {
       // Good-will's promise last, just before he comes to the cross
       if (!REL_ON && memT < 0 && Ch.x > SLOPE0 && said.open && !busy()) memT = 0;
       // after the last memory, about three seconds of quiet before the storyteller speaks (owner, build 452)
-      const memDone = REL_ON ? REL.every(m => m.said) && memQ >= 150 : memT >= memLast() + 300 && G.t >= memUntil + 180;
+      const memDone = REL_ON ? REL.every(m => m.said) && relGW && memQ >= 150 : memT >= memLast() + 300 && G.t >= memUntil + 180;
       if (!said.ascend && memDone && Ch.x > CREST0 - 900 && !busy()) { said.ascend = true; caption(ASCEND); sepT = 0; }
       // "and a little below, a sepulchre": the camera draws back and down to show it, then comes back up to him (owner,
       // build 452); he stands still while it looks
@@ -1059,6 +1082,7 @@ const CR = (() => {
       if (Ch.fade >= 1 && t > 50) Ch.cf = Math.min(SWAP, Ch.cf + 16 / 60);
       if (Ch.cf >= SWAP) {
         ph = 'tumble'; t = 0; thump(1.1);
+        sunGo = true; if (!goldTo) goldTo = .2;
         bur = { st: 'roll', x: STOP_X + (BALL.ax - CLIP_META.ax) * CHR_K, y: 0, vy: 0, v: .9, r: 0, k: 1, a: 1, dk: 0, t: 0 };
         wideTo = 1;
       }
@@ -1075,7 +1099,7 @@ const CR = (() => {
       // a silence; then the light comes up behind the cross, and the colour comes back from it outward
       // the silence is counted only once every voice is done, so the sun and the hymn never come over the words
       if (!busy()) { quietG++; qRun++; } else qRun = 0;
-      if (quietG === 150 && !goldTo) { goldTo = 1; wideTo = .35; }
+      if (quietG === 150 && goldTo < 1) { goldTo = 1; wideTo = .35; }
       if (quietG === 360 && !hymn) hymn = { t: 0, i: 0, b: 0 };
       // Christian speaks only after a breath of quiet once the burden is gone (owner, build 456)
       if (hymn && hymn.t >= 10 * BEATT && Ch.kn != null) Ch.kup = true;
@@ -1234,35 +1258,59 @@ const CR = (() => {
   // he runs through it. Baked once when he comes near (one canvas, freed after), drawn a little see-through with a
   // breathing light over it. In the mire the surface lies above the ground up to his waist and is drawn again in front
   // of him. ?skymem=1 brings back the old pictures in the sky. Ours, not the book's.
-  const REL_ON = new URLSearchParams(location.search).get('skymem') !== '1', REL_K = .625, REL_Z = 1.25, RIM = {};
+  const REL_ON = new URLSearchParams(location.search).get('skymem') !== '1', REL_K = .625, REL_Z = 1.25, REL_A = .7, RIM = {};
   // img: the still (assets); R: its ground row; k: world units a picture pixel; x0: where its left edge lies on the hill;
   // on: he is in it from..to; up: it fades into the sky between these heights above the ground; lift: the mire's depth
   const REL = [
-    { img: 'mem-village', R: 722, k: REL_K, x0: 1200, on: [1260, 2230], up: [250, 440], below: 60, glow: .1, dark: .45 },
-    { img: 'mem-slough', R: 776, k: REL_K * 1.3, x0: 1950, on: [2250, 3010], up: [350, 560], below: 80, glow: .07, dark: .5, lift: u => 74 * smooth(120, 420, u) * (1 - smooth(600, 820, u)) },
+    { img: 'mem-village', R: 722, k: REL_K, x0: 1200, on: [1260, 2230], up: [250, 440], below: 60, glow: .1, dark: .45, ends: [520, 240] },
+    { img: 'mem-slough', R: 776, k: REL_K * 1.3, x0: 1950, on: [2250, 3010], off: 2770, up: [350, 560], below: 80, glow: .07, dark: .5, fit: [[420, 70], [1000, 6]], lift: u => 74 * smooth(120, 420, u) * (1 - smooth(600, 820, u)) },
     { img: 'mem-hill-mono', R: 926, k: REL_K, x0: 2900, on: [3050, 3900], up: [400, 590], below: 60, glow: .2, dark: .8 },
   ];
-  REL.forEach((m, i) => { m.a = 0; m.said = false; m.line = RELINES[i]; });
+  // what he hears in each is the voice he heard there (owner, build 595: "i wonder if other people's messages as we did
+  // with the memories is better"): his wife at the door, Help, Evangelist's God-speed; and last, near the top, with no
+  // picture, Good-will's promise, heard as it comes true. All existing recordings (MEMS), nothing new to record.
+  REL.forEach((m, i) => { m.a = 0; m.said = false; m.voice = MEMS[[2, 3, 4][i]]; });
+  const REL_GW_X = 4000; let relGW = false;
   function relBake(m) {
     const im = RIM[m.img]; if (!im) return false;
-    const k = m.k, Wu = im.width * k, Z = REL_Z, n = Math.ceil(Wu * Z), lift = m.lift || (() => 0);
-    let top = 1e9, bot = -1e9;
-    for (let u = 0; u <= Wu; u += 8) { const g = gh(m.x0 + u); top = Math.min(top, -g - lift(u) - m.R * k); bot = Math.max(bot, -g + (im.height - m.R) * k); }
+    const k = m.k, Wu = im.width * k, Z = REL_Z, lift = m.lift || (() => 0);
+    // TILTED, NOT SKEWED (owner, build 598: "tilting is fine no need to skew"): the whole picture is turned as one
+    // piece to the slope it lies on (a straight line fitted to the hill, and the mire's depth, under his stretch of
+    // it), about the middle of that stretch. Nothing in it is sheared; the fade into the hill follows the hill's own
+    // line, so where the hill curves away from the straight picture it simply sits a little into the hillside.
+    let sn = 0, su = 0, sh = 0, suu = 0, suh = 0;
+    for (let u = m.on[0] - m.x0; u <= m.on[1] - m.x0; u += 10) { const h = gh(m.x0 + u) + lift(u); sn++; su += u; sh += h; suu += u * u; suh += u * h; }
+    // (the mire names two places instead, `fit`: waist-deep where he wades, on the ground at Help's bank)
+    const F = m.fit, sl = F ? (gh(m.x0 + F[1][0]) + F[1][1] - gh(m.x0 + F[0][0]) - F[0][1]) / (F[1][0] - F[0][0]) : (sn * suh - su * sh) / (sn * suu - su * su), up = (m.on[0] + m.on[1]) / 2 - m.x0, hp = F ? gh(m.x0 + F[0][0]) + F[0][1] + sl * (up - F[0][0]) : (sh - sl * su) / sn + sl * up, th = Math.atan(sl), co = Math.cos(th), si = Math.sin(th);
+    // a picture point (a across, b down from its ground row, world units) lands at
+    const at = (a, b) => [up + (a - up) * co + b * si, -hp - (a - up) * si + b * co];
+    let top = 1e9, bot = -1e9, left = 0, right = Wu;
+    for (const [a, b] of [[0, -m.R * k], [Wu, -m.R * k], [0, (im.height - m.R) * k], [Wu, (im.height - m.R) * k]]) { const [x, y] = at(a, b); top = Math.min(top, y); bot = Math.max(bot, y); left = Math.min(left, x); right = Math.max(right, x); }
+    // (the tilted picture reaches past its own width at its corners: the canvas takes all of it, so no upright cut shows)
+    left = Math.floor(left) - 2; const n = Math.ceil((right - left + 2) * Z);
+    for (let u = 0; u <= Wu; u += 8) { top = Math.min(top, -gh(m.x0 + u) - m.up[1]); bot = Math.max(bot, -gh(m.x0 + u) + m.below); }
     top = Math.floor(top) - 2; const Hu = Math.ceil(bot - top) + 2;
     const cv = mk(n, Math.ceil(Hu * Z)), q = cv.getContext('2d'), mask = mk(cv.width, cv.height), mq = mask.getContext('2d'), surf = [];
-    for (let i = 0; i < n; i++) {
-      const u = (i + .5) / Z, g = gh(m.x0 + u), gl = g + lift(u), sx = Math.min(im.width - 1.5, u / k);
-      q.drawImage(im, sx, 0, Math.min(1 / Z / k + .5, im.width - sx), im.height, i, (-gl - m.R * k - top) * Z, 1, im.height * k * Z);
-      if (i % 4 === 0) {
-        // it melts upward into the sky, downward into the hill, and at both ends
-        const yo = (-g - top) * Z, y0 = yo - m.up[1] * Z, y1 = yo + m.below * Z, span = y1 - y0, hf = smooth(0, 240, u) * (1 - smooth(Wu - 240, Wu, u));
-        const gr = mq.createLinearGradient(0, y0, 0, y1); gr.addColorStop(0, 'rgba(0,0,0,0)'); gr.addColorStop((m.up[1] - m.up[0]) * Z / span, `rgba(0,0,0,${hf})`); gr.addColorStop(m.up[1] * Z / span, `rgba(0,0,0,${hf})`); gr.addColorStop(1, 'rgba(0,0,0,0)');
-        mq.fillStyle = gr; mq.fillRect(i, y0, 4, span);
-        surf.push([i, (-gl - top) * Z, lift(u)]);
-      }
+    const turn = c2 => { c2.translate((up - left) * Z, (-hp - top) * Z); c2.rotate(-th); c2.scale(Z, Z); c2.translate(-up, 0); };
+    q.save(); turn(q); q.imageSmoothingEnabled = true; q.drawImage(im, 0, -m.R * k, Wu, im.height * k); q.restore();
+    for (let i = 0; i < n; i += 4) {
+      // it melts upward into the sky and downward into the hill, by the hill's own line
+      // (owner, build 599: "where it hits mountain ... no fan edge but a clean smooth transition": it is whole down
+      // to a little above the hill's line and gone just under it, so no strip of its ground fans out over the hill)
+      const u = left + (i + .5) / Z, g = gh(m.x0 + u), yo = (-g - top) * Z, y0 = yo - m.up[1] * Z, y1 = yo + 12 * Z, span = y1 - y0;
+      const gr = mq.createLinearGradient(0, y0, 0, y1); gr.addColorStop(0, 'rgba(0,0,0,0)'); gr.addColorStop((m.up[1] - m.up[0]) * Z / span, '#000'); gr.addColorStop((m.up[1] - (m.feet || 34)) * Z / span, '#000'); gr.addColorStop(1, 'rgba(0,0,0,0)');
+      mq.fillStyle = gr; mq.fillRect(i, y0, 4, span);
+      const hs = hp + sl * (u - up) / 1;
+      surf.push([i, (-hs - top) * Z, Math.max(0, hs - g) * Math.min(1, lift(u) / 40)]);
     }
-    q.globalCompositeOperation = 'destination-in'; q.drawImage(mask, 0, 0); q.globalCompositeOperation = 'source-over';
-    m.cv = cv; m.top = top; m.Wu = Wu; m.Hu = cv.height / Z; m.front = null;
+    q.globalCompositeOperation = 'destination-in'; q.drawImage(mask, 0, 0);
+    // and at both its ends and its top, by the picture's own edges (they are tilted too)
+    const em = mk(cv.width, cv.height), eq = em.getContext('2d'); eq.save(); turn(eq);
+    const eg = eq.createLinearGradient(0, 0, Wu, 0); eg.addColorStop(0, 'rgba(0,0,0,0)'); const EL = (m.ends || [240, 240]); eg.addColorStop(EL[0] * .35 / Wu, 'rgba(0,0,0,.22)'); eg.addColorStop(EL[0] * .7 / Wu, 'rgba(0,0,0,.7)'); eg.addColorStop(EL[0] / Wu, '#000'); eg.addColorStop(1 - EL[1] / Wu, '#000'); eg.addColorStop(1, 'rgba(0,0,0,0)');
+    eq.fillStyle = eg; eq.fillRect(0, -m.R * k, Wu, im.height * k);
+    eq.globalCompositeOperation = 'destination-in'; const tg = eq.createLinearGradient(0, -m.R * k, 0, -m.R * k + 150); tg.addColorStop(0, 'rgba(0,0,0,0)'); tg.addColorStop(1, '#000'); eq.fillStyle = tg; eq.fillRect(0, -m.R * k, Wu, im.height * k); eq.restore();
+    q.drawImage(em, 0, 0); q.globalCompositeOperation = 'source-over';
+    m.cv = cv; m.top = top; m.left = left; m.Wu = cv.width / Z; m.Hu = cv.height / Z; m.front = null;
     if (m.lift) {
       // the mire in front of him: everything below its surface, where it has any depth
       const f = mk(cv.width, cv.height), fq = f.getContext('2d'), pts = surf.filter(p => p[2] > 2);
@@ -1276,22 +1324,24 @@ const CR = (() => {
   function relTick() {
     if (!REL_ON) return;
     REL.forEach(m => {
-      const inIt = ph === 'walk' && Ch.x >= m.on[0] && Ch.x < m.on[1] ? 1 : 0;
-      m.a += (inIt - m.a) * (inIt ? .05 : .04); if (m.a < .004 && !inIt) { m.a = 0; m.cv = m.front = null; }
+      // (`off`: the mire fades just as he reaches Help, owner, build 599)
+      const inIt = ph === 'walk' && Ch.x >= m.on[0] && Ch.x < (m.off || m.on[1]) ? 1 : 0;
+      m.a += (inIt - m.a) * (inIt ? .05 : m.off ? .07 : .04); if (m.a < .004 && !inIt) { m.a = 0; m.cv = m.front = null; }
       if ((inIt || Ch.x > m.on[0] - 260 && Ch.x < m.on[1] && ph === 'walk') && !m.cv) relBake(m);
       // his thought, once he is well into it, and never over another voice
-      if (inIt && !m.said && Ch.x >= m.on[0] + 110 && said.open && !busy() && memQ >= 40) { m.said = true; caption([m.line]); }
+      if (inIt && !m.said && Ch.x >= m.on[0] + 110 && said.open && !busy() && memQ >= 40) { m.said = true; memVoice(m.voice); }
       // a memory he ran through before its words could be said keeps them unsaid no longer than its own stretch
       if (!m.said && Ch.x >= m.on[1]) m.said = true;
     });
+    if (!relGW && ph === 'walk' && Ch.x >= REL_GW_X && REL.every(m => m.said) && said.open && !busy() && memQ >= 60) { relGW = true; memVoice(MEMS[5]); }
   }
   function relive(c, front) {
     if (!REL_ON) return;
     for (const m of REL) {
       const cv = front ? m.front : m.cv, a = m.a * (1 - wideK); if (!cv || a < .01) continue;
-      c.save(); c.globalAlpha = .86 * a; c.drawImage(cv, m.x0, m.top, m.Wu, m.Hu);
+      c.save(); c.globalAlpha = REL_A * a; c.drawImage(cv, m.x0 + m.left, m.top, m.Wu, m.Hu);
       // intense: a breathing light over it, and a brightening as it comes
-      if (!front) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = a * (m.glow * (.7 + .3 * Math.sin(G.t / 37)) + .22 * (1 - m.a)); c.drawImage(cv, m.x0, m.top, m.Wu, m.Hu); }
+      if (!front) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = a * (m.glow * .7 * (.7 + .3 * Math.sin(G.t / 37)) + .16 * (1 - m.a)); c.drawImage(cv, m.x0 + m.left, m.top, m.Wu, m.Hu); }
       c.restore();
     }
   }

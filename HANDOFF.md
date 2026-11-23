@@ -3,6 +3,16 @@
 The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build step; until build 118 it was called `story-lab.html`: read that name below as `index.html`). `style-lab.html` is the art-style test page. `CLAUDE.md` maps the code and records the owner's decisions. Work on **`main`** and push after every change: pushing IS publishing (GitHub Pages, https://twhidbey.github.io/pilgrims-progress/). Bump the build stamp in both pages on every push and tell the owner when it is live (a phone may need `?v=N` on the link). Keep this file and `CLAUDE.md` updated. Public repo: no personal details.
 
 
+**Build 600 (Level 5 ideas chat):** Level 5's sun breaks as the burden falls and keeps rising past the cross, the sky growing in glory with it (`sunT`, `sunH`, `GL` in `cross.js`). Nothing spent.
+
+**Build 599 (Level 5 ideas chat):** the memories' edges: the mire fades as he reaches Help, the village's leading edge fades in softly, a clean join with the hill (`relBake`/`relTick` in `cross.js`). Nothing spent.
+
+**Build 598 (Level 5 ideas chat):** each relived memory on Level 5's slope is now one picture tilted to the slope (no skew; `relBake` in `cross.js`); build 597's `flat` spans are gone. Nothing spent.
+
+**Build 597 (Level 5 ideas chat):** the relived memories on Level 5's slope are fainter (`REL_A` .7) and less warped: each stands level over its own things (`flat` in `REL`, `dOf` in `relBake` in `cross.js`) and follows the slope only between them. Nothing spent.
+
+**Build 595 (Level 5 ideas chat): Level 5's relived memories now play the existing recordings of what he heard there (his wife, Help, Evangelist's God-speed, then Good-will's promise near the top); Christian's three new lines were dropped unrecorded. Nothing spent.**
+
 **Build 590 (Level 5 ideas chat): the burning hill's memory on Level 5's slope nearly one grey tone, its fire a pale warmth (`mem-hill-mono.webp`). Nothing spent.**
 
 **Build 589 (Level 5 ideas chat): the sky memories on Level 5's climb are replaced by three pictures of the game laid on the slope as he runs through them (the street past his door, the mire with Help and the oak, the burning hill), a little see-through, with Christian's thought in each (`REL`, `RELINES` in `cross.js`; `?skymem=1` for the old). The three lines are NOT recorded yet (about 3 cents, waiting on the owner's yes). Nothing spent.**
@@ -233,6 +243,12 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 **Build 505: THE SEALED ROLL IN THE TRAY (owner, of my review of Level 5: "let's do 1-5").** The roll the third Shining One gives (`G.roll.sealed`, set in `cross.js`) now opens as its own roll: `KS.roll(sealed)` (the tray's touch in `index.html` passes it) marks `#ksroll.sealed`, which shows "Give this in at the Celestial Gate." in the same black letter (red G) and, at its foot, the King's wax seal (`waxSeal()`, made the first time) with its two ribbon tails, as Evangelist's roll had before build 242; Evangelist's plain roll is unchanged. The words are the Shining One's charge (94: "that he should give it in at the Celestial Gate"); what is written in the roll the book does not say (a departure). Also timed (a full play-through, holding all the way, the real recordings): about 2 min 53 s to the end card, about 2 min 8 s of speech, no stretch of more than five lines without an act; no cuts proposed. Nothing spent.
 
 ## START HERE (rewritten at build 140, Nov 16 2026)
+
+**Build 594 (Level 2 chat): Old Hundredth begins at its full four-string part (26 s in) and fades in quickly. Nothing spent.**
+
+**Build 593 (Level 2 chat): every sound effect at half (`SFX_K`); Old Hundredth remade on strings. About 8 cents (music total now about 68 cents).**
+
+**Build 592 (Level 2 chat): Old Hundredth (a Lyria piece, viols and chamber organ) under Level 2's plain and the far bank, not the mire. About 8 cents (music total about 52 cents before; now about 60).**
 
 **Build 591 (Level 2 chat): the bog's sloshing at under half its loudness (`BOG_K`). Nothing spent.**
 
@@ -1061,3 +1077,5 @@ The owner asked what follows the Slough of Despond, what that level should hold,
 **Build 549 (Level 5 chat):** he kneels in the silence after the burden is gone (a free Modal clip) and a short wordless choir comes with the Shining Ones (one Lyria piece, about 8 cents, the owner's yes); the sepulchre further out on the skull's snout, contours on the skull. Running total: add about 8 cents (and about 10 cents of Modal's free credits).
 
 **Build 569 (Level 5 chat):** the hill painted by the image model (one 4K picture, about 25 cents, the owner's yes), its eye socket covered free so the skull is only hinted, and the hill much bigger (`H_TOP` 1500). Running total: add about 25 cents.
+
+**Build 601 (Level 5 chat):** the painted hill made again by Google without the skull, same outline (about 25 cents, the owner's yes). Running total: add about 25 cents.
