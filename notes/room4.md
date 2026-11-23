@@ -36,6 +36,8 @@ Chat: **PP House · Room 4 Fire**. Read `notes/house.md` first (shared rules, bu
 
 ## Log (newest first)
 
+- Build 571 (owner: "why do characters look washed out, and face looks especially blurry", then "yes please" to warm monochrome and the upscaled clip): washed out because every figure here was drained of colour and tinted a cool grey-brown (build 522) against the fire's warm orange wall, at low contrast. Now still monochrome but in the fire's warm brown (room tone [140,98,70], was [110,94,86]; the caster [176,124,90], the one pouring oil [214,160,118]) and a third more contrast (`ctK` 1.3, a new room option in the core, `toneOf` in `rooms.js`). The blurry face is the clip's low resolution; its frames are being upscaled (next build). Nothing spent.
+
 - Build 566 (owner: "turn it even more further away"): `PV.GP` 1800 (`PV.Y` FY - 132; the far corner still about FY + 22): the hearth wall seen more edge-on, the arch narrower with it; the water still aimed into the opening. Nothing spent.
 
 - Build 565 (owner: "you did even more tilted towards us - go other directoin plaease"): build 564 lowered `PV.GP` to 550, which WIDENED the face (it turned toward us); now `PV.GP` 1100 (`PV.Y` FY - 72, so the far corner still sits about FY + 22): the face narrower, turned further away. Rule: a larger `GP` turns the hearth wall away from us, a smaller one toward us. Nothing spent.

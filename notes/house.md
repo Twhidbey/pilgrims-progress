@@ -46,6 +46,7 @@ Several chats push to `main`. Just before pushing: `git fetch`, rebase on `origi
 
 - Build 536 (Outside & passages): `RM.HOLDS` has `'walkup'` (the walk up to the house's door).
 - Build 522 (room 4 chat): `toneOf` reads `R.satK` (a factor on every figure's colour in that room; 1 if not set, so other rooms are unchanged; it is part of the toned picture's key). Checked: rooms 3 and 5 still play, no errors.
+- Build 571 (room 4 chat): `R.ctK`, a room's factor on every figure's contrast in `toneOf` (1 = as before; room 4 uses 1.3).
 
 - Build 520 (room 2 chat): `toneOf` takes a room's `soft` (0..1, default none): a softened copy laid over each figure inside its own outline. Only room 2 sets it; no other room changes (the cache key gained one field).
 - Build 519 (Outside & passages): `houseCut` larger, lower and opaque; `RM.peek()` gives `wx` (the walker's place at the door and leaving).

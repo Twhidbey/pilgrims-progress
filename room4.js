@@ -105,7 +105,7 @@
   return {
     // 4 THE FIRE FED WITH OIL (after La Tour's St Joseph the Carpenter): round the back of the wall
     r4: {
-      pic: D4 ? 'room4-drawn' : 'room4', shell: D4 ? 1 : 0, FY: D4 ? HOUSE.FY : 1240, cam0: 0, tone: D4 ? [110, 94, 86] : [150, 100, 80], satK: D4 ? .3 : 1,
+      pic: D4 ? 'room4-drawn' : 'room4', shell: D4 ? 1 : 0, FY: D4 ? HOUSE.FY : 1240, cam0: 0, tone: D4 ? [140, 98, 70] : [150, 100, 80], satK: D4 ? .3 : 1, ctK: D4 ? 1.3 : 1,
       light(x) { const f = .8 + .13 * Math.sin(G.t / 4.3) * Math.sin(G.t / 9.1) + .07 * Math.sin(G.t / 2.1); return x < R4D.PART1 ? { x: D4 ? FXS()[0] : 1810, a: (D4 ? .28 : .75) * f, col: D4 ? [200, 130, 90] : [240, 120, 50] } : { x: R4D.PART1, a: .22 * f * smooth(.4, 1, this.rv), col: [210, 150, 100] }; },
       enter() {
         this.rv = 0; this.steam = []; this.oil = []; this.water = []; this.cast = 0; this.grow = 0; this.dip = 0; this.wet = 0;
@@ -225,13 +225,13 @@
         // behind the wall: the one pouring oil, and the thin thread of oil into the slot
         // unseen until they have gone round (the book: "it is hard for the tempted to see"): only the fire's flare at each drop shows
         const pa = smooth(0, 1, this.rv);
-        if (pa > 0) { if (sheetFrames(POURV)) fig(c, POURV.n + '#' + (Math.floor(this.pf) % POURV.fr), POURV, WK.PO, FY + WK.FEET, -1, 1, pa, [200, 188, 176]); else if (po) fig(c, 'room4-pourer', { ax: 157, g: 790, s: .8, ct: 1, mul: 1, sat: 1, noSh: 1 }, WK.PO, FY + WK.FEET, -1, 1, pa, [200, 188, 176]); }
+        if (pa > 0) { if (sheetFrames(POURV)) fig(c, POURV.n + '#' + (Math.floor(this.pf) % POURV.fr), POURV, WK.PO, FY + WK.FEET, -1, 1, pa, [214, 160, 118]); else if (po) fig(c, 'room4-pourer', { ax: 157, g: 790, s: .8, ct: 1, mul: 1, sat: 1, noSh: 1 }, WK.PO, FY + WK.FEET, -1, 1, pa, [214, 160, 118]); }
         c.strokeStyle = css([255, 196, 90], .35 * pa); c.lineWidth = Math.max(.6, 1.6 * S); c.beginPath(); const [spx, spy] = this.spout(); c.moveTo(u(spx), v(spy)); c.lineTo(u(spx - 3), v(FY + WK.FEET - 40)); c.stroke();
         c.fillStyle = css([255, 210, 110], .9 * pa); for (const o of this.oil) { c.beginPath(); c.arc(u(o.x), v(o.y), Math.max(.8, 3 * S), 0, 6.2832); c.fill(); }
         // the man casting water (his own picture; a free clip of the swing is queued)
         const cx = WK.CX;
-        if (sheetFrames(CASTV)) fig(c, CASTV.n + '#' + Math.min(CASTV.fr - 1, Math.floor(this.cf4)), CASTV, cx, FY + WK.FEET + WK.CDN, -1, 1, 1, [150, 132, 120]);
-        else if (cs) fig(c, 'room4-caster2', { ax: 150, g: 781, s: .8, ct: 1, mul: 1, sat: 1, noSh: 1 }, cx, FY + WK.FEET + WK.CDN, -1, 1, 1, [150, 132, 120]);
+        if (sheetFrames(CASTV)) fig(c, CASTV.n + '#' + Math.min(CASTV.fr - 1, Math.floor(this.cf4)), CASTV, cx, FY + WK.FEET + WK.CDN, -1, 1, 1, [176, 124, 90]);
+        else if (cs) fig(c, 'room4-caster2', { ax: 150, g: 781, s: .8, ct: 1, mul: 1, sat: 1, noSh: 1 }, cx, FY + WK.FEET + WK.CDN, -1, 1, 1, [176, 124, 90]);
         // the wet on the hearth where the water falls, darkening and slowly drying
         if (this.wet > .01) { c.save(); c.translate(u(FXS()[0] - 160), v(FY + WK.FEET + 6)); c.scale(1, .1); const wg = c.createRadialGradient(0, 0, 0, 0, 0, 120 * S); wg.addColorStop(0, css([12, 8, 8], .7 * this.wet)); wg.addColorStop(1, css([12, 8, 8], 0)); c.fillStyle = wg; c.fillRect(-120 * S, -120 * S, 240 * S, 240 * S); c.restore(); }
         c.lineCap = 'round'; c.lineWidth = Math.max(1, 2.6 * S);
