@@ -184,7 +184,7 @@ body.portrait:not(.playing) #rot{display:none}
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
   <button id="autoWalk" aria-label="He walks on by himself"><svg viewBox="0 0 24 24"><path d="M5 6l6 6-6 6M12 6l6 6-6 6"/></svg></button>
-  <div id="build">build 591 · Nov 23 2026</div>
+  <div id="build">build 592 · Nov 23 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <script>
@@ -1096,10 +1096,10 @@ const MUSIC_V = 1;
 // I loved amazing grace with lights"): no music under the walking; the book's harp on the title, and a light beat of drums
 // only at three moments, each played once with its fades baked in (cut from the run and pursuit pieces, low-passed so only
 // the drums come through). The whole hymn plays again at the gate as the lights go on ahead.
-const MUS = { book: 'l1-title', run: 'l1-beat-run', mock: 'l1-beat-mock', heart: 'l1-beat-heart', past: 'l1-run-faint', choir: 'l5-choir' };      // build 527 (owner, of the pursuit piece: "more melancholy than intense"; then chose, after the manner of Part's Fratres, the take with strings over a faint far heartbeat): grave strings over a deep held note, a faint drum heartbeat far underneath
+const MUS = { book: 'l1-title', run: 'l1-beat-run', mock: 'l1-beat-mock', heart: 'l1-beat-heart', past: 'l1-run-faint', choir: 'l5-choir', old100: 'l2-old100' };      // build 527 (owner, of the pursuit piece: "more melancholy than intense"; then chose, after the manner of Part's Fratres, the take with strings over a faint far heartbeat): grave strings over a deep held note, a faint drum heartbeat far underneath
                                                                                     // build 506 (owner: the run piece "a bit upbeat - should be intense and not too many instruments"): the pursuit piece, a low heartbeat of drums and uneasy strings
-const MUSV = { book: .3, run: .42, mock: .3, heart: .4, past: .4, choir: .38 };       // each piece's level (the owner's ears decide)
-const MUS_ONCE = { run: 1, mock: 1, heart: 1, choir: 1 }, MUS_XF = 3, MUS_SKIP = {};      // seconds of quiet lead-in skipped the first time a piece plays
+const MUSV = { book: .3, run: .42, mock: .3, heart: .4, past: .4, choir: .38, old100: .3 };       // each piece's level (the owner's ears decide)
+const MUS_ONCE = { run: 1, mock: 1, heart: 1, choir: 1 }, MUS_XF = 3, MUS_SKIP = { old100: 2.2 };      // seconds of quiet lead-in skipped the first time a piece plays
 const musBuf = {}, musLoad = {}, musV = {};
 let musG = null, musCur = null;
 function musGet(k) {
@@ -1109,7 +1109,11 @@ function musGet(k) {
 }
 function musCue() {
   if (CR.on) return CR.choir && CR.choir() ? 'choir' : null;
-  if (SL.on || HL.on || RM.on) return null;
+  // build 592 (owner: "add a nice background music - i like hymns particularly ones of that era", chose Old Hundredth): Level 2's
+  // plain, and the far bank from the lift on, under the psalm tune Old Hundredth (1551) on viols and a chamber organ; never in the
+  // mire, where its own minor notes and the fears' drums are
+  if (SL.on) { const p = SL.phase ? SL.phase() : ''; return p === 'plain' || p === 'drawn' || p === 'hist' || p === 'look' || p === 'onway' || p === 'on' ? 'old100' : null; }
+  if (HL.on || RM.on) return null;
   if (G.state === 'title') return 'book';
   if (G.neigh && !G.nchose && G.state !== 'choice') return 'heart';      // Obstinate and Pliable come after him: a low heartbeat, gone when the choice comes
   // build 493 (owner: "Music for running part in level one as he runs past neighbors"): the whole run piece (frame drums, timpani,
@@ -2880,7 +2884,7 @@ document.getElementById('on2').onclick = () => SL.on ? go3() : HL.on ? goRoom('d
   for (const [who, txt] of INTRO) vox(who, txt);          // the first words, ready before Begin is pressed
 })();
 </script>
-<script src="slough.js?v=511"></script>
+<script src="slough.js?v=592"></script>
 <script src="hill.js?v=518"></script>
 <script src="rooms-outside.js?v=555"></script>
 <script src="room1.js?v=507"></script>
