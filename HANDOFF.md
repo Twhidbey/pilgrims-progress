@@ -244,6 +244,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 ## START HERE (rewritten at build 140, Nov 16 2026)
 
+**Build 605 (art direction chat): `?look=f` nearer the painting (the low sun in view, a lemon horizon, the rock modelled). Nothing spent.**
+
 **Build 604 (art direction chat): Level 5's climb no longer stutters (the memories were remade every tick of the approach); `?look=f`, the painting's own palette, as a second trial beside `?look=r`. Nothing spent.**
 
 **Build 603 (art direction chat): Level 5's `?look=r` trial backlit in Friedrich's whole palette (umber hill, orange rim, lilac distance). Nothing spent.**
