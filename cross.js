@@ -49,6 +49,9 @@ const CR = (() => {
     // ground"): no lower jaw; the braincase, brow, the notch at the root of the nose, the short nasal bone, the deep
     // nose hole, the upper jaw and its teeth resting on the ground; the eye socket a dark hollow in the rock (`ORBIT`)
     k5: { tomb: .4, orbit: [.585, .47, .078, .066], P: [[0, 1], [.15, .99], [.3, .955], [.42, .89], [.52, .8], [.6, .7], [.65, .62], [.68, .56], [.675, .53], [.66, .51], [.685, .46], [.705, .41], [.685, .39], [.67, .35], [.665, .31], [.69, .29], [.705, .24], [.715, .19], [.72, .15], [.713, .135], [.721, .12], [.714, .105], [.722, .09], [.715, .075], [.722, .06], [.715, .045], [.72, .03], [.71, .012], [.7, 0], [.8, 0]] },
+    // after the owner's second drawing (build 564): a long top falling gently to the brink, then a steep, nearly upright
+    // rounded face with the hollow of an eye in it, and a low ledge jutting at its foot with the sepulchre in it
+    d2: { tomb: .75, orbit: [.53, .55, .06, .05], P: [[0, 1], [.15, 1.0], [.3, .995], [.42, .985], [.49, .955], [.57, .89], [.62, .79], [.64, .64], [.63, .52], [.65, .4], [.66, .26], [.645, .17], [.69, .13], [.78, .11], [.84, .07], [.88, .03], [.92, 0], [.99, 0]] },
     shoulder: { tomb: .74, P: [[0, 1], [.12, .97], [.2, .9], [.235, .79], [.27, .7], [.33, .64], [.5, .6], [.62, .57], [.655, .47], [.675, .34], [.7, .27], [.76, .2], [.84, .12], [.92, .05], [.98, 0], [1.05, 0]] },
   };
   const SH0 = SHAPES[SHAPE] || SHAPES.skull;
