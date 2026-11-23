@@ -505,7 +505,42 @@ const CR = (() => {
       }
     }
   }
+  // THE NEW LOOK, A TRIAL (art direction, Nov 23; owner: "yes do 1 and 2"): only with ?look=r. After Friedrich's
+  // *Morning in the Riesengebirge*, which the owner loved: layer after layer of misty ridges going back, each paler than the
+  // one before, a band of mist lying in every valley, the sky pale and luminous low down; and Kuindzhi's trick for the
+  // holy light (it glows because what is round it is darkened, not because it is brightened). Without ?look=r, unchanged.
+  const LOOKR = /[?&]look=r\b/.test(location.search);
+  const RR = [3, 4, 5, 6, 7, 8].map(seed => { const r = rgen(seed * 17 + 3); return [1, 2, 3, 4, 5, 6].map(k => [r() * 6.28, k, .6 + .8 * r()]); });
+  const rrY = (i, X, base, amp) => { let y = base; for (const [p, k, a] of RR[i]) y += amp * a / k * Math.sin(X * k * k * .0007 + p); return y; };
+  function farR(c) {
+    const pre = [[60, 66, 84], [118, 112, 120]], dw = [[78, 74, 92], [168, 140, 134]], gd = [[206, 172, 146], [246, 214, 164]];
+    const hz = mix(mix(pre[1], dw[1], dawn), gd[1], gold), up = mix(mix(pre[0], dw[0], dawn), gd[0], gold);
+    const deep = mix(mix([44, 46, 62], [52, 48, 60], dawn), [70, 58, 62], gold);
+    const mistC = mix(mix([150, 150, 164], [196, 176, 172], dawn), [255, 232, 200], gold);
+    // far to near: base line (screen), height of its swells, parallax, how far toward the deep colour
+    const L = [[HY - 64, 26, .03, .1], [HY - 44, 30, .06, .2], [HY - 24, 30, .1, .32], [HY - 4, 26, .15, .45], [HY + 18, 22, .22, .58], [HY + 40, 18, .3, .7]];
+    L.forEach(([base, amp, p, k], i) => {
+      const col = mix(mix(hz, up, .25), deep, k);
+      c.beginPath(); c.moveTo(0, VH);
+      for (let X = 0; X <= VW + 8; X += 6) c.lineTo(X, rrY(i, X + cam.cx * p * 6, base, amp));
+      c.lineTo(VW, VH); c.closePath(); c.fillStyle = css(col); c.fill();
+      // mist lying in the valley below this ridge: thickest low down, fading up the next ridge; strongest far off
+      const mb = base + amp * .9, g = c.createLinearGradient(0, mb - 34, 0, mb + 26);
+      const ma = (.62 - .07 * i) * (.75 + .25 * gold);
+      g.addColorStop(0, css(mistC, 0)); g.addColorStop(.62, css(mistC, ma)); g.addColorStop(1, css(mistC, ma * .5));
+      c.fillStyle = g; c.fillRect(0, mb - 34, VW, 60);
+    });
+  }
+  // Kuindzhi: once the sun is up, the picture darkens toward its edges and corners, away from the light
+  function kuindzhi(c) {
+    const k = LOOKR ? Math.max(gold, .5 * dawn) : 0; if (k < .02) return;
+    const cxs = sx(CROSS_X), cy = sy(gh(CROSS_X) + CROSS_BY), R = Math.hypot(VW, VH);
+    const g = c.createRadialGradient(cxs, cy, R * .12, cxs, cy, R * .9);
+    g.addColorStop(0, 'rgba(10,8,14,0)'); g.addColorStop(.45, css([14, 10, 18], .12 * k)); g.addColorStop(1, css([10, 8, 14], .42 * k));
+    c.fillStyle = g; c.fillRect(0, 0, VW, VH);
+  }
   function far(c) {
+    if (LOOKR) return farR(c);
     const L = [[HY - 6, 10, .06, [92, 94, 110], [214, 190, 170], [120, 118, 132], [246, 216, 172]], [HY + 26, 14, .14, [74, 74, 90], [188, 162, 146], [104, 102, 118], [240, 206, 164]]];
     L.forEach(([base, amp, p, c0, c1, h0, h1], i) => {
       const col = mix(mix(c0, mix(c0, c1, .4), dawn), c1, gold), hz0 = mix(mix(h0, mix(h0, h1, .4), dawn), h1, gold);
@@ -1356,6 +1391,7 @@ const CR = (() => {
     // the nearest ground, a dark band along the foot of the picture, under the words
     c.setTransform(DPR, 0, 0, DPR, 0, 0);
     const g = c.createLinearGradient(0, FOOTY + 20, 0, VH); g.addColorStop(0, 'rgba(12,10,12,0)'); g.addColorStop(.5, css(mix([16, 15, 20], [26, 20, 18], gold), .7)); g.addColorStop(1, css(mix([12, 11, 16], [20, 15, 13], gold), .92)); c.fillStyle = g; c.fillRect(0, FOOTY + 20, VW, VH);
+    kuindzhi(c);
     if (veil > .005) { c.fillStyle = css(mix([14, 14, 20], [24, 20, 26], dawn), veil); c.fillRect(0, 0, VW, VH); }
     if (G.ring) { const [x, y] = G.ring(); c.strokeStyle = '#ffe6ae'; c.lineWidth = 2; for (const q0 of [0, .5]) { const q = (G.t / 80 + q0) % 1; c.globalAlpha = .65 * (1 - q); c.beginPath(); c.arc(x, y, 14 + q * 40, 0, 6.2832); c.stroke(); } c.globalAlpha = 1; }
     for (const tp of G.taps) { tp.t++; c.strokeStyle = css([247, 243, 233], .5 * (1 - tp.t / 40)); c.lineWidth = 1.2; c.beginPath(); c.arc(tp.x, tp.y, 6 + tp.t * .8, 0, 7); c.stroke(); }
