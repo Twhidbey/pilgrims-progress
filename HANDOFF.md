@@ -244,6 +244,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 ## START HERE (rewritten at build 140, Nov 16 2026)
 
+**Build 609 (art direction chat): `?look=f` his walk follows the painted hill's own contours; the memories washed into the mist. Next asked: a painted ramp (about 25 cents, waiting). Nothing spent.**
+
 **Build 608 (art direction chat): `?look=f` pinnacles taken out again; the crag's own skyline with its slight jags, the cross back on the crown. Nothing spent.**
 
 **Build 607 (art direction chat): `?look=f` the crag's own skyline, pinnacles lifted into a summit, the cross on the highest one (CROSS_X 5000 there); see CLAUDE.md. Nothing spent.**

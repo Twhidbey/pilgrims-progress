@@ -81,7 +81,23 @@ const CR = (() => {
   const cap = x => SK_H * (1 - CAP_D * Math.pow((x - CROSS_X) / CAP_W, 2));
   const capS = x => -2 * SK_H * CAP_D * (x - CROSS_X) / (CAP_W * CAP_W);
   function dome(x) { const u = (x - SK_X) / (x < SK_X ? SK_L : SK_R); if (Math.abs(u) >= 1) return 0; return x < SK_X ? SK_H * Math.pow(1 - Math.pow(Math.abs(u), 3), 1.1) : SK_H * Math.pow(1 - u * u, .55); }
-  function gh(x) {
+  // ?look=f: THE HILL IS THE PAINTED CRAG'S OWN SHAPE (owner, build 607 to 609: "i liked the hill before with slight jags
+  // but not the three pinnacles", then "the left side of hill can go down but should follow the contours of the picture"):
+  // the painting's own skyline (PIN_TAB, painting units at SK_H 1080 from painting x 3160 every 8, from its alpha before
+  // the left fade) is the land's outline (pinDraw) and, smoothed, the line he walks on (gh); toward the painting's left
+  // end both blend into the drawn ramp over its fade (PIN_W)
+  const PIN_ON = /[?&]look=f\b/.test(location.search), HP_TOP = PIN_ON ? -1092.95 : -1089.42, HP_H = PIN_ON ? 1097.28 : 1093.75;
+  const PIN_TAB = [530,533,536,539,544,548,553,557,564,568,572,575,577,578,580,583,585,588,589,592,594,597,600,602,605,609,612,615,620,624,629,636,648,651,653,662,669,670,671,672,675,677,679,681,682,684,686,688,692,696,702,707,711,715,719,722,725,728,731,734,737,741,747,752,757,760,768,769,792,811,829,832,837,845,848,851,853,856,859,865,870,874,877,880,884,887,890,893,894,895,897,909,914,922,930,938,945,949,952,955,959,962,966,969,972,975,979,983,987,989,992,994,997,998,998,999,1000,1001,1002,1003,1004,1007,1009,1010,1012,1014,1017,1020,1024,1027,1032,1040,1046,1051,1052,1054,1054,1054,1054,1054,1055,1057,1057,1059,1061,1062,1062,1063,1063,1063,1063,1063,1063,1064,1064,1064,1065,1067,1067,1069,1071,1073,1075,1076,1077,1079,1079,1080,1081,1082,1082,1081,1080,1080,1079,1077,1076,1076,1075,1075,1074,1074,1074,1075,1076,1076,1076,1076,1077,1078,1078,1077,1077,1071,1065,1056,1057,1057,1057,1058,1059,1059,1057,1055,1055,1057,1057,1056,1046,1028,1002,973,976,970,1016,1021,1021,1019,1012,1008,1004,968,963,964,968,984,1003,1003,1004,1002,993,947,932,918,928,929,925,912,897,884,863,822,781,764,747,730,632,623,616,607,590,568,524,523,518,479,470,461,446,437,436,433,425,415,405,396,378,331,328,328,330,331,332,323,314,306,297,288,278,256,236,192,196,198,203,204,203,193,182,168,155,138,103,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], PIN0 = 3160, PIN1 = PIN0 + 8 * (PIN_TAB.length - 1);
+  const PIN_S = PIN_TAB.map((v, i) => { let a = 0, n = 0; for (let j = -5; j <= 5; j++) { const q = PIN_TAB[i + j]; if (q != null) { a += q; n++; } } return a / n; });
+  const pinS = () => SK_H / 1080, pinW = xp => pinS() * (xp - 4380) + SK_X;
+  function pinAt(T, x) { const s = pinS(), xp = 4380 + (x - SK_X) / s; if (xp < PIN0) return -1; if (xp >= PIN1) return 0;
+    const f = (xp - PIN0) / 8, i = Math.floor(f); return s * lerp(T[i], T[i + 1], f - i); }
+  const ptop = x => pinAt(PIN_TAB, x);
+  const PIN_W = x => smooth(pinW(PIN0 + 120), pinW(PIN0 + 700), x);
+  function pinDraw(x) { const w = PIN_W(x); if (w <= 0) return gh0(x); return lerp(gh0(x), ptop(x), w); }
+  function crossH() { if (PIN_ON) { const t = ptop(CROSS_X); if (t > 0) return t; } return gh(CROSS_X); }
+  function gh(x) { if (PIN_ON) { const w = PIN_W(x); if (w > 0) return lerp(gh0(x), pinAt(PIN_S, x), w); } return gh0(x); }
+  function gh0(x) {
     // the ramp: a smooth swoop (concave, steepening a little as it climbs) that runs up into the skull's crown with the
     // dome's own slope where they meet, so there is no notch; past the crown, the skull's round dome falling to the plain
     let h;
@@ -130,24 +146,10 @@ const CR = (() => {
   // the land's whole outline from xa to xb, as [x, y] on the picture (y = -h): the height field up to the crown, the
   // skull's own outline past it, then the plain
   function outline(xa, xb, step) { const O = [];
+    if (PIN_ON) { for (let x = xa; x <= xb + step; x += step) O.push([x, -pinDraw(x)]); return O; }
     for (let x = xa; x <= Math.min(xb, SK_X); x += step) O.push([x, -gh(x)]);
     if (xb > SK_X) { for (const [x, h] of SKO) O.push([x, -h]); for (let x = SK_END + step; x <= xb; x += step) O.push([x, 0]); }
-    return PIN_ON && HPAINT ? pinOutline(O) : O; }
-  // ?look=f: the painted crag's own summit of pinnacles (owner: "make the hill shaped more like his crag", then "Yes" to
-  // the cross standing on the highest pinnacle): the painting's pinnacles were lifted into a summit (hill-crag.webp v607,
-  // its alpha now its own skyline) and the land's outline follows that skyline over them (PIN_TAB, painting units at
-  // SK_H 1080 from painting x 4560 every 8), so they are not clipped away; the walk (gh) is unchanged; the cross's foot
-  // is on the highest pinnacle (crossH)
-  const PIN_ON = /[?&]look=f\b/.test(location.search), HP_TOP = PIN_ON ? -1092.95 : -1089.42, HP_H = PIN_ON ? 1097.28 : 1093.75;
-  const PIN_TAB = [1077,1076,1076,1075,1075,1074,1074,1074,1075,1076,1076,1076,1076,1077,1078,1078,1077,1077,1071,1065,1056,1057,1057,1057,1058,1059,1059,1057,1055,1055,1057,1057,1056,1046,1028,1002,973,976,970,1016,1021,1021,1019,1012,1008,1004,968,963,964,968,984,1003,1003,1004,1002,993,947,932,918,928,929,925,912,897,884,863,822,781,764,747,730,632,623,616,607,590,568,524,523,518,479,470,461,446,437,436,433,425,415,405,396,378,331,328,328,330], PIN0 = 4560, PIN1 = PIN0 + 8 * (PIN_TAB.length - 1);
-  function ptop(x) { const s = SK_H / 1080, xp = 4380 + (x - SK_X) / s; if (xp < PIN0 || xp > PIN1) return -1;
-    const f = (xp - PIN0) / 8, i = Math.floor(f); return s * lerp(PIN_TAB[i], PIN_TAB[Math.min(PIN_TAB.length - 1, i + 1)], f - i); }
-  function pinOutline(O) { const s = SK_H / 1080, wa = SK_X + (PIN0 - 4380) * s, wb = SK_X + (PIN1 - 4380) * s, R = [];
-    let put = false;
-    for (const p of O) { if (p[0] < wa || p[0] > wb) { R.push(p); continue; }
-      if (!put) { put = true; for (let x = wa; x <= wb; x += 4) { let base = 0; for (const q of O) if (q[0] <= x) base = -q[1]; const w = smooth(wa + 160, wa + 260, x); const pt = ptop(x); R.push([x, -(pt < 0 ? base : lerp(base, pt, w))]); } } }
-    return R; }
-  function crossH() { if (PIN_ON && HPAINT) { const t = ptop(CROSS_X); if (t > 0) return t; } return gh(CROSS_X); }
+    return O; }
   // ---------- the words (Bunyan's, shortened and made plain) ----------
   const OPEN = [[N, 'Up the highway between its walls Christian ran, but not without great difficulty, because of the load on his back.']];      // {92}
   const ASCEND = [[N, 'He came to a place somewhat ascending, and upon that place stood a cross, and a little below, a sepulchre.']];      // {93}
@@ -1471,7 +1473,7 @@ const CR = (() => {
     let sn = 0, su = 0, sh = 0, suu = 0, suh = 0;
     for (let u = m.on[0] - m.x0; u <= m.on[1] - m.x0; u += 10) { const h = gh(m.x0 + u) + lift(u); sn++; su += u; sh += h; suu += u * u; suh += u * h; }
     // (the mire names two places instead, `fit`: waist-deep where he wades, on the ground at Help's bank)
-    const F = m.fit, sl = F ? (gh(m.x0 + F[1][0]) + F[1][1] - gh(m.x0 + F[0][0]) - F[0][1]) / (F[1][0] - F[0][0]) : (sn * suh - su * sh) / (sn * suu - su * su), up = (m.on[0] + m.on[1]) / 2 - m.x0, hp = F ? gh(m.x0 + F[0][0]) + F[0][1] + sl * (up - F[0][0]) : (sh - sl * su) / sn + sl * up, th = Math.atan(sl), co = Math.cos(th), si = Math.sin(th);
+    const F = m.fit, sl = F ? (gh(m.x0 + F[1][0]) + F[1][1] - gh(m.x0 + F[0][0]) - F[0][1]) / (F[1][0] - F[0][0]) : (sn * suh - su * sh) / (sn * suu - su * su), up = (m.on[0] + m.on[1]) / 2 - m.x0, hp = F ? gh(m.x0 + F[0][0]) + F[0][1] + sl * (up - F[0][0]) : (sh - sl * su) / sn + sl * up, th = Math.atan(sl * (PIN_ON ? .55 : 1)), co = Math.cos(th), si = Math.sin(th);
     // a picture point (a across, b down from its ground row, world units) lands at
     const at = (a, b) => [up + (a - up) * co + b * si, -hp - (a - up) * si + b * co];
     let top = 1e9, bot = -1e9, left = 0, right = Wu;
@@ -1496,10 +1498,14 @@ const CR = (() => {
     q.globalCompositeOperation = 'destination-in'; q.drawImage(mask, 0, 0);
     // and at both its ends and its top, by the picture's own edges (they are tilted too)
     const em = mk(cv.width, cv.height), eq = em.getContext('2d'); eq.save(); turn(eq);
-    const eg = eq.createLinearGradient(0, 0, Wu, 0); eg.addColorStop(0, 'rgba(0,0,0,0)'); const EL = (m.ends || [240, 240]); eg.addColorStop(EL[0] * .35 / Wu, 'rgba(0,0,0,.22)'); eg.addColorStop(EL[0] * .7 / Wu, 'rgba(0,0,0,.7)'); eg.addColorStop(EL[0] / Wu, '#000'); eg.addColorStop(1 - EL[1] / Wu, '#000'); eg.addColorStop(1, 'rgba(0,0,0,0)');
+    const eg = eq.createLinearGradient(0, 0, Wu, 0); eg.addColorStop(0, 'rgba(0,0,0,0)'); const EL = (m.ends || [240, 240]).map(v => PIN_ON ? Math.min(Wu * .42, v * 1.7) : v); eg.addColorStop(EL[0] * .35 / Wu, 'rgba(0,0,0,.22)'); eg.addColorStop(EL[0] * .7 / Wu, 'rgba(0,0,0,.7)'); eg.addColorStop(EL[0] / Wu, '#000'); eg.addColorStop(1 - EL[1] / Wu, '#000'); eg.addColorStop(1, 'rgba(0,0,0,0)');
     eq.fillStyle = eg; eq.fillRect(0, -m.R * k, Wu, im.height * k);
-    eq.globalCompositeOperation = 'destination-in'; const tg = eq.createLinearGradient(0, -m.R * k, 0, -m.R * k + 150); tg.addColorStop(0, 'rgba(0,0,0,0)'); tg.addColorStop(1, '#000'); eq.fillStyle = tg; eq.fillRect(0, -m.R * k, Wu, im.height * k); eq.restore();
+    eq.globalCompositeOperation = 'destination-in'; const TF = PIN_ON ? Math.max(150, (m.R * k) * .7) : 150, tg = eq.createLinearGradient(0, -m.R * k, 0, -m.R * k + TF); tg.addColorStop(0, 'rgba(0,0,0,0)'); if (PIN_ON) { tg.addColorStop(.35, 'rgba(0,0,0,.18)'); tg.addColorStop(.7, 'rgba(0,0,0,.65)'); } tg.addColorStop(1, '#000'); eq.fillStyle = tg; eq.fillRect(0, -m.R * k, Wu, im.height * k); eq.restore();
     q.drawImage(em, 0, 0); q.globalCompositeOperation = 'source-over';
+    // ?look=f: the memory breathed into the morning mist (owner: "the memories are now framed a fair amount and might
+    // need some more blending"): washed toward the mist's own pale blue-grey, so it reads as a vision in the air, not a
+    // picture laid on it
+    if (PIN_ON) { q.globalCompositeOperation = 'source-atop'; q.fillStyle = 'rgba(196,204,212,.38)'; q.fillRect(0, 0, cv.width, cv.height); q.globalCompositeOperation = 'source-over'; }
     m.cv = cv; m.top = top; m.left = left; m.Wu = cv.width / Z; m.Hu = cv.height / Z; m.front = null;
     if (m.lift) {
       // the mire in front of him: everything below its surface, where it has any depth
@@ -1537,7 +1543,7 @@ const CR = (() => {
     if (!REL_ON) return;
     for (const m of REL) {
       const cv = front ? m.front : m.cv, a = m.a * (1 - wideK); if (!cv || a < .01) continue;
-      c.save(); c.globalAlpha = REL_A * a; c.drawImage(cv, m.x0 + m.left, m.top, m.Wu, m.Hu);
+      c.save(); c.globalAlpha = REL_A * a * (PIN_ON ? .85 : 1); c.drawImage(cv, m.x0 + m.left, m.top, m.Wu, m.Hu);
       // intense: a breathing light over it, and a brightening as it comes
       if (!front) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = a * (m.glow * .7 * (.7 + .3 * Math.sin(G.t / 37)) + .16 * (1 - m.a)); c.drawImage(cv, m.x0 + m.left, m.top, m.Wu, m.Hu); }
       c.restore();
