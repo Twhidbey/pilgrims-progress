@@ -85,7 +85,7 @@
   // the walk round the wall (build 508): the two set off from where they stand, go BEHIND the man with the bucket and the fire (a
   // little further back: smaller, darker, standing a little higher), behind the chimney breast into the dark, the Interpreter's
   // cupped candle the only light there; they stop and turn to the one pouring oil, and the dark lifts
-  const WK = { C0: 240, I0: 520, FEET: 45, C1: 2620, I1: 2860, V: 3.4, k: .9, up: 27, PO: 2080, SPOUT: [1931, 790 + 45], CDN: 35, CX: 960, LIP: [1342, 830 + 45] };
+  const WK = { C0: 240, I0: 520, FEET: 45, C1: 2620, I1: 2860, V: 3.4, k: .9, up: 27, PO: 2080, SPOUT: [1931, 790 + 45], CDN: 35, CX: 860, LIP: [1342, 830 + 45] };
   // the perspective of the chimney breast's face (build 523; build 526: the eye at chest height again, so the floor line runs up too):
   // a vanishing point PV on the left, depth d into the
   // picture shrinks by PQ(d) (as the gate's wall in Level 3); the hearth's opening runs from depth a0 to a1, its arch springing at SPR
@@ -289,8 +289,10 @@
               // the front of the slug first, its tail thinning; a slosh as it leaves the bucket
               const fi = Math.floor(this.cf4), q = (fi - 19) / 5;
               if (fi === 19 && !this.sl) { this.sl = true; if (typeof sfxPlay === 'function' && typeof audio === 'function' && audio()) sfxPlay('bog-heave', 2, .55); }
-              for (let i = 0; i < 9 - 5 * q; i++) { const vy = -1.9 + rnd() * .9, dy = ty - 170 + rnd() * 50 - ly, t = (-vy + Math.sqrt(vy * vy + .32 * Math.max(0, dy))) / .16;
-                this.water.push({ x: lx + (rnd() - .5) * 26, y: ly + (rnd() - .5) * 22, vx: (tx - 20 + rnd() * 50 - lx) / t, vy, r: (13 - 7 * q) * (.6 + .6 * rnd()), a: 1 }); } }
+              // it leaves the lip nearly level and curves down (owner, build 582: "should start almost horiz and then arc down"): aimed at the
+              // top of the hearth's opening, so it falls on into the fire
+              for (let i = 0; i < 9 - 5 * q; i++) { const vy = rnd() * .5, dy = FB - PV.SPR - PV.RISE + 60 + rnd() * 40 - ly, t = (-vy + Math.sqrt(vy * vy + .32 * Math.max(0, dy))) / .16;
+                this.water.push({ x: lx + (rnd() - .5) * 26, y: ly + (rnd() - .5) * 22, vx: (tx - 40 + rnd() * 40 - lx) / t, vy, r: (13 - 7 * q) * (.6 + .6 * rnd()), a: 1 }); } }
             else this.sl = false;
           } else {
             this.cast += 1 / 70; if (this.cast >= 3.2) { this.cast = 0; this.hit = false; }
@@ -299,6 +301,8 @@
           this.pf += 16 / 60;
           for (const w of this.water) {
             w.vy += .16; w.x += w.vx; w.y += w.vy;
+            // once inside the opening it strikes the back of the hearth and drops into the fire (it must not fly on past the far jamb)
+            if (!w.sp && w.x > FXS()[0] - 30 && w.y > FB - PV.SPR - PV.RISE) w.vx *= .55;
             if (w.x > FXS()[0] - 60 && w.y > FXS()[1] - 170 && w.a === 1) {
               w.a = .99; if (!this.hit) { this.hit = true; this.dip = 1; noise(3000, 1, .6, .05); noise(500, 2, .5, .04); if (typeof sfxPlay === 'function' && typeof audio === 'function' && audio()) sfxPlay('bog-plop', 3, .7); }
               if (w.r > 6 && rnd() < .5) for (let k = 0; k < 2; k++) this.water.push({ x: w.x, y: w.y, vx: (rnd() - .7) * 2.4, vy: -2.2 - rnd() * 2.4, r: 2 + rnd() * 3, a: .98, sp: 1 });
