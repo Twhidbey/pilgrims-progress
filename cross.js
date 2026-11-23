@@ -520,7 +520,9 @@ const CR = (() => {
     // far to near: base line (screen), height of its swells, parallax, how far toward the deep colour
     const L = [[HY - 64, 26, .03, .1], [HY - 44, 30, .06, .2], [HY - 24, 30, .1, .32], [HY - 4, 26, .15, .45], [HY + 18, 22, .22, .58], [HY + 40, 18, .3, .7]];
     L.forEach(([base, amp, p, k], i) => {
-      const col = mix(mix(hz, up, .25), deep, k);
+      let col = mix(mix(hz, up, .25), deep, k);
+      // the nearer hills take the same burnt orange as the hill, fading into the cool distance
+      if (i >= 2) col = mix(col, mix(mix([58, 44, 42], [96, 62, 48], dawn), [168, 98, 56], gold), (i - 1) / 5 * (.45 + .45 * gold));
       c.beginPath(); c.moveTo(0, VH);
       for (let X = 0; X <= VW + 8; X += 6) c.lineTo(X, rrY(i, X + cam.cx * p * 6, base, amp));
       c.lineTo(VW, VH); c.closePath(); c.fillStyle = css(col); c.fill();
@@ -798,7 +800,10 @@ const CR = (() => {
   }
   function land(c) {
     const x0 = cam.cx - VW / 2 / cam.z - 40, x1 = cam.cx + VW / 2 / cam.z + 40, step = Math.max(4, 6 / cam.z);
-    const hc = mix(mix([30, 30, 38], [36, 32, 36], dawn), [44, 34, 30], gold);
+    // with ?look=r the hill is Friedrich's burnt orange-brown rock in the morning sun (owner: "more like Morning in the
+    // Riesengebirge in that burnt orange look for the hill and nearby hills"): a warm dark brown before dawn, ember-brown
+    // at dawn, burnt orange once the sun is up
+    const hc = LOOKR ? mix(mix([40, 31, 28], [64, 42, 32], dawn), [112, 62, 34], gold) : mix(mix([30, 30, 38], [36, 32, 36], dawn), [44, 34, 30], gold);
     c.beginPath(); c.moveTo(x0, 2000);
     for (const [x, y] of outline(x0, x1, step)) c.lineTo(x, y);
     c.lineTo(x1, 2000); c.closePath(); c.fillStyle = css(hc); c.fill();
@@ -816,6 +821,12 @@ const CR = (() => {
       // the painting takes the hill's own colour through the dawn (its lightness kept)
       c.globalCompositeOperation = 'color'; c.fillStyle = css(hc); c.fillRect(x0, -H_TOP - 200, x1 - x0, H_TOP + 2300); c.globalCompositeOperation = 'source-over';
       // the foot sinks into the dark ground (owner: "blend edges and make everything super cohesive")
+      if (LOOKR && gold > .02) {
+        // the low sun on the upper rock, a soft warm light falling off down the hill (laid with 'soft-light')
+        const sg = c.createLinearGradient(0, -H_TOP - 40, 0, -H_TOP * .25);
+        sg.addColorStop(0, css([255, 150, 70], .55 * gold)); sg.addColorStop(1, 'rgba(255,150,70,0)');
+        c.globalCompositeOperation = 'soft-light'; c.fillStyle = sg; c.fillRect(x0, -H_TOP - 200, x1 - x0, H_TOP); c.globalCompositeOperation = 'source-over';
+      }
       const fg = c.createLinearGradient(0, -260, 0, 8); fg.addColorStop(0, css(dark, 0)); fg.addColorStop(.6, css(dark, .22)); fg.addColorStop(1, css(dark, .5));
       c.fillStyle = fg; c.fillRect(x0, -260, x1 - x0, 2300);
     }
