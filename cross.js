@@ -56,7 +56,7 @@ const CR = (() => {
   };
   const SH0 = SHAPES[SHAPE] || SHAPES.skull;
   // (owner, build 558: "the hill can be bigger and long flat space on top"): H_TOP 1050 (was 860)
-  const H_TOP = +(new URLSearchParams(location.search).get('htop') || 1500), START = 480, WALL_END = 860, TOMB_X = 4380 + SH0.tomb * (H_TOP + 30), SLOPE0 = 1180, CREST0 = 4080, CROSS_X = 4700, CREST1 = 4400, FALL1 = 5340;
+  const H_TOP = +(new URLSearchParams(location.search).get('htop') || 1500), START = 480, WALL_END = 860, TOMB_X = 4380 + SH0.tomb * (H_TOP + 30), SLOPE0 = 1180, CREST0 = 4080, CROSS_X = 4820, CREST1 = 4400, FALL1 = 5340;
   // GOLGOTHA, AFTER THE OWNER'S SKETCH (build 545): a smooth swooping ramp up from the left that meets the top of a round
   // rocky knoll shaped like a skull's crown (SK_X its top, SK_L / SK_R how far its dome reaches left and right)
   const SK_X = 4380, SK_L = 1000, SK_R = FALL1 - 4380, SK_H = H_TOP + 30, RAMP1 = SK_X - 260;
@@ -104,9 +104,15 @@ const CR = (() => {
     [.97, .012], [1, 0], [1.08, 0]].map(p => p);
   if (SH0.P) SKP.splice(0, SKP.length, ...SH0.P);
   // the skull's top follows the same arch up to its brow's shoulder
-  if (CAP) { const sh = SKP.findIndex(([u]) => u >= .545), top = [];
-    for (let u = 0; u < SKP[sh][0] - .02; u += .04) top.push([u, cap(SK_X + u * SK_H) / SK_H]);
-    SKP.splice(0, sh, ...top); }
+  // and turns down into the face round a soft shoulder (owner: "a bit of corner on upper right - can you smooth that
+  // out"): a curve from where the arch ends to the face's first steep point, its control where the arch's tangent and
+  // the face's line meet
+  if (CAP) { const fi = SKP.findIndex(([u]) => u >= .67), F = SKP[fi], G = SKP[fi + 1], top = [], ue = .46;
+    for (let u = 0; u < ue; u += .04) top.push([u, cap(SK_X + u * SK_H) / SK_H]);
+    const v0 = cap(SK_X + ue * SK_H) / SK_H, m0 = capS(SK_X + ue * SK_H), m1 = (G[1] - F[1]) / (G[0] - F[0]);
+    const cu = (F[1] - v0 + m0 * ue - m1 * F[0]) / (m0 - m1), C = [cu, v0 + m0 * (cu - ue)];
+    for (let k = 0; k < 8; k++) { const t = k / 8, w = 1 - t; top.push([w * w * ue + 2 * w * t * C[0] + t * t * F[0], w * w * v0 + 2 * w * t * C[1] + t * t * F[1]]); }
+    SKP.splice(0, fi, ...top); }
   const RGS = rgen(550);
   const SKO = (() => { const P = SKP.map(([u, v]) => [SK_X + u * SK_H, v * SK_H]), O = [];
     for (let i = 0; i < P.length - 1; i++) { const a = P[Math.max(0, i - 1)], b = P[i], c2 = P[i + 1], d = P[Math.min(P.length - 1, i + 2)];
