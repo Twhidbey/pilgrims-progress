@@ -20,7 +20,7 @@ const CR = (() => {
   // NEW HILL SHAPES TO TRY (owner: "we need new versions of the hill - can you [look] at how golgotha has been depicted in
   // art"): ?shape=dome (Bruegel's far round hill), plinth (Mantegna's flat-topped rock in hewn steps), wedge (Friedrich's
   // dark triangle), shoulder (a small rock knob on a grassy shoulder, the tomb in the rock band below); none = the skull
-  const SHAPE = (new URLSearchParams(location.search).get('shape') || 'skull').toLowerCase();
+  const SHAPE = (new URLSearchParams(location.search).get('shape') || 'skullsteps').toLowerCase();
   const SHAPES = {
     skull: { tomb: .7, P: null },
     dome: { tomb: 1.02, P: [[0, 1], [.2, .97], [.4, .88], [.6, .72], [.78, .52], [.92, .34], [1.02, .2], [1.1, .1], [1.17, .04], [1.24, 0], [1.3, 0]] },
@@ -442,7 +442,7 @@ const CR = (() => {
   // darker as it comes down; baked once small and drawn stretched (soft), in dark alpha so it takes the hill's colour
   let ROCK = null;
   // six trial ways to tie the skull's ledges into the slope (owner: "the bulging circular layers looks separate from slope"): ?hl=a..f
-  const HL_OPT = (new URLSearchParams(location.search).get('hl') || '').toLowerCase();
+  const HL_OPT = (new URLSearchParams(location.search).get('hl') || 'a').toLowerCase();
   const ROCK_OPT = (new URLSearchParams(location.search).get('rock') || 'skull').toLowerCase();
   // the six trials (sketches for the owner; nothing here is used without ?hl=)
   function hillTrial(q, l, K, crag) {
@@ -457,7 +457,14 @@ const CR = (() => {
     if (K === 'a') {
       // A: the ledges run the WHOLE hill: nested copies of the whole outline, ramp and skull together, drawn in toward the tomb
       const cx0 = TOMB_X - 200;
-      for (let n = 1; n <= 6; n++) { const sc = 1 - n * .13; band(WH.map(([x, h]) => { const X = cx0 + (x - cx0) * (.55 + .45 * sc), H = h * sc; return [X, H - spur(X, n, 80 + 12 * n, 170) * smooth(10, 90, H)]; }), .09); }
+      // (owner, build 557: "half circle bump is well defined but not connected to 'ramp' on the left"): the default now; each
+      // band starts far down the ramp, faded in there, runs on under the ramp's line and over into the skull
+      const fade = (a) => { const g = q.createLinearGradient(SLOPE0 + 200, 0, SLOPE0 + 1300, 0); g.addColorStop(0, css([0, 0, 0], 0)); g.addColorStop(1, css([0, 0, 0], a)); return g; };
+      for (let n = 1; n <= 6; n++) { const sc = 1 - n * .12;
+        const P = WH.map(([x, h]) => { const X = cx0 + (x - cx0) * (.7 + .3 * sc), H = h * sc; return [X, H - spur(X, n, 80 + 12 * n, 170) * smooth(10, 90, H)]; });
+        q.beginPath(); q.moveTo(P[0][0], 60); P.forEach(([x, h]) => q.lineTo(x, -h)); q.lineTo(P[P.length - 1][0], 60); q.closePath(); q.fillStyle = fade(.1); q.fill();
+        l.strokeStyle = css([255, 255, 255], .05); l.lineWidth = 1.6; l.beginPath(); let pen = false;
+        P.forEach(([x, h]) => { if (h < 20 || x < SLOPE0 + 900) { pen = false; return; } pen ? l.lineTo(x, -h - 2) : l.moveTo(x, -h - 2); pen = true; }); l.stroke(); }
     } else if (K === 'b') {
       // B: tilted bedding: long rock shelves running down from the upper left across the whole hill to the lower right
       for (let n = 0; n < 7; n++) { const o = 980 - n * 150; band(span(x => o - .28 * (x - SLOPE0) + spur(x, n, 70, 160)), .075); }
@@ -651,9 +658,9 @@ const CR = (() => {
     // its upright cracks showed as stripes down the smooth hill)
     if (false && RTEX) {} if (RTEX && ROCK_OPT === 'skull') {
       // the painted rock's grain, only on the skull, as on Level 3's crags
-      c.save(); c.beginPath(); c.moveTo(SK_X - SK_L, 60); for (let x = SK_X - SK_L; x <= SK_X; x += 8) c.lineTo(x, -Math.min(gh(x), dome(x))); for (const [x, h] of SKO) c.lineTo(x, -h); c.lineTo(SK_END, 60); c.closePath(); c.clip();
+      c.save(); c.beginPath(); c.moveTo(SLOPE0, 60); for (let x = SLOPE0; x <= SK_X; x += 8) c.lineTo(x, -gh(x)); for (const [x, h] of SKO) c.lineTo(x, -h); c.lineTo(SK_END, 60); c.closePath(); c.clip();
       if (!RPAT) RPAT = c.createPattern(RTEX, 'repeat'); const ts = 2; RPAT.setTransform(new DOMMatrix([ts, 0, 0, ts, 300, -H_TOP - 200]));
-      c.globalCompositeOperation = 'overlay'; c.globalAlpha = .14; c.fillStyle = RPAT; c.fillRect(SK_X - SK_L + 300, -H_TOP - 60, SK_END - SK_X + SK_L, H_TOP + 120); c.restore(); }
+      c.globalCompositeOperation = 'overlay'; c.globalAlpha = .14; c.fillStyle = RPAT; c.fillRect(SLOPE0, -H_TOP - 60, SK_END - SLOPE0, H_TOP + 120); c.restore(); }
     if (false) { if (!RPAT) RPAT = c.createPattern(RTEX, 'repeat'); const ts = 2.4; RPAT.setTransform(new DOMMatrix([ts, 0, 0, ts, 300, -H_TOP - 200]));
       c.globalCompositeOperation = "overlay"; c.globalAlpha = .14; c.fillStyle = RPAT; c.fillRect(x0, -H_TOP - 60, x1 - x0, H_TOP + 2100); c.globalAlpha = 1; c.globalCompositeOperation = 'source-over'; }
     c.restore();
