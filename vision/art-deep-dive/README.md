@@ -143,3 +143,19 @@ In every game people call "art, not a video game", **the art does the design wor
 6. **Not flat-sacred.** Gold grounds, icons and Raigō light were turned down: the holy should come through natural light (Nesterov, Friedrich), not symbolic convention.
 
 **What this changes in sections 5 and 6:** drop the Ogilby road map and the emblem cards as looks (the ideas could survive drawn in the game's own style, but the period look is out); drop Doré as a reference for later levels; the Japanese influence is shin-hanga (Hasui, Yoshida), not ink. Keep and strengthen: Kuindzhi's light (darken round the light), Levitan's road, Nesterov's quiet holy light, Friedrich's lone figure, the colour script's moonlit and dawn levels.
+
+## 8. The owner's taste, round 2 (21 pictures; 5 loved, 13 liked, 3 not)
+
+**Loved:** Levitan, *Above Eternal Peace*; Friedrich, *Monk by the Sea*, *Morning in the Riesengebirge* (a cross on a peak above layer after layer of misty ridges, two figures at it), *Abbey in the Oakwood*; Millet, *The Angelus*.
+**Turned down:** Cole, *The Voyage of Life: Youth* (allegory drawn literally, a fairy-tale castle in the sky, bright colour); La Tour, *Magdalene with the Smoking Flame* (a candle-lit interior); Polenov, *Overgrown Pond* (lush, detailed green).
+**Liked, not loved:** the new directions (Turner, Whistler, Monet, Bierstadt), more Friedrich, Dahl, Nesterov, Vasnetsov, Shishkin.
+
+**What it adds to round 1:**
+1. **Emptiness is the subject.** Monk by the Sea and Above Eternal Peace are mostly sky and grey water with one tiny human thing. The owner wants the game braver with empty space than it is.
+2. **The holy as a small thing in a vast quiet**: a church on a bluff, a monk on a shore, a cross on a peak, a ruined abbey, two people stopping to pray in a field at dusk. Faith shown by the landscape and a small human act, never by a symbol drawn large.
+3. **Mist in layers of ridges** (Riesengebirge) is the game's own look exactly, and it is the Cross (Level 5) almost as it stands.
+4. **Allegory must not be drawn literally.** Cole's *Voyage of Life*, the one true allegory painting in the set, was turned down: for Bunyan's allegory the pictures stay real places; the meaning comes from the story, not from fairy-tale imagery. (Agrees with round 1's no to emblems and icons.)
+5. **Muted over lush.** Polenov's rich green and Cole's bright colour were turned down; Shishkin's realism only liked.
+6. **The candle-lit interior was turned down** (La Tour). Worth asking: is it the subject (an interior) or the warm red darkness? It bears on Level 4's rooms.
+
+**In one sentence, both rounds:** *quiet, luminous, real landscapes at the edges of the day, mostly sky and mist, with one small human or holy presence in a vast space; no line, no symbols, no fantasy, nothing lush or busy.* Masters to name in every level's notes: Friedrich, Levitan, Kuindzhi, Hasui and Yoshida, Nesterov, Millet.
