@@ -36,7 +36,7 @@ Chat: **PP House · Room 4 Fire**. Read `notes/house.md` first (shared rules, bu
 
 ## Log (newest first)
 
-- Build 554 (owner: "ok fire can slightly overlap the far edge of the rock frame. the black column should cover that little red strip at the bottom and should be slightly wider"): the flames are drawn a second time, with the same shear, in a wider arch reaching past the recess on its far side, so they lick a little over the far jamb; the glowing slot at the column's foot is gone; the column is 175 wide ( 1915, was 1880), and the one pouring oil and his spout moved 35 right with it ( 2075,  1931). Nothing spent.
+- Build 554 (owner: "ok fire can slightly overlap the far edge of the rock frame. the black column should cover that little red strip at the bottom and should be slightly wider"): the flames are drawn a second time, with the same shear, in a wider arch reaching past the recess on its far side, so they lick a little over the far jamb; the glowing slot at the column's foot is gone; the column is 175 wide (`PART1` 1915, was 1880), and the one pouring oil and his spout moved 35 right with it (`WK.PO` 2075, `SPOUT` 1931). Nothing spent.
 
 - Build 541 (owner: "the top of fireplace rocks should have basically horiz perspective line (fireplace still seems stretched)"): the hearth's stones, opening, back arch and fire are placed by their own projection (`PHH`): x as the perspective, the foot of each stone on the floor line, the top of the stones level, every course eased between; the arch is now less tall and thin. The face's outline still uses `PP`. Nothing spent.
 
