@@ -1231,8 +1231,8 @@ const CR = (() => {
   // img: the still (assets); R: its ground row; k: world units a picture pixel; x0: where its left edge lies on the hill;
   // on: he is in it from..to; up: it fades into the sky between these heights above the ground; lift: the mire's depth
   const REL = [
-    { img: 'mem-village', R: 722, k: REL_K, x0: 1200, on: [1260, 2230], up: [250, 440], below: 60, glow: .1, dark: .45 },
-    { img: 'mem-slough', R: 776, k: REL_K * 1.3, x0: 1950, on: [2250, 3010], up: [350, 560], below: 80, glow: .07, dark: .5, fit: [[420, 70], [1000, 6]], lift: u => 74 * smooth(120, 420, u) * (1 - smooth(600, 820, u)) },
+    { img: 'mem-village', R: 722, k: REL_K, x0: 1200, on: [1260, 2230], up: [250, 440], below: 60, glow: .1, dark: .45, ends: [520, 240] },
+    { img: 'mem-slough', R: 776, k: REL_K * 1.3, x0: 1950, on: [2250, 3010], off: 2770, up: [350, 560], below: 80, glow: .07, dark: .5, fit: [[420, 70], [1000, 6]], lift: u => 74 * smooth(120, 420, u) * (1 - smooth(600, 820, u)) },
     { img: 'mem-hill-mono', R: 926, k: REL_K, x0: 2900, on: [3050, 3900], up: [400, 590], below: 60, glow: .2, dark: .8 },
   ];
   // what he hears in each is the voice he heard there (owner, build 595: "i wonder if other people's messages as we did
@@ -1242,7 +1242,7 @@ const CR = (() => {
   const REL_GW_X = 4000; let relGW = false;
   function relBake(m) {
     const im = RIM[m.img]; if (!im) return false;
-    const k = m.k, Wu = im.width * k, Z = REL_Z, n = Math.ceil(Wu * Z), lift = m.lift || (() => 0);
+    const k = m.k, Wu = im.width * k, Z = REL_Z, lift = m.lift || (() => 0);
     // TILTED, NOT SKEWED (owner, build 598: "tilting is fine no need to skew"): the whole picture is turned as one
     // piece to the slope it lies on (a straight line fitted to the hill, and the mire's depth, under his stretch of
     // it), about the middle of that stretch. Nothing in it is sheared; the fade into the hill follows the hill's own
@@ -1253,17 +1253,21 @@ const CR = (() => {
     const F = m.fit, sl = F ? (gh(m.x0 + F[1][0]) + F[1][1] - gh(m.x0 + F[0][0]) - F[0][1]) / (F[1][0] - F[0][0]) : (sn * suh - su * sh) / (sn * suu - su * su), up = (m.on[0] + m.on[1]) / 2 - m.x0, hp = F ? gh(m.x0 + F[0][0]) + F[0][1] + sl * (up - F[0][0]) : (sh - sl * su) / sn + sl * up, th = Math.atan(sl), co = Math.cos(th), si = Math.sin(th);
     // a picture point (a across, b down from its ground row, world units) lands at
     const at = (a, b) => [up + (a - up) * co + b * si, -hp - (a - up) * si + b * co];
-    let top = 1e9, bot = -1e9;
-    for (const [a, b] of [[0, -m.R * k], [Wu, -m.R * k], [0, (im.height - m.R) * k], [Wu, (im.height - m.R) * k]]) { const y = at(a, b)[1]; top = Math.min(top, y); bot = Math.max(bot, y); }
+    let top = 1e9, bot = -1e9, left = 0, right = Wu;
+    for (const [a, b] of [[0, -m.R * k], [Wu, -m.R * k], [0, (im.height - m.R) * k], [Wu, (im.height - m.R) * k]]) { const [x, y] = at(a, b); top = Math.min(top, y); bot = Math.max(bot, y); left = Math.min(left, x); right = Math.max(right, x); }
+    // (the tilted picture reaches past its own width at its corners: the canvas takes all of it, so no upright cut shows)
+    left = Math.floor(left) - 2; const n = Math.ceil((right - left + 2) * Z);
     for (let u = 0; u <= Wu; u += 8) { top = Math.min(top, -gh(m.x0 + u) - m.up[1]); bot = Math.max(bot, -gh(m.x0 + u) + m.below); }
     top = Math.floor(top) - 2; const Hu = Math.ceil(bot - top) + 2;
     const cv = mk(n, Math.ceil(Hu * Z)), q = cv.getContext('2d'), mask = mk(cv.width, cv.height), mq = mask.getContext('2d'), surf = [];
-    const turn = c2 => { c2.translate(up * Z, (-hp - top) * Z); c2.rotate(-th); c2.scale(Z, Z); c2.translate(-up, 0); };
+    const turn = c2 => { c2.translate((up - left) * Z, (-hp - top) * Z); c2.rotate(-th); c2.scale(Z, Z); c2.translate(-up, 0); };
     q.save(); turn(q); q.imageSmoothingEnabled = true; q.drawImage(im, 0, -m.R * k, Wu, im.height * k); q.restore();
     for (let i = 0; i < n; i += 4) {
       // it melts upward into the sky and downward into the hill, by the hill's own line
-      const u = (i + .5) / Z, g = gh(m.x0 + u), yo = (-g - top) * Z, y0 = yo - m.up[1] * Z, y1 = yo + m.below * Z, span = y1 - y0;
-      const gr = mq.createLinearGradient(0, y0, 0, y1); gr.addColorStop(0, 'rgba(0,0,0,0)'); gr.addColorStop((m.up[1] - m.up[0]) * Z / span, '#000'); gr.addColorStop(m.up[1] * Z / span, '#000'); gr.addColorStop(1, 'rgba(0,0,0,0)');
+      // (owner, build 599: "where it hits mountain ... no fan edge but a clean smooth transition": it is whole down
+      // to a little above the hill's line and gone just under it, so no strip of its ground fans out over the hill)
+      const u = left + (i + .5) / Z, g = gh(m.x0 + u), yo = (-g - top) * Z, y0 = yo - m.up[1] * Z, y1 = yo + 12 * Z, span = y1 - y0;
+      const gr = mq.createLinearGradient(0, y0, 0, y1); gr.addColorStop(0, 'rgba(0,0,0,0)'); gr.addColorStop((m.up[1] - m.up[0]) * Z / span, '#000'); gr.addColorStop((m.up[1] - (m.feet || 34)) * Z / span, '#000'); gr.addColorStop(1, 'rgba(0,0,0,0)');
       mq.fillStyle = gr; mq.fillRect(i, y0, 4, span);
       const hs = hp + sl * (u - up) / 1;
       surf.push([i, (-hs - top) * Z, Math.max(0, hs - g) * Math.min(1, lift(u) / 40)]);
@@ -1271,11 +1275,11 @@ const CR = (() => {
     q.globalCompositeOperation = 'destination-in'; q.drawImage(mask, 0, 0);
     // and at both its ends and its top, by the picture's own edges (they are tilted too)
     const em = mk(cv.width, cv.height), eq = em.getContext('2d'); eq.save(); turn(eq);
-    const eg = eq.createLinearGradient(0, 0, Wu, 0); eg.addColorStop(0, 'rgba(0,0,0,0)'); eg.addColorStop(240 / Wu, '#000'); eg.addColorStop(1 - 240 / Wu, '#000'); eg.addColorStop(1, 'rgba(0,0,0,0)');
+    const eg = eq.createLinearGradient(0, 0, Wu, 0); eg.addColorStop(0, 'rgba(0,0,0,0)'); const EL = (m.ends || [240, 240]); eg.addColorStop(EL[0] * .35 / Wu, 'rgba(0,0,0,.22)'); eg.addColorStop(EL[0] * .7 / Wu, 'rgba(0,0,0,.7)'); eg.addColorStop(EL[0] / Wu, '#000'); eg.addColorStop(1 - EL[1] / Wu, '#000'); eg.addColorStop(1, 'rgba(0,0,0,0)');
     eq.fillStyle = eg; eq.fillRect(0, -m.R * k, Wu, im.height * k);
     eq.globalCompositeOperation = 'destination-in'; const tg = eq.createLinearGradient(0, -m.R * k, 0, -m.R * k + 150); tg.addColorStop(0, 'rgba(0,0,0,0)'); tg.addColorStop(1, '#000'); eq.fillStyle = tg; eq.fillRect(0, -m.R * k, Wu, im.height * k); eq.restore();
     q.drawImage(em, 0, 0); q.globalCompositeOperation = 'source-over';
-    m.cv = cv; m.top = top; m.Wu = Wu; m.Hu = cv.height / Z; m.front = null;
+    m.cv = cv; m.top = top; m.left = left; m.Wu = cv.width / Z; m.Hu = cv.height / Z; m.front = null;
     if (m.lift) {
       // the mire in front of him: everything below its surface, where it has any depth
       const f = mk(cv.width, cv.height), fq = f.getContext('2d'), pts = surf.filter(p => p[2] > 2);
@@ -1289,8 +1293,9 @@ const CR = (() => {
   function relTick() {
     if (!REL_ON) return;
     REL.forEach(m => {
-      const inIt = ph === 'walk' && Ch.x >= m.on[0] && Ch.x < m.on[1] ? 1 : 0;
-      m.a += (inIt - m.a) * (inIt ? .05 : .04); if (m.a < .004 && !inIt) { m.a = 0; m.cv = m.front = null; }
+      // (`off`: the mire fades just as he reaches Help, owner, build 599)
+      const inIt = ph === 'walk' && Ch.x >= m.on[0] && Ch.x < (m.off || m.on[1]) ? 1 : 0;
+      m.a += (inIt - m.a) * (inIt ? .05 : m.off ? .07 : .04); if (m.a < .004 && !inIt) { m.a = 0; m.cv = m.front = null; }
       if ((inIt || Ch.x > m.on[0] - 260 && Ch.x < m.on[1] && ph === 'walk') && !m.cv) relBake(m);
       // his thought, once he is well into it, and never over another voice
       if (inIt && !m.said && Ch.x >= m.on[0] + 110 && said.open && !busy() && memQ >= 40) { m.said = true; memVoice(m.voice); }
@@ -1303,9 +1308,9 @@ const CR = (() => {
     if (!REL_ON) return;
     for (const m of REL) {
       const cv = front ? m.front : m.cv, a = m.a * (1 - wideK); if (!cv || a < .01) continue;
-      c.save(); c.globalAlpha = REL_A * a; c.drawImage(cv, m.x0, m.top, m.Wu, m.Hu);
+      c.save(); c.globalAlpha = REL_A * a; c.drawImage(cv, m.x0 + m.left, m.top, m.Wu, m.Hu);
       // intense: a breathing light over it, and a brightening as it comes
-      if (!front) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = a * (m.glow * .7 * (.7 + .3 * Math.sin(G.t / 37)) + .16 * (1 - m.a)); c.drawImage(cv, m.x0, m.top, m.Wu, m.Hu); }
+      if (!front) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = a * (m.glow * .7 * (.7 + .3 * Math.sin(G.t / 37)) + .16 * (1 - m.a)); c.drawImage(cv, m.x0 + m.left, m.top, m.Wu, m.Hu); }
       c.restore();
     }
   }
