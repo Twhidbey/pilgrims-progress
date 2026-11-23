@@ -86,14 +86,14 @@ const CR = (() => {
   // the painting's own skyline (PIN_TAB, painting units at SK_H 1080 from painting x 3160 every 8, from its alpha before
   // the left fade) is the land's outline (pinDraw) and, smoothed, the line he walks on (gh); toward the painting's left
   // end both blend into the drawn ramp over its fade (PIN_W)
-  const PIN_ON = /[?&]look=f\b/.test(location.search), HP_TOP = PIN_ON ? -1092.95 : -1089.42, HP_H = PIN_ON ? 1097.28 : 1093.75;
-  const PIN_TAB = [530,533,536,539,544,548,553,557,564,568,572,575,577,578,580,583,585,588,589,592,594,597,600,602,605,609,612,615,620,624,629,636,648,651,653,662,669,670,671,672,675,677,679,681,682,684,686,688,692,696,702,707,711,715,719,722,725,728,731,734,737,741,747,752,757,760,768,769,792,811,829,832,837,845,848,851,853,856,859,865,870,874,877,880,884,887,890,893,894,895,897,909,914,922,930,938,945,949,952,955,959,962,966,969,972,975,979,983,987,989,992,994,997,998,998,999,1000,1001,1002,1003,1004,1007,1009,1010,1012,1014,1017,1020,1024,1027,1032,1040,1046,1051,1052,1054,1054,1054,1054,1054,1055,1057,1057,1059,1061,1062,1062,1063,1063,1063,1063,1063,1063,1064,1064,1064,1065,1067,1067,1069,1071,1073,1075,1076,1077,1079,1079,1080,1081,1082,1082,1081,1080,1080,1079,1077,1076,1076,1075,1075,1074,1074,1074,1075,1076,1076,1076,1076,1077,1078,1078,1077,1077,1071,1065,1056,1057,1057,1057,1058,1059,1059,1057,1055,1055,1057,1057,1056,1046,1028,1002,973,976,970,1016,1021,1021,1019,1012,1008,1004,968,963,964,968,984,1003,1003,1004,1002,993,947,932,918,928,929,925,912,897,884,863,822,781,764,747,730,632,623,616,607,590,568,524,523,518,479,470,461,446,437,436,433,425,415,405,396,378,331,328,328,330,331,332,323,314,306,297,288,278,256,236,192,196,198,203,204,203,193,182,168,155,138,103,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], PIN0 = 3160, PIN1 = PIN0 + 8 * (PIN_TAB.length - 1);
-  const PIN_S = PIN_TAB.map((v, i) => { let a = 0, n = 0; for (let j = -5; j <= 5; j++) { const q = PIN_TAB[i + j]; if (q != null) { a += q; n++; } } return a / n; });
+  const PIN_ON = /[?&]look=f\b/.test(location.search), HP_TOP = PIN_ON ? -1093.72 : -1089.42, HP_H = PIN_ON ? 1097.09 : 1093.75, HP_X = PIN_ON ? 2064.71 : 3149.64, HP_W = PIN_ON ? 3564.71 : 2478.34;
+  const PIN_TAB = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,10,9,11,14,14,15,19,19,24,26,29,32,33,36,38,40,42,46,49,54,59,65,68,69,70,71,74,79,91,101,102,92,93,97,106,124,121,134,143,152,136,139,140,141,149,156,159,170,172,177,178,170,174,175,181,187,191,195,211,214,204,208,212,218,234,248,255,256,276,262,274,269,272,278,282,284,286,295,308,300,311,325,312,322,338,334,343,347,356,348,361,369,378,396,424,432,435,438,441,442,443,444,444,446,456,461,463,470,473,475,477,480,482,486,489,492,497,504,516,521,531,539,547,552,546,552,557,561,576,577,594,592,597,615,610,624,619,617,625,639,639,648,651,653,652,663,667,667,674,678,685,686,694,694,704,716,717,725,739,754,757,758,773,789,807,811,814,816,817,819,820,820,828,835,839,841,843,846,847,850,850,852,856,856,862,868,871,874,874,877,882,883,886,887,893,897,901,905,904,909,916,920,922,931,931,937,941,939,943,952,953,960,964,971,974,981,981,982,985,990,989,989,995,996,998,1001,1008,1004,1011,1015,1012,1017,1017,1017,1018,1022,1025,1028,1028,1030,1034,1035,1036,1039,1041,1042,1045,1046,1048,1050,1048,1046,1046,1050,1051,1050,1053,1050,1051,1052,1053,1055,1056,1057,1059,1061,1062,1062,1063,1063,1064,1064,1063,1064,1064,1065,1065,1066,1067,1068,1070,1071,1073,1075,1077,1077,1078,1079,1080,1081,1082,1082,1082,1082,1081,1080,1077,1076,1075,1075,1075,1074,1075,1075,1076,1077,1077,1077,1077,1077,1077,1079,1078,1077,1072,1065,1055,1057,1057,1057,1058,1058,1059,1058,1055,1055,1058,1058,1056,1049,1033,1005,972,976,971,1015,1021,1022,1020,1015,1009,1005,977,962,963,950,982,1004,1003,1005,1002,993,953,934,916,921,930,927,913,899,885,869,843,782,766,749,733,679,625,617,608,592,576,524,522,520,482,471,462,448,440,437,433,427,416,407,398,387,332,328,327,330,331,333,326,316,307,299,290,280,262,243,209,201,201,202,203,201,194,188,164,151,129,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], PIN0 = 2073, PIN1 = PIN0 + 8 * (PIN_TAB.length - 1);
+  const PIN_S = PIN_TAB.map((v, i) => { let a = 0, n = 0; for (let j = -10; j <= 10; j++) { const q = PIN_TAB[i + j]; if (q != null) { a += q; n++; } } return a / n; });
   const pinS = () => SK_H / 1080, pinW = xp => pinS() * (xp - 4380) + SK_X;
   function pinAt(T, x) { const s = pinS(), xp = 4380 + (x - SK_X) / s; if (xp < PIN0) return -1; if (xp >= PIN1) return 0;
     const f = (xp - PIN0) / 8, i = Math.floor(f); return s * lerp(T[i], T[i + 1], f - i); }
   const ptop = x => pinAt(PIN_TAB, x);
-  const PIN_W = x => smooth(pinW(PIN0 + 120), pinW(PIN0 + 700), x);
+  const PIN_W = x => x >= pinW(PIN0) ? 1 : 0;
   function pinDraw(x) { const w = PIN_W(x); if (w <= 0) return gh0(x); return lerp(gh0(x), ptop(x), w); }
   function crossH() { if (PIN_ON) { const t = ptop(CROSS_X); if (t > 0) return t; } return gh(CROSS_X); }
   function gh(x) { if (PIN_ON) { const w = PIN_W(x); if (w > 0) return lerp(gh0(x), pinAt(PIN_S, x), w); } return gh0(x); }
@@ -208,7 +208,7 @@ const CR = (() => {
     // the hill painted by the image model (round 2 of the owner's hill): rounded weathered rock, toned dark grey, its left
     // end faded into the drawn ramp; cropped to the rock at 1.5 px a world unit (at SK_H 1080): world x 2834 to 5654, height 1089 down to 2 below the ground
     // ?look=f: the hill painted as Friedrich's crag (build 606), laid on the same outline as the old painting
-    if (HP_ON) loadImg(LOOKF ? 'hill-crag.webp?v=608' : 'hill-cross.webp?v=601').then(im => { HPAINT = im; }).catch(() => {});
+    if (HP_ON) loadImg(LOOKF ? 'hill-crag.webp?v=610' : 'hill-cross.webp?v=601').then(im => { HPAINT = im; }).catch(() => {});
     // the burning hill's own painted rock (Level 3), made a grey tile as hill.js makes it, laid over the hill in 'overlay'
     loadImg('hill-rock.webp').then(rock => { const sx = 720, sy = 540, w = 780, h = 600, t = document.createElement('canvas'); t.width = w; t.height = h; const q = t.getContext('2d'); q.drawImage(rock, sx, sy, w, h, 0, 0, w, h);
       const d = q.getImageData(0, 0, w, h), D = d.data; let m = 0; for (let i = 0; i < D.length; i += 4) m += D[i] * .3 + D[i + 1] * .59 + D[i + 2] * .11; m /= D.length / 4;
@@ -886,7 +886,7 @@ const CR = (() => {
     // the beds of rock only when the painting is not there (their lines showed through it)
     const R = rockTex(); if (!HPAINT) c.drawImage(R.c, R.x, R.y, R.w, R.h);
     if (HPAINT) {
-      const s = SK_H / 1080; c.save(); c.translate(SK_X, 0); c.scale(s, s); c.drawImage(HPAINT, 3149.64 - 4380, HP_TOP, 2478.34, HP_H); c.restore();
+      const s = SK_H / 1080; c.save(); c.translate(SK_X, 0); c.scale(s, s); c.drawImage(HPAINT, HP_X - 4380, HP_TOP, HP_W, HP_H); c.restore();
       // the painting takes the hill's own colour through the dawn (its lightness kept); the crag of ?look=f keeps its own
       // painted colours and is only darkened before the sun is up
       if (LOOKF) { c.globalCompositeOperation = 'multiply'; c.fillStyle = css(mix(mix([92, 86, 96], [176, 160, 156], dawn), [255, 248, 240], gold)); c.fillRect(x0, -H_TOP - 700, x1 - x0, H_TOP + 2800); c.globalCompositeOperation = 'source-over'; } else {
@@ -895,7 +895,7 @@ const CR = (() => {
       if (false) {
         // the rock modelled: the painting's own light and shade, its tones spread to the full range once (hpRelief),
         // laid with 'soft-light' so the colour stays burnt orange while tops and faces read; strongest once the sun is up
-        const rv = hpRelief(); if (rv) { c.save(); c.globalCompositeOperation = 'soft-light'; c.globalAlpha = .45 + .45 * gold; c.translate(SK_X, 0); c.scale(s, s); c.drawImage(rv, 3149.64 - 4380, HP_TOP, 2478.34, HP_H); c.restore(); }
+        const rv = hpRelief(); if (rv) { c.save(); c.globalCompositeOperation = 'soft-light'; c.globalAlpha = .45 + .45 * gold; c.translate(SK_X, 0); c.scale(s, s); c.drawImage(rv, HP_X - 4380, HP_TOP, HP_W, HP_H); c.restore(); }
         // and the side light: brighter on the sun's side (left), into shade toward the right
         const sl = c.createLinearGradient(CROSS_X - 1400, 0, CROSS_X + 900, 0);
         sl.addColorStop(0, css([255, 190, 120], .35 * gold)); sl.addColorStop(.55, 'rgba(255,190,120,0)'); sl.addColorStop(1, css([20, 12, 10], .4 * gold));

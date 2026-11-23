@@ -244,6 +244,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 ## START HERE (rewritten at build 140, Nov 16 2026)
 
+**Build 610 (art direction chat): `?look=f` the ramp painted (gemini 4K, about 25 cents), a worn path to the summit; the grass is too large in scale (next). Spent: about 25 cents.**
+
 **Build 609 (art direction chat): `?look=f` his walk follows the painted hill's own contours; the memories washed into the mist. Next asked: a painted ramp (about 25 cents, waiting). Nothing spent.**
 
 **Build 608 (art direction chat): `?look=f` pinnacles taken out again; the crag's own skyline with its slight jags, the cross back on the crown. Nothing spent.**
