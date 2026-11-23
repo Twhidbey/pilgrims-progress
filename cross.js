@@ -134,6 +134,12 @@ const CR = (() => {
     if (xb > SK_X) { for (const [x, h] of SKO) O.push([x, -h]); for (let x = SK_END + step; x <= xb; x += step) O.push([x, 0]); }
     return O; }
   // ---------- the words (Bunyan's, shortened and made plain) ----------
+  // his thoughts as he relives his way on the slope (build 589); the third is Bunyan's ({65}, to Good-will), the others ours
+  const RELINES = [
+    [C, 'I ran from my own door. It was God\u2019s mercy that I ran.'],
+    [C, 'I sank in the mire. Yet a hand was given me.'],
+    [C, 'It was God\u2019s mercy that Evangelist came to me again.'],
+  ];
   const OPEN = [[N, 'Up the highway between its walls Christian ran, but not without great difficulty, because of the load on his back.']];      // {92}
   const ASCEND = [[N, 'He came to a place somewhat ascending, and upon that place stood a cross, and a little below, a sepulchre.']];      // {93}
   const LOOSED = [[N, 'Just as Christian came up with the cross, his burden loosed from off his shoulders, and fell from off his back.']];      // {93}
@@ -155,7 +161,7 @@ const CR = (() => {
     [TIP, 'Touch Christian to leap for joy.', 'leap'],
     [C, 'Blest cross! Blest sepulchre! Blest rather be the Man that there was put to shame for me!', 0, () => { blest = 1; }],      // vision chat: his song ({94})
   ];
-  const ALL = [...OPEN, ...ASCEND, ...LOOSED, ...TUMBLE, ...GLAD, ...LOOKED, ...SHINE, ...LEAPS];
+  const ALL = [...OPEN, ...RELINES, ...ASCEND, ...LOOSED, ...TUMBLE, ...GLAD, ...LOOKED, ...SHINE, ...LEAPS];
 
   // ---------- pictures ----------
   // HE KNEELS IN THE SILENCE (awe study, owner: "yes 1-3 please"): once the burden is gone he steps in and sinks to one
@@ -187,6 +193,7 @@ const CR = (() => {
     loadPack('lift', MLIFT).catch(() => {});
     ['wife', 'goodwill-reach'].forEach(n => loadImg(n + '.webp').then(im => { MIM[n] = im; }).catch(() => {}));
     loadImg('cross-burden.webp').then(im => { BURDEN = im; }).catch(() => {});
+    REL.forEach(m => loadImg(m.img + '.webp').then(im => { if (im) RIM[m.img] = im; }).catch(() => {}));
     // the hill painted by the image model (round 2 of the owner's hill): rounded weathered rock, toned dark grey, its left
     // end faded into the drawn ramp; cropped to the rock at 1.5 px a world unit (at SK_H 1080): world x 2834 to 5654, height 1089 down to 2 below the ground
     if (HP_ON) loadImg('hill-cross.webp?v=578').then(im => { HPAINT = im; }).catch(() => {});
@@ -285,7 +292,10 @@ const CR = (() => {
   }
   const tintNow = () => {
     const pre = [58, 58, 72], dw = [70, 62, 66], gd = [96, 78, 64], robeC = [150, 128, 100];
-    let c = mix(pre, dw, dawn); c = mix(c, gd, gold); return mix(c, robeC, robe * .6);
+    let c = mix(pre, dw, dawn); c = mix(c, gd, gold);
+    // in a memory he runs through he is a darker figure against it (pale, he showed like a ghost on the burning hill)
+    const rd = REL_ON ? Math.max(...REL.map(m => m.a * (m.dark || 0))) * (1 - wideK) : 0; if (rd > 0) c = mix(c, [26, 22, 26], rd);
+    return mix(c, robeC, robe * .6);
   };
   const figC = mk(8, 8);
   // running up the slope he leans a little back with the ground, so his feet land on it (owner: "tilt him ever so
@@ -924,7 +934,7 @@ const CR = (() => {
 
   // ---------- the story ----------
   function reset0() {
-    blest = 0; tumbleT = 0; sepT = -1; memT = -1; memS = []; memUntil = 0; memQ = 0; tearT = -1; looked = false; Object.assign(Ch, { x: START, anim: 12, sd: QUIET[0], cf: -1, hop: 0, hops: 0, lastV: 0, fade: 0, hv: 0, face: 1, tv: null, run: 0, ranim: 0, cc: 0, lp: null, wo: null, wa: 0, kn: null, kup: false });
+    blest = 0; tumbleT = 0; sepT = -1; memT = -1; memS = []; memUntil = 0; memQ = 0; REL.forEach(m => { m.a = 0; m.said = false; m.cv = m.front = null; }); tearT = -1; looked = false; Object.assign(Ch, { x: START, anim: 12, sd: QUIET[0], cf: -1, hop: 0, hops: 0, lastV: 0, fade: 0, hv: 0, face: 1, tv: null, run: 0, ranim: 0, cc: 0, lp: null, wo: null, wa: 0, kn: null, kup: false });
     bur = null; dawn = gold = goldTo = sun = robe = robeTo = mark = markTo = rollShow = rollGone = shine = shineTo = gone = goneTo = 0; wideK = 1; wideTo = 1;
     said = {}; hymn = null; silenceT = 0; tombT = 0; leapsLeft = 3; endT = 0; quietPad = 0; t = 0; rollFly = rollAt = null; closeK = topK = topTo = veil = 0; climb = null;
   }
@@ -940,7 +950,7 @@ const CR = (() => {
     wideK = wideTo = 0;
     const at = new URLSearchParams(location.search).get('at');
     if (typeof dropPlace === 'function') dropPlace();
-    if (at === 'cross') { ph = 'walk'; Ch.x = STOP_X - 260; Ch.sd = null; wideK = wideTo = 0; said.open = said.ascend = said.cut = true; dawn = .6; memT = 2000; memS = MEMS.map(() => 0); }
+    if (at === 'cross') { ph = 'walk'; Ch.x = STOP_X - 260; Ch.sd = null; wideK = wideTo = 0; said.open = said.ascend = said.cut = true; dawn = .6; memT = 2000; memS = MEMS.map(() => 0); REL.forEach(m => { m.said = true; }); }
     camTick(true);
     if (audio()) { AC.resume(); if (rainG) rainG.gain.setTargetAtTime(0, AC.currentTime, .8); padStart(); }
     G.state = 'wait';
@@ -1007,6 +1017,7 @@ const CR = (() => {
     // sufficiently spaced out and don't overlap with other narrator text"): it comes when he reaches its place, and
     // only after a second of quiet since the last voice; if a voice is still sounding it waits, and comes a little later
     if (memT >= 0 && memT < memLast() + 420) { memT++; const i = memS.length; if (i < MEMS.length && Ch.x >= MEM_X[i] && (i === 0 || memT - memS[i - 1] >= MEM_GAP) && memQ >= 60) { memS.push(memT); memVoice(MEMS[i]); } }
+    relTick();
     padTick(ph === 'fall' || ph === 'tumble' || ph === 'gone' ? 0 : gold > .1 ? 0 : 1);
 
     if (ph === 'look') {
@@ -1021,9 +1032,9 @@ const CR = (() => {
       // his life remembered in the sky as he runs up the hill (owner: "the memories maybe happen as he runs up the hill
       // (too much overlapping dialogue at cross)"): once the storyteller's first line is said and he is on the slope;
       // Good-will's promise last, just before he comes to the cross
-      if (memT < 0 && Ch.x > SLOPE0 && said.open && !busy()) memT = 0;
+      if (!REL_ON && memT < 0 && Ch.x > SLOPE0 && said.open && !busy()) memT = 0;
       // after the last memory, about three seconds of quiet before the storyteller speaks (owner, build 452)
-      const memDone = memT >= memLast() + 300 && G.t >= memUntil + 180;
+      const memDone = REL_ON ? REL.every(m => m.said) && memQ >= 150 : memT >= memLast() + 300 && G.t >= memUntil + 180;
       if (!said.ascend && memDone && Ch.x > CREST0 - 900 && !busy()) { said.ascend = true; caption(ASCEND); sepT = 0; }
       // "and a little below, a sepulchre": the camera draws back and down to show it, then comes back up to him (owner,
       // build 452); he stands still while it looks
@@ -1214,13 +1225,84 @@ const CR = (() => {
     });
   }
 
+  // HIS WAY RELIVED ON THE SLOPE (owner, build 589: "instead of flashbacks in sky ... the entire scene can flashback to
+  // him running in one of the other levels with a voiceover of thankfulness"; of the stills with the village standing on
+  // the slope: "that dreamlike quality is cool"; "make slightly transparent but intense"). Three pictures of the game
+  // itself (the street past his own door; the mire, Help and the oak; the burning hill), each a still taken from its
+  // level, are laid ON the hill: every upright column of the picture is hung from the hill's own outline, so walls stay
+  // upright and the ground climbs with the slope. Each is fixed to its stretch of the hill and shows while he is in it;
+  // he runs through it. Baked once when he comes near (one canvas, freed after), drawn a little see-through with a
+  // breathing light over it. In the mire the surface lies above the ground up to his waist and is drawn again in front
+  // of him. ?skymem=1 brings back the old pictures in the sky. Ours, not the book's.
+  const REL_ON = new URLSearchParams(location.search).get('skymem') !== '1', REL_K = .625, REL_Z = 1.25, RIM = {};
+  // img: the still (assets); R: its ground row; k: world units a picture pixel; x0: where its left edge lies on the hill;
+  // on: he is in it from..to; up: it fades into the sky between these heights above the ground; lift: the mire's depth
+  const REL = [
+    { img: 'mem-village', R: 722, k: REL_K, x0: 1200, on: [1260, 2230], up: [250, 440], below: 60, glow: .1, dark: .45 },
+    { img: 'mem-slough', R: 776, k: REL_K * 1.3, x0: 1950, on: [2250, 3010], up: [350, 560], below: 80, glow: .07, dark: .5, lift: u => 74 * smooth(120, 420, u) * (1 - smooth(600, 820, u)) },
+    { img: 'mem-hill', R: 926, k: REL_K, x0: 2900, on: [3050, 3900], up: [400, 590], below: 60, glow: .2, dark: .8 },
+  ];
+  REL.forEach((m, i) => { m.a = 0; m.said = false; m.line = RELINES[i]; });
+  function relBake(m) {
+    const im = RIM[m.img]; if (!im) return false;
+    const k = m.k, Wu = im.width * k, Z = REL_Z, n = Math.ceil(Wu * Z), lift = m.lift || (() => 0);
+    let top = 1e9, bot = -1e9;
+    for (let u = 0; u <= Wu; u += 8) { const g = gh(m.x0 + u); top = Math.min(top, -g - lift(u) - m.R * k); bot = Math.max(bot, -g + (im.height - m.R) * k); }
+    top = Math.floor(top) - 2; const Hu = Math.ceil(bot - top) + 2;
+    const cv = mk(n, Math.ceil(Hu * Z)), q = cv.getContext('2d'), mask = mk(cv.width, cv.height), mq = mask.getContext('2d'), surf = [];
+    for (let i = 0; i < n; i++) {
+      const u = (i + .5) / Z, g = gh(m.x0 + u), gl = g + lift(u), sx = Math.min(im.width - 1.5, u / k);
+      q.drawImage(im, sx, 0, Math.min(1 / Z / k + .5, im.width - sx), im.height, i, (-gl - m.R * k - top) * Z, 1, im.height * k * Z);
+      if (i % 4 === 0) {
+        // it melts upward into the sky, downward into the hill, and at both ends
+        const yo = (-g - top) * Z, y0 = yo - m.up[1] * Z, y1 = yo + m.below * Z, span = y1 - y0, hf = smooth(0, 240, u) * (1 - smooth(Wu - 240, Wu, u));
+        const gr = mq.createLinearGradient(0, y0, 0, y1); gr.addColorStop(0, 'rgba(0,0,0,0)'); gr.addColorStop((m.up[1] - m.up[0]) * Z / span, `rgba(0,0,0,${hf})`); gr.addColorStop(m.up[1] * Z / span, `rgba(0,0,0,${hf})`); gr.addColorStop(1, 'rgba(0,0,0,0)');
+        mq.fillStyle = gr; mq.fillRect(i, y0, 4, span);
+        surf.push([i, (-gl - top) * Z, lift(u)]);
+      }
+    }
+    q.globalCompositeOperation = 'destination-in'; q.drawImage(mask, 0, 0); q.globalCompositeOperation = 'source-over';
+    m.cv = cv; m.top = top; m.Wu = Wu; m.Hu = cv.height / Z; m.front = null;
+    if (m.lift) {
+      // the mire in front of him: everything below its surface, where it has any depth
+      const f = mk(cv.width, cv.height), fq = f.getContext('2d'), pts = surf.filter(p => p[2] > 2);
+      if (pts.length > 2) { fq.beginPath(); fq.moveTo(pts[0][0], cv.height); pts.forEach(p => fq.lineTo(p[0], p[1])); fq.lineTo(pts[pts.length - 1][0], cv.height); fq.closePath(); fq.save(); fq.clip(); fq.drawImage(cv, 0, 0); fq.restore();
+        // thinning away where the mire grows shallow, so it has no upright edge
+        const tm = mk(cv.width, cv.height), tq = tm.getContext('2d'); surf.forEach(p => { tq.fillStyle = `rgba(0,0,0,${smooth(2, 45, p[2])})`; tq.fillRect(p[0], 0, 4, cv.height); });
+        fq.globalCompositeOperation = 'destination-in'; fq.drawImage(tm, 0, 0); fq.globalCompositeOperation = 'source-over'; m.front = f; }
+    }
+    return true;
+  }
+  function relTick() {
+    if (!REL_ON) return;
+    REL.forEach(m => {
+      const inIt = ph === 'walk' && Ch.x >= m.on[0] && Ch.x < m.on[1] ? 1 : 0;
+      m.a += (inIt - m.a) * (inIt ? .05 : .04); if (m.a < .004 && !inIt) { m.a = 0; m.cv = m.front = null; }
+      if ((inIt || Ch.x > m.on[0] - 260 && Ch.x < m.on[1] && ph === 'walk') && !m.cv) relBake(m);
+      // his thought, once he is well into it, and never over another voice
+      if (inIt && !m.said && Ch.x >= m.on[0] + 110 && said.open && !busy() && memQ >= 40) { m.said = true; caption([m.line]); }
+      // a memory he ran through before its words could be said keeps them unsaid no longer than its own stretch
+      if (!m.said && Ch.x >= m.on[1]) m.said = true;
+    });
+  }
+  function relive(c, front) {
+    if (!REL_ON) return;
+    for (const m of REL) {
+      const cv = front ? m.front : m.cv, a = m.a * (1 - wideK); if (!cv || a < .01) continue;
+      c.save(); c.globalAlpha = .86 * a; c.drawImage(cv, m.x0, m.top, m.Wu, m.Hu);
+      // intense: a breathing light over it, and a brightening as it comes
+      if (!front) { c.globalCompositeOperation = 'lighter'; c.globalAlpha = a * (m.glow * (.7 + .3 * Math.sin(G.t / 37)) + .22 * (1 - m.a)); c.drawImage(cv, m.x0, m.top, m.Wu, m.Hu); }
+      c.restore();
+    }
+  }
+
   function draw() {
     const c = ctx; c.setTransform(DPR, 0, 0, DPR, 0, 0);
     sky(c); far(c); memories(c);
     c.setTransform(DPR * cam.z, 0, 0, DPR * cam.z, DPR * (VW / 2 - cam.cx * cam.z), DPR * cam.wl);
-    wall(c); land(c); tomb(c); cross(c);
+    wall(c); land(c); tomb(c); cross(c); relive(c, false);
     shining(c);
-    drawBurden(c); drawChr(c);
+    drawBurden(c); drawChr(c); relive(c, true);
     // the nearest ground, a dark band along the foot of the picture, under the words
     c.setTransform(DPR, 0, 0, DPR, 0, 0);
     const g = c.createLinearGradient(0, FOOTY + 20, 0, VH); g.addColorStop(0, 'rgba(12,10,12,0)'); g.addColorStop(.5, css(mix([16, 15, 20], [26, 20, 18], gold), .7)); g.addColorStop(1, css(mix([12, 11, 16], [20, 15, 13], gold), .92)); c.fillStyle = g; c.fillRect(0, FOOTY + 20, VW, VH);
@@ -1232,7 +1314,7 @@ const CR = (() => {
   }
 
   return { on: false, start, update, draw, touch, key, preload, lines: ALL, stop: () => padStop(), _pt: { roll: rollPt, chr: chrPt }, _turning: () => !!Ch.tv,
-    peek: () => ({ ph, t, fly: rollFly ? rollFly.t : -1, x: Math.round(Ch.x), cf: +Ch.cf.toFixed(1), bur: bur ? { st: bur.st, x: Math.round(bur.x), a: +bur.a.toFixed(2), t: bur.t, H: Math.round(bur.H || 0), z: +(bur.z || 0).toFixed(1), r: +(bur.r || 0).toFixed(2), sq: +(bur.sq || 0).toFixed(2) } : null, gold: +gold.toFixed(2), shine: +shine.toFixed(2), leaps: leapsLeft, lp: Ch.lp == null ? -1 : +Ch.lp.toFixed(1), wo: Ch.wo == null ? -1 : Ch.wo, closeK: +closeK.toFixed(2), topK: +topK.toFixed(2), veil: +veil.toFixed(2), tear: tearT, sep: sepT, mem: memS.length, kn: Ch.kn == null ? -1 : +Ch.kn.toFixed(1), hb: hymn ? +(hymn.t / BEATT).toFixed(1) : -1 }),
+    peek: () => ({ ph, t, fly: rollFly ? rollFly.t : -1, x: Math.round(Ch.x), cf: +Ch.cf.toFixed(1), bur: bur ? { st: bur.st, x: Math.round(bur.x), a: +bur.a.toFixed(2), t: bur.t, H: Math.round(bur.H || 0), z: +(bur.z || 0).toFixed(1), r: +(bur.r || 0).toFixed(2), sq: +(bur.sq || 0).toFixed(2) } : null, gold: +gold.toFixed(2), shine: +shine.toFixed(2), leaps: leapsLeft, lp: Ch.lp == null ? -1 : +Ch.lp.toFixed(1), wo: Ch.wo == null ? -1 : Ch.wo, closeK: +closeK.toFixed(2), topK: +topK.toFixed(2), veil: +veil.toFixed(2), tear: tearT, sep: sepT, mem: memS.length, rel: REL.map(m => +m.a.toFixed(2)), kn: Ch.kn == null ? -1 : +Ch.kn.toFixed(1), hb: hymn ? +(hymn.t / BEATT).toFixed(1) : -1 }),
     // A SHORT WORDLESS CHOIR FOR THE SHINING ONES (awe study): from their coming until Christian's song begins (index.html's music player, cue 'choir')
     choir: () => ph === 'shine' || (ph === 'leaps' && !blest),
     // the land's outline, for making pictures of the hill (tools)
