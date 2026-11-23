@@ -14,7 +14,7 @@ The owner asked for an art-school-level deep dive: how the art of a game like th
 | `08-story-analysis.md` | allegory and children, the dream frame, the book's emotional curve, the Puritan order of salvation, *Grace Abounding* behind each episode, the hard parts, an emotional colour script, themes to protect |
 | `09-real-conversion-stories.md` | Bunyan, Newton, Augustine, Luther, Wesley, Cowper, Spurgeon, ten Boom, Lewis and others mapped to the road; how the book was read in real lives; William James and Rambo; ideas for the game |
 | `10-music.md` | metrical psalms, Playford, Bunyan's own hymn (Monks Gate), Vaughan Williams, Amazing Grace and Sacred Harp, game scores (Outer Wilds, Journey), sacred minimalists; a cast of sounds and a sound script for 17 levels; free tunes; 10 Lyria prompts |
-| picker | the taste picker (a private page) built from about 100 public-domain pictures from 03, 04, 05 and 07; the owner's marks are saved to it and read back from there |
+| `picker-round1.json` | the 90 pictures of the taste picker, round 1 (a private page: https://claude.ai/artifact/DP533kn7iQQ3N8HqV7pRiv), from 03, 04, 05 and 07; the owner's marks are saved in the page's own store (doc `picks/main`) and read back from there |
 
 Every report marks claims **[V]** (seen this session) or **[M]** (from memory, check before quoting). Many sites could not be opened from this session; check before anything is quoted to a child.
 
