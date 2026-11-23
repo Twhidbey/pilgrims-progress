@@ -531,7 +531,9 @@ const CR = (() => {
       const cx0 = SK_X + .3 * SK_H;
       const fadeL = (c2, a) => { const g2 = c2.createLinearGradient(xa + 120, 0, xa + 700, 0); g2.addColorStop(0, css([0, 0, 0], 0)); g2.addColorStop(1, css([0, 0, 0], a)); return g2; };
       for (let n = 1; n <= 6; n++) { const sc = 1 - n * .13;
-        const P = FULL.map(([x, h], i) => [cx0 + (x - cx0) * (.25 + .75 * sc) + 5 * Math.sin(i * .37 + n), h * sc + 4 * Math.sin(x * .031 + n * 1.7) + 2.5 * Math.sin(x * .11 + n)]);
+        // each layer's edge broken into spurs like the crags at the foot of Level 3's mountain (a steep face, a short brow,
+        // a long fall), not a smooth line (owner: "do it more like the rocks layers in the foot of the mountain in level 3")
+        const P = FULL.map(([x, h], i) => { const X = cx0 + (x - cx0) * (.25 + .75 * sc), H = h * sc; return [X, H - (90 + 14 * n) * (crag(X + n * 613, 31 + n * 5, 150 + 20 * n) - .45) * smooth(10, 90, H)]; });
         q.beginPath(); q.moveTo(P[0][0], 60); P.forEach(([x, h]) => q.lineTo(x, -h)); q.lineTo(P[P.length - 1][0], 60); q.closePath();
         q.fillStyle = fadeL(q, .1); q.fill();
         l.strokeStyle = css([255, 255, 255], .05); l.lineWidth = 1.6; l.beginPath(); let pen = false;
@@ -540,16 +542,6 @@ const CR = (() => {
       for (const [ux, uy, rx, ry, a] of []) { const ex = SK_X + ux * SK_H, ey = -uy * SK_H;
         q.save(); q.translate(ex, ey); q.scale(1, ry / rx); const g2 = q.createRadialGradient(0, 0, 0, 0, 0, rx * SK_H);
         g2.addColorStop(0, css([0, 0, 0], a)); g2.addColorStop(.55, css([0, 0, 0], a * .7)); g2.addColorStop(1, 'rgba(0,0,0,0)'); q.fillStyle = g2; q.fillRect(-rx * SK_H, -rx * SK_H, 2 * rx * SK_H, 2 * rx * SK_H); q.restore(); }
-      // hatched cracks down the face
-      for (let i = 0; i < 900; i++) {
-        const x = xa + (FALL1 - xa) * Math.pow(r(), .72), top = hh(x); if (top < 30) continue;
-        const h0 = top * (.08 + .9 * r()); if (h0 > top - 8) continue;
-        const rx = (x - SK_X) / (x < SK_X ? SK_L : SK_R), lean = rx * .35 + (r() - .5) * .18, len = 14 + 52 * r() * (.5 + .5 * Math.abs(rx));
-        const a = (.1 + .18 * r()) * smooth(xa, xa + 500, x) * (.5 + .5 * smooth(xa, SK_X + 200, x)), w = 1 + 1.6 * r();
-        q.strokeStyle = css([0, 0, 0], a); q.lineWidth = w; q.beginPath(); let px = x, py = -h0; q.moveTo(px, py);
-        for (let k = 1; k <= 3; k++) { px += Math.sin(lean) * len / 3 + (r() - .5) * 3; py += Math.cos(lean) * len / 3; q.lineTo(px, py); } q.stroke();
-        l.strokeStyle = css([255, 255, 255], a * .35); l.lineWidth = w * .7; l.beginPath(); l.moveTo(x + 2.2, -h0 - 1); l.lineTo(px + 2.2, py - 1); l.stroke();
-      }
       q.restore(); l.restore();
     }
     if (O !== 'e' && O !== 'f' && O !== 'g' && O !== 'r' && O !== 'skull') ROWS.forEach(([D, Hh, seg, a], n) => {
@@ -599,8 +591,13 @@ const CR = (() => {
     // the painted rock's grain over it all, as on Level 3's crags
     // the painted cliff texture from Level 3 is no longer laid on (owner, build 470: "there's lines on the hill now":
     // its upright cracks showed as stripes down the smooth hill)
-    if (false && RTEX) { if (!RPAT) RPAT = c.createPattern(RTEX, 'repeat'); const ts = 2.4; RPAT.setTransform(new DOMMatrix([ts, 0, 0, ts, 300, -H_TOP - 200]));
-      c.globalCompositeOperation = "overlay"; c.globalAlpha = .2; c.fillStyle = RPAT; c.fillRect(x0, -H_TOP - 60, x1 - x0, H_TOP + 2100); c.globalAlpha = 1; c.globalCompositeOperation = 'source-over'; }
+    if (false && RTEX) {} if (RTEX && ROCK_OPT === 'skull') {
+      // the painted rock's grain, only on the skull, as on Level 3's crags
+      c.save(); c.beginPath(); c.moveTo(SK_X - SK_L, 60); for (let x = SK_X - SK_L; x <= SK_X; x += 8) c.lineTo(x, -Math.min(gh(x), dome(x))); for (const [x, h] of SKO) c.lineTo(x, -h); c.lineTo(SK_END, 60); c.closePath(); c.clip();
+      if (!RPAT) RPAT = c.createPattern(RTEX, 'repeat'); const ts = 2; RPAT.setTransform(new DOMMatrix([ts, 0, 0, ts, 300, -H_TOP - 200]));
+      c.globalCompositeOperation = 'overlay'; c.globalAlpha = .14; c.fillStyle = RPAT; c.fillRect(SK_X - SK_L + 300, -H_TOP - 60, SK_END - SK_X + SK_L, H_TOP + 120); c.restore(); }
+    if (false) { if (!RPAT) RPAT = c.createPattern(RTEX, 'repeat'); const ts = 2.4; RPAT.setTransform(new DOMMatrix([ts, 0, 0, ts, 300, -H_TOP - 200]));
+      c.globalCompositeOperation = "overlay"; c.globalAlpha = .14; c.fillStyle = RPAT; c.fillRect(x0, -H_TOP - 60, x1 - x0, H_TOP + 2100); c.globalAlpha = 1; c.globalCompositeOperation = 'source-over'; }
     c.restore();
     // a thin edge of light along the crown, toward the sun (after dawn)
     if (gold > .01) {
