@@ -329,7 +329,7 @@ const CR = (() => {
       if (Ch.fade < 1 && STD.length) figure(c, STD[atTime(STD_META, breathT(Ch.sd || 0))], STD_META, x, h, fc, 1 - Ch.fade, tint, rim);
       // the new clothes come at the height of the light that wraps him (robe .5): a clean swap, no double picture
       const coat = robe >= .5 && COAT.ready;
-      if (coat) { const ct = mix(tint, [236, 226, 210], .55);
+      if (coat) { const ct = mix(tint, [236, 226, 210], .18);
         if (Ch.lp != null && LEAPC.ready) figure(c, LEAPC[clamp(Math.round(Ch.lp), 0, LEAPC.length - 1)], LEAP_META, x, h, fc, 1, ct, rim);
         else if (Ch.wo != null && CWALK.ready) figure(c, CWALK[Math.floor(Ch.wa) % CWALK.length], CWALK_META, x, h, 1, 1, ct, rim);
         else { const k = (Ch.cc || 0) % 96, cf = clamp(Math.round(k < 48 ? k : 96 - k), 0, COAT.length - 1); figure(c, COAT[cf], COAT_META, x, h, fc, 1, ct, rim); Ch.coatF = cf; } }
@@ -361,8 +361,7 @@ const CR = (() => {
         c.fillStyle = css([255, 248, 232], .95 * a); c.beginPath(); c.arc(tx + .28, by - .42, .3, 0, 6.29); c.fill();
         c.restore();
       }); }
-      if (mark > .01 && !(coat && (Ch.lp != null || Ch.wo != null))) { let hx = x + 14 * fc, hy = -h - 138 + SINK - 3;
-        if (coat) { const E = faceEdge(COAT[Ch.coatF]), r = Math.round(COAT_META.ground - 141 / CHR_K); if (E && E[r] != null) { hx = x + ((E[r] - COAT_META.ax) * CHR_K - 3) * fc; hy = -h - 141 + SINK - 3; } } const mr = coat ? 5 : 9, g = c.createRadialGradient(hx, hy, 0, hx, hy, mr); g.addColorStop(0, css([255, 244, 214], (coat ? .6 : .8) * mark)); g.addColorStop(1, 'rgba(255,240,200,0)'); c.fillStyle = g; c.fillRect(hx - 10, hy - 10, 20, 20); }
+      // no mark drawn on his forehead (owner: "i don't like seal on his forehead"); the book's mark is told, not shown
     } else if (Ch.run > 0 && RUNP.ready) {
       TILT = slopeTilt(x) * Ch.run;
       if (Ch.run < 1 && STD.length) figure(c, STD[atTime(STD_META, breathT(Ch.sd || 0))], STD_META, x, h, 1, 1 - Ch.run, tint, rim);
