@@ -292,6 +292,8 @@ const CR = (() => {
   // slightly back so his feet land right as he runs up hill"): a part of the ground's own angle, about his feet
   let TILT = 0;
   const slopeTilt = x => -.6 * Math.atan((gh(x + 12) - gh(x - 12)) / 24);
+  // his feet sink a little into the hill in every pose (owner: "so he doesn't look like he's floating")
+  const SINK = 10;
   function figure(c, im, meta, x, h, face, alpha, tint, rim) {
     if (!im || alpha <= .004) return;
     im = solidOf(im);
@@ -301,7 +303,7 @@ const CR = (() => {
     if (rim > .01) { const g = f.createLinearGradient(face > 0 ? 0 : W, 0, face > 0 ? W : 0, 0); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(.6, 'rgba(0,0,0,0)'); g.addColorStop(1, css([255, 210, 150], .35 * rim)); f.globalCompositeOperation = 'source-atop'; f.fillStyle = g; f.fillRect(0, 0, W, H); }
     f.globalCompositeOperation = 'destination-in'; f.drawImage(im, 0, 0); f.globalCompositeOperation = 'source-over';
     const K = CHR_K;
-    c.save(); c.translate(x, -h + 3); if (TILT) c.rotate(TILT); c.scale(face, 1); c.globalAlpha = alpha;
+    c.save(); c.translate(x, -h + SINK); if (TILT) c.rotate(TILT); c.scale(face, 1); c.globalAlpha = alpha;
     c.drawImage(figC, -meta.ax * K, -meta.ground * K, W * K, H * K); c.restore();
   }
   // the front (right) edge of a picture's figure, row by row, worked out once and kept on the picture
@@ -312,7 +314,7 @@ const CR = (() => {
     for (let y = 0; y < hh; y++) { let e = null; for (let x = w - 1; x >= 0; x--) if (D[(y * w + x) * 4 + 3] > 110) { e = x; break; } E.push(e); }
     return (im._edge = E);
   }
-  function contact(c, x, h, a = 1, rx = 34) { const g = c.createRadialGradient(0, 0, 0, 0, 0, 1); g.addColorStop(0, 'rgba(6,6,12,.5)'); g.addColorStop(.6, 'rgba(6,6,12,.24)'); g.addColorStop(1, 'rgba(6,6,12,0)'); c.save(); c.translate(x, -h + 3); c.scale(rx, 5); c.globalAlpha = a; c.fillStyle = g; c.fillRect(-1, -1, 2, 2); c.restore(); }
+  function contact(c, x, h, a = 1, rx = 34) { const g = c.createRadialGradient(0, 0, 0, 0, 0, 1); g.addColorStop(0, 'rgba(6,6,12,.5)'); g.addColorStop(.6, 'rgba(6,6,12,.24)'); g.addColorStop(1, 'rgba(6,6,12,0)'); c.save(); c.translate(x, -h + SINK - 2); c.scale(rx, 5); c.globalAlpha = a; c.fillStyle = g; c.fillRect(-1, -1, 2, 2); c.restore(); }
   function drawChr(c) {
     const tint = tintNow(), rim = gold * (1 - wideK), x = Ch.x, h = gh(x) + Ch.hop;
     contact(c, x, gh(x), 1 - Math.min(1, Ch.hop / 40) * .6);
@@ -338,7 +340,7 @@ const CR = (() => {
         const p = Math.min(1, lt / 115), st = p * 4, d = (Math.floor(st) + smooth(.55, 1, st % 1)) / 4, y0 = TEAR_Y, y1 = TEAR_Y - 9;
         const a = smooth(0, 18, lt) * (1 - smooth(150, 175, lt));
         let ty = lerp(y0, y1, Math.min(1, d)), tx = ex(ty); if (tx == null) return; tx -= .5;
-        c.save(); c.translate(x, -h); c.scale(fc, 1);
+        c.save(); c.translate(x, -h + SINK - 3); c.scale(fc, 1);
         // the wet line it leaves
         c.strokeStyle = css([236, 220, 200], .2 * a); c.lineWidth = .45; c.beginPath();
         for (let yy = y0; yy >= ty; yy -= .8) { const xx = ex(yy); if (xx != null) yy === y0 ? c.moveTo(xx - .5, -yy) : c.lineTo(xx - .5, -yy); } c.stroke();
@@ -351,8 +353,8 @@ const CR = (() => {
         c.fillStyle = css([255, 248, 232], .95 * a); c.beginPath(); c.arc(tx + .28, by - .42, .3, 0, 6.29); c.fill();
         c.restore();
       }); }
-      if (mark > .01 && !(coat && (Ch.lp != null || Ch.wo != null))) { let hx = x + 14 * fc, hy = -h - 138;
-        if (coat) { const E = faceEdge(COAT[Ch.coatF]), r = Math.round(COAT_META.ground - 141 / CHR_K); if (E && E[r] != null) { hx = x + ((E[r] - COAT_META.ax) * CHR_K - 3) * fc; hy = -h - 141; } } const mr = coat ? 5 : 9, g = c.createRadialGradient(hx, hy, 0, hx, hy, mr); g.addColorStop(0, css([255, 244, 214], (coat ? .6 : .8) * mark)); g.addColorStop(1, 'rgba(255,240,200,0)'); c.fillStyle = g; c.fillRect(hx - 10, hy - 10, 20, 20); }
+      if (mark > .01 && !(coat && (Ch.lp != null || Ch.wo != null))) { let hx = x + 14 * fc, hy = -h - 138 + SINK - 3;
+        if (coat) { const E = faceEdge(COAT[Ch.coatF]), r = Math.round(COAT_META.ground - 141 / CHR_K); if (E && E[r] != null) { hx = x + ((E[r] - COAT_META.ax) * CHR_K - 3) * fc; hy = -h - 141 + SINK - 3; } } const mr = coat ? 5 : 9, g = c.createRadialGradient(hx, hy, 0, hx, hy, mr); g.addColorStop(0, css([255, 244, 214], (coat ? .6 : .8) * mark)); g.addColorStop(1, 'rgba(255,240,200,0)'); c.fillStyle = g; c.fillRect(hx - 10, hy - 10, 20, 20); }
     } else if (Ch.run > 0 && RUNP.ready) {
       TILT = slopeTilt(x) * Ch.run;
       if (Ch.run < 1 && STD.length) figure(c, STD[atTime(STD_META, breathT(Ch.sd || 0))], STD_META, x, h, 1, 1 - Ch.run, tint, rim);
