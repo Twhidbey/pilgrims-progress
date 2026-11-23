@@ -73,14 +73,15 @@
     c.restore(); c.globalCompositeOperation = 'source-over';
   }
   let DK = null; const dkBuf = () => { if (!DK) DK = document.createElement('canvas'); if (DK.width !== ctx.canvas.width || DK.height !== ctx.canvas.height) { DK.width = ctx.canvas.width; DK.height = ctx.canvas.height; } return DK; };
+  // the cast's frames sharpened by Real-ESRGAN to twice their size (LIPF stays in the clip's own pixels)
   // the two free clips (build 564): the man casting water (49 frames at 16 a second, facing right, as his picture) and the one pouring
   // oil (49 frames, facing left), each cut from white, its water and the paper in the bucket and the crook of his arm taken out
-  const CASTV = { n: 'room4-cast', ax: 119.7, g: 406, cols: 8, fr: 49, W: 340, H: 411, s: 1.55, ct: 1, mul: 1, sat: 1, noSh: 1 };
+  const CASTV = { n: 'room4-cast-hd', parts: 4, per: 13, ax: 239.4, g: 812, cols: 8, fr: 49, W: 680, H: 822, s: .775, ct: 1, mul: 1, sat: 1, noSh: 1 };
   const POURV = { n: 'room4-pour', ax: 71.7, g: 375, cols: 8, fr: 49, W: 152, H: 380, s: 1.7, ct: 1, mul: 1, sat: 1, noSh: 1 };
   // where his bucket's lip is at the throw (cell pixels, frames 19 to 24), and the jug's spout through the pouring loop
   const LIPF = { 19: [296, 136], 20: [304, 103], 21: [309, 80], 22: [301, 83], 23: [299, 76], 24: [301, 78] };
   const SPF = [[12, 153], [10, 152], [8, 148], [6, 145], [5, 142], [4, 143], [3, 141], [3, 136], [4, 135], [6, 138], [8, 143], [11, 150], [12, 152]];
-  if (D4) { const n = 'room4-drawn'; loads[n] = new Promise(r => setTimeout(r, 0)).then(() => (pics[n] = bakeR4())); pic('room4-caster2'); pic('room4-pourer'); pic(CASTV.n); pic(POURV.n); }
+  if (D4) { const n = 'room4-drawn'; loads[n] = new Promise(r => setTimeout(r, 0)).then(() => (pics[n] = bakeR4())); pic('room4-caster2'); pic('room4-pourer'); sheetFrames(CASTV); pic(POURV.n); }
   // the walk round the wall (build 508): the two set off from where they stand, go BEHIND the man with the bucket and the fire (a
   // little further back: smaller, darker, standing a little higher), behind the chimney breast into the dark, the Interpreter's
   // cupped candle the only light there; they stop and turn to the one pouring oil, and the dark lifts
@@ -265,10 +266,10 @@
           // the cast: every few seconds water arcs from his bucket DOWN into the fire; where it strikes the fire sinks with a hiss
           // and a gust of steam, then rises higher than before (the book: "yet did the fire burn higher and hotter")
           // the clip at its own pace (16 a second), a short rest between casts; the water leaves the bucket's lip where the clip throws it
-          if (pics[CASTV.n]) {
+          if (pics[CASTV.n + '#0']) {
             this.cf4 += 16 / 60; if (this.cf4 >= CASTV.fr + 30) { this.cf4 = 0; this.hit = false; }
             const L = LIPF[Math.floor(this.cf4)];
-            if (L) { const k = CASTV.s / .8, lx = WK.CX + (L[0] - CASTV.ax) * k, ly = this.FY + WK.FEET + WK.CDN + (L[1] - CASTV.g) * k;
+            if (L) { const k = CASTV.s / .8, lx = WK.CX + (2 * L[0] - CASTV.ax) * k, ly = this.FY + WK.FEET + WK.CDN + (2 * L[1] - CASTV.g) * k;
               // aimed so it falls into the hearth's opening (a throw under gravity .16 from the lip to just above the fire)
               const [tx, ty] = FXS();
               for (let i = 0; i < 3; i++) { const vy = -1.6 + rnd() * 1.2, dy = ty - 150 + rnd() * 40 - ly, t = (-vy + Math.sqrt(vy * vy + .32 * Math.max(0, dy))) / .16;
