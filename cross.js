@@ -389,6 +389,10 @@ const CR = (() => {
     // (build 645, owner: "christian also looks pretty washed out and ghosly"): at night he was paler than the dark
     // behind him; now he is the darkest thing in the picture, a solid figure against the lighter wall, land and sky
     if (night > .01) c = mix(c, [24, 25, 33], night);
+    // (build 650, owner: "yes do all three"): and he stays a dark figure the whole climb and at the cross until the sun
+    // is up (he had turned pale grey again on the upper slope, lighter than the hill under him); at sunrise, lit from
+    // behind, a dark warm figure, not a mid brown
+    if (LF) c = mix(mix([24, 25, 33], [29, 26, 29], dawn), [56, 43, 36], gold);
     // in a memory he runs through he is a darker figure against it (pale, he showed like a ghost on the burning hill)
     const rd = REL_ON ? Math.max(...REL.map(m => m.a * (m.dark || 0))) * (1 - wideK) : 0; if (rd > 0) c = mix(c, [26, 22, 26], rd);
     return mix(c, robeC, robe * .6);
@@ -576,6 +580,12 @@ const CR = (() => {
     const st = [0, 1, 2].map(i => mix(mix(mix(mix(pre[i], dw[i], dawn), gd[i], gold), gl[i], GL * .85), NIGHTC[i], night));
     const g = c.createLinearGradient(0, Math.min(0, by(0)), 0, by(HY + 40)); g.addColorStop(0, css(st[0])); g.addColorStop(.6, css(st[1])); g.addColorStop(1, css(st[2]));
     c.fillStyle = g; c.fillRect(0, 0, VW, VH);
+    // (build 650) FRIEDRICH'S BAND BEFORE THE SUN: through the grey stretch of the climb a thin band of rose with pale
+    // lemon under it lies low on the horizon where the sun will rise, growing as the night goes, the blue kept above
+    // it; it gives way to the sunrise itself
+    if (LF) { const k = dawn * (1 - .85 * night) * (1 - gold); if (k > .01) { const hy0 = by(HY), B0 = bgS(), cx0 = sx(CROSS_X + SUN_DX);
+      for (const [col, ry, a, dy] of [[[214, 142, 136], 180, .62, -40], [[244, 214, 158], 80, .7, -6]]) { c.save(); c.translate(cx0, hy0 + dy * B0); c.scale(VW * 1.05, ry * B0);
+        const bg = c.createRadialGradient(0, 0, 0, 0, 0, 1); bg.addColorStop(0, css(col, a * k)); bg.addColorStop(.5, css(col, a * k * .45)); bg.addColorStop(1, css(col, 0)); c.fillStyle = bg; c.fillRect(-1, -1, 2, 2); c.restore(); } } }
     // (build 632) open sky: no clouds (owner: "the simplicity of stars and open sky is nice")
     if (night > .01) stars(c);
     // the far light, low behind the crown before dawn; the sun breaking behind the crown, rising behind where the
@@ -967,6 +977,9 @@ const CR = (() => {
     q.putImageData(d, 0, 0); return (HPR = cv);
   }
   // the ground's own tone, which the hill's foot goes over into
+  // the darkening laid over the painted hill (build 650: darker at dawn, so the hill is a dark shape when the burden
+  // falls, and darker at sunrise, so it is a backlit hill and the sun and sky carry the light)
+  const landMul = () => H618 ? mix(mix(mix([40, 36, 44], [13, 14, 17], night), [60, 52, 52], dawn), [148, 130, 122], gold) : mix(mix(mix([60, 52, 58], [30, 28, 38], night), [112, 96, 90], dawn), [255, 246, 236], gold);
   const footCol = () => mix(mix(mix([24, 21, 24], [21, 21, 28], night), [25, 21, 23], dawn), [36, 27, 25], gold);
   function land(c) {
     const x0 = cam.cx - VW / 2 / cam.z - 40, x1 = cam.cx + VW / 2 / cam.z + 40, step = Math.max(4, 6 / cam.z);
@@ -984,7 +997,11 @@ const CR = (() => {
     const hc = LOOKF ? mix(mix([46, 38, 34], [92, 58, 40], dawn), [146, 80, 42], gold) : LOOKR ? mix(mix([40, 31, 28], [50, 36, 30], dawn), [62, 40, 30], gold) : mix(mix([30, 30, 38], [36, 32, 36], dawn), [44, 34, 30], gold);
     c.beginPath(); c.moveTo(x0, 2000);
     for (const [x, y] of outline(x0, x1, step)) c.lineTo(x, y);
-    c.lineTo(x1, 2000); c.closePath(); c.fillStyle = css(hc); c.fill();
+    // (build 650, owner: "there's a dotted line along the hill border"): the land's own fill used to be the hill's
+    // undarkened colour; everything darker was laid inside a clip, so the outline's soft edge pixels kept a speck of the
+    // lighter colour, a dotted rust line along the hill's border. The fill now starts at the darkened colour.
+    const hc0 = LF && HPAINT ? (m => hc.map((v, i) => v * m[i] / 255 * .75 + 17 * night))(landMul()) : hc;
+    c.lineTo(x1, 2000); c.closePath(); c.fillStyle = css(hc0); c.fill();
     // a breath of form (owner: "shade hill a slight bit to get sense of its 3d"): the hill a touch lighter just under its
     // outline, darker toward its foot, and its rock in layers (rockTex)
     c.save(); c.clip();
@@ -998,12 +1015,15 @@ const CR = (() => {
       const s = SK_H / 1080; c.save(); c.translate(SK_X, 0); c.scale(s, s); c.drawImage(HPAINT, HP_X - 4380, HP_TOP, HP_W, HP_H); c.restore();
       // the painting takes the hill's own colour through the dawn (its lightness kept); the crag of ?look=f keeps its own
       // painted colours and is only darkened before the sun is up
-      if (LOOKF) { c.globalCompositeOperation = 'multiply'; c.fillStyle = css(H618 ? mix(mix(mix([40, 36, 44], [13, 14, 17], night), [74, 62, 60], dawn), mix([255, 248, 240], [150, 132, 124], SUN_T), gold) : mix(mix(mix([60, 52, 58], [30, 28, 38], night), [112, 96, 90], dawn), [255, 246, 236], gold)); c.fillRect(x0, -H_TOP - 700, x1 - x0, H_TOP + 2800);
+      if (LOOKF) { c.globalCompositeOperation = 'multiply'; c.fillStyle = css(landMul()); c.fillRect(x0, -H_TOP - 700, x1 - x0, H_TOP + 2800);
         // (build 645) moonlight on the land: a cool lift over the night's dark, so the ground and the hill can be seen
         if (night > .01) { c.globalCompositeOperation = 'lighter'; c.fillStyle = css([17, 21, 33], night); c.fillRect(x0, -H_TOP - 700, x1 - x0, H_TOP + 2800); c.globalCompositeOperation = 'multiply'; }
         // (build 627) 618's painting at sunrise held between its own colours and 625's one rust (owner: "too colorful ... the less
         // bright 625 is better though maybe a bit monochromatic"): darker (above) and pulled part way toward one rust hue
-        if (H618 && gold > 0) { c.globalCompositeOperation = 'color'; c.globalAlpha = Math.min(1, SUN_T * 1.2) * gold; c.fillStyle = 'rgb(150,72,44)'; c.fillRect(x0, -H_TOP - 700, x1 - x0, H_TOP + 2800); c.globalAlpha = 1; } c.globalCompositeOperation = 'source-over'; } else {
+        // (build 650) its colour held back: nearly colourless until the sun is up (a dull umber laid over its own rust),
+        // then a quieter rust than before
+        if (LF && gold < 1) { c.globalCompositeOperation = 'color'; c.globalAlpha = .62 * (1 - gold); c.fillStyle = css(mix([74, 58, 54], [52, 52, 64], night)); c.fillRect(x0, -H_TOP - 700, x1 - x0, H_TOP + 2800); c.globalAlpha = 1; c.globalCompositeOperation = 'multiply'; }
+        if (H618 && gold > 0) { c.globalCompositeOperation = 'color'; c.globalAlpha = Math.min(1, SUN_T * 1.5) * gold; c.fillStyle = 'rgb(126,76,56)'; c.fillRect(x0, -H_TOP - 700, x1 - x0, H_TOP + 2800); c.globalAlpha = 1; } c.globalCompositeOperation = 'source-over'; } else {
       c.globalCompositeOperation = 'color'; c.fillStyle = css(hc); c.fillRect(x0, -H_TOP - 700, x1 - x0, H_TOP + 2800); c.globalCompositeOperation = 'source-over'; }
       // THE HILL'S FOOT MELTS INTO THE GROUND (owner, build 649: "blend in the foot of mountain when christian first
       // encounters it and where it hits the ground on other side"): the painted rock used to stop at the ground's level
@@ -1059,6 +1079,12 @@ const CR = (() => {
     if (false) { if (!RPAT) RPAT = c.createPattern(RTEX, 'repeat'); const ts = 2.4; RPAT.setTransform(new DOMMatrix([ts, 0, 0, ts, 300, -H_TOP - 200]));
       c.globalCompositeOperation = "overlay"; c.globalAlpha = .14; c.fillStyle = RPAT; c.fillRect(x0, -H_TOP - 60, x1 - x0, H_TOP + 2100); c.globalAlpha = 1; c.globalCompositeOperation = 'source-over'; }
     c.restore();
+    // (the dotted line, its second cause: each thing laid inside the clip covers the outline's soft edge pixels only in
+    // part, so a speck of the bright painted rock stayed there under the darkening. A hair-thin line in the darkened
+    // colour along the outline covers those pixels.)
+    // in the hill's own tone just under its edge at each hour (a darker line showed as a drawn outline)
+    const edgeC = mix(mix(mix([40, 28, 30], [28, 28, 38], night), [33, 19, 17], dawn), [96, 58, 44], gold);
+    if (LF && HPAINT) { c.save(); c.strokeStyle = css(edgeC); c.lineWidth = 1.15 / cam.z; c.lineJoin = 'round'; c.beginPath(); let f0 = true; for (const [x, y] of outline(x0, x1, step)) { f0 ? c.moveTo(x, y) : c.lineTo(x, y); f0 = false; } c.stroke(); c.restore(); }
     // a thin edge of light along the crown, toward the sun (after dawn)
     if (gold > .01) {
       // one stroke with its strength along a gradient (short overlapping strokes with round caps showed as beads)
