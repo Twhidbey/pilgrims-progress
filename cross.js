@@ -643,7 +643,10 @@ const CR = (() => {
       // paler against the glowing horizon
       // (build 630, after Whistler's Nocturne, Millet's Starry Night and Kuindzhi's Night): flat silhouettes, the far one a
       // little lighter than the land, each nearer one darker, the near ones nearly black
-      if (night > .01) col = mix(col, mix([30, 42, 48], [7, 9, 11], Math.pow(i / 5, .7)), night);
+      // (build 634, owner: "the hills look kinda green"): the far ridges in the sky's own greyed blue, deeper nearer, the
+      // nearest almost black with a breath of warm umber, kin to the hill's dark rust; the far ones held well below the
+      // horizon glow so it stays the lightest thing in the land
+      if (night > .01) { const u = i / 5, nc = u < .6 ? mix([30, 36, 52], [15, 18, 28], u / .6) : mix([15, 18, 28], [13, 11, 11], (u - .6) / .4); col = mix(col, nc, night); }
       c.beginPath(); c.moveTo(0, VH);
       for (let X = 0; X <= VW + 8; X += 6) c.lineTo(X, by(rrY(i, VW / 2 + (X - VW / 2) / B + cam.cx * PAN(p) * 6, base, amp)));
       c.lineTo(VW, VH); c.closePath(); c.fillStyle = css(col); c.fill();
