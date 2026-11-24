@@ -205,7 +205,10 @@ const CR = (() => {
   // the land's whole outline from xa to xb, as [x, y] on the picture (y = -h): the height field up to the crown, the
   // skull's own outline past it, then the plain
   function outline(xa, xb, step) { const O = [];
-    if (PIN_ON) { for (let x = xa; x <= xb + step; x += step) O.push([x, -pinDraw(x)]); return O; }
+    // (build 657, owner: "the outline of the hill flicker as we zoom"): the outline was sampled from the picture's left
+    // edge at a step that changed with the zoom, so its points slid along the bumpy edge as the camera moved; now it is
+    // sampled at fixed places on the land (the skyline table's own points), whatever the camera does
+    if (PIN_ON) { const S = 8 * pinS(), a = pinW(PIN0); for (let x = a + Math.floor((xa - a) / S) * S; x <= xb + S; x += S) O.push([x, -pinDraw(x)]); return O; }
     for (let x = xa; x <= Math.min(xb, SK_X); x += step) O.push([x, -gh(x)]);
     if (xb > SK_X) { for (const [x, h] of SKO) O.push([x, -h]); for (let x = SK_END + step; x <= xb; x += step) O.push([x, 0]); }
     return O; }
@@ -407,12 +410,17 @@ const CR = (() => {
   const slopeTilt = x => -.6 * Math.atan((gh(x + 12) - gh(x - 12)) / 24);
   // his feet sink a little into the hill in every pose (owner: "so he doesn't look like he's floating")
   const SINK = 10, KNEEL_SINK = 5;
+  const QP = (k, d) => { const m = location.search.match(new RegExp('[?&]' + k + '=([\\d.,]+)')); return m ? m[1].split(',').map(Number) : d; };
+  const COATC = QP('coatc', [206, 142, 92]), COATK = QP('coatk', [.6])[0], COATCON = QP('coatcon', [.85])[0];
+  let FIGCON = 0;
   function figure(c, im, meta, x, h, face, alpha, tint, rim) {
     if (!im || alpha <= .004) return;
     im = solidOf(im);
     const W = im.width, H = im.height; if (figC.width !== W || figC.height !== H) { figC.width = W; figC.height = H; }
     const f = figC.getContext('2d'); f.globalCompositeOperation = 'source-over'; f.clearRect(0, 0, W, H); f.drawImage(im, 0, 0);
     f.globalCompositeOperation = 'multiply'; f.fillStyle = css(tint); f.fillRect(0, 0, W, H);
+    // (build 657) the coat's own light and shade deepened (it read flat and washed out)
+    if (FIGCON) { f.globalAlpha = FIGCON; f.drawImage(im, 0, 0); f.globalAlpha = 1; }
     if (rim > .01) { const g = f.createLinearGradient(face > 0 ? 0 : W, 0, face > 0 ? W : 0, 0); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(.6, 'rgba(0,0,0,0)'); g.addColorStop(1, css([255, 210, 150], .35 * rim)); f.globalCompositeOperation = 'source-atop'; f.fillStyle = g; f.fillRect(0, 0, W, H); }
     f.globalCompositeOperation = 'destination-in'; f.drawImage(im, 0, 0); f.globalCompositeOperation = 'source-over';
     const K = CHR_K;
@@ -438,10 +446,10 @@ const CR = (() => {
       if (Ch.fade < 1 && STD.length) figure(c, STD[atTime(STD_META, breathT(Ch.sd || 0))], STD_META, x, h, fc, 1 - Ch.fade, tint, rim);
       // the new clothes come at the height of the light that wraps him (robe .5): a clean swap, no double picture
       const coat = robe >= .5 && COAT.ready;
-      if (coat) { const ct = mix(tint, [236, 226, 210], .18);
+      if (coat) { const ct = mix(tint, COATC, COATK); FIGCON = COATCON;
         if (Ch.lp != null && LEAPC.ready) figure(c, LEAPC[clamp(Math.round(Ch.lp), 0, LEAPC.length - 1)], LEAP_META, x, h, fc, 1, ct, rim);
         else if (Ch.wo != null && CWALK.ready) figure(c, CWALK[Math.floor(Ch.wa) % CWALK.length], CWALK_META, x, h, 1, 1, ct, rim);
-        else { const k = (Ch.cc || 0) % 96, cf = clamp(Math.round(k < 48 ? k : 96 - k), 0, COAT.length - 1); figure(c, COAT[cf], COAT_META, x, h, fc, 1, ct, rim); Ch.coatF = cf; } }
+        else { const k = (Ch.cc || 0) % 96, cf = clamp(Math.round(k < 48 ? k : 96 - k), 0, COAT.length - 1); figure(c, COAT[cf], COAT_META, x, h, fc, 1, ct, rim); Ch.coatF = cf; } FIGCON = 0; }
       else if (Ch.kn != null && KNC.ready) {
         // kneeling, he settles into the ground and with its slope, so his back leg rests on the hill (owner: "brought down
         // more so his back legs doesn't stick out")
@@ -1373,21 +1381,21 @@ const CR = (() => {
       c.restore();
     });
     // the change of raiment: light wraps him for a moment
-    if (robe > 0 && robe < 1) { const x = Ch.x, h = gh(x), g = c.createRadialGradient(x, -h - 75, 0, x, -h - 75, 110); g.addColorStop(0, css([255, 236, 200], .45 * Math.sin(Math.PI * robe))); g.addColorStop(1, 'rgba(255,230,190,0)'); c.fillStyle = g; c.fillRect(x - 120, -h - 200, 240, 220); }
+    if (robe > 0 && robe < 1) { const x = Ch.x, h = gh(x), g = c.createRadialGradient(x, -h - 55, 0, x, -h - 55, 95); g.addColorStop(0, css([255, 236, 200], .26 * Math.sin(Math.PI * robe))); g.addColorStop(1, 'rgba(255,230,190,0)'); c.fillStyle = g; c.fillRect(x - 120, -h - 200, 240, 220); }
     c.restore();
     // the sealed roll: a soft glowing light in the third one's hand, diffuse like the Shining Ones (owner: "How about the
     // scroll be glowing too and be diffuse until it's handed to Christian"); touched, it is carried to him, its glow
     // drawing in and its shape coming clear as it reaches his hands, then it goes into the tray
     if (rollShow > .01 && rollGone < 1) {
-      const [x, H] = SH[2], hx = x - 22, hy = -gh(x) - H * .52 + Math.sin(t / 30) * 2;
-      const u = rollFly ? smooth(0, 1, rollFly.t / ROLL_FLY) : 0, cxr = Ch.x + 24, cyr = -gh(Ch.x) - 72;
-      const rx = lerp(hx, cxr, u), ry = lerp(hy, cyr, u) - Math.sin(Math.PI * u) * 26, a2 = rollShow * (1 - rollGone), sh = 0, df = 1 - .3 * u;
+      const [x, H] = SH[2], hx = x - 6, hy = -gh(x) - H * .36 + Math.sin(t / 30) * 1.5;
+      const u = rollFly ? smooth(0, 1, rollFly.t / ROLL_FLY) : 0, cxr = Ch.x + 24, cyr = -gh(Ch.x) - 62;
+      const rx = lerp(hx, cxr, u), ry = lerp(hy, cyr, u) - Math.sin(Math.PI * u) * 26, a2 = rollShow * (1 - rollGone), sh = 0, df = 1 - .65 * u;
       c.save(); c.translate(rx, ry);
       c.globalCompositeOperation = 'screen';
-      const br = 1 + .08 * Math.sin(t / 22);
-      let g = c.createRadialGradient(0, 0, 0, 0, 0, 60 * br); g.addColorStop(0, css([255, 244, 214], a2 * (.85 * df + .25))); g.addColorStop(1, 'rgba(255,236,200,0)'); c.fillStyle = g; c.fillRect(-62, -62, 124, 124);
+      const br = 1 + .03 * Math.sin(t / 30);
+      let g = c.createRadialGradient(0, 0, 0, 0, 0, 40 * br); g.addColorStop(0, css([255, 244, 214], a2 * (.6 * df + .12))); g.addColorStop(1, 'rgba(255,236,200,0)'); c.fillStyle = g; c.fillRect(-62, -62, 124, 124);
       if (df > .01) { c.save(); c.scale(2.3, 1); g = c.createRadialGradient(0, 0, 0, 0, 0, 16 * br); g.addColorStop(0, css([255, 252, 238], a2 * df)); g.addColorStop(.5, css([255, 240, 206], .5 * a2 * df)); g.addColorStop(1, 'rgba(255,236,200,0)'); c.fillStyle = g; c.fillRect(-17, -17, 34, 34); c.restore(); }
-      if (df > .01) { c.globalCompositeOperation = 'source-over'; const pu = .75 + .25 * Math.sin(t / 18); g = c.createRadialGradient(0, 0, 0, 0, 0, 30); g.addColorStop(0, css([255, 200, 120], .95 * a2 * df * pu)); g.addColorStop(.45, css([255, 214, 150], .4 * a2 * df * pu)); g.addColorStop(1, 'rgba(255,214,140,0)'); c.save(); c.scale(1.7, 1); c.fillStyle = g; c.fillRect(-30, -30, 60, 60); c.restore(); c.globalCompositeOperation = 'screen'; g = c.createRadialGradient(0, 0, 0, 0, 0, 9); g.addColorStop(0, css([255, 255, 248], a2 * df)); g.addColorStop(1, 'rgba(255,250,230,0)'); c.save(); c.scale(2, 1); c.fillStyle = g; c.fillRect(-9, -9, 18, 18); c.restore(); }
+      if (df > .01) { c.globalCompositeOperation = 'source-over'; const pu = .7 + .06 * Math.sin(t / 30); g = c.createRadialGradient(0, 0, 0, 0, 0, 30); g.addColorStop(0, css([255, 200, 120], .95 * a2 * df * pu)); g.addColorStop(.45, css([255, 214, 150], .4 * a2 * df * pu)); g.addColorStop(1, 'rgba(255,214,140,0)'); c.save(); c.scale(1.7, 1); c.fillStyle = g; c.fillRect(-30, -30, 60, 60); c.restore(); c.globalCompositeOperation = 'screen'; g = c.createRadialGradient(0, 0, 0, 0, 0, 9); g.addColorStop(0, css([255, 255, 248], a2 * df)); g.addColorStop(1, 'rgba(255,250,230,0)'); c.save(); c.scale(2, 1); c.fillStyle = g; c.fillRect(-9, -9, 18, 18); c.restore(); }
       c.globalCompositeOperation = 'source-over';
       if (sh > .01) { c.globalAlpha = a2 * sh; c.scale(1.6, 1.6); c.fillStyle = 'rgb(236,222,190)'; c.fillRect(-9, -3.5, 18, 7); c.fillStyle = 'rgb(214,198,160)'; c.fillRect(-11, -4.5, 3, 9); c.fillRect(8, -4.5, 3, 9);
         c.fillStyle = 'rgb(150,24,26)'; c.beginPath(); c.arc(0, 4, 3, 0, 6.29); c.fill(); }
@@ -1395,7 +1403,7 @@ const CR = (() => {
       rollAt = [rx, ry];
     }
   }
-  const rollPt = () => { const [x, H] = SH[2]; return [sx(x - 22), sy(gh(x) + H * .52)]; };
+  const rollPt = () => { const [x, H] = SH[2]; return [sx(x - 6), sy(gh(x) + H * .36)]; };
   const chrPt = () => [sx(Ch.x), sy(gh(Ch.x) + 80)];
 
   // ---------- the story ----------
