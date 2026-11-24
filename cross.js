@@ -590,7 +590,7 @@ const CR = (() => {
     if (night > .01) stars(c);
     // the far light, low behind the crown before dawn; the sun breaking behind the crown, rising behind where the
     // beams cross, and on up the sky (kept inside the picture)
-    const cxs = sx(CROSS_X + SUN_DX), top = sy(crossH() + CROSS_BY + 4), y0 = sy(crossH()) + 40, sY = LOOKF
+    const cxs = sx(CROSS_X + SUN_DX), top = sy(crossH() + CROSS_BY + 4), y0 = sy(crossH()) + 40, sY = LOOKF && SUN_DX
       // ?look=f: as in the painting, the sun stays low, just over the farthest ranges, rising only a little
       ? by(HY - 96 - 60 * Math.min(1.3, sunH))
       : Math.max(VH * .1, y0 + (top - y0) * sunH);
@@ -644,7 +644,11 @@ const CR = (() => {
   const LOOKF = LF;
   const LOOKR = LOOKF || /[?&]look=r\b/.test(location.search);
   // with ?look=f the sun rises this far left of the cross (world units), so its light falls across the hill's face
-  const SUN_DX = LOOKF ? -430 : 0;
+  // (build 651, owner: "should sun be behind cross as before?" ... "yes move it back"): the sun is behind the cross
+  // again: it breaks behind the crown at the cross's foot, stands behind where the beams cross as the hymn begins, and
+  // climbs on above it. The far light he has followed since Level 1 is behind the cross, and now that the hill is dark
+  // and backlit (build 650) the light and the cross share one line. ?sundx=-430 gives the old place, low and to the left.
+  const SUN_DX = LOOKF ? +((location.search.match(/[?&]sundx=(-?\d+)/) || [, 0])[1]) : 0;
   const RR = [3, 4, 5, 6, 7, 8].map(seed => { const r = rgen(seed * 17 + 3); return [1, 2, 3, 4, 5, 6].map(k => [r() * 6.28, k, .6 + .8 * r()]); });
   const rrY = (i, X, base, amp) => { let y = base; for (const [p, k, a] of RR[i]) y += amp * a / k * Math.sin(X * k * k * .0007 + p); return y; };
   function farR(c) {
@@ -1400,7 +1404,7 @@ const CR = (() => {
     wideK = wideTo = 0;
     const at = new URLSearchParams(location.search).get('at');
     if (typeof dropPlace === 'function') dropPlace();
-    if (at === 'cross') { ph = 'walk'; Ch.x = STOP_X - 260; Ch.sd = null; wideK = wideTo = 0; said.open = said.ascend = said.cut = true; dawn = .6; memT = 2000; memS = MEMS.map(() => 0); REL.forEach(m => { m.said = true; }); relGW = true; gwTop = true; FIGS.forEach(f => { f.said = true; }); }
+    if (at === 'cross') { ph = 'walk'; Ch.x = STOP_X - 260; Ch.sd = null; wideK = wideTo = 0; said.open = said.ascend = said.cut = true; dawn = .6; memT = 2000; memS = MEMS.map(() => 0); REL.forEach(m => { m.said = true; }); relGW = true; gwTop = true; CONST.forEach(k => { k.said = true; k.t = 1000; k.f0 = 0; }); FIGS.forEach(f => { f.said = true; }); }
     camTick(true);
     if (audio()) { AC.resume(); if (rainG) rainG.gain.setTargetAtTime(0, AC.currentTime, .8); padStart(); }
     G.state = 'wait';
