@@ -292,6 +292,14 @@ const CR = (() => {
   // ---------- camera ----------
   const sx = x => (x - cam.cx) * cam.z + VW / 2, sy = h => cam.wl - h * cam.z;
   const FOOTY = 418, HY = 322;
+  // THE TELEPHOTO (owner: "There's a lot of parallax when you zoom in and out - I'm thinking if we imagine we are super far
+  // away and zoom in with zoom lens the shifting won't happen as much"): the sky, the far ridges and their mist were drawn at
+  // one fixed size on the screen while the hill zoomed, so every zoom slid the hill against them. Now, as through a long lens
+  // from far off, they zoom WITH the hill: scaled by the camera's zoom against BG_Z0 (the near camera, where they look as
+  // before), about the point the camera zooms about (the middle of the picture across, his feet at FOOTY up and down).
+  // ?tele=0 for the old way; ?tele=.8 a little depth kept (the power on the zoom).
+  const BG_A = +(new URLSearchParams(location.search).get('tele') ?? 1), BG_Z0 = .8;
+  const bgS = () => Math.pow(cam.z / BG_Z0, BG_A), by = y => FOOTY + (y - FOOTY) * bgS();
   function camTick(snap) {
     const near = { cx: Ch.x + lerp(250, 150, closeK), z: lerp(.8, 1.15, closeK) };
     if (ph === 'cross' || ph === 'after' || ph === 'shine' || ph === 'leaps' || ph === 'end') { near.cx = Math.max(CROSS_X - 130, Ch.x + 170); near.z = .86; }
@@ -524,26 +532,26 @@ const CR = (() => {
     // the glory: how far the sun has climbed past the crossing (0..1); everything below grows with it
     const GL = sm(.96, 1.4, sunH), gl = LOOKF ? [[104, 150, 206], [222, 230, 222], [255, 246, 204]] : LOOKR ? [[118, 140, 172], [240, 196, 168], [255, 226, 176]] : [[64, 100, 162], [238, 168, 150], [255, 228, 172]];
     const st = [0, 1, 2].map(i => mix(mix(mix(pre[i], dw[i], dawn), gd[i], gold), gl[i], GL * .85));
-    const g = c.createLinearGradient(0, 0, 0, HY + 40); g.addColorStop(0, css(st[0])); g.addColorStop(.6, css(st[1])); g.addColorStop(1, css(st[2]));
+    const g = c.createLinearGradient(0, Math.min(0, by(0)), 0, by(HY + 40)); g.addColorStop(0, css(st[0])); g.addColorStop(.6, css(st[1])); g.addColorStop(1, css(st[2]));
     c.fillStyle = g; c.fillRect(0, 0, VW, VH);
     // the far light, low behind the crown before dawn; the sun breaking behind the crown, rising behind where the
     // beams cross, and on up the sky (kept inside the picture)
     const cxs = sx(CROSS_X + SUN_DX), top = sy(crossH() + CROSS_BY + 4), y0 = sy(crossH()) + 40, sY = LOOKF
       // ?look=f: as in the painting, the sun stays low, just over the farthest ranges, rising only a little
-      ? HY - 96 - 60 * Math.min(1.3, sunH)
+      ? by(HY - 96 - 60 * Math.min(1.3, sunH))
       : Math.max(VH * .1, y0 + (top - y0) * sunH);
     if (LOOKF) {
       // the painting's bright lemon-cream horizon: a wide warm glow round the low sun and a pale band along the horizon
       const lk = Math.max(.35 * dawn, gold), lg = c.createRadialGradient(cxs, sY, 0, cxs, sY, VW * .75);
       lg.addColorStop(0, css([255, 250, 222], .75 * lk)); lg.addColorStop(.25, css([255, 244, 206], .4 * lk)); lg.addColorStop(.6, css([248, 238, 206], .14 * lk)); lg.addColorStop(1, 'rgba(248,238,206,0)');
       c.fillStyle = lg; c.fillRect(0, 0, VW, VH);
-      const hb = c.createLinearGradient(0, HY - 220, 0, HY + 40); hb.addColorStop(0, 'rgba(255,246,214,0)'); hb.addColorStop(.7, css([255, 246, 214], .5 * lk)); hb.addColorStop(1, css([255, 248, 222], .3 * lk));
-      c.fillStyle = hb; c.fillRect(0, HY - 220, VW, 260);
+      const B = bgS(), hb = c.createLinearGradient(0, by(HY - 220), 0, by(HY + 40)); hb.addColorStop(0, 'rgba(255,246,214,0)'); hb.addColorStop(.7, css([255, 246, 214], .5 * lk)); hb.addColorStop(1, css([255, 248, 222], .3 * lk));
+      c.fillStyle = hb; c.fillRect(0, by(HY - 220), VW, 260 * B);
     }
     if (GL > .01) {
       // a long band of rose and gold lying along the horizon
-      const hb = c.createLinearGradient(0, HY - 150, 0, HY + 50); hb.addColorStop(0, 'rgba(255,170,130,0)'); hb.addColorStop(.55, css([255, 176, 132], .22 * GL)); hb.addColorStop(.85, css([255, 222, 160], .3 * GL)); hb.addColorStop(1, 'rgba(255,222,160,0)');
-      c.fillStyle = hb; c.fillRect(0, HY - 150, VW, 200);
+      const B = bgS(), hb = c.createLinearGradient(0, by(HY - 150), 0, by(HY + 50)); hb.addColorStop(0, 'rgba(255,170,130,0)'); hb.addColorStop(.55, css([255, 176, 132], .22 * GL)); hb.addColorStop(.85, css([255, 222, 160], .3 * GL)); hb.addColorStop(1, 'rgba(255,222,160,0)');
+      c.fillStyle = hb; c.fillRect(0, by(HY - 150), VW, 200 * B);
     }
     const glowR = 260 + 200 * gold + 320 * GL, gg = c.createRadialGradient(cxs, sY, 0, cxs, sY, glowR);
     gg.addColorStop(0, css([255, 226, 170], Math.min(.9, .18 + .5 * gold + .1 * dawn + .12 * GL))); gg.addColorStop(.4, css([250, 196, 140], .08 + .22 * gold + .1 * GL)); gg.addColorStop(1, 'rgba(250,190,140,0)');
@@ -562,12 +570,12 @@ const CR = (() => {
     // long thin clouds, lit from beneath after dawn; more of them catch fire as the sun climbs (the last five only then)
     const CLD = [[.16, .9, .1, .05, 0], [.27, .7, .08, .02, 0], [.36, 1.1, .07, .08, 0], [.08, .6, 0, .31, 1], [.21, .5, 0, .62, 1], [.31, .8, 0, .44, 1], [.42, .6, 0, .77, 1], [.13, 1.2, 0, .9, 1]];
     for (const [y, w, a, p, late] of CLD) {
-      const yy = y * VH, xx = VW * (.5 + .45 * Math.sin(p * 9)) - (cam.cx * .02 + (late ? G.t * .004 : 0)) % 300, body = mix(mix([70, 74, 92], [255, 214, 170], gold), [226, 150, 150], GL * .6), al = late ? .2 * GL : a + .08 * gold + .1 * GL;
+      const CS = bgS(), yy = by(y * VH), xx = VW / 2 + (VW * (.45 * Math.sin(p * 9)) - (cam.cx * .02 + (late ? G.t * .004 : 0)) % 300) * CS, body = mix(mix([70, 74, 92], [255, 214, 170], gold), [226, 150, 150], GL * .6), al = late ? .2 * GL : a + .08 * gold + .1 * GL;
       if (al < .005) continue;
-      c.save(); c.translate(xx, yy); c.scale(VW * w / 2, 7 + 3 * GL); const q = c.createRadialGradient(0, 0, 0, 0, 0, 1); q.addColorStop(0, css(body, al)); q.addColorStop(1, css(body, 0)); c.fillStyle = q; c.fillRect(-1, -1, 2, 2); c.restore();
+      c.save(); c.translate(xx, yy); c.scale(VW * w / 2 * CS, (7 + 3 * GL) * CS); const q = c.createRadialGradient(0, 0, 0, 0, 0, 1); q.addColorStop(0, css(body, al)); q.addColorStop(1, css(body, 0)); c.fillStyle = q; c.fillRect(-1, -1, 2, 2); c.restore();
       if (GL > .01) {
         // its underside burning gold
-        c.save(); c.translate(xx, yy + 4 + 2 * GL); c.scale(VW * w / 2 * .8, 2.6); const q2 = c.createRadialGradient(0, 0, 0, 0, 0, 1); q2.addColorStop(0, css([255, 226, 160], (late ? .3 : .22) * GL)); q2.addColorStop(1, 'rgba(255,220,150,0)'); c.fillStyle = q2; c.fillRect(-1, -1, 2, 2); c.restore();
+        c.save(); c.translate(xx, yy + (4 + 2 * GL) * CS); c.scale(VW * w / 2 * .8 * CS, 2.6 * CS); const q2 = c.createRadialGradient(0, 0, 0, 0, 0, 1); q2.addColorStop(0, css([255, 226, 160], (late ? .3 : .22) * GL)); q2.addColorStop(1, 'rgba(255,220,150,0)'); c.fillStyle = q2; c.fillRect(-1, -1, 2, 2); c.restore();
       }
     }
   }
@@ -593,6 +601,7 @@ const CR = (() => {
     const mistC = LOOKF ? mix(mix([170, 176, 186], [224, 228, 232], dawn), [240, 242, 244], gold) : mix(mix([150, 150, 164], [196, 176, 172], dawn), [255, 196, 150], gold);
     // far to near: base line (screen), height of its swells, parallax, how far toward the deep colour
     const L = [[HY - 64, 26, .03, .1], [HY - 44, 30, .06, .2], [HY - 24, 30, .1, .32], [HY - 4, 26, .15, .45], [HY + 18, 22, .22, .58], [HY + 40, 18, .3, .7]];
+    const B = bgS();
     L.forEach(([base, amp, p, k], i) => {
       let col = mix(mix(hz, up, .25), deep, k);
       // the nearer hills take the same burnt orange as the hill, fading into the cool distance
@@ -602,26 +611,26 @@ const CR = (() => {
         ? mix(col, mix(mix([62, 44, 46], [88, 54, 50], dawn), [104, 58, 48], gold), (i - 1) / 5 * .75)
         : mix(col, mix(mix([56, 44, 44], [70, 52, 48], dawn), [84, 56, 46], gold), (i - 1) / 5 * (.45 + .4 * gold));
       c.beginPath(); c.moveTo(0, VH);
-      for (let X = 0; X <= VW + 8; X += 6) c.lineTo(X, rrY(i, X + cam.cx * p * 6, base, amp));
+      for (let X = 0; X <= VW + 8; X += 6) c.lineTo(X, by(rrY(i, VW / 2 + (X - VW / 2) / B + cam.cx * p * 6, base, amp)));
       c.lineTo(VW, VH); c.closePath(); c.fillStyle = css(col); c.fill();
       if (gold > .02 && !LOOKF) {
         // backlight on the ridge's top: brightest toward the sun, fading away from it
         const sxs = sx(CROSS_X + SUN_DX), g = c.createLinearGradient(0, 0, VW, 0);
         for (let q = 0; q <= 8; q++) { const X = q / 8 * VW, k = Math.exp(-Math.pow((X - sxs) / (VW * .45), 2)); g.addColorStop(q / 8, css([255, 150, 74], (.25 + .1 * i) * gold * k)); }
         c.save(); c.strokeStyle = g; c.lineWidth = 2.2 + .5 * i; c.beginPath();
-        for (let X = 0; X <= VW + 8; X += 6) c.lineTo(X, rrY(i, X + cam.cx * p * 6, base, amp) + 1); c.stroke(); c.restore();
+        for (let X = 0; X <= VW + 8; X += 6) c.lineTo(X, by(rrY(i, VW / 2 + (X - VW / 2) / B + cam.cx * p * 6, base, amp)) + 1); c.stroke(); c.restore();
       }
       // mist lying in the valley below this ridge: thickest low down, fading up the next ridge; strongest far off
-      const mb = base + amp * .9, g = c.createLinearGradient(0, mb - 34, 0, mb + 26);
+      const mb = by(base + amp * .9), g = c.createLinearGradient(0, mb - 34 * B, 0, mb + 26 * B);
       const ma = (.62 - .07 * i) * (.75 + .25 * gold) * (LOOKF ? 1.2 : 1);
       g.addColorStop(0, css(mistC, 0)); g.addColorStop(.62, css(mistC, ma)); g.addColorStop(1, css(mistC, ma * .5));
-      c.fillStyle = g; c.fillRect(0, mb - 34, VW, 60);
+      c.fillStyle = g; c.fillRect(0, mb - 34 * B, VW, 60 * B);
     });
   }
   // Kuindzhi: once the sun is up, the picture darkens toward its edges and corners, away from the light
   function kuindzhi(c) {
     const k = LOOKR ? Math.max(gold, .5 * dawn) * (LOOKF ? .45 : 1) : 0; if (k < .02) return;
-    const cxs = sx(CROSS_X + SUN_DX), cy = LOOKF ? HY - 120 : sy(crossH() + CROSS_BY), R = Math.hypot(VW, VH);
+    const cxs = sx(CROSS_X + SUN_DX), cy = LOOKF ? by(HY - 120) : sy(crossH() + CROSS_BY), R = Math.hypot(VW, VH);
     const g = c.createRadialGradient(cxs, cy, R * .12, cxs, cy, R * .9);
     g.addColorStop(0, 'rgba(10,8,14,0)'); g.addColorStop(.45, css([14, 10, 18], .12 * k)); g.addColorStop(1, css([10, 8, 14], .42 * k));
     c.fillStyle = g; c.fillRect(0, 0, VW, VH);
@@ -629,12 +638,13 @@ const CR = (() => {
   function far(c) {
     if (LOOKR) return farR(c);
     const L = [[HY - 6, 10, .06, [92, 94, 110], [214, 190, 170], [120, 118, 132], [246, 216, 172]], [HY + 26, 14, .14, [74, 74, 90], [188, 162, 146], [104, 102, 118], [240, 206, 164]]];
+    const B = bgS();
     L.forEach(([base, amp, p, c0, c1, h0, h1], i) => {
       const col = mix(mix(c0, mix(c0, c1, .4), dawn), c1, gold), hz0 = mix(mix(h0, mix(h0, h1, .4), dawn), h1, gold);
       c.beginPath(); c.moveTo(0, VH);
-      for (let X = 0; X <= VW + 8; X += 8) c.lineTo(X, ridgeY(i, X + cam.cx * p * 6, base, amp));
+      for (let X = 0; X <= VW + 8; X += 8) c.lineTo(X, by(ridgeY(i, VW / 2 + (X - VW / 2) / B + cam.cx * p * 6, base, amp)));
       c.lineTo(VW, VH); c.closePath(); c.fillStyle = css(col); c.fill();
-      const g = c.createLinearGradient(0, base - 18, 0, base + 30); g.addColorStop(0, css(hz0, 0)); g.addColorStop(.5, css(hz0, .45)); g.addColorStop(1, css(hz0, 0)); c.fillStyle = g; c.fillRect(0, base - 18, VW, 48);
+      const g = c.createLinearGradient(0, by(base - 18), 0, by(base + 30)); g.addColorStop(0, css(hz0, 0)); g.addColorStop(.5, css(hz0, .45)); g.addColorStop(1, css(hz0, 0)); c.fillStyle = g; c.fillRect(0, by(base - 18), VW, 48 * B);
     });
   }
   // the land in world units (the transform is set by the caller)
@@ -1627,7 +1637,7 @@ const CR = (() => {
   }
 
   return { on: false, start, update, draw, touch, key, preload, lines: ALL, stop: () => padStop(), _pt: { roll: rollPt, chr: chrPt }, _turning: () => !!Ch.tv,
-    peek: () => ({ ph, t, fly: rollFly ? rollFly.t : -1, x: Math.round(Ch.x), cf: +Ch.cf.toFixed(1), bur: bur ? { st: bur.st, x: Math.round(bur.x), a: +bur.a.toFixed(2), t: bur.t, H: Math.round(bur.H || 0), z: +(bur.z || 0).toFixed(1), r: +(bur.r || 0).toFixed(2), sq: +(bur.sq || 0).toFixed(2) } : null, gold: +gold.toFixed(2), shine: +shine.toFixed(2), leaps: leapsLeft, lp: Ch.lp == null ? -1 : +Ch.lp.toFixed(1), wo: Ch.wo == null ? -1 : Ch.wo, closeK: +closeK.toFixed(2), topK: +topK.toFixed(2), veil: +veil.toFixed(2), tear: tearT, sep: sepT, mem: memS.length, rel: REL.map(m => +m.a.toFixed(2)), kn: Ch.kn == null ? -1 : +Ch.kn.toFixed(1), hb: hymn ? +(hymn.t / BEATT).toFixed(1) : -1 }),
+    peek: () => ({ ph, t, z: +cam.z.toFixed(3), fly: rollFly ? rollFly.t : -1, x: Math.round(Ch.x), cf: +Ch.cf.toFixed(1), bur: bur ? { st: bur.st, x: Math.round(bur.x), a: +bur.a.toFixed(2), t: bur.t, H: Math.round(bur.H || 0), z: +(bur.z || 0).toFixed(1), r: +(bur.r || 0).toFixed(2), sq: +(bur.sq || 0).toFixed(2) } : null, gold: +gold.toFixed(2), shine: +shine.toFixed(2), leaps: leapsLeft, lp: Ch.lp == null ? -1 : +Ch.lp.toFixed(1), wo: Ch.wo == null ? -1 : Ch.wo, closeK: +closeK.toFixed(2), topK: +topK.toFixed(2), veil: +veil.toFixed(2), tear: tearT, sep: sepT, mem: memS.length, rel: REL.map(m => +m.a.toFixed(2)), kn: Ch.kn == null ? -1 : +Ch.kn.toFixed(1), hb: hymn ? +(hymn.t / BEATT).toFixed(1) : -1 }),
     // A SHORT WORDLESS CHOIR FOR THE SHINING ONES (awe study): from their coming until Christian's song begins (index.html's music player, cue 'choir')
     choir: () => ph === 'shine' || (ph === 'leaps' && !blest),
     // the land's outline, for making pictures of the hill (tools)
