@@ -7,12 +7,12 @@ Level 4 (book `{70}` to `{92}`). Since build 507 each room has its own file and 
 | Chat title | Files it owns | Notes |
 |---|---|---|
 | PP House · Outside & passages | `rooms-outside.js` (the door at night, leaving, the passages between rooms and their verses) | `notes/rooms-outside.md` |
-| PP House · Room 1 Picture | `room1.js` | `notes/room1.md` (not started yet) |
+| PP House · Room 1 Picture | `room1.js` | `notes/room1.md` |
 | PP House · Room 2 Parlour | `room2.js` | `notes/room2.md` |
-| PP House · Room 3 Passion & Patience | `room3.js` | `notes/room3.md` (not started yet) |
+| PP House · Room 3 Passion & Patience | `room3.js` | `notes/room3.md` |
 | PP House · Room 4 Fire | `room4.js` | `notes/room4.md` |
-| PP House · Room 5 Palace | `room5.js` | `notes/room5.md` (not started yet) |
-| PP House · Rooms 6–7 Darker | `room6.js`, `room7.js` | `notes/room6-7.md` (not started yet) |
+| PP House · Room 5 Palace | `room5.js` | `notes/room5.md` |
+| PP House · Rooms 6–7 Darker | `room6.js`, `room7.js` | `notes/room6-7.md` |
 
 **`rooms.js` is the shared core:** the house's shell (`HOUSE`, `bakeShell`, `EX`, `mkBake`, `lightPool`), the two visitors (`VIS`, `fig`, `visitor`, `walkFig`, `toneOf`), the view (`setView`), sounds, mood beds (`MOODS`), the house cutaway and plan (`houseCut`, `housePlan`, `PLAN`), the room order and moving between rooms. A room chat changes it only when its room truly needs it, keeps the change small, says so in "Changes to the core" below, and checks that the other rooms still look the same (stills of each room before and after).
 

@@ -258,6 +258,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 ## START HERE (rewritten at build 140, Nov 16 2026)
 
+**After build 650 (Level 4 chat, no game change): notes for the remaining house chats written (`notes/room1.md`, `room3.md`, `room5.md`, `room6-7.md`); their chats wait on the owner's word.**
+
 **Build 624 (art direction chat): `?look=f` smooth top in the wide shots, rocky close up; he walks on the smooth edge (no line across him at the cross). Nothing spent.**
 
 **Build 623 (art direction chat): `?look=f` slight rockiness on the smooth top edge; the rock picture without its softening pass, sharper. Nothing spent.**
