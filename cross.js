@@ -267,7 +267,8 @@ const CR = (() => {
     loadPack('lift', MLIFT).catch(() => {});
     ['wife', 'family', 'goodwill-reach', 'room4-caster'].forEach(n => loadImg(n + '.webp').then(im => { MIM[n] = im; }).catch(() => {}));
     loadImg('cross-burden.webp').then(im => { BURDEN = im; }).catch(() => {});
-    loadImg('cross-burden-turn.webp?v=658').then(im => { BURT = im; }).catch(() => {});
+    // (build 659, owner: "the new burden looks awful - prefer old"): the video's sack is used only with ?burt=1; the burden is its own old picture again
+    if (/[?&]burt=1\b/.test(location.search)) loadImg('cross-burden-turn.webp?v=658').then(im => { BURT = im; }).catch(() => {});
     REL.forEach(m => loadImg(m.img + '.webp').then(im => { if (im) RIM[m.img] = im; }).catch(() => {}));
     // the hill painted by the image model (round 2 of the owner's hill): rounded weathered rock, toned dark grey, its left
     // end faded into the drawn ramp; cropped to the rock at 1.5 px a world unit (at SK_H 1080): world x 2834 to 5654, height 1089 down to 2 below the ground
@@ -1640,9 +1641,11 @@ const CR = (() => {
       if (quietG === 150 && goldTo < 1) { goldTo = 1; }
       if (quietG === 360 && !hymn) hymn = { t: 0, i: 0, b: 0 };
       // Christian speaks only after a breath of quiet once the burden is gone (owner, build 456)
-      if (hymn && hymn.t >= 10 * BEATT && Ch.kn != null) Ch.kup = true;
-      if (hymn && hymn.t >= 12 * BEATT && qRun >= 150 && Ch.kn == null && !said.glad) { said.glad = true; caption(GLAD); }
-      if (said.glad && hymn && hymn.t >= 25 * BEATT && !looked) { caption(LOOKED); looked = true; }
+      // (build 659, owner: "have him say his first line as he kneels, and then the narrator says stood as he stands"):
+      // kneeling, he says "He hath given me rest ..."; once that is said and a breath has passed, the storyteller's
+      // "He stood still to wonder ..." begins and he rises with it
+      if (hymn && hymn.t >= 6 * BEATT && qRun >= 150 && (Ch.kn == null || Ch.kn >= 48) && !said.glad) { said.glad = G.t; caption(GLAD); }
+      if (said.glad && !looked && G.t - said.glad > 150 && !busy() && qRun >= 80) { caption(LOOKED); looked = true; if (Ch.kn != null) Ch.kup = true; }
       if (looked && tearT < 0 && !G.capQ.length) tearT = 0;
       if (hymnDone() && !busy()) { ph = 'shine'; t = 0; shineTo = 1; hymn = null; }
     } else if (ph === 'shine') {
