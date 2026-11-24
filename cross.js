@@ -502,8 +502,8 @@ const CR = (() => {
   function sky(c) {
     // ?look=r: the whole palette after Friedrich's Morning in the Riesengebirge (owner: "Make entire color palette match"):
     // a pale grey-blue upper sky, a lilac middle, peach and pale gold low down; never a deep navy
-    const pre = LOOKF ? [[44, 54, 74], [104, 116, 132], [168, 170, 164]] : LOOKR ? [[40, 44, 60], [92, 90, 110], [150, 134, 140]] : [[26, 30, 44], [60, 66, 84], [118, 112, 120]],
-      dw = LOOKF ? [[92, 120, 160], [186, 200, 206], [236, 232, 204]] : LOOKR ? [[62, 68, 90], [150, 138, 156], [222, 184, 164]] : [[30, 34, 50], [78, 74, 92], [168, 140, 134]],
+    const pre = LOOKF ? [[30, 36, 52], [70, 78, 94], [118, 120, 122]] : LOOKR ? [[40, 44, 60], [92, 90, 110], [150, 134, 140]] : [[26, 30, 44], [60, 66, 84], [118, 112, 120]],
+      dw = LOOKF ? [[56, 70, 100], [128, 136, 148], [186, 176, 158]] : LOOKR ? [[62, 68, 90], [150, 138, 156], [222, 184, 164]] : [[30, 34, 50], [78, 74, 92], [168, 140, 134]],
       gd = LOOKF ? [[112, 156, 204], [212, 226, 226], [252, 246, 208]] : LOOKR ? [[132, 146, 168], [222, 200, 184], [250, 224, 182]] : [[84, 100, 132], [206, 172, 146], [246, 214, 164]];
     // the glory: how far the sun has climbed past the crossing (0..1); everything below grows with it
     const GL = sm(.96, 1.4, sunH), gl = LOOKF ? [[104, 150, 206], [222, 230, 222], [255, 246, 204]] : LOOKR ? [[118, 140, 172], [240, 196, 168], [255, 226, 176]] : [[64, 100, 162], [238, 168, 150], [255, 228, 172]];
@@ -570,7 +570,7 @@ const CR = (() => {
   const RR = [3, 4, 5, 6, 7, 8].map(seed => { const r = rgen(seed * 17 + 3); return [1, 2, 3, 4, 5, 6].map(k => [r() * 6.28, k, .6 + .8 * r()]); });
   const rrY = (i, X, base, amp) => { let y = base; for (const [p, k, a] of RR[i]) y += amp * a / k * Math.sin(X * k * k * .0007 + p); return y; };
   function farR(c) {
-    const pre = LOOKF ? [[104, 116, 132], [168, 170, 164]] : [[92, 90, 110], [150, 134, 140]], dw = LOOKF ? [[186, 200, 206], [236, 232, 204]] : [[150, 138, 156], [222, 184, 164]], gd = LOOKF ? [[212, 226, 226], [252, 246, 208]] : [[222, 200, 184], [250, 224, 182]];
+    const pre = LOOKF ? [[70, 78, 94], [118, 120, 122]] : [[92, 90, 110], [150, 134, 140]], dw = LOOKF ? [[128, 136, 148], [186, 176, 158]] : [[150, 138, 156], [222, 184, 164]], gd = LOOKF ? [[212, 226, 226], [252, 246, 208]] : [[222, 200, 184], [250, 224, 182]];
     const hz = mix(mix(pre[1], dw[1], dawn), gd[1], gold), up = mix(mix(pre[0], dw[0], dawn), gd[0], gold);
     // Friedrich's far ranges: lilac and blue-violet, cool against the warm mist
     const deep = LOOKF ? mix(mix([58, 66, 80], [88, 100, 116], dawn), [104, 118, 134], gold) : mix(mix([62, 62, 84], [92, 86, 112], dawn), [118, 112, 146], gold);
@@ -901,7 +901,7 @@ const CR = (() => {
       const s = SK_H / 1080; c.save(); c.translate(SK_X, 0); c.scale(s, s); c.drawImage(HPAINT, HP_X - 4380, HP_TOP, HP_W, HP_H); c.restore();
       // the painting takes the hill's own colour through the dawn (its lightness kept); the crag of ?look=f keeps its own
       // painted colours and is only darkened before the sun is up
-      if (LOOKF) { c.globalCompositeOperation = 'multiply'; c.fillStyle = css(mix(mix([92, 86, 96], [176, 160, 156], dawn), [255, 248, 240], gold)); c.fillRect(x0, -H_TOP - 700, x1 - x0, H_TOP + 2800); c.globalCompositeOperation = 'source-over'; } else {
+      if (LOOKF) { c.globalCompositeOperation = 'multiply'; c.fillStyle = css(mix(mix([40, 36, 44], [74, 62, 60], dawn), [255, 248, 240], gold)); c.fillRect(x0, -H_TOP - 700, x1 - x0, H_TOP + 2800); c.globalCompositeOperation = 'source-over'; } else {
       c.globalCompositeOperation = 'color'; c.fillStyle = css(hc); c.fillRect(x0, -H_TOP - 700, x1 - x0, H_TOP + 2800); c.globalCompositeOperation = 'source-over'; }
       // the foot sinks into the dark ground (owner: "blend edges and make everything super cohesive")
       if (false) {
