@@ -574,7 +574,7 @@ const CR = (() => {
     // a pale grey-blue upper sky, a lilac middle, peach and pale gold low down; never a deep navy
     const pre = LOOKF ? [[30, 36, 52], [70, 78, 94], [118, 120, 122]] : LOOKR ? [[40, 44, 60], [92, 90, 110], [150, 134, 140]] : [[26, 30, 44], [60, 66, 84], [118, 112, 120]],
       dw = LOOKF ? [[56, 70, 100], [128, 136, 148], [186, 176, 158]] : LOOKR ? [[62, 68, 90], [150, 138, 156], [222, 184, 164]] : [[30, 34, 50], [78, 74, 92], [168, 140, 134]],
-      gd = LOOKF ? [[112, 156, 204], [212, 226, 226], [252, 246, 208]] : LOOKR ? [[132, 146, 168], [222, 200, 184], [250, 224, 182]] : [[84, 100, 132], [206, 172, 146], [246, 214, 164]];
+      gd = LOOKF ? [[136, 144, 164], [226, 198, 176], [252, 220, 170]] : LOOKR ? [[132, 146, 168], [222, 200, 184], [250, 224, 182]] : [[84, 100, 132], [206, 172, 146], [246, 214, 164]];
     // the glory: how far the sun has climbed past the crossing (0..1); everything below grows with it
     const GL = sm(.96, 1.4, sunH), gl = LOOKF ? [[122, 152, 192], [222, 230, 222], [255, 246, 204]] : LOOKR ? [[118, 140, 172], [240, 196, 168], [255, 226, 176]] : [[64, 100, 162], [238, 168, 150], [255, 228, 172]];
     const st = [0, 1, 2].map(i => mix(mix(mix(mix(pre[i], dw[i], dawn), gd[i], gold), gl[i], GL * .85), NIGHTC[i], night));
@@ -597,9 +597,11 @@ const CR = (() => {
     if (LOOKF) {
       // the painting's bright lemon-cream horizon: a wide warm glow round the low sun and a pale band along the horizon
       const lk = Math.max(.35 * dawn, gold), lg = c.createRadialGradient(cxs, sY, 0, cxs, sY, VW * .75);
-      lg.addColorStop(0, css([255, 250, 222], .75 * lk)); lg.addColorStop(.25, css([255, 244, 206], .4 * lk)); lg.addColorStop(.6, css([248, 238, 206], .14 * lk)); lg.addColorStop(1, 'rgba(248,238,206,0)');
+      // (build 653) warm amber as the sun breaks, clearing to lemon-cream as it climbs
+      const wA = mix([255, 222, 168], [255, 250, 222], GL), wB = mix([255, 206, 150], [255, 244, 206], GL), wC = mix([250, 196, 146], [248, 238, 206], GL);
+      lg.addColorStop(0, css(wA, .75 * lk)); lg.addColorStop(.25, css(wB, .4 * lk)); lg.addColorStop(.6, css(wC, .14 * lk)); lg.addColorStop(1, css(wC, 0));
       c.fillStyle = lg; c.fillRect(0, 0, VW, VH);
-      const B = bgS(), hb = c.createLinearGradient(0, by(HY - 220), 0, by(HY + 40)); hb.addColorStop(0, 'rgba(255,246,214,0)'); hb.addColorStop(.7, css([255, 246, 214], .5 * lk)); hb.addColorStop(1, css([255, 248, 222], .3 * lk));
+      const B = bgS(), hb = c.createLinearGradient(0, by(HY - 220), 0, by(HY + 40)); hb.addColorStop(0, css(wB, 0)); hb.addColorStop(.7, css(mix([255, 214, 160], [255, 246, 214], GL), .5 * lk)); hb.addColorStop(1, css(mix([255, 218, 166], [255, 248, 222], GL), .3 * lk));
       c.fillStyle = hb; c.fillRect(0, by(HY - 220), VW, 260 * B);
     }
     if (GL > .01) {
@@ -652,11 +654,11 @@ const CR = (() => {
   const RR = [3, 4, 5, 6, 7, 8].map(seed => { const r = rgen(seed * 17 + 3); return [1, 2, 3, 4, 5, 6].map(k => [r() * 6.28, k, .6 + .8 * r()]); });
   const rrY = (i, X, base, amp) => { let y = base; for (const [p, k, a] of RR[i]) y += amp * a / k * Math.sin(X * k * k * .0007 + p); return y; };
   function farR(c) {
-    const pre = LOOKF ? [[70, 78, 94], [118, 120, 122]] : [[92, 90, 110], [150, 134, 140]], dw = LOOKF ? [[128, 136, 148], [186, 176, 158]] : [[150, 138, 156], [222, 184, 164]], gd = LOOKF ? [[212, 226, 226], [252, 246, 208]] : [[222, 200, 184], [250, 224, 182]];
+    const pre = LOOKF ? [[70, 78, 94], [118, 120, 122]] : [[92, 90, 110], [150, 134, 140]], dw = LOOKF ? [[128, 136, 148], [186, 176, 158]] : [[150, 138, 156], [222, 184, 164]], GL = sm(.96, 1.4, sunH), gd = LOOKF ? [mix([226, 198, 176], [212, 226, 226], GL), mix([252, 220, 170], [252, 246, 208], GL)] : [[222, 200, 184], [250, 224, 182]];
     const hz = mix(mix(pre[1], dw[1], dawn), gd[1], gold), up = mix(mix(pre[0], dw[0], dawn), gd[0], gold);
     // Friedrich's far ranges: lilac and blue-violet, cool against the warm mist
-    const deep = LOOKF ? mix(mix([58, 66, 80], [88, 100, 116], dawn), [104, 118, 134], gold) : mix(mix([62, 62, 84], [92, 86, 112], dawn), [118, 112, 146], gold);
-    const mistC = LOOKF ? mix(mix(mix([170, 176, 186], [86, 98, 130], night), [224, 228, 232], dawn), [228, 234, 246], gold) : mix(mix([150, 150, 164], [196, 176, 172], dawn), [255, 196, 150], gold);
+    const deep = LOOKF ? mix(mix([58, 66, 80], [88, 100, 116], dawn), mix([120, 108, 134], [104, 118, 134], GL), gold) : mix(mix([62, 62, 84], [92, 86, 112], dawn), [118, 112, 146], gold);
+    const mistC = LOOKF ? mix(mix(mix([170, 176, 186], [86, 98, 130], night), [224, 228, 232], dawn), mix([255, 210, 168], [228, 234, 246], GL), gold) : mix(mix([150, 150, 164], [196, 176, 172], dawn), [255, 196, 150], gold);
     // far to near: base line (screen), height of its swells, parallax, how far toward the deep colour
     const L = [[HY - 64, 26, .03, .1], [HY - 44, 30, .06, .2], [HY - 24, 30, .1, .32], [HY - 4, 26, .15, .45], [HY + 18, 22, .22, .58], [HY + 40, 18, .3, .7]];
     const B = bgS();
@@ -667,7 +669,7 @@ const CR = (() => {
       // the nearer ridges stand dark and warm against the light (umber, not lit orange)
       if (i >= 2) col = LOOKF
         // the nearer hills: a hint of dark rust-red, kin to the hill, darker nearer
-        ? (false ? mix(col, mix(mix([52, 58, 58], [76, 86, 82], dawn), [86, 98, 90], gold), (i - 1) / 5 * .75) : mix(col, mix(mix(mix([62, 44, 46], [88, 54, 50], dawn), [104, 58, 48], gold), [66, 72, 104], gold * (i < 5 ? .85 : .8)), (i - 1) / 5 * .75))
+        ? (false ? mix(col, mix(mix([52, 58, 58], [76, 86, 82], dawn), [86, 98, 90], gold), (i - 1) / 5 * .75) : mix(col, mix(mix(mix([62, 44, 46], [88, 54, 50], dawn), [96, 60, 56], gold), [66, 72, 104], gold * GL * (i < 5 ? .85 : .8)), (i - 1) / 5 * .75))
         : mix(col, mix(mix([56, 44, 44], [70, 52, 48], dawn), [84, 56, 46], gold), (i - 1) / 5 * (.45 + .4 * gold));
       // (build 629) hills at night as Kuindzhi, Friedrich and Hasui paint them (owner: "the hills at night need to look more
       // like hills at night"): cool blue, each nearer range a step darker down to near black, no warm colour; the far ones
@@ -688,10 +690,10 @@ const CR = (() => {
       // at night the far ridges' tops catch a breath of starlight (a hair-thin cool line, fainter nearer)
       if (false && night > .05 && i < 4) { c.save(); c.strokeStyle = css([120, 134, 170], (.16 - .035 * i) * night); c.lineWidth = 1; c.beginPath();
         for (let X = 0; X <= VW + 8; X += 6) c.lineTo(X, by(rrY(i, VW / 2 + (X - VW / 2) / B + cam.cx * PAN(p) * 6, base, amp)) + .5); c.stroke(); c.restore(); }
-      if (gold > .02 && !LOOKF) {
+      if (gold > .02) {
         // backlight on the ridge's top: brightest toward the sun, fading away from it
         const sxs = sx(CROSS_X + SUN_DX), g = c.createLinearGradient(0, 0, VW, 0);
-        for (let q = 0; q <= 8; q++) { const X = q / 8 * VW, k = Math.exp(-Math.pow((X - sxs) / (VW * .45), 2)); g.addColorStop(q / 8, css([255, 150, 74], (.25 + .1 * i) * gold * k)); }
+        for (let q = 0; q <= 8; q++) { const X = q / 8 * VW, k = Math.exp(-Math.pow((X - sxs) / (VW * .45), 2)); g.addColorStop(q / 8, css([255, 150, 74], (.25 + .1 * i) * gold * k * (LOOKF ? .8 * (1 - .75 * GL) : 1))); }
         c.save(); c.strokeStyle = g; c.lineWidth = 2.2 + .5 * i; c.beginPath();
         for (let X = 0; X <= VW + 8; X += 6) c.lineTo(X, by(rrY(i, VW / 2 + (X - VW / 2) / B + cam.cx * PAN(p) * 6, base, amp)) + 1); c.stroke(); c.restore();
       }
