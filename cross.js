@@ -1045,23 +1045,39 @@ const CR = (() => {
   const WALL_H = 92, WALL_X0 = Math.min(-600, START - 900);
   let WALLC = null, WALLP = null;
   if (/[?&]look=f\b/.test(location.search)) loadImg('wall.webp').then(im => { if (im) { WALLP = im; WALLC = null; } }).catch(() => {});
+  // (build 633, owner: "wall is getting better but i think it should be dark with a moonlit edge - think rocks piled on top
+  // of each other"): a dry-stone wall in silhouette: rough rounded rocks of every size piled one on another, big ones low,
+  // the wall nearly black, each rock read only by a thin cool rim of moonlight along its upper edge, strongest along the
+  // top of the wall and fading toward its foot; at sunrise the same rocks warm
   function bakeWall(night) {
-    const S = 2, L = WALL_END - WALL_X0, W = (L + 10) * S, H = (WALL_H + 20) * S, cv = mk(W, H), q = cv.getContext('2d'), r = rgen(41);
-    q.scale(S, S); const G = WALL_H + 16, Y0 = 112, k = WALL_H / (400 - Y0), pw = WALLP.width * k;
-    // the worn coping: a profile along the top
-    q.beginPath(); q.moveTo(0, G); let x = 0; while (x < L) { const w = 13 + r() * 30, d = r() < .2 ? 4 + r() * 4 : r() * 2.2; q.lineTo(x, G - WALL_H + d); q.lineTo(Math.min(L, x + w), G - WALL_H + d); x += w; }
-    q.lineTo(L, G); q.closePath(); q.save(); q.clip();
-    for (let n = 0, px = 0; px < L; n++, px += pw) { q.save(); if (n % 2) { q.translate(px + pw, 0); q.scale(-1, 1); } else q.translate(px, 0); q.drawImage(WALLP, 0, Y0, WALLP.width, 400 - Y0, -.3, G - WALL_H, pw + .6, WALL_H); q.restore(); }
-    // dark at night (a faint cool light from the sky on its top), warm at sunrise
-    q.globalCompositeOperation = 'multiply';
-    const g = q.createLinearGradient(0, G - WALL_H, 0, G);
-    if (night) { g.addColorStop(0, 'rgb(46,58,64)'); g.addColorStop(.3, 'rgb(26,32,38)'); g.addColorStop(1, 'rgb(12,14,17)'); }
-    else { g.addColorStop(0, 'rgb(236,206,170)'); g.addColorStop(.35, 'rgb(176,146,122)'); g.addColorStop(1, 'rgb(96,76,64)'); }
-    q.fillStyle = g; q.fillRect(0, 0, L + 10, G); q.restore();
+    const S = 2, L = WALL_END - WALL_X0, W = (L + 10) * S, H = (WALL_H + 30) * S, cv = mk(W, H), q = cv.getContext('2d'), r = rgen(633);
+    q.scale(S, S); const G = WALL_H + 26;
+    const body = night ? [13, 15, 20] : [70, 52, 42], rimC = night ? [150, 168, 196] : [246, 200, 150];
+    const rock = (cx, cy, w, h) => { const n = 7 + Math.floor(r() * 4), P = [];
+      for (let k = 0; k < n; k++) { const a = k / n * 6.2832 + r() * .45, rr = .66 + r() * .42; P.push([cx + Math.cos(a) * w / 2 * rr, cy + Math.sin(a) * h / 2 * rr * (Math.sin(a) > 0 ? .9 : 1)]); }
+      return P; };
+    const path = P => { q.beginPath(); const m = (a, b) => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]; let s0 = m(P[P.length - 1], P[0]); q.moveTo(...s0);
+      for (let k = 0; k < P.length; k++) { const e = m(P[k], P[(k + 1) % P.length]); q.quadraticCurveTo(P[k][0], P[k][1], e[0], e[1]); } q.closePath(); };
+    // piled from the ground up: each course's rocks sit in the hollows of the one below, smaller as it rises
+    const rocks = []; let y = G;
+    while (y > G - WALL_H + 4) { const hgt = (G - y) / WALL_H, ch = (19 - 7 * hgt) * (.8 + r() * .5);
+      for (let x = -r() * 18; x < L + 10;) { const w = (38 - 14 * hgt) * (.55 + r() * .95), h = ch * (.75 + r() * .5);
+        rocks.push([x + w / 2, y - h / 2 + (r() - .5) * 3, w, h, hgt]); x += w * (.82 + r() * .12); }
+      y -= ch * .78; }
+    // the top: a line of rounded cope rocks set close, irregular
+    const tops = []; for (let x = 0; x < L;) { const w = 14 + r() * 22, h = 9 + r() * 8; tops.push([x + w / 2, G - WALL_H - h * .2 + (r() - .5) * 2.5, w, h, 1]); x += w * .86; }
+    const all = rocks.concat(tops).map(k => [...k, rock(k[0], k[1], k[2], k[3])]);
+    // the body: every rock filled dark (a breath of variation), drawn low to high so upper rocks sit on lower
+    for (const [cx, cy, w, h, hg, P] of all) { path(P); const v = (r() - .5) * 6; q.fillStyle = css(body.map(c => Math.max(0, c + v))); q.fill(); }
+    // the moonlit rims: the upper edge of each rock, a hair wide, brighter toward the top; the top line strongest
+    for (const [cx, cy, w, h, hg, P] of all) {
+      q.save(); path(P); q.clip();
+      const top = hg >= 1, a = (top ? .42 : .04 + .14 * Math.pow(hg, 1.6)) * (night ? 1 : .8), g = q.createLinearGradient(0, cy - h / 2, 0, cy - h / 2 + (top ? 4 : 3));
+      g.addColorStop(0, css(rimC, a)); g.addColorStop(1, css(rimC, 0)); q.fillStyle = g; q.fillRect(cx - w, cy - h, w * 2, h); q.restore();
+    }
     return { cv, S, G };
   }
   function wall(c) {
-    if (!WALLP) return;
     if (!WALLC) WALLC = [bakeWall(true), bakeWall(false)];
     const k = Math.max(gold, .35 * dawn);
     for (const [b, a] of [[WALLC[0], 1], [WALLC[1], k]]) { if (a < .01) continue; c.globalAlpha = a; c.drawImage(b.cv, WALL_X0, -b.G, b.cv.width / b.S, b.cv.height / b.S); }

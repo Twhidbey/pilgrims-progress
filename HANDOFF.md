@@ -1128,6 +1128,7 @@ The owner asked what follows the Slough of Despond, what that level should hold,
 
 **Build 601 (Level 5 chat):** the painted hill made again by Google without the skull, same outline (about 25 cents, the owner's yes). Running total: add about 25 cents.
 
+- Build 633 (art direction chat): `?look=f` wall now a dark dry-stone wall of piled rocks with a moonlit edge on each rock, strongest along the top. Nothing spent.
 - Build 632 (art direction chat): `?look=f` night a greyed blue between 630's teal and 631's blue; no clouds, an open starry sky. Nothing spent.
 - Build 631 (art direction chat): `?look=f` night sky bluer with thin lit cloud streaks and soft cloud masses (Hasui, van der Neer); the drawn track and the orange hairline on the hill gone (the rocks in front of him are now a copy of the finished hill). Nothing spent.
 - Build 630 (art direction chat): `?look=f` night after the owner's five chosen night paintings (dark silhouette land, teal sky glowing at the horizon), Level 1's wall painting, three classic constellations (wife's reaching hand, the Slough oak, the lightning on the burning hill). Nothing spent.
