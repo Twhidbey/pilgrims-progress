@@ -576,7 +576,7 @@ const CR = (() => {
       dw = LOOKF ? [[56, 70, 100], [128, 136, 148], [186, 176, 158]] : LOOKR ? [[62, 68, 90], [150, 138, 156], [222, 184, 164]] : [[30, 34, 50], [78, 74, 92], [168, 140, 134]],
       gd = LOOKF ? [[112, 156, 204], [212, 226, 226], [252, 246, 208]] : LOOKR ? [[132, 146, 168], [222, 200, 184], [250, 224, 182]] : [[84, 100, 132], [206, 172, 146], [246, 214, 164]];
     // the glory: how far the sun has climbed past the crossing (0..1); everything below grows with it
-    const GL = sm(.96, 1.4, sunH), gl = LOOKF ? [[104, 150, 206], [222, 230, 222], [255, 246, 204]] : LOOKR ? [[118, 140, 172], [240, 196, 168], [255, 226, 176]] : [[64, 100, 162], [238, 168, 150], [255, 228, 172]];
+    const GL = sm(.96, 1.4, sunH), gl = LOOKF ? [[122, 152, 192], [222, 230, 222], [255, 246, 204]] : LOOKR ? [[118, 140, 172], [240, 196, 168], [255, 226, 176]] : [[64, 100, 162], [238, 168, 150], [255, 228, 172]];
     const st = [0, 1, 2].map(i => mix(mix(mix(mix(pre[i], dw[i], dawn), gd[i], gold), gl[i], GL * .85), NIGHTC[i], night));
     const g = c.createLinearGradient(0, Math.min(0, by(0)), 0, by(HY + 40)); g.addColorStop(0, css(st[0])); g.addColorStop(.6, css(st[1])); g.addColorStop(1, css(st[2]));
     c.fillStyle = g; c.fillRect(0, 0, VW, VH);
@@ -656,7 +656,7 @@ const CR = (() => {
     const hz = mix(mix(pre[1], dw[1], dawn), gd[1], gold), up = mix(mix(pre[0], dw[0], dawn), gd[0], gold);
     // Friedrich's far ranges: lilac and blue-violet, cool against the warm mist
     const deep = LOOKF ? mix(mix([58, 66, 80], [88, 100, 116], dawn), [104, 118, 134], gold) : mix(mix([62, 62, 84], [92, 86, 112], dawn), [118, 112, 146], gold);
-    const mistC = LOOKF ? mix(mix(mix([170, 176, 186], [86, 98, 130], night), [224, 228, 232], dawn), [240, 242, 244], gold) : mix(mix([150, 150, 164], [196, 176, 172], dawn), [255, 196, 150], gold);
+    const mistC = LOOKF ? mix(mix(mix([170, 176, 186], [86, 98, 130], night), [224, 228, 232], dawn), [228, 234, 246], gold) : mix(mix([150, 150, 164], [196, 176, 172], dawn), [255, 196, 150], gold);
     // far to near: base line (screen), height of its swells, parallax, how far toward the deep colour
     const L = [[HY - 64, 26, .03, .1], [HY - 44, 30, .06, .2], [HY - 24, 30, .1, .32], [HY - 4, 26, .15, .45], [HY + 18, 22, .22, .58], [HY + 40, 18, .3, .7]];
     const B = bgS();
@@ -667,7 +667,7 @@ const CR = (() => {
       // the nearer ridges stand dark and warm against the light (umber, not lit orange)
       if (i >= 2) col = LOOKF
         // the nearer hills: a hint of dark rust-red, kin to the hill, darker nearer
-        ? (false ? mix(col, mix(mix([52, 58, 58], [76, 86, 82], dawn), [86, 98, 90], gold), (i - 1) / 5 * .75) : mix(col, mix(mix([62, 44, 46], [88, 54, 50], dawn), [104, 58, 48], gold), (i - 1) / 5 * .75))
+        ? (false ? mix(col, mix(mix([52, 58, 58], [76, 86, 82], dawn), [86, 98, 90], gold), (i - 1) / 5 * .75) : mix(col, mix(mix(mix([62, 44, 46], [88, 54, 50], dawn), [104, 58, 48], gold), [66, 72, 104], gold * (i < 5 ? .85 : .8)), (i - 1) / 5 * .75))
         : mix(col, mix(mix([56, 44, 44], [70, 52, 48], dawn), [84, 56, 46], gold), (i - 1) / 5 * (.45 + .4 * gold));
       // (build 629) hills at night as Kuindzhi, Friedrich and Hasui paint them (owner: "the hills at night need to look more
       // like hills at night"): cool blue, each nearer range a step darker down to near black, no warm colour; the far ones
@@ -700,6 +700,9 @@ const CR = (() => {
       const ma = (.62 - .07 * i) * (.75 + .25 * gold) * (LOOKF ? 1.2 : 1) * (1 - .9 * night);
       g.addColorStop(0, css(mistC, 0)); g.addColorStop(.62, css(mistC, ma)); g.addColorStop(1, css(mistC, ma * .5));
       c.fillStyle = g; c.fillRect(0, mb - 34 * B, VW, 60 * B);
+      // (build 652) the mist takes the light's colour near the sun (lemon-peach), and stays cool away from it
+      if (LOOKF && gold > .02) { const wa = ma * gold * .8; c.save(); c.beginPath(); c.rect(0, mb - 34 * B, VW, 60 * B); c.clip(); c.translate(sx(CROSS_X + SUN_DX), mb + 4 * B); c.scale(VW * .55, 34 * B);
+        const wg = c.createRadialGradient(0, 0, 0, 0, 0, 1); wg.addColorStop(0, css([255, 232, 180], wa)); wg.addColorStop(.5, css([255, 226, 176], wa * .5)); wg.addColorStop(1, 'rgba(255,226,176,0)'); c.fillStyle = wg; c.fillRect(-1, -1, 2, 2); c.restore(); }
       if (i === 1 && night > .01) stormBolts(c);
     });
   }

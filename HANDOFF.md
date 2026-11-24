@@ -3,6 +3,8 @@
 The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build step; until build 118 it was called `story-lab.html`: read that name below as `index.html`). `style-lab.html` is the art-style test page. `CLAUDE.md` maps the code and records the owner's decisions. Work on **`main`** and push after every change: pushing IS publishing (GitHub Pages, https://twhidbey.github.io/pilgrims-progress/). Bump the build stamp in both pages on every push and tell the owner when it is live (a phone may need `?v=N` on the link). Keep this file and `CLAUDE.md` updated. Public repo: no personal details.
 
 
+**Build 652 (Level 5 ideas chat):** Level 5's sunrise cut to three colour families (blue-violet distance incl. the far plain, lemon-gold light with mist warmed near the sun, dark warm hill); upper blue eased. See CLAUDE.md. Nothing spent.
+
 **Build 651 (Level 5 ideas chat):** Level 5's sun rises behind the cross again (`SUN_DX` 0; `?sundx=-430` for the old place); `?level=5&at=cross` no longer sticks. Nothing spent.
 
 **Build 650 (Level 5 ideas chat):** Level 5's colour: Christian dark until sunrise, a rose and lemon band on the horizon before the sun, the hill darker and its rust later and quieter, the dotted line on the hill's border gone (`tintNow`, `sky`, `landMul`, `edgeC` in `cross.js`). Nothing spent.
