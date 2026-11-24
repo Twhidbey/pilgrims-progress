@@ -1128,6 +1128,7 @@ The owner asked what follows the Slough of Despond, what that level should hold,
 
 **Build 601 (Level 5 chat):** the painted hill made again by Google without the skull, same outline (about 25 cents, the owner's yes). Running total: add about 25 cents.
 
+- Build 635 (art direction chat): `?look=f` the hill's top edge smoothed (`?edge=soft`, default); `hill-crag-r.webp` extends its rock 60 px above the skyline so filled notches show rock. `?edge=raw` = 634. Nothing spent.
 - Build 634 (art direction chat): `?look=f` night hills no longer greenish: far ridges in the sky's greyed blue, nearest almost black with a breath of warm umber. Nothing spent.
 - Build 633 (art direction chat): `?look=f` wall now a dark dry-stone wall of piled rocks with a moonlit edge on each rock, strongest along the top. Nothing spent.
 - Build 632 (art direction chat): `?look=f` night a greyed blue between 630's teal and 631's blue; no clouds, an open starry sky. Nothing spent.
