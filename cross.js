@@ -369,11 +369,15 @@ const CR = (() => {
   }
   // the book: "Up this way did burdened Christian run, but not without great difficulty" ({92}): up the highway and the
   // slope he runs, in his plain run at its video's own pace; after the climb he walks the last steps to the cross
+  const bend = () => LF ? sm(SLOPE0 + 250, WALK_X - 60, Ch.x) : 0;
   function run(go) {
     if (!RUNP.ready) return walk(go ? MAXV * .9 : 0);
     if (go) {
-      const st = RUNP_META.vpx * CHR_K * .4; Ch.x += st; Ch.lastV = st; Ch.ranim += .4; Ch.run = Math.min(1, Ch.run + .14); Ch.sd = null;
-      if (Math.floor(Ch.ranim) % 14 === 0 && Math.floor(Ch.ranim - .4) % 14 !== 0 && audio()) groundStep(typeof STEP_RUN === 'number' ? STEP_RUN : 1.2, 1.3);
+      // THE BURDEN GROWS HEAVIER UP THE HILL (owner, build 646: "let's do A and B"): he slows as the hill steepens (his
+      // pictures turn slower with him, so his feet do not slide) and bends lower under it (`bend()`, in the drawing);
+      // the child has to keep holding. Ours: the book says only that he ran "not without great difficulty" ({92}).
+      const rk = .4 * (1 - .42 * bend()), st = RUNP_META.vpx * CHR_K * rk; Ch.x += st; Ch.lastV = st; Ch.ranim += rk; Ch.run = Math.min(1, Ch.run + .14); Ch.sd = null;
+      if (Math.floor(Ch.ranim) % 14 === 0 && Math.floor(Ch.ranim - rk) % 14 !== 0 && audio()) groundStep(typeof STEP_RUN === 'number' ? STEP_RUN : 1.2, 1.3);
       return st;
     }
     Ch.lastV = 0; Ch.run = Math.max(0, Ch.run - .14); if (Ch.sd == null) Ch.sd = QUIET[0];
@@ -461,7 +465,7 @@ const CR = (() => {
       }); }
       // no mark drawn on his forehead (owner: "i don't like seal on his forehead"); the book's mark is told, not shown
     } else if (Ch.run > 0 && RUNP.ready) {
-      TILT = slopeTilt(x) * Ch.run;
+      TILT = (slopeTilt(x) + .2 * bend()) * Ch.run;
       if (Ch.run < 1 && STD.length) figure(c, STD[atTime(STD_META, breathT(Ch.sd || 0))], STD_META, x, h, 1, 1 - Ch.run, tint, rim);
       figure(c, RUNP[((Math.floor(Ch.ranim) % RUNP.length) + RUNP.length) % RUNP.length], RUNP_META, x, h, 1, Ch.run < 1 ? Ch.run : 1, tint, rim);
       TILT = 0;
@@ -1328,7 +1332,7 @@ const CR = (() => {
 
   // ---------- the story ----------
   function reset0() {
-    blest = 0; tumbleT = 0; sepT = -1; memT = -1; memS = []; memUntil = 0; memQ = 0; REL.forEach(m => { m.a = 0; m.said = false; m.cv = m.front = null; }); relGW = false; FIGS.forEach(f => { f.a = 0; f.said = false; f.i = 0; }); CONST.forEach(k => { k.t = -1; k.said = false; k.f0 = null; k.nv = -1; }); night = NIGHT_ON ? 1 : 0; tearT = -1; looked = false; Object.assign(Ch, { x: START, anim: 12, sd: QUIET[0], cf: -1, hop: 0, hops: 0, lastV: 0, fade: 0, hv: 0, face: 1, tv: null, run: 0, ranim: 0, cc: 0, lp: null, wo: null, wa: 0, kn: null, kup: false });
+    blest = 0; tumbleT = 0; sepT = -1; memT = -1; memS = []; memUntil = 0; memQ = 0; REL.forEach(m => { m.a = 0; m.said = false; m.cv = m.front = null; }); relGW = false; gwTop = false; FIGS.forEach(f => { f.a = 0; f.said = false; f.i = 0; }); CONST.forEach(k => { k.t = -1; k.said = false; k.f0 = null; k.nv = -1; }); night = NIGHT_ON ? 1 : 0; tearT = -1; looked = false; Object.assign(Ch, { x: START, anim: 12, sd: QUIET[0], cf: -1, hop: 0, hops: 0, lastV: 0, fade: 0, hv: 0, face: 1, tv: null, run: 0, ranim: 0, cc: 0, lp: null, wo: null, wa: 0, kn: null, kup: false });
     sunT = 0; sunGo = false; sunH = 0;
     bur = null; dawn = gold = goldTo = sun = robe = robeTo = mark = markTo = rollShow = rollGone = shine = shineTo = gone = goneTo = 0; wideK = 1; wideTo = 1;
     said = {}; hymn = null; silenceT = 0; tombT = 0; leapsLeft = 3; endT = 0; quietPad = 0; t = 0; rollFly = rollAt = null; closeK = topK = topTo = veil = 0; climb = null;
@@ -1345,7 +1349,7 @@ const CR = (() => {
     wideK = wideTo = 0;
     const at = new URLSearchParams(location.search).get('at');
     if (typeof dropPlace === 'function') dropPlace();
-    if (at === 'cross') { ph = 'walk'; Ch.x = STOP_X - 260; Ch.sd = null; wideK = wideTo = 0; said.open = said.ascend = said.cut = true; dawn = .6; memT = 2000; memS = MEMS.map(() => 0); REL.forEach(m => { m.said = true; }); relGW = true; FIGS.forEach(f => { f.said = true; }); }
+    if (at === 'cross') { ph = 'walk'; Ch.x = STOP_X - 260; Ch.sd = null; wideK = wideTo = 0; said.open = said.ascend = said.cut = true; dawn = .6; memT = 2000; memS = MEMS.map(() => 0); REL.forEach(m => { m.said = true; }); relGW = true; gwTop = true; FIGS.forEach(f => { f.said = true; }); }
     camTick(true);
     if (audio()) { AC.resume(); if (rainG) rainG.gain.setTargetAtTime(0, AC.currentTime, .8); padStart(); }
     G.state = 'wait';
@@ -1437,7 +1441,7 @@ const CR = (() => {
       // Good-will's promise last, just before he comes to the cross
       if (!REL_ON && !NIGHT_ON && memT < 0 && Ch.x > SLOPE0 && said.open && !busy()) memT = 0;
       // after the last memory, about three seconds of quiet before the storyteller speaks (owner, build 452)
-      const memDone = NIGHT_ON ? FIGS.every(f => f.said) && memQ >= 150 : REL_ON ? REL.every(m => m.said) && relGW && memQ >= 150 : memT >= memLast() + 300 && G.t >= memUntil + 180;
+      const memDone = NIGHT_ON ? FIGS.every(f => f.said) && (gwTop || !HILLFIGS_OFF) && memQ >= 150 : REL_ON ? REL.every(m => m.said) && relGW && memQ >= 150 : memT >= memLast() + 300 && G.t >= memUntil + 180;
       if (!said.ascend && memDone && Ch.x > CREST0 - 900 && !busy()) { said.ascend = true; caption(ASCEND); sepT = 0; }
       // "and a little below, a sepulchre": the camera draws back and down to show it, then comes back up to him (owner,
       // build 452); he stands still while it looks
@@ -1654,7 +1658,7 @@ const CR = (() => {
   // with the memories is better"): his wife at the door, Help, Evangelist's God-speed; and last, near the top, with no
   // picture, Good-will's promise, heard as it comes true. All existing recordings (MEMS), nothing new to record.
   REL.forEach((m, i) => { m.a = 0; m.said = false; m.voice = MEMS[[2, 3, 4][i]]; });
-  const REL_GW_X = 4000; let relGW = false;
+  const REL_GW_X = 4000; let relGW = false, gwTop = false;
   function relBake(m) {
     const im = RIM[m.img]; if (!im) return false;
     const k = m.k, Wu = im.width * k, Z = REL_Z, lift = m.lift || (() => 0);
@@ -1935,7 +1939,12 @@ const CR = (() => {
     if (zk > .001) { const W = ev.w * VW, Hh = ev.h * VH, X0 = VW * ev.cx, Y0 = VH * ev.cy, Cx = X0 + (EVZ.c[0] - .5) * W, Cy = Y0 + (EVZ.c[1] - .5) * Hh, s1 = 1 + zk * (EVZ.z - 1);
       c.translate(zk * (VW * EVZ.t[0] - Cx * EVZ.z), zk * (VH * EVZ.t[1] - Cy * EVZ.z)); c.scale(s1, s1);
       for (const s of STARS2) { const a = zk * a0 * s.b * (.7 + .3 * Math.sin(G.t / s.f + s.p)); c.fillStyle = `rgba(222,228,248,${a})`; c.fillRect(s.x * VW - s.s / 2, s.y * VH - s.s / 2, s.s, s.s); } }
-    for (const s of STARS) { const x = skyX(s.x), y = s.y * VH, a = fb * a0 * s.b * (.75 + .25 * Math.sin(G.t / s.f + s.p)); c.fillStyle = `rgba(226,230,244,${a})`;
+    // THE STARS GO OUT ONE BY ONE AS HE CLIMBS (owner, build 646): each has its own moment in the fading night
+    // (`s.o`: the small faint ones first, the great ones last) and goes out there over a breath, at its full
+    // brightness until then, so the sky empties star by star instead of dimming all at once
+    for (const s of STARS) { if (s.o == null) { const q = Math.min(1, s.s / 2.6) * .6 + (s.p / 6.2832) * .4; s.o = .9 - .78 * q; }
+      const out = smooth(s.o - .035, s.o + .035, night); if (out < .01) continue;
+      const x = skyX(s.x), y = s.y * VH, a = fb * (1 - gold) * out * s.b * (.75 + .25 * Math.sin(G.t / s.f + s.p)); c.fillStyle = `rgba(226,230,244,${a})`;
       if (s.s > 1.4) { c.beginPath(); c.arc(x, y, s.s * .6, 0, 6.2832); c.fill(); c.fillStyle = `rgba(200,210,240,${a * .18})`; c.beginPath(); c.arc(x, y, s.s * 2, 0, 6.2832); c.fill(); }
       else c.fillRect(x - s.s / 2, y - s.s / 2, s.s, s.s); }
     for (const k of CONST) {
@@ -2012,6 +2021,9 @@ const CR = (() => {
   ];
   FIGS.forEach(f => { f.a = 0; f.said = false; f.dk = null; f.i = 0; });
   function figTick() {
+    // the one voice on the climb (build 646): Good-will's promise, heard near the top as the last stars go out, just
+    // before it comes true; never over another voice
+    if (NIGHT_ON && HILLFIGS_OFF && !gwTop && ph === 'walk' && Ch.x >= WALK_X - 380 && said.open && !busy() && memQ >= 60) { gwTop = true; memVoice(MEMS[5]); }
     if (!NIGHT_ON) return;
     CONST.forEach((k, i) => { const prev = CONST[i - 1]; if (k.t < 0 && Ch.x >= k.at && ph === 'walk' && night > .3 && (!prev || (prev.f0 != null && prev.t >= prev.f0))) k.t = 0; else if (k.t >= 0) k.t++;
       // it stays until its line has been heard, a breath more, then fades as the next comes
