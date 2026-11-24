@@ -244,6 +244,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 ## START HERE (rewritten at build 140, Nov 16 2026)
 
+**Build 620 (art direction chat): `?look=f` the rock one dark rust with build 618's contrast, the edge smooth by default, a hint of red in the nearer hills. Nothing spent.**
+
 **Build 619 (art direction chat): `?look=f` the rock regraded to Friedrich's crag (even, less detail), its top cropped clean in code, three edges on links (`&edge=clean|smooth|line`). Nothing spent. Waiting: the owner's pick of edge.**
 
 **Build 618 (art direction chat): `?look=f` back to build 616's painting; his walking line one smooth curve, passing behind two painted rocks drawn in front of him. Nothing spent. Waiting: the owner's choice after the Friedrich comparison and their picture of the old crag, smoothed.**
