@@ -96,7 +96,17 @@ const CR = (() => {
   const PIN_W = x => x >= pinW(PIN0) ? 1 : 0;
   function pinDraw(x) { const w = PIN_W(x); if (w <= 0) return gh0(x); return lerp(gh0(x), ptop(x), w); }
   function crossH() { if (PIN_ON) { const t = ptop(CROSS_X); if (t > 0) return t; } return gh(CROSS_X); }
-  function gh(x) { if (PIN_ON) { const w = PIN_W(x); if (w > 0) return lerp(gh0(x), pinAt(PIN_S, x), w); } return gh0(x); }
+  // he walks the painted track (owner, build 612: "the figure now needs to walk the path"): traced by hand on build 611's
+  // painting (world [x, h]), smoothed; it winds up across the face below the hill's top edge, and joins the top on the
+  // crown (PATH_J), where the cross stands
+  const PATH_P = [[1339,19],[1650,105],[1889,201],[2128,308],[2248,397],[2367,481],[2451,540],[2535,607],[2654,653],[2774,715],[2917,808],[3013,875],[3085,918],[3180,976],[3264,1038],[3360,1095],[3455,1138],[3527,1191],[3635,1262],[3754,1329],[3874,1372],[4017,1406],[4208,1444],[4448,1473],[4687,1497],[4878,1511]], PATH_J = [4250, 4450];
+  const PATH_S = (() => { const T = []; for (let x = PATH_P[0][0]; x <= PATH_P[PATH_P.length - 1][0]; x += 8) { let i = 0; while (i < PATH_P.length - 2 && PATH_P[i + 1][0] < x) i++; const [a, b] = [PATH_P[i], PATH_P[i + 1]]; T.push(lerp(a[1], b[1], clamp((x - a[0]) / (b[0] - a[0])))); }
+    return T.map((v, i) => { let a = 0, n = 0; for (let j = -6; j <= 6; j++) { const q = T[i + j]; if (q != null) { a += q; n++; } } return a / n; }); })();
+  function pathH(x) { const f = (x - PATH_P[0][0]) / 8, i = Math.floor(f); if (i < 0) return -1; if (i >= PATH_S.length - 1) return -1; return lerp(PATH_S[i], PATH_S[i + 1], f - i); }
+  function gh(x) { if (PIN_ON) { const w = PIN_W(x); if (w > 0) { const top = lerp(gh0(x), pinAt(PIN_S, x), w), ph = pathH(x);
+    if (ph < 0) return x < PATH_P[0][0] ? Math.min(top, PATH_P[0][1] * clamp((x - SLOPE0) / (PATH_P[0][0] - SLOPE0))) : top;
+    return lerp(Math.min(ph, top), top, smooth(PATH_J[0], PATH_J[1], x)); } } return gh0(x); }
+  const topH = x => PIN_ON ? pinDraw(x) : gh(x);
   function gh0(x) {
     // the ramp: a smooth swoop (concave, steepening a little as it climbs) that runs up into the skull's crown with the
     // dome's own slope where they meet, so there is no notch; past the crown, the skull's round dome falling to the plain
@@ -1480,7 +1490,7 @@ const CR = (() => {
     for (const [a, b] of [[0, -m.R * k], [Wu, -m.R * k], [0, (im.height - m.R) * k], [Wu, (im.height - m.R) * k]]) { const [x, y] = at(a, b); top = Math.min(top, y); bot = Math.max(bot, y); left = Math.min(left, x); right = Math.max(right, x); }
     // (the tilted picture reaches past its own width at its corners: the canvas takes all of it, so no upright cut shows)
     left = Math.floor(left) - 2; const n = Math.ceil((right - left + 2) * Z);
-    for (let u = 0; u <= Wu; u += 8) { top = Math.min(top, -gh(m.x0 + u) - m.up[1]); bot = Math.max(bot, -gh(m.x0 + u) + m.below); }
+    for (let u = 0; u <= Wu; u += 8) { top = Math.min(top, -topH(m.x0 + u) - m.up[1]); bot = Math.max(bot, -topH(m.x0 + u) + m.below); }
     top = Math.floor(top) - 2; const Hu = Math.ceil(bot - top) + 2;
     const cv = mk(n, Math.ceil(Hu * Z)), q = cv.getContext('2d'), mask = mk(cv.width, cv.height), mq = mask.getContext('2d'), surf = [];
     const turn = c2 => { c2.translate((up - left) * Z, (-hp - top) * Z); c2.rotate(-th); c2.scale(Z, Z); c2.translate(-up, 0); };
@@ -1489,7 +1499,7 @@ const CR = (() => {
       // it melts upward into the sky and downward into the hill, by the hill's own line
       // (owner, build 599: "where it hits mountain ... no fan edge but a clean smooth transition": it is whole down
       // to a little above the hill's line and gone just under it, so no strip of its ground fans out over the hill)
-      const u = left + (i + .5) / Z, g = gh(m.x0 + u), yo = (-g - top) * Z, y0 = yo - m.up[1] * Z, y1 = yo + 12 * Z, span = y1 - y0;
+      const u = left + (i + .5) / Z, g = topH(m.x0 + u), yo = (-g - top) * Z, y0 = yo - m.up[1] * Z, y1 = yo + 12 * Z, span = y1 - y0;
       const gr = mq.createLinearGradient(0, y0, 0, y1); gr.addColorStop(0, 'rgba(0,0,0,0)'); gr.addColorStop((m.up[1] - m.up[0]) * Z / span, '#000'); gr.addColorStop((m.up[1] - (m.feet || 34)) * Z / span, '#000'); gr.addColorStop(1, 'rgba(0,0,0,0)');
       mq.fillStyle = gr; mq.fillRect(i, y0, 4, span);
       const hs = hp + sl * (u - up) / 1;
@@ -1500,7 +1510,9 @@ const CR = (() => {
     const em = mk(cv.width, cv.height), eq = em.getContext('2d'); eq.save(); turn(eq);
     const eg = eq.createLinearGradient(0, 0, Wu, 0); eg.addColorStop(0, 'rgba(0,0,0,0)'); const EL = (m.ends || [240, 240]).map(v => PIN_ON ? Math.min(Wu * .42, v * 1.7) : v); eg.addColorStop(EL[0] * .35 / Wu, 'rgba(0,0,0,.22)'); eg.addColorStop(EL[0] * .7 / Wu, 'rgba(0,0,0,.7)'); eg.addColorStop(EL[0] / Wu, '#000'); eg.addColorStop(1 - EL[1] / Wu, '#000'); eg.addColorStop(1, 'rgba(0,0,0,0)');
     eq.fillStyle = eg; eq.fillRect(0, -m.R * k, Wu, im.height * k);
-    eq.globalCompositeOperation = 'destination-in'; const TF = PIN_ON ? Math.max(150, (m.R * k) * .7) : 150, tg = eq.createLinearGradient(0, -m.R * k, 0, -m.R * k + TF); tg.addColorStop(0, 'rgba(0,0,0,0)'); if (PIN_ON) { tg.addColorStop(.35, 'rgba(0,0,0,.18)'); tg.addColorStop(.7, 'rgba(0,0,0,.65)'); } tg.addColorStop(1, '#000'); eq.fillStyle = tg; eq.fillRect(0, -m.R * k, Wu, im.height * k); eq.restore();
+    eq.globalCompositeOperation = 'destination-in'; const TF = PIN_ON ? Math.max(150, (m.R * k) * .7) : 150, tg = eq.createLinearGradient(0, -m.R * k, 0, -m.R * k + TF); tg.addColorStop(0, 'rgba(0,0,0,0)'); if (PIN_ON) { tg.addColorStop(.35, 'rgba(0,0,0,.18)'); tg.addColorStop(.7, 'rgba(0,0,0,.65)'); } tg.addColorStop(1, '#000'); eq.fillStyle = tg; eq.fillRect(0, -m.R * k, Wu, im.height * k);
+    if (PIN_ON) { const bb = (im.height - m.R) * k, bg = eq.createLinearGradient(0, Math.min(0, bb - 160), 0, bb); bg.addColorStop(0, '#000'); bg.addColorStop(1, 'rgba(0,0,0,0)'); eq.fillStyle = bg; eq.fillRect(0, -m.R * k, Wu, im.height * k); }
+    eq.restore();
     q.drawImage(em, 0, 0); q.globalCompositeOperation = 'source-over';
     // ?look=f: the memory breathed into the morning mist (owner: "the memories are now framed a fair amount and might
     // need some more blending"): washed toward the mist's own pale blue-grey, so it reads as a vision in the air, not a
