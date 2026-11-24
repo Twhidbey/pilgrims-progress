@@ -15,6 +15,10 @@
 // body alone) and assets/cross-burden.webp (the bundle as it lands, which the code then rolls down the slope).
 // ============================================================
 const CR = (() => {
+  // THE NIGHT-TO-DAWN LOOK IS LIVE (build 643, owner: "Can you push live now? Save edits for potential changes down the road"):
+  // the look built under ?look=f (builds 604 to 642) is now the default; ?look=old brings back build 601's level
+  // (?look=r its Friedrich trial). Every older trial stays in the code behind its link.
+  const LF = !/[?&]look=(old|r)\b/.test(location.search);
   const SO = 'The Shining Ones', S1 = 'The first Shining One', S3 = 'The third Shining One';
   // ---------- the land (world units: x along the way, h up from the foot of the slope) ----------
   // NEW HILL SHAPES TO TRY (owner: "we need new versions of the hill - can you [look] at how golgotha has been depicted in
@@ -57,9 +61,9 @@ const CR = (() => {
   const SH0 = SHAPES[SHAPE] || SHAPES.skull;
   // ?look=f with the painted hill (build 628): the sepulchre is the cave painted into the picture (owner: "the sepluchre is
   // built into picture so we don't need to draw one"): the burden goes into it, no cave is drawn
-  const PCAVE = /[?&]look=f\b/.test(location.search) && !/[?&]hill=625\b/.test(location.search);
+  const PCAVE = LF && !/[?&]hill=625\b/.test(location.search);
   // (owner, build 558: "the hill can be bigger and long flat space on top"): H_TOP 1050 (was 860)
-  const H_TOP = +(new URLSearchParams(location.search).get('htop') || 1500), START = /[?&]look=f\b/.test(location.search) ? -520 : 480, WALL_END = 860, TOMB_X = PCAVE ? 5520 : 4380 + SH0.tomb * (H_TOP + 30), SLOPE0 = 1180, CREST0 = 4080, CROSS_X = 4820, CREST1 = 4400, FALL1 = 5340;
+  const H_TOP = +(new URLSearchParams(location.search).get('htop') || 1500), START = LF ? -520 : 480, WALL_END = 860, TOMB_X = PCAVE ? 5520 : 4380 + SH0.tomb * (H_TOP + 30), SLOPE0 = 1180, CREST0 = 4080, CROSS_X = 4820, CREST1 = 4400, FALL1 = 5340;
   // GOLGOTHA, AFTER THE OWNER'S SKETCH (build 545): a smooth swooping ramp up from the left that meets the top of a round
   // rocky knoll shaped like a skull's crown (SK_X its top, SK_L / SK_R how far its dome reaches left and right)
   const SK_X = 4380, SK_L = 1000, SK_R = FALL1 - 4380, SK_H = H_TOP + 30, RAMP1 = SK_X - 260;
@@ -92,7 +96,7 @@ const CR = (() => {
   // ?hill=618: build 618's hill for comparing (owner: "i like the climbing on the 618 hill slightly better"): its painting,
   // its edge as painted, its walking line and its colours; ?figs=0 hides the figures on the hill
   const H618 = !/[?&]hill=625\b/.test(location.search), SUN_T = +((location.search.match(/[?&]suntone=([\d.]+)/) || [, .5])[1]), FIGS_OFF = /[?&]figs=0\b/.test(location.search);
-  const PIN_ON = /[?&]look=f\b/.test(location.search), HP_TOP = PIN_ON ? -1097.65 : -1089.42, HP_H = PIN_ON ? 1101.03 : 1093.75, HP_X = PIN_ON ? 2064.71 : 3149.64, HP_W = PIN_ON ? 3564.71 : 2478.34;
+  const PIN_ON = LF, HP_TOP = PIN_ON ? -1097.65 : -1089.42, HP_H = PIN_ON ? 1101.03 : 1093.75, HP_X = PIN_ON ? 2064.71 : 3149.64, HP_W = PIN_ON ? 3564.71 : 2478.34;
   const PIN_TAB = [0,0,0,0,0,0,0,0,0,0,0,0,8,0,8,9,9,10,12,12,15,19,20,25,28,30,33,35,37,38,40,42,45,48,56,60,63,66,69,69,71,74,78,81,83,86,89,93,97,100,107,111,114,116,120,128,130,129,140,146,152,159,156,159,163,165,170,170,173,178,186,186,194,195,197,204,206,212,219,223,228,235,245,251,255,262,266,272,271,275,283,285,288,294,299,305,309,311,309,323,326,327,334,341,342,348,360,377,393,422,432,435,437,440,441,442,443,443,444,455,460,464,469,473,474,477,479,482,485,488,491,496,502,507,514,527,529,533,538,540,547,555,563,567,574,575,578,583,586,595,600,608,612,617,623,628,634,637,642,646,652,654,659,666,674,676,681,691,697,698,700,705,722,731,751,758,757,760,781,802,810,813,815,817,819,820,821,823,832,838,841,843,846,847,850,852,853,856,859,862,865,868,869,874,877,880,883,887,887,894,896,898,901,904,911,911,918,921,922,928,931,937,938,943,944,950,953,959,960,963,968,972,975,980,982,983,986,990,992,999,999,1002,1003,1007,1008,1009,1010,1013,1016,1018,1024,1024,1028,1032,1034,1035,1036,1037,1041,1043,1043,1036,1040,1044,1045,1044,1045,1049,1047,1050,1053,1050,1054,1055,1055,1054,1055,1060,1059,1061,1064,1062,1067,1067,1067,1072,1070,1072,1070,1070,1070,1068,1070,1075,1076,1075,1075,1078,1077,1081,1083,1084,1084,1082,1081,1081,1084,1086,1085,1081,1081,1083,1081,1080,1084,1081,1076,1082,1082,1082,1084,1084,1083,1084,1084,1084,1084,1084,1084,1077,1073,1072,1072,1071,1067,1064,1066,1066,1064,1067,1065,1066,1065,1060,1056,1045,1014,994,974,975,969,1018,1021,1021,1019,1013,1010,1005,971,963,962,977,1001,1004,1004,1005,1000,989,944,927,915,928,928,923,909,894,882,862,802,778,760,744,726,630,622,613,604,585,551,523,520,515,469,469,454,445,435,434,433,425,413,405,395,372,330,327,329,330,331,330,324,314,305,296,287,269,254,237,209,203,200,200,201,200,194,186,159,146,118,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], PIN0 = 2073, PIN1 = PIN0 + 8 * (PIN_TAB.length - 1);
   // his walking line is ONE smooth curve (owner, build 618: "he can go behind rocks on the way - maintaining the smooth curve of
   // hill"): the skyline smoothed twice over about 160 painting units, then lowered only where the skyline dips under it (the
@@ -616,7 +620,7 @@ const CR = (() => {
   // painting itself: a pale blue to lemon-cream sky, white cool mist, blue-grey far ranges, grey-green middle hills, and
   // the hill the ONE warm thing, lit burnt orange from the side by a sun rising low just left of the cross. ?look=r (the
   // backlit version, build 603) is kept as it was. LOOKR is true for either (the shared ridges and their mist).
-  const LOOKF = /[?&]look=f\b/.test(location.search);
+  const LOOKF = LF;
   const LOOKR = LOOKF || /[?&]look=r\b/.test(location.search);
   // with ?look=f the sun rises this far left of the cross (world units), so its light falls across the hill's face
   const SUN_DX = LOOKF ? -430 : 0;
@@ -1049,7 +1053,7 @@ const CR = (() => {
   // either side with a wall"); men "come tumbling over" it later, so about chest-high to him. Dark at night, warm at sunrise.
   const WALL_H = 92, WALL_X0 = Math.min(-600, START - 900);
   let WALLC = null, WALLP = null;
-  if (/[?&]look=f\b/.test(location.search)) loadImg('wall.webp').then(im => { if (im) { WALLP = im; WALLC = null; } }).catch(() => {});
+  if (LF) loadImg('wall.webp').then(im => { if (im) { WALLP = im; WALLC = null; } }).catch(() => {});
   // (build 633, owner: "wall is getting better but i think it should be dark with a moonlit edge - think rocks piled on top
   // of each other"): a dry-stone wall in silhouette: rough rounded rocks of every size piled one on another, big ones low,
   // the wall nearly black, each rock read only by a thin cool rim of moonlight along its upper edge, strongest along the
@@ -1607,7 +1611,7 @@ const CR = (() => {
   // he runs through it. Baked once when he comes near (one canvas, freed after), drawn a little see-through with a
   // breathing light over it. In the mire the surface lies above the ground up to his waist and is drawn again in front
   // of him. ?skymem=1 brings back the old pictures in the sky. Ours, not the book's.
-  const REL_ON = new URLSearchParams(location.search).get('skymem') !== '1' && !/[?&]look=f\b/.test(location.search), REL_K = .625, REL_Z = 1.25, REL_A = .7, RIM = {};
+  const REL_ON = new URLSearchParams(location.search).get('skymem') !== '1' && !LF, REL_K = .625, REL_Z = 1.25, REL_A = .7, RIM = {};
   // img: the still (assets); R: its ground row; k: world units a picture pixel; x0: where its left edge lies on the hill;
   // on: he is in it from..to; up: it fades into the sky between these heights above the ground; lift: the mire's depth
   const REL = [
@@ -1715,7 +1719,7 @@ const CR = (() => {
   // can just be shadowy figures with slight bit of mist around them ahead on him way down the path saying the lines -
   // remove the entire scene changes"; my advice, agreed: no lines between the stars, places in the sky, people on the
   // path). Only with ?look=f. Ours, not the book's (he leaves the Interpreter's house at night, so 3am fits).
-  const NIGHT_ON = /[?&]look=f\b/.test(location.search);
+  const NIGHT_ON = LF;
   const NIGHTC = [[8, 12, 24], [22, 32, 46], [74, 86, 96]];
   // the stars, plentiful and bright enough to be the picture at 3am (owner, build 629: "the starry sky should be more
   // prominent"): a scatter of many small ones, a few large, and a faint band of the Milky Way

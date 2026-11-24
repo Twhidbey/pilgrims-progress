@@ -1146,3 +1146,4 @@ The owner asked what follows the Slough of Despond, what that level should hold,
 - Build 626 (art direction chat): `?hill=618` brings back build 618's hill under the night of 625 for comparing; `?figs=0` hides the hill figures. Nothing spent.
 - Build 625 (art direction chat): `?look=f` opens at 3 a.m. on a longer flat under stars, memories as three star-shapes (house, oak, mountain), then four dark figures in mist on the hill saying their lines (wife, Help, Evangelist, Good-will); the slope's scene-pictures off there. Nothing spent.
 - Build 642: Level 5 (`?look=f`), Evangelist's star picture waits for a touch; touched, the sky zooms in, the great star bursts like a nova, his pointing hand fills in in starlight and his line is heard. Nothing spent.
+- Build 643: Level 5's night-to-dawn look (the old `?look=f`) is now the default for everyone; `?look=old` brings back build 601's level; every trial still behind its link. Nothing spent.
