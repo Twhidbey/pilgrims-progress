@@ -55,8 +55,11 @@ const CR = (() => {
     shoulder: { tomb: .74, P: [[0, 1], [.12, .97], [.2, .9], [.235, .79], [.27, .7], [.33, .64], [.5, .6], [.62, .57], [.655, .47], [.675, .34], [.7, .27], [.76, .2], [.84, .12], [.92, .05], [.98, 0], [1.05, 0]] },
   };
   const SH0 = SHAPES[SHAPE] || SHAPES.skull;
+  // ?look=f with the painted hill (build 628): the sepulchre is the cave painted into the picture (owner: "the sepluchre is
+  // built into picture so we don't need to draw one"): the burden goes into it, no cave is drawn
+  const PCAVE = /[?&]look=f\b/.test(location.search) && !/[?&]hill=625\b/.test(location.search);
   // (owner, build 558: "the hill can be bigger and long flat space on top"): H_TOP 1050 (was 860)
-  const H_TOP = +(new URLSearchParams(location.search).get('htop') || 1500), START = /[?&]look=f\b/.test(location.search) ? -520 : 480, WALL_END = 860, TOMB_X = 4380 + SH0.tomb * (H_TOP + 30), SLOPE0 = 1180, CREST0 = 4080, CROSS_X = 4820, CREST1 = 4400, FALL1 = 5340;
+  const H_TOP = +(new URLSearchParams(location.search).get('htop') || 1500), START = /[?&]look=f\b/.test(location.search) ? -520 : 480, WALL_END = 860, TOMB_X = PCAVE ? 5520 : 4380 + SH0.tomb * (H_TOP + 30), SLOPE0 = 1180, CREST0 = 4080, CROSS_X = 4820, CREST1 = 4400, FALL1 = 5340;
   // GOLGOTHA, AFTER THE OWNER'S SKETCH (build 545): a smooth swooping ramp up from the left that meets the top of a round
   // rocky knoll shaped like a skull's crown (SK_X its top, SK_L / SK_R how far its dome reaches left and right)
   const SK_X = 4380, SK_L = 1000, SK_R = FALL1 - 4380, SK_H = H_TOP + 30, RAMP1 = SK_X - 260;
@@ -254,7 +257,7 @@ const CR = (() => {
     // the hill painted by the image model (round 2 of the owner's hill): rounded weathered rock, toned dark grey, its left
     // end faded into the drawn ramp; cropped to the rock at 1.5 px a world unit (at SK_H 1080): world x 2834 to 5654, height 1089 down to 2 below the ground
     // ?look=f: the hill painted as Friedrich's crag (build 606), laid on the same outline as the old painting
-    if (HP_ON) loadImg(LOOKF ? (H618 ? 'hill-crag.webp?v=618' : 'hill-crag-f.webp?v=623') : 'hill-cross.webp?v=601').then(im => { HPAINT = im; }).catch(() => {});
+    if (HP_ON) loadImg(LOOKF ? (H618 ? (/[?&]paint=618\b/.test(location.search) ? 'hill-crag.webp?v=618' : 'hill-crag-r.webp?v=628') : 'hill-crag-f.webp?v=623') : 'hill-cross.webp?v=601').then(im => { HPAINT = im; }).catch(() => {});
     // the burning hill's own painted rock (Level 3), made a grey tile as hill.js makes it, laid over the hill in 'overlay'
     loadImg('hill-rock.webp').then(rock => { const sx = 720, sy = 540, w = 780, h = 600, t = document.createElement('canvas'); t.width = w; t.height = h; const q = t.getContext('2d'); q.drawImage(rock, sx, sy, w, h, 0, 0, w, h);
       const d = q.getImageData(0, 0, w, h), D = d.data; let m = 0; for (let i = 0; i < D.length; i += 4) m += D[i] * .3 + D[i + 1] * .59 + D[i + 2] * .11; m /= D.length / 4;
@@ -1039,13 +1042,14 @@ const CR = (() => {
   // at the level of the plain, cut into the foot of the hill just left of the point under the cross (owner: "At bottom of
   // hill not on slope but on ground level below cross - when zoomed out it should be pretty much below cross (maybe to the
   // left of the point on the zoomed out ground at the base of the cross)")
-  const tombSill = () => 6;
+  const tombSill = () => PCAVE ? 90 : 6;
   // the sepulchre: a cave in the hill's foot (owner: "more like a cave and more integrated into hill side and base (which
   // is darker color) (very subtle but beautiful)"): an uneven dark mouth with a soft deeper shadow round it, the rock's
   // brow over it catching a faint light, and the round stone half sunk beside it in the hill's own tone
   const MOUTH = (() => { const r = rgen(31), P = []; for (let i = 0; i <= 28; i++) { const u = i / 28, a = Math.PI * (1 - u);
     P.push([Math.cos(a) * (60 + (r() - .5) * 10) * (1 + .12 * Math.pow(1 - Math.sin(a), 2)) + 3 * Math.sin(u * 7), -Math.pow(Math.sin(a), .7) * (DOOR_H - 18 + (r() - .5) * 9) * (1 + .05 * Math.sin(u * 5 + 1))]); } return P; })();
   function tomb(c) {
+    if (PCAVE && HPAINT) return;
     const x = TOMB_X, sill = tombSill(), col = mix(mix([30, 30, 38], [36, 32, 36], dawn), [44, 34, 30], gold);
     // kept inside the hill: at the bluff's foot its soft shadow must not spill into the sky (build 544)
     c.save(); c.beginPath(); c.moveTo(x - 320, 40); for (const [xx, yy] of outline(x - 320, x + 320, 6)) c.lineTo(xx, yy); c.lineTo(x + 320, 40); c.closePath(); c.clip();
