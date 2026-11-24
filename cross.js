@@ -686,6 +686,7 @@ const CR = (() => {
       const ma = (.62 - .07 * i) * (.75 + .25 * gold) * (LOOKF ? 1.2 : 1) * (1 - .9 * night);
       g.addColorStop(0, css(mistC, 0)); g.addColorStop(.62, css(mistC, ma)); g.addColorStop(1, css(mistC, ma * .5));
       c.fillStyle = g; c.fillRect(0, mb - 34 * B, VW, 60 * B);
+      if (i === 1 && night > .01) stormBolts(c);
     });
   }
   // Kuindzhi: once the sun is up, the picture darkens toward its edges and corners, away from the light
@@ -1990,9 +1991,52 @@ const CR = (() => {
   function mkStorm() { if (!STORMR) { const r = rgen(91); STORMR = []; let t = 30; for (let i = 0; i < 40; i++) {
       let bolt = null; if (i === 0 || r() < .55) { bolt = []; crackle(r, 0, 0, 1, (r() - .5) * .3, 2, bolt, 1); }
       STORMR.push({ t: Math.round(t), x: .24 + r() * .4, w: .7 + r() * .6, bolt, two: r() < .55 }); t += 55 + r() * 95; } } }
+  let STORMC = null;
+  const stormBox = () => { const B = bgS(), hy = by(HY); return { x: VW * .14, w: VW * .62, y: hy - 128 * B, h: 86 * B }; };
+  function stormCloud() {
+    if (STORMC) return STORMC;
+    const W = 420, H = 120, r = rgen(207), mkc = col => { const cv = mk(W, H), q = cv.getContext('2d');
+      // heaped soft lobes on a flat base, thicker in the middle, thinning to nothing at both ends
+      for (let i = 0; i < 46; i++) { const u = r(), x = 40 + u * (W - 80), e = Math.sin(u * Math.PI), rad = 16 + r() * 26 * e + 8 * e, y = H - 22 - r() * 46 * e;
+        const g = q.createRadialGradient(x, y, 0, x, y, rad); g.addColorStop(0, css(col, .34)); g.addColorStop(.6, css(col, .16)); g.addColorStop(1, css(col, 0));
+        q.save(); q.translate(x, y); q.scale(1.9, 1); q.translate(-x, -y); q.fillStyle = g; q.fillRect(x - rad, y - rad, rad * 2, rad * 2); q.restore(); }
+      // the flat base: everything below it fades away
+      q.globalCompositeOperation = 'destination-in'; const fg = q.createLinearGradient(0, H - 34, 0, H - 8); fg.addColorStop(0, '#000'); fg.addColorStop(1, 'rgba(0,0,0,0)'); q.fillStyle = fg; q.fillRect(0, 0, W, H);
+      return cv; };
+    const r0 = rgen(207); const d = mkc([12, 15, 27]); STORMC = { d, l: null };
+    // the lit copy uses the same lobes (the same seed)
+    { const W2 = 420, H2 = 120, rr = rgen(207), cv = mk(W2, H2), q = cv.getContext('2d'); q.drawImage(d, 0, 0); q.globalCompositeOperation = 'source-in'; q.fillStyle = 'rgb(214,212,250)'; q.fillRect(0, 0, W2, H2); STORMC.l = cv; }
+    return STORMC;
+  }
+  // the bolts themselves, drawn among the far ridges (called from farR after the two furthest): half their old size, each
+  // comes down out of the cloud's base and strikes the land, so its foot lies over the far ridges and a nearer ridge
+  // hides nothing of it but stands in front (owner, build 648: "overlap the striking lightning with a little overlap
+  // of the land"; real: a strike lands on ground nearer than the furthest hills, and is seen against them)
+  function stormBolts(c) {
+    const k = CONST.find(q => q.kind === 'storm'); if (!k || k.t < 0 || !STORMR) return;
+    const a0 = night * (1 - gold), kk = smooth(0, 60, k.t) * (k.f0 == null ? 1 : 1 - smooth(k.f0, k.f0 + 110, k.t)); if (kk * a0 < .01) return;
+    const hy = by(HY), B = bgS();
+    for (const f of STORMR) {
+      const d = k.t - f.t; if (d < 0 || d > 15 || !f.bolt) continue;
+      const on = d < 3 || (d >= 6 && d < 9) || (f.two && d >= 12 && d < 15); if (!on) continue;
+      const A = kk * a0, x = VW * f.x, W = VW * .2 * f.w, Hh = 62 * B, X = x - W * .15, Y = hy - 96 * B;
+      c.save(); c.lineJoin = c.lineCap = 'round';
+      for (const [lw, al, col] of [[4, .2, [190, 186, 255]], [1.8, .45, [222, 218, 255]], [.9, 1, [255, 255, 255]]]) {
+        for (const br of f.bolt) { const al2 = al * A * (br.w < 1 ? .75 : 1), sg = c.createLinearGradient(0, Y, 0, Y + .3 * Hh); sg.addColorStop(0, css(col, 0)); sg.addColorStop(1, css(col, al2)); c.strokeStyle = sg; c.lineWidth = lw * Math.max(.45, br.w) * Math.max(.7, B); c.beginPath();
+          br.P.forEach(([u, v], i) => { const X1 = X + u * Hh, Y1 = Y + v * Hh; i ? c.lineTo(X1, Y1) : c.moveTo(X1, Y1); }); c.stroke(); } }
+      // where it strikes: a small soft light on the land
+      const main = f.bolt[f.bolt.length - 1].P, ft = main[main.length - 1], fx = X + ft[0] * Hh, fy = Y + ft[1] * Hh, g = c.createRadialGradient(fx, fy, 0, fx, fy, 16 * B);
+      g.addColorStop(0, css([236, 232, 255], .5 * A)); g.addColorStop(1, 'rgba(200,200,255,0)'); c.fillStyle = g; c.fillRect(fx - 16 * B, fy - 16 * B, 32 * B, 32 * B);
+      c.restore();
+    }
+  }
   function storm2(c, k, a0) {
     const kk = smooth(0, 60, k.t) * (k.f0 == null ? 1 : 1 - smooth(k.f0, k.f0 + 110, k.t)); if (kk < .01) return;
     const hy = by(HY), B = bgS();
+    // (build 648, owner: "for the lighting to be realistic there needs to be faint storm cloud in the distance"): the
+    // lightning has its cloud: one low faint storm bank far off over the ridges, a flat base and a soft heaped top, a
+    // shade darker than the night, there while the storm is; each flash lights it from within
+    const SC = stormCloud(), CL = stormBox(); c.globalAlpha = .62 * kk * a0; c.drawImage(SC.d, CL.x, CL.y, CL.w, CL.h); c.globalAlpha = 1;
     for (const f of STORMR) {
       const d = k.t - f.t; if (d < 0 || d > 40) continue;
       // a flash, a dark moment, often a second flash, then the glow dying
@@ -2004,11 +2048,8 @@ const CR = (() => {
       c.save(); c.translate(x, gy); c.scale(1, .55);
       const g = c.createRadialGradient(0, 0, 0, 0, 0, W); g.addColorStop(0, css([244, 240, 255], A)); g.addColorStop(.3, css([206, 202, 244], .58 * A)); g.addColorStop(1, 'rgba(160,164,214,0)');
       c.fillStyle = g; c.fillRect(-W, -W, W * 2, W * 2); c.restore();
-      if (f.bolt && on) { const Hh = 120 * B, X = x - W * .15, Y = gy - Hh * 1.05; c.save(); c.lineJoin = c.lineCap = 'round';
-        for (const [lw, al, col] of [[6, .2, [190, 186, 255]], [2.6, .45, [222, 218, 255]], [1.1, 1, [255, 255, 255]]]) {
-          for (const br of f.bolt) { const al2 = al * A * (br.w < 1 ? .75 : 1), sg = c.createLinearGradient(0, Y, 0, Y + .3 * Hh); sg.addColorStop(0, css(col, 0)); sg.addColorStop(1, css(col, al2)); c.strokeStyle = sg; c.lineWidth = lw * Math.max(.45, br.w) * Math.max(.7, B); c.beginPath();
-            br.P.forEach(([u, v], i) => { const X1 = X + u * Hh, Y1 = Y + v * Hh; i ? c.lineTo(X1, Y1) : c.moveTo(X1, Y1); }); c.stroke(); } }
-        c.restore(); }
+      // its form lit from within by the flash
+      c.globalCompositeOperation = 'lighter'; c.globalAlpha = Math.min(1, .3 * A); c.drawImage(SC.l, CL.x, CL.y, CL.w, CL.h); c.globalAlpha = 1; c.globalCompositeOperation = 'source-over';
     }
   }
   // the people he heard, standing a little ahead of him on the way up, dark, with a breath of mist round them: each speaks
