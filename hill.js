@@ -1314,8 +1314,10 @@ const HL = (() => {
     // BRIGHTER AMONG THE ROCKS (build 639; owner: "the mt scene is too dark ... i love the current palette by the way - just
     // too dark"). The same rose-mauve, lifted (John Martin's lit skies behind black rock): the top a dusky violet, the low
     // sky a glowing rose-amber behind the mountain. `RK` is the rocky phases (as `rocky` below).
-    const RK = ph === 'path' || ph === 'still' || ph === 'come' || ph === 'evan' || ph === 'back' || ph === 'mist';
-    const top = mix(mix(mix(mix([104, 134, 160], [15, 14, 20], gateish), [32, 32, 44], dark), [40, 22, 17], .75 * gateish), [66, 54, 72], RK ? .75 : 0), low = mix(mix(mix(mix([255, 228, 168], [50, 40, 40], gateish), [124, 94, 88], dark), [112, 56, 38], .75 * gateish), [206, 138, 112], RK ? .7 : 0);
+    const RK = ph === 'path' || ph === 'still' || ph === 'come' || ph === 'evan' || ph === 'back' || ph === 'mist', LB = RK ? 1 - Zw : 0;
+    // (build 641, owner: "the zoomed out picture of the old is better - the dark connects that local scene to the larger
+    // mountain"): the lift (`LB`) fades out as the camera pulls back to the whole mountain, so the wide shot is as before
+    const top = mix(mix(mix(mix([104, 134, 160], [15, 14, 20], gateish), [32, 32, 44], dark), [40, 22, 17], .75 * gateish), [66, 54, 72], .75 * LB), low = mix(mix(mix(mix([255, 228, 168], [50, 40, 40], gateish), [124, 94, 88], dark), [112, 56, 38], .75 * gateish), [206, 138, 112], .7 * LB);
     { const g = c.createLinearGradient(0, 0, 0, hor), fairK = (1 - dark) * (1 - gateish); g.addColorStop(0, css(top)); g.addColorStop(.58, css(mix(mix(top, low, .62), [240, 208, 186], .5 * fairK))); g.addColorStop(1, css(low)); c.fillStyle = g; c.fillRect(0, 0, VW, hor + 2); }
     // clouds, pale by day and heavy near the hill
     { const off = ((cx * .05 + G.t * .02) % 800 + 800) % 800;
@@ -1496,14 +1498,14 @@ const HL = (() => {
         // among the rocks and read as a blurred halo. There the hill's outline is drawn from its own shape (`hillPath`)
         // in the dark rock's tone, sharp, and the painting is laid inside it, kept a few units in from the edge. Only the
         // overhanging face is done so (`facePath`): elsewhere the painting's own outline differs a little from the drawn one.
-        if (rocky) { c.fillStyle = css(mix([64, 48, 46], [54, 40, 38], dark)); facePath(c, hx, hy, k, 0, 30); c.fill(); c.save(); facePath(c, hx, hy, k, 2, 3000, 400); c.clip(); }
+        if (rocky) { c.fillStyle = css(mix(mix([46, 36, 36], [33, 25, 26], dark), mix([64, 48, 46], [54, 40, 38], dark), 1 - Zw)); facePath(c, hx, hy, k, 0, 30); c.fill(); c.save(); facePath(c, hx, hy, k, 2, 3000, 400); c.clip(); }
         villageBehind();
-        c.globalAlpha = reveal; c.drawImage(!rocky && HILLV ? HILLV : HILL[0], dx, dy, HW * k, HH * k); if (dark > .01) { c.globalAlpha = dark * (rocky ? .55 : 1); c.drawImage(HILL[1], dx, dy, HW * k, HH * k); }
+        c.globalAlpha = reveal; c.drawImage(!rocky && HILLV ? HILLV : HILL[0], dx, dy, HW * k, HH * k); if (dark > .01) { c.globalAlpha = dark * (rocky ? lerp(.55, 1, Zw) : 1); c.drawImage(HILL[1], dx, dy, HW * k, HH * k); }
         if (rocky) c.restore();
         // (build 639) under the overhang the rock is seen dimly by the fire's warmth from below: a soft warm light gathered
         // round the foot of the face and fading up its underside (never a lit line)
-        if (rocky && burnR > .01) { c.save(); facePath(c, hx, hy, k, 0, 3000, 400); c.clip(); c.globalCompositeOperation = 'screen'; c.globalAlpha = 1;
-          const R0 = TOP * k * .75, g = c.createRadialGradient(hx + 40 * k, hy, 0, hx + 40 * k, hy, R0); g.addColorStop(0, css([200, 104, 62], .3 * burnR)); g.addColorStop(.45, css([150, 70, 46], .16 * burnR)); g.addColorStop(1, css([110, 44, 34], 0));
+        if (rocky && burnR * (1 - Zw) > .01) { c.save(); facePath(c, hx, hy, k, 0, 3000, 400); c.clip(); c.globalCompositeOperation = 'screen'; c.globalAlpha = 1;
+          const R0 = TOP * k * .75, g = c.createRadialGradient(hx + 40 * k, hy, 0, hx + 40 * k, hy, R0); g.addColorStop(0, css([200, 104, 62], .3 * burnR * (1 - Zw))); g.addColorStop(.45, css([150, 70, 46], .16 * burnR * (1 - Zw))); g.addColorStop(1, css([110, 44, 34], 0));
           c.fillStyle = g; c.fillRect(hx - R0, hy - R0, 2 * R0, 2 * R0); c.restore(); } c.globalAlpha = 1;
         // (build 295) a soft breath of mist where the village meets the mountain's left foot, so the two edges never meet bare
         if (!rocky && VILP) { const mx = hx + 10 * k, my = hy - 34 * k, mc = mix(mix(far, low, .3), [60, 54, 62], dark * .7); c.save(); c.translate(mx, my); c.scale(120 * k, 40 * k);
@@ -1717,7 +1719,7 @@ const HL = (() => {
       if (rocky) {
         // (build 237, owner: "When we're down with Christian we remove mist that's between mountain and next layer up"): the
         // haze in the gully between the mountain and the crags behind the path is gone
-        crags(.75, 11, 190, 0, 70, 470, mix([74, 55, 50], [62, 46, 42], dark), .5 * burnR, true, .8, 560, 0, 1, 1, .38 * burnR);
+        crags(.75, 11, 190, 0, 70, 470, mix(mix([46, 37, 33], [31, 25, 23], dark), mix([74, 55, 50], [62, 46, 42], dark), 1 - Zw), .5 * burnR, true, .8, 560, 0, 1, 1, .38 * burnR * (1 - Zw));
         // (build 314; owner: "the mist around christian should maybe be replaced by mist localized to the layer behind him (so
         // he doesn't glow so much when he's near mountain) ... it is difficult to see him"): instead of a glow round each
         // figure (HAZE, now off), one low bank of mist lies in front of the crags behind the path, along his stretch of it,
@@ -2106,7 +2108,7 @@ const HL = (() => {
       // blue make it feel distinct"): beyond his stretch of the path the ground is the mountain's own foot: a soft rise in the
       // tone of the rock's base, laid a little over the painting's lower edge, darkening down into the floor of the nearest
       // crags (their tone at their base line), so rock, ground and the dark band are one
-      if (rocky) alongPath(x => 1 - inPath(x), q => { const t0 = Y(-34), t1 = Y(150), b = mix([60, 44, 42], [52, 38, 36], dark), g = q.createLinearGradient(0, t0, 0, t1), u = (Y(-4) - t0) / (t1 - t0);
+      if (rocky) alongPath(x => 1 - inPath(x), q => { const t0 = Y(-34), t1 = Y(150), b = mix(mix([40, 30, 29], [35, 26, 25], dark), mix([60, 44, 42], [52, 38, 36], dark), 1 - Zw), g = q.createLinearGradient(0, t0, 0, t1), u = (Y(-4) - t0) / (t1 - t0);
         g.addColorStop(0, css(b, 0)); g.addColorStop(clamp(u), css(b)); g.addColorStop(clamp(u + (1 - u) * .45), css(mix(b, [15, 12, 11], .6))); g.addColorStop(1, css([15, 12, 11])); q.fillStyle = g; q.fillRect(0, t0, VW, VH - t0 + 2); }); };
     road();
     // (easter eggs 3 and 7) the lizards on the path's stony edge, and the three hidden lights in its crevices
