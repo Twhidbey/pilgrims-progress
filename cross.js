@@ -1875,12 +1875,11 @@ const CR = (() => {
   // the people he heard, standing a little ahead of him on the way up, dark, with a breath of mist round them: each speaks
   // the words he heard as he comes near, and thins into the mist before he reaches it (one voice at a time: busy())
   // the talk at home ({11}: "O my dear wife, said he, and you the children of my bowels ... this our city will be burned
-  // with fire from heaven ... except some way of escape can be found"); the son's questions are ours
-  const CH = 'His son';
+  // with fire from heaven ... except some way of escape can be found"); his wife's questions are ours (build 639: the owner asked for her, not the son)
   const FAMLINES = [
-    [CH, 'Father, why do you weep over that book?'],
+    [W, 'Husband, why do you weep over that book?'],
     [C, 'Oh, my dear wife, and you my sweet babes, this city will be burned with fire from heaven.'],
-    [CH, 'Then what shall we do, Father?'],
+    [W, 'Then what shall we do?'],
     [C, 'Some way of escape must be found. I will find it, for all of us.'],
   ];
   const FIGS = [
