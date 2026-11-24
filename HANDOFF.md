@@ -244,6 +244,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 ## START HERE (rewritten at build 140, Nov 16 2026)
 
+**Build 624 (art direction chat): `?look=f` smooth top in the wide shots, rocky close up; he walks on the smooth edge (no line across him at the cross). Nothing spent.**
+
 **Build 623 (art direction chat): `?look=f` slight rockiness on the smooth top edge; the rock picture without its softening pass, sharper. Nothing spent.**
 
 **Build 622 (art direction chat): Level 5 build 621 taken back (`?tele=1` keeps it); the far ridges now slide at nearly one slow pace instead of past one another (`?pan=1` the old spread). Nothing spent.**

@@ -100,6 +100,7 @@ const CR = (() => {
   // so the game cuts it along a line of its choosing: ?edge=clean (default: the skyline lightly smoothed, the rocks kept),
   // ?edge=smooth (a rounder top), ?edge=line (just above his walking line: no rocks to pass behind), ?edge=raw (as painted)
   const EDGE_OPT = (location.search.match(/[?&]edge=(\w+)/) || [, 'smooth'])[1];
+  let EDGE_R = null, WALK = null;
   const EDGE = (() => { const T = PIN_TAB, sm = (A, R) => A.map((v, i) => { let a = 0, n = 0; for (let j = -R; j <= R; j++) { const q = A[i + j]; if (q != null) { a += q; n++; } } return a / n; });
     if (EDGE_OPT === 'raw') return T;
     const C = sm(sm(T, 2), 2), cr = (4380 + (CROSS_X - SK_X) / (SK_H / 1080) - PIN0) / 8;
@@ -109,11 +110,20 @@ const CR = (() => {
     const hs = i => { const v = Math.sin(i * 127.1 + 311.7) * 43758.5453; return 2 * (v - Math.floor(v)) - 1; };
     const vn = u => { const i = Math.floor(u), f = u - i; return lerp(hs(i), hs(i + 1), f); };
     const R = EDGE_OPT === 'raw' ? () => 0 : i => 2.6 * vn(i / 2.7) + 1.3 * vn(i / 1.15 + 40) - .8 * Math.abs(vn(i / 5 + 90));
-    return E.map((v, i) => T[i] > 0 ? Math.max(Math.min(v + R(i), T[i] + 13), PIN_S[i] + 1) : T[i]); })();
+    // (build 624: chips only cut DOWN into the edge, never rise above it or below his line, so no rock is drawn again in
+    // front of him; EDGE_R is the chipped edge, used only as the camera comes close, see ptop)
+    const E0 = E.map((v, i) => T[i] > 0 ? Math.min(v, T[i] + 13) : T[i]);
+    // (build 624) he walks on the smooth edge itself (WALK, 1.5 under it), so the edge's lit line never crosses him and his
+    // shadow lies where he stands; the chips go at most 5 under the edge, hidden by his sunk feet (SINK 10)
+    EDGE_R = E0.map((v, i) => T[i] > 0 ? v + Math.max(-5, 1.3 * Math.min(0, R(i) - .6)) : v);
+    WALK = E0.map((v, i) => T[i] > 0 ? v - 1.5 : v);
+    return E0; })();
   const pinS = () => SK_H / 1080, pinW = xp => pinS() * (xp - 4380) + SK_X;
   function pinAt(T, x) { const s = pinS(), xp = 4380 + (x - SK_X) / s; if (xp < PIN0) return -1; if (xp >= PIN1) return 0;
     const f = (xp - PIN0) / 8, i = Math.floor(f); return s * lerp(T[i], T[i + 1], f - i); }
-  const ptop = x => pinAt(PIN_ON ? EDGE : PIN_TAB, x);
+  // smooth in the wide shots, a little rocky close up (owner, build 624: "I like the smoothness of the wide shots but the close
+  // shots more texture")
+  const ptop = x => { if (!PIN_ON) return pinAt(PIN_TAB, x); const k = smooth(.45, .8, cam.z); const a = pinAt(EDGE, x); return k > .001 && a > 0 ? lerp(a, pinAt(EDGE_R, x), k) : a; };
   const PIN_W = x => x >= pinW(PIN0) ? 1 : 0;
   function pinDraw(x) { const w = PIN_W(x); if (w <= 0) return gh0(x); return lerp(gh0(x), ptop(x), w); }
   function crossH() { if (PIN_ON) { const t = ptop(CROSS_X); if (t > 0) return t; } return gh(CROSS_X); }
@@ -125,7 +135,7 @@ const CR = (() => {
   const PATH_S = (() => { const T = []; for (let x = PATH_P[0][0]; x <= PATH_P[PATH_P.length - 1][0]; x += 8) { let i = 0; while (i < PATH_P.length - 2 && PATH_P[i + 1][0] < x) i++; const [a, b] = [PATH_P[i], PATH_P[i + 1]]; T.push(lerp(a[1], b[1], clamp((x - a[0]) / (b[0] - a[0])))); }
     return T.map((v, i) => { let a = 0, n = 0; for (let j = -6; j <= 6; j++) { const q = T[i + j]; if (q != null) { a += q; n++; } } return a / n; }); })();
   function pathH(x) { const f = (x - PATH_P[0][0]) / 8, i = Math.floor(f); if (i < 0) return -1; if (i >= PATH_S.length - 1) return -1; return lerp(PATH_S[i], PATH_S[i + 1], f - i); }
-  function gh(x) { if (PIN_ON) { const w = PIN_W(x); if (w > 0) { const top = lerp(gh0(x), pinAt(PIN_S, x), w), ph = PATH_ON ? pathH(x) : -1;
+  function gh(x) { if (PIN_ON) { const w = PIN_W(x); if (w > 0) { const top = lerp(gh0(x), pinAt(WALK, x), w), ph = PATH_ON ? pathH(x) : -1;
     if (!PATH_ON) return top;
     if (ph < 0) return x < PATH_P[0][0] ? Math.min(top, PATH_P[0][1] * clamp((x - SLOPE0) / (PATH_P[0][0] - SLOPE0))) : top;
     return lerp(Math.min(ph, top), top, smooth(PATH_J[0], PATH_J[1], x)); } } return gh0(x); }
@@ -1619,7 +1629,7 @@ const CR = (() => {
     const xa = Math.max(x0, pinW(PIN0)), xb = Math.min(x1, CROSS_X - 40); if (xb <= xa) return;
     c.save(); c.beginPath(); c.moveTo(xa, -gh(xa));
     // only where a rock stands up out of his line; there it covers his sunk feet too (down to SINK + 3 below the line)
-    const up = x => smooth(1, 10, topH(x) - gh(x));
+    const up = x => smooth(4, 12, topH(x) - gh(x));
     for (let x = xa; x <= xb; x += st) c.lineTo(x, -gh(x) - (topH(x) - gh(x)) * up(x) - .5);
     for (let x = xb; x >= xa; x -= st) c.lineTo(x, -gh(x) + (SINK + 3) * up(x) - .5);
     c.closePath(); c.clip(); land(c); c.restore();
