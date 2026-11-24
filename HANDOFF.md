@@ -3,6 +3,8 @@
 The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build step; until build 118 it was called `story-lab.html`: read that name below as `index.html`). `style-lab.html` is the art-style test page. `CLAUDE.md` maps the code and records the owner's decisions. Work on **`main`** and push after every change: pushing IS publishing (GitHub Pages, https://twhidbey.github.io/pilgrims-progress/). Bump the build stamp in both pages on every push and tell the owner when it is live (a phone may need `?v=N` on the link). Keep this file and `CLAUDE.md` updated. Public repo: no personal details.
 
 
+**Build 655 (Level 5 ideas chat):** Level 5: after the tumble the camera stays wide while the sun rises behind the cross, then one slow zoom in (about 55 s) to him, held from the Shining Ones on; the sun never sinks on the screen (`sunRest`). See CLAUDE.md. Nothing spent.
+
 **Build 654 (Level 5 ideas chat):** Level 5's camera is one zoom out (the tumble) and one slow glide back to a single camera held to the end; no look down at the sepulchre, no tears close-up; the sun starts when the burden is gone and only rises; ridge rims faint. See CLAUDE.md. Nothing spent.
 
 **Build 653 (Level 5 ideas chat):** Level 5's sunrise is warm (build 603's amber, peach mist, orange ridge rims) as the sun breaks, then clears to lemon and a quiet blue as it climbs (by `GL`). See CLAUDE.md. Nothing spent.

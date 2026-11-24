@@ -279,7 +279,7 @@ const CR = (() => {
   // ---------- state ----------
   let blest = 0, tumbleT = 0, pauseKey = null, qRun = 0, quietG = 0, sepT = -1, ph = '', t = 0, cam = { cx: 0, z: 1, wl: 420 }, wideK = 0, wideTo = 0;
   const Ch = { x: START, anim: 12, sd: null, cf: -1, cfd: 1, hop: 0, hops: 0, lastV: 0, fade: 0, face: 1, tv: null, run: 0, ranim: 0 };
-  let sunT = 0, sunGo = false, sunH = 0;
+  let sunT = 0, sunGo = false, sunH = 0, sunYr = null, zoomP = 0;
   let night = 0, bur = null, dawn = 0, gold = 0, goldTo = 0, sun = 0, robe = 0, robeTo = 0, mark = 0, markTo = 0, rollShow = 0, rollGone = 0, shine = 0, shineTo = 0, gone = 0, goneTo = 0;
   let closeK = 0, topK = 0, topTo = 0, veil = 0, climb = null, tearT = -1, looked = false;
   // his tears (owner, offered instead of eyes in the sky: "Sure!!"): on "He looked, and looked again, till the tears ran
@@ -333,6 +333,7 @@ const CR = (() => {
   const PAN_K = +(QS.get('pan') ?? .15), PAN_MID = .06, PAN = p => PAN_MID + (p - PAN_MID) * PAN_K;
   const bgS = () => Math.pow(cam.z / BG_Z0, BG_A), by = y => FOOTY + (y - FOOTY) * bgS();
   const TEARZ = /[?&]tearzoom=1\b/.test(location.search);
+  const ZOOM_AT = 600, ZOOM_LEN = 3300;
   const SEPLOOK = /[?&]seplook=1\b/.test(location.search);
   function camTick(snap) {
     const near = { cx: Ch.x + lerp(250, 150, closeK), z: lerp(.8, 1.15, closeK) };
@@ -571,6 +572,9 @@ const CR = (() => {
   function rgen(seed) { let s = seed >>> 0 || 1; return () => { s = s + 0x6D2B79F5 | 0; let q = Math.imul(s ^ s >>> 15, 1 | s); q = q + Math.imul(q ^ q >>> 7, 61 | q) ^ q; return ((q ^ q >>> 14) >>> 0) / 4294967296; }; }
   const RIDGES = [1, 2].map(seed => { const r = rgen(seed * 31 + 7); return [1, 2, 3, 4, 5].map(k => [r() * 6.28, k]); });
   const ridgeY = (i, X, base, amp) => { let y = base; for (const [p, k] of RIDGES[i]) y += amp / k * Math.sin(X * k * k * .0011 + p); return y; };
+  // the sun's height on the screen: tied to the cross, but never lower than it has already been (the camera's slow
+  // move in would otherwise slide it down the sky)
+  function sunRest(y) { if (!sunGo) return y; sunYr = sunYr == null ? y : Math.min(sunYr, y); return sunYr; }
   function sky(c) {
     // ?look=r: the whole palette after Friedrich's Morning in the Riesengebirge (owner: "Make entire color palette match"):
     // a pale grey-blue upper sky, a lilac middle, peach and pale gold low down; never a deep navy
@@ -592,10 +596,10 @@ const CR = (() => {
     if (night > .01) stars(c);
     // the far light, low behind the crown before dawn; the sun breaking behind the crown, rising behind where the
     // beams cross, and on up the sky (kept inside the picture)
-    const cxs = sx(CROSS_X + SUN_DX), top = sy(crossH() + CROSS_BY + 4), y0 = sy(crossH()) + 40, sY = LOOKF && SUN_DX
+    const cxs = sx(CROSS_X + SUN_DX), top = sy(crossH() + CROSS_BY + 4), y0 = sy(crossH()) + 40 * Math.min(1, cam.z / .86), sY = LOOKF && SUN_DX
       // ?look=f: as in the painting, the sun stays low, just over the farthest ranges, rising only a little
       ? by(HY - 96 - 60 * Math.min(1.3, sunH))
-      : Math.max(VH * .1, y0 + (top - y0) * sunH);
+      : sunRest(Math.max(VH * .1, y0 + (top - y0) * sunH));
     if (LOOKF) {
       // the painting's bright lemon-cream horizon: a wide warm glow round the low sun and a pale band along the horizon
       const lk = Math.max(.35 * dawn, gold), lg = c.createRadialGradient(cxs, sY, 0, cxs, sY, VW * .75);
@@ -625,7 +629,7 @@ const CR = (() => {
       c.restore();
     }
     // (build 654) the disc shows only as the camera comes back to him, so it is never seen sliding down behind the far hills
-    const sunA = sun * (1 - wideK) * (1 - wideK);
+    const sunA = sun;
     if (sunA > .01) { const sun = sunA, R = (15 + 4 * cam.z) * (1 + .4 * GL), d = c.createRadialGradient(cxs, sY, 0, cxs, sY, R * 2.2); d.addColorStop(0, css([255, 252, 236], .95 * sun)); d.addColorStop(.45, css([255, 240, 200], .85 * sun)); d.addColorStop(.5, css([255, 226, 170], .35 * sun)); d.addColorStop(1, 'rgba(255,220,160,0)'); c.fillStyle = d; c.fillRect(cxs - R * 3, sY - R * 3, R * 6, R * 6); }
     // long thin clouds, lit from beneath after dawn; more of them catch fire as the sun climbs (the last five only then)
     const CLD = [[.16, .9, .1, .05, 0], [.27, .7, .08, .02, 0], [.36, 1.1, .07, .08, 0], [.08, .6, 0, .31, 1], [.21, .5, 0, .62, 1], [.31, .8, 0, .44, 1], [.42, .6, 0, .77, 1], [.13, 1.2, 0, .9, 1]];
@@ -1397,7 +1401,7 @@ const CR = (() => {
   // ---------- the story ----------
   function reset0() {
     blest = 0; tumbleT = 0; sepT = -1; memT = -1; memS = []; memUntil = 0; memQ = 0; REL.forEach(m => { m.a = 0; m.said = false; m.cv = m.front = null; }); relGW = false; gwTop = false; FIGS.forEach(f => { f.a = 0; f.said = false; f.i = 0; }); CONST.forEach(k => { k.t = -1; k.said = false; k.f0 = null; k.nv = -1; }); night = NIGHT_ON ? 1 : 0; tearT = -1; looked = false; Object.assign(Ch, { x: START, anim: 12, sd: QUIET[0], cf: -1, hop: 0, hops: 0, lastV: 0, fade: 0, hv: 0, face: 1, tv: null, run: 0, ranim: 0, cc: 0, lp: null, wo: null, wa: 0, kn: null, kup: false });
-    sunT = 0; sunGo = false; sunH = 0;
+    sunT = 0; sunGo = false; sunH = 0; sunYr = null; zoomP = 0;
     bur = null; dawn = gold = goldTo = sun = robe = robeTo = mark = markTo = rollShow = rollGone = shine = shineTo = gone = goneTo = 0; wideK = 1; wideTo = 1;
     said = {}; hymn = null; silenceT = 0; tombT = 0; leapsLeft = 3; endT = 0; quietPad = 0; t = 0; rollFly = rollAt = null; closeK = topK = topTo = veil = 0; climb = null;
   }
@@ -1477,8 +1481,13 @@ const CR = (() => {
     // 0 under the crown, 1 behind where the beams cross (about 50 s on, as the hymn plays), then on up, slower and
     // slower, to a little under the picture's top by the level's end. The sky's glory (in `sky()`) grows with its height past the crossing.
     if (sunGo) { sunT++; sun = Math.min(1, sunT / 1500); const u = sunT / 3000; sunH = u < 1 ? u : 1 + .42 * (1 - Math.exp(-(u - 1) / 1.1)); }
-    // (build 654) the one way back from the wide shot is slow, a single glide
-    wideK += (wideTo - wideK) * (wideTo < wideK && (ph === 'gone' || ph === 'shine') ? .007 : .02);
+    // (build 655, owner: "maybe start zooming after sun rise and just keep slow zooming until the rest"): the sun
+    // rises over the whole hill in the wide shot; once it is up the camera comes in to him in ONE slow steady move
+    // (about a minute, eased at both ends), never back and forth
+    if (sunGo && sunT > ZOOM_AT) { zoomP = Math.min(1, zoomP + 1 / ZOOM_LEN); wideTo = 1 - zoomP * zoomP * (3 - 2 * zoomP); }
+    // the sun never sinks on the screen: it keeps the highest place it has reached and drifts slowly up
+    if (sunYr != null) sunYr = Math.max(VH * .1, sunYr - .02);
+    wideK += (wideTo - wideK) * .02;
     if (!climb) topK += (topTo - topK) * .022;
     hymnTick();
     if (tearT >= 0) tearT++;
@@ -1548,20 +1557,19 @@ const CR = (() => {
       // when the storyteller begins the tumble line: the burden waits on the cave's lip until he is well into it
       if (t > 50 && !tumbleT && !G.capQ.length && saying()) tumbleT = G.t;
       burdenTick();
-      if (bur.st === 'gone') { ph = 'gone'; t = 0; quietG = qRun = 0; wideTo = 0; sunGo = true; if (KNC.ready) { Ch.kn = 0; Ch.knd = 1; Ch.kup = false; } }
+      if (bur.st === 'gone') { ph = 'gone'; t = 0; quietG = qRun = 0; sunGo = true; if (KNC.ready) { Ch.kn = 0; Ch.knd = 1; Ch.kup = false; } }
     } else if (ph === 'gone') {
       if (Ch.kn != null) kneelTick(); else clipHold();
       // a silence; then the light comes up behind the cross, and the colour comes back from it outward
       // the silence is counted only once every voice is done, so the sun and the hymn never come over the words
       if (!busy()) { quietG++; qRun++; } else qRun = 0;
-      if (quietG === 150 && goldTo < 1) { goldTo = 1; wideTo = 0; }
+      if (quietG === 150 && goldTo < 1) { goldTo = 1; }
       if (quietG === 360 && !hymn) hymn = { t: 0, i: 0, b: 0 };
       // Christian speaks only after a breath of quiet once the burden is gone (owner, build 456)
       if (hymn && hymn.t >= 10 * BEATT && Ch.kn != null) Ch.kup = true;
       if (hymn && hymn.t >= 12 * BEATT && qRun >= 150 && Ch.kn == null && !said.glad) { said.glad = true; caption(GLAD); }
       if (said.glad && hymn && hymn.t >= 25 * BEATT && !looked) { caption(LOOKED); looked = true; }
       if (looked && tearT < 0 && !G.capQ.length) tearT = 0;
-      if (hymn && hymn.t > 20 * BEATT) wideTo = 0;
       if (hymnDone() && !busy()) { ph = 'shine'; t = 0; shineTo = 1; hymn = null; }
     } else if (ph === 'shine') {
       clipHold();
