@@ -95,10 +95,20 @@ const CR = (() => {
   const PIN_S = (() => { const T = PIN_TAB, sm = (A, R) => A.map((v, i) => { let a = 0, n = 0; for (let j = -R; j <= R; j++) { const q = A[i + j]; if (q != null) { a += q; n++; } } return a / n; });
     const S = sm(sm(T, 20), 20), D = S.map((v, i) => Math.max(0, v - T[i])), DM = D.map((v, i) => { let m = 0; for (let j = -14; j <= 14; j++) { const q = D[i + j]; if (q != null) m = Math.max(m, q); } return m; });
     const L = sm(sm(DM, 10), 10); return S.map((v, i) => v - L[i]); })();
+  // the top edge, cropped clean in code (owner, build 619: "smooth the top of the rock a little or make it clean crop - edge
+  // looks messy - maybe give me a couple options"): the rock picture (hill-crag-f) is solid a little above its own skyline,
+  // so the game cuts it along a line of its choosing: ?edge=clean (default: the skyline lightly smoothed, the rocks kept),
+  // ?edge=smooth (a rounder top), ?edge=line (just above his walking line: no rocks to pass behind), ?edge=raw (as painted)
+  const EDGE_OPT = (location.search.match(/[?&]edge=(\w+)/) || [, 'clean'])[1];
+  const EDGE = (() => { const T = PIN_TAB, sm = (A, R) => A.map((v, i) => { let a = 0, n = 0; for (let j = -R; j <= R; j++) { const q = A[i + j]; if (q != null) { a += q; n++; } } return a / n; });
+    if (EDGE_OPT === 'raw') return T;
+    const C = sm(sm(T, 2), 2), cr = (4380 + (CROSS_X - SK_X) / (SK_H / 1080) - PIN0) / 8;
+    const E = EDGE_OPT === 'smooth' ? sm(sm(T, 8), 8) : EDGE_OPT === 'line' ? PIN_S.map((v, i) => lerp(v + 3, C[i], smooth(cr - 4, cr + 8, i))) : C;
+    return E.map((v, i) => T[i] > 0 ? Math.min(v, T[i] + 13) : T[i]); })();
   const pinS = () => SK_H / 1080, pinW = xp => pinS() * (xp - 4380) + SK_X;
   function pinAt(T, x) { const s = pinS(), xp = 4380 + (x - SK_X) / s; if (xp < PIN0) return -1; if (xp >= PIN1) return 0;
     const f = (xp - PIN0) / 8, i = Math.floor(f); return s * lerp(T[i], T[i + 1], f - i); }
-  const ptop = x => pinAt(PIN_TAB, x);
+  const ptop = x => pinAt(PIN_ON ? EDGE : PIN_TAB, x);
   const PIN_W = x => x >= pinW(PIN0) ? 1 : 0;
   function pinDraw(x) { const w = PIN_W(x); if (w <= 0) return gh0(x); return lerp(gh0(x), ptop(x), w); }
   function crossH() { if (PIN_ON) { const t = ptop(CROSS_X); if (t > 0) return t; } return gh(CROSS_X); }
@@ -226,7 +236,7 @@ const CR = (() => {
     // the hill painted by the image model (round 2 of the owner's hill): rounded weathered rock, toned dark grey, its left
     // end faded into the drawn ramp; cropped to the rock at 1.5 px a world unit (at SK_H 1080): world x 2834 to 5654, height 1089 down to 2 below the ground
     // ?look=f: the hill painted as Friedrich's crag (build 606), laid on the same outline as the old painting
-    if (HP_ON) loadImg(LOOKF ? 'hill-crag.webp?v=618' : 'hill-cross.webp?v=601').then(im => { HPAINT = im; }).catch(() => {});
+    if (HP_ON) loadImg(LOOKF ? 'hill-crag-f.webp?v=619' : 'hill-cross.webp?v=601').then(im => { HPAINT = im; }).catch(() => {});
     // the burning hill's own painted rock (Level 3), made a grey tile as hill.js makes it, laid over the hill in 'overlay'
     loadImg('hill-rock.webp').then(rock => { const sx = 720, sy = 540, w = 780, h = 600, t = document.createElement('canvas'); t.width = w; t.height = h; const q = t.getContext('2d'); q.drawImage(rock, sx, sy, w, h, 0, 0, w, h);
       const d = q.getImageData(0, 0, w, h), D = d.data; let m = 0; for (let i = 0; i < D.length; i += 4) m += D[i] * .3 + D[i + 1] * .59 + D[i + 2] * .11; m /= D.length / 4;
@@ -907,7 +917,7 @@ const CR = (() => {
       const s = SK_H / 1080; c.save(); c.translate(SK_X, 0); c.scale(s, s); c.drawImage(HPAINT, HP_X - 4380, HP_TOP, HP_W, HP_H); c.restore();
       // the painting takes the hill's own colour through the dawn (its lightness kept); the crag of ?look=f keeps its own
       // painted colours and is only darkened before the sun is up
-      if (LOOKF) { c.globalCompositeOperation = 'multiply'; c.fillStyle = css(mix(mix([40, 36, 44], [74, 62, 60], dawn), [255, 248, 240], gold)); c.fillRect(x0, -H_TOP - 700, x1 - x0, H_TOP + 2800); c.globalCompositeOperation = 'source-over'; } else {
+      if (LOOKF) { c.globalCompositeOperation = 'multiply'; c.fillStyle = css(mix(mix([60, 52, 58], [112, 96, 90], dawn), [255, 246, 236], gold)); c.fillRect(x0, -H_TOP - 700, x1 - x0, H_TOP + 2800); c.globalCompositeOperation = 'source-over'; } else {
       c.globalCompositeOperation = 'color'; c.fillStyle = css(hc); c.fillRect(x0, -H_TOP - 700, x1 - x0, H_TOP + 2800); c.globalCompositeOperation = 'source-over'; }
       // the foot sinks into the dark ground (owner: "blend edges and make everything super cohesive")
       if (false) {
