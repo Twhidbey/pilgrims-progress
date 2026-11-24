@@ -1128,5 +1128,6 @@ The owner asked what follows the Slough of Despond, what that level should hold,
 
 **Build 601 (Level 5 chat):** the painted hill made again by Google without the skull, same outline (about 25 cents, the owner's yes). Running total: add about 25 cents.
 
+- Build 627 (art direction chat): `?look=f` now has 618's mountain with 625's sky, stars and far hills; the sunrise toned halfway between 618's colours and 625's rust (`?suntone=`), `?hill=625` for the old rust hill. Nothing spent.
 - Build 626 (art direction chat): `?hill=618` brings back build 618's hill under the night of 625 for comparing; `?figs=0` hides the hill figures. Nothing spent.
 - Build 625 (art direction chat): `?look=f` opens at 3 a.m. on a longer flat under stars, memories as three star-shapes (house, oak, mountain), then four dark figures in mist on the hill saying their lines (wife, Help, Evangelist, Good-will); the slope's scene-pictures off there. Nothing spent.

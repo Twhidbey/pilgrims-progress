@@ -88,7 +88,7 @@ const CR = (() => {
   // end both blend into the drawn ramp over its fade (PIN_W)
   // ?hill=618: build 618's hill for comparing (owner: "i like the climbing on the 618 hill slightly better"): its painting,
   // its edge as painted, its walking line and its colours; ?figs=0 hides the figures on the hill
-  const H618 = /[?&]hill=618\b/.test(location.search), FIGS_OFF = /[?&]figs=0\b/.test(location.search);
+  const H618 = !/[?&]hill=625\b/.test(location.search), SUN_T = +((location.search.match(/[?&]suntone=([\d.]+)/) || [, .5])[1]), FIGS_OFF = /[?&]figs=0\b/.test(location.search);
   const PIN_ON = /[?&]look=f\b/.test(location.search), HP_TOP = PIN_ON ? -1097.65 : -1089.42, HP_H = PIN_ON ? 1101.03 : 1093.75, HP_X = PIN_ON ? 2064.71 : 3149.64, HP_W = PIN_ON ? 3564.71 : 2478.34;
   const PIN_TAB = [0,0,0,0,0,0,0,0,0,0,0,0,8,0,8,9,9,10,12,12,15,19,20,25,28,30,33,35,37,38,40,42,45,48,56,60,63,66,69,69,71,74,78,81,83,86,89,93,97,100,107,111,114,116,120,128,130,129,140,146,152,159,156,159,163,165,170,170,173,178,186,186,194,195,197,204,206,212,219,223,228,235,245,251,255,262,266,272,271,275,283,285,288,294,299,305,309,311,309,323,326,327,334,341,342,348,360,377,393,422,432,435,437,440,441,442,443,443,444,455,460,464,469,473,474,477,479,482,485,488,491,496,502,507,514,527,529,533,538,540,547,555,563,567,574,575,578,583,586,595,600,608,612,617,623,628,634,637,642,646,652,654,659,666,674,676,681,691,697,698,700,705,722,731,751,758,757,760,781,802,810,813,815,817,819,820,821,823,832,838,841,843,846,847,850,852,853,856,859,862,865,868,869,874,877,880,883,887,887,894,896,898,901,904,911,911,918,921,922,928,931,937,938,943,944,950,953,959,960,963,968,972,975,980,982,983,986,990,992,999,999,1002,1003,1007,1008,1009,1010,1013,1016,1018,1024,1024,1028,1032,1034,1035,1036,1037,1041,1043,1043,1036,1040,1044,1045,1044,1045,1049,1047,1050,1053,1050,1054,1055,1055,1054,1055,1060,1059,1061,1064,1062,1067,1067,1067,1072,1070,1072,1070,1070,1070,1068,1070,1075,1076,1075,1075,1078,1077,1081,1083,1084,1084,1082,1081,1081,1084,1086,1085,1081,1081,1083,1081,1080,1084,1081,1076,1082,1082,1082,1084,1084,1083,1084,1084,1084,1084,1084,1084,1077,1073,1072,1072,1071,1067,1064,1066,1066,1064,1067,1065,1066,1065,1060,1056,1045,1014,994,974,975,969,1018,1021,1021,1019,1013,1010,1005,971,963,962,977,1001,1004,1004,1005,1000,989,944,927,915,928,928,923,909,894,882,862,802,778,760,744,726,630,622,613,604,585,551,523,520,515,469,469,454,445,435,434,433,425,413,405,395,372,330,327,329,330,331,330,324,314,305,296,287,269,254,237,209,203,200,200,201,200,194,186,159,146,118,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], PIN0 = 2073, PIN1 = PIN0 + 8 * (PIN_TAB.length - 1);
   // his walking line is ONE smooth curve (owner, build 618: "he can go behind rocks on the way - maintaining the smooth curve of
@@ -629,7 +629,7 @@ const CR = (() => {
       // the nearer ridges stand dark and warm against the light (umber, not lit orange)
       if (i >= 2) col = LOOKF
         // the nearer hills: a hint of dark rust-red, kin to the hill, darker nearer
-        ? (H618 ? mix(col, mix(mix([52, 58, 58], [76, 86, 82], dawn), [86, 98, 90], gold), (i - 1) / 5 * .75) : mix(col, mix(mix([62, 44, 46], [88, 54, 50], dawn), [104, 58, 48], gold), (i - 1) / 5 * .75))
+        ? (false ? mix(col, mix(mix([52, 58, 58], [76, 86, 82], dawn), [86, 98, 90], gold), (i - 1) / 5 * .75) : mix(col, mix(mix([62, 44, 46], [88, 54, 50], dawn), [104, 58, 48], gold), (i - 1) / 5 * .75))
         : mix(col, mix(mix([56, 44, 44], [70, 52, 48], dawn), [84, 56, 46], gold), (i - 1) / 5 * (.45 + .4 * gold));
       c.beginPath(); c.moveTo(0, VH);
       for (let X = 0; X <= VW + 8; X += 6) c.lineTo(X, by(rrY(i, VW / 2 + (X - VW / 2) / B + cam.cx * PAN(p) * 6, base, amp)));
@@ -948,7 +948,10 @@ const CR = (() => {
       const s = SK_H / 1080; c.save(); c.translate(SK_X, 0); c.scale(s, s); c.drawImage(HPAINT, HP_X - 4380, HP_TOP, HP_W, HP_H); c.restore();
       // the painting takes the hill's own colour through the dawn (its lightness kept); the crag of ?look=f keeps its own
       // painted colours and is only darkened before the sun is up
-      if (LOOKF) { c.globalCompositeOperation = 'multiply'; c.fillStyle = css(H618 ? mix(mix(mix([40, 36, 44], [26, 24, 32], night), [74, 62, 60], dawn), [255, 248, 240], gold) : mix(mix(mix([60, 52, 58], [30, 28, 38], night), [112, 96, 90], dawn), [255, 246, 236], gold)); c.fillRect(x0, -H_TOP - 700, x1 - x0, H_TOP + 2800); c.globalCompositeOperation = 'source-over'; } else {
+      if (LOOKF) { c.globalCompositeOperation = 'multiply'; c.fillStyle = css(H618 ? mix(mix(mix([40, 36, 44], [26, 24, 32], night), [74, 62, 60], dawn), mix([255, 248, 240], [150, 132, 124], SUN_T), gold) : mix(mix(mix([60, 52, 58], [30, 28, 38], night), [112, 96, 90], dawn), [255, 246, 236], gold)); c.fillRect(x0, -H_TOP - 700, x1 - x0, H_TOP + 2800);
+        // (build 627) 618's painting at sunrise held between its own colours and 625's one rust (owner: "too colorful ... the less
+        // bright 625 is better though maybe a bit monochromatic"): darker (above) and pulled part way toward one rust hue
+        if (H618 && gold > 0) { c.globalCompositeOperation = 'color'; c.globalAlpha = Math.min(1, SUN_T * 1.2) * gold; c.fillStyle = 'rgb(150,72,44)'; c.fillRect(x0, -H_TOP - 700, x1 - x0, H_TOP + 2800); c.globalAlpha = 1; } c.globalCompositeOperation = 'source-over'; } else {
       c.globalCompositeOperation = 'color'; c.fillStyle = css(hc); c.fillRect(x0, -H_TOP - 700, x1 - x0, H_TOP + 2800); c.globalCompositeOperation = 'source-over'; }
       // the foot sinks into the dark ground (owner: "blend edges and make everything super cohesive")
       if (false) {
