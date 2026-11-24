@@ -640,12 +640,14 @@ const CR = (() => {
       // (build 629) hills at night as Kuindzhi, Friedrich and Hasui paint them (owner: "the hills at night need to look more
       // like hills at night"): cool blue, each nearer range a step darker down to near black, no warm colour; the far ones
       // paler against the glowing horizon
-      if (night > .01) col = mix(col, mix([34, 40, 60], [9, 10, 17], Math.pow(i / 5, .8)), night);
+      // (build 630, after Whistler's Nocturne, Millet's Starry Night and Kuindzhi's Night): flat silhouettes, the far one a
+      // little lighter than the land, each nearer one darker, the near ones nearly black
+      if (night > .01) col = mix(col, mix([30, 42, 48], [7, 9, 11], Math.pow(i / 5, .7)), night);
       c.beginPath(); c.moveTo(0, VH);
       for (let X = 0; X <= VW + 8; X += 6) c.lineTo(X, by(rrY(i, VW / 2 + (X - VW / 2) / B + cam.cx * PAN(p) * 6, base, amp)));
       c.lineTo(VW, VH); c.closePath(); c.fillStyle = css(col); c.fill();
       // at night the far ridges' tops catch a breath of starlight (a hair-thin cool line, fainter nearer)
-      if (night > .05 && i < 4) { c.save(); c.strokeStyle = css([120, 134, 170], (.16 - .035 * i) * night); c.lineWidth = 1; c.beginPath();
+      if (false && night > .05 && i < 4) { c.save(); c.strokeStyle = css([120, 134, 170], (.16 - .035 * i) * night); c.lineWidth = 1; c.beginPath();
         for (let X = 0; X <= VW + 8; X += 6) c.lineTo(X, by(rrY(i, VW / 2 + (X - VW / 2) / B + cam.cx * PAN(p) * 6, base, amp)) + .5); c.stroke(); c.restore(); }
       if (gold > .02 && !LOOKF) {
         // backlight on the ridge's top: brightest toward the sun, fading away from it
@@ -656,7 +658,7 @@ const CR = (() => {
       }
       // mist lying in the valley below this ridge: thickest low down, fading up the next ridge; strongest far off
       const mb = by(base + amp * .9), g = c.createLinearGradient(0, mb - 34 * B, 0, mb + 26 * B);
-      const ma = (.62 - .07 * i) * (.75 + .25 * gold) * (LOOKF ? 1.2 : 1) * (1 - .35 * night);
+      const ma = (.62 - .07 * i) * (.75 + .25 * gold) * (LOOKF ? 1.2 : 1) * (1 - .9 * night);
       g.addColorStop(0, css(mistC, 0)); g.addColorStop(.62, css(mistC, ma)); g.addColorStop(1, css(mistC, ma * .5));
       c.fillStyle = g; c.fillRect(0, mb - 34 * B, VW, 60 * B);
     });
@@ -961,7 +963,7 @@ const CR = (() => {
       const s = SK_H / 1080; c.save(); c.translate(SK_X, 0); c.scale(s, s); c.drawImage(HPAINT, HP_X - 4380, HP_TOP, HP_W, HP_H); c.restore();
       // the painting takes the hill's own colour through the dawn (its lightness kept); the crag of ?look=f keeps its own
       // painted colours and is only darkened before the sun is up
-      if (LOOKF) { c.globalCompositeOperation = 'multiply'; c.fillStyle = css(H618 ? mix(mix(mix([40, 36, 44], [26, 24, 32], night), [74, 62, 60], dawn), mix([255, 248, 240], [150, 132, 124], SUN_T), gold) : mix(mix(mix([60, 52, 58], [30, 28, 38], night), [112, 96, 90], dawn), [255, 246, 236], gold)); c.fillRect(x0, -H_TOP - 700, x1 - x0, H_TOP + 2800);
+      if (LOOKF) { c.globalCompositeOperation = 'multiply'; c.fillStyle = css(H618 ? mix(mix(mix([40, 36, 44], [13, 14, 17], night), [74, 62, 60], dawn), mix([255, 248, 240], [150, 132, 124], SUN_T), gold) : mix(mix(mix([60, 52, 58], [30, 28, 38], night), [112, 96, 90], dawn), [255, 246, 236], gold)); c.fillRect(x0, -H_TOP - 700, x1 - x0, H_TOP + 2800);
         // (build 627) 618's painting at sunrise held between its own colours and 625's one rust (owner: "too colorful ... the less
         // bright 625 is better though maybe a bit monochromatic"): darker (above) and pulled part way toward one rust hue
         if (H618 && gold > 0) { c.globalCompositeOperation = 'color'; c.globalAlpha = Math.min(1, SUN_T * 1.2) * gold; c.fillStyle = 'rgb(150,72,44)'; c.fillRect(x0, -H_TOP - 700, x1 - x0, H_TOP + 2800); c.globalAlpha = 1; } c.globalCompositeOperation = 'source-over'; } else {
@@ -1033,44 +1035,27 @@ const CR = (() => {
     }
   }
   // the wall of Salvation: a low coursed wall behind the way, ending where the land opens
-  // the wall called Salvation in the same stone as the wicket-gate's wall of Level 3, before it was cut in section (owner,
-  // build 629: "wall looks awful - consider the wall at the end of level 2 [3] a while back ... worked on that a long time -
-  // that was good"): the patchwork of four CC0 flint-wall photographs (gate-wall.webp, builds 235 to 241) softened toward
-  // watercolour as hill.js softens it (a quarter-size copy laid over at .7, its mean colour at .22), the stones about 15
-  // units, under a row of rough rounded cap stones of every width, now and then one missing (as build 216's). The book gives
-  // no height ({92}: "fenced on either side with a wall"); men "come tumbling over" it later, so about chest-high to him.
-  // Painted once at 2 px a unit, at night (dim, cool, a little light from the sky on its top) and at sunrise; crossfaded.
+  // the wall called Salvation in Level 1's own city-wall painting (owner, build 630: "wall doesn't look very good - level 1
+  // night was much better - things are dark at night"): assets/wall.webp below its battlements (WALL_TOP rows, as index.html
+  // cuts it), its top a worn coping that dips and rises with now and then a stone gone, the pieces laid end to end with
+  // every other one mirrored, scaled so its stones sit right for a low wall. The book gives no height ({92}: "fenced on
+  // either side with a wall"); men "come tumbling over" it later, so about chest-high to him. Dark at night, warm at sunrise.
   const WALL_H = 92, WALL_X0 = Math.min(-600, START - 900);
   let WALLC = null, WALLP = null;
-  function softenW(im, f, a, flat) {
-    const w = im.width, h = im.height, T = mk(w * 3, h * 3), t = T.getContext('2d');
-    for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) t.drawImage(im, i * w, j * h);
-    let src = T, sw = T.width, sh = T.height; const tw = Math.round(T.width / f), th = Math.round(T.height / f);
-    while (sw > tw) { const nw = Math.max(tw, Math.round(sw / 2)), nh = Math.max(th, Math.round(sh / 2)), q = mk(nw, nh); q.getContext('2d').drawImage(src, 0, 0, sw, sh, 0, 0, nw, nh); src = q; sw = nw; sh = nh; }
-    const out = mk(w, h), o = out.getContext('2d'); o.drawImage(im, 0, 0); o.globalAlpha = a; o.drawImage(src, sw / 3, sh / 3, sw / 3, sh / 3, 0, 0, w, h); o.globalAlpha = 1;
-    const m = mk(1, 1), mq = m.getContext('2d'); mq.drawImage(src, 0, 0, 1, 1); const d = mq.getImageData(0, 0, 1, 1).data;
-    o.fillStyle = `rgba(${d[0]},${d[1]},${d[2]},${flat})`; o.fillRect(0, 0, w, h); return out;
-  }
-  if (/[?&]look=f\b/.test(location.search)) loadImg('gate-wall.webp').then(im => { if (im) { WALLP = softenW(im, 4, .7, .22); WALLC = null; } }).catch(() => {});
+  if (/[?&]look=f\b/.test(location.search)) loadImg('wall.webp').then(im => { if (im) { WALLP = im; WALLC = null; } }).catch(() => {});
   function bakeWall(night) {
-    const S = 2, L = WALL_END - WALL_X0, W = (L + 10) * S, H = (WALL_H + 40) * S, cv = mk(W, H), q = cv.getContext('2d'), r = rgen(216);
-    q.scale(S, S); const G = WALL_H + 36, top = x => WALL_H + 2.4 * Math.sin(x / 150) + 1.6 * Math.sin(x / 53 + 1);
-    // the body of the wall and its cap stones as one shape
-    q.beginPath(); q.moveTo(0, G); q.lineTo(0, G - top(0));
-    for (let x = 0; x < L;) { const w = 14 + r() * 24, hh = 1 + r() * 4.5, miss = r() < .05, y = G - top(x + w / 2);
-      if (miss) { q.lineTo(x + w, y + 1.5); x += w; continue; }
-      q.lineTo(x + .6, y); q.bezierCurveTo(x + w * .1, y - hh, x + w * .9, y - hh * (.7 + r() * .5), x + w - .6, y); x += w; }
-    q.lineTo(L, G - top(L)); q.lineTo(L, G); q.closePath(); q.save(); q.clip();
-    const pat = q.createPattern(WALLP, 'repeat'), k = 470 / WALLP.width; pat.setTransform(new DOMMatrix([k, 0, 0, k, 0, G - WALL_H - 8]));
-    q.fillStyle = pat; q.fillRect(0, 0, L + 10, G);
-    // the light: a little from the sky on the top, falling away to its foot; at sunrise warm
+    const S = 2, L = WALL_END - WALL_X0, W = (L + 10) * S, H = (WALL_H + 20) * S, cv = mk(W, H), q = cv.getContext('2d'), r = rgen(41);
+    q.scale(S, S); const G = WALL_H + 16, Y0 = 112, k = WALL_H / (400 - Y0), pw = WALLP.width * k;
+    // the worn coping: a profile along the top
+    q.beginPath(); q.moveTo(0, G); let x = 0; while (x < L) { const w = 13 + r() * 30, d = r() < .2 ? 4 + r() * 4 : r() * 2.2; q.lineTo(x, G - WALL_H + d); q.lineTo(Math.min(L, x + w), G - WALL_H + d); x += w; }
+    q.lineTo(L, G); q.closePath(); q.save(); q.clip();
+    for (let n = 0, px = 0; px < L; n++, px += pw) { q.save(); if (n % 2) { q.translate(px + pw, 0); q.scale(-1, 1); } else q.translate(px, 0); q.drawImage(WALLP, 0, Y0, WALLP.width, 400 - Y0, -.3, G - WALL_H, pw + .6, WALL_H); q.restore(); }
+    // dark at night (a faint cool light from the sky on its top), warm at sunrise
     q.globalCompositeOperation = 'multiply';
-    const g = q.createLinearGradient(0, G - WALL_H - 8, 0, G);
-    if (night) { g.addColorStop(0, 'rgb(118,126,160)'); g.addColorStop(.25, 'rgb(74,80,108)'); g.addColorStop(1, 'rgb(34,36,52)'); }
-    else { g.addColorStop(0, 'rgb(236,206,170)'); g.addColorStop(.3, 'rgb(170,140,118)'); g.addColorStop(1, 'rgb(82,64,56)'); }
-    q.fillStyle = g; q.fillRect(0, 0, L + 10, G);
-    q.globalCompositeOperation = 'source-over'; q.restore();
-    // the cap stones' tops catch the sky a hair
+    const g = q.createLinearGradient(0, G - WALL_H, 0, G);
+    if (night) { g.addColorStop(0, 'rgb(46,58,64)'); g.addColorStop(.3, 'rgb(26,32,38)'); g.addColorStop(1, 'rgb(12,14,17)'); }
+    else { g.addColorStop(0, 'rgb(236,206,170)'); g.addColorStop(.35, 'rgb(176,146,122)'); g.addColorStop(1, 'rgb(96,76,64)'); }
+    q.fillStyle = g; q.fillRect(0, 0, L + 10, G); q.restore();
     return { cv, S, G };
   }
   function wall(c) {
@@ -1695,7 +1680,7 @@ const CR = (() => {
   // remove the entire scene changes"; my advice, agreed: no lines between the stars, places in the sky, people on the
   // path). Only with ?look=f. Ours, not the book's (he leaves the Interpreter's house at night, so 3am fits).
   const NIGHT_ON = /[?&]look=f\b/.test(location.search);
-  const NIGHTC = [[4, 6, 16], [14, 18, 36], [52, 60, 88]];
+  const NIGHTC = [[6, 13, 19], [18, 32, 40], [74, 88, 88]];
   // the stars, plentiful and bright enough to be the picture at 3am (owner, build 629: "the starry sky should be more
   // prominent"): a scatter of many small ones, a few large, and a faint band of the Milky Way
   const STARS = (() => { const r = rgen(41), A = []; for (let i = 0; i < 380; i++) A.push({ x: r(), y: Math.pow(r(), 1.3) * .6, s: .4 + r() * r() * r() * 2.4, b: .3 + r() * .7, p: r() * 6.28, f: 30 + r() * 60 });
@@ -1726,25 +1711,32 @@ const CR = (() => {
     for (let k = 0; k < E.length * 3 && out.length < n; k++) { const p = E[Math.floor(r() * E.length)]; if (out.every(o => Math.hypot(o[0] - p[0], o[1] - p[1]) > minD)) out.push(p); }
     return out.map(([x, y]) => [x / W + (r() - .5) * .012, y / H + (r() - .5) * .02]);
   }
+  // (build 630, owner: "the first set of stars should be rendition of arm/ hand reaching out (maybe his wive's reaching out
+  // for him) - make it subtle (think classic constellation), the second constellation can be the beautiful tree overhanging
+  // the slough - again subtle but clean , finally the last constellation can be lightning from the mountain in level
+  // three"): each a classic constellation, a few stars at its points joined by the faintest lines, across the sky
   const CONST = [
-    // (build 629, owner: "should show one at a time, should take up whole sky each and be much more subtle"): each spans
-    // the sky, comes only once the one before has gone, and is just a little brighter than the stars round it
-    { at: START + 150, cx: .5, cy: .27, w: .92, h: .4, kind: 'city', voice: MEMS[0] },
-    { at: START + 600, cx: .5, cy: .26, w: .62, h: .46, kind: 'oak', voice: { who: C, txt: 'There shall be no more crying, nor sorrow. We shall shine like the sun.' } },
-    { at: START + 1100, cx: .5, cy: .27, w: .94, h: .38, kind: 'hill', voice: { who: E, txt: 'What are you doing here, Christian? You are out of the way.' } },
+    { at: START + 150, cx: .5, cy: .3, w: .62, h: .52, kind: 'hand', voice: { who: W, txt: 'Christian! Come back!' } },
+    { at: START + 600, cx: .5, cy: .27, w: .6, h: .5, kind: 'oak', voice: { who: C, txt: 'There shall be no more crying, nor sorrow. We shall shine like the sun.' } },
+    { at: START + 1100, cx: .4, cy: .26, w: .62, h: .48, kind: 'bolt', voice: { who: E, txt: 'What are you doing here, Christian? You are out of the way.' } },
   ];
   const CONST_HOLD = 420;
   CONST.forEach(k => { k.t = -1; k.said = false; k.P = null; k.f0 = null; });
   let HILLROCK = null; if (NIGHT_ON) loadImg('hill-rock.webp').then(im => { HILLROCK = im; }).catch(() => {});
-  function constPts(k) {
-    if (k.P) return k.P; const r = rgen(k.kind.length * 13 + 5);
-    if (k.kind === 'city') { k.P = polyStars(CITY, 110, r); k.warm = [];
-      // his own lit door, and a few lit windows
-      k.P.push([.22, .9]); k.warm.push(k.P.length - 1); for (const w of []) { k.P.push(w); k.warm.push(k.P.length - 1); } }
-    else if (k.kind === 'oak') { if (!(typeof SL !== 'undefined' && SL.oakPic)) return null; const ob = SL.oakPic([0, 0, 0], .5), im = ob && ob.c; if (!im) return null; k.P = edgeStars(im, 90, false, r); }
-    else { if (!HILLROCK) return null; k.P = edgeStars(HILLROCK, 80, true, r).filter(p => p[1] < .86); let m = 0; k.P.forEach((p, j) => { if (p[1] < k.P[m][1]) m = j; }); k.warm = [m]; }
-    return k.P;
-  }
+  // the figures: points (x, y in the box, 0..1; a third number = a brighter star) and the lines between them
+  const SHAPES_C = {
+    // a woman's arm reaching up out of the lower left, the hand open, fingers spread toward him
+    hand: { V: [[.02, .98], [.18, .82], [.34, .66, 1], [.48, .52], [.58, .42, 1], [.62, .36], [.6, .26], [.64, .16, 1], [.7, .3], [.79, .14, 1], [.73, .34], [.85, .22, 1], [.74, .39], [.87, .33, 1], [.72, .43], [.83, .44, 1]],
+      E: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 7], [5, 8], [8, 9], [5, 10], [10, 11], [4, 12], [12, 13], [4, 14], [14, 15]] },
+    // the great oak of the Slough: a short thick trunk, its limbs sweeping out, the long one nearly level over the water
+    oak: { V: [[.42, 1], [.47, 1], [.44, .7], [.46, .58, 1], [.3, .44], [.14, .4, 1], [.04, .5], [.34, .26], [.26, .1, 1], [.5, .34], [.54, .1, 1], [.62, .42], [.8, .4], [.98, .46, 1], [.66, .28], [.8, .16, 1], [.88, .5]],
+      E: [[0, 2], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [3, 7], [7, 8], [3, 9], [9, 10], [3, 11], [11, 12], [12, 13], [11, 14], [14, 15], [12, 16]] },
+    // the burning hill and the lightning that struck it: the hill's breaking-wave outline low, the bolt down to its summit
+    bolt: { V: [[0, 1], [.14, .84], [.3, .7], [.44, .62, 1], [.52, .6], [.56, .66], [.6, .78], [.74, .86], [1, .92], [.58, 0, 1], [.52, .14], [.6, .26], [.5, .4], [.55, .48], [.47, .6], [.66, .2], [.78, .3]],
+      E: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 7], [7, 8], [9, 10], [10, 11], [11, 12], [12, 13], [13, 14], [11, 15], [15, 16]] },
+  };
+  function constPts(k) { return SHAPES_C[k.kind]; }
+
   const skyX = x0 => ((x0 * VW * 1.3 - cam.cx * .012) % (VW * 1.3) + VW * 1.3) % (VW * 1.3) - VW * .15;
   function stars(c) {
     const a0 = night * (1 - gold);
@@ -1757,14 +1749,16 @@ const CR = (() => {
       if (s.s > 1.4) { c.beginPath(); c.arc(x, y, s.s * .6, 0, 6.2832); c.fill(); c.fillStyle = `rgba(200,210,240,${a * .18})`; c.beginPath(); c.arc(x, y, s.s * 2, 0, 6.2832); c.fill(); }
       else c.fillRect(x - s.s / 2, y - s.s / 2, s.s, s.s); }
     for (const k of CONST) {
-      if (k.t < 0) continue; const P = constPts(k); if (!P) continue;
+      if (k.t < 0) continue; const SH = constPts(k); if (!SH) continue;
       const kk = smooth(0, 90, k.t) * (k.f0 == null ? 1 : 1 - smooth(k.f0, k.f0 + 110, k.t)); if (kk < .01) continue;
-      const W = k.w * VW, Hh = k.h * VH, X0 = VW * k.cx, Y0 = VH * k.cy;
-      P.forEach(([u, v], j) => {
-        const x = X0 + (u - .5) * W, y = Y0 + (v - .5) * Hh, warm = k.warm && k.warm.includes(j), tw = .75 + .25 * Math.sin(G.t / (40 + j % 9 * 7) + j);
-        const a = a0 * kk * tw * (.5 + .35 * ((j * 7) % 5) / 4), r = .7 + .5 * ((j * 3) % 4) / 3, col = warm ? [255, 220, 176] : [226, 232, 250];
-        const g = c.createRadialGradient(x, y, 0, x, y, 4); g.addColorStop(0, css(col, .16 * a)); g.addColorStop(1, css(col, 0)); c.fillStyle = g; c.fillRect(x - 4, y - 4, 8, 8);
-        c.fillStyle = css(col, a); c.beginPath(); c.arc(x, y, r, 0, 6.2832); c.fill();
+      const W = k.w * VW, Hh = k.h * VH, X0 = VW * k.cx, Y0 = VH * k.cy, P = SH.V.map(([u, v]) => [X0 + (u - .5) * W, Y0 + (v - .5) * Hh]);
+      // the faintest lines, as on an old star chart
+      c.strokeStyle = css([200, 210, 236], .09 * kk * a0); c.lineWidth = .7; c.beginPath();
+      for (const [a, b] of SH.E) { c.moveTo(P[a][0], P[a][1]); c.lineTo(P[b][0], P[b][1]); } c.stroke();
+      SH.V.forEach((v, j) => {
+        const [x, y] = P[j], br = v[2] ? 1 : 0, tw = .8 + .2 * Math.sin(G.t / (40 + j % 9 * 7) + j), a = a0 * kk * tw * (br ? .85 : .55), r = br ? 1.35 : .95;
+        const g = c.createRadialGradient(x, y, 0, x, y, br ? 7 : 4.5); g.addColorStop(0, css([226, 232, 250], .2 * a)); g.addColorStop(1, 'rgba(226,232,250,0)'); c.fillStyle = g; c.fillRect(x - 8, y - 8, 16, 16);
+        c.fillStyle = css([236, 240, 255], a); c.beginPath(); c.arc(x, y, r, 0, 6.2832); c.fill();
       });
     }
     c.restore();
