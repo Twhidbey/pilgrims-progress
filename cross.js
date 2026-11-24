@@ -292,13 +292,14 @@ const CR = (() => {
   // ---------- camera ----------
   const sx = x => (x - cam.cx) * cam.z + VW / 2, sy = h => cam.wl - h * cam.z;
   const FOOTY = 418, HY = 322;
-  // THE TELEPHOTO (owner: "There's a lot of parallax when you zoom in and out - I'm thinking if we imagine we are super far
-  // away and zoom in with zoom lens the shifting won't happen as much"): the sky, the far ridges and their mist were drawn at
-  // one fixed size on the screen while the hill zoomed, so every zoom slid the hill against them. Now, as through a long lens
-  // from far off, they zoom WITH the hill: scaled by the camera's zoom against BG_Z0 (the near camera, where they look as
-  // before), about the point the camera zooms about (the middle of the picture across, his feet at FOOTY up and down).
-  // ?tele=0 for the old way; ?tele=.8 a little depth kept (the power on the zoom).
-  const BG_A = +(new URLSearchParams(location.search).get('tele') ?? 1), BG_Z0 = .8;
+  // THE TELEPHOTO, second try (owner, of build 621's ridges zooming with the hill: "liked the old one best in terms of heights
+  // of hills - I think what's more annoying is how the hills horizontal positions change relative to each other"): their
+  // heights and sizes are as before build 621 (fixed on the screen), but the ridges no longer slide past one another as he
+  // goes: as through a long lens from far off, every ridge slides at nearly ONE pace (`PAN`: each layer's old pace pulled
+  // most of the way to the middle one). ?pan=1 keeps the old spread of paces; ?pan=0 slides them all exactly together.
+  // ?tele=1 brings back build 621's zooming of the whole background.
+  const QS = new URLSearchParams(location.search), BG_A = +(QS.get('tele') ?? 0), BG_Z0 = .8;
+  const PAN_K = +(QS.get('pan') ?? .15), PAN_MID = .06, PAN = p => PAN_MID + (p - PAN_MID) * PAN_K;
   const bgS = () => Math.pow(cam.z / BG_Z0, BG_A), by = y => FOOTY + (y - FOOTY) * bgS();
   function camTick(snap) {
     const near = { cx: Ch.x + lerp(250, 150, closeK), z: lerp(.8, 1.15, closeK) };
@@ -611,14 +612,14 @@ const CR = (() => {
         ? mix(col, mix(mix([62, 44, 46], [88, 54, 50], dawn), [104, 58, 48], gold), (i - 1) / 5 * .75)
         : mix(col, mix(mix([56, 44, 44], [70, 52, 48], dawn), [84, 56, 46], gold), (i - 1) / 5 * (.45 + .4 * gold));
       c.beginPath(); c.moveTo(0, VH);
-      for (let X = 0; X <= VW + 8; X += 6) c.lineTo(X, by(rrY(i, VW / 2 + (X - VW / 2) / B + cam.cx * p * 6, base, amp)));
+      for (let X = 0; X <= VW + 8; X += 6) c.lineTo(X, by(rrY(i, VW / 2 + (X - VW / 2) / B + cam.cx * PAN(p) * 6, base, amp)));
       c.lineTo(VW, VH); c.closePath(); c.fillStyle = css(col); c.fill();
       if (gold > .02 && !LOOKF) {
         // backlight on the ridge's top: brightest toward the sun, fading away from it
         const sxs = sx(CROSS_X + SUN_DX), g = c.createLinearGradient(0, 0, VW, 0);
         for (let q = 0; q <= 8; q++) { const X = q / 8 * VW, k = Math.exp(-Math.pow((X - sxs) / (VW * .45), 2)); g.addColorStop(q / 8, css([255, 150, 74], (.25 + .1 * i) * gold * k)); }
         c.save(); c.strokeStyle = g; c.lineWidth = 2.2 + .5 * i; c.beginPath();
-        for (let X = 0; X <= VW + 8; X += 6) c.lineTo(X, by(rrY(i, VW / 2 + (X - VW / 2) / B + cam.cx * p * 6, base, amp)) + 1); c.stroke(); c.restore();
+        for (let X = 0; X <= VW + 8; X += 6) c.lineTo(X, by(rrY(i, VW / 2 + (X - VW / 2) / B + cam.cx * PAN(p) * 6, base, amp)) + 1); c.stroke(); c.restore();
       }
       // mist lying in the valley below this ridge: thickest low down, fading up the next ridge; strongest far off
       const mb = by(base + amp * .9), g = c.createLinearGradient(0, mb - 34 * B, 0, mb + 26 * B);
@@ -642,7 +643,7 @@ const CR = (() => {
     L.forEach(([base, amp, p, c0, c1, h0, h1], i) => {
       const col = mix(mix(c0, mix(c0, c1, .4), dawn), c1, gold), hz0 = mix(mix(h0, mix(h0, h1, .4), dawn), h1, gold);
       c.beginPath(); c.moveTo(0, VH);
-      for (let X = 0; X <= VW + 8; X += 8) c.lineTo(X, by(ridgeY(i, VW / 2 + (X - VW / 2) / B + cam.cx * p * 6, base, amp)));
+      for (let X = 0; X <= VW + 8; X += 8) c.lineTo(X, by(ridgeY(i, VW / 2 + (X - VW / 2) / B + cam.cx * PAN(p) * 6, base, amp)));
       c.lineTo(VW, VH); c.closePath(); c.fillStyle = css(col); c.fill();
       const g = c.createLinearGradient(0, by(base - 18), 0, by(base + 30)); g.addColorStop(0, css(hz0, 0)); g.addColorStop(.5, css(hz0, .45)); g.addColorStop(1, css(hz0, 0)); c.fillStyle = g; c.fillRect(0, by(base - 18), VW, 48 * B);
     });
