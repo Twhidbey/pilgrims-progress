@@ -1484,7 +1484,8 @@ const CR = (() => {
     // (build 655, owner: "maybe start zooming after sun rise and just keep slow zooming until the rest"): the sun
     // rises over the whole hill in the wide shot; once it is up the camera comes in to him in ONE slow steady move
     // (about a minute, eased at both ends), never back and forth
-    if (sunGo && sunT > ZOOM_AT) { zoomP = Math.min(1, zoomP + 1 / ZOOM_LEN); wideTo = 1 - zoomP * zoomP * (3 - 2 * zoomP); }
+    if (sunGo && sunT > ZOOM_AT) { zoomP = Math.min(1, zoomP + 1 / ZOOM_LEN); // (build 656, owner: "it can go faster at the beginning ... and then slow down as we reach closer"): quick at first, slowing all the way in
+      wideTo = Math.pow(1 - zoomP, 2.4); }
     // the sun never sinks on the screen: it keeps the highest place it has reached and drifts slowly up
     if (sunYr != null) sunYr = Math.max(VH * .1, sunYr - .02);
     wideK += (wideTo - wideK) * .02;
