@@ -559,7 +559,8 @@ const CR = (() => {
     const st = [0, 1, 2].map(i => mix(mix(mix(mix(pre[i], dw[i], dawn), gd[i], gold), gl[i], GL * .85), NIGHTC[i], night));
     const g = c.createLinearGradient(0, Math.min(0, by(0)), 0, by(HY + 40)); g.addColorStop(0, css(st[0])); g.addColorStop(.6, css(st[1])); g.addColorStop(1, css(st[2]));
     c.fillStyle = g; c.fillRect(0, 0, VW, VH);
-    if (night > .01) { stars(c); nightClouds(c); }
+    // (build 632) open sky: no clouds (owner: "the simplicity of stars and open sky is nice")
+    if (night > .01) stars(c);
     // the far light, low behind the crown before dawn; the sun breaking behind the crown, rising behind where the
     // beams cross, and on up the sky (kept inside the picture)
     const cxs = sx(CROSS_X + SUN_DX), top = sy(crossH() + CROSS_BY + 4), y0 = sy(crossH()) + 40, sY = LOOKF
@@ -1681,7 +1682,7 @@ const CR = (() => {
   // remove the entire scene changes"; my advice, agreed: no lines between the stars, places in the sky, people on the
   // path). Only with ?look=f. Ours, not the book's (he leaves the Interpreter's house at night, so 3am fits).
   const NIGHT_ON = /[?&]look=f\b/.test(location.search);
-  const NIGHTC = [[5, 11, 26], [16, 32, 52], [72, 90, 98]];
+  const NIGHTC = [[8, 12, 24], [22, 32, 46], [74, 86, 96]];
   // the stars, plentiful and bright enough to be the picture at 3am (owner, build 629: "the starry sky should be more
   // prominent"): a scatter of many small ones, a few large, and a faint band of the Milky Way
   const STARS = (() => { const r = rgen(41), A = []; for (let i = 0; i < 380; i++) A.push({ x: r(), y: Math.pow(r(), 1.3) * .6, s: .4 + r() * r() * r() * 2.4, b: .3 + r() * .7, p: r() * 6.28, f: 30 + r() * 60 });
