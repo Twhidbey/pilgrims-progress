@@ -1074,14 +1074,18 @@ const CR = (() => {
         rocks.push([x + w / 2, y - h / 2 + (r() - .5) * 3, w, h, hgt]); x += w * (.82 + r() * .12); }
       y -= ch * .78; }
     // the top: a line of rounded cope rocks set close, irregular
-    const tops = []; for (let x = 0; x < L;) { const w = 14 + r() * 22, h = 9 + r() * 8; tops.push([x + w / 2, G - WALL_H - h * .2 + (r() - .5) * 2.5, w, h, 1]); x += w * .86; }
-    const all = rocks.concat(tops).map(k => [...k, rock(k[0], k[1], k[2], k[3])]);
+    // (build 644, owner: "top of wall need [more] - what would be most realistic and natural?"): the traditional cope of a
+    // dry-stone wall, "cock and hen": flat stones set upright on edge along the top, packed tight, a taller one every few,
+    // each leaning a little the same way, so the crest is a ragged comb of stone, not a row of pebbles
+    const tops = []; for (let x = -4, i = 0; x < L + 4; i++) { const tall = r() < .28, w = 5 + r() * 6, h = (tall ? 15 : 10) + r() * 5; tops.push([x + w / 2, G - WALL_H + 5 - h / 2, w, h, 1, .14 + (r() - .5) * .16]); x += w * .72; }
+    const slab = (cx, cy, w, h, lean) => { const P = [], s1 = Math.sin(lean); for (const [u, v] of [[-.5, .5], [-.46, -.1], [-.5 + r() * .15, -.5], [.5 - r() * .2, -.5 + r() * .1], [.5, -.05], [.46, .5]]) P.push([cx + u * w - v * h * s1, cy + v * h]); return P; };
+    const all = rocks.map(k => [...k, rock(k[0], k[1], k[2], k[3])]).concat(tops.map(k => [k[0], k[1], k[2], k[3], 1, slab(k[0], k[1], k[2], k[3], k[5])]));
     // the body: every rock filled dark (a breath of variation), drawn low to high so upper rocks sit on lower
     for (const [cx, cy, w, h, hg, P] of all) { path(P); const v = (r() - .5) * 6; q.fillStyle = css(body.map(c => Math.max(0, c + v))); q.fill(); }
     // the moonlit rims: the upper edge of each rock, a hair wide, brighter toward the top; the top line strongest
     for (const [cx, cy, w, h, hg, P] of all) {
       q.save(); path(P); q.clip();
-      const top = hg >= 1, a = (top ? .42 : .04 + .14 * Math.pow(hg, 1.6)) * (night ? 1 : .8), g = q.createLinearGradient(0, cy - h / 2, 0, cy - h / 2 + (top ? 4 : 3));
+      const top = hg >= 1, a = (top ? .15 : .04 + .14 * Math.pow(hg, 1.6)) * (night ? 1 : .8), g = q.createLinearGradient(0, cy - h / 2, 0, cy - h / 2 + (top ? 4 : 3));
       g.addColorStop(0, css(rimC, a)); g.addColorStop(1, css(rimC, 0)); q.fillStyle = g; q.fillRect(cx - w, cy - h, w * 2, h); q.restore();
     }
     return { cv, S, G };
@@ -1801,28 +1805,31 @@ const CR = (() => {
   const ease = u => u < .5 ? 2 * u * u : 1 - 2 * (1 - u) * (1 - u);
   const STARS2 = (() => { const r = rgen(53), out = []; for (let i = 0; i < 260; i++) out.push({ x: r(), y: r() * .7, s: .5 + r() * .9, b: .25 + r() * .45, f: 30 + r() * 60, p: r() * 6.3 }); return out; })();
   // his arm in starlight: shoulder (120, 70) and fingertip (235, 20) in EVA's frame 79
-  const EVARM = { f: 79, x0: 150, y0: 10, w: 90, h: 50, sh: [160, 47], tip: [235, 20], from: [.43, .135], to: [.66, .07] };
+  const EVARM = { f: 79, x0: 150, y0: 10, w: 90, h: 50, sh: [160, 47], tip: [235, 20], from: [.34, .175], to: [.66, .07] };
+  // (build 644, owner: "you're sticking very close to arm/hand drawing in game - you can do something more generic and
+  // fitting with stars"): the hand is no longer his painted arm: a simple pointing hand drawn as a constellation would be,
+  // a faint cool nebula in its shape, small stars along its outline, brighter ones at the knuckle, the wrist and the
+  // fingertip. Made once in its own frame: the wrist end at x 0, the fingertip at x 1 (units of its length).
+  const HANDP = [[0, -.07], [.2, -.072], [.42, -.066], [.47, -.082], [.52, -.084], [.6, -.086], [.68, -.074], [.72, -.05],
+    [.86, -.038], [.98, -.03], [1.01, -.016], [.99, -.002], [.86, -.006], [.77, -.002], [.75, .025], [.72, .052], [.66, .068],
+    [.58, .066], [.52, .054], [.47, .062], [.42, .064], [.2, .066], [0, .066]];
   let EVG = null;
   function evGhost() {
-    if (EVG || !EVA.ready || !EVA[EVARM.f]) return EVG; const A = EVARM, im = EVA[A.f];
-    const cr = mk(A.w, A.h), q = cr.getContext('2d'); q.drawImage(im, -A.x0, -A.y0);
-    // the staff's top above the arm is not part of the arm
-    q.clearRect(158 - A.x0, 0, 30, 33 - A.y0);
-    q.globalCompositeOperation = 'destination-out';
-    let g = q.createLinearGradient(0, 0, 30, 0); g.addColorStop(0, 'rgba(0,0,0,1)'); g.addColorStop(1, 'rgba(0,0,0,0)'); q.fillStyle = g; q.fillRect(0, 0, A.w, A.h);
-    g = q.createLinearGradient(0, A.h - 12, 0, A.h); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,1)'); q.fillStyle = g; q.fillRect(0, 0, A.w, A.h);
-    const D = q.getImageData(0, 0, A.w, A.h).data;
-    // light: the arm's shape filled with a cool starlight, a soft glow round it (made small and drawn back up)
-    q.globalCompositeOperation = 'source-atop'; q.fillStyle = 'rgb(214,224,255)'; q.fillRect(0, 0, A.w, A.h);
-    const glow = mk(A.w + 40, A.h + 40), qg = glow.getContext('2d'); qg.drawImage(cr, 20, 20);
-    for (const d of [2, 3]) { const t1 = mk(Math.ceil(glow.width / d), Math.ceil(glow.height / d)); t1.getContext('2d').drawImage(glow, 0, 0, t1.width, t1.height); qg.clearRect(0, 0, glow.width, glow.height); qg.drawImage(t1, 0, 0, glow.width, glow.height); }
-    // a scatter of small stars along its outline, revealed from the fingertip back to the shoulder
-    const pts = [], r = rgen(11);
-    for (let y = 1; y < A.h - 1; y++) for (let x = 1; x < A.w - 1; x++) { const a = D[(y * A.w + x) * 4 + 3]; if (a < 120) continue;
-      const edge = D[(y * A.w + x - 1) * 4 + 3] < 120 || D[(y * A.w + x + 1) * 4 + 3] < 120 || D[((y - 1) * A.w + x) * 4 + 3] < 120 || D[((y + 1) * A.w + x) * 4 + 3] < 120;
-      if ((edge && r() < .34) || r() < .02) pts.push({ x: x + A.x0, y: y + A.y0, s: edge ? .7 + r() * .8 : .5 + r() * .5, d: Math.hypot(x + A.x0 - A.tip[0], y + A.y0 - A.tip[1]), p: r() * 6.3 }); }
-    const dm = Math.max(...pts.map(q => q.d)); pts.forEach(q => q.d /= dm);
-    return (EVG = { cr, glow, pts });
+    if (EVG) return EVG; const L = 560, M = 40, W = L + 2 * M, H = 160, cv = mk(W, H), q = cv.getContext('2d'), X = u => M + u * L, Y = v => H / 2 + v * L;
+    q.beginPath(); HANDP.forEach(([u, v], i) => i ? q.lineTo(X(u), Y(v)) : q.moveTo(X(u), Y(v))); q.closePath();
+    const g = q.createLinearGradient(X(0), 0, X(1), 0); g.addColorStop(0, 'rgba(170,186,236,0)'); g.addColorStop(.3, 'rgba(170,186,236,.7)'); g.addColorStop(1, 'rgba(206,216,250,1)');
+    q.fillStyle = g; q.fill();
+    // a nebula, not a picture: blurred well past its outline by halving and doubling back
+    let cur = cv; for (const d of [2, 2, 2, 2]) { const t = mk(Math.ceil(cur.width / d), Math.ceil(cur.height / d)); t.getContext('2d').drawImage(cur, 0, 0, t.width, t.height); cur = t; }
+    const glow = mk(W, H), qg = glow.getContext('2d'); let up = cur; while (up.width < W / 1.9) { const t = mk(up.width * 2, up.height * 2); t.getContext('2d').drawImage(up, 0, 0, t.width, t.height); up = t; } qg.drawImage(up, 0, 0, W, H);
+    // stars along its outline, a few within; brighter at the fingertip, the knuckle and the wrist
+    const r = rgen(11), pts = [], key = [[1.01, -.016, 2.6], [.68, -.074, 2], [.47, -.082, 1.6], [.72, .052, 1.4]];
+    for (let i = 0; i < HANDP.length - 1; i++) { const [u0, v0] = HANDP[i], [u1, v1] = HANDP[i + 1], n = Math.max(1, Math.round(Math.hypot(u1 - u0, v1 - v0) * 34));
+      for (let j = 0; j < n; j++) { if (r() < .35) continue; const t = (j + r()) / n, u = u0 + (u1 - u0) * t, v = v0 + (v1 - v0) * t; pts.push({ u, v: v + (r() - .5) * .006, s: .6 + r() * .9, p: r() * 6.3 }); } }
+    for (let i = 0; i < 14; i++) { const u = .1 + r() * .82, v = (r() - .5) * .09 * (u > .72 ? .4 : 1); pts.push({ u, v, s: .4 + r() * .5, p: r() * 6.3 }); }
+    for (const [u, v, s] of key) pts.push({ u, v, s, p: r() * 6.3, key: 1 });
+    pts.forEach(q => { q.d = 1 - q.u; });
+    return (EVG = { glow, pts, L, M, H });
   }
   function evNova(c, k, P, A0) {
     // waiting: a glint now and then on the great star, asking to be touched
@@ -1845,13 +1852,15 @@ const CR = (() => {
     // his arm and pointing hand, filling in out of the light from the fingertip back to the shoulder
     const E = evGhost(); if (!E || n < 130) return;
     const W = k.w * VW, Hh = k.h * VH, X0 = VW * k.cx, Y0 = VH * k.cy, at = (u, v) => [X0 + (u - .5) * W, Y0 + (v - .5) * Hh];
-    const [ax, ay] = at(...EVARM.from), [bx, by2] = at(...EVARM.to), A = EVARM, vx = A.tip[0] - A.sh[0], vy = A.tip[1] - A.sh[1];
-    const K = Math.hypot(bx - ax, by2 - ay) / Math.hypot(vx, vy), rot = Math.atan2(by2 - ay, bx - ax) - Math.atan2(vy, vx), rv = smooth(130, 300, n);
-    c.save(); c.translate(ax, ay); c.rotate(rot); c.scale(K, K); c.translate(-A.sh[0], -A.sh[1]);
-    c.globalAlpha = .22 * smooth(170, 330, n) * A0; c.drawImage(E.glow, A.x0 - 20, A.y0 - 20);
-    c.globalAlpha = .3 * smooth(200, 340, n) * A0; c.drawImage(E.cr, A.x0, A.y0);
+    const [ax, ay] = at(...EVARM.from), [bx, by2] = at(...EVARM.to), D = Math.hypot(bx - ax, by2 - ay), rv = smooth(130, 300, n);
+    c.save(); c.translate(ax, ay); c.rotate(Math.atan2(by2 - ay, bx - ax));
+    // the forearm's end melts into the sky
+    c.globalAlpha = .26 * smooth(170, 330, n) * A0; c.drawImage(E.glow, -E.M * D / E.L, -E.H / 2 * D / E.L, (E.L + 2 * E.M) * D / E.L, E.H * D / E.L);
     c.globalAlpha = 1;
-    for (const q of E.pts) { const a = smooth(q.d - .12, q.d + .02, rv * 1.12) * A0 * (.6 + .4 * Math.sin(G.t / 37 + q.p)); if (a < .01) continue; c.fillStyle = css([244, 247, 255], .95 * a); c.beginPath(); c.arc(q.x, q.y, q.s * .9 / K, 0, 6.2832); c.fill(); }
+    for (const q of E.pts) { const a = smooth(q.d - .12, q.d + .02, rv * 1.12) * smooth(0, .22, q.u) * A0 * (.6 + .4 * Math.sin(G.t / 37 + q.p)); if (a < .01) continue;
+      const x = q.u * D, y = q.v * D;
+      if (q.key) { const R = q.s * 4.5, g = c.createRadialGradient(x, y, 0, x, y, R); g.addColorStop(0, css([230, 236, 255], .3 * a)); g.addColorStop(1, 'rgba(230,236,255,0)'); c.fillStyle = g; c.fillRect(x - R, y - R, R * 2, R * 2); }
+      c.fillStyle = css([244, 247, 255], .95 * a); c.beginPath(); c.arc(x, y, q.s * .9, 0, 6.2832); c.fill(); }
     c.restore();
   }
   // a touch on Evangelist's star picture (or anywhere near it in the sky) while it waits
