@@ -249,6 +249,7 @@ const CR = (() => {
   // the leap for joy and his walk on, in the new coat (free clips, build 543): the leap played once a touch at its own
   // pace (16 a second); the walk one whole stride that loops, its planted foot sliding 3.48 picture px a frame
   const LEAPC = [], LEAP_META = { ax: 77, ground: 339, frames: 49 }, CWALK = [], CWALK_META = { ax: 78, ground: 297, frames: 29, vpx: 3.48 };
+  let BURT = null;
   let BURDEN = null, RTEX = null, RPAT = null, HPAINT = null, loaded = false;
   const HP_ON = new URLSearchParams(location.search).get('hp') !== '0';
   const MLIFT = [], MIM = {};
@@ -266,6 +267,7 @@ const CR = (() => {
     loadPack('lift', MLIFT).catch(() => {});
     ['wife', 'family', 'goodwill-reach', 'room4-caster'].forEach(n => loadImg(n + '.webp').then(im => { MIM[n] = im; }).catch(() => {}));
     loadImg('cross-burden.webp').then(im => { BURDEN = im; }).catch(() => {});
+    loadImg('cross-burden-turn.webp?v=658').then(im => { BURT = im; }).catch(() => {});
     REL.forEach(m => loadImg(m.img + '.webp').then(im => { if (im) RIM[m.img] = im; }).catch(() => {}));
     // the hill painted by the image model (round 2 of the owner's hill): rounded weathered rock, toned dark grey, its left
     // end faded into the drawn ramp; cropped to the rock at 1.5 px a world unit (at SK_H 1080): world x 2834 to 5654, height 1089 down to 2 below the ground
@@ -336,11 +338,13 @@ const CR = (() => {
   const PAN_K = +(QS.get('pan') ?? .15), PAN_MID = .06, PAN = p => PAN_MID + (p - PAN_MID) * PAN_K;
   const bgS = () => Math.pow(cam.z / BG_Z0, BG_A), by = y => FOOTY + (y - FOOTY) * bgS();
   const TEARZ = /[?&]tearzoom=1\b/.test(location.search);
-  const ZOOM_AT = 600, ZOOM_LEN = 3300;
+  const ZOOM_AT = 0, ZOOM_LEN = 3300, END_BACK = +((location.search.match(/[?&]endback=([\d.]+)/) || [, 1.5])[1]);
   const SEPLOOK = /[?&]seplook=1\b/.test(location.search);
   function camTick(snap) {
     const near = { cx: Ch.x + lerp(250, 150, closeK), z: lerp(.8, 1.15, closeK) };
-    if (ph === 'cross' || ph === 'tumble' || ph === 'gone' || ph === 'after' || ph === 'shine' || ph === 'leaps' || ph === 'end') { near.cx = Math.max(CROSS_X - 130, Ch.x + 170); near.z = .86; }
+    if (ph === 'cross' || ph === 'tumble' || ph === 'gone' || ph === 'after' || ph === 'shine' || ph === 'leaps' || ph === 'end') { near.cx = Math.max(CROSS_X - 130, Ch.x + 170); near.z = .86;
+      // (build 658, owner: "let stay back a little bit and not zoom in all the way (maybe 1.5 times back from your original ending)")
+      if (ph !== 'cross') near.z = .86 / END_BACK; }
     // ?look=f: the cross stands on the summit's highest pinnacle, well above him: draw back enough to keep it whole
     if (PIN_ON && Ch.x > CROSS_X - 1600) { const up = crossH() + CROSS_H + 20 - gh(Ch.x); if (up > 0) near.z = Math.min(near.z, (FOOTY - 34) / up); }
     const open = ph === 'look', fitT = (FOOTY - 30) / (crossH() + CROSS_H - tombSill() + 40);
@@ -504,6 +508,16 @@ const CR = (() => {
     // so a bounce reads as a bounce, not as the sack floating up the hill
     if (bur.st === 'roll' && bur.z != null) { const z = bur.z || 0, gy = -(h - z) + 2, sa = .55 * (1 - Math.min(1, z / 50)) * bur.a, rx = w * (.42 + .25 * Math.min(1, z / 50));
       if (sa > .01) { c.save(); c.translate(bur.x, gy); c.scale(rx, rx * .22); const g = c.createRadialGradient(0, 0, 0, 0, 0, 1); g.addColorStop(0, css([4, 3, 6], sa)); g.addColorStop(1, 'rgba(4,3,6,0)'); c.fillStyle = g; c.fillRect(-1, -1, 2, 2); c.restore(); } }
+    // (build 658, owner: "the burden tumbling could use some animation when it flips (spend some $ on this)"): a video of
+    // the sack turning over end on end (38 pictures, one whole turn), shown by how far it has turned
+    if (BURT && bur.path) { const sq = clamp(bur.sq || 0, -.4, .25), N = 38, C = 128, fi = ((Math.floor((bur.ph || 0) / 6.2832 * N) % N) + N) % N, dw = hh * 1.68;
+      if (figC.width !== C || figC.height !== C) { figC.width = C; figC.height = C; }
+      const f = figC.getContext('2d'), sxs = (fi % 8) * C, sys = Math.floor(fi / 8) * C, tint = tintNow();
+      f.globalCompositeOperation = 'source-over'; f.clearRect(0, 0, C, C); f.drawImage(BURT, sxs, sys, C, C, 0, 0, C, C);
+      f.globalCompositeOperation = 'multiply'; f.fillStyle = css(mix(mix(tint, [176, 164, 162], .5 * (1 - bur.dk) + .2 * gl), [8, 7, 10], bur.dk)); f.fillRect(0, 0, C, C);
+      f.globalCompositeOperation = 'destination-in'; f.drawImage(BURT, sxs, sys, C, C, 0, 0, C, C); f.globalCompositeOperation = 'source-over';
+      c.save(); c.translate(bur.x, -h - hh / 2 + 2 + hh * (sq < 0 ? -sq * .5 : 0)); c.scale(1 - sq * .7, 1 + sq); c.rotate(bur.r || 0); c.globalAlpha = bur.a;
+      c.drawImage(figC, -dw / 2, -dw / 2, dw, dw); c.restore(); return; }
     const sq = clamp(bur.sq || 0, -.4, .25), cp = Math.cos(bur.ph || 0), fy = (cp < 0 ? -1 : 1) * (.58 + .42 * Math.abs(cp)), fx = 1 + .07 * (1 - Math.abs(cp));
     c.save(); c.translate(bur.x, -h - hh / 2 + 2 + hh * (sq < 0 ? -sq * .5 : 0)); c.scale((1 - sq * .7) * fx, (1 + sq) * fy); c.rotate(bur.r); c.globalAlpha = bur.a;
     const tint = tintNow(), W = BURDEN.width, H = BURDEN.height;
@@ -522,9 +536,57 @@ const CR = (() => {
   // little friction; the rough face kicks it up now and then (more often and higher the faster it goes); in the air it
   // falls under gravity and bounces back a part of its speed; each bounce knocks it a little sideways and changes its
   // spin; it is drawn larger as it comes nearer. A seeded random, so it falls the same way each time
+  // (build 658, owner: "can following the natural contours of the rock like its hitting and bouncing"): the ledges of the
+  // painted cliff between him and the cave, marked on the painting ([x, height], world units): the sack drops from one
+  // to the next under gravity, strikes (a thump, a squash, a puff of dust), rolls a moment along the ledge and goes
+  // over; it turns faster the further it has fallen; last it drops off the shelf over the cave onto the cave's floor
+  const LEDGES = [[4600, 1425], [4760, 1195], [4930, 1005], [5070, 790], [5210, 640], [5330, 498], [5425, 452], [5462, 84], [5440, 84]];
+  const LEDGE_UP = [16, 30, 26, 34, 22, 20, 7, 12, 9], LG = .15;
+  function burdenLedges() {
+    if (!bur.path) { const x0 = bur.x, H0 = gh(bur.x) + 4; bur.path = [[x0, H0], ...LEDGES]; Object.assign(bur, { pi: 0, pt: 0, rest: 0, gl: 0, ph: 0, pw: .07, sq: 0, sqa: 0, sqv: 0, r: 0, z: null, rnd: rgen(77), dust: [], sx0: x0, sH0: H0 }); }
+    const P = bur.path, R = bur.rnd, n = P.length - 1;
+    bur.t++; bur.gl = Math.min(1, bur.gl + .02);
+    for (const d of bur.dust) { d.x += d.vx; d.y += d.vy; d.vx *= .97; d.vy *= .97; d.r += .3; d.a -= .012; }
+    bur.sqa += (-bur.sq) * .16; bur.sqa *= .8; bur.sq += bur.sqa + bur.sqv; bur.sqv = 0;
+    bur.ph += bur.pw; bur.r = .1 * Math.sin(bur.ph * .5 + .7);
+    bur.k = 1 + .3 * sm(0, n, bur.pi + (bur.rest > 0 ? 0 : .5));
+    if (bur.rest > 0) {
+      // on a ledge: it rolls a little way along it, slowing, then goes over
+      bur.rest--; bur.x += bur.rv; bur.rv *= .9; bur.pw += (.045 - bur.pw) * .2; bur.sx0 = bur.x; bur.H = bur.sH0;
+      return;
+    }
+    const xa = bur.sx0, Ha = bur.sH0, [xb, Hb] = P[bur.pi + 1], up = LEDGE_UP[bur.pi], v0 = Math.sqrt(2 * LG * up), T = (v0 + Math.sqrt(v0 * v0 + 2 * LG * Math.max(0, Ha - Hb))) / LG;
+    bur.pt++; const tt = Math.min(bur.pt, T);
+    bur.x = lerp(xa, xb, tt / T); bur.H = Ha + v0 * tt - LG * tt * tt / 2;
+    // in the air it stretches a little and turns freely, faster after a longer drop
+    bur.sq += (Math.min(.1, Math.abs(v0 - LG * tt) * .02) - bur.sq) * .05;
+    if (bur.pt >= T) {
+      const hit = Math.abs(v0 - LG * T); bur.H = Hb; bur.x = xb; bur.pi++; bur.pt = 0; bur.sx0 = xb; bur.sH0 = Hb;
+      thump(Math.min(1.15, .22 + hit * .1)); bur.sqv -= Math.min(.42, hit * .045); bur.pw = .09 + .012 * hit + .03 * R();
+      for (let i = 0; i < 3 + Math.round(hit * .5); i++) bur.dust.push({ x: xb + (R() - .5) * 40, y: Hb + R() * 8, vx: (R() - .5) * 1.2, vy: .2 + R() * .5, r: 8 + R() * 10, a: Math.min(1, .35 + hit * .07) });
+      if (bur.pi >= n) { bur.st = 'in'; bur.t = 0; bur.x0 = bur.x; return; }
+      bur.rest = bur.pi >= n - 2 ? 2 : 4 + Math.round(R() * 5); bur.rv = (P[bur.pi + 1][0] - xb > 0 ? 1 : -1) * (1 + R());
+    }
+  }
+  // into the cave: it has landed on the cave's floor; it rolls on in with what speed it has left, smaller as it goes
+  // deeper and darker as the dark takes it, until it cannot be told from the dark; then one dull fall far inside
+  function burdenIn() {
+    bur.t++; const tt = bur.t, sill = 84;
+    for (const d of bur.dust) { d.x += d.vx; d.y += d.vy; d.vx *= .97; d.vy *= .97; d.r += .3; d.a -= .01; }
+    bur.sqa += (-bur.sq) * .16; bur.sqa *= .8; bur.sq += bur.sqa;
+    // it waits on the floor only if the storyteller has not yet reached "the mouth of the sepulchre"
+    if (bur.go == null) { bur.pw += (.012 - bur.pw) * .1; bur.ph += bur.pw; bur.H = sill; if ((tumbleT && G.t - tumbleT > 300) || tt > 420) { bur.go = tt; bur.pw = .06; } else return; }
+    const q = sm(0, 150, tt - bur.go);
+    bur.pw += (.02 - bur.pw) * .02; bur.ph += bur.pw; bur.x = bur.x0 - 46 * q; bur.H = sill + 46 * q; bur.k = 1.3 - .62 * q;
+    bur.dk = sm(.05, .7, q); bur.gl = 1 - sm(0, .5, q); bur.a = 1 - sm(.72, 1, q);
+    if (tt - bur.go === 190) { thump(1.1); if (audio()) hiss(70, .6, .1, 1.6); }
+    if (tt - bur.go > 250) { bur.st = 'gone'; tombT = t; }
+  }
   function burdenTick() {
     if (!bur) return;
     if (bur.dust) for (const d of bur.dust) { d.x += d.vx; d.y += d.vy; d.vx *= .97; d.vy *= .97; d.r += .35; d.a -= .006; }
+    if (bur.st === 'roll' && PCAVE) return burdenLedges();
+    if (bur.st === 'in' && bur.path) return burdenIn();
     if (bur.st === 'roll') {
       if (bur.x0 == null) { Object.assign(bur, { x0: bur.x, H0: gh(bur.x), gl: 0, s: 0, vs: .6, z: 0, vz: 1.4, vx: .3, dx: 0, w: 0, ph: 0, pw: .05, sq: 0, sqa: 0, sqv: 0, rnd: rgen(77) }); if (FLING) Object.assign(bur, { vz: 5.2, vx: -2.3, vs: .2, w: -.09, z: 4 }); }
       const R = bur.rnd, L = bur.H0 - tombSill() - 6, g = .16;
@@ -1492,8 +1554,11 @@ const CR = (() => {
     // (build 655, owner: "maybe start zooming after sun rise and just keep slow zooming until the rest"): the sun
     // rises over the whole hill in the wide shot; once it is up the camera comes in to him in ONE slow steady move
     // (about a minute, eased at both ends), never back and forth
-    if (sunGo && sunT > ZOOM_AT) { zoomP = Math.min(1, zoomP + 1 / ZOOM_LEN); // (build 656, owner: "it can go faster at the beginning ... and then slow down as we reach closer"): quick at first, slowing all the way in
-      wideTo = Math.pow(1 - zoomP, 2.4); }
+    if (sunGo && sunT > ZOOM_AT) { zoomP = Math.min(1, zoomP + 1 / ZOOM_LEN); 
+      // (build 658, owner: "when burden disappears that's when zoom should begin and can even faster at the beginning but
+      // keep start slow pace after about zoomed halfway"): it sets off the moment the burden is gone, covers half the way
+      // in about seven seconds, then keeps one slow steady pace the rest of the way
+      const pA = .13; wideTo = zoomP < pA ? 1 - .5 * (1 - Math.pow(1 - zoomP / pA, 2)) : .5 * (1 - (zoomP - pA) / (1 - pA)); }
     // the sun never sinks on the screen: it keeps the highest place it has reached and drifts slowly up
     if (sunYr != null) sunYr = Math.max(VH * .1, sunYr - .02);
     wideK += (wideTo - wideK) * .02;
