@@ -1078,6 +1078,12 @@ const CR = (() => {
   function bakeWall(night) {
     const S = 2, L = WALL_END - WALL_X0, W = (L + 10) * S, H = (WALL_H + 30) * S, cv = mk(W, H), q = cv.getContext('2d'), r = rgen(633);
     q.scale(S, S); const G = WALL_H + 26;
+    const body = night ? [13, 15, 20] : [70, 52, 42], rimC = night ? [150, 168, 196] : [246, 200, 150];
+    const rock = (cx, cy, w, h) => { const n = 7 + Math.floor(r() * 4), P = [];
+      for (let k = 0; k < n; k++) { const a = k / n * 6.2832 + r() * .45, rr = .66 + r() * .42; P.push([cx + Math.cos(a) * w / 2 * rr, cy + Math.sin(a) * h / 2 * rr * (Math.sin(a) > 0 ? .9 : 1)]); }
+      return P; };
+    const path = P => { q.beginPath(); const m = (a, b) => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]; let s0 = m(P[P.length - 1], P[0]); q.moveTo(...s0);
+      for (let k = 0; k < P.length; k++) { const e = m(P[k], P[(k + 1) % P.length]); q.quadraticCurveTo(P[k][0], P[k][1], e[0], e[1]); } q.closePath(); };
     // (build 645, owner: "the wall is too detailed and distracting ... the night sky and natural beauty should be the
     // focus"): no stones drawn. One plain quiet shape with a slightly uneven top, a soft breath of moonlight along its
     // top edge, a little darker toward its foot. ?wall=stones brings back the piled rocks.
@@ -1087,17 +1093,19 @@ const CR = (() => {
       const topY = x => { const e = Math.max(0, Math.min(1, (L + 4 - x) / 34)), f = Math.pow(Math.sin(e * Math.PI / 2), .55); return G - (WALL_H - 2.2 * Math.sin(x * .021 + 1) - 1.4 * Math.sin(x * .057 + 2.3) - .7 * Math.sin(x * .13)) * f; };
       q.beginPath(); q.moveTo(-6, G + 4); for (let x = -6; x <= L + 12; x += 3) q.lineTo(x, topY(x)); q.lineTo(L + 12, G + 4); q.closePath();
       q.fillStyle = css(bodyP); q.fill(); q.save(); q.clip();
+      // (build 647, owner: "the wall need a little texture"): a breath of its stones: rough uneven stones laid in
+      // rough courses, big ones low, each only a shade lighter or darker than the wall, the joints between them a
+      // shade darker; no rims, no lit edges, so it reads as stone close up and as one quiet shape at a glance
+      q.fillStyle = css(bodyP.map(v => v - 3)); q.fillRect(-6, 0, L + 20, G + 6);
+      for (let y = G + 2; y > G - WALL_H - 6;) { const hg = (G - y) / WALL_H, ch = (20 - 6 * hg) * (.85 + r() * .35);
+        for (let x = -r() * 30; x < L + 14;) { const w = (42 - 12 * hg) * (.6 + r() * .9), h = ch * (.85 + r() * .35), v = (r() - .5) * 5;
+          path(rock(x + w / 2, y - ch / 2 + (r() - .5) * 3, w * 1.04, h * 1.08)); q.fillStyle = css(bodyP.map(c => c + v)); q.fill(); x += w * .93; }
+        y -= ch * .84; }
       const dg = q.createLinearGradient(0, G - WALL_H, 0, G); dg.addColorStop(0, 'rgba(0,0,0,0)'); dg.addColorStop(1, 'rgba(4,5,9,.42)'); q.fillStyle = dg; q.fillRect(-6, 0, L + 20, G + 6);
       for (let k = 0; k < 6; k++) { q.strokeStyle = css(rimP, .05); q.lineWidth = 1 + k * 1.6; q.beginPath(); for (let x = -6; x <= L + 12; x += 3) q.lineTo(x, topY(x)); q.stroke(); }
       q.restore();
       return { cv, S, G };
     }
-    const body = night ? [13, 15, 20] : [70, 52, 42], rimC = night ? [150, 168, 196] : [246, 200, 150];
-    const rock = (cx, cy, w, h) => { const n = 7 + Math.floor(r() * 4), P = [];
-      for (let k = 0; k < n; k++) { const a = k / n * 6.2832 + r() * .45, rr = .66 + r() * .42; P.push([cx + Math.cos(a) * w / 2 * rr, cy + Math.sin(a) * h / 2 * rr * (Math.sin(a) > 0 ? .9 : 1)]); }
-      return P; };
-    const path = P => { q.beginPath(); const m = (a, b) => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]; let s0 = m(P[P.length - 1], P[0]); q.moveTo(...s0);
-      for (let k = 0; k < P.length; k++) { const e = m(P[k], P[(k + 1) % P.length]); q.quadraticCurveTo(P[k][0], P[k][1], e[0], e[1]); } q.closePath(); };
     // piled from the ground up: each course's rocks sit in the hollows of the one below, smaller as it rises
     const rocks = []; let y = G;
     while (y > G - WALL_H + 4) { const hgt = (G - y) / WALL_H, ch = (19 - 7 * hgt) * (.8 + r() * .5);
@@ -1937,7 +1945,9 @@ const CR = (() => {
     // THE TOUCHED STAR PICTURE (build 642): the sky draws in on Evangelist's picture, more stars come out of the dark
     const ev = CONST[0], zk = ev.nv >= 0 ? ease(smooth(0, 130, ev.nv)) * constFade(ev) : 0;
     if (zk > .001) { const W = ev.w * VW, Hh = ev.h * VH, X0 = VW * ev.cx, Y0 = VH * ev.cy, Cx = X0 + (EVZ.c[0] - .5) * W, Cy = Y0 + (EVZ.c[1] - .5) * Hh, s1 = 1 + zk * (EVZ.z - 1);
-      c.translate(zk * (VW * EVZ.t[0] - Cx * EVZ.z), zk * (VH * EVZ.t[1] - Cy * EVZ.z)); c.scale(s1, s1);
+      // (build 647, owner: "i don't like sky zooming when you click ... yes take out zoom"): the sky no longer draws
+      // in or grows; the touch is answered only in light (the other stars fall back, more faint stars come out, the
+      // great star bursts, the hand fills in)
       for (const s of STARS2) { const a = zk * a0 * s.b * (.7 + .3 * Math.sin(G.t / s.f + s.p)); c.fillStyle = `rgba(222,228,248,${a})`; c.fillRect(s.x * VW - s.s / 2, s.y * VH - s.s / 2, s.s, s.s); } }
     // THE STARS GO OUT ONE BY ONE AS HE CLIMBS (owner, build 646): each has its own moment in the fading night
     // (`s.o`: the small faint ones first, the great ones last) and goes out there over a breath, at its full
