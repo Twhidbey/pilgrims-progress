@@ -3,6 +3,8 @@
 The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build step; until build 118 it was called `story-lab.html`: read that name below as `index.html`). `style-lab.html` is the art-style test page. `CLAUDE.md` maps the code and records the owner's decisions. Work on **`main`** and push after every change: pushing IS publishing (GitHub Pages, https://twhidbey.github.io/pilgrims-progress/). Bump the build stamp in both pages on every push and tell the owner when it is live (a phone may need `?v=N` on the link). Keep this file and `CLAUDE.md` updated. Public repo: no personal details.
 
 
+**Build 661 (Level 5 ideas chat):** Level 5: build 660's hill shading taken back (owner disliked the violet and the contrast; `?shade=1`); the shadows of him and the cross toward us and his thin rim kept. See CLAUDE.md. Nothing spent.
+
 **Build 660 (Level 5 ideas chat):** Level 5 lit from behind at sunrise (shadows of the cross and of him toward us, the hill's face in cool shade with lit ledge tops, a thin rim on him; `?lit=0` the old light); the choir with the Shining Ones off (`?choir=1`). See CLAUDE.md. Nothing spent.
 
 **Build 659 (Level 5 ideas chat):** Level 5: the burden is its old picture again (the video sack turned down, only with `?burt=1`; the ledge fall kept); Christian says his first line kneeling and rises as the storyteller says "He stood still". See CLAUDE.md. Nothing spent.

@@ -1074,6 +1074,9 @@ const CR = (() => {
   // coming our way"): the backlit scene. ?lit=0 gives the old light, to compare
   // (build 660, owner: "not a huge fan of the choir when the shining ones appear (save for later maybe?)"): only with ?choir=1
   const CHOIR_ON = /[?&]choir=1\b/.test(location.search);
+  // (build 661, owner: "i don't like the shading on hill (at all) ... let's go back. the shadow on christian looks great"):
+  // build 660's shaded face, lit ledge tops and violet-brown wash are off (only with ?shade=1); the shadows and the rim stay
+  const SHADE = /[?&]shade=1\b/.test(location.search);
   const LIT = LF && !/[?&]lit=0\b/.test(location.search);
   // how long a shadow lies toward us (longest as the sun breaks, shorter as it climbs) and how strong
   const shLen = () => lerp(1.75, .6, sm(0, 1.2, sunH)), shA = () => LIT ? .66 * sun * (1 - night) : 0;
@@ -1158,9 +1161,9 @@ const CR = (() => {
         // (build 650) its colour held back: nearly colourless until the sun is up (a dull umber laid over its own rust),
         // then a quieter rust than before
         if (LF && gold < 1) { c.globalCompositeOperation = 'color'; c.globalAlpha = .62 * (1 - gold); c.fillStyle = css(mix([74, 58, 54], [52, 52, 64], night)); c.fillRect(x0, -H_TOP - 700, x1 - x0, H_TOP + 2800); c.globalAlpha = 1; c.globalCompositeOperation = 'multiply'; }
-        if (H618 && gold > 0) { c.globalCompositeOperation = 'color'; c.globalAlpha = Math.min(1, SUN_T * 1.5) * gold; c.fillStyle = LIT ? 'rgb(112,80,84)' : 'rgb(126,76,56)'; c.fillRect(x0, -H_TOP - 700, x1 - x0, H_TOP + 2800); c.globalAlpha = 1; }
+        if (H618 && gold > 0) { c.globalCompositeOperation = 'color'; c.globalAlpha = Math.min(1, SUN_T * 1.5) * gold; c.fillStyle = SHADE ? 'rgb(112,80,84)' : 'rgb(126,76,56)'; c.fillRect(x0, -H_TOP - 700, x1 - x0, H_TOP + 2800); c.globalAlpha = 1; }
         // the face toward us in its own cool shade once the sun is up behind it; only the ledges' tops take the light
-        if (LIT && gold > .01) { c.globalCompositeOperation = 'multiply'; c.fillStyle = css(mix([255, 255, 255], [188, 176, 186], gold)); c.fillRect(x0, -H_TOP - 700, x1 - x0, H_TOP + 2800);
+        if (SHADE && gold > .01) { c.globalCompositeOperation = 'multiply'; c.fillStyle = css(mix([255, 255, 255], [188, 176, 186], gold)); c.fillRect(x0, -H_TOP - 700, x1 - x0, H_TOP + 2800);
           const tp = hpTops(); if (tp) { const s2 = SK_H / 1080; c.save(); c.translate(SK_X, 0); c.scale(s2, s2); c.globalCompositeOperation = 'lighter'; c.globalAlpha = .34 * gold * sun;
             c.drawImage(TOPT || (TOPT = tintTops(tp)), HP_X - 4380, HP_TOP, HP_W, HP_H); c.restore(); } }
         c.globalCompositeOperation = 'source-over'; } else {
