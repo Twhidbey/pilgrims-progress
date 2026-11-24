@@ -559,7 +559,7 @@ const CR = (() => {
     const st = [0, 1, 2].map(i => mix(mix(mix(mix(pre[i], dw[i], dawn), gd[i], gold), gl[i], GL * .85), NIGHTC[i], night));
     const g = c.createLinearGradient(0, Math.min(0, by(0)), 0, by(HY + 40)); g.addColorStop(0, css(st[0])); g.addColorStop(.6, css(st[1])); g.addColorStop(1, css(st[2]));
     c.fillStyle = g; c.fillRect(0, 0, VW, VH);
-    if (night > .01) stars(c);
+    if (night > .01) { stars(c); nightClouds(c); }
     // the far light, low behind the crown before dawn; the sun breaking behind the crown, rising behind where the
     // beams cross, and on up the sky (kept inside the picture)
     const cxs = sx(CROSS_X + SUN_DX), top = sy(crossH() + CROSS_BY + 4), y0 = sy(crossH()) + 40, sY = LOOKF
@@ -988,8 +988,9 @@ const CR = (() => {
       c.fillStyle = fg; c.fillRect(x0, -260, x1 - x0, 2300);
       // ?look=f: a thin worn track along the edge where his feet go (owner: "put path next to edge so he can walk with sky
       // behind him"): a band of pale trodden earth just under his walking line, its width and strength wandering along it,
-      // from the hill's foot to the crown, lit as the hill is lit
-      if (LOOKF) {
+      // from the hill's foot to the crown, lit as the hill is lit. (build 631: taken out, owner: "the ground has some trace
+      // light lines on it - maybe from the drawn path ... make the ground not draw attention")
+      if (false && LOOKF) {
         const ta = Math.max(x0, SLOPE0 - 80), tb = Math.min(x1, CROSS_X - 60);
         if (tb > ta) {
           const wob = x => .5 + .3 * Math.sin(x * .013) + .2 * Math.sin(x * .041 + 1.7);
@@ -1680,7 +1681,7 @@ const CR = (() => {
   // remove the entire scene changes"; my advice, agreed: no lines between the stars, places in the sky, people on the
   // path). Only with ?look=f. Ours, not the book's (he leaves the Interpreter's house at night, so 3am fits).
   const NIGHT_ON = /[?&]look=f\b/.test(location.search);
-  const NIGHTC = [[6, 13, 19], [18, 32, 40], [74, 88, 88]];
+  const NIGHTC = [[5, 11, 26], [16, 32, 52], [72, 90, 98]];
   // the stars, plentiful and bright enough to be the picture at 3am (owner, build 629: "the starry sky should be more
   // prominent"): a scatter of many small ones, a few large, and a faint band of the Milky Way
   const STARS = (() => { const r = rgen(41), A = []; for (let i = 0; i < 380; i++) A.push({ x: r(), y: Math.pow(r(), 1.3) * .6, s: .4 + r() * r() * r() * 2.4, b: .3 + r() * .7, p: r() * 6.28, f: 30 + r() * 60 });
@@ -1737,6 +1738,25 @@ const CR = (() => {
   };
   function constPts(k) { return SHAPES_C[k.kind]; }
 
+  // night clouds after Hasui's Full Moon at Magome and van der Neer's moonlit landscapes (owner, build 631: "here's a
+  // couple other - any changes from these?"): long thin streaks low in the sky, each lit pale along its upper edge by the
+  // hidden moon, and a few darker broken masses higher up; in front of the stars; baked once, drifting very slowly
+  let NCL = null;
+  function nightClouds(c) {
+    const a0 = night * (1 - gold); if (a0 < .01) return;
+    if (!NCL) { const r = rgen(77), W = 1600, H = 420, cv = mk(W, H), q = cv.getContext('2d');
+      // dark broken masses up high (van der Neer), soft
+      for (let i = 0; i < 14; i++) { const x = r() * W, y = 20 + r() * 110, w = 200 + r() * 300, h = 26 + r() * 34;
+        const g = q.createRadialGradient(x, y, 0, x, y, w / 2); g.addColorStop(0, 'rgba(26,38,58,.5)'); g.addColorStop(.6, 'rgba(20,30,48,.3)'); g.addColorStop(1, 'rgba(20,30,48,0)'); q.save(); q.translate(x, y); q.scale(1, h / w * 2); q.translate(-x, -y); q.fillStyle = g; q.fillRect(x - w, y - w, w * 2, w * 2); q.restore(); }
+      // thin streaks low down (Hasui): a body and a lit upper edge
+      for (let i = 0; i < 9; i++) { const x = r() * W, y = 160 + r() * 80, w = 300 + r() * 420, t = 3 + r() * 5;
+        q.save(); q.beginPath(); q.moveTo(x, y); for (let u = 0; u <= 1.001; u += .05) q.lineTo(x + u * w, y - Math.sin(u * Math.PI) * t * (1 + .4 * Math.sin(u * 9 + i))); for (let u = 1; u >= -.001; u -= .05) q.lineTo(x + u * w, y + Math.sin(u * Math.PI) * t * .5); q.closePath();
+        const g = q.createLinearGradient(x, 0, x + w, 0); g.addColorStop(0, 'rgba(30,52,78,0)'); g.addColorStop(.3, 'rgba(34,56,82,.45)'); g.addColorStop(.7, 'rgba(34,56,82,.45)'); g.addColorStop(1, 'rgba(30,52,78,0)'); q.fillStyle = g; q.fill();
+        q.strokeStyle = 'rgba(130,160,186,.16)'; q.lineWidth = 2.2; q.beginPath(); for (let u = .08; u <= .92; u += .04) { const X = x + u * w, Y = y - Math.sin(u * Math.PI) * t * (1 + .4 * Math.sin(u * 9 + i)) + .6; u < .09 ? q.moveTo(X, Y) : q.lineTo(X, Y); } q.stroke(); q.restore(); }
+      NCL = cv; }
+    const W = NCL.width, k = VW / 960, off = ((G.t * .04 + cam.cx * .006) % W + W) % W;
+    c.save(); c.globalAlpha = a0; const y0 = by(HY - 330 * k); for (let x = -off * k; x < VW; x += W * k) c.drawImage(NCL, x, y0, W * k, NCL.height * k); c.restore();
+  }
   const skyX = x0 => ((x0 * VW * 1.3 - cam.cx * .012) % (VW * 1.3) + VW * 1.3) % (VW * 1.3) - VW * .15;
   function stars(c) {
     const a0 = night * (1 - gold);
@@ -1813,22 +1833,33 @@ const CR = (() => {
 
   // the painted rocks that rise above his smooth walking line stand in front of him: the hill drawn again (the same land(),
   // so the same shade and the same overlay), clipped to the band between its own outline and his line
+  // (build 631) the hill as it stands before he is drawn, copied once a frame, so the rocks laid back over him are the very
+  // same pixels (drawing the land a second time under a clip left a thin orange seam along the clip's edges)
+  let SNAP = null;
+  function snapLand(c) {
+    if (!PIN_ON || !HPAINT) { SNAP = null; return; } const cv = c.canvas;
+    if (!SNAP || SNAP.width !== cv.width || SNAP.height !== cv.height) SNAP = mk(cv.width, cv.height);
+    const q = SNAP.getContext('2d'); q.clearRect(0, 0, cv.width, cv.height); q.drawImage(cv, 0, 0);
+  }
   function rocksFront(c) {
-    if (!PIN_ON || !HPAINT) return;
+    if (!PIN_ON || !HPAINT || /[?&]nofront\b/.test(location.search)) return;
     const x0 = cam.cx - VW / 2 / cam.z - 40, x1 = cam.cx + VW / 2 / cam.z + 40, st = 4;
     const xa = Math.max(x0, pinW(PIN0)), xb = Math.min(x1, CROSS_X - 40); if (xb <= xa) return;
     c.save(); c.beginPath(); c.moveTo(xa, -gh(xa));
     // only where a rock stands up out of his line; there it covers his sunk feet too (down to SINK + 3 below the line)
     const up = x => H618 ? smooth(1, 10, topH(x) - gh(x)) : smooth(4, 12, topH(x) - gh(x));
-    for (let x = xa; x <= xb; x += st) c.lineTo(x, -gh(x) - (topH(x) - gh(x)) * up(x) - .5);
-    for (let x = xb; x >= xa; x -= st) c.lineTo(x, -gh(x) + (SINK + 3) * up(x) - .5);
-    c.closePath(); c.clip(); land(c); c.restore();
+    // (build 631) only where a rock really rises: a band of no width still drew a hairline seam all along his path (owner:
+    // "the ground has some trace light lines on it")
+    c.beginPath(); let run = null; const flush = () => { if (run && run.length > 1) { run.forEach(([x], i) => i ? c.lineTo(x, -gh(x) - (topH(x) - gh(x)) * up(x) - .5) : c.moveTo(x, -gh(x) - (topH(x) - gh(x)) * up(x) - .5));
+      for (let i = run.length - 1; i >= 0; i--) { const x = run[i][0]; c.lineTo(x, -gh(x) + (SINK + 3) * up(x) - .5); } c.closePath(); } run = null; };
+    for (let x = xa; x <= xb; x += st) { if (up(x) > .02) (run = run || []).push([x]); else flush(); } flush();
+    c.clip(); if (SNAP) { c.setTransform(1, 0, 0, 1, 0, 0); c.drawImage(SNAP, 0, 0); } else land(c); c.restore();
   }
   function draw() {
     const c = ctx; c.setTransform(DPR, 0, 0, DPR, 0, 0);
     sky(c); far(c); memories(c);
     c.setTransform(DPR * cam.z, 0, 0, DPR * cam.z, DPR * (VW / 2 - cam.cx * cam.z), DPR * cam.wl);
-    wall(c); land(c); crag(c); tomb(c); cross(c); relive(c, false); if (!FIGS_OFF) figs(c);
+    wall(c); land(c); crag(c); tomb(c); cross(c); relive(c, false); if (!FIGS_OFF) figs(c); snapLand(c);
     shining(c);
     drawBurden(c); drawChr(c); rocksFront(c); relive(c, true);
     // the nearest ground, a dark band along the foot of the picture, under the words
