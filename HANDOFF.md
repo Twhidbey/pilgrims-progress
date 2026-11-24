@@ -3,6 +3,8 @@
 The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build step; until build 118 it was called `story-lab.html`: read that name below as `index.html`). `style-lab.html` is the art-style test page. `CLAUDE.md` maps the code and records the owner's decisions. Work on **`main`** and push after every change: pushing IS publishing (GitHub Pages, https://twhidbey.github.io/pilgrims-progress/). Bump the build stamp in both pages on every push and tell the owner when it is live (a phone may need `?v=N` on the link). Keep this file and `CLAUDE.md` updated. Public repo: no personal details.
 
 
+**Build 649 (Level 5 ideas chat):** Level 5's hill melts into the ground at both feet (`footCol`, the apron in `land()`); sheets of fifteen past versions sent to the owner, waiting on what to bring back. Nothing spent.
+
 **Build 648 (Level 5 ideas chat):** Level 5's far storm has a faint cloud; its bolts are half the size and strike the far land (`stormCloud`, `stormBolts` in `cross.js`). Nothing spent.
 
 **Build 647 (Level 5 ideas chat):** Level 5's wall has a faint stone texture; the sky no longer zooms when Evangelist's stars are touched. Nothing spent.

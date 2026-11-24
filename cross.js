@@ -966,8 +966,17 @@ const CR = (() => {
     for (let i = 0; i < p.length; i += 4) { const l = Math.max(0, Math.min(255, ((p[i] + p[i + 1] + p[i + 2]) / 3 - lo) * sc)); p[i] = p[i + 1] = p[i + 2] = l; }
     q.putImageData(d, 0, 0); return (HPR = cv);
   }
+  // the ground's own tone, which the hill's foot goes over into
+  const footCol = () => mix(mix(mix([24, 21, 24], [21, 21, 28], night), [25, 21, 23], dawn), [36, 27, 25], gold);
   function land(c) {
     const x0 = cam.cx - VW / 2 / cam.z - 40, x1 = cam.cx + VW / 2 / cam.z + 40, step = Math.max(4, 6 / cam.z);
+    // (build 649) a low apron of ground at both feet: the hill's lowest 120 units, smoothed over a long stretch, drawn
+    // first in the ground's tone, so where the hill met the flat in a sharp corner (the start of the climb, and the
+    // cliff's foot on the far side) the ground now swells up to it in a soft curve
+    if (LF) { const st = Math.max(16, 22 / cam.z), R = 290, lo = x => Math.min(120, Math.max(0, gh(x)));
+      c.beginPath(); c.moveTo(x0 - R, 40);
+      for (let x = x0 - R; x <= x1 + R; x += st) { let a = 0, w = 0; for (let k = -4; k <= 4; k++) { const ww = 1 - Math.abs(k) / 5; a += lo(x + k * R / 4) * ww; w += ww; } c.lineTo(x, -a / w); }
+      c.lineTo(x1 + R, 40); c.closePath(); c.fillStyle = css(footCol()); c.fill(); }
     // with ?look=r the hill is warm umber (owner: "more like Morning in the Riesengebirge in that burnt orange look for the
     // hill and nearby hills", then "think about where sun is and if that's realistic" ... "yes do the realistic backlit
     // version"): the sun rises BEHIND the cross, so the face toward us is in its own shadow, a dark warm umber; the burnt
@@ -996,6 +1005,13 @@ const CR = (() => {
         // bright 625 is better though maybe a bit monochromatic"): darker (above) and pulled part way toward one rust hue
         if (H618 && gold > 0) { c.globalCompositeOperation = 'color'; c.globalAlpha = Math.min(1, SUN_T * 1.2) * gold; c.fillStyle = 'rgb(150,72,44)'; c.fillRect(x0, -H_TOP - 700, x1 - x0, H_TOP + 2800); c.globalAlpha = 1; } c.globalCompositeOperation = 'source-over'; } else {
       c.globalCompositeOperation = 'color'; c.fillStyle = css(hc); c.fillRect(x0, -H_TOP - 700, x1 - x0, H_TOP + 2800); c.globalCompositeOperation = 'source-over'; }
+      // THE HILL'S FOOT MELTS INTO THE GROUND (owner, build 649: "blend in the foot of mountain when christian first
+      // encounters it and where it hits the ground on other side"): the painted rock used to stop at the ground's level
+      // in a straight line, lighter above and darker below. Now the hill's lowest stretch goes over into the ground's
+      // own tone, a little at 260 units up and wholly by the ground line, and the ground below is that same tone, so
+      // there is no line at either foot.
+      if (LF) { const fc = footCol(), fg = c.createLinearGradient(0, -260, 0, -4);
+        fg.addColorStop(0, css(fc, 0)); fg.addColorStop(.45, css(fc, .22)); fg.addColorStop(.8, css(fc, .7)); fg.addColorStop(1, css(fc, 1)); c.fillStyle = fg; c.fillRect(x0, -260, x1 - x0, 3200); }
       // the foot sinks into the dark ground (owner: "blend edges and make everything super cohesive")
       if (false) {
         // the rock modelled: the painting's own light and shade, its tones spread to the full range once (hpRelief),
