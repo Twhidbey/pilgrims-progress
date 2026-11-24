@@ -244,6 +244,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 ## START HERE (rewritten at build 140, Nov 16 2026)
 
+**Build 613 (art direction chat): `?look=f` he walks the top edge again (the track walk behind `?track=1`); next asked: repaint the track along the edge, about 25 cents. Nothing spent.**
+
 **Build 612 (art direction chat): `?look=f` he walks the painted track (traced by hand, `PATH_P`). Nothing spent.**
 
 **Build 611 (art direction chat): `?look=f` the hill repainted at its true scale (fine grass, a thin track), three gemini edits guided by figures at Christian's size, about 75 cents. Spent this session so far: about $1.50.**

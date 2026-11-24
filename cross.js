@@ -99,11 +99,13 @@ const CR = (() => {
   // he walks the painted track (owner, build 612: "the figure now needs to walk the path"): traced by hand on build 611's
   // painting (world [x, h]), smoothed; it winds up across the face below the hill's top edge, and joins the top on the
   // crown (PATH_J), where the cross stands
+  const PATH_ON = /[?&]track=1\b/.test(location.search);
   const PATH_P = [[1339,19],[1650,105],[1889,201],[2128,308],[2248,397],[2367,481],[2451,540],[2535,607],[2654,653],[2774,715],[2917,808],[3013,875],[3085,918],[3180,976],[3264,1038],[3360,1095],[3455,1138],[3527,1191],[3635,1262],[3754,1329],[3874,1372],[4017,1406],[4208,1444],[4448,1473],[4687,1497],[4878,1511]], PATH_J = [4250, 4450];
   const PATH_S = (() => { const T = []; for (let x = PATH_P[0][0]; x <= PATH_P[PATH_P.length - 1][0]; x += 8) { let i = 0; while (i < PATH_P.length - 2 && PATH_P[i + 1][0] < x) i++; const [a, b] = [PATH_P[i], PATH_P[i + 1]]; T.push(lerp(a[1], b[1], clamp((x - a[0]) / (b[0] - a[0])))); }
     return T.map((v, i) => { let a = 0, n = 0; for (let j = -6; j <= 6; j++) { const q = T[i + j]; if (q != null) { a += q; n++; } } return a / n; }); })();
   function pathH(x) { const f = (x - PATH_P[0][0]) / 8, i = Math.floor(f); if (i < 0) return -1; if (i >= PATH_S.length - 1) return -1; return lerp(PATH_S[i], PATH_S[i + 1], f - i); }
-  function gh(x) { if (PIN_ON) { const w = PIN_W(x); if (w > 0) { const top = lerp(gh0(x), pinAt(PIN_S, x), w), ph = pathH(x);
+  function gh(x) { if (PIN_ON) { const w = PIN_W(x); if (w > 0) { const top = lerp(gh0(x), pinAt(PIN_S, x), w), ph = PATH_ON ? pathH(x) : -1;
+    if (!PATH_ON) return top;
     if (ph < 0) return x < PATH_P[0][0] ? Math.min(top, PATH_P[0][1] * clamp((x - SLOPE0) / (PATH_P[0][0] - SLOPE0))) : top;
     return lerp(Math.min(ph, top), top, smooth(PATH_J[0], PATH_J[1], x)); } } return gh0(x); }
   const topH = x => PIN_ON ? pinDraw(x) : gh(x);
