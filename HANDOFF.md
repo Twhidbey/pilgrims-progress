@@ -1128,6 +1128,7 @@ The owner asked what follows the Slough of Despond, what that level should hold,
 
 **Build 601 (Level 5 chat):** the painted hill made again by Google without the skull, same outline (about 25 cents, the owner's yes). Running total: add about 25 cents.
 
+- Build 629 (art direction chat): `?look=f` night: blue night hills, the walk starts close, the wall in Level 3's old gate stone, more stars and a Milky Way, three whole-sky star pictures (city, oak, burning hill) one at a time with lines from Levels 1 to 3, and he stops at the hill's foot to see them. Nothing spent.
 - Build 628 (art direction chat): `?look=f` hill now has 608's clearer rock joined in from the foot of the climb rightward (free, `assets/hill-crag-r.webp`); the burden goes into the cave painted in the picture, no drawn cave. Nothing spent.
 - Build 627 (art direction chat): `?look=f` now has 618's mountain with 625's sky, stars and far hills; the sunrise toned halfway between 618's colours and 625's rust (`?suntone=`), `?hill=625` for the old rust hill. Nothing spent.
 - Build 626 (art direction chat): `?hill=618` brings back build 618's hill under the night of 625 for comparing; `?figs=0` hides the hill figures. Nothing spent.

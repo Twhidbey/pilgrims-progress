@@ -336,7 +336,10 @@ const CR = (() => {
     if (topK > .001) { const z2 = .4, wl2 = 250 + gh(Ch.x) * z2; tcx = lerp(tcx, Ch.x - 40, topK); twl = lerp(twl, wl2, topK); tz = Math.exp(lerp(Math.log(tz), Math.log(z2), topK)); }
     // ?look=f: never cut the cross's top off (it stands on the summit, well above him)
     if (PIN_ON && topK <= .001) { const c0 = (open ? 28 : 0) * wideK, up = crossH() + CROSS_H + 10 - fh;
-      if (up > 0 && FOOTY + c0 - up * tz < 34) { tz = Math.max(.05, (FOOTY + c0 - 34) / up); twl = FOOTY + fh * tz + c0; } }
+      // (build 629) only as the cross comes into the picture, so the night walk starts close on him (owner: "we should
+      // start zoomed in"), drawing back smoothly as it nears
+      const away = Math.abs(CROSS_X - tcx) - VW / 2 / tz, kC = Math.max(wideK, 1 - smooth(0, 700, away));
+      if (up > 0 && FOOTY + c0 - up * tz < 34 && kC > .001) { const z1 = Math.max(.05, (FOOTY + c0 - 34) / up); tz = Math.exp(lerp(Math.log(tz), Math.log(z1), kC)); twl = FOOTY + fh * tz + c0; } }
     const e = snap ? 1 : .045; cam.cx += (tcx - cam.cx) * e; cam.z += (tz - cam.z) * e; cam.wl += (twl - cam.wl) * e;
   }
 
@@ -621,7 +624,7 @@ const CR = (() => {
     const hz = mix(mix(pre[1], dw[1], dawn), gd[1], gold), up = mix(mix(pre[0], dw[0], dawn), gd[0], gold);
     // Friedrich's far ranges: lilac and blue-violet, cool against the warm mist
     const deep = LOOKF ? mix(mix([58, 66, 80], [88, 100, 116], dawn), [104, 118, 134], gold) : mix(mix([62, 62, 84], [92, 86, 112], dawn), [118, 112, 146], gold);
-    const mistC = LOOKF ? mix(mix([170, 176, 186], [224, 228, 232], dawn), [240, 242, 244], gold) : mix(mix([150, 150, 164], [196, 176, 172], dawn), [255, 196, 150], gold);
+    const mistC = LOOKF ? mix(mix(mix([170, 176, 186], [86, 98, 130], night), [224, 228, 232], dawn), [240, 242, 244], gold) : mix(mix([150, 150, 164], [196, 176, 172], dawn), [255, 196, 150], gold);
     // far to near: base line (screen), height of its swells, parallax, how far toward the deep colour
     const L = [[HY - 64, 26, .03, .1], [HY - 44, 30, .06, .2], [HY - 24, 30, .1, .32], [HY - 4, 26, .15, .45], [HY + 18, 22, .22, .58], [HY + 40, 18, .3, .7]];
     const B = bgS();
@@ -634,9 +637,16 @@ const CR = (() => {
         // the nearer hills: a hint of dark rust-red, kin to the hill, darker nearer
         ? (false ? mix(col, mix(mix([52, 58, 58], [76, 86, 82], dawn), [86, 98, 90], gold), (i - 1) / 5 * .75) : mix(col, mix(mix([62, 44, 46], [88, 54, 50], dawn), [104, 58, 48], gold), (i - 1) / 5 * .75))
         : mix(col, mix(mix([56, 44, 44], [70, 52, 48], dawn), [84, 56, 46], gold), (i - 1) / 5 * (.45 + .4 * gold));
+      // (build 629) hills at night as Kuindzhi, Friedrich and Hasui paint them (owner: "the hills at night need to look more
+      // like hills at night"): cool blue, each nearer range a step darker down to near black, no warm colour; the far ones
+      // paler against the glowing horizon
+      if (night > .01) col = mix(col, mix([34, 40, 60], [9, 10, 17], Math.pow(i / 5, .8)), night);
       c.beginPath(); c.moveTo(0, VH);
       for (let X = 0; X <= VW + 8; X += 6) c.lineTo(X, by(rrY(i, VW / 2 + (X - VW / 2) / B + cam.cx * PAN(p) * 6, base, amp)));
       c.lineTo(VW, VH); c.closePath(); c.fillStyle = css(col); c.fill();
+      // at night the far ridges' tops catch a breath of starlight (a hair-thin cool line, fainter nearer)
+      if (night > .05 && i < 4) { c.save(); c.strokeStyle = css([120, 134, 170], (.16 - .035 * i) * night); c.lineWidth = 1; c.beginPath();
+        for (let X = 0; X <= VW + 8; X += 6) c.lineTo(X, by(rrY(i, VW / 2 + (X - VW / 2) / B + cam.cx * PAN(p) * 6, base, amp)) + .5); c.stroke(); c.restore(); }
       if (gold > .02 && !LOOKF) {
         // backlight on the ridge's top: brightest toward the sun, fading away from it
         const sxs = sx(CROSS_X + SUN_DX), g = c.createLinearGradient(0, 0, VW, 0);
@@ -646,7 +656,7 @@ const CR = (() => {
       }
       // mist lying in the valley below this ridge: thickest low down, fading up the next ridge; strongest far off
       const mb = by(base + amp * .9), g = c.createLinearGradient(0, mb - 34 * B, 0, mb + 26 * B);
-      const ma = (.62 - .07 * i) * (.75 + .25 * gold) * (LOOKF ? 1.2 : 1) * (1 - .55 * night);
+      const ma = (.62 - .07 * i) * (.75 + .25 * gold) * (LOOKF ? 1.2 : 1) * (1 - .35 * night);
       g.addColorStop(0, css(mistC, 0)); g.addColorStop(.62, css(mistC, ma)); g.addColorStop(1, css(mistC, ma * .5));
       c.fillStyle = g; c.fillRect(0, mb - 34 * B, VW, 60 * B);
     });
@@ -1023,16 +1033,55 @@ const CR = (() => {
     }
   }
   // the wall of Salvation: a low coursed wall behind the way, ending where the land opens
-  function wall(c) {
-    const r = rgen(9), col = mix(mix([36, 36, 46], [42, 38, 44], dawn), [52, 42, 38], gold), WH = 64;
-    const WX = Math.min(-600, START - 900); c.beginPath(); c.moveTo(WX, 6); let x = WX;
-    while (x < WALL_END) { const w = 14 + r() * 12, hh = r() * 2.5; c.lineTo(x, -WH - hh); c.lineTo(Math.min(WALL_END, x + w - 1), -WH - hh); x += w; }
-    c.lineTo(WALL_END, -WH + 4); c.lineTo(WALL_END + 3, 6); c.closePath(); c.fillStyle = css(col); c.fill();
-    c.strokeStyle = css(mix(col, [0, 0, 0], .18)); c.lineWidth = 1;
-    for (let q = 1; q < 5; q++) { c.beginPath(); c.moveTo(WX, -WH + q * 13); c.lineTo(WALL_END, -WH + q * 13); c.stroke(); }
-    // the coping catches a little of the sky
-    c.fillStyle = css(mix(col, [200, 190, 190], .08 + .12 * gold)); c.fillRect(WX, -WH - 3, WALL_END - WX, 2);
+  // the wall called Salvation in the same stone as the wicket-gate's wall of Level 3, before it was cut in section (owner,
+  // build 629: "wall looks awful - consider the wall at the end of level 2 [3] a while back ... worked on that a long time -
+  // that was good"): the patchwork of four CC0 flint-wall photographs (gate-wall.webp, builds 235 to 241) softened toward
+  // watercolour as hill.js softens it (a quarter-size copy laid over at .7, its mean colour at .22), the stones about 15
+  // units, under a row of rough rounded cap stones of every width, now and then one missing (as build 216's). The book gives
+  // no height ({92}: "fenced on either side with a wall"); men "come tumbling over" it later, so about chest-high to him.
+  // Painted once at 2 px a unit, at night (dim, cool, a little light from the sky on its top) and at sunrise; crossfaded.
+  const WALL_H = 92, WALL_X0 = Math.min(-600, START - 900);
+  let WALLC = null, WALLP = null;
+  function softenW(im, f, a, flat) {
+    const w = im.width, h = im.height, T = mk(w * 3, h * 3), t = T.getContext('2d');
+    for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) t.drawImage(im, i * w, j * h);
+    let src = T, sw = T.width, sh = T.height; const tw = Math.round(T.width / f), th = Math.round(T.height / f);
+    while (sw > tw) { const nw = Math.max(tw, Math.round(sw / 2)), nh = Math.max(th, Math.round(sh / 2)), q = mk(nw, nh); q.getContext('2d').drawImage(src, 0, 0, sw, sh, 0, 0, nw, nh); src = q; sw = nw; sh = nh; }
+    const out = mk(w, h), o = out.getContext('2d'); o.drawImage(im, 0, 0); o.globalAlpha = a; o.drawImage(src, sw / 3, sh / 3, sw / 3, sh / 3, 0, 0, w, h); o.globalAlpha = 1;
+    const m = mk(1, 1), mq = m.getContext('2d'); mq.drawImage(src, 0, 0, 1, 1); const d = mq.getImageData(0, 0, 1, 1).data;
+    o.fillStyle = `rgba(${d[0]},${d[1]},${d[2]},${flat})`; o.fillRect(0, 0, w, h); return out;
   }
+  if (/[?&]look=f\b/.test(location.search)) loadImg('gate-wall.webp').then(im => { if (im) { WALLP = softenW(im, 4, .7, .22); WALLC = null; } }).catch(() => {});
+  function bakeWall(night) {
+    const S = 2, L = WALL_END - WALL_X0, W = (L + 10) * S, H = (WALL_H + 40) * S, cv = mk(W, H), q = cv.getContext('2d'), r = rgen(216);
+    q.scale(S, S); const G = WALL_H + 36, top = x => WALL_H + 2.4 * Math.sin(x / 150) + 1.6 * Math.sin(x / 53 + 1);
+    // the body of the wall and its cap stones as one shape
+    q.beginPath(); q.moveTo(0, G); q.lineTo(0, G - top(0));
+    for (let x = 0; x < L;) { const w = 14 + r() * 24, hh = 1 + r() * 4.5, miss = r() < .05, y = G - top(x + w / 2);
+      if (miss) { q.lineTo(x + w, y + 1.5); x += w; continue; }
+      q.lineTo(x + .6, y); q.bezierCurveTo(x + w * .1, y - hh, x + w * .9, y - hh * (.7 + r() * .5), x + w - .6, y); x += w; }
+    q.lineTo(L, G - top(L)); q.lineTo(L, G); q.closePath(); q.save(); q.clip();
+    const pat = q.createPattern(WALLP, 'repeat'), k = 470 / WALLP.width; pat.setTransform(new DOMMatrix([k, 0, 0, k, 0, G - WALL_H - 8]));
+    q.fillStyle = pat; q.fillRect(0, 0, L + 10, G);
+    // the light: a little from the sky on the top, falling away to its foot; at sunrise warm
+    q.globalCompositeOperation = 'multiply';
+    const g = q.createLinearGradient(0, G - WALL_H - 8, 0, G);
+    if (night) { g.addColorStop(0, 'rgb(118,126,160)'); g.addColorStop(.25, 'rgb(74,80,108)'); g.addColorStop(1, 'rgb(34,36,52)'); }
+    else { g.addColorStop(0, 'rgb(236,206,170)'); g.addColorStop(.3, 'rgb(170,140,118)'); g.addColorStop(1, 'rgb(82,64,56)'); }
+    q.fillStyle = g; q.fillRect(0, 0, L + 10, G);
+    q.globalCompositeOperation = 'source-over'; q.restore();
+    // the cap stones' tops catch the sky a hair
+    return { cv, S, G };
+  }
+  function wall(c) {
+    if (!WALLP) return;
+    if (!WALLC) WALLC = [bakeWall(true), bakeWall(false)];
+    const k = Math.max(gold, .35 * dawn);
+    for (const [b, a] of [[WALLC[0], 1], [WALLC[1], k]]) { if (a < .01) continue; c.globalAlpha = a; c.drawImage(b.cv, WALL_X0, -b.G, b.cv.width / b.S, b.cv.height / b.S); }
+    c.globalAlpha = 1;
+  }
+
+
   // the sepulchre, cut into the body of the hill (owner: "down on the ground like in the body of hill"): in the flat side
   // view the dark mass under the slope's outline is the hill's face toward us, and the tomb is hewn into it, below the
   // surface: a rough cut face a breath lighter than the hill, a round-headed doorway dark within, a worn sill and a
@@ -1225,7 +1274,7 @@ const CR = (() => {
 
   // ---------- the story ----------
   function reset0() {
-    blest = 0; tumbleT = 0; sepT = -1; memT = -1; memS = []; memUntil = 0; memQ = 0; REL.forEach(m => { m.a = 0; m.said = false; m.cv = m.front = null; }); relGW = false; FIGS.forEach(f => { f.a = 0; f.said = false; }); CONST.forEach(k => { k.t = -1; }); night = NIGHT_ON ? 1 : 0; tearT = -1; looked = false; Object.assign(Ch, { x: START, anim: 12, sd: QUIET[0], cf: -1, hop: 0, hops: 0, lastV: 0, fade: 0, hv: 0, face: 1, tv: null, run: 0, ranim: 0, cc: 0, lp: null, wo: null, wa: 0, kn: null, kup: false });
+    blest = 0; tumbleT = 0; sepT = -1; memT = -1; memS = []; memUntil = 0; memQ = 0; REL.forEach(m => { m.a = 0; m.said = false; m.cv = m.front = null; }); relGW = false; FIGS.forEach(f => { f.a = 0; f.said = false; }); CONST.forEach(k => { k.t = -1; k.said = false; k.f0 = null; }); night = NIGHT_ON ? 1 : 0; tearT = -1; looked = false; Object.assign(Ch, { x: START, anim: 12, sd: QUIET[0], cf: -1, hop: 0, hops: 0, lastV: 0, fade: 0, hv: 0, face: 1, tv: null, run: 0, ranim: 0, cc: 0, lp: null, wo: null, wa: 0, kn: null, kup: false });
     sunT = 0; sunGo = false; sunH = 0;
     bur = null; dawn = gold = goldTo = sun = robe = robeTo = mark = markTo = rollShow = rollGone = shine = shineTo = gone = goneTo = 0; wideK = 1; wideTo = 1;
     said = {}; hymn = null; silenceT = 0; tombT = 0; leapsLeft = 3; endT = 0; quietPad = 0; t = 0; rollFly = rollAt = null; closeK = topK = topTo = veil = 0; climb = null;
@@ -1345,7 +1394,10 @@ const CR = (() => {
       // to the cross, the book's "He ran thus till he came at a place somewhat ascending"
       // once he is up on the top near the cross he walks (owner, build 452: "once he's at the top with the cross he can walk")
       const onTop = Ch.x >= WALK_X;
-      if (want && !sepLook && Ch.x < STOP_X - .5) {
+      // (build 629) at the foot of the hill he stands and looks up while the three star pictures of the places he has left
+      // come one after another and their lines are heard; then the child can run on
+      const starHold = NIGHT_ON && Ch.x >= SLOPE0 - 80 && !CONST.every(k => k.said);
+      if (want && !sepLook && !starHold && Ch.x < STOP_X - .5) {
         if (!onTop) run(true); else if (Ch.run > 0) run(false); else walk(MAXV * .9);
         if (Ch.x > STOP_X) Ch.x = STOP_X;
       } else { run(false); if (Ch.run <= 0 && Ch.sd == null) walk(0); }
@@ -1643,29 +1695,75 @@ const CR = (() => {
   // remove the entire scene changes"; my advice, agreed: no lines between the stars, places in the sky, people on the
   // path). Only with ?look=f. Ours, not the book's (he leaves the Interpreter's house at night, so 3am fits).
   const NIGHT_ON = /[?&]look=f\b/.test(location.search);
-  const NIGHTC = [[6, 8, 20], [16, 20, 38], [40, 44, 62]];
-  // a quiet scatter of stars in the upper sky (fixed; they drift a hair as he goes)
-  const STARS = (() => { const r = rgen(41), A = []; for (let i = 0; i < 150; i++) A.push({ x: r(), y: Math.pow(r(), 1.5) * .5, s: .45 + r() * r() * 1.1, b: .25 + r() * .6, p: r() * 6.28, f: 30 + r() * 60 }); return A; })();
-  // three places he has left, each a handful of stars that brighten for a few seconds so their places hint at it, then go
-  // back into the scatter (no lines): his house and its lit door, the oak over the Slough, the burning hill. Silent.
+  const NIGHTC = [[4, 6, 16], [14, 18, 36], [52, 60, 88]];
+  // the stars, plentiful and bright enough to be the picture at 3am (owner, build 629: "the starry sky should be more
+  // prominent"): a scatter of many small ones, a few large, and a faint band of the Milky Way
+  const STARS = (() => { const r = rgen(41), A = []; for (let i = 0; i < 380; i++) A.push({ x: r(), y: Math.pow(r(), 1.3) * .6, s: .4 + r() * r() * r() * 2.4, b: .3 + r() * .7, p: r() * 6.28, f: 30 + r() * 60 });
+    // the Milky Way: dense faint dust along a slanting band
+    for (let i = 0; i < 520; i++) { const u = r(), off = (r() + r() + r() - 1.5) * .07; A.push({ x: u, y: .05 + u * .32 + off, s: .3 + r() * .5, b: .12 + r() * .3, p: r() * 6.28, f: 40 + r() * 60, mw: 1 }); }
+    return A; })();
+  // three places he has left, drawn in the sky as scatterings of stars along their outlines (owner, build 629: "put the
+  // mt and city of destrution and the tree form the slough in starry outlines (not perfect but scattering of stars as an
+  // artistic homage to those locations) complete with lines from characters in those levels"), in the order he passed
+  // them: the City of Destruction (its walls, roofs, towers and spires, one warm star for his own lit door), the great oak
+  // over the Slough (traced from Level 2's own tree), the burning hill (traced from Level 3's own painting, a warm star at
+  // its summit). Each brightens as he walks under it and its line is heard; after, it stays in the sky, fainter.
+  const CITY = [[0, 1], [0, .66], [.05, .66], [.05, .4], [.09, .34], [.13, .4], [.13, .62], [.2, .62], [.24, .5], [.28, .62], [.31, .62], [.31, .44], [.33, .12], [.35, .44],
+    [.35, .58], [.42, .58], [.46, .46], [.5, .58], [.55, .52], [.59, .38], [.63, .52], [.68, .6], [.7, .6], [.7, .3], [.74, .3], [.74, .6], [.8, .56], [.84, .44], [.88, .56],
+    [.92, .56], [.92, .2], [.935, .06], [.95, .2], [.95, .6], [1, .64], [1, 1]];
+  function polyStars(P, n, r) { const L = []; let tot = 0; for (let i = 1; i < P.length; i++) { const d = Math.hypot(P[i][0] - P[i - 1][0], P[i][1] - P[i - 1][1]); L.push(d); tot += d; }
+    const out = []; for (let k = 0; k < n; k++) { let t = (k + .5 + (r() - .5) * .7) / n * tot, i = 0; while (i < L.length - 1 && t > L[i]) { t -= L[i]; i++; }
+      const f = Math.min(1, t / L[i]), a = P[i], b = P[i + 1]; out.push([a[0] + (b[0] - a[0]) * f + (r() - .5) * .018, a[1] + (b[1] - a[1]) * f + (r() - .5) * .03]); }
+    return out; }
+  // the outline of a picture's alpha: its edge pixels, then spread out by keeping only points far enough apart
+  function edgeStars(im, n, topOnly, r) {
+    const W = 160, H = Math.round(160 * im.height / im.width), cv = mk(W, H), q = cv.getContext('2d'); q.drawImage(im, 0, 0, W, H);
+    if (!topOnly) { const t = mk(W, H), tq = t.getContext('2d'); for (let k = 0; k < 3; k++) { tq.clearRect(0, 0, W, H); tq.filter = 'none'; for (const [dx, dy] of [[-2,0],[2,0],[0,-2],[0,2],[0,0]]) tq.drawImage(cv, dx, dy); q.clearRect(0, 0, W, H); q.drawImage(t, 0, 0); } }
+    const d = q.getImageData(0, 0, W, H).data, A = (x, y) => x < 0 || y < 0 || x >= W || y >= H ? 0 : d[(y * W + x) * 4 + 3], E = [];
+    if (topOnly) { for (let x = 0; x < W; x++) for (let y = 0; y < H; y++) if (A(x, y) > 120) { E.push([x, y]); break; } }
+    else for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (A(x, y) > 120 && (A(x - 1, y) <= 120 || A(x + 1, y) <= 120 || A(x, y - 1) <= 120 || A(x, y + 1) <= 120)) E.push([x, y]);
+    const out = [], minD = Math.sqrt(W * H / n) * (topOnly ? .55 : .9);
+    for (let k = 0; k < E.length * 3 && out.length < n; k++) { const p = E[Math.floor(r() * E.length)]; if (out.every(o => Math.hypot(o[0] - p[0], o[1] - p[1]) > minD)) out.push(p); }
+    return out.map(([x, y]) => [x / W + (r() - .5) * .012, y / H + (r() - .5) * .02]);
+  }
   const CONST = [
-    { at: START + 260, cx: .2, cy: .2, w: 64, h: 54, warm: [7], P: [[.5, .02], [.1, .42], [.9, .42], [.14, 1], [.86, 1], [.74, .1], [.5, .64], [.5, .86]] },
-    { at: START + 760, cx: .5, cy: .13, w: 92, h: 78, P: [[.5, 1], [.5, .58], [.08, .36], [.24, .1], [.52, .02], [.78, .12], [.95, .4], [.3, .48], [.7, .5]] },
-    { at: START + 1260, cx: .8, cy: .2, w: 100, h: 64, warm: [2], P: [[0, 1], [.24, .56], [.55, .04], [.76, .16], [.68, .48], [1, 1], [.4, .3]] },
+    // (build 629, owner: "should show one at a time, should take up whole sky each and be much more subtle"): each spans
+    // the sky, comes only once the one before has gone, and is just a little brighter than the stars round it
+    { at: START + 150, cx: .5, cy: .27, w: .92, h: .4, kind: 'city', voice: MEMS[0] },
+    { at: START + 600, cx: .5, cy: .26, w: .62, h: .46, kind: 'oak', voice: { who: C, txt: 'There shall be no more crying, nor sorrow. We shall shine like the sun.' } },
+    { at: START + 1100, cx: .5, cy: .27, w: .94, h: .38, kind: 'hill', voice: { who: E, txt: 'What are you doing here, Christian? You are out of the way.' } },
   ];
-  CONST.forEach(k => { k.t = -1; });
+  const CONST_HOLD = 420;
+  CONST.forEach(k => { k.t = -1; k.said = false; k.P = null; k.f0 = null; });
+  let HILLROCK = null; if (NIGHT_ON) loadImg('hill-rock.webp').then(im => { HILLROCK = im; }).catch(() => {});
+  function constPts(k) {
+    if (k.P) return k.P; const r = rgen(k.kind.length * 13 + 5);
+    if (k.kind === 'city') { k.P = polyStars(CITY, 110, r); k.warm = [];
+      // his own lit door, and a few lit windows
+      k.P.push([.22, .9]); k.warm.push(k.P.length - 1); for (const w of []) { k.P.push(w); k.warm.push(k.P.length - 1); } }
+    else if (k.kind === 'oak') { if (!(typeof SL !== 'undefined' && SL.oakPic)) return null; const ob = SL.oakPic([0, 0, 0], .5), im = ob && ob.c; if (!im) return null; k.P = edgeStars(im, 90, false, r); }
+    else { if (!HILLROCK) return null; k.P = edgeStars(HILLROCK, 80, true, r).filter(p => p[1] < .86); let m = 0; k.P.forEach((p, j) => { if (p[1] < k.P[m][1]) m = j; }); k.warm = [m]; }
+    return k.P;
+  }
   const skyX = x0 => ((x0 * VW * 1.3 - cam.cx * .012) % (VW * 1.3) + VW * 1.3) % (VW * 1.3) - VW * .15;
   function stars(c) {
     const a0 = night * (1 - gold);
     if (a0 < .01) return;
     c.save();
-    for (const s of STARS) { const x = skyX(s.x), y = s.y * VH, a = a0 * s.b * (.78 + .22 * Math.sin(G.t / s.f + s.p)); c.fillStyle = `rgba(226,230,244,${a})`; c.fillRect(x - s.s / 2, y - s.s / 2, s.s, s.s); }
+    // the Milky Way's faint glow under its dust
+    { c.save(); c.globalAlpha = .55 * a0; c.translate(VW * .5, VH * .2); c.rotate(Math.atan2(.32 * VH, VW * 1.3)); const gg = c.createLinearGradient(0, -VH * .07, 0, VH * .07);
+      gg.addColorStop(0, 'rgba(120,130,170,0)'); gg.addColorStop(.5, 'rgba(120,130,170,.13)'); gg.addColorStop(1, 'rgba(120,130,170,0)'); c.fillStyle = gg; c.fillRect(-VW, -VH * .07, VW * 2, VH * .14); c.restore(); }
+    for (const s of STARS) { const x = skyX(s.x), y = s.y * VH, a = a0 * s.b * (.75 + .25 * Math.sin(G.t / s.f + s.p)); c.fillStyle = `rgba(226,230,244,${a})`;
+      if (s.s > 1.4) { c.beginPath(); c.arc(x, y, s.s * .6, 0, 6.2832); c.fill(); c.fillStyle = `rgba(200,210,240,${a * .18})`; c.beginPath(); c.arc(x, y, s.s * 2, 0, 6.2832); c.fill(); }
+      else c.fillRect(x - s.s / 2, y - s.s / 2, s.s, s.s); }
     for (const k of CONST) {
-      const lt = k.t, kk = lt < 0 ? 0 : smooth(0, 100, lt) * (1 - smooth(320, 460, lt));
-      k.P.forEach(([u, v], j) => {
-        const x = skyX(k.cx) + (u - .5) * k.w, y = k.cy * VH + (v - .5) * k.h, warm = k.warm && k.warm.includes(j), tw = .85 + .15 * Math.sin(G.t / (40 + j * 7) + j);
-        const a = a0 * (.32 + .6 * kk) * tw, r = .7 + .9 * kk, col = warm ? [255, 214, 160] : [230, 234, 250];
-        if (kk > .02) { const g = c.createRadialGradient(x, y, 0, x, y, 5 + 5 * kk); g.addColorStop(0, css(col, .3 * kk * a0)); g.addColorStop(1, css(col, 0)); c.fillStyle = g; c.fillRect(x - 10, y - 10, 20, 20); }
+      if (k.t < 0) continue; const P = constPts(k); if (!P) continue;
+      const kk = smooth(0, 90, k.t) * (k.f0 == null ? 1 : 1 - smooth(k.f0, k.f0 + 110, k.t)); if (kk < .01) continue;
+      const W = k.w * VW, Hh = k.h * VH, X0 = VW * k.cx, Y0 = VH * k.cy;
+      P.forEach(([u, v], j) => {
+        const x = X0 + (u - .5) * W, y = Y0 + (v - .5) * Hh, warm = k.warm && k.warm.includes(j), tw = .75 + .25 * Math.sin(G.t / (40 + j % 9 * 7) + j);
+        const a = a0 * kk * tw * (.5 + .35 * ((j * 7) % 5) / 4), r = .7 + .5 * ((j * 3) % 4) / 3, col = warm ? [255, 220, 176] : [226, 232, 250];
+        const g = c.createRadialGradient(x, y, 0, x, y, 4); g.addColorStop(0, css(col, .16 * a)); g.addColorStop(1, css(col, 0)); c.fillStyle = g; c.fillRect(x - 4, y - 4, 8, 8);
         c.fillStyle = css(col, a); c.beginPath(); c.arc(x, y, r, 0, 6.2832); c.fill();
       });
     }
@@ -1682,7 +1780,13 @@ const CR = (() => {
   FIGS.forEach(f => { f.a = 0; f.said = false; f.dk = null; });
   function figTick() {
     if (!NIGHT_ON) return;
-    CONST.forEach(k => { if (k.t < 0 && Ch.x >= k.at && ph === 'walk') k.t = 0; else if (k.t >= 0) k.t++; });
+    CONST.forEach((k, i) => { const prev = CONST[i - 1]; if (k.t < 0 && Ch.x >= k.at && ph === 'walk' && night > .3 && (!prev || (prev.f0 != null && prev.t >= prev.f0))) k.t = 0; else if (k.t >= 0) k.t++;
+      // it stays until its line has been heard, a breath more, then fades as the next comes
+      if (k.said && k.f0 == null && k.t > 120 && G.t > memUntil + 40) k.f0 = k.t;
+      // its line, once it has brightened, never over another voice; passed by if he is already far beyond it
+      if (k.t > 40 && !k.said && FIGS_OFF) k.said = true;
+      if (k.t > 40 && !k.said && said.open && !busy() && memQ >= 40 && !FIGS_OFF) { k.said = true; memVoice(k.voice); }
+      if (!k.said && k.t < 0 && night <= .3) k.said = true; });
     FIGS.forEach(f => {
       const tgt = ph === 'walk' ? sm(f.x - 920, f.x - 780, Ch.x) * (1 - sm(f.x - 270, f.x - 150, Ch.x)) : 0;
       f.a += (tgt - f.a) * .06;
@@ -1745,7 +1849,7 @@ const CR = (() => {
   }
 
   return { on: false, start, update, draw, touch, key, preload, lines: ALL, stop: () => padStop(), _pt: { roll: rollPt, chr: chrPt }, _turning: () => !!Ch.tv,
-    peek: () => ({ ph, t, z: +cam.z.toFixed(3), figs: FIGS.map(f => (f.said ? 'S' : '-') + f.a.toFixed(1)).join(' '), night: +night.toFixed(2), fly: rollFly ? rollFly.t : -1, x: Math.round(Ch.x), cf: +Ch.cf.toFixed(1), bur: bur ? { st: bur.st, x: Math.round(bur.x), a: +bur.a.toFixed(2), t: bur.t, H: Math.round(bur.H || 0), z: +(bur.z || 0).toFixed(1), r: +(bur.r || 0).toFixed(2), sq: +(bur.sq || 0).toFixed(2) } : null, gold: +gold.toFixed(2), shine: +shine.toFixed(2), leaps: leapsLeft, lp: Ch.lp == null ? -1 : +Ch.lp.toFixed(1), wo: Ch.wo == null ? -1 : Ch.wo, closeK: +closeK.toFixed(2), topK: +topK.toFixed(2), veil: +veil.toFixed(2), tear: tearT, sep: sepT, mem: memS.length, rel: REL.map(m => +m.a.toFixed(2)), kn: Ch.kn == null ? -1 : +Ch.kn.toFixed(1), hb: hymn ? +(hymn.t / BEATT).toFixed(1) : -1 }),
+    peek: () => ({ ph, t, z: +cam.z.toFixed(3), cst: CONST.map(k => (k.said ? 'S' : '-') + k.t + (k.P ? 'p' : 'n')).join(' '), figs: FIGS.map(f => (f.said ? 'S' : '-') + f.a.toFixed(1)).join(' '), night: +night.toFixed(2), fly: rollFly ? rollFly.t : -1, x: Math.round(Ch.x), cf: +Ch.cf.toFixed(1), bur: bur ? { st: bur.st, x: Math.round(bur.x), a: +bur.a.toFixed(2), t: bur.t, H: Math.round(bur.H || 0), z: +(bur.z || 0).toFixed(1), r: +(bur.r || 0).toFixed(2), sq: +(bur.sq || 0).toFixed(2) } : null, gold: +gold.toFixed(2), shine: +shine.toFixed(2), leaps: leapsLeft, lp: Ch.lp == null ? -1 : +Ch.lp.toFixed(1), wo: Ch.wo == null ? -1 : Ch.wo, closeK: +closeK.toFixed(2), topK: +topK.toFixed(2), veil: +veil.toFixed(2), tear: tearT, sep: sepT, mem: memS.length, rel: REL.map(m => +m.a.toFixed(2)), kn: Ch.kn == null ? -1 : +Ch.kn.toFixed(1), hb: hymn ? +(hymn.t / BEATT).toFixed(1) : -1 }),
     // A SHORT WORDLESS CHOIR FOR THE SHINING ONES (awe study): from their coming until Christian's song begins (index.html's music player, cue 'choir')
     choir: () => ph === 'shine' || (ph === 'leaps' && !blest),
     // the land's outline, for making pictures of the hill (tools)
