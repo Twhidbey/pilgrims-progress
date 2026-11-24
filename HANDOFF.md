@@ -244,6 +244,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 ## START HERE (rewritten at build 140, Nov 16 2026)
 
+**Build 617 (art direction chat): `?look=f` the slope's top edge repainted smooth with a thin worn track, two rock groups added on the grass below. Spent: about 50 cents.**
+
 **Build 616 (art direction chat): `?look=f` the last of the old winding track painted out with the free FLUX model. Nothing spent.**
 
 **Build 615 (art direction chat): `?look=f` the winding track across the face painted out (one Google edit kept of two, about 50 cents in all), a faint worn track drawn in code along the edge where he walks. Spent: about 50 cents.**
