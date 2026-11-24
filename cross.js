@@ -417,7 +417,7 @@ const CR = (() => {
   const SINK = 10, KNEEL_SINK = 5;
   const QP = (k, d) => { const m = location.search.match(new RegExp('[?&]' + k + '=([\\d.,]+)')); return m ? m[1].split(',').map(Number) : d; };
   const COATC = QP('coatc', [206, 142, 92]), COATK = QP('coatk', [.6])[0], COATCON = QP('coatcon', [.85])[0];
-  let FIGCON = 0;
+  let FIGCON = 0, FIGSH = 0; const rimC = document.createElement('canvas'), shC = document.createElement('canvas');
   function figure(c, im, meta, x, h, face, alpha, tint, rim) {
     if (!im || alpha <= .004) return;
     im = solidOf(im);
@@ -429,6 +429,18 @@ const CR = (() => {
     if (rim > .01) { const g = f.createLinearGradient(face > 0 ? 0 : W, 0, face > 0 ? W : 0, 0); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(.6, 'rgba(0,0,0,0)'); g.addColorStop(1, css([255, 210, 150], .35 * rim)); f.globalCompositeOperation = 'source-atop'; f.fillStyle = g; f.fillRect(0, 0, W, H); }
     f.globalCompositeOperation = 'destination-in'; f.drawImage(im, 0, 0); f.globalCompositeOperation = 'source-over';
     const K = CHR_K;
+    // a hair-thin edge of the sun's light along the tops of him (head, shoulders), the sun being behind
+    if (LIT && rim > .01) { if (rimC.width !== W || rimC.height !== H) { rimC.width = W; rimC.height = H; } const q = rimC.getContext('2d');
+      q.globalCompositeOperation = 'source-over'; q.clearRect(0, 0, W, H); q.drawImage(im, 0, 0); q.globalCompositeOperation = 'destination-out'; q.drawImage(im, 0, 3);
+      q.globalCompositeOperation = 'source-in'; q.fillStyle = 'rgb(255,216,160)'; q.fillRect(0, 0, W, H);
+      f.globalCompositeOperation = 'source-atop'; f.globalAlpha = Math.min(1, .8 * rim); f.drawImage(rimC, 0, 0); f.globalAlpha = 1; f.globalCompositeOperation = 'source-over'; }
+    // his shadow toward us: his own shape turned over at his feet, lying down the hill's face, soft, fading toward its head
+    const sa = FIGSH ? shA() * alpha : 0;
+    if (sa > .01) { const sw = Math.ceil(W / 5), sh = Math.ceil(H / 5); if (shC.width !== sw || shC.height !== sh) { shC.width = sw; shC.height = sh; } const q = shC.getContext('2d');
+      q.globalCompositeOperation = 'source-over'; q.clearRect(0, 0, sw, sh); q.drawImage(im, 0, 0, sw, sh); q.globalCompositeOperation = 'source-in';
+      const g = q.createLinearGradient(0, sh * meta.ground / H, 0, 0); g.addColorStop(0, 'rgba(8,7,14,1)'); g.addColorStop(.5, 'rgba(8,7,14,.55)'); g.addColorStop(1, 'rgba(8,7,14,0)'); q.fillStyle = g; q.fillRect(0, 0, sw, sh);
+      c.save(); landClip(c, x - 260, x + 260); c.translate(x, -h + SINK - 2); c.transform(1, 0, clamp((x - CROSS_X) / 1400, -.3, .3), 1, 0, 0); c.scale(face, -shLen()); c.globalAlpha = sa;
+      c.drawImage(shC, -meta.ax * K, -meta.ground * K, W * K, H * K); c.restore(); }
     c.save(); c.translate(x, -h + SINK); if (TILT) c.rotate(TILT); c.scale(face, 1); c.globalAlpha = alpha;
     c.drawImage(figC, -meta.ax * K, -meta.ground * K, W * K, H * K); c.restore();
   }
@@ -442,6 +454,9 @@ const CR = (() => {
   }
   function contact(c, x, h, a = 1, rx = 34) { const g = c.createRadialGradient(0, 0, 0, 0, 0, 1); g.addColorStop(0, 'rgba(6,6,12,.5)'); g.addColorStop(.6, 'rgba(6,6,12,.24)'); g.addColorStop(1, 'rgba(6,6,12,0)'); c.save(); c.beginPath(); c.moveTo(x - 80, 60); for (const [xx, yy] of outline(x - 80, x + 80, 4)) c.lineTo(xx, yy); c.lineTo(x + 80, 60); c.closePath(); c.clip(); c.translate(x, -h + SINK - 2); c.scale(rx, 5); c.globalAlpha = a; c.fillStyle = g; c.fillRect(-1, -1, 2, 2); c.restore(); }
   function drawChr(c) {
+    FIGSH = 1; try { drawChr0(c); } finally { FIGSH = 0; }
+  }
+  function drawChr0(c) {
     const tint = tintNow(), rim = gold * (1 - wideK), x = Ch.x, h = gh(x) + Ch.hop;
     contact(c, x, gh(x), 1 - Math.min(1, Ch.hop / 40) * .6);
     const useClip = Ch.cf >= 0 && CLIP.ready, fc = Ch.face;
@@ -1055,6 +1070,38 @@ const CR = (() => {
   }
   // the painted hill's light and shade spread to the full range of grey, made once (for ?look=f's modelled rock)
   let HPR = null;
+  // (build 660, owner: "the sun is behind him so much of the hill should be shaded and there should be a shadow from him
+  // coming our way"): the backlit scene. ?lit=0 gives the old light, to compare
+  // (build 660, owner: "not a huge fan of the choir when the shining ones appear (save for later maybe?)"): only with ?choir=1
+  const CHOIR_ON = /[?&]choir=1\b/.test(location.search);
+  const LIT = LF && !/[?&]lit=0\b/.test(location.search);
+  // how long a shadow lies toward us (longest as the sun breaks, shorter as it climbs) and how strong
+  const shLen = () => lerp(1.75, .6, sm(0, 1.2, sunH)), shA = () => LIT ? .66 * sun * (1 - night) : 0;
+  const landClip = (c, xa, xb) => { c.beginPath(); c.moveTo(xa, 4000); for (const [xx, yy] of outline(xa, xb, 6)) c.lineTo(xx, yy); c.lineTo(xb, 4000); c.closePath(); c.clip(); };
+  // the tops of the painted rock's ledges (where the painting is lighter than the rock round it), kept once as a soft
+  // white mask at a quarter of its size: only these catch the sun; the faces toward us stay in shade
+  let HPT = null, TOPT = null;
+  function tintTops(tp) { const cv = mk(tp.width, tp.height), q = cv.getContext('2d'); q.drawImage(tp, 0, 0); q.globalCompositeOperation = 'source-in'; q.fillStyle = 'rgb(255,168,104)'; q.fillRect(0, 0, cv.width, cv.height); return cv; }
+  function hpTops() {
+    if (HPT || !HPAINT) return HPT;
+    const W = Math.round(HPAINT.width / 4), H = Math.round(HPAINT.height / 4), cv = mk(W, H), q = cv.getContext('2d');
+    q.drawImage(HPAINT, 0, 0, W, H); const d = q.getImageData(0, 0, W, H), p = d.data;
+    const sm0 = mk(Math.ceil(W / 12), Math.ceil(H / 12)), q0 = sm0.getContext('2d'); q0.drawImage(cv, 0, 0, sm0.width, sm0.height);
+    const bl = mk(W, H), qb = bl.getContext('2d'); qb.drawImage(sm0, 0, 0, W, H); const m = qb.getImageData(0, 0, W, H).data;
+    for (let i = 0; i < p.length; i += 4) { const l = (p[i] + p[i + 1] + p[i + 2]) / 3, mm = (m[i] + m[i + 1] + m[i + 2]) / 3, a = Math.max(0, Math.min(1, (l - mm - 5) / 26));
+      p[i] = p[i + 1] = p[i + 2] = 255; p[i + 3] = Math.round(255 * a * (p[i + 3] / 255)); }
+    q.putImageData(d, 0, 0); return (HPT = cv);
+  }
+  // the cross's shadow, lying down the hill's face toward us: its own shape turned over at its foot, soft, fading
+  function crossShadow(c) {
+    const a = shA(); if (a < .01) return; const L = shLen(), x = CROSS_X, h = crossH(), T = 15, bw = 186;
+    c.save(); landClip(c, x - 260, x + 260); c.translate(x, -h + 4);
+    for (const [gw, ga] of [[1, .5], [1.9, .28], [3.2, .16]]) {
+      const g = c.createLinearGradient(0, 0, 0, CROSS_H * L); g.addColorStop(0, css([8, 7, 14], a * ga)); g.addColorStop(.55, css([8, 7, 14], a * ga * .6)); g.addColorStop(1, css([8, 7, 14], 0));
+      c.fillStyle = g; c.fillRect(-T / 2 * gw, 0, T * gw, CROSS_H * L);
+      c.fillRect(-bw / 2 - (gw - 1) * 5, CROSS_BY * L - T * L / 2 * gw, bw + (gw - 1) * 10, T * L * gw); }
+    c.restore();
+  }
   function hpRelief() {
     if (HPR || !HPAINT) return HPR;
     const W = Math.round(HPAINT.width / 2), H = Math.round(HPAINT.height / 2), cv = mk(W, H), q = cv.getContext('2d');
@@ -1111,7 +1158,12 @@ const CR = (() => {
         // (build 650) its colour held back: nearly colourless until the sun is up (a dull umber laid over its own rust),
         // then a quieter rust than before
         if (LF && gold < 1) { c.globalCompositeOperation = 'color'; c.globalAlpha = .62 * (1 - gold); c.fillStyle = css(mix([74, 58, 54], [52, 52, 64], night)); c.fillRect(x0, -H_TOP - 700, x1 - x0, H_TOP + 2800); c.globalAlpha = 1; c.globalCompositeOperation = 'multiply'; }
-        if (H618 && gold > 0) { c.globalCompositeOperation = 'color'; c.globalAlpha = Math.min(1, SUN_T * 1.5) * gold; c.fillStyle = 'rgb(126,76,56)'; c.fillRect(x0, -H_TOP - 700, x1 - x0, H_TOP + 2800); c.globalAlpha = 1; } c.globalCompositeOperation = 'source-over'; } else {
+        if (H618 && gold > 0) { c.globalCompositeOperation = 'color'; c.globalAlpha = Math.min(1, SUN_T * 1.5) * gold; c.fillStyle = LIT ? 'rgb(112,80,84)' : 'rgb(126,76,56)'; c.fillRect(x0, -H_TOP - 700, x1 - x0, H_TOP + 2800); c.globalAlpha = 1; }
+        // the face toward us in its own cool shade once the sun is up behind it; only the ledges' tops take the light
+        if (LIT && gold > .01) { c.globalCompositeOperation = 'multiply'; c.fillStyle = css(mix([255, 255, 255], [188, 176, 186], gold)); c.fillRect(x0, -H_TOP - 700, x1 - x0, H_TOP + 2800);
+          const tp = hpTops(); if (tp) { const s2 = SK_H / 1080; c.save(); c.translate(SK_X, 0); c.scale(s2, s2); c.globalCompositeOperation = 'lighter'; c.globalAlpha = .34 * gold * sun;
+            c.drawImage(TOPT || (TOPT = tintTops(tp)), HP_X - 4380, HP_TOP, HP_W, HP_H); c.restore(); } }
+        c.globalCompositeOperation = 'source-over'; } else {
       c.globalCompositeOperation = 'color'; c.fillStyle = css(hc); c.fillRect(x0, -H_TOP - 700, x1 - x0, H_TOP + 2800); c.globalCompositeOperation = 'source-over'; }
       // THE HILL'S FOOT MELTS INTO THE GROUND (owner, build 649: "blend in the foot of mountain when christian first
       // encounters it and where it hits the ground on other side"): the painted rock used to stop at the ground's level
@@ -2297,7 +2349,7 @@ const CR = (() => {
     const c = ctx; c.setTransform(DPR, 0, 0, DPR, 0, 0);
     sky(c); far(c); memories(c);
     c.setTransform(DPR * cam.z, 0, 0, DPR * cam.z, DPR * (VW / 2 - cam.cx * cam.z), DPR * cam.wl);
-    wall(c); land(c); crag(c); tomb(c); cross(c); relive(c, false); if (!FIGS_OFF && !HILLFIGS_OFF) figs(c); snapLand(c);
+    wall(c); land(c); crag(c); tomb(c); crossShadow(c); cross(c); relive(c, false); if (!FIGS_OFF && !HILLFIGS_OFF) figs(c); snapLand(c);
     shining(c);
     drawBurden(c); drawChr(c); rocksFront(c); relive(c, true);
     // the nearest ground, a dark band along the foot of the picture, under the words
@@ -2314,7 +2366,7 @@ const CR = (() => {
   return { on: false, start, update, draw, touch, key, preload, lines: ALL, stop: () => padStop(), _pt: { roll: rollPt, chr: chrPt }, _turning: () => !!Ch.tv,
     _cst: CONST, _figs: () => FIGS, _busy: () => [busy(), memQ, said.open, ph], _storm: () => (mkStorm(), STORMR.map(f => f.t + (f.bolt ? "b" : ""))), _B: () => bgS(), peek: () => ({ ph, t, z: +cam.z.toFixed(3), cst: CONST.map(k => (k.said ? 'S' : '-') + k.t + (k.P ? 'p' : 'n')).join(' '), figs: FIGS.map(f => (f.said ? 'S' : '-') + f.a.toFixed(1)).join(' '), night: +night.toFixed(2), fly: rollFly ? rollFly.t : -1, x: Math.round(Ch.x), cf: +Ch.cf.toFixed(1), bur: bur ? { st: bur.st, x: Math.round(bur.x), a: +bur.a.toFixed(2), t: bur.t, H: Math.round(bur.H || 0), z: +(bur.z || 0).toFixed(1), r: +(bur.r || 0).toFixed(2), sq: +(bur.sq || 0).toFixed(2) } : null, gold: +gold.toFixed(2), shine: +shine.toFixed(2), leaps: leapsLeft, lp: Ch.lp == null ? -1 : +Ch.lp.toFixed(1), wo: Ch.wo == null ? -1 : Ch.wo, closeK: +closeK.toFixed(2), topK: +topK.toFixed(2), veil: +veil.toFixed(2), tear: tearT, sep: sepT, mem: memS.length, rel: REL.map(m => +m.a.toFixed(2)), kn: Ch.kn == null ? -1 : +Ch.kn.toFixed(1), hb: hymn ? +(hymn.t / BEATT).toFixed(1) : -1 }),
     // A SHORT WORDLESS CHOIR FOR THE SHINING ONES (awe study): from their coming until Christian's song begins (index.html's music player, cue 'choir')
-    choir: () => ph === 'shine' || (ph === 'leaps' && !blest),
+    choir: () => CHOIR_ON && (ph === 'shine' || (ph === 'leaps' && !blest)),
     // the land's outline, for making pictures of the hill (tools)
     outlinePts: (a, b, st) => outline(a, b, st), SK: () => ({ SK_X, SK_END, SK_H, SLOPE0, CROSS_X, TOMB_X }) };
 })();
