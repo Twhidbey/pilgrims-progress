@@ -1826,23 +1826,37 @@ const CR = (() => {
   function storm(c, k, a0) {
     const kk = smooth(0, 60, k.t) * (k.f0 == null ? 1 : 1 - smooth(k.f0, k.f0 + 110, k.t)); if (kk < .01) return;
     mkStorm(); }
-  function mkStorm() { if (!STORMR) { const r = rgen(91); STORMR = []; let t = 30; for (let i = 0; i < 40; i++) { const pts = [], bx = .22 + r() * .42; let x = 0, y = 0; pts.push([0, 0]); while (y < 1) { y += .08 + r() * .1; x += (r() - .5) * .09; pts.push([x, Math.min(1, y)]); }
-      STORMR.push({ t: Math.round(t), x: bx, w: .7 + r() * .6, bolt: (i === 0 || r() < .5) ? pts : null, two: r() < .5 }); t += 55 + r() * 95; } } }
+  // (build 637, owner: "the lightning and storm can be even smaller on horizon but light up a little brighter - make sure
+  // lightning is a real crackle not just a tiny strand"): each bolt a jagged channel made by midpoint displacement, with
+  // forks that branch again, drawn as a white core in a violet glow; it flickers as a real strike does
+  function crackle(r, x0, y0, len, dir, depth, out, w) {
+    // a stepped leader: short straight steps mostly downward, each turned sharply, with forks that branch again
+    const P = [[x0, y0]]; let x = x0, y = y0, a = dir;
+    while (y - y0 < len && P.length < 120) { a = dir + (r() - .5) * 1.9; const st = .016 + r() * .03; x += Math.sin(a) * st; y += Math.max(.012, Math.cos(a) * st); P.push([x, y]);
+      if (depth > 0 && P.length > 3 && r() < .12) crackle(r, x, y, (len - (y - y0)) * (.35 + r() * .4), dir + (r() < .5 ? -1 : 1) * (.5 + r() * .5), depth - 1, out, w * .55); }
+    out.push({ P, w });
+  }
+  function mkStorm() { if (!STORMR) { const r = rgen(91); STORMR = []; let t = 30; for (let i = 0; i < 40; i++) {
+      let bolt = null; if (i === 0 || r() < .55) { bolt = []; crackle(r, 0, 0, 1, (r() - .5) * .3, 2, bolt, 1); }
+      STORMR.push({ t: Math.round(t), x: .24 + r() * .4, w: .7 + r() * .6, bolt, two: r() < .55 }); t += 55 + r() * 95; } } }
   function storm2(c, k, a0) {
     const kk = smooth(0, 60, k.t) * (k.f0 == null ? 1 : 1 - smooth(k.f0, k.f0 + 110, k.t)); if (kk < .01) return;
     const hy = by(HY), B = bgS();
     for (const f of STORMR) {
       const d = k.t - f.t; if (d < 0 || d > 40) continue;
-      // a flash, a dim moment, often a second flash
-      const fl = (d < 5 ? 1 - d / 7 : d < 10 ? .25 : f.two && d < 16 ? .8 : 0) + (d >= 16 ? .35 * Math.exp(-(d - 16) / 8) : 0);
+      // a flash, a dark moment, often a second flash, then the glow dying
+      const on = d < 3 || (d >= 6 && d < 9) || (f.two && d >= 12 && d < 15);
+      const fl = (on ? 1 : .15) * (d < 15 ? 1 : 0) + (d >= 15 ? .4 * Math.exp(-(d - 15) / 7) : 0);
       const A = fl * kk * a0; if (A < .01) continue;
-      const x = VW * f.x, W = VW * .42 * f.w;
-      c.save(); c.translate(x, hy - 70 * B); c.scale(1, .5);
-      const g = c.createRadialGradient(0, 0, 0, 0, 0, W); g.addColorStop(0, css([214, 208, 236], .6 * A)); g.addColorStop(.4, css([170, 172, 214], .26 * A)); g.addColorStop(1, 'rgba(150,156,200,0)');
+      // small and low on the horizon, but bright: the sky lit from behind the far ridges
+      const x = VW * f.x, W = VW * .2 * f.w, gy = hy - 36 * B;
+      c.save(); c.translate(x, gy); c.scale(1, .55);
+      const g = c.createRadialGradient(0, 0, 0, 0, 0, W); g.addColorStop(0, css([244, 240, 255], A)); g.addColorStop(.3, css([206, 202, 244], .58 * A)); g.addColorStop(1, 'rgba(160,164,214,0)');
       c.fillStyle = g; c.fillRect(-W, -W, W * 2, W * 2); c.restore();
-      if (f.bolt && d < 14) { const Hh = 150 * B, X = x + W * .1; c.save(); c.lineJoin = 'round';
-        for (const [lw, al] of [[4, .12], [1.2, .7]]) { c.strokeStyle = css([236, 232, 255], al * A); c.lineWidth = lw; c.beginPath();
-          f.bolt.forEach(([u, v], i) => { const X1 = X + u * Hh, Y1 = hy - Hh * 1.05 + v * Hh; i ? c.lineTo(X1, Y1) : c.moveTo(X1, Y1); }); c.stroke(); }
+      if (f.bolt && on) { const Hh = 120 * B, X = x - W * .15, Y = gy - Hh * 1.05; c.save(); c.lineJoin = c.lineCap = 'round';
+        for (const [lw, al, col] of [[6, .2, [190, 186, 255]], [2.6, .45, [222, 218, 255]], [1.1, 1, [255, 255, 255]]]) {
+          for (const br of f.bolt) { const al2 = al * A * (br.w < 1 ? .75 : 1), sg = c.createLinearGradient(0, Y, 0, Y + .3 * Hh); sg.addColorStop(0, css(col, 0)); sg.addColorStop(1, css(col, al2)); c.strokeStyle = sg; c.lineWidth = lw * Math.max(.45, br.w) * Math.max(.7, B); c.beginPath();
+            br.P.forEach(([u, v], i) => { const X1 = X + u * Hh, Y1 = Y + v * Hh; i ? c.lineTo(X1, Y1) : c.moveTo(X1, Y1); }); c.stroke(); } }
         c.restore(); }
     }
   }
@@ -1940,7 +1954,7 @@ const CR = (() => {
   }
 
   return { on: false, start, update, draw, touch, key, preload, lines: ALL, stop: () => padStop(), _pt: { roll: rollPt, chr: chrPt }, _turning: () => !!Ch.tv,
-    _cst: CONST, peek: () => ({ ph, t, z: +cam.z.toFixed(3), cst: CONST.map(k => (k.said ? 'S' : '-') + k.t + (k.P ? 'p' : 'n')).join(' '), figs: FIGS.map(f => (f.said ? 'S' : '-') + f.a.toFixed(1)).join(' '), night: +night.toFixed(2), fly: rollFly ? rollFly.t : -1, x: Math.round(Ch.x), cf: +Ch.cf.toFixed(1), bur: bur ? { st: bur.st, x: Math.round(bur.x), a: +bur.a.toFixed(2), t: bur.t, H: Math.round(bur.H || 0), z: +(bur.z || 0).toFixed(1), r: +(bur.r || 0).toFixed(2), sq: +(bur.sq || 0).toFixed(2) } : null, gold: +gold.toFixed(2), shine: +shine.toFixed(2), leaps: leapsLeft, lp: Ch.lp == null ? -1 : +Ch.lp.toFixed(1), wo: Ch.wo == null ? -1 : Ch.wo, closeK: +closeK.toFixed(2), topK: +topK.toFixed(2), veil: +veil.toFixed(2), tear: tearT, sep: sepT, mem: memS.length, rel: REL.map(m => +m.a.toFixed(2)), kn: Ch.kn == null ? -1 : +Ch.kn.toFixed(1), hb: hymn ? +(hymn.t / BEATT).toFixed(1) : -1 }),
+    _cst: CONST, _storm: () => (mkStorm(), STORMR.map(f => f.t + (f.bolt ? "b" : ""))), _B: () => bgS(), peek: () => ({ ph, t, z: +cam.z.toFixed(3), cst: CONST.map(k => (k.said ? 'S' : '-') + k.t + (k.P ? 'p' : 'n')).join(' '), figs: FIGS.map(f => (f.said ? 'S' : '-') + f.a.toFixed(1)).join(' '), night: +night.toFixed(2), fly: rollFly ? rollFly.t : -1, x: Math.round(Ch.x), cf: +Ch.cf.toFixed(1), bur: bur ? { st: bur.st, x: Math.round(bur.x), a: +bur.a.toFixed(2), t: bur.t, H: Math.round(bur.H || 0), z: +(bur.z || 0).toFixed(1), r: +(bur.r || 0).toFixed(2), sq: +(bur.sq || 0).toFixed(2) } : null, gold: +gold.toFixed(2), shine: +shine.toFixed(2), leaps: leapsLeft, lp: Ch.lp == null ? -1 : +Ch.lp.toFixed(1), wo: Ch.wo == null ? -1 : Ch.wo, closeK: +closeK.toFixed(2), topK: +topK.toFixed(2), veil: +veil.toFixed(2), tear: tearT, sep: sepT, mem: memS.length, rel: REL.map(m => +m.a.toFixed(2)), kn: Ch.kn == null ? -1 : +Ch.kn.toFixed(1), hb: hymn ? +(hymn.t / BEATT).toFixed(1) : -1 }),
     // A SHORT WORDLESS CHOIR FOR THE SHINING ONES (awe study): from their coming until Christian's song begins (index.html's music player, cue 'choir')
     choir: () => ph === 'shine' || (ph === 'leaps' && !blest),
     // the land's outline, for making pictures of the hill (tools)
