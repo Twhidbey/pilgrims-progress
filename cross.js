@@ -86,8 +86,8 @@ const CR = (() => {
   // the painting's own skyline (PIN_TAB, painting units at SK_H 1080 from painting x 3160 every 8, from its alpha before
   // the left fade) is the land's outline (pinDraw) and, smoothed, the line he walks on (gh); toward the painting's left
   // end both blend into the drawn ramp over its fade (PIN_W)
-  const PIN_ON = /[?&]look=f\b/.test(location.search), HP_TOP = PIN_ON ? -1098.78 : -1089.42, HP_H = PIN_ON ? 1102.16 : 1093.75, HP_X = PIN_ON ? 2064.71 : 3149.64, HP_W = PIN_ON ? 3564.71 : 2478.34;
-  const PIN_TAB = [0,0,0,0,0,0,0,0,0,0,0,0,8,0,8,8,9,10,12,11,14,19,17,24,28,30,32,33,35,38,39,42,45,48,56,59,62,65,68,68,71,75,78,81,82,86,88,92,96,99,109,110,114,118,122,125,133,132,141,146,152,157,155,160,163,165,169,171,174,179,183,186,190,195,197,204,207,212,218,224,228,236,244,251,255,260,264,272,272,275,283,287,290,294,302,306,308,310,315,322,324,328,335,342,344,348,362,377,390,420,432,435,437,440,442,442,443,444,445,456,461,462,469,473,475,477,480,482,485,488,491,496,502,509,515,525,527,531,538,541,550,556,566,568,570,574,577,586,586,596,600,605,612,616,622,631,632,638,645,647,654,656,661,666,673,676,682,691,697,697,701,709,722,735,750,757,758,767,785,802,810,813,815,817,818,820,820,825,834,839,841,843,845,847,850,851,852,855,858,861,865,868,870,874,876,879,882,886,887,895,896,901,901,905,910,910,918,919,923,928,930,936,940,945,945,950,953,959,961,964,968,972,976,980,982,983,991,990,992,995,1001,1002,1004,1005,1008,1009,1011,1014,1016,1019,1023,1023,1028,1030,1033,1033,1032,1038,1040,1042,1041,1038,1042,1045,1044,1047,1046,1049,1049,1049,1053,1050,1054,1057,1056,1054,1056,1058,1059,1061,1063,1063,1065,1066,1066,1070,1072,1071,1068,1068,1069,1068,1070,1073,1075,1075,1072,1076,1077,1079,1081,1084,1085,1084,1085,1086,1085,1085,1084,1082,1083,1082,1083,1082,1081,1080,1077,1083,1082,1084,1083,1082,1084,1084,1084,1083,1083,1082,1082,1076,1073,1072,1072,1071,1066,1066,1067,1066,1065,1066,1065,1064,1064,1059,1054,1041,1012,989,975,975,966,1019,1021,1021,1018,1012,1008,1002,956,963,954,978,1003,1004,1005,1004,999,985,941,916,913,931,927,920,906,891,879,857,790,774,756,740,721,628,620,612,601,582,549,523,520,511,478,468,451,444,439,433,432,421,411,402,393,331,330,327,329,330,331,329,321,312,303,295,285,265,254,231,202,201,200,200,201,196,191,170,156,141,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], PIN0 = 2073, PIN1 = PIN0 + 8 * (PIN_TAB.length - 1);
+  const PIN_ON = /[?&]look=f\b/.test(location.search), HP_TOP = PIN_ON ? -1097.65 : -1089.42, HP_H = PIN_ON ? 1101.03 : 1093.75, HP_X = PIN_ON ? 2064.71 : 3149.64, HP_W = PIN_ON ? 3564.71 : 2478.34;
+  const PIN_TAB = [0,0,0,0,0,0,0,0,0,0,0,0,8,0,8,9,9,10,12,12,15,19,20,25,28,30,33,35,37,38,40,42,45,48,56,60,63,66,69,69,71,74,78,81,83,86,89,93,97,100,107,111,114,116,120,128,130,129,140,146,152,159,156,159,163,165,170,170,173,178,186,186,194,195,197,204,206,212,219,223,228,235,245,251,255,262,266,272,271,275,283,285,288,294,299,305,309,311,309,323,326,327,334,341,342,348,360,377,393,422,432,435,437,440,441,442,443,443,444,455,460,464,469,473,474,477,479,482,485,488,491,496,502,507,514,527,529,533,538,540,547,555,563,567,574,575,578,583,586,595,600,608,612,617,623,628,634,637,642,646,652,654,659,665,674,676,681,691,697,698,700,705,722,731,751,758,757,760,780,802,810,813,815,817,819,820,821,823,832,838,841,843,846,847,850,851,853,856,859,862,865,868,869,874,877,880,883,887,887,894,896,898,901,904,911,911,918,921,922,928,931,937,938,943,944,950,953,959,960,963,968,972,975,980,982,983,986,990,992,999,999,1002,1003,1007,1008,1009,1010,1013,1016,1018,1024,1023,1028,1032,1034,1035,1036,1037,1041,1043,1043,1036,1040,1044,1045,1044,1045,1049,1047,1050,1053,1050,1054,1055,1055,1054,1055,1060,1059,1061,1064,1062,1067,1067,1067,1072,1070,1072,1070,1070,1070,1068,1070,1075,1076,1075,1075,1078,1077,1081,1083,1084,1084,1082,1081,1081,1084,1086,1085,1081,1081,1083,1081,1080,1084,1081,1076,1082,1082,1082,1084,1084,1083,1084,1084,1084,1084,1084,1084,1077,1073,1072,1072,1071,1067,1064,1066,1066,1064,1067,1065,1066,1065,1060,1056,1045,1014,994,974,975,969,1018,1021,1021,1019,1013,1010,1005,971,963,962,977,1001,1004,1004,1005,1000,989,944,927,915,928,928,923,909,894,882,862,802,778,760,744,726,630,622,613,604,585,551,523,520,515,469,469,454,445,435,434,433,425,413,405,395,372,330,327,329,330,331,330,324,314,305,296,287,269,254,237,209,203,200,200,201,200,194,186,159,146,118,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], PIN0 = 2073, PIN1 = PIN0 + 8 * (PIN_TAB.length - 1);
   const PIN_S = PIN_TAB.map((v, i) => { let a = 0, n = 0; for (let j = -10; j <= 10; j++) { const q = PIN_TAB[i + j]; if (q != null) { a += q; n++; } } return a / n; });
   const pinS = () => SK_H / 1080, pinW = xp => pinS() * (xp - 4380) + SK_X;
   function pinAt(T, x) { const s = pinS(), xp = 4380 + (x - SK_X) / s; if (xp < PIN0) return -1; if (xp >= PIN1) return 0;
@@ -220,7 +220,7 @@ const CR = (() => {
     // the hill painted by the image model (round 2 of the owner's hill): rounded weathered rock, toned dark grey, its left
     // end faded into the drawn ramp; cropped to the rock at 1.5 px a world unit (at SK_H 1080): world x 2834 to 5654, height 1089 down to 2 below the ground
     // ?look=f: the hill painted as Friedrich's crag (build 606), laid on the same outline as the old painting
-    if (HP_ON) loadImg(LOOKF ? 'hill-crag.webp?v=611' : 'hill-cross.webp?v=601').then(im => { HPAINT = im; }).catch(() => {});
+    if (HP_ON) loadImg(LOOKF ? 'hill-crag.webp?v=615' : 'hill-cross.webp?v=601').then(im => { HPAINT = im; }).catch(() => {});
     // the burning hill's own painted rock (Level 3), made a grey tile as hill.js makes it, laid over the hill in 'overlay'
     loadImg('hill-rock.webp').then(rock => { const sx = 720, sy = 540, w = 780, h = 600, t = document.createElement('canvas'); t.width = w; t.height = h; const q = t.getContext('2d'); q.drawImage(rock, sx, sy, w, h, 0, 0, w, h);
       const d = q.getImageData(0, 0, w, h), D = d.data; let m = 0; for (let i = 0; i < D.length; i += 4) m += D[i] * .3 + D[i + 1] * .59 + D[i + 2] * .11; m /= D.length / 4;
@@ -921,6 +921,21 @@ const CR = (() => {
       }
       const fg = c.createLinearGradient(0, -260, 0, 8); fg.addColorStop(0, css(dark, 0)); fg.addColorStop(.6, css(dark, .22)); fg.addColorStop(1, css(dark, .5));
       c.fillStyle = fg; c.fillRect(x0, -260, x1 - x0, 2300);
+      // ?look=f: a thin worn track along the edge where his feet go (owner: "put path next to edge so he can walk with sky
+      // behind him"): a band of pale trodden earth just under his walking line, its width and strength wandering along it,
+      // from the hill's foot to the crown, lit as the hill is lit
+      if (LOOKF) {
+        const ta = Math.max(x0, SLOPE0 - 80), tb = Math.min(x1, CROSS_X - 60);
+        if (tb > ta) {
+          const wob = x => .5 + .3 * Math.sin(x * .013) + .2 * Math.sin(x * .041 + 1.7);
+          const top = [], bot = [];
+          for (let x = ta; x <= tb; x += 6) { const y = -gh(x); top.push([x, y + 3 + 2 * Math.sin(x * .03)]); bot.push([x, y + 9 + 9 * wob(x)]); }
+          const tc = mix(mix([70, 62, 60], [120, 100, 84], dawn), [214, 176, 128], gold), tg = c.createLinearGradient(ta, 0, tb, 0);
+          for (let i = 0; i <= 24; i++) { const x = ta + (tb - ta) * i / 24, e = Math.min(1, (x - SLOPE0 + 80) / 260, (CROSS_X - 60 - x) / 200); tg.addColorStop(i / 24, css(tc, Math.max(0, e) * (.16 + .2 * wob(x * 1.7)))); }
+          c.beginPath(); c.moveTo(...top[0]); for (const p of top) c.lineTo(...p); for (let i = bot.length - 1; i >= 0; i--) c.lineTo(...bot[i]); c.closePath();
+          c.fillStyle = tg; c.fill();
+        }
+      }
     }
     if (R.l && !HPAINT) { c.globalCompositeOperation = 'screen'; c.globalAlpha = .55 + .2 * dawn + .25 * gold; c.drawImage(R.l, R.x, R.y, R.w, R.h); c.globalAlpha = 1; c.globalCompositeOperation = 'source-over'; }
     // the painted rock's grain over it all, as on Level 3's crags
