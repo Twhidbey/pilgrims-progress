@@ -1404,7 +1404,7 @@ const CR = (() => {
       const onTop = Ch.x >= WALK_X;
       // (build 629) at the foot of the hill he stands and looks up while the three star pictures of the places he has left
       // come one after another and their lines are heard; then the child can run on
-      const starHold = NIGHT_ON && Ch.x >= SLOPE0 - 80 && !CONST.every(k => k.said);
+      const starHold = NIGHT_ON && Ch.x >= SLOPE0 - 80 && !CONST.every(k => k.said && (k.kind !== 'storm' || (k.f0 != null && k.t > k.f0 + 60)));
       if (want && !sepLook && !starHold && Ch.x < STOP_X - .5) {
         if (!onTop) run(true); else if (Ch.run > 0) run(false); else walk(MAXV * .9);
         if (Ch.x > STOP_X) Ch.x = STOP_X;
@@ -1738,25 +1738,39 @@ const CR = (() => {
   // for him) - make it subtle (think classic constellation), the second constellation can be the beautiful tree overhanging
   // the slough - again subtle but clean , finally the last constellation can be lightning from the mountain in level
   // three"): each a classic constellation, a few stars at its points joined by the faintest lines, across the sky
+  // (build 636, owner: "as he walks (before mountain) constellations appear and then a word from each - please don't draw
+  // lines between stars - just use large and small stars in complentary manner to convey a shape. (first evagnelist pointing
+  // out light ) then tree of slough with helps words , finally something reminiscient of mountain like maybe draw far off
+  // lightning on horizon lighting up the sky"): two star pictures with no lines, then a far storm on the horizon
   const CONST = [
-    { at: START + 150, cx: .5, cy: .3, w: .62, h: .52, kind: 'hand', voice: { who: W, txt: 'Christian! Come back!' } },
-    { at: START + 600, cx: .5, cy: .27, w: .6, h: .5, kind: 'oak', voice: { who: C, txt: 'There shall be no more crying, nor sorrow. We shall shine like the sun.' } },
-    { at: START + 1100, cx: .4, cy: .26, w: .62, h: .48, kind: 'bolt', voice: { who: E, txt: 'What are you doing here, Christian? You are out of the way.' } },
+    { at: START + 150, cx: .52, cy: .3, w: .9, h: .54, kind: 'evan', voice: MEMS[0] },
+    { at: START + 600, cx: .5, cy: .27, w: .6, h: .5, kind: 'oak', voice: MEMS[3] },
+    { at: START + 1100, kind: 'storm', voice: { who: E, txt: 'What are you doing here, Christian? You are out of the way.' } },
   ];
   const CONST_HOLD = 420;
   CONST.forEach(k => { k.t = -1; k.said = false; k.P = null; k.f0 = null; });
   let HILLROCK = null; if (NIGHT_ON) loadImg('hill-rock.webp').then(im => { HILLROCK = im; }).catch(() => {});
   // the figures: points (x, y in the box, 0..1; a third number = a brighter star) and the lines between them
+  // the figures, in stars only: points (x, y in the box, 0..1) and a size (0 a faint small star, 1 a middling one, 2 a great
+  // one), the great and small set so the eye joins them into the shape (no lines)
   const SHAPES_C = {
-    // a woman's arm reaching up out of the lower left, the hand open, fingers spread toward him
-    hand: { V: [[.02, .98], [.18, .82], [.34, .66, 1], [.48, .52], [.58, .42, 1], [.62, .36], [.6, .26], [.64, .16, 1], [.7, .3], [.79, .14, 1], [.73, .34], [.85, .22, 1], [.74, .39], [.87, .33, 1], [.72, .43], [.83, .44, 1]],
-      E: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 7], [5, 8], [8, 9], [5, 10], [10, 11], [4, 12], [12, 13], [4, 14], [14, 15]] },
+    // Evangelist on the left, his staff in one hand, the other arm raised pointing far up to the right, at the one great
+    // star there: the shining light
+    evan: { V: [
+      [.16, .14, 2], [.12, .27, 1], [.21, .26, 0],
+      [.1, .4, 0], [.09, .54, 1], [.08, .68, 0], [.07, .82, 0], [.06, .96, 1],
+      [.23, .4, 0], [.245, .55, 0], [.26, .7, 1], [.27, .84, 0], [.28, .97, 0], [.17, .98, 0],
+      [.27, .22, 0], [.33, .18, 1], [.39, .145, 0], [.45, .11, 0], [.5, .085, 1],
+      [.03, .2, 1], [.026, .4, 0], [.022, .6, 0], [.018, .8, 0], [.014, .99, 1],
+      [.92, .05, 2] ] },
     // the great oak of the Slough: a short thick trunk, its limbs sweeping out, the long one nearly level over the water
-    oak: { V: [[.42, 1], [.47, 1], [.44, .7], [.46, .58, 1], [.3, .44], [.14, .4, 1], [.04, .5], [.34, .26], [.26, .1, 1], [.5, .34], [.54, .1, 1], [.62, .42], [.8, .4], [.98, .46, 1], [.66, .28], [.8, .16, 1], [.88, .5]],
-      E: [[0, 2], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [3, 7], [7, 8], [3, 9], [9, 10], [3, 11], [11, 12], [12, 13], [11, 14], [14, 15], [12, 16]] },
-    // the burning hill and the lightning that struck it: the hill's breaking-wave outline low, the bolt down to its summit
-    bolt: { V: [[0, 1], [.14, .84], [.3, .7], [.44, .62, 1], [.52, .6], [.56, .66], [.6, .78], [.74, .86], [1, .92], [.58, 0, 1], [.52, .14], [.6, .26], [.5, .4], [.55, .48], [.47, .6], [.66, .2], [.78, .3]],
-      E: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 7], [7, 8], [9, 10], [10, 11], [11, 12], [12, 13], [13, 14], [11, 15], [15, 16]] },
+    oak: { V: [
+      [.44, 1, 1], [.45, .9, 0], [.45, .8, 1], [.46, .68, 0], [.46, .58, 2],
+      [.38, .5, 0], [.3, .44, 1], [.22, .41, 0], [.14, .4, 1], [.08, .44, 0], [.04, .5, 1],
+      [.4, .4, 0], [.34, .26, 1], [.3, .17, 0], [.26, .1, 1],
+      [.5, .44, 0], [.52, .3, 1], [.53, .2, 0], [.54, .1, 1],
+      [.56, .52, 0], [.64, .44, 1], [.72, .41, 0], [.8, .4, 1], [.88, .42, 0], [.98, .46, 2],
+      [.7, .3, 0], [.8, .16, 1], [.88, .5, 0], [.9, .58, 0] ] },
   };
   function constPts(k) { return SHAPES_C[k.kind]; }
 
@@ -1787,23 +1801,50 @@ const CR = (() => {
     // the Milky Way's faint glow under its dust
     { c.save(); c.globalAlpha = .55 * a0; c.translate(VW * .5, VH * .2); c.rotate(Math.atan2(.32 * VH, VW * 1.3)); const gg = c.createLinearGradient(0, -VH * .07, 0, VH * .07);
       gg.addColorStop(0, 'rgba(120,130,170,0)'); gg.addColorStop(.5, 'rgba(120,130,170,.13)'); gg.addColorStop(1, 'rgba(120,130,170,0)'); c.fillStyle = gg; c.fillRect(-VW, -VH * .07, VW * 2, VH * .14); c.restore(); }
-    for (const s of STARS) { const x = skyX(s.x), y = s.y * VH, a = a0 * s.b * (.75 + .25 * Math.sin(G.t / s.f + s.p)); c.fillStyle = `rgba(226,230,244,${a})`;
+    // while a star picture shows, the other stars fall back so its shape stands out
+    let ck = 0; for (const k of CONST) if (k.t >= 0 && k.kind !== 'storm') ck = Math.max(ck, smooth(0, 90, k.t) * (k.f0 == null ? 1 : 1 - smooth(k.f0, k.f0 + 110, k.t)));
+    const fb = 1 - .6 * ck;
+    for (const s of STARS) { const x = skyX(s.x), y = s.y * VH, a = fb * a0 * s.b * (.75 + .25 * Math.sin(G.t / s.f + s.p)); c.fillStyle = `rgba(226,230,244,${a})`;
       if (s.s > 1.4) { c.beginPath(); c.arc(x, y, s.s * .6, 0, 6.2832); c.fill(); c.fillStyle = `rgba(200,210,240,${a * .18})`; c.beginPath(); c.arc(x, y, s.s * 2, 0, 6.2832); c.fill(); }
       else c.fillRect(x - s.s / 2, y - s.s / 2, s.s, s.s); }
     for (const k of CONST) {
       if (k.t < 0) continue; const SH = constPts(k); if (!SH) continue;
       const kk = smooth(0, 90, k.t) * (k.f0 == null ? 1 : 1 - smooth(k.f0, k.f0 + 110, k.t)); if (kk < .01) continue;
       const W = k.w * VW, Hh = k.h * VH, X0 = VW * k.cx, Y0 = VH * k.cy, P = SH.V.map(([u, v]) => [X0 + (u - .5) * W, Y0 + (v - .5) * Hh]);
-      // the faintest lines, as on an old star chart
-      c.strokeStyle = css([200, 210, 236], .09 * kk * a0); c.lineWidth = .7; c.beginPath();
-      for (const [a, b] of SH.E) { c.moveTo(P[a][0], P[a][1]); c.lineTo(P[b][0], P[b][1]); } c.stroke();
       SH.V.forEach((v, j) => {
-        const [x, y] = P[j], br = v[2] ? 1 : 0, tw = .8 + .2 * Math.sin(G.t / (40 + j % 9 * 7) + j), a = a0 * kk * tw * (br ? .85 : .55), r = br ? 1.35 : .95;
-        const g = c.createRadialGradient(x, y, 0, x, y, br ? 7 : 4.5); g.addColorStop(0, css([226, 232, 250], .2 * a)); g.addColorStop(1, 'rgba(226,232,250,0)'); c.fillStyle = g; c.fillRect(x - 8, y - 8, 16, 16);
+        const [x, y] = P[j], sz = v[2] || 0, tw = .8 + .2 * Math.sin(G.t / (40 + j % 9 * 7) + j), a = a0 * kk * smooth(j * 6, j * 6 + 40, k.t) * tw * [.72, .92, 1][sz], r = [1, 1.55, 2.3][sz], R = [4.5, 8, 16][sz];
+        const g = c.createRadialGradient(x, y, 0, x, y, R); g.addColorStop(0, css([226, 232, 250], [.18, .24, .32][sz] * a)); g.addColorStop(1, 'rgba(226,232,250,0)'); c.fillStyle = g; c.fillRect(x - R, y - R, R * 2, R * 2);
         c.fillStyle = css([236, 240, 255], a); c.beginPath(); c.arc(x, y, r, 0, 6.2832); c.fill();
       });
     }
     c.restore();
+    for (const k of CONST) if (k.kind === 'storm' && k.t >= 0) { storm(c, k, a0); storm2(c, k, a0); }
+  }
+  // the burning hill remembered: a far storm on the horizon, silent but for a far rumble, its flashes lighting the sky from
+  // behind the far ridges (drawn before them), now and then a thin bolt down to the horizon
+  let STORMR = null;
+  function storm(c, k, a0) {
+    const kk = smooth(0, 60, k.t) * (k.f0 == null ? 1 : 1 - smooth(k.f0, k.f0 + 110, k.t)); if (kk < .01) return;
+    mkStorm(); }
+  function mkStorm() { if (!STORMR) { const r = rgen(91); STORMR = []; let t = 30; for (let i = 0; i < 40; i++) { const pts = [], bx = .22 + r() * .42; let x = 0, y = 0; pts.push([0, 0]); while (y < 1) { y += .08 + r() * .1; x += (r() - .5) * .09; pts.push([x, Math.min(1, y)]); }
+      STORMR.push({ t: Math.round(t), x: bx, w: .7 + r() * .6, bolt: (i === 0 || r() < .5) ? pts : null, two: r() < .5 }); t += 55 + r() * 95; } } }
+  function storm2(c, k, a0) {
+    const kk = smooth(0, 60, k.t) * (k.f0 == null ? 1 : 1 - smooth(k.f0, k.f0 + 110, k.t)); if (kk < .01) return;
+    const hy = by(HY), B = bgS();
+    for (const f of STORMR) {
+      const d = k.t - f.t; if (d < 0 || d > 40) continue;
+      // a flash, a dim moment, often a second flash
+      const fl = (d < 5 ? 1 - d / 7 : d < 10 ? .25 : f.two && d < 16 ? .8 : 0) + (d >= 16 ? .35 * Math.exp(-(d - 16) / 8) : 0);
+      const A = fl * kk * a0; if (A < .01) continue;
+      const x = VW * f.x, W = VW * .42 * f.w;
+      c.save(); c.translate(x, hy - 70 * B); c.scale(1, .5);
+      const g = c.createRadialGradient(0, 0, 0, 0, 0, W); g.addColorStop(0, css([214, 208, 236], .6 * A)); g.addColorStop(.4, css([170, 172, 214], .26 * A)); g.addColorStop(1, 'rgba(150,156,200,0)');
+      c.fillStyle = g; c.fillRect(-W, -W, W * 2, W * 2); c.restore();
+      if (f.bolt && d < 14) { const Hh = 150 * B, X = x + W * .1; c.save(); c.lineJoin = 'round';
+        for (const [lw, al] of [[4, .12], [1.2, .7]]) { c.strokeStyle = css([236, 232, 255], al * A); c.lineWidth = lw; c.beginPath();
+          f.bolt.forEach(([u, v], i) => { const X1 = X + u * Hh, Y1 = hy - Hh * 1.05 + v * Hh; i ? c.lineTo(X1, Y1) : c.moveTo(X1, Y1); }); c.stroke(); }
+        c.restore(); }
+    }
   }
   // the people he heard, standing a little ahead of him on the way up, dark, with a breath of mist round them: each speaks
   // the words he heard as he comes near, and thins into the mist before he reaches it (one voice at a time: busy())
@@ -1818,11 +1859,14 @@ const CR = (() => {
     if (!NIGHT_ON) return;
     CONST.forEach((k, i) => { const prev = CONST[i - 1]; if (k.t < 0 && Ch.x >= k.at && ph === 'walk' && night > .3 && (!prev || (prev.f0 != null && prev.t >= prev.f0))) k.t = 0; else if (k.t >= 0) k.t++;
       // it stays until its line has been heard, a breath more, then fades as the next comes
-      if (k.said && k.f0 == null && k.t > 120 && G.t > memUntil + 40) k.f0 = k.t;
+      if (k.said && k.f0 == null && k.t > (k.kind === 'storm' ? 480 : 240) && G.t > memUntil + 40) k.f0 = k.t;
       // its line, once it has brightened, never over another voice; passed by if he is already far beyond it
       if (k.t > 40 && !k.said && FIGS_OFF) k.said = true;
       if (k.t > 40 && !k.said && said.open && !busy() && memQ >= 40 && !FIGS_OFF) { k.said = true; memVoice(k.voice); }
-      if (!k.said && k.t < 0 && night <= .3) k.said = true; });
+      if (!k.said && k.t < 0 && night <= .3) k.said = true;
+      // the far storm's thunder, low and late (sound travels slower than light)
+      if (k.kind === 'storm' && k.t >= 0 && audio()) { mkStorm(); const fade = k.f0 == null ? 1 : 1 - smooth(k.f0, k.f0 + 110, k.t);
+        for (const f of STORMR) if (k.t === f.t + 50 && fade > .05) { hiss(55, .7, .05 * f.w * fade, 2.6); hiss(110, .9, .02 * f.w * fade, 1.6); } } });
     FIGS.forEach(f => {
       const tgt = ph === 'walk' ? sm(f.x - 920, f.x - 780, Ch.x) * (1 - sm(f.x - 270, f.x - 150, Ch.x)) : 0;
       f.a += (tgt - f.a) * .06;
@@ -1896,7 +1940,7 @@ const CR = (() => {
   }
 
   return { on: false, start, update, draw, touch, key, preload, lines: ALL, stop: () => padStop(), _pt: { roll: rollPt, chr: chrPt }, _turning: () => !!Ch.tv,
-    peek: () => ({ ph, t, z: +cam.z.toFixed(3), cst: CONST.map(k => (k.said ? 'S' : '-') + k.t + (k.P ? 'p' : 'n')).join(' '), figs: FIGS.map(f => (f.said ? 'S' : '-') + f.a.toFixed(1)).join(' '), night: +night.toFixed(2), fly: rollFly ? rollFly.t : -1, x: Math.round(Ch.x), cf: +Ch.cf.toFixed(1), bur: bur ? { st: bur.st, x: Math.round(bur.x), a: +bur.a.toFixed(2), t: bur.t, H: Math.round(bur.H || 0), z: +(bur.z || 0).toFixed(1), r: +(bur.r || 0).toFixed(2), sq: +(bur.sq || 0).toFixed(2) } : null, gold: +gold.toFixed(2), shine: +shine.toFixed(2), leaps: leapsLeft, lp: Ch.lp == null ? -1 : +Ch.lp.toFixed(1), wo: Ch.wo == null ? -1 : Ch.wo, closeK: +closeK.toFixed(2), topK: +topK.toFixed(2), veil: +veil.toFixed(2), tear: tearT, sep: sepT, mem: memS.length, rel: REL.map(m => +m.a.toFixed(2)), kn: Ch.kn == null ? -1 : +Ch.kn.toFixed(1), hb: hymn ? +(hymn.t / BEATT).toFixed(1) : -1 }),
+    _cst: CONST, peek: () => ({ ph, t, z: +cam.z.toFixed(3), cst: CONST.map(k => (k.said ? 'S' : '-') + k.t + (k.P ? 'p' : 'n')).join(' '), figs: FIGS.map(f => (f.said ? 'S' : '-') + f.a.toFixed(1)).join(' '), night: +night.toFixed(2), fly: rollFly ? rollFly.t : -1, x: Math.round(Ch.x), cf: +Ch.cf.toFixed(1), bur: bur ? { st: bur.st, x: Math.round(bur.x), a: +bur.a.toFixed(2), t: bur.t, H: Math.round(bur.H || 0), z: +(bur.z || 0).toFixed(1), r: +(bur.r || 0).toFixed(2), sq: +(bur.sq || 0).toFixed(2) } : null, gold: +gold.toFixed(2), shine: +shine.toFixed(2), leaps: leapsLeft, lp: Ch.lp == null ? -1 : +Ch.lp.toFixed(1), wo: Ch.wo == null ? -1 : Ch.wo, closeK: +closeK.toFixed(2), topK: +topK.toFixed(2), veil: +veil.toFixed(2), tear: tearT, sep: sepT, mem: memS.length, rel: REL.map(m => +m.a.toFixed(2)), kn: Ch.kn == null ? -1 : +Ch.kn.toFixed(1), hb: hymn ? +(hymn.t / BEATT).toFixed(1) : -1 }),
     // A SHORT WORDLESS CHOIR FOR THE SHINING ONES (awe study): from their coming until Christian's song begins (index.html's music player, cue 'choir')
     choir: () => ph === 'shine' || (ph === 'leaps' && !blest),
     // the land's outline, for making pictures of the hill (tools)
