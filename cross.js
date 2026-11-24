@@ -332,9 +332,11 @@ const CR = (() => {
   const QS = new URLSearchParams(location.search), BG_A = +(QS.get('tele') ?? 0), BG_Z0 = .8;
   const PAN_K = +(QS.get('pan') ?? .15), PAN_MID = .06, PAN = p => PAN_MID + (p - PAN_MID) * PAN_K;
   const bgS = () => Math.pow(cam.z / BG_Z0, BG_A), by = y => FOOTY + (y - FOOTY) * bgS();
+  const TEARZ = /[?&]tearzoom=1\b/.test(location.search);
+  const SEPLOOK = /[?&]seplook=1\b/.test(location.search);
   function camTick(snap) {
     const near = { cx: Ch.x + lerp(250, 150, closeK), z: lerp(.8, 1.15, closeK) };
-    if (ph === 'cross' || ph === 'after' || ph === 'shine' || ph === 'leaps' || ph === 'end') { near.cx = Math.max(CROSS_X - 130, Ch.x + 170); near.z = .86; }
+    if (ph === 'cross' || ph === 'tumble' || ph === 'gone' || ph === 'after' || ph === 'shine' || ph === 'leaps' || ph === 'end') { near.cx = Math.max(CROSS_X - 130, Ch.x + 170); near.z = .86; }
     // ?look=f: the cross stands on the summit's highest pinnacle, well above him: draw back enough to keep it whole
     if (PIN_ON && Ch.x > CROSS_X - 1600) { const up = crossH() + CROSS_H + 20 - gh(Ch.x); if (up > 0) near.z = Math.min(near.z, (FOOTY - 34) / up); }
     const open = ph === 'look', fitT = (FOOTY - 30) / (crossH() + CROSS_H - tombSill() + 40);
@@ -622,7 +624,9 @@ const CR = (() => {
       }
       c.restore();
     }
-    if (sun > .01) { const R = (15 + 4 * cam.z) * (1 + .4 * GL), d = c.createRadialGradient(cxs, sY, 0, cxs, sY, R * 2.2); d.addColorStop(0, css([255, 252, 236], .95 * sun)); d.addColorStop(.45, css([255, 240, 200], .85 * sun)); d.addColorStop(.5, css([255, 226, 170], .35 * sun)); d.addColorStop(1, 'rgba(255,220,160,0)'); c.fillStyle = d; c.fillRect(cxs - R * 3, sY - R * 3, R * 6, R * 6); }
+    // (build 654) the disc shows only as the camera comes back to him, so it is never seen sliding down behind the far hills
+    const sunA = sun * (1 - wideK) * (1 - wideK);
+    if (sunA > .01) { const sun = sunA, R = (15 + 4 * cam.z) * (1 + .4 * GL), d = c.createRadialGradient(cxs, sY, 0, cxs, sY, R * 2.2); d.addColorStop(0, css([255, 252, 236], .95 * sun)); d.addColorStop(.45, css([255, 240, 200], .85 * sun)); d.addColorStop(.5, css([255, 226, 170], .35 * sun)); d.addColorStop(1, 'rgba(255,220,160,0)'); c.fillStyle = d; c.fillRect(cxs - R * 3, sY - R * 3, R * 6, R * 6); }
     // long thin clouds, lit from beneath after dawn; more of them catch fire as the sun climbs (the last five only then)
     const CLD = [[.16, .9, .1, .05, 0], [.27, .7, .08, .02, 0], [.36, 1.1, .07, .08, 0], [.08, .6, 0, .31, 1], [.21, .5, 0, .62, 1], [.31, .8, 0, .44, 1], [.42, .6, 0, .77, 1], [.13, 1.2, 0, .9, 1]];
     for (const [y, w, a, p, late] of CLD) {
@@ -693,8 +697,8 @@ const CR = (() => {
       if (gold > .02) {
         // backlight on the ridge's top: brightest toward the sun, fading away from it
         const sxs = sx(CROSS_X + SUN_DX), g = c.createLinearGradient(0, 0, VW, 0);
-        for (let q = 0; q <= 8; q++) { const X = q / 8 * VW, k = Math.exp(-Math.pow((X - sxs) / (VW * .45), 2)); g.addColorStop(q / 8, css([255, 150, 74], (.25 + .1 * i) * gold * k * (LOOKF ? .8 * (1 - .75 * GL) : 1))); }
-        c.save(); c.strokeStyle = g; c.lineWidth = 2.2 + .5 * i; c.beginPath();
+        for (let q = 0; q <= 8; q++) { const X = q / 8 * VW, k = Math.exp(-Math.pow((X - sxs) / (VW * .45), 2)); g.addColorStop(q / 8, css(LOOKF ? [255, 196, 142] : [255, 150, 74], (.25 + .1 * i) * gold * k * (LOOKF ? .3 * (1 - .75 * GL) : 1))); }
+        c.save(); c.strokeStyle = g; c.lineWidth = LOOKF ? 1.3 + .15 * i : 2.2 + .5 * i; c.beginPath();
         for (let X = 0; X <= VW + 8; X += 6) c.lineTo(X, by(rrY(i, VW / 2 + (X - VW / 2) / B + cam.cx * PAN(p) * 6, base, amp)) + 1); c.stroke(); c.restore();
       }
       // mist lying in the valley below this ridge: thickest low down, fading up the next ridge; strongest far off
@@ -1473,11 +1477,12 @@ const CR = (() => {
     // 0 under the crown, 1 behind where the beams cross (about 50 s on, as the hymn plays), then on up, slower and
     // slower, to a little under the picture's top by the level's end. The sky's glory (in `sky()`) grows with its height past the crossing.
     if (sunGo) { sunT++; sun = Math.min(1, sunT / 1500); const u = sunT / 3000; sunH = u < 1 ? u : 1 + .42 * (1 - Math.exp(-(u - 1) / 1.1)); }
-    wideK += (wideTo - wideK) * .02;
+    // (build 654) the one way back from the wide shot is slow, a single glide
+    wideK += (wideTo - wideK) * (wideTo < wideK && (ph === 'gone' || ph === 'shine') ? .007 : .02);
     if (!climb) topK += (topTo - topK) * .022;
     hymnTick();
     if (tearT >= 0) tearT++;
-    if (ph === 'gone' || ph === 'shine') closeK += ((ph === 'gone' && tearT >= 0 && tearT < 420 ? 1 : 0) - closeK) * .025;
+    if (ph === 'gone' || ph === 'shine') closeK += ((TEARZ && ph === 'gone' && tearT >= 0 && tearT < 420 ? 1 : 0) - closeK) * .025;
     // the memories' own clock runs on whatever the phase, so the last one fades even once he is at the cross
     memQ = busy() ? 0 : memQ + 1;
     // each memory is tied to a place on the hill (owner, build 466: "tie memories to locations so that they are
@@ -1505,8 +1510,10 @@ const CR = (() => {
       if (!said.ascend && memDone && Ch.x > CREST0 - 900 && !busy()) { said.ascend = true; caption(ASCEND); sepT = 0; }
       // "and a little below, a sepulchre": the camera draws back and down to show it, then comes back up to him (owner,
       // build 452); he stands still while it looks
-      if (sepT >= 0) { sepT++; if (sepT === 150) wideTo = 1; if (sepT === 430) wideTo = 0; }
-      const sepLook = sepT >= 150 && (sepT < 430 || wideK > .08);
+      // (build 654, owner: "there's a fair amount of zooming back and forth"): no look down at the sepulchre here; it is
+      // seen once, when the burden tumbles into it (?seplook=1 brings the look back)
+      if (sepT >= 0) { sepT++; if (SEPLOOK) { if (sepT === 150) wideTo = 1; if (sepT === 430) wideTo = 0; } }
+      const sepLook = SEPLOOK && sepT >= 150 && (sepT < 430 || wideK > .08);
       closeK += (0 - closeK) * .03;
       if (topTo && topK > .9 && !busy() && G.t - (said.topT || 0) > 150) topTo = 0;
       // no cut any more (owner: "Since he's running you can probably not cut to top of hill"): he runs all the way up
@@ -1530,7 +1537,7 @@ const CR = (() => {
       if (Ch.fade >= 1 && t > 50) Ch.cf = Math.min(SWAP, Ch.cf + 16 / 60);
       if (Ch.cf >= SWAP) {
         ph = 'tumble'; t = 0; thump(1.1);
-        sunGo = true; if (!goldTo) goldTo = .2;
+        if (!goldTo) goldTo = .2;
         bur = { st: 'roll', x: STOP_X + (BALL.ax - CLIP_META.ax) * CHR_K, y: 0, vy: 0, v: .9, r: 0, k: 1, a: 1, dk: 0, t: 0 };
         wideTo = 1;
       }
@@ -1541,13 +1548,13 @@ const CR = (() => {
       // when the storyteller begins the tumble line: the burden waits on the cave's lip until he is well into it
       if (t > 50 && !tumbleT && !G.capQ.length && saying()) tumbleT = G.t;
       burdenTick();
-      if (bur.st === 'gone') { ph = 'gone'; t = 0; quietG = qRun = 0; if (KNC.ready) { Ch.kn = 0; Ch.knd = 1; Ch.kup = false; } }
+      if (bur.st === 'gone') { ph = 'gone'; t = 0; quietG = qRun = 0; wideTo = 0; sunGo = true; if (KNC.ready) { Ch.kn = 0; Ch.knd = 1; Ch.kup = false; } }
     } else if (ph === 'gone') {
       if (Ch.kn != null) kneelTick(); else clipHold();
       // a silence; then the light comes up behind the cross, and the colour comes back from it outward
       // the silence is counted only once every voice is done, so the sun and the hymn never come over the words
       if (!busy()) { quietG++; qRun++; } else qRun = 0;
-      if (quietG === 150 && goldTo < 1) { goldTo = 1; wideTo = .35; }
+      if (quietG === 150 && goldTo < 1) { goldTo = 1; wideTo = 0; }
       if (quietG === 360 && !hymn) hymn = { t: 0, i: 0, b: 0 };
       // Christian speaks only after a breath of quiet once the burden is gone (owner, build 456)
       if (hymn && hymn.t >= 10 * BEATT && Ch.kn != null) Ch.kup = true;
