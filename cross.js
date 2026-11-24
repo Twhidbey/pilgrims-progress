@@ -143,7 +143,7 @@ const CR = (() => {
   const PATH_S = (() => { const T = []; for (let x = PATH_P[0][0]; x <= PATH_P[PATH_P.length - 1][0]; x += 8) { let i = 0; while (i < PATH_P.length - 2 && PATH_P[i + 1][0] < x) i++; const [a, b] = [PATH_P[i], PATH_P[i + 1]]; T.push(lerp(a[1], b[1], clamp((x - a[0]) / (b[0] - a[0])))); }
     return T.map((v, i) => { let a = 0, n = 0; for (let j = -6; j <= 6; j++) { const q = T[i + j]; if (q != null) { a += q; n++; } } return a / n; }); })();
   function pathH(x) { const f = (x - PATH_P[0][0]) / 8, i = Math.floor(f); if (i < 0) return -1; if (i >= PATH_S.length - 1) return -1; return lerp(PATH_S[i], PATH_S[i + 1], f - i); }
-  function gh(x) { if (PIN_ON) { const w = PIN_W(x); if (w > 0) { const top = lerp(gh0(x), pinAt(H618 || !WALK ? PIN_S : WALK, x), w), ph = PATH_ON ? pathH(x) : -1;
+  function gh(x) { if (PIN_ON) { const w = PIN_W(x); if (w > 0) { const top = lerp(gh0(x), pinAt((H618 && EDGE_OPT === 'raw') || !WALK ? PIN_S : WALK, x), w), ph = PATH_ON ? pathH(x) : -1;
     if (!PATH_ON) return top;
     if (ph < 0) return x < PATH_P[0][0] ? Math.min(top, PATH_P[0][1] * clamp((x - SLOPE0) / (PATH_P[0][0] - SLOPE0))) : top;
     return lerp(Math.min(ph, top), top, smooth(PATH_J[0], PATH_J[1], x)); } } return gh0(x); }
@@ -253,13 +253,13 @@ const CR = (() => {
     EVA.ready || loadPack('evangelist', EVA).catch(() => {});
     KNEEL.ready || loadPack('christian-kneel', KNEEL).catch(() => {});
     loadPack('lift', MLIFT).catch(() => {});
-    ['wife', 'goodwill-reach', 'room4-caster'].forEach(n => loadImg(n + '.webp').then(im => { MIM[n] = im; }).catch(() => {}));
+    ['wife', 'family', 'goodwill-reach', 'room4-caster'].forEach(n => loadImg(n + '.webp').then(im => { MIM[n] = im; }).catch(() => {}));
     loadImg('cross-burden.webp').then(im => { BURDEN = im; }).catch(() => {});
     REL.forEach(m => loadImg(m.img + '.webp').then(im => { if (im) RIM[m.img] = im; }).catch(() => {}));
     // the hill painted by the image model (round 2 of the owner's hill): rounded weathered rock, toned dark grey, its left
     // end faded into the drawn ramp; cropped to the rock at 1.5 px a world unit (at SK_H 1080): world x 2834 to 5654, height 1089 down to 2 below the ground
     // ?look=f: the hill painted as Friedrich's crag (build 606), laid on the same outline as the old painting
-    if (HP_ON) loadImg(LOOKF ? (H618 ? (/[?&]paint=618\b/.test(location.search) ? 'hill-crag.webp?v=618' : 'hill-crag-r.webp?v=635') : 'hill-crag-f.webp?v=623') : 'hill-cross.webp?v=601').then(im => { HPAINT = im; }).catch(() => {});
+    if (HP_ON) loadImg(LOOKF ? (H618 ? (/[?&]paint=618\b/.test(location.search) ? 'hill-crag.webp?v=618' : 'hill-crag-r.webp?v=638') : 'hill-crag-f.webp?v=623') : 'hill-cross.webp?v=601').then(im => { HPAINT = im; }).catch(() => {});
     // the burning hill's own painted rock (Level 3), made a grey tile as hill.js makes it, laid over the hill in 'overlay'
     loadImg('hill-rock.webp').then(rock => { const sx = 720, sy = 540, w = 780, h = 600, t = document.createElement('canvas'); t.width = w; t.height = h; const q = t.getContext('2d'); q.drawImage(rock, sx, sy, w, h, 0, 0, w, h);
       const d = q.getImageData(0, 0, w, h), D = d.data; let m = 0; for (let i = 0; i < D.length; i += 4) m += D[i] * .3 + D[i + 1] * .59 + D[i + 2] * .11; m /= D.length / 4;
@@ -1191,7 +1191,7 @@ const CR = (() => {
       c.restore(); }
   }
   function cross(c) {
-    const x = CROSS_X, h = crossH() + (LOOKF && !HPAINT ? CRAG_LIFT : 0), col = mix(mix([20, 20, 27], [22, 20, 24], dawn), [30, 22, 20], gold), H = CROSS_H, T = 14, bw = 186, by = CROSS_BY;
+    const x = CROSS_X, h = crossH() + (LOOKF && !HPAINT ? CRAG_LIFT : 0), col = LOOKF ? mix(mix([30, 21, 16], [36, 24, 17], dawn), [46, 29, 19], gold) : mix(mix([20, 20, 27], [22, 20, 24], dawn), [30, 22, 20], gold), H = CROSS_H, T = 14, bw = 186, by = CROSS_BY;
     c.save(); c.translate(x, -h + 4); c.fillStyle = css(col);
     // edges very slightly uneven, as a hand-hewn beam's are (owner: "ever slight variation to the straight edges to make it
     // look slightly (very slightly) more wooden"): a slow wander along each edge, a fine roughness, a hair of taper, ends
@@ -1205,6 +1205,17 @@ const CR = (() => {
     for (let i = 0; i <= 30; i++) { const u = i / 30; c.lineTo(-bw / 2 + bw * u + (i === 0 ? .6 : i === 30 ? -.4 : 0), -by - T / 2 + u + wav(7, u)); }
     for (let i = 30; i >= 0; i--) { const u = i / 30; c.lineTo(-bw / 2 + bw * u + (i === 0 ? -.5 : i === 30 ? .7 : 0), -by + T / 2 + u - 1 + wav(9, u)); }
     c.closePath(); c.fill();
+    // (build 638, owner: "the cross can be a very dark brown and maybe a slight (very very subtle wood texture)"): faint
+    // grain along each beam, a hair lighter and darker than the wood, clipped to it
+    if (LOOKF) { const gr = rgen(11); c.save(); c.beginPath(); UL.forEach(([px, py]) => c.lineTo(px, py)); for (let i = 40; i >= 0; i--) c.lineTo(UR[i][0], UR[i][1]); c.closePath();
+      c.rect(-bw / 2, -by - T / 2 - 1.5, bw, T + 2); c.clip('nonzero'); c.lineWidth = .7;
+      for (let i = 0; i < 9; i++) { const gx = -T / 2 + 1 + i * (T - 2) / 8 + (gr() - .5) * 1.2, li = i % 2 ? [70, 48, 33] : [14, 9, 7], ph = gr() * 6;
+        c.strokeStyle = css(li, .16 + gr() * .1); c.beginPath(); for (let u = 0; u <= 1.001; u += .05) c.lineTo(gx + .5 * Math.sin(u * 9 + ph) + .3 * Math.sin(u * 23 + ph * 2), -H * u); c.stroke(); }
+      for (let i = 0; i < 8; i++) { const gy = -by - T / 2 + 1.5 + i * (T - 3) / 7 + (gr() - .5), li = i % 2 ? [70, 48, 33] : [14, 9, 7], ph = gr() * 6;
+        c.strokeStyle = css(li, .16 + gr() * .1); c.beginPath(); for (let u = 0; u <= 1.001; u += .04) c.lineTo(-bw / 2 + bw * u, gy + u + .45 * Math.sin(u * 11 + ph) + .25 * Math.sin(u * 29 + ph)); c.stroke(); }
+      // a knot or two
+      c.strokeStyle = css([12, 8, 6], .3); c.lineWidth = .6; for (const [kx, ky, kr] of [[1.5, -H * .62, 2.2], [-bw * .28, -by, 1.8]]) { c.beginPath(); c.ellipse(kx, ky, kr * (ky === -by ? 1.8 : .9), kr * (ky === -by ? .9 : 1.8), 0, 0, 6.2832); c.stroke(); }
+      c.restore(); }
     // the low sun behind it: a thin gold edge down the upright's own sides and over its top, not across the beam
     if (gold > .01) {
       c.globalCompositeOperation = 'lighter'; c.strokeStyle = css([255, 220, 160], .35 * gold); c.lineWidth = 1.2; c.beginPath();
@@ -1282,7 +1293,7 @@ const CR = (() => {
 
   // ---------- the story ----------
   function reset0() {
-    blest = 0; tumbleT = 0; sepT = -1; memT = -1; memS = []; memUntil = 0; memQ = 0; REL.forEach(m => { m.a = 0; m.said = false; m.cv = m.front = null; }); relGW = false; FIGS.forEach(f => { f.a = 0; f.said = false; }); CONST.forEach(k => { k.t = -1; k.said = false; k.f0 = null; }); night = NIGHT_ON ? 1 : 0; tearT = -1; looked = false; Object.assign(Ch, { x: START, anim: 12, sd: QUIET[0], cf: -1, hop: 0, hops: 0, lastV: 0, fade: 0, hv: 0, face: 1, tv: null, run: 0, ranim: 0, cc: 0, lp: null, wo: null, wa: 0, kn: null, kup: false });
+    blest = 0; tumbleT = 0; sepT = -1; memT = -1; memS = []; memUntil = 0; memQ = 0; REL.forEach(m => { m.a = 0; m.said = false; m.cv = m.front = null; }); relGW = false; FIGS.forEach(f => { f.a = 0; f.said = false; f.i = 0; }); CONST.forEach(k => { k.t = -1; k.said = false; k.f0 = null; }); night = NIGHT_ON ? 1 : 0; tearT = -1; looked = false; Object.assign(Ch, { x: START, anim: 12, sd: QUIET[0], cf: -1, hop: 0, hops: 0, lastV: 0, fade: 0, hv: 0, face: 1, tv: null, run: 0, ranim: 0, cc: 0, lp: null, wo: null, wa: 0, kn: null, kup: false });
     sunT = 0; sunGo = false; sunH = 0;
     bur = null; dawn = gold = goldTo = sun = robe = robeTo = mark = markTo = rollShow = rollGone = shine = shineTo = gone = goneTo = 0; wideK = 1; wideTo = 1;
     said = {}; hymn = null; silenceT = 0; tombT = 0; leapsLeft = 3; endT = 0; quietPad = 0; t = 0; rollFly = rollAt = null; closeK = topK = topTo = veil = 0; climb = null;
@@ -1404,7 +1415,8 @@ const CR = (() => {
       const onTop = Ch.x >= WALK_X;
       // (build 629) at the foot of the hill he stands and looks up while the three star pictures of the places he has left
       // come one after another and their lines are heard; then the child can run on
-      const starHold = NIGHT_ON && Ch.x >= SLOPE0 - 80 && !CONST.every(k => k.said && (k.kind !== 'storm' || (k.f0 != null && k.t > k.f0 + 60)));
+      const famHold = NIGHT_ON && !FIGS_OFF && FIGS.some(f => f.seq && (!f.said || busy()) && f.a > .3 && Ch.x >= f.x - 420);
+      const starHold = famHold || NIGHT_ON && Ch.x >= SLOPE0 - 80 && !CONST.every(k => k.said && (k.kind !== 'storm' || (k.f0 != null && k.t > k.f0 + 60)));
       if (want && !sepLook && !starHold && Ch.x < STOP_X - .5) {
         if (!onTop) run(true); else if (Ch.run > 0) run(false); else walk(MAXV * .9);
         if (Ch.x > STOP_X) Ch.x = STOP_X;
@@ -1536,7 +1548,7 @@ const CR = (() => {
       memUntil = G.t + Math.ceil(dur * 60) + 20;
       const s = AC.createBufferSource(), g = AC.createGain(); g.gain.value = m.last ? .85 : .6; s.buffer = buf; s.connect(g); g.connect(VOICEG); s.start(0, off);
     }).catch(() => { memUntil = 0; });
-    hiss(700, .7, .018, 1.1); note(m.last ? 55 : 50, .02, 2.2, 0, true);
+    if (!m.q) { hiss(700, .7, .018, 1.1); note(m.last ? 55 : 50, .02, 2.2, 0, true); }
   }
   // one memory painted once: dark figures against a soft warm light, then blurred a little and faded at every edge
   function memPic(i) {
@@ -1862,13 +1874,24 @@ const CR = (() => {
   }
   // the people he heard, standing a little ahead of him on the way up, dark, with a breath of mist round them: each speaks
   // the words he heard as he comes near, and thins into the mist before he reaches it (one voice at a time: busy())
+  // the talk at home ({11}: "O my dear wife, said he, and you the children of my bowels ... this our city will be burned
+  // with fire from heaven ... except some way of escape can be found"); the son's questions are ours
+  const CH = 'His son';
+  const FAMLINES = [
+    [CH, 'Father, why do you weep over that book?'],
+    [C, 'Oh, my dear wife, and you my sweet babes, this city will be burned with fire from heaven.'],
+    [CH, 'Then what shall we do, Father?'],
+    [C, 'Some way of escape must be found. I will find it, for all of us.'],
+  ];
   const FIGS = [
-    { x: 2050, img: () => MIM.wife, ax: 66, g: 254, H: 248, k: .92, flip: true, voice: MEMS[2] },
+    // (build 638, owner: "as he climbs we could get a memory about a conversation he had with his child"; "need a couple lines
+    // back and forth with kid"): his wife and children as in his own door, a few words back and forth; he stands to hear them
+    { x: 2050, img: () => MIM.family, ax: 94, g: 254, H: 248, k: .92, flip: true, seq: FAMLINES.map(([who, txt], i) => ({ who, txt, q: i > 0 })) },
     { x: 2800, img: () => MIM['room4-caster'], ax: 34, g: 302, H: 302, k: 1, flip: false, voice: MEMS[3] },
     { x: 3550, img: () => EVS[0], ax: EVS_META.ax, g: EVS_META.ground, H: 300, k: 1, flip: true, voice: MEMS[4] },
     { x: 4350, img: () => MIM['goodwill-reach'], ax: 62, g: 299, H: 298, k: 1, flip: true, voice: MEMS[5] },
   ];
-  FIGS.forEach(f => { f.a = 0; f.said = false; f.dk = null; });
+  FIGS.forEach(f => { f.a = 0; f.said = false; f.dk = null; f.i = 0; });
   function figTick() {
     if (!NIGHT_ON) return;
     CONST.forEach((k, i) => { const prev = CONST[i - 1]; if (k.t < 0 && Ch.x >= k.at && ph === 'walk' && night > .3 && (!prev || (prev.f0 != null && prev.t >= prev.f0))) k.t = 0; else if (k.t >= 0) k.t++;
@@ -1885,6 +1908,7 @@ const CR = (() => {
       const tgt = ph === 'walk' ? sm(f.x - 920, f.x - 780, Ch.x) * (1 - sm(f.x - 270, f.x - 150, Ch.x)) : 0;
       f.a += (tgt - f.a) * .06;
       if (FIGS_OFF) { f.said = true; return; }
+      if (f.seq) { if (!f.said && ph === 'walk' && f.a > .6 && said.open && !busy() && memQ >= (f.i ? 30 : 40)) { memVoice(f.seq[f.i]); if (++f.i >= f.seq.length) f.said = true; } return; }
       if (!f.said && ph === 'walk' && f.a > .6 && said.open && !busy() && memQ >= 40) { f.said = true; memVoice(f.voice); }
       // a figure he ran past before its words could be said keeps them unsaid no longer
       if (!f.said && Ch.x > f.x - 150) f.said = true;
@@ -1923,6 +1947,9 @@ const CR = (() => {
   }
   function rocksFront(c) {
     if (!PIN_ON || !HPAINT || /[?&]nofront\b/.test(location.search)) return;
+    // (build 638) with the smoothed edge he walks on the edge itself, so no rock stands in front of him (and the falling
+    // burden was hidden behind the band this drew)
+    if (H618 && EDGE_OPT !== 'raw') return;
     const x0 = cam.cx - VW / 2 / cam.z - 40, x1 = cam.cx + VW / 2 / cam.z + 40, st = 4;
     const xa = Math.max(x0, pinW(PIN0)), xb = Math.min(x1, CROSS_X - 40); if (xb <= xa) return;
     c.save(); c.beginPath(); c.moveTo(xa, -gh(xa));
@@ -1954,7 +1981,7 @@ const CR = (() => {
   }
 
   return { on: false, start, update, draw, touch, key, preload, lines: ALL, stop: () => padStop(), _pt: { roll: rollPt, chr: chrPt }, _turning: () => !!Ch.tv,
-    _cst: CONST, _storm: () => (mkStorm(), STORMR.map(f => f.t + (f.bolt ? "b" : ""))), _B: () => bgS(), peek: () => ({ ph, t, z: +cam.z.toFixed(3), cst: CONST.map(k => (k.said ? 'S' : '-') + k.t + (k.P ? 'p' : 'n')).join(' '), figs: FIGS.map(f => (f.said ? 'S' : '-') + f.a.toFixed(1)).join(' '), night: +night.toFixed(2), fly: rollFly ? rollFly.t : -1, x: Math.round(Ch.x), cf: +Ch.cf.toFixed(1), bur: bur ? { st: bur.st, x: Math.round(bur.x), a: +bur.a.toFixed(2), t: bur.t, H: Math.round(bur.H || 0), z: +(bur.z || 0).toFixed(1), r: +(bur.r || 0).toFixed(2), sq: +(bur.sq || 0).toFixed(2) } : null, gold: +gold.toFixed(2), shine: +shine.toFixed(2), leaps: leapsLeft, lp: Ch.lp == null ? -1 : +Ch.lp.toFixed(1), wo: Ch.wo == null ? -1 : Ch.wo, closeK: +closeK.toFixed(2), topK: +topK.toFixed(2), veil: +veil.toFixed(2), tear: tearT, sep: sepT, mem: memS.length, rel: REL.map(m => +m.a.toFixed(2)), kn: Ch.kn == null ? -1 : +Ch.kn.toFixed(1), hb: hymn ? +(hymn.t / BEATT).toFixed(1) : -1 }),
+    _cst: CONST, _figs: () => FIGS, _busy: () => [busy(), memQ, said.open, ph], _storm: () => (mkStorm(), STORMR.map(f => f.t + (f.bolt ? "b" : ""))), _B: () => bgS(), peek: () => ({ ph, t, z: +cam.z.toFixed(3), cst: CONST.map(k => (k.said ? 'S' : '-') + k.t + (k.P ? 'p' : 'n')).join(' '), figs: FIGS.map(f => (f.said ? 'S' : '-') + f.a.toFixed(1)).join(' '), night: +night.toFixed(2), fly: rollFly ? rollFly.t : -1, x: Math.round(Ch.x), cf: +Ch.cf.toFixed(1), bur: bur ? { st: bur.st, x: Math.round(bur.x), a: +bur.a.toFixed(2), t: bur.t, H: Math.round(bur.H || 0), z: +(bur.z || 0).toFixed(1), r: +(bur.r || 0).toFixed(2), sq: +(bur.sq || 0).toFixed(2) } : null, gold: +gold.toFixed(2), shine: +shine.toFixed(2), leaps: leapsLeft, lp: Ch.lp == null ? -1 : +Ch.lp.toFixed(1), wo: Ch.wo == null ? -1 : Ch.wo, closeK: +closeK.toFixed(2), topK: +topK.toFixed(2), veil: +veil.toFixed(2), tear: tearT, sep: sepT, mem: memS.length, rel: REL.map(m => +m.a.toFixed(2)), kn: Ch.kn == null ? -1 : +Ch.kn.toFixed(1), hb: hymn ? +(hymn.t / BEATT).toFixed(1) : -1 }),
     // A SHORT WORDLESS CHOIR FOR THE SHINING ONES (awe study): from their coming until Christian's song begins (index.html's music player, cue 'choir')
     choir: () => ph === 'shine' || (ph === 'leaps' && !blest),
     // the land's outline, for making pictures of the hill (tools)
