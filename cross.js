@@ -104,7 +104,12 @@ const CR = (() => {
     if (EDGE_OPT === 'raw') return T;
     const C = sm(sm(T, 2), 2), cr = (4380 + (CROSS_X - SK_X) / (SK_H / 1080) - PIN0) / 8;
     const E = EDGE_OPT === 'smooth' ? sm(sm(T, 8), 8) : EDGE_OPT === 'line' ? PIN_S.map((v, i) => lerp(v + 3, C[i], smooth(cr - 4, cr + 8, i))) : C;
-    return E.map((v, i) => T[i] > 0 ? Math.min(v, T[i] + 13) : T[i]); })();
+    // a little rockiness on the smooth top (owner, build 623: "while smooth can have a little more texture at the closest
+    // frame - maybe slight rockiness"): small broken facets and chips laid along it, never below his walking line
+    const hs = i => { const v = Math.sin(i * 127.1 + 311.7) * 43758.5453; return 2 * (v - Math.floor(v)) - 1; };
+    const vn = u => { const i = Math.floor(u), f = u - i; return lerp(hs(i), hs(i + 1), f); };
+    const R = EDGE_OPT === 'raw' ? () => 0 : i => 2.6 * vn(i / 2.7) + 1.3 * vn(i / 1.15 + 40) - .8 * Math.abs(vn(i / 5 + 90));
+    return E.map((v, i) => T[i] > 0 ? Math.max(Math.min(v + R(i), T[i] + 13), PIN_S[i] + 1) : T[i]); })();
   const pinS = () => SK_H / 1080, pinW = xp => pinS() * (xp - 4380) + SK_X;
   function pinAt(T, x) { const s = pinS(), xp = 4380 + (x - SK_X) / s; if (xp < PIN0) return -1; if (xp >= PIN1) return 0;
     const f = (xp - PIN0) / 8, i = Math.floor(f); return s * lerp(T[i], T[i + 1], f - i); }
@@ -236,7 +241,7 @@ const CR = (() => {
     // the hill painted by the image model (round 2 of the owner's hill): rounded weathered rock, toned dark grey, its left
     // end faded into the drawn ramp; cropped to the rock at 1.5 px a world unit (at SK_H 1080): world x 2834 to 5654, height 1089 down to 2 below the ground
     // ?look=f: the hill painted as Friedrich's crag (build 606), laid on the same outline as the old painting
-    if (HP_ON) loadImg(LOOKF ? 'hill-crag-f.webp?v=620' : 'hill-cross.webp?v=601').then(im => { HPAINT = im; }).catch(() => {});
+    if (HP_ON) loadImg(LOOKF ? 'hill-crag-f.webp?v=623' : 'hill-cross.webp?v=601').then(im => { HPAINT = im; }).catch(() => {});
     // the burning hill's own painted rock (Level 3), made a grey tile as hill.js makes it, laid over the hill in 'overlay'
     loadImg('hill-rock.webp').then(rock => { const sx = 720, sy = 540, w = 780, h = 600, t = document.createElement('canvas'); t.width = w; t.height = h; const q = t.getContext('2d'); q.drawImage(rock, sx, sy, w, h, 0, 0, w, h);
       const d = q.getImageData(0, 0, w, h), D = d.data; let m = 0; for (let i = 0; i < D.length; i += 4) m += D[i] * .3 + D[i + 1] * .59 + D[i + 2] * .11; m /= D.length / 4;
