@@ -1293,7 +1293,7 @@ const CR = (() => {
 
   // ---------- the story ----------
   function reset0() {
-    blest = 0; tumbleT = 0; sepT = -1; memT = -1; memS = []; memUntil = 0; memQ = 0; REL.forEach(m => { m.a = 0; m.said = false; m.cv = m.front = null; }); relGW = false; FIGS.forEach(f => { f.a = 0; f.said = false; f.i = 0; }); CONST.forEach(k => { k.t = -1; k.said = false; k.f0 = null; }); night = NIGHT_ON ? 1 : 0; tearT = -1; looked = false; Object.assign(Ch, { x: START, anim: 12, sd: QUIET[0], cf: -1, hop: 0, hops: 0, lastV: 0, fade: 0, hv: 0, face: 1, tv: null, run: 0, ranim: 0, cc: 0, lp: null, wo: null, wa: 0, kn: null, kup: false });
+    blest = 0; tumbleT = 0; sepT = -1; memT = -1; memS = []; memUntil = 0; memQ = 0; REL.forEach(m => { m.a = 0; m.said = false; m.cv = m.front = null; }); relGW = false; FIGS.forEach(f => { f.a = 0; f.said = false; f.i = 0; }); CONST.forEach(k => { k.t = -1; k.said = false; k.f0 = null; k.nv = -1; }); night = NIGHT_ON ? 1 : 0; tearT = -1; looked = false; Object.assign(Ch, { x: START, anim: 12, sd: QUIET[0], cf: -1, hop: 0, hops: 0, lastV: 0, fade: 0, hv: 0, face: 1, tv: null, run: 0, ranim: 0, cc: 0, lp: null, wo: null, wa: 0, kn: null, kup: false });
     sunT = 0; sunGo = false; sunH = 0;
     bur = null; dawn = gold = goldTo = sun = robe = robeTo = mark = markTo = rollShow = rollGone = shine = shineTo = gone = goneTo = 0; wideK = 1; wideTo = 1;
     said = {}; hymn = null; silenceT = 0; tombT = 0; leapsLeft = 3; endT = 0; quietPad = 0; t = 0; rollFly = rollAt = null; closeK = topK = topTo = veil = 0; climb = null;
@@ -1326,6 +1326,7 @@ const CR = (() => {
     document.getElementById('on2').style.display = 'none';
   }
   function touch(px, py) {
+    if (!G.act) { constTouch(px, py); return; }
     if (G.act === 'roll') { const [x, y] = rollPt(); if (Math.hypot(px - x, py - y) < 70) takeRoll(); else G.actT = Math.max(G.actT, 89); return; }
     if (G.act === 'leap') { const [x, y] = chrPt(); if (Math.abs(px - x) < 90 && Math.abs(py - y) < 120) leap(); else G.actT = Math.max(G.actT, 89); return; }
   }
@@ -1760,7 +1761,7 @@ const CR = (() => {
     { at: START + 1100, kind: 'storm', voice: { who: E, txt: 'What are you doing here, Christian? You are out of the way.' } },
   ];
   const CONST_HOLD = 420;
-  CONST.forEach(k => { k.t = -1; k.said = false; k.P = null; k.f0 = null; });
+  CONST.forEach(k => { k.t = -1; k.said = false; k.P = null; k.f0 = null; k.nv = -1; });
   let HILLROCK = null; if (NIGHT_ON) loadImg('hill-rock.webp').then(im => { HILLROCK = im; }).catch(() => {});
   // the figures: points (x, y in the box, 0..1; a third number = a brighter star) and the lines between them
   // the figures, in stars only: points (x, y in the box, 0..1) and a size (0 a faint small star, 1 a middling one, 2 a great
@@ -1785,6 +1786,77 @@ const CR = (() => {
       [.7, .3, 0], [.8, .16, 1], [.88, .5, 0], [.9, .58, 0] ] },
   };
   function constPts(k) { return SHAPES_C[k.kind]; }
+  // (build 642, owner: "I wonder if one could click on group of stars and it zoom in and the sky fills as zoom and then a
+  // super nova like shape that fleshes out the image of a hand pointing"; "Touch and just evangelist first"): Evangelist's
+  // star picture waits for a touch, a glint on its great star asking for it; touched, the sky draws in on it (EVZ: the
+  // point c of the picture's box brought to t on the screen, z times larger), more stars come out, the great star bursts
+  // like a nova, and out of its light his arm and pointing hand fill in, in starlight (his own pointing picture from
+  // Level 1, EVA frame 79), and his "Do you see that shining light?" is heard; then it all fades and the sky draws back
+  const EVZ = { c: [.6, .15], t: [.47, .3], z: 1.35 };
+  const constFade = k => k.f0 == null ? 1 : 1 - smooth(k.f0, k.f0 + 110, k.t);
+  const ease = u => u < .5 ? 2 * u * u : 1 - 2 * (1 - u) * (1 - u);
+  const STARS2 = (() => { const r = rgen(53), out = []; for (let i = 0; i < 260; i++) out.push({ x: r(), y: r() * .7, s: .5 + r() * .9, b: .25 + r() * .45, f: 30 + r() * 60, p: r() * 6.3 }); return out; })();
+  // his arm in starlight: shoulder (120, 70) and fingertip (235, 20) in EVA's frame 79
+  const EVARM = { f: 79, x0: 150, y0: 10, w: 90, h: 50, sh: [160, 47], tip: [235, 20], from: [.43, .135], to: [.66, .07] };
+  let EVG = null;
+  function evGhost() {
+    if (EVG || !EVA.ready || !EVA[EVARM.f]) return EVG; const A = EVARM, im = EVA[A.f];
+    const cr = mk(A.w, A.h), q = cr.getContext('2d'); q.drawImage(im, -A.x0, -A.y0);
+    // the staff's top above the arm is not part of the arm
+    q.clearRect(158 - A.x0, 0, 30, 33 - A.y0);
+    q.globalCompositeOperation = 'destination-out';
+    let g = q.createLinearGradient(0, 0, 30, 0); g.addColorStop(0, 'rgba(0,0,0,1)'); g.addColorStop(1, 'rgba(0,0,0,0)'); q.fillStyle = g; q.fillRect(0, 0, A.w, A.h);
+    g = q.createLinearGradient(0, A.h - 12, 0, A.h); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,1)'); q.fillStyle = g; q.fillRect(0, 0, A.w, A.h);
+    const D = q.getImageData(0, 0, A.w, A.h).data;
+    // light: the arm's shape filled with a cool starlight, a soft glow round it (made small and drawn back up)
+    q.globalCompositeOperation = 'source-atop'; q.fillStyle = 'rgb(214,224,255)'; q.fillRect(0, 0, A.w, A.h);
+    const glow = mk(A.w + 40, A.h + 40), qg = glow.getContext('2d'); qg.drawImage(cr, 20, 20);
+    for (const d of [2, 3]) { const t1 = mk(Math.ceil(glow.width / d), Math.ceil(glow.height / d)); t1.getContext('2d').drawImage(glow, 0, 0, t1.width, t1.height); qg.clearRect(0, 0, glow.width, glow.height); qg.drawImage(t1, 0, 0, glow.width, glow.height); }
+    // a scatter of small stars along its outline, revealed from the fingertip back to the shoulder
+    const pts = [], r = rgen(11);
+    for (let y = 1; y < A.h - 1; y++) for (let x = 1; x < A.w - 1; x++) { const a = D[(y * A.w + x) * 4 + 3]; if (a < 120) continue;
+      const edge = D[(y * A.w + x - 1) * 4 + 3] < 120 || D[(y * A.w + x + 1) * 4 + 3] < 120 || D[((y - 1) * A.w + x) * 4 + 3] < 120 || D[((y + 1) * A.w + x) * 4 + 3] < 120;
+      if ((edge && r() < .34) || r() < .02) pts.push({ x: x + A.x0, y: y + A.y0, s: edge ? .7 + r() * .8 : .5 + r() * .5, d: Math.hypot(x + A.x0 - A.tip[0], y + A.y0 - A.tip[1]), p: r() * 6.3 }); }
+    const dm = Math.max(...pts.map(q => q.d)); pts.forEach(q => q.d /= dm);
+    return (EVG = { cr, glow, pts });
+  }
+  function evNova(c, k, P, A0) {
+    // waiting: a glint now and then on the great star, asking to be touched
+    const [sx, sy] = P[P.length - 1];
+    if (k.nv < 0) { if (k.t > 120 && k.f0 == null) { const u = (k.t - 120) % 170, g = u < 44 ? Math.sin(u / 44 * Math.PI) : 0;
+        if (g > .01) { c.save(); c.translate(sx, sy); c.rotate(.3); for (const [w, l] of [[1.4, 26], [.8, 15]]) { c.fillStyle = css([246, 248, 255], .7 * g * A0); c.beginPath(); for (let i = 0; i < 4; i++) { c.rotate(Math.PI / 2); c.moveTo(0, -w); c.lineTo(l * g, 0); c.lineTo(0, w); } c.fill(); } c.restore(); } }
+      return; }
+    const n = k.nv;
+    // the nova: a flash, a ring going out, four long spikes, then the light stays, larger and breathing
+    const f = n - 100;
+    if (f > 0) { const b = Math.exp(-Math.pow((f - 18) / 22, 2)), ring = f * 2.2, ra = Math.max(0, 1 - f / 150);
+      const stay = smooth(10, 80, f), R = 18 + 60 * b + 26 * stay * (1 + .08 * Math.sin(G.t / 60));
+      let g = c.createRadialGradient(sx, sy, 0, sx, sy, R); g.addColorStop(0, css([255, 255, 255], A0 * (.55 * b + .5 * stay))); g.addColorStop(.25, css([236, 238, 255], A0 * (.35 * b + .22 * stay))); g.addColorStop(1, 'rgba(220,226,255,0)');
+      c.fillStyle = g; c.fillRect(sx - R, sy - R, R * 2, R * 2);
+      if (ra > 0) { c.strokeStyle = css([214, 222, 255], .35 * ra * A0); c.lineWidth = 2 + 6 * ra; c.beginPath(); c.arc(sx, sy, ring, 0, 6.2832); c.stroke(); }
+      const L = 30 + 120 * b + 30 * stay; c.save(); c.translate(sx, sy);
+      for (let i = 0; i < 4; i++) { const sg = c.createLinearGradient(0, 0, L, 0); sg.addColorStop(0, css([255, 255, 255], A0 * (.7 * b + .3 * stay))); sg.addColorStop(1, 'rgba(255,255,255,0)'); c.fillStyle = sg; c.beginPath(); c.moveTo(0, -1.4); c.lineTo(L, 0); c.lineTo(0, 1.4); c.fill(); c.rotate(Math.PI / 2); }
+      c.restore();
+      c.fillStyle = css([255, 255, 255], A0); c.beginPath(); c.arc(sx, sy, 2.6 + 2 * stay, 0, 6.2832); c.fill(); }
+    // his arm and pointing hand, filling in out of the light from the fingertip back to the shoulder
+    const E = evGhost(); if (!E || n < 130) return;
+    const W = k.w * VW, Hh = k.h * VH, X0 = VW * k.cx, Y0 = VH * k.cy, at = (u, v) => [X0 + (u - .5) * W, Y0 + (v - .5) * Hh];
+    const [ax, ay] = at(...EVARM.from), [bx, by2] = at(...EVARM.to), A = EVARM, vx = A.tip[0] - A.sh[0], vy = A.tip[1] - A.sh[1];
+    const K = Math.hypot(bx - ax, by2 - ay) / Math.hypot(vx, vy), rot = Math.atan2(by2 - ay, bx - ax) - Math.atan2(vy, vx), rv = smooth(130, 300, n);
+    c.save(); c.translate(ax, ay); c.rotate(rot); c.scale(K, K); c.translate(-A.sh[0], -A.sh[1]);
+    c.globalAlpha = .22 * smooth(170, 330, n) * A0; c.drawImage(E.glow, A.x0 - 20, A.y0 - 20);
+    c.globalAlpha = .3 * smooth(200, 340, n) * A0; c.drawImage(E.cr, A.x0, A.y0);
+    c.globalAlpha = 1;
+    for (const q of E.pts) { const a = smooth(q.d - .12, q.d + .02, rv * 1.12) * A0 * (.6 + .4 * Math.sin(G.t / 37 + q.p)); if (a < .01) continue; c.fillStyle = css([244, 247, 255], .95 * a); c.beginPath(); c.arc(q.x, q.y, q.s * .9 / K, 0, 6.2832); c.fill(); }
+    c.restore();
+  }
+  // a touch on Evangelist's star picture (or anywhere near it in the sky) while it waits
+  function constTouch(px, py) {
+    const k = CONST[0]; if (!NIGHT_ON || k.kind !== 'evan' || k.t < 40 || k.nv >= 0 || k.f0 != null || k.said) return false;
+    const W = k.w * VW, Hh = k.h * VH, X0 = VW * k.cx, Y0 = VH * k.cy;
+    if (px < X0 - W * .55 || px > X0 + W * .55 || py > Y0 + Hh * .6) return false;
+    k.nv = 0; clearHint('evstar'); note(74, .035, 3.2); note(79, .03, 3.2, .12); note(86, .025, 3.4, .26); return true;
+  }
 
   // night clouds after Hasui's Full Moon at Magome and van der Neer's moonlit landscapes (owner, build 631: "here's a
   // couple other - any changes from these?"): long thin streaks low in the sky, each lit pale along its upper edge by the
@@ -1816,6 +1888,11 @@ const CR = (() => {
     // while a star picture shows, the other stars fall back so its shape stands out
     let ck = 0; for (const k of CONST) if (k.t >= 0 && k.kind !== 'storm') ck = Math.max(ck, smooth(0, 90, k.t) * (k.f0 == null ? 1 : 1 - smooth(k.f0, k.f0 + 110, k.t)));
     const fb = 1 - .6 * ck;
+    // THE TOUCHED STAR PICTURE (build 642): the sky draws in on Evangelist's picture, more stars come out of the dark
+    const ev = CONST[0], zk = ev.nv >= 0 ? ease(smooth(0, 130, ev.nv)) * constFade(ev) : 0;
+    if (zk > .001) { const W = ev.w * VW, Hh = ev.h * VH, X0 = VW * ev.cx, Y0 = VH * ev.cy, Cx = X0 + (EVZ.c[0] - .5) * W, Cy = Y0 + (EVZ.c[1] - .5) * Hh, s1 = 1 + zk * (EVZ.z - 1);
+      c.translate(zk * (VW * EVZ.t[0] - Cx * EVZ.z), zk * (VH * EVZ.t[1] - Cy * EVZ.z)); c.scale(s1, s1);
+      for (const s of STARS2) { const a = zk * a0 * s.b * (.7 + .3 * Math.sin(G.t / s.f + s.p)); c.fillStyle = `rgba(222,228,248,${a})`; c.fillRect(s.x * VW - s.s / 2, s.y * VH - s.s / 2, s.s, s.s); } }
     for (const s of STARS) { const x = skyX(s.x), y = s.y * VH, a = fb * a0 * s.b * (.75 + .25 * Math.sin(G.t / s.f + s.p)); c.fillStyle = `rgba(226,230,244,${a})`;
       if (s.s > 1.4) { c.beginPath(); c.arc(x, y, s.s * .6, 0, 6.2832); c.fill(); c.fillStyle = `rgba(200,210,240,${a * .18})`; c.beginPath(); c.arc(x, y, s.s * 2, 0, 6.2832); c.fill(); }
       else c.fillRect(x - s.s / 2, y - s.s / 2, s.s, s.s); }
@@ -1828,6 +1905,7 @@ const CR = (() => {
         const g = c.createRadialGradient(x, y, 0, x, y, R); g.addColorStop(0, css([226, 232, 250], [.18, .24, .32][sz] * a)); g.addColorStop(1, 'rgba(226,232,250,0)'); c.fillStyle = g; c.fillRect(x - R, y - R, R * 2, R * 2);
         c.fillStyle = css([236, 240, 255], a); c.beginPath(); c.arc(x, y, r, 0, 6.2832); c.fill();
       });
+      if (k === CONST[0]) evNova(c, k, P, a0 * kk);
     }
     c.restore();
     for (const k of CONST) if (k.kind === 'storm' && k.t >= 0) { storm(c, k, a0); storm2(c, k, a0); }
@@ -1895,10 +1973,16 @@ const CR = (() => {
     if (!NIGHT_ON) return;
     CONST.forEach((k, i) => { const prev = CONST[i - 1]; if (k.t < 0 && Ch.x >= k.at && ph === 'walk' && night > .3 && (!prev || (prev.f0 != null && prev.t >= prev.f0))) k.t = 0; else if (k.t >= 0) k.t++;
       // it stays until its line has been heard, a breath more, then fades as the next comes
-      if (k.said && k.f0 == null && k.t > (k.kind === 'storm' ? 480 : 240) && G.t > memUntil + 40) k.f0 = k.t;
+      if (k.nv >= 0) { k.nv++; if (k.nv === 100) { hiss(2400, 1.4, .02, 1.6); note(91, .03, 3.6); note(98, .018, 3.8, .1); } }
+      if (k.said && k.f0 == null && k.t > (k.kind === 'storm' ? 480 : 240) && (k.nv < 0 || k.nv > 400) && G.t > memUntil + 40) k.f0 = k.t;
+      // Evangelist's picture waits for a touch (a side message after a moment); the nova's light brings his words; if it is
+      // never touched, his words come at last as before
+      const waits = k === CONST[0] && k.kind === 'evan' && !FIGS_OFF && !k.said;
+      if (waits && k.nv < 0 && k.t === 150) hint('evstar', 'Touch the stars.');
+      if (waits && k.nv >= 150 && said.open && !busy() && memQ >= 20) { k.said = true; memVoice(k.voice); }
       // its line, once it has brightened, never over another voice; passed by if he is already far beyond it
       if (k.t > 40 && !k.said && FIGS_OFF) k.said = true;
-      if (k.t > 40 && !k.said && said.open && !busy() && memQ >= 40 && !FIGS_OFF) { k.said = true; memVoice(k.voice); }
+      if (k.t > (waits ? 780 : 40) && !k.said && k.nv < 0 && said.open && !busy() && memQ >= 40 && !FIGS_OFF) { k.said = true; clearHint('evstar'); memVoice(k.voice); }
       if (!k.said && k.t < 0 && night <= .3) k.said = true;
       // the far storm's thunder, low and late (sound travels slower than light)
       if (k.kind === 'storm' && k.t >= 0 && audio()) { mkStorm(); const fade = k.f0 == null ? 1 : 1 - smooth(k.f0, k.f0 + 110, k.t);
