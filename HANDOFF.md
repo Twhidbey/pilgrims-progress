@@ -280,6 +280,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 ## START HERE (rewritten at build 140, Nov 16 2026)
 
+**Build 663 (art direction chat): the interface rebuilt: hold anywhere on the screen walks him; one red ribbon replaces the three buttons and opens the contents page as the menu (the current level's moments as chapter lines, jump to any reached, sound and auto-walk at its foot); a new full-screen night opening that draws back into a darker cover with a much larger window; app icons remade. New file `moments.js` (`MO`). Auto-walk left off by default. See CLAUDE.md, "BUILD 663". Nothing spent.**
+
 **Build 662 (art direction chat): Level 3's gate light is the far light, small and pale, not an orange sun; Level 2's last picture cools to silver with fewer, fainter shafts. Held for later (owner: Level 4 still being made): Level 4's outside as a night landscape, the parlour a third darker. Next: three still sketches of the new cover, the contents page as the menu, and the one-ribbon play screen (see CLAUDE.md, "THE VISION FOR BUTTONS, MENU AND COVER"); open question: auto-walk by default on phones. Nothing spent.**
 
 **After build 650 (Level 4 chat, no game change): notes for the remaining house chats written (`notes/room1.md`, `room3.md`, `room5.md`, `room6-7.md`); their chats wait on the owner's word.**

@@ -87,14 +87,8 @@ const ED = (() => {
   // to jump to (key points described)"): one button opens a list of each level's key points; a choice begins that level
   // again and fast-forwards silently (as the play-through test does) until the point is reached. The arrows are gone; the
   // [ and ] keys still step one moment back and on.
-  const said = (a, i = 0) => () => { const t = text(), w = a && a[i] && a[i][1]; return !!(t && w && t.slice(0, 24) === w.slice(0, 24)); };
-  const P3 = (...ps) => () => ps.includes(HL.peek().ph), P2 = (...ps) => () => ps.includes(SL.peek().ph), P5 = (...ps) => () => ps.includes(CR.peek().ph), R4 = id => () => RM.peek().room === id;
-  const POINTS = [
-    [1, 'City of Destruction', [['The start: his house in the rain', null], ['Evangelist in the field', said(typeof EVAN !== 'undefined' && EVAN)], ['"Do you see that shining light?" (the run)', said(typeof RUNS !== 'undefined' && RUNS)], ['His wife at the door', said(typeof DOOR_WORDS !== 'undefined' && DOOR_WORDS)], ['"Life! Life! Eternal life!"', said(typeof LIFE !== 'undefined' && LIFE)], ['The mocking neighbours', said(typeof WATCH !== 'undefined' && WATCH)], ['Obstinate and Pliable', said(typeof NEIGH !== 'undefined' && NEIGH)], ['The choice: go home or go on', () => G.state === 'choice'], ['The city gate', said(typeof GATEWORDS !== 'undefined' && GATEWORDS)], ['The end card', () => G.state === 'end']]],
-    [2, 'Slough of Despond', [['The start: the plain with Pliable', null], ['They fall into the bog', P2('fall')], ["Pliable's anger, the choice", P2('pli')], ['Wading alone (the dark, the drums)', P2('wade')], ['Stuck at the far bank', P2('stuck')], ['Help comes', P2('help')], ['Lifted out; the history', P2('drawn', 'hist')], ['The steps found', P2('look')], ['"Go on your way"', P2('onway', 'on')], ['The end card', () => G.state === 'end']]],
-    [3, 'Worldly Wiseman and the hill', [['The start: the plain', null], ['Meeting Worldly Wiseman under the oak', P3('meet')], ['"Do you see that hill?" turning aside', P3('aside')], ['The rocky path', P3('path')], ['Under the burning hill (wide shot)', P3('still')], ['Evangelist comes', P3('come', 'evan')], ['Running back', P3('back')], ['The wicket-gate', P3('gate')], ['Knocking', P3('knock')], ['The door opens', P3('open')], ['Pulled in, the arrows', () => HL.peek().pull > 25], ['The end card', () => G.state === 'end']]],
-    [4, "The Interpreter's House", [['The door at night', null], ['1 The picture', R4('r1')], ['2 The dusty parlour', R4('r2')], ['3 Passion and Patience', R4('r3')], ['4 The fire behind the wall', R4('r4')], ['5 The palace', R4('r5')], ['6 The iron cage (darker rooms on)', R4('r6')], ['7 The dream (darker rooms on)', R4('r7')], ['Leaving', R4('leave')], ['The end card', () => G.state === 'end']]],
-    [5, 'The Cross', [['The start: between the walls', null], ['The climb', () => CR.peek().ph === 'walk' && (CR.peek().mem >= 1 || CR.peek().rel.some(a => a > .3))], ['At the cross: the burden falls', P5('cross')], ['The burden tumbles to the sepulchre', P5('tumble')], ['The sunrise, Amazing Grace', P5('gone')], ['The Shining Ones', P5('shine')], ['The three leaps', P5('leaps')], ['The end card', () => G.state === 'end']]]];
+  // (build 663) the list of key moments and the jump itself now live in moments.js (MO), shared with the contents page
+  const POINTS = MO.POINTS;
   const jb = document.createElement('button'); jb.id = 'edjump'; jb.textContent = '☰ Jump to…'; stage.appendChild(jb);
   const list = document.createElement('div'); list.id = 'edlist'; document.body.appendChild(list);
   const busyEl = document.createElement('div'); busyEl.id = 'edbusy'; busyEl.textContent = 'Jumping…'; document.body.appendChild(busyEl);
@@ -105,27 +99,7 @@ const ED = (() => {
   list.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; e.stopPropagation(); list.classList.remove('on'); if (b.dataset.i != null) jumpTo(+b.dataset.i, +b.dataset.j); });
   for (const ev of ['pointerdown', 'touchstart']) { list.addEventListener(ev, e => e.stopPropagation()); jb.addEventListener(ev, e => e.stopPropagation()); }
   jb.onclick = e => { e.stopPropagation(); render(); list.classList.toggle('on'); };
-  function begin(lv) { if (G.state === 'title' && typeof openBook === 'function') openBook(); hush(); dlg.className = ''; choiceEl.className = ''; document.body.classList.remove('talking', 'capped', 'slough');
-    G.capQ.length = 0; G.cap = 0; G.hint = null; G.act = null; G.ring = null; G.state = 'wait'; document.getElementById('endc').className = 'card';
-    if (lv === 5) go5(); else if (lv === 4) goRoom('door'); else if (lv === 3) go3(); else if (lv === 2) go2(); else start(); n = 0; }
-  // one tick of play as the play-through test plays it
-  function tick() { if (G.state === 'choice') pick(false); keys.r = G.state === 'play';
-    if (G.state === 'dialog') { if (G.act === 'gate' || G.act === 'walkon' || (RM.on && RM.HOLDS.includes(G.act))) keys.push = true; else if (G.act === 'hand') SL.grip(); else if (G.act === 'light') lightTouched(); else if (CR.on && G.act) CR.key(); else if (RM.on && G.act) RM.key(); else if (HL.on && G.act) HL.key(); else if (!G.act) next(true); }
-    update(); }
-  function jumpTo(i, j) {
-    if (busy || KS.paused) return; busy = true; quiet(true); busyEl.style.display = 'block';
-    const [lv, , ps] = POINTS[i], cond = ps[j][1]; begin(lv);
-    const t0 = Date.now(), poll = setInterval(() => {
-      if ((G.state === 'wait' || G.state === 'title') && Date.now() - t0 < 10000) return;
-      clearInterval(poll); seen = lvl();
-      // a time limit, not a tick count: the house changes rooms on real timers, so while a room waits ('wait') the page is
-      // let run a moment before ticking on
-      const tStop = Date.now() + 90000; const run = () => { const tEnd = performance.now() + 40;
-        while (cond && !cond() && G.state !== 'end' && performance.now() < tEnd) { if (G.state === 'wait') break; tick(); }
-        if (cond && !cond() && G.state !== 'end' && Date.now() < tStop) return setTimeout(run, G.state === 'wait' ? 40 : 0);
-        settle(); busyEl.style.display = 'none'; busy = false; setTimeout(() => quiet(false), 60); label(); };
-      run(); }, 50);
-  }
+  function jumpTo(i, j) { if (busy) return; busy = true; if (!MO.jumpTo(i, j, () => { busy = false; seen = lvl(); n = 0; settle(); label(); })) busy = false; }
   for (const [b, f] of [[bl, back], [br, () => fwd()]]) { b.addEventListener('pointerdown', e => e.stopPropagation()); b.onclick = e => { e.stopPropagation(); f(); }; }
   addEventListener('keydown', e => { if (e.key === ']') fwd(); if (e.key === '[') back(); });
   // the arrows show once a level has begun; a new level (from an end card or the menu) counts from 0 again

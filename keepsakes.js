@@ -27,22 +27,34 @@ const KS = (() => {
   const pen = encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='97' height='8'><path d='M0 4.1 C11 3.3 22 5 34 4.3 S58 3.2 70 4.4 S88 4.6 97 4.1' fill='none' stroke='${INK}' stroke-width='1.35' stroke-linecap='round' opacity='.82'/></svg>`);
   const style = document.createElement('style');
   style.textContent = `
-#pause{position:absolute;right:calc(1% + 2.6em);top:1.5%;width:2.2em;height:2.2em;border-radius:50%;border:none;background:rgba(20,22,30,.22);color:rgba(244,236,220,.8);font-size:clamp(14px,2vw,19px);cursor:pointer;display:none;padding:0}
-#pause i{display:inline-block;width:.16em;height:.72em;background:currentColor;margin:0 .09em;border-radius:1px;vertical-align:middle}
-body.playing #pause{display:block}
+/* (build 663) ONE RIBBON in place of the pause, sound and auto-walk buttons: the book's own red ribbon hangs at the top of
+   the picture; a touch on it opens the contents page (the menu) */
+#ribbon{position:absolute;right:5%;top:0;width:clamp(15px,2.3vw,23px);aspect-ratio:16/27;border:none;padding:0;background:none;display:none;cursor:pointer;opacity:.85;z-index:5;filter:drop-shadow(0 2px 3px rgba(0,0,0,.5));-webkit-tap-highlight-color:transparent}
+#ribbon::after{content:'';position:absolute;inset:-4px -18px -20px -18px}
+#ribbon:active{opacity:1}
+body.playing #ribbon{display:block}
 .kscover{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% 50%,rgba(22,18,14,.72),rgba(8,8,12,.9));touch-action:none;-webkit-user-select:none;user-select:none}
 .kscover.on{display:flex;animation:ksfade .45s ease both}
 @keyframes ksfade{from{opacity:0}to{opacity:1}}
 .ksx{position:absolute;right:max(14px,env(safe-area-inset-right));top:max(10px,env(safe-area-inset-top));width:2.3em;height:2.3em;border-radius:50%;border:1px solid rgba(244,236,220,.45);background:rgba(20,22,30,.4);color:#f4ecdc;font:20px Georgia,serif;cursor:pointer;line-height:1;z-index:9}
-/* the menu */
-#ksmenu .kscard{display:flex;flex-direction:column;align-items:center;font-family:Georgia,'Times New Roman',serif;color:#f4ecdc;text-shadow:0 1px 10px rgba(8,10,16,.75);text-align:center}
-#ksmenu h1{font-weight:400;font-style:italic;font-size:clamp(26px,5.4vh,44px);margin:0 0 .3em}
-#ksmenu p{margin:1.1em 0 .1em;font-size:clamp(12px,2.6vh,17px);letter-spacing:.14em;text-transform:uppercase;color:rgba(244,236,220,.7)}
-#ksmenu .btn{font-size:clamp(14px,3.3vh,21px);min-width:13.5em;margin-top:.5em}
-#ksmenu .btn i{font-style:normal;opacity:.6;margin-right:.5em}
-#ksmenu .btn.here{border-color:#e8c27c}
-#ksmenu .btn.here::after{content:' (here)';opacity:.6}
-#ksmenu .btn.auto{min-width:0;font-size:clamp(12px,2.6vh,16px);font-style:italic;background:none;border-color:rgba(244,236,220,.3);margin-top:.9em}
+/* the menu (build 663): the book's contents page, as on the title; the level he is in shows its moments as chapter lines */
+#ksmenu{flex-direction:column}
+#ksmenu .kspage{position:relative;width:min(92vw,max(300px,118vh));max-height:min(88vh,640px);overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:pan-y;background:#e6d9bc center/cover;box-shadow:0 10px 50px rgba(0,0,0,.7);border-radius:2px;color:#2a2018;font-family:'IM Fell English',Georgia,serif;font-size:clamp(14px,3.9vh,19px);box-sizing:border-box;padding:.9em}
+body.portrait #ksmenu .kspage{width:92vw;max-height:80vh;font-size:clamp(15px,4.3vw,19px)}
+#ksmenu .kspin{border:1.4px solid rgba(150,40,30,.55);outline:.7px solid rgba(150,40,30,.45);outline-offset:3px;padding:.7em 1.1em .6em}
+#ksmenu .kh{font-family:'IM Fell English SC','IM Fell English',Georgia,serif;letter-spacing:.2em;text-align:center;font-size:1.05em}
+#ksmenu .krule{height:0;border-top:.8px solid rgba(42,32,24,.6);margin:.45em 8% .3em}#ksmenu .krule.d{border-top:3px double rgba(42,32,24,.6);margin-top:.5em}
+#ksmenu button{font:inherit;background:none;border:none;color:inherit;cursor:pointer;padding:0;text-align:left;-webkit-tap-highlight-color:transparent}
+#ksmenu .kl{display:flex;align-items:baseline;width:100%;padding:.34em .1em;border-bottom:1px dotted rgba(42,32,24,.3);color:rgba(42,32,24,.62)}
+#ksmenu .kl i{flex:0 0 2.3em;font-style:normal;color:#8a2a1e}
+#ksmenu .kl.here{color:#2a2018;border-bottom:none;cursor:default}
+#ksmenu .kl:not(.here):active,#ksmenu .km button:active,#ksmenu .kfoot button:active{color:#8a2a1e}
+#ksmenu .km{display:flex;flex-wrap:wrap;gap:.1em 1.1em;margin:0 0 .3em 2.3em;padding-bottom:.35em;border-bottom:1px dotted rgba(42,32,24,.3);font-style:italic;font-size:.92em;color:#4a3a2a}
+#ksmenu .km button{padding:.28em 0;font-style:italic}
+#ksmenu .km button.now{color:#8a2a1e}#ksmenu .km button.now::before{content:'☞ '}
+#ksmenu .kfoot{display:flex;justify-content:space-between;flex-wrap:wrap;gap:.2em 1em;padding-top:.45em;font-style:italic;font-size:.9em;color:#4a3a2a}
+#ksmenu .kfoot button{padding:.3em 0}#ksmenu .kfoot b{font-weight:400;font-style:normal;color:#8a2a1e;margin-left:.3em}
+#ksmenu .khint{margin-top:.9em;font:italic clamp(12px,3.2vh,15px) 'IM Fell English',Georgia,serif;color:rgba(244,236,220,.55)}
 /* the Bible: brown calf, blind-tooled, red-sprinkled edges, laid paper */
 #ksbook .bible{position:relative;--W:min(93vw,calc(86vh * 1.5));width:var(--W);height:calc(var(--W) / 1.5);padding:calc(var(--W) * .026);box-sizing:border-box;border-radius:calc(var(--W) * .014);
   background-color:#4a2c1c;background-image:var(--calf);background-size:cover;box-shadow:0 22px 60px rgba(0,0,0,.65),inset 0 0 calc(var(--W) * .02) rgba(0,0,0,.55);perspective:calc(var(--W) * 2.4)}
@@ -374,11 +386,12 @@ body.playing #pause{display:block}
 
   // ---------- the overlays ----------
   const mkEl = (html) => { const d = document.createElement('div'); d.innerHTML = html.trim(); return d.firstChild; };
-  const pauseBtn = mkEl(`<button id="pause" aria-label="Pause"><i></i><i></i></button>`);
+  const pauseBtn = mkEl(`<button id="ribbon" aria-label="The contents"></button>`);
   document.getElementById('stage').appendChild(pauseBtn);
-  const NAMES = ['The City of Destruction', 'The Slough of Despond', 'Mr. Worldly Wiseman', 'The Interpreter’s House', 'The Cross'];
-  const menu = mkEl(`<div id="ksmenu" class="kscover"><div class="kscard"><h1>Resting a while</h1><button class="btn" data-go="on">Go on</button><button class="btn auto" data-auto="1"></button>
-    <p>or begin again at</p>${NAMES.map((n, i) => `<button class="btn" data-go="${i + 1}"><i>${i + 1}</i>${n}</button>`).join('')}</div></div>`);
+  { const tr = document.querySelector('.tribbon'); pauseBtn.style.background = (tr && tr.style.background) || 'linear-gradient(90deg,#5d1712,#8c2a20 45%,#6a1b15)'; }
+  const NAMES = ['The City of Destruction', 'The Slough of Despond', 'Mr. Worldly Wiseman', 'The Interpreter’s House', 'The Cross'], ROMAN = ['I.', 'II.', 'III.', 'IV.', 'V.'];
+  const menu = mkEl(`<div id="ksmenu" class="kscover"><div class="kspage"><div class="kspin"><div class="kh">THE CONTENTS.</div><div class="krule"></div><div class="klv"></div><div class="krule d"></div>
+    <div class="kfoot"><button data-snd="1">Sound<b></b></button><button data-auto="1">He walks on by himself<b></b></button></div></div></div><div class="khint">Touch outside the page to go on</div></div>`);
   const book = mkEl(`<div id="ksbook" class="kscover"><div class="bible"><div class="spread"><div class="edges"></div><div class="page L"></div><div class="page R"></div>
     <div class="leaf"><div class="face front"></div><div class="face back"></div></div><div class="spine"></div><div class="ribbon"></div><div class="page scratch"></div></div></div>
     <button class="ksarrow l" aria-label="Turn back">‹</button><button class="ksarrow r" aria-label="Turn on">›</button><button class="ksx" aria-label="Close">×</button></div>`);
@@ -435,18 +448,29 @@ body.playing #pause{display:block}
 
   // the menu
   // (build 309) the auto-walk switch, shared with the contents page's line (setAuto in index.html)
-  const autoLabel = () => { const b = menu.querySelector('[data-auto]'); if (b) b.textContent = (AUTOW ? '\u25C6' : '\u25C7') + ' He walks on by himself: ' + (AUTOW ? 'on' : 'off'); };
+  const autoLabel = () => { const b = menu.querySelector('[data-auto] b'); if (b) b.textContent = AUTOW ? '\u25C6' : '\u25C7'; const s = menu.querySelector('[data-snd] b'); if (s) s.textContent = muted ? '\u25C7' : '\u25C6'; };
   const curLv = () => CR.on ? 5 : RM.on ? 4 : HL.on ? 3 : SL.on ? 2 : 1;
+  const darkOn = () => { try { return localStorage.getItem('pp-dark') === '1'; } catch (e) { return false; } };
+  // the page: every level a line; under the level he is in, its moments so far as chapter lines (all of them in the editor)
+  function renderMenu() {
+    const lv = curLv(), ps = MO.POINTS[lv - 1][2], all = typeof ED !== 'undefined' && ED.on, far = all ? ps.length - 2 : Math.max(MO.reached(lv), MO.here()), now = MO.here();
+    let h = '';
+    NAMES.forEach((n, i) => { h += `<button class="kl${i + 1 === lv ? ' here' : ''}" ${i + 1 === lv ? '' : `data-go="${i + 1}"`}><i>${ROMAN[i]}</i>${n}</button>`;
+      if (i + 1 === lv) h += '<div class="km">' + ps.map((p, j) => j > far || j === ps.length - 1 || (/^[67] /.test(p[0]) && !darkOn()) ? '' : `<button data-m="${j}"${j === now ? ' class="now"' : ''}>${p[2] || p[0]}</button>`).join('') + '</div>'; });
+    menu.querySelector('.klv').innerHTML = h;
+    const pg = menu.querySelector('.kspage'), tp = document.querySelector('.tpage'); if (tp && tp.style.backgroundImage) pg.style.backgroundImage = tp.style.backgroundImage; pg.scrollTop = 0;
+  }
   function openMenu() {
-    if (G.state === 'title') return;
-    for (const b of menu.querySelectorAll('[data-go]')) b.classList.toggle('here', b.dataset.go === String(curLv()));
-    autoLabel(); show(menu, .15);
+    if (G.state === 'title' || MO.busy) return;
+    renderMenu(); autoLabel(); show(menu, .15);
   }
   pauseBtn.onclick = e => { e.stopPropagation(); openMenu(); };
   pauseBtn.addEventListener('pointerdown', e => e.stopPropagation());
   menu.addEventListener('click', e => {
-    if (e.target.closest('[data-auto]')) { setAuto(!AUTOW); return; }
-    const b = e.target.closest('[data-go]'); if (!b && e.target !== menu) return;
+    if (e.target.closest('[data-auto]')) { setAuto(!AUTOW); autoLabel(); return; }
+    if (e.target.closest('[data-snd]')) { sndEl.onclick(); vol(.15); autoLabel(); return; }
+    const m = e.target.closest('[data-m]'); if (m) { const lv = curLv(); hide(); MO.jumpTo(lv - 1, +m.dataset.m); return; }
+    const b = e.target.closest('[data-go]'); if (!b && e.target.closest('.kspage')) return;
     const go = b ? b.dataset.go : 'on'; hide();
     if (go === 'on') return;
     // leave whatever was going on cleanly, then begin the chosen level from its start

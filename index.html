@@ -9,14 +9,14 @@
 <meta name="apple-mobile-web-app-title" content="Pilgrim">
 <meta name="theme-color" content="#1b1c22">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="assets/icon-180.png?v=363">
+<link rel="apple-touch-icon" href="assets/icon-180.png?v=663">
 <script>
 // THE EDITOR AS ITS OWN HOME SCREEN APP (build 193; owner: "I want an editor link that I can put on my phone Home Screen and it
 // updates with changes"). On the editor's link the page offers its own manifest (start "./?edit"), name and icon, so an icon
 // added from it opens the editor; it updates itself like the game (freshCopy keeps ?edit when it reloads).
 if (/[?&]edit(=|&|$)/.test(location.search)) {
   document.querySelector('link[rel=manifest]').href = 'edit.webmanifest';
-  document.querySelector('link[rel=apple-touch-icon]').href = 'assets/icon-edit-180.png?v=363';
+  document.querySelector('link[rel=apple-touch-icon]').href = 'assets/icon-edit-180.png?v=663';
   document.querySelector('meta[name=apple-mobile-web-app-title]').content = 'PP Editor';
   document.title = "Pilgrim's Progress (editor)";
 }
@@ -47,7 +47,7 @@ body.coverready .tbook{opacity:1}
 .tpage{position:absolute;top:0;width:50%;height:100%;box-sizing:border-box;color:#2a2018;text-shadow:none;font-family:'IM Fell English',Georgia,serif;background-color:#e6d9bc;background-size:cover;box-shadow:0 calc(var(--u,1) * 10px) calc(var(--u,1) * 40px) rgba(0,0,0,.55)}
 .tleaf{position:absolute;left:50%;top:0;width:50%;height:100%;transform-origin:0 50%;transform-style:preserve-3d;-webkit-transform-style:preserve-3d;transform:translateZ(2px);transition:transform 1.7s cubic-bezier(.45,.05,.2,1);z-index:2}
 body.opened .tleaf{transform:translateZ(2px) rotateY(-180deg)}
-.tcover{position:absolute;inset:calc(var(--u,1) * -5px) calc(var(--u,1) * -6px) calc(var(--u,1) * -6px) 0;background:#5c3a22 center/100% 100%;border-radius:2px 7px 7px 2px;backface-visibility:hidden;-webkit-backface-visibility:hidden;cursor:pointer;box-shadow:0 calc(var(--u,1) * 1px) calc(var(--u,1) * 2px) rgba(0,0,0,.5)}
+.tcover{position:absolute;inset:calc(var(--u,1) * -5px) calc(var(--u,1) * -6px) calc(var(--u,1) * -6px) 0;background:#2a211d center/100% 100%;border-radius:2px 7px 7px 2px;backface-visibility:hidden;-webkit-backface-visibility:hidden;cursor:pointer;box-shadow:0 calc(var(--u,1) * 1px) calc(var(--u,1) * 2px) rgba(0,0,0,.5)}
 /* the block of pages under the board (build 210): its own layer, so the ribbon can come out from between the pages,
    under the cover; cream edges with the fine lines of the leaves, a little lower and to the right of the board */
 .tpages{position:absolute;inset:calc(var(--u,1) * -2px) calc(var(--u,1) * -10px) calc(var(--u,1) * -12px) calc(var(--u,1) * 2px);border-radius:2px 5px 5px 2px;background:repeating-linear-gradient(0deg,#ab9b7c 0 1px,#9a8a6c 1px 2px);backface-visibility:hidden;-webkit-backface-visibility:hidden;box-shadow:0 calc(var(--u,1) * 14px) calc(var(--u,1) * 40px) rgba(0,0,0,.6),inset 0 0 0 1px rgba(90,60,25,.35);transition:opacity .4s}
@@ -76,6 +76,16 @@ body.opened .tribbon{opacity:0}
 .tfoot h2{margin:0;opacity:.62;font-family:'IM Fell English',Georgia,serif;font-style:italic;text-transform:none;letter-spacing:.05em}
 body.opened .tfoot{visibility:hidden}
 body.portrait .tc .tpin{left:calc(var(--u,1) * 18px);right:calc(var(--u,1) * 14px);padding-left:calc(var(--u,1) * 6px);padding-right:calc(var(--u,1) * 4px)}body.portrait #levels .lv i{flex-basis:2em}
+/* the opening (build 663): the game's returning picture over the whole screen; a touch draws it back into the cover's window */
+#opening{position:fixed;inset:0;z-index:45;display:none;background:#0b0d12;transform-origin:0 0;cursor:pointer;overflow:hidden}
+body.opening #opening{display:block}
+#opening canvas{position:absolute;inset:0}
+#opening .ol{position:absolute;border-radius:50%;pointer-events:none;background:radial-gradient(closest-side,rgba(255,246,222,.5),rgba(255,228,172,.15) 45%,rgba(255,228,172,0));animation:opbreath 8s ease-in-out infinite}
+@keyframes opbreath{0%,100%{opacity:.3;transform:scale(.94)}50%{opacity:1;transform:scale(1.06)}}
+#opening .ot{position:absolute;left:0;right:0;top:13%;text-align:center;color:#efe6d2;font-family:'IM Fell English SC','IM Fell English',Georgia,serif;letter-spacing:.14em;font-size:clamp(20px,6.6vmin,42px);text-shadow:0 0 24px rgba(10,14,24,.6);transition:opacity .35s}
+#opening .os{font-family:'IM Fell English',Georgia,serif;font-style:italic;letter-spacing:.02em;font-size:.5em;opacity:.6;margin-top:.55em}
+#opening.go{transition:transform 1.2s cubic-bezier(.5,.05,.2,1),opacity .55s ease .65s;opacity:0}
+#opening.go .ot{opacity:0}
 #endc{background:radial-gradient(ellipse at 50% 45%,rgba(60,40,10,.05),rgba(40,26,8,.42));opacity:0;pointer-events:none}
 #endc.on{opacity:1;pointer-events:auto}
 /* the words: a thin strip of light text on the dark road, under everyone's feet */
@@ -98,7 +108,8 @@ body.slough #dlg{background:linear-gradient(rgba(14,14,20,0),rgba(14,14,20,.78) 
 #choice button{font-size:clamp(14px,2.3vw,21px);font-style:italic;color:#f4ecdc;background:rgba(20,22,30,.3);border:1px solid rgba(244,236,220,.55);border-radius:40px;padding:.35em 1.4em;cursor:pointer;text-shadow:0 1px 3px rgba(0,0,0,.8);animation:rise .6s ease both}
 #choice button:active{transform:scale(.96)}
 #snd{position:absolute;right:1%;top:1.5%;width:2.2em;height:2.2em;border-radius:50%;border:none;background:rgba(20,22,30,.22);color:rgba(244,236,220,.8);font-size:clamp(14px,2vw,19px);cursor:pointer;display:none}
-body.playing #snd,body.opened #snd{display:block}
+/* build 663: one ribbon and the contents page take the place of the sound and auto-walk buttons (keepsakes.js) */
+#snd,#autoWalk{display:none!important}
 #snd.off{color:rgba(244,236,220,.35);text-decoration:line-through}
 /* build 322 (owner: "take it off book page and make it separate button next to pause button"): the auto-walk switch, left of the pause button; bright when on */
 #autoWalk{position:absolute;right:calc(1% + 5.2em);top:1.5%;width:2.2em;height:2.2em;border-radius:50%;border:none;background:rgba(20,22,30,.22);color:rgba(244,236,220,.35);font-size:clamp(14px,2vw,19px);cursor:pointer;display:none;padding:0}
@@ -184,9 +195,10 @@ body.portrait:not(.playing) #rot{display:none}
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
   <button id="autoWalk" aria-label="He walks on by himself"><svg viewBox="0 0 24 24"><path d="M5 6l6 6-6 6M12 6l6 6-6 6"/></svg></button>
-  <div id="build">build 662 · Nov 25 2026</div>
+  <div id="build">build 663 · Nov 25 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
+<div id="opening"><canvas></canvas><div class="ol"></div><div class="ot">The Pilgrim&#8217;s Progress<div class="os">Touch to open the book</div></div></div>
 <script>
 // STORY LAB: Level 1 as a story walk. No jumps, no obstacles, no score.
 //   Hold to walk toward the light. Lights on the road each sing one note of a hymn as Christian gathers them.
@@ -2642,6 +2654,20 @@ stage.addEventListener('pointerdown', e => {
   if (G.state !== 'play') return;
   downs.set(e.pointerId, G.t); if (HL.on) HL.touch(sx, sy); else if (SL.on) SL.touch(sx, sy); else if (CR.on) CR.touch(sx, sy); else touchAt(sx, sy);
 });
+// HOLD ANYWHERE (build 663; owner: "especially on iphone (its hard to hold right side of screen)"): a finger down anywhere
+// outside the picture (the dark bars beside it held sideways, the dark space under it held upright) walks him and holds
+// for the hold acts, exactly as a finger on the picture does; it touches nothing in the scene. A tap there passes a line.
+document.addEventListener('pointerdown', e => {
+  if (e.target.closest('#stage') || e.target.closest('button') || e.target.closest('.kscover') || e.target.closest('#edlist') || e.target.closest('#opening')) return;
+  if (KS.paused || G.state === 'title' || G.state === 'end') return;
+  if (G.state === 'dialog') {
+    if (G.act === 'walkon' || (RM.on && RM.HOLDS.includes(G.act))) downs.set(e.pointerId, G.t);
+    else if (G.act === 'gate') { pushing = true; pushId = e.pointerId; }
+    else if (!G.act) next();
+    return;
+  }
+  if (G.state === 'play') downs.set(e.pointerId, G.t);
+});
 const lift = e => { if (e.type === 'blur') { downs.clear(); pushing = false; return; } downs.delete(e.pointerId); if (e.pointerId === pushId) pushing = false; };
 addEventListener('pointerup', lift); addEventListener('pointercancel', lift); addEventListener('blur', lift);
 addEventListener('contextmenu', e => e.preventDefault());
@@ -2706,6 +2732,33 @@ function start() {
   const run = ++runN; G.state = 'wait'; setTimeout(() => { if (run === runN && G.state === 'wait') talk(INTRO); }, 1700);   // the bell, then the story
 }
 for (const b of document.querySelectorAll('#levels .lv')) { b.classList.toggle('dim', +b.dataset.lv !== LV); b.onclick = () => +b.dataset.lv === 5 ? go5() : +b.dataset.lv === 4 ? goRoom('door') : +b.dataset.lv === 3 ? go3() : +b.dataset.lv === 2 ? go2() : start(); }
+// THE GAME'S RETURNING PICTURE AT NIGHT (build 663), for the opening screen and the cover's window: a great dusk-blue
+// sky with a few stars, six misty ridges going back (pale far, dark near), the far light low on the right third behind
+// the second ridge, made to glow by the dark round it (Kuindzhi), and the pilgrim small on a near ridge at the left
+// third (his own outline, PILGRIM_P, traced from his walk). Drawn into the box X0, Y0, w, h; returns where the light is.
+const PILGRIM_P = [13,-100,10,-100,1,-91,-1,-92,-5,-92,-9,-90,-11,-88,-11,-83,-19,-76,-21,-71,-21,-70,-22,-66,-21,-61,-17,-56,-13,-55,-15,-50,-23,-37,-21,-35,-22,-31,-19,-29,-19,-27,-18,-25,-19,-20,-17,-19,-16,-17,-19,-14,-21,-14,-23,-11,-21,-7,-20,-4,-17,0,-15,-1,-17,-4,-15,-11,-9,-17,-2,-15,-1,-14,0,-15,5,-15,5,-9,4,-5,5,-2,15,-1,19,-2,17,-4,14,-4,12,-5,10,-9,11,-17,15,-17,15,-31,13,-42,12,-44,12,-63,13,-71,13,-80,14,-83,18,-88,19,-95,18,-98];
+const COVER_WIN = { hor: .7, lx: .67, px: .3 };
+function nightLand(x, X0, Y0, w, h, o) {
+  let sd = 7; const R = () => (sd = (sd * 16807) % 2147483647) / 2147483647;
+  const hor = Y0 + h * (o.hor || .66), lx = X0 + w * (o.lx || .68), ly = hor - h * .045, u = h / 390;
+  let g = x.createLinearGradient(0, Y0, 0, hor); g.addColorStop(0, '#0d1524'); g.addColorStop(.45, '#22344f'); g.addColorStop(.8, '#666e84'); g.addColorStop(1, '#c4b5a4'); x.fillStyle = g; x.fillRect(X0, Y0, w, h);
+  const ns = Math.round(70 * Math.max(1, w / h));
+  for (let i = 0; i < ns; i++) { const sy = R() * (hor - Y0) * .62, sa = (.12 + .6 * R()) * (1 - sy / ((hor - Y0) * .62)); x.fillStyle = 'rgba(235,238,250,' + sa.toFixed(3) + ')'; x.beginPath(); x.arc(X0 + R() * w, Y0 + sy, (.4 + R() * .8) * u, 0, 7); x.fill(); }
+  const cols = ['#878b9c', '#6b7286', '#525a70', '#3a4156', '#252a39', '#131621'], N = Math.ceil(w / 3);
+  for (let k = 0; k < 6; k++) { const y0 = hor - h * .04 + k * h * .036 * (1 + k * .2), a = h * (.035 + .012 * k), f = (.004 + .0011 * k) / u, p = k * 1.9;
+    // the far light, behind the nearer ridges: a cool silver reach, a gold body, a white core (heaven.js's own three)
+    if (k === 1) for (const [rad, col, al] of [[h * .9, '206,212,232', .2], [h * .34, '255,228,172', .42], [h * .1, '255,250,236', .9], [h * .028, '255,255,250', 1]]) { const gl = x.createRadialGradient(lx, ly, 0, lx, ly, rad); gl.addColorStop(0, 'rgba(' + col + ',' + al + ')'); gl.addColorStop(1, 'rgba(' + col + ',0)'); x.fillStyle = gl; x.fillRect(X0, Y0, w, h); }
+    const yAt = px => y0 - a * (.55 * Math.sin((px - X0) * f + p) + .3 * Math.sin((px - X0) * f * 2.3 + p * 2) + .15 * Math.sin((px - X0) * f * 5.1 + p));
+    x.fillStyle = cols[k]; x.beginPath(); x.moveTo(X0, Y0 + h); for (let i = 0; i <= N; i++) { const px = X0 + i * w / N; x.lineTo(px, yAt(px)); } x.lineTo(X0 + w, Y0 + h); x.closePath(); x.fill();
+    // mist lying in the valley behind the next ridge: soft at both its edges
+    if (k < 5) { const m0 = y0 + a * .1, mh = h * .075, m = x.createLinearGradient(0, m0, 0, m0 + mh), ma = .34 - .05 * k; m.addColorStop(0, 'rgba(196,198,210,0)'); m.addColorStop(.35, 'rgba(196,198,210,' + (ma * .6).toFixed(3) + ')'); m.addColorStop(.6, 'rgba(196,198,210,' + ma.toFixed(3) + ')'); m.addColorStop(1, 'rgba(196,198,210,0)'); x.fillStyle = m; x.fillRect(X0, m0, w, mh); }
+    if (k === 4) { const fx = X0 + w * (o.px || .3), fy = yAt(fx) + 1, s = (o.ph || h * .062) / 100; x.save(); x.translate(fx, fy); x.fillStyle = '#10131c'; x.beginPath();
+      for (let j = 0; j < PILGRIM_P.length; j += 2) j ? x.lineTo(PILGRIM_P[j] * s, PILGRIM_P[j + 1] * s) : x.moveTo(PILGRIM_P[j] * s, PILGRIM_P[j + 1] * s);
+      x.closePath(); x.fill(); x.restore(); }
+  }
+  g = x.createRadialGradient(lx, ly, h * .2, lx, ly, Math.hypot(w, h) * .75); g.addColorStop(0, 'rgba(6,8,14,0)'); g.addColorStop(1, 'rgba(6,8,14,.6)'); x.fillStyle = g; x.fillRect(X0, Y0, w, h);
+  return { lx, ly, hor };
+}
 // the title page's paper (build 187): laid paper as in a book of the 1670s: warm cream, cloudy pulp, faint chain lines,
 // a few spots of foxing, darker toward the edges. Made once, small, and stretched over both pages.
 (function paperPages() {
@@ -2759,7 +2812,7 @@ for (const b of document.querySelectorAll('#levels .lv')) { b.classList.toggle('
     x.fill(); };
   // build 358 (owner: "clean up the board"): a cleaner, warmer brown; fewer, softer washes and no dark rings round them
   // (they read as cracks and dirt); the random numbers are still drawn in the same order, so the hills are unchanged
-  x.fillStyle = '#5d412d'; x.fillRect(0, 0, W, H);
+  x.fillStyle = '#2a211d'; x.fillRect(0, 0, W, H);
   for (let i = 0; i < 260; i++) blob(r() * W, r() * H, 30 + r() * 110, r() < .5 ? 'rgba(42,24,14,.035)' : 'rgba(132,92,58,.03)');
   for (let i = 0; i < 40; i++) { const px = r() * W, py = r() * H, rad = 40 + r() * 90; blob(px, py, rad, 'rgba(128,90,58,.025)'); r(); }
   let g = x.createLinearGradient(0, 0, 70, 0); g.addColorStop(0, 'rgba(24,15,10,.5)'); g.addColorStop(1, 'rgba(24,15,10,0)'); x.fillStyle = g; x.fillRect(0, 0, 70, H);
@@ -2770,38 +2823,11 @@ for (const b of document.querySelectorAll('#levels .lv')) { b.classList.toggle('
   const rect = (x0, y0, x1, y1) => [[x0, y0], [x1, y0], [x1, y1], [x0, y1]];
   for (const k of [0, 1]) { line(rect(70, 62, W - 46, H - 62), 5 - k * 2, 'rgba(30,19,13,' + (.32 - k * .1) + ')'); line(rect(84, 76, W - 60, H - 76), 2.4, 'rgba(30,19,13,.28)'); }
   line(rect(77, 69, W - 53, H - 69), 1.6, 'rgba(196,160,98,.36)');
-  // the window: an arch, painted wet into wet, its edge left soft
-  const cx = W / 2 + 12, ww = 166, top = 250, bot = 650, arch = () => { x.beginPath(); x.moveTo(cx - ww, bot); x.lineTo(cx - ww, top + ww); x.arc(cx, top + ww, ww, Math.PI, 0); x.lineTo(cx + ww, bot); x.closePath(); };
-  x.save(); arch(); x.clip();
-  g = x.createLinearGradient(cx - ww, 0, cx + ww, 0); g.addColorStop(0, '#6d6e72'); g.addColorStop(.55, '#8f8676'); g.addColorStop(1, '#b49a6c'); x.fillStyle = g; x.fillRect(cx - ww, top, ww * 2, bot - top);
-  const lx = cx + ww * .45, ly = 470, sun = x.createRadialGradient(lx, ly, 0, lx, ly, 190); sun.addColorStop(0, 'rgba(240,206,140,.85)'); sun.addColorStop(.18, 'rgba(222,182,116,.42)'); sun.addColorStop(1, 'rgba(200,160,100,0)'); x.fillStyle = sun; x.fillRect(cx - ww, top, ww * 2, bot - top);
-  for (let i = 0; i < 26; i++) blob(cx - ww + r() * ww * 2, top + r() * 220, 20 + r() * 50, r() < .5 ? 'rgba(80,78,84,.07)' : 'rgba(230,210,170,.05)');
-  // build 280 (owner: "i liked the old hills - maybe just the second from the front on the right could be slightly
-  // lower as it hits the third layer a bit"): build 276's hills, the second range from the front lowered toward the right
-  const hills = [[480, '#857a6e', 30, .55, 0], [520, '#655a50', 42, .8, 0], [570, '#43382f', 55, 1.1, 22], [612, '#2c231d', 40, 1.6, 0]], ridge = [];
-  for (const [y0, col, amp, f, dropR] of hills) { ridge.length = 0;
-    const hb = y0 === 612 ? 632 : y0; g = x.createLinearGradient(0, y0 - amp - 50, 0, hb); g.addColorStop(0, 'rgba(200,184,156,0)'); g.addColorStop(1, 'rgba(200,184,156,.3)'); x.fillStyle = g; x.fillRect(cx - ww, y0 - amp - 50, ww * 2, hb - y0 + amp + 50);
-    x.fillStyle = col; x.beginPath(); x.moveTo(cx - ww, bot);
-    const ph = r() * 6; for (let px = cx - ww; px <= cx + ww + 8; px += 8) { const u = Math.min(1, Math.max(0, (px - cx) / ww)), drop = dropR * u * u * (3 - 2 * u), jit = (r() - .5) * 2;
-      // build 360 (owner: "make foreground hills much more gradual ... really stress the artistry and simplicity"): the two
-      // nearest ranges are long, gradual slopes, not short waves: a soft broad swell behind, its crown left of the middle,
-      // falling away toward the light; in front, low ground rising gently all the way across, which the pilgrim climbs
-      const v = (px - (cx - ww)) / (ww * 2);
-      const py = y0 === 570 ? 560 - 26 * Math.exp(-(((v - .2) / .42) ** 2)) + 20 * v * v + .3 * jit
-        : y0 === 612 ? 622 - 28 * Math.pow(v, 1.25) + 2.5 * Math.sin(v * 5.5 + 1) + .2 * jit
-        : y0 - amp * (.5 + .3 * Math.sin(px / 60 * f + ph) + .2 * Math.sin(px / 23 * f + ph * 2)) + jit + drop;
-      ridge.push([px, py]); x.lineTo(px, py); }
-    x.lineTo(cx + ww, bot); x.closePath(); x.fill(); }
-  // build 358 (owner: "add the tiny pilgrim"): a tiny dark pilgrim on the nearest hill, his burden on his back, walking
-  // toward the far light; the hill behind him is paler, so his outline reads. One tone, like every figure.
-  { const fx = cx - ww * .32, i = ridge.findIndex(p => p[0] >= fx), a = ridge[Math.max(0, i - 1)], b = ridge[i], t = (fx - a[0]) / ((b[0] - a[0]) || 1), fy = a[1] + (b[1] - a[1]) * t + 1.5;
-    // build 359 (owner: "that pilgrim is unrealistic - can you use a more realistic shape"): his own outline, traced from
-    // a picture of his book-free walk (christian-walk-nb, picture 14, mid-stride), 100 units tall, feet at 0
-    const P = [13,-100,10,-100,1,-91,-1,-92,-5,-92,-9,-90,-11,-88,-11,-83,-19,-76,-21,-71,-21,-70,-22,-66,-21,-61,-17,-56,-13,-55,-15,-50,-23,-37,-21,-35,-22,-31,-19,-29,-19,-27,-18,-25,-19,-20,-17,-19,-16,-17,-19,-14,-21,-14,-23,-11,-21,-7,-20,-4,-17,0,-15,-1,-17,-4,-15,-11,-9,-17,-2,-15,-1,-14,0,-15,5,-15,5,-9,4,-5,5,-2,15,-1,19,-2,17,-4,14,-4,12,-5,10,-9,11,-17,15,-17,15,-31,13,-42,12,-44,12,-63,13,-71,13,-80,14,-83,18,-88,19,-95,18,-98], k = .3;
-    x.save(); x.translate(fx, fy); x.fillStyle = '#2c231d'; x.beginPath();
-    for (let j = 0; j < P.length; j += 2) j ? x.lineTo(P[j] * k, P[j + 1] * k) : x.moveTo(P[j] * k, P[j + 1] * k);
-    x.closePath(); x.fill(); x.restore(); }
-  x.restore();
+  // (build 663; owner: the cover "doesn't have the wow factor that the levels have ... maybe it's the shade of brown"):
+  // the board is nearly black-brown and the window much larger, so the picture glows; in it the game's returning
+  // picture at night (nightLand): a great sky, misty ridges, the small pilgrim on the left, the far light on the right
+  const cx = W / 2 + 12, ww = 222, top = 110, bot = 760, arch = () => { x.beginPath(); x.moveTo(cx - ww, bot); x.lineTo(cx - ww, top + ww); x.arc(cx, top + ww, ww, Math.PI, 0); x.lineTo(cx + ww, bot); x.closePath(); };
+  x.save(); arch(); x.clip(); nightLand(x, cx - ww, top, ww * 2, bot - top, COVER_WIN); x.restore();
   for (const k of [0, 1]) { x.lineWidth = 7 - k * 4; x.strokeStyle = 'rgba(30,19,13,' + (.2 + k * .2) + ')'; arch(); x.stroke(); }
   x.save(); x.lineWidth = 1.5; x.strokeStyle = 'rgba(196,160,98,.4)'; x.beginPath(); x.moveTo(cx - ww - 10, bot + 10); x.lineTo(cx - ww - 10, top + ww); x.arc(cx, top + ww, ww + 10, Math.PI, 0); x.lineTo(cx + ww + 10, bot + 10); x.closePath(); x.stroke(); x.restore();
   // paper grain and a soft darkening toward the edges
@@ -2809,7 +2835,31 @@ for (const b of document.querySelectorAll('#levels .lv')) { b.classList.toggle('
   g = x.createRadialGradient(W / 2, H / 2, H * .3, W / 2, H / 2, H * .72); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(16,10,6,.38)'); x.fillStyle = g; x.fillRect(0, 0, W, H);
   const el = document.querySelector('.tcover'), url = c.toDataURL('image/jpeg', .9); el.style.backgroundImage = 'url(' + url + ')';
   { const im = new Image(), ready = () => document.body.classList.add('coverready'); im.onload = ready; im.onerror = ready; im.src = url; setTimeout(ready, 1500); }
-  el.onclick = () => openBook();
+  el.onclick = () => { if (!document.body.classList.contains('opening')) openBook(); };
+})();
+// THE OPENING (build 663; owner: "it'd be nice to make it stunning from the get go"): before the book, the game's own
+// returning picture fills the whole screen (nightLand: a night sky, misty ridges, the small pilgrim on the left third,
+// the far light breathing on the right; no level's scene, so nothing of the world is given away). One touch and the
+// picture draws back until it is the window in the book's cover, and the book opens. Painted in code, nothing loads.
+// Not shown to the automated tests (they click the cover themselves) nor on a link that names a place ("Touch to begin").
+(function opening() {
+  const el = document.getElementById('opening'), q = new URLSearchParams(location.search);
+  if ((navigator.webdriver && !q.has('showopen')) || /[?&](level|at|room)=/.test(location.search)) return;
+  const oc = el.querySelector('canvas'), ol = el.querySelector('.ol'); let L = null, gone = false;
+  const paint = () => { const w = innerWidth, h = innerHeight, d = Math.min(2, devicePixelRatio || 1); oc.width = Math.round(w * d); oc.height = Math.round(h * d);
+    const x = oc.getContext('2d'); x.setTransform(d, 0, 0, d, 0, 0); L = nightLand(x, 0, 0, w, h, {});
+    const r = Math.min(w, h) * .2; ol.style.cssText = 'left:' + (L.lx - r) + 'px;top:' + (L.ly - r) + 'px;width:' + 2 * r + 'px;height:' + 2 * r + 'px'; };
+  paint(); addEventListener('resize', () => { if (!gone) paint(); });
+  document.body.classList.add('opening');
+  el.addEventListener('pointerdown', e => e.stopPropagation());
+  el.addEventListener('pointerup', e => { e.stopPropagation(); if (gone) return; gone = true;
+    try { if (audio()) AC.resume(); } catch (err) {}
+    // where the cover's window is on the screen (the cover's own 660 x 896 units), and the far light in it
+    const r = document.querySelector('.tcover').getBoundingClientRect(), wx = r.left + r.width * 120 / 660, wy = r.top + r.height * 110 / 896, w2 = r.width * 444 / 660, h2 = r.height * 650 / 896;
+    const k = h2 / innerHeight, tx = wx + w2 * COVER_WIN.lx - k * L.lx, ty = wy + h2 * (COVER_WIN.hor - .045) - k * L.ly;
+    el.style.transform = 'translate(' + tx + 'px,' + ty + 'px) scale(' + k + ')'; el.classList.add('go');
+    setTimeout(() => { document.body.classList.remove('opening'); openBook(); }, q.has('showopen') && navigator.webdriver ? 1400 : 1300);
+  });
 })();
 // build 382 (owner: "can we remove the open book button and just click on cover to open"): no button; a touch on the
 // cover opens the book once everything for the first picture has loaded (body.bookready)
@@ -2899,8 +2949,9 @@ document.getElementById('on2').onclick = () => SL.on ? go3() : HL.on ? goRoom('d
 <script src="room7.js?v=507"></script>
 <script src="rooms.js?v=571"></script>
 <script src="heaven.js?v=547"></script>
-<script src="keepsakes.js?v=505"></script>
+<script src="moments.js?v=663"></script>
+<script src="keepsakes.js?v=663"></script>
 <script src="cross.js?v=661"></script>
-<script src="editor.js?v=609"></script>
+<script src="editor.js?v=663"></script>
 </body>
 </html>
