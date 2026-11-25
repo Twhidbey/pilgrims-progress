@@ -76,16 +76,23 @@ body.opened .tribbon{opacity:0}
 .tfoot h2{margin:0;opacity:.62;font-family:'IM Fell English',Georgia,serif;font-style:italic;text-transform:none;letter-spacing:.05em}
 body.opened .tfoot{visibility:hidden}
 body.portrait .tc .tpin{left:calc(var(--u,1) * 18px);right:calc(var(--u,1) * 14px);padding-left:calc(var(--u,1) * 6px);padding-right:calc(var(--u,1) * 4px)}body.portrait #levels .lv i{flex-basis:2em}
-/* the opening (build 663): the game's returning picture over the whole screen; a touch draws it back into the cover's window */
-#opening{position:fixed;inset:0;z-index:45;display:none;background:#0b0d12;transform-origin:0 0;cursor:pointer;overflow:hidden}
+/* the opening (builds 663, 665): the book itself seen from so close that the picture in its cover's window fills the
+   screen (.tzoom, set in opening()); a touch and the camera draws back, in one move, to the whole closed book */
+.tzoom{transform-origin:0 0;transform-style:preserve-3d;-webkit-transform-style:preserve-3d}
+.tzoom.go{transition:transform 1.9s cubic-bezier(.55,0,.15,1)}
+.twin{position:absolute;left:18.182%;top:12.277%;width:67.273%;height:72.545%;border-radius:50% 50% 0 0/34.154% 34.154% 0 0;overflow:hidden;pointer-events:none;transition:opacity .5s}
+.twin canvas{position:absolute;inset:0;width:100%;height:100%}
+.twin .ol{position:absolute;left:67%;top:65.5%;width:44%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(closest-side,rgba(255,246,222,.5),rgba(255,228,172,.15) 45%,rgba(255,228,172,0));animation:opbreath 8s ease-in-out infinite;transition:opacity 1.2s}
+body.opening .tfoot{opacity:0}
+body.opening #stage{overflow:visible}
+.tfoot{transition:opacity .6s}
+#opening{position:fixed;inset:0;z-index:45;display:none;cursor:pointer}
 body.opening #opening{display:block}
-#opening canvas{position:absolute;inset:0}
-#opening .ol{position:absolute;border-radius:50%;pointer-events:none;background:radial-gradient(closest-side,rgba(255,246,222,.5),rgba(255,228,172,.15) 45%,rgba(255,228,172,0));animation:opbreath 8s ease-in-out infinite}
-@keyframes opbreath{0%,100%{opacity:.3;transform:scale(.94)}50%{opacity:1;transform:scale(1.06)}}
-#opening .ot{position:absolute;left:0;right:0;top:13%;text-align:center;color:#efe6d2;font-family:'IM Fell English SC','IM Fell English',Georgia,serif;letter-spacing:.14em;font-size:clamp(20px,6.6vmin,42px);text-shadow:0 0 24px rgba(10,14,24,.6);transition:opacity .35s}
+#opening .ot{position:absolute;left:0;right:0;top:13%;text-align:center;color:#efe6d2;font-family:'IM Fell English SC','IM Fell English',Georgia,serif;letter-spacing:.14em;font-size:clamp(20px,6.6vmin,42px);text-shadow:0 0 24px rgba(10,14,24,.6);transition:opacity .5s}
+@media (orientation:landscape){#opening .ot{text-align:left;left:7%;top:11%}}
 #opening .os{font-family:'IM Fell English',Georgia,serif;font-style:italic;letter-spacing:.02em;font-size:.5em;opacity:.6;margin-top:.55em}
-#opening.go{transition:transform 1.2s cubic-bezier(.5,.05,.2,1),opacity .55s ease .65s;opacity:0}
 #opening.go .ot{opacity:0}
+@keyframes opbreath{0%,100%{opacity:.3;transform:translate(-50%,-50%) scale(.94)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.06)}}
 #endc{background:radial-gradient(ellipse at 50% 45%,rgba(60,40,10,.05),rgba(40,26,8,.42));opacity:0;pointer-events:none}
 #endc.on{opacity:1;pointer-events:auto}
 /* the words: a thin strip of light text on the dark road, under everyone's feet */
@@ -149,7 +156,7 @@ body.portrait:not(.playing) #rot{display:none}
   <div id="title" class="card">
     <!-- THE BOOK (build 187): the title page as first printed in 1678, alone on a dark ground; "Open the book" swings the
          contents page open beside it. Nothing of the world shows until a level is chosen. -->
-    <div class="tbook">
+    <div class="tzoom"><div class="tbook">
       <div class="tleaf"><div class="tpages"></div><div class="tribbon"></div><div class="tcover"></div><div class="tpage tp"><div class="tpin">
         <div class="t1">THE</div>
         <div class="t2">Pilgrim's Progress</div>
@@ -183,7 +190,7 @@ body.portrait:not(.playing) #rot{display:none}
         <div class="trule d"></div>
         <div class="t6 tdream">As I walked through the wilderness of this world, I lighted on a certain place where was a Den, and I laid me down in that place to sleep: and, as I slept, I dreamed a dream.</div>
       </div></div>
-    </div>
+    </div></div>
     <div class="tfoot"><h2 id="sub">Getting ready…</h2></div>
   </div>
   <div id="endc" class="card">
@@ -195,10 +202,10 @@ body.portrait:not(.playing) #rot{display:none}
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
   <button id="autoWalk" aria-label="He walks on by himself"><svg viewBox="0 0 24 24"><path d="M5 6l6 6-6 6M12 6l6 6-6 6"/></svg></button>
-  <div id="build">build 664 · Nov 25 2026</div>
+  <div id="build">build 665 · Nov 25 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
-<div id="opening"><canvas></canvas><div class="ol"></div><div class="ot">The Pilgrim&#8217;s Progress<div class="os">Touch to open the book</div></div></div>
+<div id="opening"><div class="ot">The Pilgrim&#8217;s Progress<div class="os">Touch to open the book</div></div></div>
 <script>
 // STORY LAB: Level 1 as a story walk. No jumps, no obstacles, no score.
 //   Hold to walk toward the light. Lights on the road each sing one note of a hymn as Christian gathers them.
@@ -2737,9 +2744,9 @@ for (const b of document.querySelectorAll('#levels .lv')) { b.classList.toggle('
 // the second ridge, made to glow by the dark round it (Kuindzhi), and the pilgrim small on a near ridge at the left
 // third (his own outline, PILGRIM_P, traced from his walk). Drawn into the box X0, Y0, w, h; returns where the light is.
 const PILGRIM_P = [13,-100,10,-100,1,-91,-1,-92,-5,-92,-9,-90,-11,-88,-11,-83,-19,-76,-21,-71,-21,-70,-22,-66,-21,-61,-17,-56,-13,-55,-15,-50,-23,-37,-21,-35,-22,-31,-19,-29,-19,-27,-18,-25,-19,-20,-17,-19,-16,-17,-19,-14,-21,-14,-23,-11,-21,-7,-20,-4,-17,0,-15,-1,-17,-4,-15,-11,-9,-17,-2,-15,-1,-14,0,-15,5,-15,5,-9,4,-5,5,-2,15,-1,19,-2,17,-4,14,-4,12,-5,10,-9,11,-17,15,-17,15,-31,13,-42,12,-44,12,-63,13,-71,13,-80,14,-83,18,-88,19,-95,18,-98];
-const COVER_WIN = { hor: .7, lx: .67, px: .3 };
+const COVER_WIN = { hor: .7, lx: .67, px: .3, pk: 3 };
 function nightLand(x, X0, Y0, w, h, o) {
-  let sd = 7; const R = () => (sd = (sd * 16807) % 2147483647) / 2147483647;
+  let sd = 7, pyOut = 0; const R = () => (sd = (sd * 16807) % 2147483647) / 2147483647;
   const hor = Y0 + h * (o.hor || .66), lx = X0 + w * (o.lx || .68), ly = hor - h * .045, u = h / 390;
   let g = x.createLinearGradient(0, Y0, 0, hor); g.addColorStop(0, '#0d1524'); g.addColorStop(.45, '#22344f'); g.addColorStop(.8, '#666e84'); g.addColorStop(1, '#c4b5a4'); x.fillStyle = g; x.fillRect(X0, Y0, w, h);
   const ns = Math.round(70 * Math.max(1, w / h));
@@ -2752,12 +2759,12 @@ function nightLand(x, X0, Y0, w, h, o) {
     x.fillStyle = cols[k]; x.beginPath(); x.moveTo(X0, Y0 + h); for (let i = 0; i <= N; i++) { const px = X0 + i * w / N; x.lineTo(px, yAt(px)); } x.lineTo(X0 + w, Y0 + h); x.closePath(); x.fill();
     // mist lying in the valley behind the next ridge: soft at both its edges
     if (k < 5) { const m0 = y0 + a * .1, mh = h * .075, m = x.createLinearGradient(0, m0, 0, m0 + mh), ma = .34 - .05 * k; m.addColorStop(0, 'rgba(196,198,210,0)'); m.addColorStop(.35, 'rgba(196,198,210,' + (ma * .6).toFixed(3) + ')'); m.addColorStop(.6, 'rgba(196,198,210,' + ma.toFixed(3) + ')'); m.addColorStop(1, 'rgba(196,198,210,0)'); x.fillStyle = m; x.fillRect(X0, m0, w, mh); }
-    if (k === 4) { const fx = X0 + w * (o.px || .3), fy = yAt(fx) + 1, s = (o.ph || h * .062) / 100; x.save(); x.translate(fx, fy); x.fillStyle = '#10131c'; x.beginPath();
+    if (k === (o.pk || 4)) { const fx = X0 + w * (o.px || .3), fy = yAt(fx) + 1; pyOut = fy; const s = (o.ph || h * .062) / 100; x.save(); x.translate(fx, fy); x.fillStyle = '#10131c'; x.beginPath();
       for (let j = 0; j < PILGRIM_P.length; j += 2) j ? x.lineTo(PILGRIM_P[j] * s, PILGRIM_P[j + 1] * s) : x.moveTo(PILGRIM_P[j] * s, PILGRIM_P[j + 1] * s);
       x.closePath(); x.fill(); x.restore(); }
   }
   g = x.createRadialGradient(lx, ly, h * .2, lx, ly, Math.hypot(w, h) * .75); g.addColorStop(0, 'rgba(6,8,14,0)'); g.addColorStop(1, 'rgba(6,8,14,.6)'); x.fillStyle = g; x.fillRect(X0, Y0, w, h);
-  return { lx, ly, hor };
+  return { lx, ly, hor, py: pyOut };
 }
 // the title page's paper (build 187): laid paper as in a book of the 1670s: warm cream, cloudy pulp, faint chain lines,
 // a few spots of foxing, darker toward the edges. Made once, small, and stretched over both pages.
@@ -2837,28 +2844,42 @@ function nightLand(x, X0, Y0, w, h, o) {
   { const im = new Image(), ready = () => document.body.classList.add('coverready'); im.onload = ready; im.onerror = ready; im.src = url; setTimeout(ready, 1500); }
   el.onclick = () => { if (!document.body.classList.contains('opening')) openBook(); };
 })();
-// THE OPENING (build 663; owner: "it'd be nice to make it stunning from the get go"): before the book, the game's own
-// returning picture fills the whole screen (nightLand: a night sky, misty ridges, the small pilgrim on the left third,
-// the far light breathing on the right; no level's scene, so nothing of the world is given away). One touch and the
-// picture draws back until it is the window in the book's cover, and the book opens. Painted in code, nothing loads.
-// Not shown to the automated tests (they click the cover themselves) nor on a link that names a place ("Touch to begin").
+// THE OPENING (builds 663, 665; owner: "it'd be nice to make it stunning from the get go", then "transition from opening
+// to inside is rough"): there is ONE picture, the one in the cover's arched window. At first the book is seen from so
+// close that the window fills the screen (.tzoom is the whole book enlarged; the window painted again at that size in
+// .twin, so it is sharp): the pilgrim small on the left, the far light breathing on the right. One touch and the camera
+// draws back in a single move, the sky opening upward into the arch, the dark board and the whole book coming into
+// view; it rests a moment, then the cover opens. Nothing shrinks across the screen and nothing is swapped. Painted in
+// code. Not shown to the automated tests (they click the cover themselves) nor on a link that names a place.
 (function opening() {
   const el = document.getElementById('opening'), q = new URLSearchParams(location.search);
   if ((navigator.webdriver && !q.has('showopen')) || /[?&](level|at|room)=/.test(location.search)) return;
-  const oc = el.querySelector('canvas'), ol = el.querySelector('.ol'); let L = null, gone = false;
-  const paint = () => { const w = innerWidth, h = innerHeight, d = Math.min(2, devicePixelRatio || 1); oc.width = Math.round(w * d); oc.height = Math.round(h * d);
-    const x = oc.getContext('2d'); x.setTransform(d, 0, 0, d, 0, 0); L = nightLand(x, 0, 0, w, h, {});
-    const r = Math.min(w, h) * .2; ol.style.cssText = 'left:' + (L.lx - r) + 'px;top:' + (L.ly - r) + 'px;width:' + 2 * r + 'px;height:' + 2 * r + 'px'; };
-  paint(); addEventListener('resize', () => { if (!gone) paint(); });
-  document.body.classList.add('opening');
+  const zoom = document.querySelector('.tzoom'), cover = document.querySelector('.tcover');
+  const win = document.createElement('div'); win.className = 'twin'; win.innerHTML = '<canvas></canvas><div class="ol"></div>'; cover.appendChild(win);
+  const oc = win.firstChild; let gone = false, drawn = '', feet = 0;
+  // where the book must be put so the window fills the whole screen: as much of the window's width as fits under its
+  // arch, the pilgrim's feet low in the picture and the far light above him on the right
+  const place = () => { if (gone) return; zoom.style.transform = 'none';
+    const S = { left: 0, top: 0, width: innerWidth, height: innerHeight }, r = cover.getBoundingClientRect(), z = zoom.getBoundingClientRect(); if (!r.width || !S.width) return;
+    const wx = r.left + r.width * 120 / 660, wy = r.top + r.height * 110 / 896, w2 = r.width * 444 / 660, h2 = r.height * 650 / 896;
+    let K = 1, top = 0; const fy = feet || .82;
+    for (let f = .96; f > .2; f -= .01) { K = S.width / (f * w2); const hi = -K * w2 / 2 * (1 - Math.sqrt(1 - f * f)) - 2, lo = S.height - .985 * K * h2;
+      if (lo <= hi) { top = Math.max(lo, Math.min(hi, .86 * S.height - fy * K * h2)); break; } }
+    const tx = S.left + S.width / 2 - K * w2 / 2 - z.left - K * (wx - z.left), ty = S.top + top - z.top - K * (wy - z.top);
+    zoom.style.transform = 'translate(' + tx.toFixed(2) + 'px,' + ty.toFixed(2) + 'px) scale(' + K.toFixed(4) + ')';
+    const d = Math.min(2, devicePixelRatio || 1), cw = Math.min(2200, Math.round(w2 * K * d)), ch = Math.round(cw * 650 / 444), key = cw + 'x' + ch;
+    if (key !== drawn) { drawn = key; oc.width = cw; oc.height = ch; const f0 = feet; feet = nightLand(oc.getContext('2d'), 0, 0, cw, ch, COVER_WIN).py / ch; if (!f0) place(); } };
+  document.body.classList.add('opening'); place();
+  addEventListener('resize', () => setTimeout(place, 60)); for (const t of [0, 250, 800, 1600]) setTimeout(place, t);
   el.addEventListener('pointerdown', e => e.stopPropagation());
-  el.addEventListener('pointerup', e => { e.stopPropagation(); if (gone) return; gone = true;
+  el.addEventListener('pointerup', e => { e.stopPropagation(); if (gone) return; place(); gone = true;
     try { if (audio()) AC.resume(); } catch (err) {}
-    // where the cover's window is on the screen (the cover's own 660 x 896 units), and the far light in it
-    const r = document.querySelector('.tcover').getBoundingClientRect(), wx = r.left + r.width * 120 / 660, wy = r.top + r.height * 110 / 896, w2 = r.width * 444 / 660, h2 = r.height * 650 / 896;
-    const k = h2 / innerHeight, tx = wx + w2 * COVER_WIN.lx - k * L.lx, ty = wy + h2 * (COVER_WIN.hor - .045) - k * L.ly;
-    el.style.transform = 'translate(' + tx + 'px,' + ty + 'px) scale(' + k + ')'; el.classList.add('go');
-    setTimeout(() => { document.body.classList.remove('opening'); openBook(); }, q.has('showopen') && navigator.webdriver ? 1400 : 1300);
+    zoom.getBoundingClientRect(); zoom.classList.add('go'); el.classList.add('go'); zoom.style.transform = 'none'; win.querySelector('.ol').style.opacity = 0;
+    // the camera has come to rest on the closed book: the sharp window gives way to the cover's own, a breath, and it opens
+    setTimeout(() => { win.style.opacity = 0; }, 1900);
+    const open = () => { if (!document.body.classList.contains('bookready')) return setTimeout(open, 150);
+      document.body.classList.remove('opening'); zoom.classList.remove('go'); zoom.style.transform = ''; openBook(); setTimeout(() => win.remove(), 1200); };
+    setTimeout(open, 2450);
   });
 })();
 // build 382 (owner: "can we remove the open book button and just click on cover to open"): no button; a touch on the

@@ -280,6 +280,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 ## START HERE (rewritten at build 140, Nov 16 2026)
 
+**Build 665 (art direction chat): the opening is one camera move now: the book is seen from so close that the picture in its cover's window fills the screen; a touch draws the camera back to the whole closed book, a breath, and it opens (`.tzoom`, `.twin`, `opening()` in `index.html`). The owner found build 663's shrinking picture rough. Nothing spent.**
+
 **Build 664 (art direction chat): the editor's app icon has no arrows badge now (the same book as the game's icon). Nothing spent.**
 
 **Build 663 (art direction chat): the interface rebuilt: hold anywhere on the screen walks him; one red ribbon replaces the three buttons and opens the contents page as the menu (the current level's moments as chapter lines, jump to any reached, sound and auto-walk at its foot); a new full-screen night opening that draws back into a darker cover with a much larger window; app icons remade. New file `moments.js` (`MO`). Auto-walk left off by default. See CLAUDE.md, "BUILD 663". Nothing spent.**
