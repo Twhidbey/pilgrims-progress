@@ -993,7 +993,10 @@ const SL = (() => {
     RECS = {}; chrLate = 0; SH0 = SHN; SHN = [];
     const { z, cx, wl } = cam, hor = wl - 140 * z, S = DPR;
     const X = x => (x - cx) * z + VW / 2, Y = y => wl + y * z;
-    const warmth = look.gold, lightCol = mix(LIGHT, GOLD, warmth * .8);
+    // (build 662, art direction: the level's last picture was a wide gold burst with rays, too near the Cross's sunrise)
+    // as he walks on into the mist the gold cools toward silver-cream, and the shafts are fewer and fainter
+    const ahead0 = ph === 'on' ? smooth(-120, 360, C2.x) : 0;
+    const warmth = look.gold * (1 - .6 * ahead0), lightCol = mix(LIGHT, GOLD, warmth * .8);
     // the far light: in the oak's branches when he is near, far off over the plain before
     const near = smooth(-1300, -250, cx);
     // build 124: as he goes on his way the far light is ahead of him again, low in the mist on the right (ahead: 0 at the oak .. 1)
@@ -1415,11 +1418,11 @@ const SL = (() => {
         ctx.fillStyle = g; ctx.fillRect(Math.max(0, xa), 0, VW, VH); }
       if (ahead > .02) {
         ctx.save(); ctx.globalCompositeOperation = 'screen';
-        glow(ctx, discX, discY, 380, mix(LIGHT, GOLD, .5), .55 * ahead); glow(ctx, discX, discY, 120, LIGHT, .6 * ahead);
-        for (let i = 0; i < 9; i++) {
+        glow(ctx, discX, discY, 380, mix(LIGHT, GOLD, .18), .45 * ahead); glow(ctx, discX, discY, 120, LIGHT, .5 * ahead);
+        for (let i = 0; i < 9; i += 2) {
           const a0 = (i < 7 ? 1.75 + i * .2 : .95 - (i - 7) * .3) + .05 * Math.sin(G.t * .004 + i * 1.7), hw = .028 + .022 * ((i * 7) % 3), len = 1000;
-          const k = .21 * ahead * (.55 + .45 * Math.sin(G.t * .007 + i * 2.3)), g = ctx.createRadialGradient(discX, discY, 30, discX, discY, len);
-          g.addColorStop(0, css(mix(LIGHT, GOLD, .45), k)); g.addColorStop(.5, css(mix(LIGHT, GOLD, .45), k * .45)); g.addColorStop(1, css(GOLD, 0));
+          const k = .14 * ahead * (.55 + .45 * Math.sin(G.t * .007 + i * 2.3)), g = ctx.createRadialGradient(discX, discY, 30, discX, discY, len);
+          g.addColorStop(0, css(mix(LIGHT, GOLD, .15), k)); g.addColorStop(.5, css(mix(LIGHT, GOLD, .15), k * .45)); g.addColorStop(1, css(GOLD, 0));
           ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(discX, discY); ctx.lineTo(discX + Math.cos(a0 - hw) * len, discY + Math.sin(a0 - hw) * len); ctx.lineTo(discX + Math.cos(a0 + hw) * len, discY + Math.sin(a0 + hw) * len); ctx.fill();
         }
         ctx.restore();

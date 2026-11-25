@@ -1884,11 +1884,13 @@ const HL = (() => {
       // the passage needs a source: the far light he has followed since Level 1 stands just behind the gate, a little over
       // the land inside, so Good-will and Christian stand dark against it and the passage glows with it
       { const op = smooth(0, 1, door), fx3 = X(GATE_X + 175), fy3 = Y(-215), R3 = 700 * z, g = c.createRadialGradient(fx3, fy3, 0, fx3, fy3, R3);
-        g.addColorStop(0, css([255, 244, 214], .3 + .62 * op)); g.addColorStop(.05, css([255, 228, 176], .2 + .55 * op)); g.addColorStop(.16, css([255, 200, 134], .08 + .36 * op)); g.addColorStop(.45, css([220, 130, 76], .03 + .17 * op)); g.addColorStop(1, css([200, 110, 60], 0));
+        // (build 662, art direction: it read as an orange sunset one level before the game's first dawn) a paler, smaller glow,
+        // warm only close in, and the light itself is the one far light (heaven.js), small, with its silver reach
+        g.addColorStop(0, css([255, 246, 226], .2 + .4 * op)); g.addColorStop(.05, css([250, 232, 200], .13 + .33 * op)); g.addColorStop(.16, css([226, 196, 166], .05 + .19 * op)); g.addColorStop(.45, css([150, 116, 108], .02 + .07 * op)); g.addColorStop(1, css([120, 96, 96], 0));
         // (build 514, owner: the sky either side of the wall must be one sky): the glow lies on the whole sky, outside too;
         // the wall, the passage and the land outside are drawn after it and cover it, so only the land inside is lit
         c.save(); c.beginPath(); c.rect(0, 0, VW, yG + 2); c.clip(); c.globalCompositeOperation = 'lighter'; c.fillStyle = g; c.fillRect(fx3 - R3, fy3 - R3, 2 * R3, 2 * R3);
-        { const g2 = c.createRadialGradient(fx3, fy3, 0, fx3, fy3, 22 * z); g2.addColorStop(0, css([255, 250, 232], .9 * op)); g2.addColorStop(.6, css([255, 236, 196], .5 * op)); g2.addColorStop(1, css([255, 220, 170], 0)); c.fillStyle = g2; c.fillRect(fx3 - 22 * z, fy3 - 22 * z, 44 * z, 44 * z); }
+        if (window.HV) HV.draw(c, fx3, fy3, 19 * z, op * .9); else { const g2 = c.createRadialGradient(fx3, fy3, 0, fx3, fy3, 22 * z); g2.addColorStop(0, css([255, 250, 232], .9 * op)); g2.addColorStop(.6, css([255, 236, 196], .5 * op)); g2.addColorStop(1, css([255, 220, 170], 0)); c.fillStyle = g2; c.fillRect(fx3 - 22 * z, fy3 - 22 * z, 44 * z, 44 * z); }
         c.restore(); }
       // the land inside, laid after the far light so its rises hide the light's foot (it sinks behind them)
       { c.save(); inClip(yG + 2);
