@@ -202,7 +202,7 @@ body.portrait:not(.playing) #rot{display:none}
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
   <button id="autoWalk" aria-label="He walks on by himself"><svg viewBox="0 0 24 24"><path d="M5 6l6 6-6 6M12 6l6 6-6 6"/></svg></button>
-  <div id="build">build 667 · Nov 26 2026</div>
+  <div id="build">build 668 · Nov 26 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <div id="opening"><div class="ot">The Pilgrim&#8217;s Progress<div class="os">Touch to open the book</div></div></div>
@@ -892,7 +892,7 @@ function audio() {
     NOISE = AC.createBuffer(1, AC.sampleRate * 2, AC.sampleRate);
     const ch = NOISE.getChannelData(0); for (let i = 0; i < ch.length; i++) ch[i] = Math.random() * 2 - 1;
     rainG = gain(0, OUT);
-    const rs = AC.createBufferSource(); rs.buffer = NOISE; rs.loop = true; rs.connect(filt('highpass', 900, 0, filt('lowpass', 6500, 0, rainG))); rs.start();
+    const rs = AC.createBufferSource(); rs.buffer = NOISE; rs.loop = true; rs.connect(filt('highpass', 450, 0, filt('lowpass', 3000, 0, rainG))); rs.start();
     // a low, steady hum under everything (G and D); a warmer note joins in the golden light, a dark one when he turns back
     const padF = filt('lowpass', 520, 0, OUT);
     padG = gain(0, padF); warmG = gain(0, padF); gloomG = gain(0, padF);
@@ -988,7 +988,7 @@ const SFXL = {}, sfxLast = {};
 // footfall of his in every level is played at STEP_VOL, walking 1, running STEP_RUN; the wheat's rustle .8 of a step, a squelch in
 // the mire 1.3 (it is heavier). Nothing else sets a footstep's loudness.
 // (build 502 had turned them all to .4 of their old loudness, STEP_K: STEP_VOL is set at that level)
-const STEP_VOL = .13, STEP_RUN = 1.2, STEP_K = .4;
+const STEP_VOL = .065, STEP_RUN = 1.2, STEP_K = .4;
 function stepOn(surf, v = 1, heavy = 0) {
   if (!audio()) return;
   if (!sfxPlay('step-' + surf, STEP_N[surf], STEP_VOL * v)) { sfx.step(false, heavy || .8); return; }
@@ -1091,7 +1091,7 @@ const sfx = {
   open: () => { sweep(82, 41, 1.6, .12); [43, 55, 62, 67, 71].forEach((m, i) => note(m, .06, 6, i * .12)); },
 };
 // the weather you can hear: rain fades as the light grows
-const RAIN_VOL = .032;                    // how loud the rain is (was .05; owner asked for slightly quieter)
+const RAIN_VOL = .013;                    // how loud the rain is (.05, then .032, then build 668: "atmospheric not dominant")
 function ambience() {
   if (!AC || G.t % 8) return;
   const now = AC.currentTime, w = warm((P.x - G.cam) / VW);
