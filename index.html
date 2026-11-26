@@ -202,7 +202,7 @@ body.portrait:not(.playing) #rot{display:none}
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
   <button id="autoWalk" aria-label="He walks on by himself"><svg viewBox="0 0 24 24"><path d="M5 6l6 6-6 6M12 6l6 6-6 6"/></svg></button>
-  <div id="build">build 665 · Nov 25 2026</div>
+  <div id="build">build 666 · Nov 26 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <div id="opening"><div class="ot">The Pilgrim&#8217;s Progress<div class="os">Touch to open the book</div></div></div>
@@ -2759,7 +2759,8 @@ function nightLand(x, X0, Y0, w, h, o) {
     x.fillStyle = cols[k]; x.beginPath(); x.moveTo(X0, Y0 + h); for (let i = 0; i <= N; i++) { const px = X0 + i * w / N; x.lineTo(px, yAt(px)); } x.lineTo(X0 + w, Y0 + h); x.closePath(); x.fill();
     // mist lying in the valley behind the next ridge: soft at both its edges
     if (k < 5) { const m0 = y0 + a * .1, mh = h * .075, m = x.createLinearGradient(0, m0, 0, m0 + mh), ma = .34 - .05 * k; m.addColorStop(0, 'rgba(196,198,210,0)'); m.addColorStop(.35, 'rgba(196,198,210,' + (ma * .6).toFixed(3) + ')'); m.addColorStop(.6, 'rgba(196,198,210,' + ma.toFixed(3) + ')'); m.addColorStop(1, 'rgba(196,198,210,0)'); x.fillStyle = m; x.fillRect(X0, m0, w, mh); }
-    if (k === (o.pk || 4)) { const fx = X0 + w * (o.px || .3), fy = yAt(fx) + 1; pyOut = fy; const s = (o.ph || h * .062) / 100; x.save(); x.translate(fx, fy); x.fillStyle = '#10131c'; x.beginPath();
+    // the pilgrim: in the very tone of the ridge he walks on, his feet sunk a little into it (never floating)
+    if (k === (o.pk || 4)) { const fx = X0 + w * (o.px || .3), s = (o.ph || h * .062) / 100, fy = yAt(fx) + 7 * s; pyOut = fy; x.save(); x.translate(fx, fy); x.fillStyle = cols[k]; x.beginPath();
       for (let j = 0; j < PILGRIM_P.length; j += 2) j ? x.lineTo(PILGRIM_P[j] * s, PILGRIM_P[j + 1] * s) : x.moveTo(PILGRIM_P[j] * s, PILGRIM_P[j + 1] * s);
       x.closePath(); x.fill(); x.restore(); }
   }

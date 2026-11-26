@@ -280,6 +280,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 ## START HERE (rewritten at build 140, Nov 16 2026)
 
+**Build 666 (art direction chat): the pilgrim of the opening and the cover is in his ridge's own tone with his feet sunk into it; a new rule in CLAUDE.md, "NEVER FLOATING" (under People), for every figure in every level. Nothing spent.**
+
 **Build 665 (art direction chat): the opening is one camera move now: the book is seen from so close that the picture in its cover's window fills the screen; a touch draws the camera back to the whole closed book, a breath, and it opens (`.tzoom`, `.twin`, `opening()` in `index.html`). The owner found build 663's shrinking picture rough. Nothing spent.**
 
 **Build 664 (art direction chat): the editor's app icon has no arrows badge now (the same book as the game's icon). Nothing spent.**
