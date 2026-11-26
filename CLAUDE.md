@@ -49,6 +49,7 @@ A gentle side-scrolling story walk for kids ages 7 to 10, following Bunyan's *Th
 - **The owner** looks closely and answers fast; show stills. "What do you think?" wants my opinion; "do it" wants action; "before you code" means only talk. I cannot hear sound or watch motion: say so; their ears and eyes decide.
 - **Keep the files trim** (owner, build 26): never add dated or numbered copies; delete test pages once done (ask first).
 - Sister project with the same habits: `Twhidbey/math-jump`.
+- **A fresh start for the future telling: `Twhidbey/pilgrim-2100`** (owner, Nov 26 2026: "we need an entire transformation - new words too"; a new repository so nothing here is overwritten). The year-2100 version is built THERE, with its own short notes; this game stays the 1678 telling and is not converted. `concept-2200.html` here is its old concept page.
 
 ## Art direction
 

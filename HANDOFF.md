@@ -280,6 +280,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 ## START HERE (rewritten at build 140, Nov 16 2026)
 
+- **Nov 26 2026: the 2100 version has its own repository, `Twhidbey/pilgrim-2100`** (a fresh start, seeded with the notes' lasting rules, Bunyan's text, the far light, Christian's pictures, the sounds and the tools). Nothing in this game changes for it.
+
 **Build 669 (art direction chat): the rain slightly louder (`RAIN_VOL` .018). Nothing spent.**
 
 **Build 668 (art direction chat): every footstep at half (`STEP_VOL` .065) and the rain quieter and darker (`RAIN_VOL` .013, its noise 450 to 3000 Hz). Nothing spent; the owner's ears decide.**
