@@ -202,7 +202,7 @@ body.portrait:not(.playing) #rot{display:none}
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
   <button id="autoWalk" aria-label="He walks on by himself"><svg viewBox="0 0 24 24"><path d="M5 6l6 6-6 6M12 6l6 6-6 6"/></svg></button>
-  <div id="build">build 668 · Nov 26 2026</div>
+  <div id="build">build 669 · Nov 26 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <div id="opening"><div class="ot">The Pilgrim&#8217;s Progress<div class="os">Touch to open the book</div></div></div>
@@ -1091,7 +1091,7 @@ const sfx = {
   open: () => { sweep(82, 41, 1.6, .12); [43, 55, 62, 67, 71].forEach((m, i) => note(m, .06, 6, i * .12)); },
 };
 // the weather you can hear: rain fades as the light grows
-const RAIN_VOL = .013;                    // how loud the rain is (.05, then .032, then build 668: "atmospheric not dominant")
+const RAIN_VOL = .018;                    // how loud the rain is (.05, then .032, then build 668: "atmospheric not dominant")
 function ambience() {
   if (!AC || G.t % 8) return;
   const now = AC.currentTime, w = warm((P.x - G.cam) / VW);

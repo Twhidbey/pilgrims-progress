@@ -280,6 +280,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 ## START HERE (rewritten at build 140, Nov 16 2026)
 
+**Build 669 (art direction chat): the rain slightly louder (`RAIN_VOL` .018). Nothing spent.**
+
 **Build 668 (art direction chat): every footstep at half (`STEP_VOL` .065) and the rain quieter and darker (`RAIN_VOL` .013, its noise 450 to 3000 Hz). Nothing spent; the owner's ears decide.**
 
 **Build 667 (art direction chat): the opening's pilgrim is in the next nearer ridge's tone (a step darker than the hill under him), his feet still sunk; build 666's own-ridge tone was too faint. Nothing spent.**
