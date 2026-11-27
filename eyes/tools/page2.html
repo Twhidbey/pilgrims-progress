@@ -1,0 +1,6 @@
+<!doctype html><meta charset="utf-8"><title>Eyes</title><style>body{margin:0;background:#15110f}canvas{width:100%;display:block}</style>
+<canvas id="c" width="1650" height="520"></canvas>
+<script>
+const q = new URLSearchParams(location.search), add = (src, f) => { const s = document.createElement('script'); s.src = src + '?' + Date.now(); s.onload = f; document.body.appendChild(s); };
+add((q.get('data') || '.') + '/eyes-data.js', () => add('m/eyes-draw.js', () => { window.cv = document.getElementById('c'); window.cx = cv.getContext('2d'); document.title = 'done'; }));
+</script>
