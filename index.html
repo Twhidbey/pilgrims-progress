@@ -202,7 +202,7 @@ body.portrait:not(.playing) #rot{display:none}
   </div>
   <button id="snd" aria-label="Sound on or off">♪</button>
   <button id="autoWalk" aria-label="He walks on by himself"><svg viewBox="0 0 24 24"><path d="M5 6l6 6-6 6M12 6l6 6-6 6"/></svg></button>
-  <div id="build">build 669 · Nov 26 2026</div>
+  <div id="build">build 670 · Nov 28 2026</div>
 </div></div>
 <div id="rot">Turn your phone sideways for a bigger picture</div>
 <div id="opening"><div class="ot">The Pilgrim&#8217;s Progress<div class="os">Touch to open the book</div></div></div>
@@ -2744,7 +2744,7 @@ for (const b of document.querySelectorAll('#levels .lv')) { b.classList.toggle('
 // the second ridge, made to glow by the dark round it (Kuindzhi), and the pilgrim small on a near ridge at the left
 // third (his own outline, PILGRIM_P, traced from his walk). Drawn into the box X0, Y0, w, h; returns where the light is.
 const PILGRIM_P = [13,-100,10,-100,1,-91,-1,-92,-5,-92,-9,-90,-11,-88,-11,-83,-19,-76,-21,-71,-21,-70,-22,-66,-21,-61,-17,-56,-13,-55,-15,-50,-23,-37,-21,-35,-22,-31,-19,-29,-19,-27,-18,-25,-19,-20,-17,-19,-16,-17,-19,-14,-21,-14,-23,-11,-21,-7,-20,-4,-17,0,-15,-1,-17,-4,-15,-11,-9,-17,-2,-15,-1,-14,0,-15,5,-15,5,-9,4,-5,5,-2,15,-1,19,-2,17,-4,14,-4,12,-5,10,-9,11,-17,15,-17,15,-31,13,-42,12,-44,12,-63,13,-71,13,-80,14,-83,18,-88,19,-95,18,-98];
-const COVER_WIN = { hor: .7, lx: .67, px: .3, pk: 3 };
+const COVER_WIN = { hor: .7, lx: .67, px: .24, pk: 4 };
 function nightLand(x, X0, Y0, w, h, o) {
   let sd = 7, pyOut = 0; const R = () => (sd = (sd * 16807) % 2147483647) / 2147483647;
   const hor = Y0 + h * (o.hor || .66), lx = X0 + w * (o.lx || .68), ly = hor - h * .045, u = h / 390;
@@ -2866,7 +2866,7 @@ function nightLand(x, X0, Y0, w, h, o) {
     const wx = r.left + r.width * 120 / 660, wy = r.top + r.height * 110 / 896, w2 = r.width * 444 / 660, h2 = r.height * 650 / 896;
     let K = 1, top = 0; const fy = feet || .82;
     for (let f = .96; f > .2; f -= .01) { K = S.width / (f * w2); const hi = -K * w2 / 2 * (1 - Math.sqrt(1 - f * f)) - 2, lo = S.height - .985 * K * h2;
-      if (lo <= hi) { top = Math.max(lo, Math.min(hi, .86 * S.height - fy * K * h2)); break; } }
+      if (lo <= hi) { top = Math.max(lo, Math.min(hi, .93 * S.height - fy * K * h2)); break; } }
     const tx = S.left + S.width / 2 - K * w2 / 2 - z.left - K * (wx - z.left), ty = S.top + top - z.top - K * (wy - z.top);
     zoom.style.transform = 'translate(' + tx.toFixed(2) + 'px,' + ty.toFixed(2) + 'px) scale(' + K.toFixed(4) + ')';
     const d = Math.min(2, devicePixelRatio || 1), cw = Math.min(2200, Math.round(w2 * K * d)), ch = Math.round(cw * 650 / 444), key = cw + 'x' + ch;
@@ -2962,7 +2962,7 @@ document.getElementById('on2').onclick = () => SL.on ? go3() : HL.on ? goRoom('d
 </script>
 <script src="slough.js?v=662"></script>
 <script src="hill.js?v=662"></script>
-<script src="rooms-outside.js?v=555"></script>
+<script src="rooms-outside.js?v=670"></script>
 <script src="room1.js?v=507"></script>
 <script src="room2.js?v=524"></script>
 <script src="room3.js?v=507"></script>

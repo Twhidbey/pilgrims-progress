@@ -192,7 +192,12 @@
       // back into the light ahead of him; then room 1
       enter() { this.gone = false; this.d = 0; this.kn = 0; this.ia = 0; this.cut = 0; this.cw = 0; this.cx = this.CX0; this.uw = 0; this.bkT = -1; this.cfr = 0; this.cw2 = 0; this.ca = 1; this.inT = -1; pic(this.BK.n); SEEN_R.clear(); pic(VIS.I.walk.n); pic(VIS.C.walk.n); },
       cutLit(id) { return id === 'door' ? .5 : 0; },
-      run() { talk([[TIP, 'Hold to walk on to the house.', 'walkup']], () => talk([[N, 'Then he went on till he came to the house of the Interpreter, and knocked over and over.']], () => { this.cw = 0; talk([[TIP, 'Knock on the door.', 'knock']], () => { H.ph = 'open'; H.t = 0; G.state = 'auto'; }); })); },
+      // (build 670; owner: "make interpretor house off limits for now - can walk up but can't go in door (till I'm finished)"): outside the
+      // editor he walks up to the door and the level ends there (a quiet side message, the end card on to the Cross); in the editor the house is open
+      locked() { return !(typeof ED !== 'undefined' && ED.on); },
+      run() { if (this.locked()) { talk([[TIP, 'Hold to walk on to the house.', 'walkup']], () => talk([[TIP, 'The house is not open yet. Come back soon.']], () => {
+          finish(); const e = document.getElementById('endc'); e.querySelector('h1').textContent = 'The Interpreter\u2019s House'; e.querySelectorAll('p')[0].textContent = 'The house is not open yet.'; })); return; }
+        talk([[TIP, 'Hold to walk on to the house.', 'walkup']], () => talk([[N, 'Then he went on till he came to the house of the Interpreter, and knocked over and over.']], () => { this.cw = 0; talk([[TIP, 'Knock on the door.', 'knock']], () => { H.ph = 'open'; H.t = 0; G.state = 'auto'; }); })); },
       act(sx, sy) { if (G.act === 'knock' && (sx == null || near(sx, sy, DOOR.x, 950, 150))) { knockS(); if (++this.kn >= 3) next(true); } },
       upd() {
         this.cut += ((this.cw ? 1 : 0) - this.cut) * (this.cw ? .03 : .05); if (this.cut < .003) this.cut = 0;

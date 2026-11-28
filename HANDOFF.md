@@ -286,6 +286,8 @@ The game is `index.html` (Level 1 in the page, Level 2 in `slough.js`; no build 
 
 **Build 668 (art direction chat): every footstep at half (`STEP_VOL` .065) and the rain quieter and darker (`RAIN_VOL` .013, its noise 450 to 3000 Hz). Nothing spent; the owner's ears decide.**
 
+**Build 670: the Interpreter's House is shut outside editor mode (he walks up to the door, a side message, the end card on to the Cross; open in `?edit`); the opening's pilgrim stands on the nearest ridge seen, framed a little lower. Nothing spent.**
+
 **Build 667 (art direction chat): the opening's pilgrim is in the next nearer ridge's tone (a step darker than the hill under him), his feet still sunk; build 666's own-ridge tone was too faint. Nothing spent.**
 
 **Build 666 (art direction chat): the pilgrim of the opening and the cover is in his ridge's own tone with his feet sunk into it; a new rule in CLAUDE.md, "NEVER FLOATING" (under People), for every figure in every level. Nothing spent.**
